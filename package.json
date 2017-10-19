@@ -43,11 +43,13 @@
     "Vikas Kedia <vikas.kedia@gmail.com>"
   ],
   "scripts": {
+    "cover": "nyc --reporter=lcov mocha --require intelli-espower-loader test/*.js && nyc report",
     "generate-scaffolding": "repo-tools generate all && repo-tools generate lib_samples_readme -l samples/ --config ../.cloud-repo-tools.json",
     "lint": "repo-tools lint --cmd eslint -- src/ samples/ system-test/ test/",
     "prettier": "prettier --write src/*.js src/*/*.js src/admin/database/*/*.js src/admin/instance/*/*.js samples/*.js samples/*/*.js test/*.js test/*/*.js system-test/*.js system-test/*/*.js",
-    "test": "mocha test/*.js",
-    "system-test": "mocha system-test/*.js --no-timeouts --bail"
+    "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
+    "test-no-cover": "repo-tools test run --cmd mocha -- test/*.js --no-timeouts",
+    "test": "repo-tools test run --cmd npm -- run cover"
   },
   "dependencies": {
     "@google-cloud/common": "^0.13.0",
@@ -74,14 +76,18 @@
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^2.0.10",
-    "async": "^2.0.1",
+    "async": "^2.5.0",
+    "codecov": "^2.3.1",
     "concat-stream": "^1.6.0",
     "eslint": "^4.9.0",
     "eslint-config-prettier": "^2.6.0",
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-prettier": "^2.3.1",
-    "mocha": "^3.0.1",
+    "intelli-espower-loader": "^1.0.1",
+    "mocha": "^3.5.3",
     "multiline": "^1.0.2",
+    "nyc": "^11.2.1",
+    "power-assert": "^1.4.4",
     "prettier": "^1.7.4",
     "proxyquire": "^1.7.11",
     "uuid": "^3.0.1"
