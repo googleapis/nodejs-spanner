@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var events = require('events');
 var extend = require('extend');
 var is = require('is');

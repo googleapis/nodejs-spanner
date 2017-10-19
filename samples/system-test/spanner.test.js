@@ -31,7 +31,7 @@ const INSTANCE_ID = `test-instance`;
 const DATABASE_ID = `test-database-${Date.now()}`;
 
 test.before(tools.checkCredentials);
-test.before(async t => {
+test.before(async () => {
   const instance = spanner.instance(INSTANCE_ID);
   const database = instance.database(DATABASE_ID);
   try {
@@ -41,7 +41,7 @@ test.before(async t => {
   }
 });
 
-test.after.always(async t => {
+test.after.always(async () => {
   const instance = spanner.instance(INSTANCE_ID);
   const database = instance.database(DATABASE_ID);
   try {

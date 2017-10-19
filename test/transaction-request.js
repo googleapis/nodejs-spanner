@@ -901,18 +901,18 @@ describe('TransactionRequest', function() {
         );
       } catch (e) {
         caughtError = e;
-      } finally {
-        if (!caughtError) {
-          throw new Error('Expected error was not thrown.');
-        }
-
-        var expectedErrorMessage = [
-          'Row at index 0 does not contain the correct number of columns.',
-          'Missing columns: ["key2"]',
-        ].join('\n\n');
-
-        assert.strictEqual(caughtError.message, expectedErrorMessage);
       }
+
+      if (!caughtError) {
+        throw new Error('Expected error was not thrown.');
+      }
+
+      var expectedErrorMessage = [
+        'Row at index 0 does not contain the correct number of columns.',
+        'Missing columns: ["key2"]',
+      ].join('\n\n');
+
+      assert.strictEqual(caughtError.message, expectedErrorMessage);
     });
 
     it('should push the request to the queue if a transaction', function(done) {
