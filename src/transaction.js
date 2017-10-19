@@ -118,7 +118,7 @@ util.inherits(Transaction, TransactionRequest);
 Transaction.createDeadlineError_ = function(err) {
   return extend({}, err, {
     code: 4,
-    message: 'Deadline for Transaction exceeded.'
+    message: 'Deadline for Transaction exceeded.',
   });
 };
 
@@ -130,7 +130,7 @@ Transaction.createDeadlineError_ = function(err) {
  * @return {?number}
  */
 Transaction.createRetryDelay_ = function(retries) {
-  return (Math.pow(2, retries) * 1000) + Math.floor(Math.random() * 1000);
+  return Math.pow(2, retries) * 1000 + Math.floor(Math.random() * 1000);
 };
 
 /**
@@ -166,40 +166,46 @@ Transaction.prototype.begin = function(callback) {
 
   if (!this.readOnly) {
     options = {
-      readWrite: {}
+      readWrite: {},
     };
   } else {
     options = {
-      readOnly: extend({
-        returnReadTimestamp: true
-      }, this.options)
+      readOnly: extend(
+        {
+          returnReadTimestamp: true,
+        },
+        this.options
+      ),
     };
   }
 
   var reqOpts = {
-    options: options
+    options: options,
   };
 
-  this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.beginTransaction.bind(this.api.Spanner)
-  }, function(err, resp) {
-    if (err) {
-      callback(err);
-      return;
+  this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.beginTransaction.bind(this.api.Spanner),
+    },
+    function(err, resp) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      self.id = resp.id;
+      self.metadata = resp;
+
+      if (resp.readTimestamp) {
+        self.readTimestamp = TransactionRequest.fromProtoTimestamp_(
+          resp.readTimestamp
+        );
+      }
+
+      callback(null, resp);
     }
-
-    self.id = resp.id;
-    self.metadata = resp;
-
-    if (resp.readTimestamp) {
-      self.readTimestamp = TransactionRequest.fromProtoTimestamp_(
-        resp.readTimestamp
-      );
-    }
-
-    callback(null, resp);
-  });
+  );
 };
 
 /**
@@ -235,27 +241,30 @@ Transaction.prototype.commit = function(callback) {
   var self = this;
 
   var reqOpts = {
-    mutations: this.queuedMutations_
+    mutations: this.queuedMutations_,
   };
 
   if (this.id) {
     reqOpts.transactionId = this.id;
   } else {
     reqOpts.singleUseTransaction = {
-      readWrite: {}
+      readWrite: {},
     };
   }
 
-  this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.commit.bind(this.api.Spanner)
-  }, function(err, resp) {
-    if (!err) {
-      self.end();
-    }
+  this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.commit.bind(this.api.Spanner),
+    },
+    function(err, resp) {
+      if (!err) {
+        self.end();
+      }
 
-    callback(err, resp);
-  });
+      callback(err, resp);
+    }
+  );
 };
 
 /**
@@ -316,9 +325,12 @@ Transaction.prototype.queue_ = function(mutation) {
 Transaction.prototype.request = function(config, callback) {
   var self = this;
 
-  var reqOpts = extend({
-    session: this.session.formattedName_
-  }, config.reqOpts);
+  var reqOpts = extend(
+    {
+      session: this.session.formattedName_,
+    },
+    config.reqOpts
+  );
 
   var gaxOptions = reqOpts.gaxOptions;
   delete reqOpts.gaxOptions;
@@ -349,9 +361,12 @@ Transaction.prototype.request = function(config, callback) {
 Transaction.prototype.requestStream = function(config) {
   var self = this;
 
-  var reqOpts = extend({
-    session: this.session.formattedName_
-  }, config.reqOpts);
+  var reqOpts = extend(
+    {
+      session: this.session.formattedName_,
+    },
+    config.reqOpts
+  );
 
   var gaxOptions = reqOpts.gaxOptions;
   delete reqOpts.gaxOptions;
@@ -441,19 +456,22 @@ Transaction.prototype.rollback = function(callback) {
   }
 
   var reqOpts = {
-    transactionId: this.id
+    transactionId: this.id,
   };
 
-  this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.rollback.bind(this.api.Spanner)
-  }, function(err, resp) {
-    if (!err) {
-      self.end();
-    }
+  this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.rollback.bind(this.api.Spanner),
+    },
+    function(err, resp) {
+      if (!err) {
+        self.end();
+      }
 
-    callback(err, resp);
-  });
+      callback(err, resp);
+    }
+  );
 };
 
 /**
@@ -607,14 +625,17 @@ Transaction.prototype.runStream = function(query) {
 
   if (is.string(query)) {
     query = {
-      sql: query
+      sql: query,
     };
   }
 
-  var reqOpts = extend({
-    transaction: {},
-    session: this.formattedName_
-  }, query);
+  var reqOpts = extend(
+    {
+      transaction: {},
+      session: this.formattedName_,
+    },
+    query
+  );
 
   var fields = {};
   var prop;
@@ -633,7 +654,7 @@ Transaction.prototype.runStream = function(query) {
     }
 
     reqOpts.params = {
-      fields: fields
+      fields: fields,
     };
   }
 
@@ -655,14 +676,14 @@ Transaction.prototype.runStream = function(query) {
         code = 0; // unspecified
       }
 
-      types[prop] = { code: code };
+      types[prop] = {code: code};
 
       if (child === -1) {
         child = 0; // unspecified
       }
 
       if (is.number(child)) {
-        types[prop].arrayElementType = { code: child };
+        types[prop].arrayElementType = {code: child};
       }
     }
 
@@ -674,14 +695,14 @@ Transaction.prototype.runStream = function(query) {
     reqOpts.transaction.id = this.id;
   } else {
     reqOpts.transaction.singleUse = {
-      readOnly: this.options || {}
+      readOnly: this.options || {},
     };
   }
 
   function makeRequest(resumeToken) {
     return self.requestStream({
-      reqOpts: extend({}, reqOpts, { resumeToken: resumeToken }),
-      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner)
+      reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
+      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner),
     });
   }
 
@@ -696,8 +717,11 @@ Transaction.prototype.runStream = function(query) {
  * @return {boolean}
  */
 Transaction.prototype.shouldRetry_ = function(err) {
-  return err.code === ABORTED && is.fn(this.runFn_) &&
-    (Date.now() - this.beginTime_ < this.timeout_);
+  return (
+    err.code === ABORTED &&
+    is.fn(this.runFn_) &&
+    Date.now() - this.beginTime_ < this.timeout_
+  );
 };
 
 /*! Developer Documentation

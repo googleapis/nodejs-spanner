@@ -44,6 +44,8 @@
   ],
   "scripts": {
     "generate-scaffolding": "repo-tools generate all && repo-tools generate lib_samples_readme -l samples/ --config ../.cloud-repo-tools.json",
+    "lint": "repo-tools lint --cmd eslint -- src/ samples/ system-test/ test/",
+    "prettier": "prettier --write src/*.js src/*/*.js samples/*.js samples/*/*.js test/*.js test/*/*.js system-test/*.js system-test/*/*.js",
     "test": "mocha test/*.js",
     "system-test": "mocha system-test/*.js --no-timeouts --bail"
   },
@@ -73,8 +75,13 @@
     "@google-cloud/nodejs-repo-tools": "^2.0.10",
     "async": "^2.0.1",
     "concat-stream": "^1.6.0",
+    "eslint": "^4.9.0",
+    "eslint-config-prettier": "^2.6.0",
+    "eslint-plugin-node": "^5.2.0",
+    "eslint-plugin-prettier": "^2.3.1",
     "mocha": "^3.0.1",
     "multiline": "^1.0.2",
+    "prettier": "^1.7.4",
     "proxyquire": "^1.7.11",
     "uuid": "^3.0.1"
   }

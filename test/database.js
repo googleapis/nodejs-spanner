@@ -36,9 +36,9 @@ var fakeUtil = extend({}, util, {
       'runTransaction',
       'table',
       'updateSchema',
-      'session_'
+      'session_',
     ]);
-  }
+  },
 });
 
 function FakeGrpcServiceObject() {
@@ -69,7 +69,7 @@ var fakeCodec = {
   encode: util.noop,
   Int: function() {},
   Float: function() {},
-  SpannerDate: function() {}
+  SpannerDate: function() {},
 };
 
 describe('Database', function() {
@@ -79,7 +79,7 @@ describe('Database', function() {
   var INSTANCE = {
     api: {},
     formattedName_: 'instance-name',
-    databases_: new Map()
+    databases_: new Map(),
   };
 
   var NAME = 'table-name';
@@ -92,17 +92,17 @@ describe('Database', function() {
   before(function() {
     Database = proxyquire('../src/database.js', {
       '@google-cloud/common': {
-        util: fakeUtil
+        util: fakeUtil,
       },
       '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject
+        ServiceObject: FakeGrpcServiceObject,
       },
       './codec.js': fakeCodec,
       './partial-result-stream.js': FakePartialResultStream,
       './session-pool.js': FakeSessionPool,
       './session.js': FakeSession,
       './table.js': FakeTable,
-      './transaction-request.js': FakeTransactionRequest
+      './transaction-request.js': FakeTransactionRequest,
     });
     DatabaseCached = extend({}, Database);
   });
@@ -114,9 +114,9 @@ describe('Database', function() {
       Spanner: {
         executeStreamingSql: function() {
           return util.noop;
-        }
+        },
       },
-      Database: {}
+      Database: {},
     };
 
     extend(Database, DatabaseCached);
@@ -164,7 +164,7 @@ describe('Database', function() {
           assert.strictEqual(name, database.formattedName_);
           assert.strictEqual(options_, options);
           callback(); // done()
-        }
+        },
       });
 
       database = new Database(instanceInstance, NAME);
@@ -177,7 +177,7 @@ describe('Database', function() {
       assert.deepEqual(calledWith.methods, {
         create: true,
         exists: true,
-        get: true
+        get: true,
       });
 
       calledWith.createMethod(null, options, done);
@@ -205,7 +205,7 @@ describe('Database', function() {
         database.pool_ = {
           clear: function() {
             return Promise.resolve();
-          }
+          },
         };
       });
 
@@ -234,7 +234,7 @@ describe('Database', function() {
         database.pool_ = {
           clear: function() {
             return Promise.reject(error);
-          }
+          },
         };
 
         database.close(function(err) {
@@ -247,13 +247,15 @@ describe('Database', function() {
         database.pool_ = {
           clear: function() {
             return Promise.reject();
-          }
+          },
         };
 
         database.close(function(err) {
           assert(err instanceof Error);
-          assert.strictEqual(err.message,
-            'Unable to close database connection.');
+          assert.strictEqual(
+            err.message,
+            'Unable to close database connection.'
+          );
           done();
         });
       });
@@ -350,11 +352,11 @@ describe('Database', function() {
       database.api.Database = {
         dropDatabase: function(reqOpts, callback) {
           assert.deepEqual(reqOpts, {
-            database: database.formattedName_
+            database: database.formattedName_,
           });
           assert.strictEqual(callback, assert.ifError);
           return generatedReturnValue;
-        }
+        },
       };
 
       var returnValue = database.delete(assert.ifError);
@@ -369,11 +371,11 @@ describe('Database', function() {
       database.api.Database = {
         getDatabase: function(reqOpts, callback) {
           assert.deepEqual(reqOpts, {
-            name: database.formattedName_
+            name: database.formattedName_,
           });
           assert.strictEqual(callback, assert.ifError);
           return generatedReturnValue;
-        }
+        },
       };
 
       var returnValue = database.getMetadata(assert.ifError);
@@ -386,10 +388,10 @@ describe('Database', function() {
       database.api.Database = {
         getDatabaseDdl: function(reqOpts) {
           assert.deepEqual(reqOpts, {
-            database: database.formattedName_
+            database: database.formattedName_,
           });
           done();
-        }
+        },
       };
 
       database.getSchema(assert.ifError);
@@ -406,7 +408,7 @@ describe('Database', function() {
         database.api.Database = {
           getDatabaseDdl: function(reqOpts, callback) {
             callback(ARG_1, STATEMENTS_ARG, ARG_3, ARG_4, ARG_5);
-          }
+          },
         };
       });
 
@@ -429,14 +431,14 @@ describe('Database', function() {
       var ARG_5 = {};
 
       var STATEMENTS_ARG = {
-        statements: {}
+        statements: {},
       };
 
       beforeEach(function() {
         database.api.Database = {
           getDatabaseDdl: function(reqOpts, callback) {
             callback(ARG_1, STATEMENTS_ARG, ARG_3, ARG_4, ARG_5);
-          }
+          },
         };
       });
 
@@ -501,11 +503,7 @@ describe('Database', function() {
 
       database.run(QUERY, function(err, rows) {
         assert.ifError(err);
-        assert.deepEqual(rows, [
-          ROW_1,
-          ROW_2,
-          ROW_3
-        ]);
+        assert.deepEqual(rows, [ROW_1, ROW_2, ROW_3]);
         done();
       });
     });
@@ -526,11 +524,11 @@ describe('Database', function() {
     var QUERY = {
       sql: 'SELECT * FROM table',
       a: 'b',
-      c: 'd'
+      c: 'd',
     };
 
     var EXPECTED_REQ_OPTS = extend(QUERY, {
-      session: DATABASE_FORMATTED_NAME
+      session: DATABASE_FORMATTED_NAME,
     });
 
     it('should accept a query object', function(done) {
@@ -571,8 +569,8 @@ describe('Database', function() {
         var query = {
           sql: QUERY,
           params: {
-            test: 'value'
-          }
+            test: 'value',
+          },
         };
 
         var encodedValue = {};
@@ -601,14 +599,14 @@ describe('Database', function() {
           timestamp: new Date(),
           date: new fakeCodec.SpannerDate(),
           string: 'abc',
-          bytes: new Buffer('abc')
+          bytes: new Buffer('abc'),
         };
 
         var types = Object.keys(params);
 
         var query = {
           sql: QUERY,
-          params: params
+          params: params,
         };
 
         var getTypeCallCount = 0;
@@ -623,29 +621,29 @@ describe('Database', function() {
         database.pool_.requestStream = function(options) {
           assert.deepEqual(options.reqOpts.paramTypes, {
             unspecified: {
-              code: 0
+              code: 0,
             },
             bool: {
-              code: 1
+              code: 1,
             },
             int64: {
-              code: 2
+              code: 2,
             },
             float64: {
-              code: 3
+              code: 3,
             },
             timestamp: {
-              code: 4
+              code: 4,
             },
             date: {
-              code: 5
+              code: 5,
             },
             string: {
-              code: 6
+              code: 6,
             },
             bytes: {
-              code: 7
-            }
+              code: 7,
+            },
           });
 
           done();
@@ -659,11 +657,11 @@ describe('Database', function() {
       it('should not overwrite existing type definitions', function(done) {
         var query = {
           params: {
-            test: 123
+            test: 123,
           },
           types: {
-            test: 'string'
-          }
+            test: 'string',
+          },
         };
 
         fakeCodec.getType = function() {
@@ -673,8 +671,8 @@ describe('Database', function() {
         database.pool_.requestStream = function(options) {
           assert.deepEqual(options.reqOpts.paramTypes, {
             test: {
-              code: 6
-            }
+              code: 6,
+            },
           });
           done();
         };
@@ -687,11 +685,11 @@ describe('Database', function() {
       it('should throw an error for unknown types', function() {
         var query = {
           params: {
-            test: 'abc'
+            test: 'abc',
           },
           types: {
-            test: 'unicorn'
-          }
+            test: 'unicorn',
+          },
         };
 
         assert.throws(function() {
@@ -702,14 +700,14 @@ describe('Database', function() {
       it('should attempt to guess array types', function(done) {
         var query = {
           params: {
-            test: ['abc']
-          }
+            test: ['abc'],
+          },
         };
 
         fakeCodec.getType = function() {
           return {
             type: 'array',
-            child: 'string'
+            child: 'string',
           };
         };
 
@@ -718,9 +716,9 @@ describe('Database', function() {
             test: {
               code: 8,
               arrayElementType: {
-                code: 6
-              }
-            }
+                code: 6,
+              },
+            },
           });
 
           done();
@@ -734,14 +732,14 @@ describe('Database', function() {
       it('should throw an error for unknown child types', function() {
         var query = {
           params: {
-            test: [null]
-          }
+            test: [null],
+          },
         };
 
         fakeCodec.getType = function() {
           return {
             type: 'array',
-            child: 'unicorn'
+            child: 'unicorn',
           };
         };
 
@@ -753,11 +751,11 @@ describe('Database', function() {
       it('should delete the type map from the request options', function(done) {
         var query = {
           params: {
-            test: 'abc'
+            test: 'abc',
           },
           types: {
-            test: 'string'
-          }
+            test: 'string',
+          },
         };
 
         database.pool_.requestStream = function(options) {
@@ -790,8 +788,8 @@ describe('Database', function() {
     });
 
     it('should add timestamp options', function(done) {
-      var OPTIONS = { a: 'a' };
-      var FORMATTED_OPTIONS = { b: 'b' };
+      var OPTIONS = {a: 'a'};
+      var FORMATTED_OPTIONS = {b: 'b'};
 
       FakeTransactionRequest.formatTimestampOptions_ = function(options) {
         assert.strictEqual(options, OPTIONS);
@@ -838,7 +836,7 @@ describe('Database', function() {
     it('should run the transaction', function(done) {
       var TRANSACTION = {};
       var OPTIONS = {
-        a: 'a'
+        a: 'a',
       };
 
       var dateNow = Date.now;
@@ -869,7 +867,7 @@ describe('Database', function() {
     it('should capture the timeout', function(done) {
       var TRANSACTION = {};
       var OPTIONS = {
-        timeout: 1000
+        timeout: 1000,
       };
 
       database.getTransaction = function(options, callback) {
@@ -903,10 +901,7 @@ describe('Database', function() {
   });
 
   describe('updateSchema', function() {
-    var STATEMENTS = [
-      'statement-1',
-      'statement-2'
-    ];
+    var STATEMENTS = ['statement-1', 'statement-2'];
 
     it('should call and return the generated API', function() {
       var generatedReturnValue = {};
@@ -915,11 +910,11 @@ describe('Database', function() {
         updateDatabaseDdl: function(reqOpts, callback) {
           assert.deepEqual(reqOpts, {
             database: database.formattedName_,
-            statements: STATEMENTS
+            statements: STATEMENTS,
           });
           assert.strictEqual(callback, assert.ifError);
           return generatedReturnValue;
-        }
+        },
       };
 
       var returnValue = database.updateSchema(STATEMENTS, assert.ifError);
@@ -931,7 +926,7 @@ describe('Database', function() {
         updateDatabaseDdl: function(reqOpts) {
           assert.deepEqual(reqOpts.statements, [STATEMENTS[0]]);
           done();
-        }
+        },
       };
 
       database.updateSchema(STATEMENTS[0], assert.ifError);
@@ -940,18 +935,18 @@ describe('Database', function() {
     it('should accept an object', function(done) {
       var config = {
         statements: STATEMENTS,
-        otherConfiguration: {}
+        otherConfiguration: {},
       };
 
       var expectedReqOpts = extend({}, config, {
-        database: database.formattedName_
+        database: database.formattedName_,
       });
 
       database.api.Database = {
         updateDatabaseDdl: function(reqOpts) {
           assert.deepEqual(reqOpts, expectedReqOpts);
           done();
-        }
+        },
       };
 
       database.updateSchema(config, assert.ifError);
@@ -965,13 +960,13 @@ describe('Database', function() {
       database.api.Spanner = {
         createSession: function(reqOpts, options) {
           assert.deepEqual(reqOpts, {
-            database: database.formattedName_
+            database: database.formattedName_,
           });
 
           assert.strictEqual(options, OPTIONS);
 
           done();
-        }
+        },
       };
 
       database.createSession_(OPTIONS, assert.ifError);
@@ -981,13 +976,13 @@ describe('Database', function() {
       database.api.Spanner = {
         createSession: function(reqOpts, options) {
           assert.deepEqual(reqOpts, {
-            database: database.formattedName_
+            database: database.formattedName_,
           });
 
           assert.deepEqual(options, {});
 
           done();
-        }
+        },
       };
 
       database.createSession_(assert.ifError);
@@ -1001,7 +996,7 @@ describe('Database', function() {
         database.api.Spanner = {
           createSession: function(reqOpts, options, callback) {
             callback(ERROR, API_RESPONSE);
-          }
+          },
         };
       });
 
@@ -1017,14 +1012,14 @@ describe('Database', function() {
 
     describe('success', function() {
       var API_RESPONSE = {
-        name: 'session-name'
+        name: 'session-name',
       };
 
       beforeEach(function() {
         database.api.Spanner = {
           createSession: function(reqOpts, options, callback) {
             callback(null, API_RESPONSE);
-          }
+          },
         };
       });
 
@@ -1055,7 +1050,7 @@ describe('Database', function() {
       database.pool_ = {
         getSession: function(callback) {
           callback(); // done()
-        }
+        },
       };
 
       database.getSession_(done);
@@ -1072,7 +1067,7 @@ describe('Database', function() {
         database.pool_ = {
           getWriteSession: function(callback) {
             callback(error, session, transaction);
-          }
+          },
         };
 
         database.getTransaction(function(err, transaction_) {
@@ -1086,14 +1081,14 @@ describe('Database', function() {
     describe('readOnly mode', function() {
       var OPTIONS = {
         readOnly: true,
-        a: 'a'
+        a: 'a',
       };
 
       it('should get a session from the pool', function(done) {
         database.pool_ = {
           getSession: function() {
             done();
-          }
+          },
         };
 
         database.getTransaction(OPTIONS, assert.ifError);
@@ -1105,7 +1100,7 @@ describe('Database', function() {
         database.pool_ = {
           getSession: function(callback) {
             callback(error);
-          }
+          },
         };
 
         database.getTransaction(OPTIONS, function(err) {
@@ -1117,7 +1112,7 @@ describe('Database', function() {
       it('should should create a transaction', function(done) {
         var SESSION = {};
         var TRANSACTION = {
-          begin: function() {}
+          begin: function() {},
         };
 
         database.pool_ = {
@@ -1130,7 +1125,7 @@ describe('Database', function() {
 
             setImmediate(done);
             return TRANSACTION;
-          }
+          },
         };
 
         database.getTransaction(OPTIONS, assert.ifError);
@@ -1141,7 +1136,7 @@ describe('Database', function() {
         var TRANSACTION = {
           begin: function(callback) {
             callback(null);
-          }
+          },
         };
 
         database.pool_ = {
@@ -1150,7 +1145,7 @@ describe('Database', function() {
           },
           createTransaction_: function() {
             return TRANSACTION;
-          }
+          },
         };
 
         database.getTransaction(OPTIONS, function(err, transaction) {
@@ -1171,7 +1166,7 @@ describe('Database', function() {
           },
           end: function() {
             endCalled = true;
-          }
+          },
         };
 
         database.pool_ = {
@@ -1180,7 +1175,7 @@ describe('Database', function() {
           },
           createTransaction_: function() {
             return TRANSACTION;
-          }
+          },
         };
 
         database.getTransaction(OPTIONS, function(err) {

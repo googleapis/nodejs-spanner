@@ -28,14 +28,14 @@ describe('RowBuilder', function() {
 
   var METADATA = {
     rowType: {
-      fields: []
-    }
+      fields: [],
+    },
   };
 
   var CHUNKS = [
     {
-      metadata: METADATA
-    }
+      metadata: METADATA,
+    },
   ];
 
   beforeEach(function() {
@@ -65,9 +65,7 @@ describe('RowBuilder', function() {
     });
 
     it('should correctly initialize a rows array', function() {
-      assert.deepEqual(rowBuilder.rows, [
-        []
-      ]);
+      assert.deepEqual(rowBuilder.rows, [[]]);
     });
 
     it('should localize metadata', function() {
@@ -79,10 +77,7 @@ describe('RowBuilder', function() {
     });
 
     it('should return the last row when accessing currentRow', function() {
-      var rows = [
-        {},
-        {}
-      ];
+      var rows = [{}, {}];
 
       rowBuilder.rows.push(rows[0]);
       assert.strictEqual(rowBuilder.currentRow, rows[0]);
@@ -102,7 +97,7 @@ describe('RowBuilder', function() {
     it('should detect value objects', function() {
       var value = {
         kind: 'stringValue',
-        stringValue: 'hi'
+        stringValue: 'hi',
       };
 
       assert.strictEqual(RowBuilder.getValue(value), value.stringValue);
@@ -112,8 +107,8 @@ describe('RowBuilder', function() {
       var value = {
         kind: 'listValue',
         listValue: {
-          values: [{}, {}]
-        }
+          values: [{}, {}],
+        },
       };
 
       assert.strictEqual(RowBuilder.getValue(value), value.listValue.values);
@@ -130,12 +125,10 @@ describe('RowBuilder', function() {
     it('should iterate an array', function() {
       var field = {
         code: 'ARRAY',
-        arrayElementType: 'type'
+        arrayElementType: 'type',
       };
 
-      var value = [
-        {}
-      ];
+      var value = [{}];
 
       var formattedValue = RowBuilder.formatValue(field, value);
       assert.strictEqual(formattedValue[0], value[0]);
@@ -143,12 +136,10 @@ describe('RowBuilder', function() {
 
     it('should return the original value if not an array', function() {
       var field = {
-        code: 'NOT_STRUCT_OR_ARRAY' // so it returns original value
+        code: 'NOT_STRUCT_OR_ARRAY', // so it returns original value
       };
 
-      var value = [
-        {}
-      ];
+      var value = [{}];
 
       var formattedValue = RowBuilder.formatValue(field, value);
       assert.strictEqual(formattedValue[0], value[0]);
@@ -161,19 +152,17 @@ describe('RowBuilder', function() {
           fields: [
             {
               name: 'fieldName',
-              type: 'NOT_STRUCT_OR_ARRAY' // so it returns original value
-            }
-          ]
-        }
+              type: 'NOT_STRUCT_OR_ARRAY', // so it returns original value
+            },
+          ],
+        },
       };
 
-      var value = [
-        {}
-      ];
+      var value = [{}];
 
       var formattedValue = RowBuilder.formatValue(field, value);
       assert.deepEqual(formattedValue, {
-        fieldName: value[0]
+        fieldName: value[0],
       });
     });
   });
@@ -183,24 +172,16 @@ describe('RowBuilder', function() {
       var type = {
         code: 'ARRAY',
         arrayElementType: {
-          code: 'FLOAT64' // so we break out of the fn w/o more processing
-        }
+          code: 'FLOAT64', // so we break out of the fn w/o more processing
+        },
       };
 
-      var head = [
-        1,
-        2
-      ];
+      var head = [1, 2];
 
-      var tail = [
-        3,
-        4
-      ];
+      var tail = [3, 4];
 
       var merged = RowBuilder.merge(type, head, tail);
-      assert.deepEqual(merged, [
-        [ 1, 2, 3, 4 ]
-      ]);
+      assert.deepEqual(merged, [[1, 2, 3, 4]]);
     });
 
     it('should merge structs', function() {
@@ -211,32 +192,24 @@ describe('RowBuilder', function() {
             {},
             {
               type: {
-                code: 'FLOAT64' // so we break out of the fn w/o more processing
-              }
-            }
-          ]
-        }
+                code: 'FLOAT64', // so we break out of the fn w/o more processing
+              },
+            },
+          ],
+        },
       };
 
-      var head = [
-        1,
-        2
-      ];
+      var head = [1, 2];
 
-      var tail = [
-        3,
-        4
-      ];
+      var tail = [3, 4];
 
       var merged = RowBuilder.merge(type, head, tail);
-      assert.deepEqual(merged, [
-        [ 1, 2, 3, 4 ]
-      ]);
+      assert.deepEqual(merged, [[1, 2, 3, 4]]);
     });
 
     it('should merge numbers', function() {
       var type = {
-        code: 'mergable-type' // any value but float64/array/struct
+        code: 'mergable-type', // any value but float64/array/struct
       };
 
       var head = 1;
@@ -248,7 +221,7 @@ describe('RowBuilder', function() {
 
     it('should merge strings', function() {
       var type = {
-        code: 'mergable-type' // any value but float64/array/struct
+        code: 'mergable-type', // any value but float64/array/struct
       };
 
       var head = 'a';
@@ -260,7 +233,7 @@ describe('RowBuilder', function() {
 
     it('should not merge null head values', function() {
       var type = {
-        code: 'mergable-type' // any value but float64/array/struct
+        code: 'mergable-type', // any value but float64/array/struct
       };
 
       var head = null;
@@ -273,7 +246,7 @@ describe('RowBuilder', function() {
 
     it('should not merge null tail values', function() {
       var type = {
-        code: 'mergable-type' // any value but float64/array/struct
+        code: 'mergable-type', // any value but float64/array/struct
       };
 
       var head = 1;
@@ -286,7 +259,7 @@ describe('RowBuilder', function() {
 
     it('should not merge floats', function() {
       var type = {
-        code: 'FLOAT64' // any value but float64/array/struct
+        code: 'FLOAT64', // any value but float64/array/struct
       };
 
       var head = 1;
@@ -299,7 +272,7 @@ describe('RowBuilder', function() {
 
     it('should filter out empty strings', function() {
       var type = {
-        code: 'mergable-type' // any value but float64/array/struct
+        code: 'mergable-type', // any value but float64/array/struct
       };
 
       var head = '';
@@ -311,10 +284,7 @@ describe('RowBuilder', function() {
   });
 
   describe('append', function() {
-    var ROWS = [
-      [{}, {}],
-      [{}, {}]
-    ];
+    var ROWS = [[{}, {}], [{}, {}]];
 
     var ROW_1 = ROWS[0];
     var ROW_2 = ROWS[1];
@@ -323,7 +293,7 @@ describe('RowBuilder', function() {
       rowBuilder.fields = [{}, {}]; // matches the # of objects in a row
 
       rowBuilder.rows = [
-        ROW_1 // row 1 is complete
+        ROW_1, // row 1 is complete
       ];
     });
 
@@ -354,10 +324,8 @@ describe('RowBuilder', function() {
     it('should append values from a chunk', function(done) {
       rowBuilder.chunks = [
         {
-          values: [
-            {}
-          ]
-        }
+          values: [{}],
+        },
       ];
 
       rowBuilder.append = function(value) {
@@ -370,29 +338,24 @@ describe('RowBuilder', function() {
     });
 
     it('should merge chunked values', function() {
-      rowBuilder.rows = [
-        [{}, {}]
-      ];
+      rowBuilder.rows = [[{}, {}]];
 
-      rowBuilder.fields = [ // length matches the # of values in a row
+      rowBuilder.fields = [
+        // length matches the # of values in a row
         {},
         {
-          type: {}
-        }
+          type: {},
+        },
       ];
 
       rowBuilder.chunks = [
         {
           chunkedValue: true,
-          values: [
-            {}
-          ]
+          values: [{}],
         },
         {
-          values: [
-            {}
-          ]
-        }
+          values: [{}],
+        },
       ];
 
       var expectedHead = rowBuilder.rows[0][1];
@@ -400,8 +363,8 @@ describe('RowBuilder', function() {
 
       var mergedValues = [
         {
-          merged: true
-        }
+          merged: true,
+        },
       ];
 
       RowBuilder.merge = function(type, head, tail) {
@@ -435,21 +398,17 @@ describe('RowBuilder', function() {
 
     it('should format the values', function() {
       var formattedValue = {
-        formatted: true
+        formatted: true,
       };
 
       rowBuilder.fields = [
         {
           name: 'fieldName',
-          type: {}
-        }
+          type: {},
+        },
       ];
 
-      rowBuilder.rows = [
-        [
-          {}
-        ]
-      ];
+      rowBuilder.rows = [[{}]];
 
       RowBuilder.formatValue = function(type, value) {
         assert.strictEqual(type, rowBuilder.fields[0].type);
@@ -463,12 +422,12 @@ describe('RowBuilder', function() {
       assert.deepEqual(row, [
         {
           name: 'fieldName',
-          value: formattedValue
-        }
+          value: formattedValue,
+        },
       ]);
 
       assert.deepEqual(row.toJSON(), {
-        fieldName: formattedValue
+        fieldName: formattedValue,
       });
     });
   });

@@ -85,14 +85,14 @@ TransactionRequest.formatTimestampOptions_ = function(options) {
   if (is.number(options.maxStaleness)) {
     formatted.maxStaleness = {
       seconds: options.maxStaleness,
-      nanos: 0
+      nanos: 0,
     };
   }
 
   if (is.number(options.exactStaleness)) {
     formatted.exactStaleness = {
       seconds: options.exactStaleness,
-      nanos: 0
+      nanos: 0,
     };
   }
 
@@ -103,7 +103,7 @@ TransactionRequest.formatTimestampOptions_ = function(options) {
 
     return {
       seconds: Math.floor(seconds),
-      nanos: date.getMilliseconds() * 1e6
+      nanos: date.getMilliseconds() * 1e6,
     };
   }
 };
@@ -233,17 +233,20 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
 
   if (is.array(query) || is.string(query)) {
     query = {
-      keys: query
+      keys: query,
     };
   }
 
-  var reqOpts = extend({
-    table: table
-  }, query);
+  var reqOpts = extend(
+    {
+      table: table,
+    },
+    query
+  );
 
   if (this.transaction && this.id) {
     reqOpts.transaction = {
-      id: this.id
+      id: this.id,
     };
   }
 
@@ -254,7 +257,7 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
   if (query.keys) {
     reqOpts.keySet.keys = arrify(query.keys).map(function(key) {
       return {
-        values: arrify(key).map(codec.encode)
+        values: arrify(key).map(codec.encode),
       };
     });
     delete reqOpts.keys;
@@ -266,7 +269,7 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
 
       for (var bound in range) {
         range[bound] = {
-          values: arrify(range[bound]).map(codec.encode)
+          values: arrify(range[bound]).map(codec.encode),
         };
       }
 
@@ -277,8 +280,8 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
 
   function makeRequest(resumeToken) {
     return self.requestStream({
-      reqOpts: extend(reqOpts, { resumeToken: resumeToken }),
-      method: self.api.Spanner.streamingRead.bind(self.api.Spanner)
+      reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
+      method: self.api.Spanner.streamingRead.bind(self.api.Spanner),
     });
   }
 
@@ -336,10 +339,10 @@ TransactionRequest.prototype.deleteRows = function(table, keys, callback) {
     keySet: {
       keys: arrify(keys).map(function(key) {
         return {
-          values: arrify(key).map(codec.encode)
+          values: arrify(key).map(codec.encode),
         };
-      })
-    }
+      }),
+    },
   };
 
   if (this.transaction) {
@@ -349,15 +352,18 @@ TransactionRequest.prototype.deleteRows = function(table, keys, callback) {
 
   var reqOpts = {
     singleUseTransaction: {
-      readWrite: {}
+      readWrite: {},
     },
-    mutations: [mutation]
+    mutations: [mutation],
   };
 
-  return this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.commit.bind(this.api.Spanner)
-  }, callback);
+  return this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.commit.bind(this.api.Spanner),
+    },
+    callback
+  );
 };
 
 /**
@@ -684,10 +690,12 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
     var missingColumns = columns.filter(column => keys.indexOf(column) === -1);
 
     if (missingColumns.length > 0) {
-      throw new Error([
-        `Row at index ${index} does not contain the correct number of columns.`,
-        `Missing columns: ${JSON.stringify(missingColumns)}`
-      ].join('\n\n'));
+      throw new Error(
+        [
+          `Row at index ${index} does not contain the correct number of columns.`,
+          `Missing columns: ${JSON.stringify(missingColumns)}`,
+        ].join('\n\n')
+      );
     }
 
     return columns.map(function(column) {
@@ -697,7 +705,7 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
   });
 
   var mutation = {
-    [method]: { table, columns, values }
+    [method]: {table, columns, values},
   };
 
   if (this.transaction) {
@@ -707,15 +715,18 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
 
   var reqOpts = {
     singleUseTransaction: {
-      readWrite: {}
+      readWrite: {},
     },
-    mutations: [mutation]
+    mutations: [mutation],
   };
 
-  return this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.commit.bind(this.api.Spanner)
-  }, cb);
+  return this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.commit.bind(this.api.Spanner),
+    },
+    cb
+  );
 };
 
 /*! Developer Documentation

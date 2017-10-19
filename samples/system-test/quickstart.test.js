@@ -23,11 +23,11 @@ const tools = require(`@google-cloud/nodejs-repo-tools`);
 test.before(tools.stubConsole);
 test.after.always(tools.restoreConsole);
 
-test.cb(`should query a table`, (t) => {
+test.cb(`should query a table`, t => {
   const databaseMock = {
-    run: (_query) => {
+    run: _query => {
       t.deepEqual(_query, {
-        sql: `SELECT 1`
+        sql: `SELECT 1`,
       });
       setTimeout(() => {
         try {
@@ -38,17 +38,17 @@ test.cb(`should query a table`, (t) => {
         }
       }, 200);
       return Promise.resolve([['test']]);
-    }
+    },
   };
   const instanceMock = {
-    database: sinon.stub().returns(databaseMock)
+    database: sinon.stub().returns(databaseMock),
   };
   const spannerMock = {
-    instance: sinon.stub().returns(instanceMock)
+    instance: sinon.stub().returns(instanceMock),
   };
 
   proxyquire(`../quickstart`, {
-    '@google-cloud/spanner': sinon.stub().returns(spannerMock)
+    '@google-cloud/spanner': sinon.stub().returns(spannerMock),
   });
 
   t.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);
