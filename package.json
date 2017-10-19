@@ -1,18 +1,13 @@
 {
   "name": "@google-cloud/spanner",
-  "version": "0.7.1",
-  "author": "Google Inc.",
   "description": "Cloud Spanner Client Library for Node.js",
-  "contributors": [
-    {
-      "name": "Dave Gramlich",
-      "email": "callmehiphop@gmail.com"
-    },
-    {
-      "name": "Stephen Sawchuk",
-      "email": "sawchuk@gmail.com"
-    }
-  ],
+  "version": "0.7.1",
+  "license": "Apache-2.0",
+  "author": "Google Inc.",
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "repository": "googleapis/nodejs-spanner",
   "main": "./src/index.js",
   "files": [
     "protos",
@@ -21,7 +16,6 @@
     "CONTRIBUTORS",
     "LICENSE"
   ],
-  "repository": "googleapis/nodejs-spanner",
   "keywords": [
     "google apis client",
     "google api client",
@@ -33,6 +27,31 @@
     "cloud",
     "spanner"
   ],
+  "contributors": [
+    "Ace Nassri <anassri@google.com>",
+    "Dave Gramlich <callmehiphop@gmail.com>",
+    "Eric Uldall <ericuldall@gmail.com>",
+    "Evawere Ogbe <eoogbe@gmail.com>",
+    "JJ Geewax <jj@geewax.org>",
+    "Jason Dobry <jason.dobry@gmail.com>",
+    "Jason Dobry <jmdobry@users.noreply.github.com>",
+    "Jun Mukai <jun.mukai@gmail.com>",
+    "Jun Mukai <mukai@google.com>",
+    "Luke Sneeringer <luke@sneeringer.com>",
+    "Luke Sneeringer <lukesneeringer@google.com>",
+    "Ryan Matsumoto <ryanmats@google.com>",
+    "Song Wang <songwang@google.com>",
+    "Stephen <stephenplusplus@users.noreply.github.com>",
+    "Stephen Sawchuk <sawchuk@gmail.com>",
+    "Stephen Sawchuk <stephenplusplus@users.noreply.github.com>",
+    "Tim Swast <swast@google.com>",
+    "Vikas Kedia <vikas.kedia@gmail.com>"
+  ],
+  "scripts": {
+    "generate-scaffolding": "repo-tools generate all && repo-tools generate lib_samples_readme -l samples/ --config ../.cloud-repo-tools.json",
+    "test": "mocha test/*.js",
+    "system-test": "mocha system-test/*.js --no-timeouts --bail"
+  },
   "dependencies": {
     "@google-cloud/common": "^0.13.0",
     "@google-cloud/common-grpc": "^0.4.0",
@@ -63,14 +82,5 @@
     "multiline": "^1.0.2",
     "proxyquire": "^1.7.11",
     "uuid": "^3.0.1"
-  },
-  "scripts": {
-    "generate-scaffolding": "repo-tools generate all && repo-tools generate lib_samples_readme -l samples/ --config ../.cloud-repo-tools.json",
-    "test": "mocha test/*.js",
-    "system-test": "mocha system-test/*.js --no-timeouts --bail"
-  },
-  "license": "Apache-2.0",
-  "engines": {
-    "node": ">=4.0.0"
   }
 }
