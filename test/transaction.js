@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream');
@@ -33,7 +34,7 @@ var fakeUtil = extend({}, util, {
     promisified = true;
     assert.strictEqual(options, undefined);
     util.promisifyAll(Class, options);
-  }
+  },
 });
 
 function FakeGrpcService() {}
@@ -48,7 +49,7 @@ function FakeTransactionRequest(options) {
 }
 
 var fakeCodec = {
-  encode: util.noop
+  encode: util.noop,
 };
 
 describe('Transaction', function() {
@@ -58,7 +59,7 @@ describe('Transaction', function() {
 
   var SESSION = {
     api: {},
-    formattedName_: 'formatted-session-name'
+    formattedName_: 'formatted-session-name',
   };
 
   var ID = 'transaction-id';
@@ -66,14 +67,14 @@ describe('Transaction', function() {
   before(function() {
     Transaction = proxyquire('../src/transaction.js', {
       '@google-cloud/common': {
-        util: fakeUtil
+        util: fakeUtil,
       },
       '@google-cloud/common-grpc': {
-        Service: FakeGrpcService
+        Service: FakeGrpcService,
       },
       './codec.js': fakeCodec,
       './partial-result-stream.js': FakePartialResultStream,
-      './transaction-request.js': FakeTransactionRequest
+      './transaction-request.js': FakeTransactionRequest,
     });
 
     TransactionCached = extend({}, Transaction);
@@ -95,8 +96,8 @@ describe('Transaction', function() {
         },
         rollback: function() {
           return util.noop;
-        }
-      }
+        },
+      },
     };
 
     extend(Transaction, TransactionCached);
@@ -148,14 +149,14 @@ describe('Transaction', function() {
         code: 10,
         message: 'Transaction aborted.',
         a: 'a',
-        b: 'b'
+        b: 'b',
       };
 
       var expectedError = {
         code: 4,
         message: 'Deadline for Transaction exceeded.',
         a: 'a',
-        b: 'b'
+        b: 'b',
       };
 
       var formattedError = Transaction.createDeadlineError_(originalError);
@@ -168,8 +169,8 @@ describe('Transaction', function() {
   describe('createRetryDelay_', function() {
     it('should return exponential retry delay', function() {
       [0, 1].forEach(function(retries) {
-        var min = (Math.pow(2, retries) * 1000);
-        var max = (Math.pow(2, retries) * 1000) + 1000;
+        var min = Math.pow(2, retries) * 1000;
+        var max = Math.pow(2, retries) * 1000 + 1000;
 
         var time = Transaction.createRetryDelay_(retries);
 
@@ -182,13 +183,13 @@ describe('Transaction', function() {
     var OPTIONS = {
       readOnly: true,
       boundOptions: true,
-      returnReadTimestamp: true
+      returnReadTimestamp: true,
     };
 
     var EXPECTED_REQ_OPTS = {
       options: {
-        readOnly: OPTIONS
-      }
+        readOnly: OPTIONS,
+      },
     };
 
     it('should make the correct request', function(done) {
@@ -209,8 +210,8 @@ describe('Transaction', function() {
       transaction.request = function(config) {
         assert.deepEqual(config.reqOpts, {
           options: {
-            readWrite: {}
-          }
+            readWrite: {},
+          },
         });
         done();
       };
@@ -233,7 +234,7 @@ describe('Transaction', function() {
 
     describe('success', function() {
       var API_RESPONSE = {
-        id: 'transaction-id'
+        id: 'transaction-id',
       };
 
       beforeEach(function() {
@@ -271,9 +272,15 @@ describe('Transaction', function() {
         var fakeDate = new Date();
 
         transaction.request = function(config, callback) {
-          callback(null, extend({
-            readTimestamp: fakeProtoTimestamp
-          }, API_RESPONSE));
+          callback(
+            null,
+            extend(
+              {
+                readTimestamp: fakeProtoTimestamp,
+              },
+              API_RESPONSE
+            )
+          );
         };
 
         FakeTransactionRequest.fromProtoTimestamp_ = function(value) {
@@ -291,9 +298,7 @@ describe('Transaction', function() {
   });
 
   describe('commit', function() {
-    var QUEUED_MUTATIONS = [
-      {}
-    ];
+    var QUEUED_MUTATIONS = [{}];
 
     beforeEach(function() {
       transaction.queuedMutations_ = QUEUED_MUTATIONS;
@@ -305,7 +310,7 @@ describe('Transaction', function() {
       transaction.request = function(config) {
         assert.deepEqual(config.reqOpts, {
           transactionId: transaction.id,
-          mutations: QUEUED_MUTATIONS
+          mutations: QUEUED_MUTATIONS,
         });
 
         assert.strictEqual(config.method(), util.noop);
@@ -322,9 +327,9 @@ describe('Transaction', function() {
       transaction.request = function(config) {
         assert.deepEqual(config.reqOpts, {
           singleUseTransaction: {
-            readWrite: {}
+            readWrite: {},
           },
-          mutations: QUEUED_MUTATIONS
+          mutations: QUEUED_MUTATIONS,
         });
         done();
       };
@@ -374,7 +379,6 @@ describe('Transaction', function() {
       });
     });
   });
-
 
   describe('end', function() {
     it('should empty the queue', function() {
@@ -432,11 +436,11 @@ describe('Transaction', function() {
         reqOpts: {
           a: 'b',
           c: 'd',
-          gaxOptions: {}
+          gaxOptions: {},
         },
         method: function(reqOpts, gaxOptions) {
           var expectedReqOpts = extend({}, config.reqOpts, {
-            session: transaction.session.formattedName_
+            session: transaction.session.formattedName_,
           });
 
           delete expectedReqOpts.gaxOptions;
@@ -444,7 +448,7 @@ describe('Transaction', function() {
           assert.deepEqual(reqOpts, expectedReqOpts);
           assert.strictEqual(gaxOptions, config.reqOpts.gaxOptions);
           done();
-        }
+        },
       };
 
       transaction.request(config, assert.ifError);
@@ -457,7 +461,7 @@ describe('Transaction', function() {
         reqOpts: {},
         method: function(reqOpts, gaxOptions, callback) {
           callback(null, resp);
-        }
+        },
       };
 
       transaction.request(config, function(err, apiResponse) {
@@ -468,7 +472,7 @@ describe('Transaction', function() {
     });
 
     describe('aborted errors', function() {
-      var abortedError = { code: 10 };
+      var abortedError = {code: 10};
       var resp = {};
       var config;
 
@@ -476,7 +480,7 @@ describe('Transaction', function() {
         config = {
           method: function(reqOpts, gaxOptions, callback) {
             callback(abortedError, resp);
-          }
+          },
         };
       });
 
@@ -545,17 +549,17 @@ describe('Transaction', function() {
       var config = {
         reqOpts: {
           a: 'b',
-          c: 'd'
+          c: 'd',
         },
         method: function(reqOpts) {
           var expectedReqOpts = extend({}, config.reqOpts, {
-            session: transaction.session.formattedName_
+            session: transaction.session.formattedName_,
           });
 
           assert.deepEqual(reqOpts, expectedReqOpts);
 
           return methodReturnValue;
-        }
+        },
       };
 
       var returnValue = transaction.requestStream(config);
@@ -567,7 +571,7 @@ describe('Transaction', function() {
 
       var fakeReqOpts = {
         a: 'a',
-        gaxOptions: fakeGaxOptions
+        gaxOptions: fakeGaxOptions,
       };
 
       var config = {
@@ -576,7 +580,7 @@ describe('Transaction', function() {
           assert.strictEqual(reqOpts.gaxOptions, undefined);
           assert.deepEqual(gaxOptions, fakeGaxOptions);
           done();
-        }
+        },
       };
 
       transaction.requestStream(config);
@@ -589,7 +593,7 @@ describe('Transaction', function() {
         reqOpts: {},
         method: function() {
           return fakeStream;
-        }
+        },
       };
 
       beforeEach(function() {
@@ -599,10 +603,11 @@ describe('Transaction', function() {
 
       it('should pipe the request stream to the user stream', function(done) {
         var fakeData = {
-          a: 'a'
+          a: 'a',
         };
 
-        transaction.requestStream(config)
+        transaction
+          .requestStream(config)
           .on('error', done)
           .on('data', function(data) {
             assert.strictEqual(data, fakeData);
@@ -625,7 +630,7 @@ describe('Transaction', function() {
       });
 
       it('should retry the transaction', function(done) {
-        var error = { code: 10 };
+        var error = {code: 10};
         var stream;
 
         transaction.shouldRetry_ = function(err) {
@@ -647,7 +652,7 @@ describe('Transaction', function() {
       });
 
       it('should send a deadline error to the runFn', function(done) {
-        var error = { code: 10 };
+        var error = {code: 10};
         var stream;
 
         var deadlineError = {};
@@ -697,7 +702,7 @@ describe('Transaction', function() {
     it('should make the correct request', function(done) {
       transaction.request = function(config) {
         assert.deepEqual(config.reqOpts, {
-          transactionId: transaction.id
+          transactionId: transaction.id,
         });
 
         assert.strictEqual(config.method(), util.noop);
@@ -823,17 +828,17 @@ describe('Transaction', function() {
     var QUERY = {
       sql: 'SELECT * FROM table',
       a: 'b',
-      c: 'd'
+      c: 'd',
     };
 
     var OPTIONS = {
-      timestampBoundOptions: true
+      timestampBoundOptions: true,
     };
 
     var EXPECTED_REQ_OPTS = extend({}, QUERY, {
       transaction: {
-        id: ID
-      }
+        id: ID,
+      },
     });
 
     beforeEach(function() {
@@ -873,8 +878,8 @@ describe('Transaction', function() {
         var query = {
           sql: QUERY,
           params: {
-            test: 'value'
-          }
+            test: 'value',
+          },
         };
 
         var encodedValue = {};
@@ -903,14 +908,14 @@ describe('Transaction', function() {
           timestamp: new Date(),
           date: new fakeCodec.SpannerDate(),
           string: 'abc',
-          bytes: new Buffer('abc')
+          bytes: Buffer.alloc('abc'),
         };
 
         var types = Object.keys(params);
 
         var query = {
           sql: QUERY,
-          params: params
+          params: params,
         };
 
         var getTypeCallCount = 0;
@@ -925,29 +930,29 @@ describe('Transaction', function() {
         transaction.requestStream = function(options) {
           assert.deepEqual(options.reqOpts.paramTypes, {
             unspecified: {
-              code: 0
+              code: 0,
             },
             bool: {
-              code: 1
+              code: 1,
             },
             int64: {
-              code: 2
+              code: 2,
             },
             float64: {
-              code: 3
+              code: 3,
             },
             timestamp: {
-              code: 4
+              code: 4,
             },
             date: {
-              code: 5
+              code: 5,
             },
             string: {
-              code: 6
+              code: 6,
             },
             bytes: {
-              code: 7
-            }
+              code: 7,
+            },
           });
 
           done();
@@ -961,11 +966,11 @@ describe('Transaction', function() {
       it('should not overwrite existing type definitions', function(done) {
         var query = {
           params: {
-            test: 123
+            test: 123,
           },
           types: {
-            test: 'string'
-          }
+            test: 'string',
+          },
         };
 
         fakeCodec.getType = function() {
@@ -975,8 +980,8 @@ describe('Transaction', function() {
         transaction.requestStream = function(options) {
           assert.deepEqual(options.reqOpts.paramTypes, {
             test: {
-              code: 6
-            }
+              code: 6,
+            },
           });
           done();
         };
@@ -989,11 +994,11 @@ describe('Transaction', function() {
       it('should set type to unspecified for unknown types', function(done) {
         var query = {
           params: {
-            test: 'abc'
+            test: 'abc',
           },
           types: {
-            test: 'unicorn'
-          }
+            test: 'unicorn',
+          },
         };
 
         fakeCodec.getType = function() {
@@ -1003,8 +1008,8 @@ describe('Transaction', function() {
         transaction.requestStream = function(options) {
           assert.deepEqual(options.reqOpts.paramTypes, {
             test: {
-              code: 0
-            }
+              code: 0,
+            },
           });
 
           done();
@@ -1018,14 +1023,14 @@ describe('Transaction', function() {
       it('should attempt to guess array types', function(done) {
         var query = {
           params: {
-            test: ['abc']
-          }
+            test: ['abc'],
+          },
         };
 
         fakeCodec.getType = function() {
           return {
             type: 'array',
-            child: 'string'
+            child: 'string',
           };
         };
 
@@ -1034,9 +1039,9 @@ describe('Transaction', function() {
             test: {
               code: 8,
               arrayElementType: {
-                code: 6
-              }
-            }
+                code: 6,
+              },
+            },
           });
 
           done();
@@ -1050,14 +1055,14 @@ describe('Transaction', function() {
       it('should set the child to unspecified if unsure', function(done) {
         var query = {
           params: {
-            test: [null]
-          }
+            test: [null],
+          },
         };
 
         fakeCodec.getType = function() {
           return {
             type: 'array',
-            child: 'unicorn'
+            child: 'unicorn',
           };
         };
 
@@ -1066,9 +1071,9 @@ describe('Transaction', function() {
             test: {
               code: 8,
               arrayElementType: {
-                code: 0
-              }
-            }
+                code: 0,
+              },
+            },
           });
 
           done();
@@ -1082,11 +1087,11 @@ describe('Transaction', function() {
       it('should delete the type map from the request options', function(done) {
         var query = {
           params: {
-            test: 'abc'
+            test: 'abc',
           },
           types: {
-            test: 'string'
-          }
+            test: 'string',
+          },
         };
 
         transaction.requestStream = function(options) {
@@ -1107,9 +1112,9 @@ describe('Transaction', function() {
         var expectedReqOpts = extend(true, {}, EXPECTED_REQ_OPTS, {
           transaction: {
             singleUse: {
-              readOnly: OPTIONS
-            }
-          }
+              readOnly: OPTIONS,
+            },
+          },
         });
 
         delete expectedReqOpts.transaction.id;
@@ -1132,9 +1137,9 @@ describe('Transaction', function() {
         var expectedReqOpts = extend(true, {}, EXPECTED_REQ_OPTS, {
           transaction: {
             singleUse: {
-              readOnly: {}
-            }
-          }
+              readOnly: {},
+            },
+          },
         });
 
         delete expectedReqOpts.transaction.id;
@@ -1251,10 +1256,10 @@ describe('Transaction', function() {
   });
 
   describe('shouldRetry_', function() {
-    var abortedError = { code: 10 };
+    var abortedError = {code: 10};
 
     it('should not retry if non-aborted error', function() {
-      var shouldRetry = transaction.shouldRetry_({ code: 4});
+      var shouldRetry = transaction.shouldRetry_({code: 4});
       assert.strictEqual(shouldRetry, false);
     });
 

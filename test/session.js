@@ -29,12 +29,8 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, [
-      'delete',
-      'getMetadata',
-      'transaction'
-    ]);
-  }
+    assert.deepEqual(options.exclude, ['delete', 'getMetadata', 'transaction']);
+  },
 });
 
 function FakeGrpcServiceObject() {
@@ -51,7 +47,7 @@ describe('Session', function() {
 
   var DATABASE = {
     api: {},
-    formattedName_: 'formatted-database-name'
+    formattedName_: 'formatted-database-name',
   };
 
   var NAME = 'session-name';
@@ -59,19 +55,19 @@ describe('Session', function() {
   before(function() {
     Session = proxyquire('../src/session.js', {
       '@google-cloud/common': {
-        util: fakeUtil
+        util: fakeUtil,
       },
       '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject
+        ServiceObject: FakeGrpcServiceObject,
       },
-      './transaction.js': FakeTransaction
+      './transaction.js': FakeTransaction,
     });
   });
 
   beforeEach(function() {
     DATABASE.api = {
       Database: {},
-      Instance: {}
+      Instance: {},
     };
 
     session = new Session(DATABASE, NAME);
@@ -113,7 +109,7 @@ describe('Session', function() {
       assert.deepEqual(calledWith.methods, {
         create: true,
         exists: true,
-        get: true
+        get: true,
       });
     });
 
@@ -124,14 +120,14 @@ describe('Session', function() {
         var apiResponse = {};
 
         var createdSession = {
-          uniqueProperty: true
+          uniqueProperty: true,
         };
 
         var databaseInstance = extend({}, DATABASE, {
           createSession_: function(options_, callback) {
             assert.strictEqual(options_, options);
             callback(null, createdSession, apiResponse);
-          }
+          },
         });
 
         var session = new Session(databaseInstance, NAME);
@@ -157,7 +153,7 @@ describe('Session', function() {
         var databaseInstance = extend({}, DATABASE, {
           createSession_: function(options_, callback) {
             callback(error, null, apiResponse);
-          }
+          },
         });
 
         var session = new Session(databaseInstance, NAME);
@@ -198,11 +194,11 @@ describe('Session', function() {
       session.api.Spanner = {
         deleteSession: function(reqOpts, callback_) {
           assert.deepEqual(reqOpts, {
-            name: session.formattedName_
+            name: session.formattedName_,
           });
           assert.strictEqual(callback_, callback);
           return gaxReturnValue;
-        }
+        },
       };
 
       var returnValue = session.delete(callback);
@@ -219,11 +215,11 @@ describe('Session', function() {
       session.api.Spanner = {
         getSession: function(reqOpts, callback_) {
           assert.deepEqual(reqOpts, {
-            name: session.formattedName_
+            name: session.formattedName_,
           });
           assert.strictEqual(callback_, callback);
           return gaxReturnValue;
-        }
+        },
       };
 
       var returnValue = session.getMetadata(callback);
@@ -241,11 +237,11 @@ describe('Session', function() {
         executeSql: function(reqOpts, callback_) {
           assert.deepEqual(reqOpts, {
             session: session.formattedName_,
-            sql: 'SELECT 1'
+            sql: 'SELECT 1',
           });
           assert.strictEqual(callback_, callback);
           return gaxReturnValue;
-        }
+        },
       };
 
       var returnValue = session.keepAlive(callback);

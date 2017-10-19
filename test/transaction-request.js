@@ -39,11 +39,11 @@ var fakeUtil = extend({}, util, {
     promisified = true;
     assert.strictEqual(options, undefined);
     util.promisifyAll(Class, options);
-  }
+  },
 });
 
 var fakeCodec = {
-  encode: util.noop
+  encode: util.noop,
 };
 
 describe('TransactionRequest', function() {
@@ -53,13 +53,13 @@ describe('TransactionRequest', function() {
   before(function() {
     TransactionRequest = proxyquire('../src/transaction-request.js', {
       '@google-cloud/common': {
-        util: fakeUtil
+        util: fakeUtil,
       },
       '@google-cloud/common-grpc': {
-        Service: FakeGrpcService
+        Service: FakeGrpcService,
       },
       './codec.js': fakeCodec,
-      './partial-result-stream.js': FakePartialResultStream
+      './partial-result-stream.js': FakePartialResultStream,
     });
   });
 
@@ -74,8 +74,8 @@ describe('TransactionRequest', function() {
         },
         streamingRead: function() {
           return util.noop;
-        }
-      }
+        },
+      },
     };
   });
 
@@ -100,11 +100,11 @@ describe('TransactionRequest', function() {
 
     it('should localize the transaction options', function() {
       var UNFORMATTED_OPTIONS = {
-        b: 'b'
+        b: 'b',
       };
 
       var FORMATTED_OPTIONS = {
-        a: 'a'
+        a: 'a',
       };
 
       TransactionRequest.formatTimestampOptions_ = function(options) {
@@ -138,7 +138,7 @@ describe('TransactionRequest', function() {
       };
 
       var transaction = new TransactionRequest({
-        readOnly: true
+        readOnly: true,
       });
 
       assert.strictEqual(transaction.readOnly, true);
@@ -157,28 +157,28 @@ describe('TransactionRequest', function() {
         maxStaleness: 10,
         readTimestamp: new Date('2016-12-05'),
         exactStaleness: 11,
-        returnReadTimestamp: true
+        returnReadTimestamp: true,
       };
 
       var expected = {
         strong: true,
         minReadTimestamp: {
           seconds: 1480809600,
-          nanos: 0
+          nanos: 0,
         },
         maxStaleness: {
           seconds: 10,
-          nanos: 0
+          nanos: 0,
         },
         readTimestamp: {
           seconds: 1480896000,
-          nanos: 0
+          nanos: 0,
         },
         exactStaleness: {
           seconds: 11,
-          nanos: 0
+          nanos: 0,
         },
-        returnReadTimestamp: true
+        returnReadTimestamp: true,
       };
 
       var formatted = TransactionRequest.formatTimestampOptions_(options);
@@ -192,7 +192,7 @@ describe('TransactionRequest', function() {
 
       var protoTimestamp = {
         seconds: Math.floor(now.getTime() / 1000),
-        nanos: now.getMilliseconds() * 1e6
+        nanos: now.getMilliseconds() * 1e6,
       };
 
       var date = TransactionRequest.fromProtoTimestamp_(protoTimestamp);
@@ -208,11 +208,11 @@ describe('TransactionRequest', function() {
     it('should accept a query object', function(done) {
       var query = {
         a: 'b',
-        c: 'd'
+        c: 'd',
       };
 
       var expectedReqOpts = extend({}, query, {
-        table: TABLE
+        table: TABLE,
       });
 
       transactionRequest.requestStream = function(options) {
@@ -234,8 +234,8 @@ describe('TransactionRequest', function() {
       var expectedReqOpts = {
         table: TABLE,
         transaction: {
-          id: ID
-        }
+          id: ID,
+        },
       };
 
       transactionRequest.requestStream = function(options) {
@@ -252,10 +252,7 @@ describe('TransactionRequest', function() {
     describe('query.keys', function() {
       it('should encode and map input to keySet.keys[].values', function(done) {
         var query = {
-          keys: [
-            'key',
-            ['composite', 'key']
-          ]
+          keys: ['key', ['composite', 'key']],
         };
 
         var encodedValue = {};
@@ -285,16 +282,11 @@ describe('TransactionRequest', function() {
         transactionRequest.requestStream = function(options) {
           var expectedKeys = [
             {
-              values: [
-                encodedValue
-              ]
+              values: [encodedValue],
             },
             {
-              values: [
-                encodedValue,
-                encodedValue
-              ]
-            }
+              values: [encodedValue, encodedValue],
+            },
           ];
 
           assert.deepStrictEqual(options.reqOpts.keySet.keys, expectedKeys);
@@ -352,7 +344,7 @@ describe('TransactionRequest', function() {
 
       it('should arrify query.keys', function(done) {
         var query = {
-          keys: 'key'
+          keys: 'key',
         };
 
         var encodedValue = {};
@@ -376,7 +368,7 @@ describe('TransactionRequest', function() {
 
       it('should remove keys property from request object', function(done) {
         var query = {
-          keys: ['key']
+          keys: ['key'],
         };
 
         transactionRequest.requestStream = function(options) {
@@ -393,10 +385,12 @@ describe('TransactionRequest', function() {
     describe('query.ranges', function() {
       it('should encode/map the inputs', function(done) {
         var query = {
-          ranges: [{
-            startOpen: 'key',
-            endClosed: ['composite', 'key']
-          }]
+          ranges: [
+            {
+              startOpen: 'key',
+              endClosed: ['composite', 'key'],
+            },
+          ],
         };
 
         var encodedValue = {};
@@ -413,12 +407,12 @@ describe('TransactionRequest', function() {
           var expectedRanges = [
             {
               startOpen: {
-                values: [encodedValue]
+                values: [encodedValue],
               },
               endClosed: {
-                values: [encodedValue, encodedValue]
-              }
-            }
+                values: [encodedValue, encodedValue],
+              },
+            },
           ];
 
           assert.strictEqual(numEncodeRequests, 3);
@@ -433,10 +427,12 @@ describe('TransactionRequest', function() {
 
       it('should arrify query.ranges', function(done) {
         var query = {
-          ranges: [{
-            startOpen: 'start',
-            endClosed: 'end'
-          }]
+          ranges: [
+            {
+              startOpen: 'start',
+              endClosed: 'end',
+            },
+          ],
         };
 
         var encodedValue = {};
@@ -451,12 +447,12 @@ describe('TransactionRequest', function() {
           var expectedRanges = [
             {
               startOpen: {
-                values: [encodedValue]
+                values: [encodedValue],
               },
               endClosed: {
-                values: [encodedValue]
-              }
-            }
+                values: [encodedValue],
+              },
+            },
           ];
 
           assert.strictEqual(numEncodeRequests, 2);
@@ -471,10 +467,12 @@ describe('TransactionRequest', function() {
 
       it('should remove the ranges property from the query', function(done) {
         var query = {
-          ranges: [{
-            startOpen: 'start',
-            endClosed: 'end'
-          }]
+          ranges: [
+            {
+              startOpen: 'start',
+              endClosed: 'end',
+            },
+          ],
         };
 
         transactionRequest.requestStream = function(options) {
@@ -496,12 +494,12 @@ describe('TransactionRequest', function() {
 
       it('should make and return the correct request', function(done) {
         var query = {
-          a: 'b'
+          a: 'b',
         };
 
         var expectedQuery = extend({}, query, {
           table: TABLE,
-          resumeToken: undefined
+          resumeToken: undefined,
         });
 
         transactionRequest.requestStream = function(options) {
@@ -532,13 +530,10 @@ describe('TransactionRequest', function() {
 
   describe('deleteRows', function() {
     var TABLE = 'table-name';
-    var KEYS = [
-      'key',
-      ['composite', 'key']
-    ];
+    var KEYS = ['key', ['composite', 'key']];
 
     var ENCODED_VALUE = {
-      encoded: true
+      encoded: true,
     };
 
     var EXPECTED_MUTATION = {
@@ -547,19 +542,14 @@ describe('TransactionRequest', function() {
         keySet: {
           keys: [
             {
-              values: [
-                ENCODED_VALUE
-              ]
+              values: [ENCODED_VALUE],
             },
             {
-              values: [
-                ENCODED_VALUE,
-                ENCODED_VALUE
-              ]
-            }
-          ]
-        }
-      }
+              values: [ENCODED_VALUE, ENCODED_VALUE],
+            },
+          ],
+        },
+      },
     };
 
     beforeEach(function() {
@@ -598,11 +588,9 @@ describe('TransactionRequest', function() {
 
       var expectedReqOpts = {
         singleUseTransaction: {
-          readWrite: {}
+          readWrite: {},
         },
-        mutations: [
-          EXPECTED_MUTATION
-        ]
+        mutations: [EXPECTED_MUTATION],
       };
 
       transactionRequest.request = function(options, callback_) {
@@ -631,7 +619,7 @@ describe('TransactionRequest', function() {
       transactionRequest.transaction = true;
 
       var encodedValue = {
-        encoded: true
+        encoded: true,
       };
       fakeCodec.encode = function() {
         return encodedValue;
@@ -793,14 +781,15 @@ describe('TransactionRequest', function() {
         key: '1-key-value',
         anotherNullable: '1-anotherNullable-value',
         nonNullable: '1-nonNullable-value',
-        nullable: '1-nullable-value'
+        nullable: '1-nullable-value',
       },
-      { /* keys defined in different order */
+      {
+        /* keys defined in different order */
         key: '2-key-value',
         nullable: null,
         nonNullable: '2-nonNullable-value',
-        anotherNullable: null
-      }
+        anotherNullable: null,
+      },
     ];
 
     var EXPECTED_MUTATION = {};
@@ -812,15 +801,15 @@ describe('TransactionRequest', function() {
           KEYVALS[0].anotherNullable,
           KEYVALS[0].key,
           KEYVALS[0].nonNullable,
-          KEYVALS[0].nullable
+          KEYVALS[0].nullable,
         ],
         [
           KEYVALS[1].anotherNullable,
           KEYVALS[1].key,
           KEYVALS[1].nonNullable,
-          KEYVALS[1].nullable
-        ]
-      ]
+          KEYVALS[1].nullable,
+        ],
+      ],
     };
 
     beforeEach(function() {
@@ -878,11 +867,9 @@ describe('TransactionRequest', function() {
 
       var expectedReqOpts = {
         singleUseTransaction: {
-          readWrite: {}
+          readWrite: {},
         },
-        mutations: [
-          EXPECTED_MUTATION
-        ]
+        mutations: [EXPECTED_MUTATION],
       };
 
       transactionRequest.request = function(options, callback_) {
@@ -902,28 +889,30 @@ describe('TransactionRequest', function() {
     });
 
     it('should throw when rows have incorrect amount of columns', function() {
-      var invalidEntry = { key1: 'val' };
+      var invalidEntry = {key1: 'val'};
       var caughtError;
 
       try {
-        transactionRequest.mutate_(METHOD, TABLE, [
-          invalidEntry,
-          { key1: 'val', key2: 'val' }
-        ], assert.ifError);
-      } catch(e) {
+        transactionRequest.mutate_(
+          METHOD,
+          TABLE,
+          [invalidEntry, {key1: 'val', key2: 'val'}],
+          assert.ifError
+        );
+      } catch (e) {
         caughtError = e;
-      } finally {
-        if (!caughtError) {
-          throw new Error('Expected error was not thrown.');
-        }
-
-        var expectedErrorMessage = [
-          'Row at index 0 does not contain the correct number of columns.',
-          'Missing columns: ["key2"]'
-        ].join('\n\n');
-
-        assert.strictEqual(caughtError.message, expectedErrorMessage);
       }
+
+      if (!caughtError) {
+        throw new Error('Expected error was not thrown.');
+      }
+
+      var expectedErrorMessage = [
+        'Row at index 0 does not contain the correct number of columns.',
+        'Missing columns: ["key2"]',
+      ].join('\n\n');
+
+      assert.strictEqual(caughtError.message, expectedErrorMessage);
     });
 
     it('should push the request to the queue if a transaction', function(done) {

@@ -31,10 +31,8 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, [
-      'delete'
-    ]);
-  }
+    assert.deepEqual(options.exclude, ['delete']);
+  },
 });
 
 function FakeTransactionRequest() {}
@@ -47,9 +45,13 @@ describe('Table', function() {
   var DATABASE = {
     api: {},
     pool_: {
-      request: function() { return util.noop; },
-      requestStream: function() { return util.noop; }
-    }
+      request: function() {
+        return util.noop;
+      },
+      requestStream: function() {
+        return util.noop;
+      },
+    },
   };
 
   var NAME = 'table-name';
@@ -57,9 +59,9 @@ describe('Table', function() {
   before(function() {
     Table = proxyquire('../src/table.js', {
       '@google-cloud/common': {
-        util: fakeUtil
+        util: fakeUtil,
       },
-      './transaction-request.js': FakeTransactionRequest
+      './transaction-request.js': FakeTransactionRequest,
     });
     TableCached = extend({}, Table);
   });
@@ -107,7 +109,7 @@ describe('Table', function() {
         createTable: function(schema_, callback) {
           assert.strictEqual(schema_, schema);
           callback(); // done()
-        }
+        },
       };
 
       table.create(schema, done);
@@ -125,10 +127,10 @@ describe('Table', function() {
           assert.strictEqual(this, table);
           assert.strictEqual(name, table.name);
           assert.deepEqual(query_, {
-            keys: query
+            keys: query,
           });
           return parentMethodReturnValue;
-        }
+        },
       };
 
       var readStream = table.createReadStream(query);
@@ -142,7 +144,7 @@ describe('Table', function() {
         createReadStream: function(name, query) {
           assert.strictEqual(query.keys, QUERY);
           done();
-        }
+        },
       };
 
       table.createReadStream(QUERY);
@@ -163,8 +165,7 @@ describe('Table', function() {
 
       FakeTransactionRequest.prototype = {
         createReadStream: function(name, query) {
-          FakeTransactionRequest.formatTimestampOptions_ =
-            formatTimestampOptions;
+          FakeTransactionRequest.formatTimestampOptions_ = formatTimestampOptions;
 
           assert.strictEqual(
             query.transaction.singleUse.readOnly,
@@ -173,7 +174,7 @@ describe('Table', function() {
 
           setImmediate(done);
           return {};
-        }
+        },
       };
 
       table.createReadStream(QUERY, OPTIONS);
@@ -191,7 +192,7 @@ describe('Table', function() {
           assert.strictEqual(schema, 'DROP TABLE `' + table.name + '`');
           assert.strictEqual(callback_, callback);
           return updateSchemaReturnValue;
-        }
+        },
       };
 
       var returnValue = table.delete(callback);
@@ -214,7 +215,7 @@ describe('Table', function() {
           assert.strictEqual(keys_, keys);
           assert.strictEqual(callback_, callback);
           return parentMethodReturnValue;
-        }
+        },
       };
 
       var returnValue = table.deleteRows(keys, callback);

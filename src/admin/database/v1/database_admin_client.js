@@ -39,9 +39,10 @@ var CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 
 var PAGE_DESCRIPTORS = {
   listDatabases: new gax.PageDescriptor(
-      'pageToken',
-      'nextPageToken',
-      'databases')
+    'pageToken',
+    'nextPageToken',
+    'databases'
+  ),
 };
 
 /**
@@ -50,7 +51,7 @@ var PAGE_DESCRIPTORS = {
  */
 var ALL_SCOPES = [
   'https://www.googleapis.com/auth/cloud-platform',
-  'https://www.googleapis.com/auth/spanner.admin'
+  'https://www.googleapis.com/auth/spanner.admin',
 ];
 
 /**
@@ -73,15 +74,16 @@ var ALL_SCOPES = [
  * @class
  */
 function DatabaseAdminClient(gaxGrpc, grpcClients, opts) {
-  opts = extend({
-    servicePath: SERVICE_ADDRESS,
-    port: DEFAULT_SERVICE_PORT,
-    clientConfig: {}
-  }, opts);
+  opts = extend(
+    {
+      servicePath: SERVICE_ADDRESS,
+      port: DEFAULT_SERVICE_PORT,
+      clientConfig: {},
+    },
+    opts
+  );
 
-  var googleApiClient = [
-    'gl-node/' + process.versions.node
-  ];
+  var googleApiClient = ['gl-node/' + process.versions.node];
   if (opts.libName && opts.libVersion) {
     googleApiClient.push(opts.libName + '/' + opts.libVersion);
   }
@@ -91,35 +93,39 @@ function DatabaseAdminClient(gaxGrpc, grpcClients, opts) {
     'grpc/' + gaxGrpc.grpcVersion
   );
 
-
   this.operationsClient = new gax.lro({
     auth: gaxGrpc.auth,
-    grpc: gaxGrpc.grpc
+    grpc: gaxGrpc.grpc,
   }).operationsClient(opts);
 
   this.longrunningDescriptors = {
     createDatabase: new gax.LongrunningDescriptor(
       this.operationsClient,
       grpcClients.google.spanner.admin.database.v1.Database.decode,
-      grpcClients.google.spanner.admin.database.v1.CreateDatabaseMetadata.decode),
+      grpcClients.google.spanner.admin.database.v1.CreateDatabaseMetadata.decode
+    ),
     updateDatabaseDdl: new gax.LongrunningDescriptor(
       this.operationsClient,
       grpcClients.google.protobuf.Empty.decode,
-      grpcClients.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.decode)
+      grpcClients.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+        .decode
+    ),
   };
 
   var defaults = gaxGrpc.constructSettings(
-      'google.spanner.admin.database.v1.DatabaseAdmin',
-      configData,
-      opts.clientConfig,
-      {'x-goog-api-client': googleApiClient.join(' ')});
+    'google.spanner.admin.database.v1.DatabaseAdmin',
+    configData,
+    opts.clientConfig,
+    {'x-goog-api-client': googleApiClient.join(' ')}
+  );
 
   var self = this;
 
   this.auth = gaxGrpc.auth;
   var databaseAdminStub = gaxGrpc.createStub(
-      grpcClients.google.spanner.admin.database.v1.DatabaseAdmin,
-      opts);
+    grpcClients.google.spanner.admin.database.v1.DatabaseAdmin,
+    opts
+  );
   var databaseAdminStubMethods = [
     'listDatabases',
     'createDatabase',
@@ -129,7 +135,7 @@ function DatabaseAdminClient(gaxGrpc, grpcClients, opts) {
     'getDatabaseDdl',
     'setIamPolicy',
     'getIamPolicy',
-    'testIamPermissions'
+    'testIamPermissions',
   ];
   databaseAdminStubMethods.forEach(function(methodName) {
     self['_' + methodName] = gax.createApiCall(
@@ -140,17 +146,20 @@ function DatabaseAdminClient(gaxGrpc, grpcClients, opts) {
         };
       }),
       defaults[methodName],
-      PAGE_DESCRIPTORS[methodName] || self.longrunningDescriptors[methodName]);
+      PAGE_DESCRIPTORS[methodName] || self.longrunningDescriptors[methodName]
+    );
   });
 }
 
 // Path templates
 
 var INSTANCE_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}/instances/{instance}');
+  'projects/{project}/instances/{instance}'
+);
 
 var DATABASE_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}/instances/{instance}/databases/{database}');
+  'projects/{project}/instances/{instance}/databases/{database}'
+);
 
 /**
  * Returns a fully-qualified instance resource name string.
@@ -161,7 +170,7 @@ var DATABASE_PATH_TEMPLATE = new gax.PathTemplate(
 DatabaseAdminClient.prototype.instancePath = function(project, instance) {
   return INSTANCE_PATH_TEMPLATE.render({
     project: project,
-    instance: instance
+    instance: instance,
   });
 };
 
@@ -171,7 +180,9 @@ DatabaseAdminClient.prototype.instancePath = function(project, instance) {
  *   A fully-qualified path representing a instance resources.
  * @returns {String} - A string representing the project.
  */
-DatabaseAdminClient.prototype.matchProjectFromInstanceName = function(instanceName) {
+DatabaseAdminClient.prototype.matchProjectFromInstanceName = function(
+  instanceName
+) {
   return INSTANCE_PATH_TEMPLATE.match(instanceName).project;
 };
 
@@ -181,7 +192,9 @@ DatabaseAdminClient.prototype.matchProjectFromInstanceName = function(instanceNa
  *   A fully-qualified path representing a instance resources.
  * @returns {String} - A string representing the instance.
  */
-DatabaseAdminClient.prototype.matchInstanceFromInstanceName = function(instanceName) {
+DatabaseAdminClient.prototype.matchInstanceFromInstanceName = function(
+  instanceName
+) {
   return INSTANCE_PATH_TEMPLATE.match(instanceName).instance;
 };
 
@@ -192,11 +205,15 @@ DatabaseAdminClient.prototype.matchInstanceFromInstanceName = function(instanceN
  * @param {String} database
  * @returns {String}
  */
-DatabaseAdminClient.prototype.databasePath = function(project, instance, database) {
+DatabaseAdminClient.prototype.databasePath = function(
+  project,
+  instance,
+  database
+) {
   return DATABASE_PATH_TEMPLATE.render({
     project: project,
     instance: instance,
-    database: database
+    database: database,
   });
 };
 
@@ -206,7 +223,9 @@ DatabaseAdminClient.prototype.databasePath = function(project, instance, databas
  *   A fully-qualified path representing a database resources.
  * @returns {String} - A string representing the project.
  */
-DatabaseAdminClient.prototype.matchProjectFromDatabaseName = function(databaseName) {
+DatabaseAdminClient.prototype.matchProjectFromDatabaseName = function(
+  databaseName
+) {
   return DATABASE_PATH_TEMPLATE.match(databaseName).project;
 };
 
@@ -216,7 +235,9 @@ DatabaseAdminClient.prototype.matchProjectFromDatabaseName = function(databaseNa
  *   A fully-qualified path representing a database resources.
  * @returns {String} - A string representing the instance.
  */
-DatabaseAdminClient.prototype.matchInstanceFromDatabaseName = function(databaseName) {
+DatabaseAdminClient.prototype.matchInstanceFromDatabaseName = function(
+  databaseName
+) {
   return DATABASE_PATH_TEMPLATE.match(databaseName).instance;
 };
 
@@ -226,7 +247,9 @@ DatabaseAdminClient.prototype.matchInstanceFromDatabaseName = function(databaseN
  *   A fully-qualified path representing a database resources.
  * @returns {String} - A string representing the database.
  */
-DatabaseAdminClient.prototype.matchDatabaseFromDatabaseName = function(databaseName) {
+DatabaseAdminClient.prototype.matchDatabaseFromDatabaseName = function(
+  databaseName
+) {
   return DATABASE_PATH_TEMPLATE.match(databaseName).database;
 };
 
@@ -315,7 +338,11 @@ DatabaseAdminClient.prototype.getProjectId = function(callback) {
  *         console.error(err);
  *     });
  */
-DatabaseAdminClient.prototype.listDatabases = function(request, options, callback) {
+DatabaseAdminClient.prototype.listDatabases = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -372,7 +399,11 @@ DatabaseAdminClient.prototype.listDatabasesStream = function(request, options) {
     options = {};
   }
 
-  return PAGE_DESCRIPTORS.listDatabases.createStream(this._listDatabases, request, options);
+  return PAGE_DESCRIPTORS.listDatabases.createStream(
+    this._listDatabases,
+    request,
+    options
+  );
 };
 
 /**
@@ -465,7 +496,11 @@ DatabaseAdminClient.prototype.listDatabasesStream = function(request, options) {
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.createDatabase = function(request, options, callback) {
+DatabaseAdminClient.prototype.createDatabase = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -507,7 +542,11 @@ DatabaseAdminClient.prototype.createDatabase = function(request, options, callba
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.getDatabase = function(request, options, callback) {
+DatabaseAdminClient.prototype.getDatabase = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -620,7 +659,11 @@ DatabaseAdminClient.prototype.getDatabase = function(request, options, callback)
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.updateDatabaseDdl = function(request, options, callback) {
+DatabaseAdminClient.prototype.updateDatabaseDdl = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -655,7 +698,11 @@ DatabaseAdminClient.prototype.updateDatabaseDdl = function(request, options, cal
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.dropDatabase = function(request, options, callback) {
+DatabaseAdminClient.prototype.dropDatabase = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -698,7 +745,11 @@ DatabaseAdminClient.prototype.dropDatabase = function(request, options, callback
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.getDatabaseDdl = function(request, options, callback) {
+DatabaseAdminClient.prototype.getDatabaseDdl = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -757,7 +808,11 @@ DatabaseAdminClient.prototype.getDatabaseDdl = function(request, options, callba
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.setIamPolicy = function(request, options, callback) {
+DatabaseAdminClient.prototype.setIamPolicy = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -804,7 +859,11 @@ DatabaseAdminClient.prototype.setIamPolicy = function(request, options, callback
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.getIamPolicy = function(request, options, callback) {
+DatabaseAdminClient.prototype.getIamPolicy = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -862,7 +921,11 @@ DatabaseAdminClient.prototype.getIamPolicy = function(request, options, callback
  *     console.error(err);
  * });
  */
-DatabaseAdminClient.prototype.testIamPermissions = function(request, options, callback) {
+DatabaseAdminClient.prototype.testIamPermissions = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -879,12 +942,13 @@ function DatabaseAdminClientBuilder(gaxGrpc) {
     return new DatabaseAdminClientBuilder(gaxGrpc);
   }
 
-  var databaseAdminClient = gaxGrpc.load([{
-    root: require('google-proto-files')('..'),
-    file: 'google/spanner/admin/database/v1/spanner_database_admin.proto'
-  }]);
+  var databaseAdminClient = gaxGrpc.load([
+    {
+      root: require('google-proto-files')('..'),
+      file: 'google/spanner/admin/database/v1/spanner_database_admin.proto',
+    },
+  ]);
   extend(this, databaseAdminClient.google.spanner.admin.database.v1);
-
 
   /**
    * Build a new instance of {@link DatabaseAdminClient}.

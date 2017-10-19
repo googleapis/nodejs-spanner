@@ -182,20 +182,23 @@ Table.prototype.create = function(schema, callback) {
 Table.prototype.createReadStream = function(query, options) {
   if (is.array(query) || is.string(query)) {
     query = {
-      keys: query
+      keys: query,
     };
   }
 
   if (options) {
     query.transaction = {
       singleUse: {
-        readOnly: TransactionRequest.formatTimestampOptions_(options)
-      }
+        readOnly: TransactionRequest.formatTimestampOptions_(options),
+      },
     };
   }
 
-  return TransactionRequest.prototype
-    .createReadStream.call(this, this.name, query);
+  return TransactionRequest.prototype.createReadStream.call(
+    this,
+    this.name,
+    query
+  );
 };
 
 /**
@@ -275,8 +278,12 @@ Table.prototype.delete = function(callback) {
  *   });
  */
 Table.prototype.deleteRows = function(keys, callback) {
-  return TransactionRequest.prototype
-    .deleteRows.call(this, this.name, keys, callback);
+  return TransactionRequest.prototype.deleteRows.call(
+    this,
+    this.name,
+    keys,
+    callback
+  );
 };
 
 /**
@@ -577,9 +584,7 @@ Table.prototype.upsert = function(keyVals, callback) {
  * that a callback is omitted.
  */
 common.util.promisifyAll(Table, {
-  exclude: [
-    'delete'
-  ]
+  exclude: ['delete'],
 });
 
 module.exports = Table;

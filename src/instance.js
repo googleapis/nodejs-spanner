@@ -131,7 +131,7 @@ function Instance(spanner, name) {
      *   var apiResponse = data[0];
      * });
      */
-    get: true
+    get: true,
   };
 
   commonGrpc.ServiceObject.call(this, {
@@ -140,7 +140,7 @@ function Instance(spanner, name) {
     methods: methods,
     createMethod: function(_, options, callback) {
       spanner.createInstance(self.formattedName_, options, callback);
-    }
+    },
   });
 
   this.databases_ = new Map();
@@ -245,10 +245,13 @@ Instance.prototype.createDatabase = function(name, options, callback) {
   var poolOptions = options.poolOptions;
   delete options.poolOptions;
 
-  var reqOpts = extend({
-    parent: this.formattedName_,
-    createStatement: 'CREATE DATABASE `' + name.split('/').pop() + '`'
-  }, options);
+  var reqOpts = extend(
+    {
+      parent: this.formattedName_,
+      createStatement: 'CREATE DATABASE `' + name.split('/').pop() + '`',
+    },
+    options
+  );
 
   if (reqOpts.schema) {
     reqOpts.extraStatements = arrify(reqOpts.schema);
@@ -321,7 +324,7 @@ Instance.prototype.delete = function(callback) {
   var self = this;
 
   var reqOpts = {
-    name: this.formattedName_
+    name: this.formattedName_,
   };
 
   return this.api.Instance.deleteInstance(reqOpts, function(err, resp) {
@@ -387,7 +390,7 @@ Instance.prototype.getDatabases = function(query, callback) {
   }
 
   var reqOpts = extend({}, query, {
-    parent: this.formattedName_
+    parent: this.formattedName_,
   });
 
   this.api.Database.listDatabases(reqOpts, query, function(err, databases) {
@@ -431,8 +434,9 @@ Instance.prototype.getDatabases = function(query, callback) {
  *     this.end();
  *   });
  */
-Instance.prototype.getDatabasesStream =
-  common.paginator.streamify('getDatabases');
+Instance.prototype.getDatabasesStream = common.paginator.streamify(
+  'getDatabases'
+);
 
 /**
  * Get the instance's metadata.
@@ -456,9 +460,12 @@ Instance.prototype.getDatabasesStream =
  * });
  */
 Instance.prototype.getMetadata = function(callback) {
-  return this.api.Instance.getInstance({
-    name: this.formattedName_
-  }, callback);
+  return this.api.Instance.getInstance(
+    {
+      name: this.formattedName_,
+    },
+    callback
+  );
 };
 
 /**
@@ -500,14 +507,20 @@ Instance.prototype.getMetadata = function(callback) {
  * });
  */
 Instance.prototype.setMetadata = function(metadata, callback) {
-  return this.api.Instance.updateInstance({
-    instance: extend({
-      name: this.formattedName_
-    }, metadata),
-    fieldMask: {
-      paths: Object.keys(metadata).map(snakeCase)
-    }
-  }, callback);
+  return this.api.Instance.updateInstance(
+    {
+      instance: extend(
+        {
+          name: this.formattedName_,
+        },
+        metadata
+      ),
+      fieldMask: {
+        paths: Object.keys(metadata).map(snakeCase),
+      },
+    },
+    callback
+  );
 };
 
 /*! Developer Documentation
@@ -516,12 +529,7 @@ Instance.prototype.setMetadata = function(metadata, callback) {
  * that a callback is omitted.
  */
 common.util.promisifyAll(Instance, {
-  exclude: [
-    'database',
-    'delete',
-    'getMetadata',
-    'setMetadata'
-  ]
+  exclude: ['database', 'delete', 'getMetadata', 'setMetadata'],
 });
 
 module.exports = Instance;

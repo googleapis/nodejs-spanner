@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 /*!
  * @module spanner
  */
@@ -66,13 +65,13 @@ function Spanner(options) {
 
   options = extend({}, options, {
     libName: 'gccl',
-    libVersion: require('../package.json').version
+    libVersion: require('../package.json').version,
   });
 
   this.api = {
     Database: v1.admin.database(options).databaseAdminClient(options),
     Instance: v1.admin.instance(options).instanceAdminClient(options),
-    Spanner: v1(options).spannerClient(options)
+    Spanner: v1(options).spannerClient(options),
   };
 
   var config = {
@@ -81,13 +80,11 @@ function Spanner(options) {
     protoServices: {
       Operations: {
         path: 'google/longrunning/operations.proto',
-        service: 'longrunning'
-      }
+        service: 'longrunning',
+      },
     },
-    scopes: [
-      'https://www.googleapis.com/auth/cloud-platform'
-    ],
-    packageJson: require('../package.json')
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    packageJson: require('../package.json'),
   };
 
   commonGrpc.Service.call(this, config, options);
@@ -196,9 +193,9 @@ Spanner.prototype.createInstance = function(name, config, callback) {
   }
 
   if (!config) {
-    throw new Error([
-      'A configuration object is required to create an instance.'
-    ].join(''));
+    throw new Error(
+      ['A configuration object is required to create an instance.'].join('')
+    );
   }
 
   var self = this;
@@ -209,10 +206,13 @@ Spanner.prototype.createInstance = function(name, config, callback) {
   var reqOpts = {
     parent: 'projects/' + this.projectId,
     instanceId: shortName,
-    instance: extend({
-      name: formattedName,
-      displayName: shortName
-    }, config)
+    instance: extend(
+      {
+        name: formattedName,
+        displayName: shortName,
+      },
+      config
+    ),
   };
 
   if (is.defined(config.nodes)) {
@@ -223,7 +223,7 @@ Spanner.prototype.createInstance = function(name, config, callback) {
   if (config.config && config.config.indexOf('/') === -1) {
     reqOpts.instance.config = format('projects/{pId}/instanceConfigs/{cfg}', {
       pId: this.projectId,
-      cfg: config.config
+      cfg: config.config,
     });
   }
 
@@ -307,7 +307,7 @@ Spanner.prototype.getInstances = function(query, callback) {
   }
 
   var reqOpts = extend({}, query, {
-    parent: 'projects/' + this.projectId
+    parent: 'projects/' + this.projectId,
   });
 
   this.api.Instance.listInstances(reqOpts, query, function(err, instances) {
@@ -351,8 +351,9 @@ Spanner.prototype.getInstances = function(query, callback) {
  *     this.end();
  *   });
  */
-Spanner.prototype.getInstancesStream =
-  common.paginator.streamify('getInstances');
+Spanner.prototype.getInstancesStream = common.paginator.streamify(
+  'getInstances'
+);
 
 /**
  * Get a list of instance configs.
@@ -410,7 +411,7 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
   }
 
   var reqOpts = extend({}, query, {
-    parent: 'projects/' + this.projectId
+    parent: 'projects/' + this.projectId,
   });
 
   return this.api.Instance.listInstanceConfigs(reqOpts, callback);
@@ -444,7 +445,7 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
  */
 Spanner.prototype.getInstanceConfigsStream = function(query) {
   var reqOpts = extend({}, query, {
-    parent: 'projects/' + this.projectId
+    parent: 'projects/' + this.projectId,
   });
 
   return this.api.Instance.listInstanceConfigsStream(reqOpts);
@@ -504,8 +505,8 @@ common.util.promisifyAll(Spanner, {
     'getInstanceConfigs',
     'instance',
     'int',
-    'operation'
-  ]
+    'operation',
+  ],
 });
 
 module.exports = Spanner;

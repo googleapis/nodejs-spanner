@@ -178,7 +178,7 @@ function Database(instance, name, poolOptions) {
      *   var apiResponse = data[0];
      * });
      */
-    get: true
+    get: true,
   };
 
   commonGrpc.ServiceObject.call(this, {
@@ -187,7 +187,7 @@ function Database(instance, name, poolOptions) {
     methods: methods,
     createMethod: function(_, options, callback) {
       return instance.createDatabase(self.formattedName_, options, callback);
-    }
+    },
   });
 }
 
@@ -234,12 +234,15 @@ Database.formatName_ = function(instanceName, name) {
 Database.prototype.close = function(callback) {
   var self = this;
 
-  this.pool_.clear().then(function() {
-    self.parent.databases_.delete(self.id);
-    callback(null);
-  }, function(err) {
-    callback(err || new Error('Unable to close database connection.'));
-  });
+  this.pool_.clear().then(
+    function() {
+      self.parent.databases_.delete(self.id);
+      callback(null);
+    },
+    function(err) {
+      callback(err || new Error('Unable to close database connection.'));
+    }
+  );
 };
 
 /**
@@ -331,7 +334,7 @@ Database.prototype.createTable = function(schema, callback) {
  */
 Database.prototype.delete = function(callback) {
   var reqOpts = {
-    database: this.formattedName_
+    database: this.formattedName_,
   };
 
   return this.api.Database.dropDatabase(reqOpts, callback);
@@ -365,9 +368,12 @@ Database.prototype.delete = function(callback) {
  * });
  */
 Database.prototype.getMetadata = function(callback) {
-  return this.api.Database.getDatabase({
-    name: this.formattedName_
-  }, callback);
+  return this.api.Database.getDatabase(
+    {
+      name: this.formattedName_,
+    },
+    callback
+  );
 };
 
 /**
@@ -393,15 +399,18 @@ Database.prototype.getMetadata = function(callback) {
  * });
  */
 Database.prototype.getSchema = function(callback) {
-  this.api.Database.getDatabaseDdl({
-    database: this.formattedName_
-  }, function(err, statements) {
-    if (statements) {
-      arguments[1] = statements.statements;
-    }
+  this.api.Database.getDatabaseDdl(
+    {
+      database: this.formattedName_,
+    },
+    function(err, statements) {
+      if (statements) {
+        arguments[1] = statements.statements;
+      }
 
-    callback.apply(null, arguments);
-  });
+      callback.apply(null, arguments);
+    }
+  );
 };
 
 /**
@@ -698,12 +707,12 @@ Database.prototype.runStream = function(query, options) {
 
   if (is.string(query)) {
     query = {
-      sql: query
+      sql: query,
     };
   }
 
   var reqOpts = extend({}, query, {
-    session: this.formattedName_
+    session: this.formattedName_,
   });
 
   var fields = {};
@@ -723,7 +732,7 @@ Database.prototype.runStream = function(query, options) {
     }
 
     reqOpts.params = {
-      fields: fields
+      fields: fields,
     };
   }
 
@@ -749,14 +758,14 @@ Database.prototype.runStream = function(query, options) {
         throw new Error('Unknown param type: ' + type);
       }
 
-      types[prop] = { code: code };
+      types[prop] = {code: code};
 
       if (child === -1) {
         throw new Error('Unknown param type: ' + childType);
       }
 
       if (is.number(child)) {
-        types[prop].arrayElementType = { code: child };
+        types[prop].arrayElementType = {code: child};
       }
     }
 
@@ -767,15 +776,15 @@ Database.prototype.runStream = function(query, options) {
   if (options) {
     reqOpts.transaction = {
       singleUse: {
-        readOnly: TransactionRequest.formatTimestampOptions_(options)
-      }
+        readOnly: TransactionRequest.formatTimestampOptions_(options),
+      },
     };
   }
 
   function makeRequest(resumeToken) {
     return self.pool_.requestStream({
-      reqOpts: extend(reqOpts, { resumeToken: resumeToken }),
-      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner)
+      reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
+      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner),
     });
   }
 
@@ -988,13 +997,16 @@ Database.prototype.table = function(name) {
 Database.prototype.updateSchema = function(statements, callback) {
   if (!is.object(statements)) {
     statements = {
-      statements: arrify(statements)
+      statements: arrify(statements),
     };
   }
 
-  var reqOpts = extend({
-    database: this.formattedName_
-  }, statements);
+  var reqOpts = extend(
+    {
+      database: this.formattedName_,
+    },
+    statements
+  );
 
   return this.api.Database.updateDatabaseDdl(reqOpts, callback);
 };
@@ -1048,19 +1060,23 @@ Database.prototype.createSession_ = function(options, callback) {
 
   options = options || {};
 
-  this.api.Spanner.createSession({
-    database: this.formattedName_
-  }, options, function(err, resp) {
-    if (err) {
-      callback(err, null, resp);
-      return;
+  this.api.Spanner.createSession(
+    {
+      database: this.formattedName_,
+    },
+    options,
+    function(err, resp) {
+      if (err) {
+        callback(err, null, resp);
+        return;
+      }
+
+      var session = self.session_(resp.name);
+      session.metadata = resp;
+
+      callback(null, session, resp);
     }
-
-    var session = self.session_(resp.name);
-    session.metadata = resp;
-
-    callback(null, session, resp);
-  });
+  );
 };
 
 /**
@@ -1117,8 +1133,8 @@ common.util.promisifyAll(Database, {
     'runTransaction',
     'table',
     'updateSchema',
-    'session_'
-  ]
+    'session_',
+  ],
 });
 
 module.exports = Database;
