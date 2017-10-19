@@ -147,7 +147,7 @@ describe('codec', function() {
     });
 
     it('should decode BYTES', function() {
-      var value = Buffer.alloc('bytes value');
+      var value = Buffer.from('bytes value');
 
       var decoded = codec.decode(value.toString('base64'), {
         type: {
@@ -155,7 +155,7 @@ describe('codec', function() {
         },
       });
 
-      assert.deepEqual(decoded, Buffer.alloc(value, 'base64'));
+      assert.deepEqual(decoded, Buffer.from(value, 'base64'));
     });
 
     it('should decode FLOAT64', function() {
@@ -358,7 +358,7 @@ describe('codec', function() {
     });
 
     it('should encode BYTES', function() {
-      var value = Buffer.alloc('bytes value');
+      var value = Buffer.from('bytes value');
 
       var encoded = codec.encode(value);
 
@@ -486,7 +486,7 @@ describe('codec', function() {
     });
 
     it('should determine if the value is bytes', function() {
-      assert.strictEqual(codec.getType(Buffer.alloc('abc')), 'bytes');
+      assert.strictEqual(codec.getType(Buffer.from('abc')), 'bytes');
     });
 
     it('should determine if the value is a timestamp', function() {

@@ -84,7 +84,7 @@ function decode(value, field) {
 
     switch (type.code) {
       case 'BYTES': {
-        decoded = Buffer.alloc(decoded, 'base64');
+        decoded = Buffer.from(decoded, 'base64');
         break;
       }
       case 'FLOAT64': {

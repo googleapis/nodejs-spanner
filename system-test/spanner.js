@@ -451,9 +451,9 @@ describe('Spanner', function() {
 
     describe('bytes', function() {
       it('should write bytes values', function(done) {
-        insert({BytesValue: Buffer.alloc('abc')}, function(err, row) {
+        insert({BytesValue: Buffer.from('abc')}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesValue, Buffer.alloc('abc'));
+          assert.deepEqual(row.toJSON().BytesValue, Buffer.from('abc'));
           done();
         });
       });
@@ -483,7 +483,7 @@ describe('Spanner', function() {
       });
 
       it('should write bytes array values', function(done) {
-        var values = [Buffer.alloc('a'), Buffer.alloc('b')];
+        var values = [Buffer.from('a'), Buffer.from('b')];
 
         insert({BytesArray: values}, function(err, row) {
           assert.ifError(err);
@@ -1195,7 +1195,7 @@ describe('Spanner', function() {
       var NAME = generateName('name');
       var FLOAT = 8.2;
       var INT = 2;
-      var INFO = Buffer.alloc(generateName('info'));
+      var INFO = Buffer.from(generateName('info'));
       var CREATED = new Date();
       var DOB = Spanner.date(DATE);
       var ACCENTS = ['jamaican'];
@@ -1777,7 +1777,7 @@ describe('Spanner', function() {
 
         describe('bytes', function() {
           it('should bind the value', function(done) {
-            var buffer = Buffer.alloc('abc');
+            var buffer = Buffer.from('abc');
 
             var query = {
               sql: 'SELECT @v',
@@ -1812,7 +1812,7 @@ describe('Spanner', function() {
           });
 
           it('should bind arrays', function(done) {
-            var values = [Buffer.alloc('a'), Buffer.alloc('b'), null];
+            var values = [Buffer.from('a'), Buffer.from('b'), null];
 
             var query = {
               sql: 'SELECT @v',
@@ -2108,7 +2108,7 @@ describe('Spanner', function() {
         }
 
         function base64ToBuffer(bytes) {
-          return Buffer.alloc(bytes, 'base64');
+          return Buffer.from(bytes, 'base64');
         }
 
         before(function() {

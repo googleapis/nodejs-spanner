@@ -908,7 +908,7 @@ describe('Transaction', function() {
           timestamp: new Date(),
           date: new fakeCodec.SpannerDate(),
           string: 'abc',
-          bytes: Buffer.alloc('abc'),
+          bytes: Buffer.from('abc'),
         };
 
         var types = Object.keys(params);

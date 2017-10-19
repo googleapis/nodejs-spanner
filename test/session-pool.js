@@ -934,7 +934,7 @@ describe('SessionPool', function() {
       });
 
       it('should make request and pipe to the stream', function(done) {
-        var responseData = new Buffer('response-data');
+        var responseData = Buffer.from('response-data');
 
         sessionPool.requestStream(CONFIG).on('data', function(data) {
           assert.deepEqual(data, responseData);
