@@ -39,13 +39,15 @@ var CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 
 var PAGE_DESCRIPTORS = {
   listInstanceConfigs: new gax.PageDescriptor(
-      'pageToken',
-      'nextPageToken',
-      'instanceConfigs'),
+    'pageToken',
+    'nextPageToken',
+    'instanceConfigs'
+  ),
   listInstances: new gax.PageDescriptor(
-      'pageToken',
-      'nextPageToken',
-      'instances')
+    'pageToken',
+    'nextPageToken',
+    'instances'
+  ),
 };
 
 /**
@@ -54,7 +56,7 @@ var PAGE_DESCRIPTORS = {
  */
 var ALL_SCOPES = [
   'https://www.googleapis.com/auth/cloud-platform',
-  'https://www.googleapis.com/auth/spanner.admin'
+  'https://www.googleapis.com/auth/spanner.admin',
 ];
 
 /**
@@ -93,15 +95,16 @@ var ALL_SCOPES = [
  * @class
  */
 function InstanceAdminClient(gaxGrpc, grpcClients, opts) {
-  opts = extend({
-    servicePath: SERVICE_ADDRESS,
-    port: DEFAULT_SERVICE_PORT,
-    clientConfig: {}
-  }, opts);
+  opts = extend(
+    {
+      servicePath: SERVICE_ADDRESS,
+      port: DEFAULT_SERVICE_PORT,
+      clientConfig: {},
+    },
+    opts
+  );
 
-  var googleApiClient = [
-    'gl-node/' + process.versions.node
-  ];
+  var googleApiClient = ['gl-node/' + process.versions.node];
   if (opts.libName && opts.libVersion) {
     googleApiClient.push(opts.libName + '/' + opts.libVersion);
   }
@@ -111,35 +114,38 @@ function InstanceAdminClient(gaxGrpc, grpcClients, opts) {
     'grpc/' + gaxGrpc.grpcVersion
   );
 
-
   this.operationsClient = new gax.lro({
     auth: gaxGrpc.auth,
-    grpc: gaxGrpc.grpc
+    grpc: gaxGrpc.grpc,
   }).operationsClient(opts);
 
   this.longrunningDescriptors = {
     createInstance: new gax.LongrunningDescriptor(
       this.operationsClient,
       grpcClients.google.spanner.admin.instance.v1.Instance.decode,
-      grpcClients.google.spanner.admin.instance.v1.CreateInstanceMetadata.decode),
+      grpcClients.google.spanner.admin.instance.v1.CreateInstanceMetadata.decode
+    ),
     updateInstance: new gax.LongrunningDescriptor(
       this.operationsClient,
       grpcClients.google.spanner.admin.instance.v1.Instance.decode,
-      grpcClients.google.spanner.admin.instance.v1.UpdateInstanceMetadata.decode)
+      grpcClients.google.spanner.admin.instance.v1.UpdateInstanceMetadata.decode
+    ),
   };
 
   var defaults = gaxGrpc.constructSettings(
-      'google.spanner.admin.instance.v1.InstanceAdmin',
-      configData,
-      opts.clientConfig,
-      {'x-goog-api-client': googleApiClient.join(' ')});
+    'google.spanner.admin.instance.v1.InstanceAdmin',
+    configData,
+    opts.clientConfig,
+    {'x-goog-api-client': googleApiClient.join(' ')}
+  );
 
   var self = this;
 
   this.auth = gaxGrpc.auth;
   var instanceAdminStub = gaxGrpc.createStub(
-      grpcClients.google.spanner.admin.instance.v1.InstanceAdmin,
-      opts);
+    grpcClients.google.spanner.admin.instance.v1.InstanceAdmin,
+    opts
+  );
   var instanceAdminStubMethods = [
     'listInstanceConfigs',
     'getInstanceConfig',
@@ -150,7 +156,7 @@ function InstanceAdminClient(gaxGrpc, grpcClients, opts) {
     'deleteInstance',
     'setIamPolicy',
     'getIamPolicy',
-    'testIamPermissions'
+    'testIamPermissions',
   ];
   instanceAdminStubMethods.forEach(function(methodName) {
     self['_' + methodName] = gax.createApiCall(
@@ -161,20 +167,22 @@ function InstanceAdminClient(gaxGrpc, grpcClients, opts) {
         };
       }),
       defaults[methodName],
-      PAGE_DESCRIPTORS[methodName] || self.longrunningDescriptors[methodName]);
+      PAGE_DESCRIPTORS[methodName] || self.longrunningDescriptors[methodName]
+    );
   });
 }
 
 // Path templates
 
-var PROJECT_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}');
+var PROJECT_PATH_TEMPLATE = new gax.PathTemplate('projects/{project}');
 
 var INSTANCE_CONFIG_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}/instanceConfigs/{instance_config}');
+  'projects/{project}/instanceConfigs/{instance_config}'
+);
 
 var INSTANCE_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}/instances/{instance}');
+  'projects/{project}/instances/{instance}'
+);
 
 /**
  * Returns a fully-qualified project resource name string.
@@ -183,7 +191,7 @@ var INSTANCE_PATH_TEMPLATE = new gax.PathTemplate(
  */
 InstanceAdminClient.prototype.projectPath = function(project) {
   return PROJECT_PATH_TEMPLATE.render({
-    project: project
+    project: project,
   });
 };
 
@@ -193,7 +201,9 @@ InstanceAdminClient.prototype.projectPath = function(project) {
  *   A fully-qualified path representing a project resources.
  * @returns {String} - A string representing the project.
  */
-InstanceAdminClient.prototype.matchProjectFromProjectName = function(projectName) {
+InstanceAdminClient.prototype.matchProjectFromProjectName = function(
+  projectName
+) {
   return PROJECT_PATH_TEMPLATE.match(projectName).project;
 };
 
@@ -203,10 +213,13 @@ InstanceAdminClient.prototype.matchProjectFromProjectName = function(projectName
  * @param {String} instanceConfig
  * @returns {String}
  */
-InstanceAdminClient.prototype.instanceConfigPath = function(project, instanceConfig) {
+InstanceAdminClient.prototype.instanceConfigPath = function(
+  project,
+  instanceConfig
+) {
   return INSTANCE_CONFIG_PATH_TEMPLATE.render({
     project: project,
-    instance_config: instanceConfig
+    instance_config: instanceConfig,
   });
 };
 
@@ -216,7 +229,9 @@ InstanceAdminClient.prototype.instanceConfigPath = function(project, instanceCon
  *   A fully-qualified path representing a instance_config resources.
  * @returns {String} - A string representing the project.
  */
-InstanceAdminClient.prototype.matchProjectFromInstanceConfigName = function(instanceConfigName) {
+InstanceAdminClient.prototype.matchProjectFromInstanceConfigName = function(
+  instanceConfigName
+) {
   return INSTANCE_CONFIG_PATH_TEMPLATE.match(instanceConfigName).project;
 };
 
@@ -226,8 +241,11 @@ InstanceAdminClient.prototype.matchProjectFromInstanceConfigName = function(inst
  *   A fully-qualified path representing a instance_config resources.
  * @returns {String} - A string representing the instance_config.
  */
-InstanceAdminClient.prototype.matchInstanceConfigFromInstanceConfigName = function(instanceConfigName) {
-  return INSTANCE_CONFIG_PATH_TEMPLATE.match(instanceConfigName).instance_config;
+InstanceAdminClient.prototype.matchInstanceConfigFromInstanceConfigName = function(
+  instanceConfigName
+) {
+  return INSTANCE_CONFIG_PATH_TEMPLATE.match(instanceConfigName)
+    .instance_config;
 };
 
 /**
@@ -239,7 +257,7 @@ InstanceAdminClient.prototype.matchInstanceConfigFromInstanceConfigName = functi
 InstanceAdminClient.prototype.instancePath = function(project, instance) {
   return INSTANCE_PATH_TEMPLATE.render({
     project: project,
-    instance: instance
+    instance: instance,
   });
 };
 
@@ -249,7 +267,9 @@ InstanceAdminClient.prototype.instancePath = function(project, instance) {
  *   A fully-qualified path representing a instance resources.
  * @returns {String} - A string representing the project.
  */
-InstanceAdminClient.prototype.matchProjectFromInstanceName = function(instanceName) {
+InstanceAdminClient.prototype.matchProjectFromInstanceName = function(
+  instanceName
+) {
   return INSTANCE_PATH_TEMPLATE.match(instanceName).project;
 };
 
@@ -259,7 +279,9 @@ InstanceAdminClient.prototype.matchProjectFromInstanceName = function(instanceNa
  *   A fully-qualified path representing a instance resources.
  * @returns {String} - A string representing the instance.
  */
-InstanceAdminClient.prototype.matchInstanceFromInstanceName = function(instanceName) {
+InstanceAdminClient.prototype.matchInstanceFromInstanceName = function(
+  instanceName
+) {
   return INSTANCE_PATH_TEMPLATE.match(instanceName).instance;
 };
 
@@ -349,7 +371,11 @@ InstanceAdminClient.prototype.getProjectId = function(callback) {
  *         console.error(err);
  *     });
  */
-InstanceAdminClient.prototype.listInstanceConfigs = function(request, options, callback) {
+InstanceAdminClient.prototype.listInstanceConfigs = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -402,12 +428,19 @@ InstanceAdminClient.prototype.listInstanceConfigs = function(request, options, c
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.listInstanceConfigsStream = function(request, options) {
+InstanceAdminClient.prototype.listInstanceConfigsStream = function(
+  request,
+  options
+) {
   if (options === undefined) {
     options = {};
   }
 
-  return PAGE_DESCRIPTORS.listInstanceConfigs.createStream(this._listInstanceConfigs, request, options);
+  return PAGE_DESCRIPTORS.listInstanceConfigs.createStream(
+    this._listInstanceConfigs,
+    request,
+    options
+  );
 };
 
 /**
@@ -440,7 +473,11 @@ InstanceAdminClient.prototype.listInstanceConfigsStream = function(request, opti
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.getInstanceConfig = function(request, options, callback) {
+InstanceAdminClient.prototype.getInstanceConfig = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -546,7 +583,11 @@ InstanceAdminClient.prototype.getInstanceConfig = function(request, options, cal
  *         console.error(err);
  *     });
  */
-InstanceAdminClient.prototype.listInstances = function(request, options, callback) {
+InstanceAdminClient.prototype.listInstances = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -623,7 +664,11 @@ InstanceAdminClient.prototype.listInstancesStream = function(request, options) {
     options = {};
   }
 
-  return PAGE_DESCRIPTORS.listInstances.createStream(this._listInstances, request, options);
+  return PAGE_DESCRIPTORS.listInstances.createStream(
+    this._listInstances,
+    request,
+    options
+  );
 };
 
 /**
@@ -656,7 +701,11 @@ InstanceAdminClient.prototype.listInstancesStream = function(request, options) {
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.getInstance = function(request, options, callback) {
+InstanceAdminClient.prototype.getInstance = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -786,7 +835,11 @@ InstanceAdminClient.prototype.getInstance = function(request, options, callback)
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.createInstance = function(request, options, callback) {
+InstanceAdminClient.prototype.createInstance = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -920,7 +973,11 @@ InstanceAdminClient.prototype.createInstance = function(request, options, callba
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.updateInstance = function(request, options, callback) {
+InstanceAdminClient.prototype.updateInstance = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -966,7 +1023,11 @@ InstanceAdminClient.prototype.updateInstance = function(request, options, callba
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.deleteInstance = function(request, options, callback) {
+InstanceAdminClient.prototype.deleteInstance = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -1025,7 +1086,11 @@ InstanceAdminClient.prototype.deleteInstance = function(request, options, callba
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.setIamPolicy = function(request, options, callback) {
+InstanceAdminClient.prototype.setIamPolicy = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -1072,7 +1137,11 @@ InstanceAdminClient.prototype.setIamPolicy = function(request, options, callback
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.getIamPolicy = function(request, options, callback) {
+InstanceAdminClient.prototype.getIamPolicy = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -1130,7 +1199,11 @@ InstanceAdminClient.prototype.getIamPolicy = function(request, options, callback
  *     console.error(err);
  * });
  */
-InstanceAdminClient.prototype.testIamPermissions = function(request, options, callback) {
+InstanceAdminClient.prototype.testIamPermissions = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -1147,12 +1220,13 @@ function InstanceAdminClientBuilder(gaxGrpc) {
     return new InstanceAdminClientBuilder(gaxGrpc);
   }
 
-  var instanceAdminClient = gaxGrpc.load([{
-    root: require('google-proto-files')('..'),
-    file: 'google/spanner/admin/instance/v1/spanner_instance_admin.proto'
-  }]);
+  var instanceAdminClient = gaxGrpc.load([
+    {
+      root: require('google-proto-files')('..'),
+      file: 'google/spanner/admin/instance/v1/spanner_instance_admin.proto',
+    },
+  ]);
   extend(this, instanceAdminClient.google.spanner.admin.instance.v1);
-
 
   /**
    * Build a new instance of {@link InstanceAdminClient}.
