@@ -22,6 +22,7 @@
 
 var codec = module.exports;
 
+var Buffer = require('safe-buffer').Buffer;
 var commonGrpc = require('@google-cloud/common-grpc');
 var is = require('is');
 
@@ -83,7 +84,7 @@ function decode(value, field) {
 
     switch (type.code) {
       case 'BYTES': {
-        decoded = new Buffer(decoded, 'base64');
+        decoded = Buffer.alloc(decoded, 'base64');
         break;
       }
       case 'FLOAT64': {

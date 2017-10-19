@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var through = require('through2');
@@ -599,7 +600,7 @@ describe('Database', function() {
           timestamp: new Date(),
           date: new fakeCodec.SpannerDate(),
           string: 'abc',
-          bytes: new Buffer('abc'),
+          bytes: Buffer.alloc('abc'),
         };
 
         var types = Object.keys(params);
@@ -694,7 +695,7 @@ describe('Database', function() {
 
         assert.throws(function() {
           database.runStream(query);
-        }, /Unknown param type\: unicorn/);
+        }, /Unknown param type: unicorn/);
       });
 
       it('should attempt to guess array types', function(done) {
@@ -745,7 +746,7 @@ describe('Database', function() {
 
         assert.throws(function() {
           database.runStream(query);
-        }, /Unknown param type\: unicorn/);
+        }, /Unknown param type: unicorn/);
       });
 
       it('should delete the type map from the request options', function(done) {

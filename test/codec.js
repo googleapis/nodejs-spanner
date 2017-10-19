@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var util = require('@google-cloud/common').util;
@@ -146,7 +147,7 @@ describe('codec', function() {
     });
 
     it('should decode BYTES', function() {
-      var value = new Buffer('bytes value');
+      var value = Buffer.alloc('bytes value');
 
       var decoded = codec.decode(value.toString('base64'), {
         type: {
@@ -154,7 +155,7 @@ describe('codec', function() {
         },
       });
 
-      assert.deepEqual(decoded, new Buffer(value, 'base64'));
+      assert.deepEqual(decoded, Buffer.alloc(value, 'base64'));
     });
 
     it('should decode FLOAT64', function() {
@@ -357,7 +358,7 @@ describe('codec', function() {
     });
 
     it('should encode BYTES', function() {
-      var value = new Buffer('bytes value');
+      var value = Buffer.alloc('bytes value');
 
       var encoded = codec.encode(value);
 
@@ -485,7 +486,7 @@ describe('codec', function() {
     });
 
     it('should determine if the value is bytes', function() {
-      assert.strictEqual(codec.getType(new Buffer('abc')), 'bytes');
+      assert.strictEqual(codec.getType(Buffer.alloc('abc')), 'bytes');
     });
 
     it('should determine if the value is a timestamp', function() {

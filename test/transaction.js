@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream');
@@ -907,7 +908,7 @@ describe('Transaction', function() {
           timestamp: new Date(),
           date: new fakeCodec.SpannerDate(),
           string: 'abc',
-          bytes: new Buffer('abc'),
+          bytes: Buffer.alloc('abc'),
         };
 
         var types = Object.keys(params);

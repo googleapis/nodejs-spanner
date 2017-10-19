@@ -18,6 +18,7 @@
 
 var assert = require('assert');
 var async = require('async');
+var Buffer = require('safe-buffer').Buffer;
 var concat = require('concat-stream');
 var crypto = require('crypto');
 var exec = require('methmeth');
@@ -26,13 +27,12 @@ var is = require('is');
 var multiline = require('multiline');
 var uuid = require('uuid');
 
-var env = require('../../../system-test/env.js');
 var Spanner = require('../');
 
 var PREFIX = 'gcloud-tests-';
-var spanner = new Spanner(env);
+var spanner = new Spanner();
 
-(env.projectId ? describe : describe.skip)('Spanner', function() {
+describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
 
   before(function(done) {
@@ -451,9 +451,9 @@ var spanner = new Spanner(env);
 
     describe('bytes', function() {
       it('should write bytes values', function(done) {
-        insert({BytesValue: new Buffer('abc')}, function(err, row) {
+        insert({BytesValue: Buffer.alloc('abc')}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesValue, new Buffer('abc'));
+          assert.deepEqual(row.toJSON().BytesValue, Buffer.alloc('abc'));
           done();
         });
       });
@@ -483,7 +483,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write bytes array values', function(done) {
-        var values = [new Buffer('a'), new Buffer('b')];
+        var values = [Buffer.alloc('a'), Buffer.alloc('b')];
 
         insert({BytesArray: values}, function(err, row) {
           assert.ifError(err);
@@ -1195,7 +1195,7 @@ var spanner = new Spanner(env);
       var NAME = generateName('name');
       var FLOAT = 8.2;
       var INT = 2;
-      var INFO = new Buffer(generateName('info'));
+      var INFO = Buffer.alloc(generateName('info'));
       var CREATED = new Date();
       var DOB = Spanner.date(DATE);
       var ACCENTS = ['jamaican'];
@@ -1777,7 +1777,7 @@ var spanner = new Spanner(env);
 
         describe('bytes', function() {
           it('should bind the value', function(done) {
-            var buffer = new Buffer('abc');
+            var buffer = Buffer.alloc('abc');
 
             var query = {
               sql: 'SELECT @v',
@@ -1812,7 +1812,7 @@ var spanner = new Spanner(env);
           });
 
           it('should bind arrays', function(done) {
-            var values = [new Buffer('a'), new Buffer('b'), null];
+            var values = [Buffer.alloc('a'), Buffer.alloc('b'), null];
 
             var query = {
               sql: 'SELECT @v',
@@ -2108,7 +2108,7 @@ var spanner = new Spanner(env);
         }
 
         function base64ToBuffer(bytes) {
-          return new Buffer(bytes, 'base64');
+          return Buffer.alloc(bytes, 'base64');
         }
 
         before(function() {
