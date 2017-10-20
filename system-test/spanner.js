@@ -30,7 +30,7 @@ var uuid = require('uuid');
 var Spanner = require('../');
 
 var PREFIX = 'gcloud-tests-';
-var spanner = new Spanner();
+var spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
 describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
