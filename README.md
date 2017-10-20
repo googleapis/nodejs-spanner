@@ -69,7 +69,7 @@ const projectId = 'YOUR_PROJECT_ID';
 
 // Instantiates a client
 const spanner = Spanner({
-  projectId: projectId
+  projectId: projectId,
 });
 
 // Your Cloud Spanner instance ID
@@ -84,16 +84,15 @@ const database = instance.database(databaseId);
 
 // The query to execute
 const query = {
-  sql: 'SELECT 1'
+  sql: 'SELECT 1',
 };
 
 // Execute a simple SQL statement
-database.run(query)
-  .then((results) => {
-    const rows = results[0];
+database.run(query).then(results => {
+  const rows = results[0];
 
-    rows.forEach((row) => console.log(row));
-  });
+  rows.forEach(row => console.log(row));
+});
 ```
 
 ## Samples

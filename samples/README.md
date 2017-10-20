@@ -38,8 +38,7 @@ Commands:
                                                 with an additional column (MarketingBudget) added by addColumn.
 
 Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
+  --help  Show help                                                                                            [boolean]
 
 Examples:
   node schema.js createDatabase "my-instance" "my-database"
@@ -67,8 +66,7 @@ Commands:
   read-stale <instanceName> <databaseName>  Reads stale data in an example Cloud Spanner table.
 
 Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
+  --help  Show help                                                                                            [boolean]
 
 Examples:
   node crud.js update "my-instance" "my-database"
@@ -103,8 +101,7 @@ Commands:
                                                     storing index.
 
 Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
+  --help  Show help                                                                                            [boolean]
 
 Examples:
   node indexing.js createIndex "my-instance" "my-database"
@@ -131,8 +128,7 @@ Commands:
   readWrite <instanceName> <databaseName>  Execute a read-write transaction on an example Cloud Spanner table.
 
 Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
+  --help  Show help                                                                                            [boolean]
 
 Examples:
   node transaction.js readOnly "my-instance" "my-database"
