@@ -69,9 +69,9 @@ function Spanner(options) {
   });
 
   this.api = {
-    Database: v1.admin.database(options).databaseAdminClient(options),
-    Instance: v1.admin.instance(options).instanceAdminClient(options),
-    Spanner: v1(options).spannerClient(options),
+    Database: new v1.DatabaseAdminClient(options),
+    Instance: new v1.InstanceAdminClient(options),
+    Spanner: new v1.SpannerClient(options),
   };
 
   var config = {
