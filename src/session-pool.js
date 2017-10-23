@@ -59,7 +59,7 @@ function SessionPool(database, options) {
   options = options || {};
 
   this.database = database;
-  this.maxIdle = options.maxIdle || 1;
+  this.maxIdle = options.maxIdle || options.min || 1;
   this.fail = !!options.fail;
 
   this.pendingAcquires = [];

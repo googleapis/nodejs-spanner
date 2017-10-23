@@ -148,17 +148,19 @@ describe('SessionPool', function() {
     });
 
     describe('options.maxIdle', function() {
-      var options = extend({}, OPTIONS, {
-        maxIdle: 5
+      it('should localize the maxIdle option', function() {
+        var pool = new SessionPool(DATABASE, { maxIdle: 7 });
+        assert.strictEqual(pool.maxIdle, 7);
       });
 
-      it('should default to 1', function() {
-        assert.strictEqual(sessionPool.maxIdle, 1);
+      it('should use the min option when maxIdle is absent', function() {
+        var pool = new SessionPool(DATABASE, { min: 4 });
+        assert.strictEqual(pool.maxIdle, 4);
       });
 
-      it('should localize the maxIdle setting', function() {
-        var sessionPool = new SessionPool(DATABASE, options);
-        assert.strictEqual(sessionPool.maxIdle, options.maxIdle);
+      it('should default to 1 if both min and maxIdle are absent', function() {
+        var pool = new SessionPool(DATABASE);
+        assert.strictEqual(pool.maxIdle, 1);
       });
     });
 
