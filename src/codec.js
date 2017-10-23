@@ -22,15 +22,18 @@
 
 var codec = module.exports;
 
+var Buffer = require('safe-buffer').Buffer;
 var commonGrpc = require('@google-cloud/common-grpc');
 var is = require('is');
 
 function SpannerDate(value) {
   if (arguments.length > 1) {
-    throw new TypeError([
-      'The spanner.date function accepts a Date object or a',
-      'single argument parseable by Date\'s constructor.'
-    ].join(' '));
+    throw new TypeError(
+      [
+        'The spanner.date function accepts a Date object or a',
+        "single argument parseable by Date's constructor.",
+      ].join(' ')
+    );
   }
 
   if (is.undefined(value)) {
@@ -81,7 +84,7 @@ function decode(value, field) {
 
     switch (type.code) {
       case 'BYTES': {
-        decoded = new Buffer(decoded, 'base64');
+        decoded = Buffer.from(decoded, 'base64');
         break;
       }
       case 'FLOAT64': {
@@ -114,7 +117,7 @@ function decode(value, field) {
 
           var column = {
             name: field.name,
-            value: decodeValue_(value, field.type)
+            value: decodeValue_(value, field.type),
           };
 
           formattedRow.push(column);
@@ -128,7 +131,7 @@ function decode(value, field) {
           enumerable: false,
           value: function() {
             return serializedRow;
-          }
+          },
         });
 
         decoded = formattedRow;
@@ -153,17 +156,18 @@ codec.decode = decode;
 function encode(value) {
   function preEncode(value) {
     var numberShouldBeStringified =
-      !(value instanceof Float) &&
-      is.int(value) ||
+      (!(value instanceof Float) && is.int(value)) ||
       value instanceof Int ||
       is.infinite(value) ||
       Number.isNaN(value);
 
     if (is.date(value)) {
       value = value.toJSON();
-    } else if (value instanceof SpannerDate ||
-               value instanceof Float ||
-               value instanceof Int) {
+    } else if (
+      value instanceof SpannerDate ||
+      value instanceof Float ||
+      value instanceof Int
+    ) {
       value = value.value;
     } else if (Buffer.isBuffer(value)) {
       value = value.toString('base64');
@@ -206,8 +210,8 @@ function getType(field) {
     return 'bool';
   }
 
-  var isSpecialNumber = is.infinite(field) ||
-    (is.number(field) && isNaN(field));
+  var isSpecialNumber =
+    is.infinite(field) || (is.number(field) && isNaN(field));
 
   if (is.decimal(field) || isSpecialNumber || field instanceof Float) {
     return 'float64';
@@ -246,7 +250,7 @@ function getType(field) {
 
     return {
       type: 'array',
-      child: getType(child)
+      child: getType(child),
     };
   }
 
@@ -270,7 +274,7 @@ var TYPES = [
   'date',
   'string',
   'bytes',
-  'array'
+  'array',
 ];
 
 codec.TYPES = TYPES;

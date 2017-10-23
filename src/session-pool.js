@@ -71,7 +71,7 @@ function SessionPool(database, options) {
   if (options.writes) {
     writePoolOptions = extend({}, poolOptions, {
       max: options.writes,
-      min: Math.ceil(poolOptions.min / 2)
+      min: Math.ceil(poolOptions.min / 2),
     });
 
     poolOptions.max -= options.writes;
@@ -84,7 +84,7 @@ function SessionPool(database, options) {
       destroy: function(transaction) {
         return transaction.session.delete();
       },
-      validate: SessionPool.isSessionActive_
+      validate: SessionPool.isSessionActive_,
     });
   }
 
@@ -93,16 +93,16 @@ function SessionPool(database, options) {
       return self.createSession_.apply(self, arguments);
     },
     destroy: exec('delete'),
-    validate: SessionPool.isSessionActive_
+    validate: SessionPool.isSessionActive_,
   });
 
   Object.defineProperty(this, 'available', {
     get: function() {
       var availableReads = this.pool.available;
-      var availableWrites = this.writePool && this.writePool.available || 0;
+      var availableWrites = (this.writePool && this.writePool.available) || 0;
 
       return availableReads + availableWrites;
-    }
+    },
   });
 }
 
@@ -129,7 +129,7 @@ SessionPool.createPool_ = function(poolOptions, factory) {
   Object.defineProperty(pool, 'free', {
     get: function() {
       return pool.max - pool.borrowed;
-    }
+    },
   });
 
   return pool;
@@ -149,7 +149,7 @@ SessionPool.getPoolOptions_ = function(userOptions) {
     testOnBorrow: true,
     max: userOptions.max || 100,
     min: userOptions.min || 0,
-    numTestsPerRun: 100
+    numTestsPerRun: 100,
   };
 
   poolOptions.numTestsPerRun = poolOptions.max;
@@ -195,11 +195,13 @@ SessionPool.prototype.clear = function() {
     return readClear;
   }
 
-  return readClear.then(function() {
-    return self.writePool.drain();
-  }).then(function() {
-    return self.writePool.clear();
-  });
+  return readClear
+    .then(function() {
+      return self.writePool.drain();
+    })
+    .then(function() {
+      return self.writePool.clear();
+    });
 };
 
 /**
@@ -218,21 +220,20 @@ SessionPool.prototype.getSession = function(callback) {
     return;
   }
 
-  pool.acquire()
-    .then(function(session) {
-      // because of the way generic-pool handles creation errors, we need to
-      // resolve our create calls with any errors that occur. That being said,
-      // it is possible that this instance of `session` will actually be an
-      // error of some kind.
-      // re: https://github.com/coopernurse/node-pool/issues/175
-      if (session instanceof Error) {
-        pool.destroy(session);
-        callback(session);
-        return;
-      }
+  pool.acquire().then(function(session) {
+    // because of the way generic-pool handles creation errors, we need to
+    // resolve our create calls with any errors that occur. That being said,
+    // it is possible that this instance of `session` will actually be an
+    // error of some kind.
+    // re: https://github.com/coopernurse/node-pool/issues/175
+    if (session instanceof Error) {
+      pool.destroy(session);
+      callback(session);
+      return;
+    }
 
-      callback(null, session);
-    }, callback);
+    callback(null, session);
+  }, callback);
 };
 
 /**
@@ -249,13 +250,17 @@ SessionPool.prototype.getWriteSession = function(callback) {
   var pool = this.writePool;
 
   if (!pool || !pool.free) {
-    this.getNextAvailableSession_({
-      write: true
-    }, callback);
+    this.getNextAvailableSession_(
+      {
+        write: true,
+      },
+      callback
+    );
     return;
   }
 
-  pool.acquire()
+  pool
+    .acquire()
     .then(function(session) {
       // because of the way generic-pool handles creation errors, we need to
       // resolve our create calls with any errors that occur. That being said,
@@ -383,11 +388,14 @@ SessionPool.prototype.requestStream = function(config) {
 SessionPool.prototype.createSession_ = function() {
   var session = this.database.session_();
 
-  return session.create().then(function() {
-    return session;
-  }, function(err) {
-    return err;
-  });
+  return session.create().then(
+    function() {
+      return session;
+    },
+    function(err) {
+      return err;
+    }
+  );
 };
 
 /**
@@ -515,7 +523,7 @@ SessionPool.prototype.pollForSession_ = function(options, callback) {
   this.pendingAcquires.push({
     options: options,
     callback: callback,
-    timeout: this.acquireTimeout
+    timeout: this.acquireTimeout,
   });
 
   if (this.acquireIntervalId) {
@@ -528,8 +536,8 @@ SessionPool.prototype.pollForSession_ = function(options, callback) {
   this.acquireIntervalId = setInterval(checkForSession, intervalSpeed);
 
   function checkForSession() {
-    var hasFreeSession = self.pool.free ||
-      self.writePool && self.writePool.free;
+    var hasFreeSession =
+      self.pool.free || (self.writePool && self.writePool.free);
 
     if (hasFreeSession) {
       var acquireReq = self.pendingAcquires.shift();
@@ -569,7 +577,8 @@ SessionPool.prototype.releaseWriteSession_ = function(session) {
   var self = this;
   var transaction = self.createTransaction_(session);
 
-  return transaction.begin()
+  return transaction
+    .begin()
     .then(function() {
       session.transaction_ = transaction;
       return self.writePool.release(session);

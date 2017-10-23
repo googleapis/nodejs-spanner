@@ -15,7 +15,7 @@
 
 'use strict';
 
-function updateData (instanceId, databaseId) {
+function updateData(instanceId, databaseId) {
   // [START update_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -36,17 +36,18 @@ function updateData (instanceId, databaseId) {
   // must be converted to strings before being inserted as INT64s
   const albumsTable = database.table('Albums');
 
-  albumsTable.update([
-    { SingerId: '1', AlbumId: '1', MarketingBudget: '100000' },
-    { SingerId: '2', AlbumId: '2', MarketingBudget: '500000' }
-  ])
-  .then(() => {
-    console.log('Updated data.');
-  });
+  albumsTable
+    .update([
+      {SingerId: '1', AlbumId: '1', MarketingBudget: '100000'},
+      {SingerId: '2', AlbumId: '2', MarketingBudget: '500000'},
+    ])
+    .then(() => {
+      console.log('Updated data.');
+    });
   // [END update_data]
 }
 
-function insertData (instanceId, databaseId) {
+function insertData(instanceId, databaseId) {
   // [START insert_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -69,30 +70,31 @@ function insertData (instanceId, databaseId) {
   // Inserts rows into the Singers table
   // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so
   // they must be converted to strings before being inserted as INT64s
-  singersTable.insert([
-    { SingerId: '1', FirstName: 'Marc', LastName: 'Richards' },
-    { SingerId: '2', FirstName: 'Catalina', LastName: 'Smith' },
-    { SingerId: '3', FirstName: 'Alice', LastName: 'Trentor' },
-    { SingerId: '4', FirstName: 'Lea', LastName: 'Martin' },
-    { SingerId: '5', FirstName: 'David', LastName: 'Lomond' }
-  ])
-  .then(() => {
-    // Inserts rows into the Albums table
-    albumsTable.insert([
-      { SingerId: '1', AlbumId: '1', AlbumTitle: 'Go, Go, Go' },
-      { SingerId: '1', AlbumId: '2', AlbumTitle: 'Total Junk' },
-      { SingerId: '2', AlbumId: '1', AlbumTitle: 'Green' },
-      { SingerId: '2', AlbumId: '2', AlbumTitle: 'Forever Hold your Peace' },
-      { SingerId: '2', AlbumId: '3', AlbumTitle: 'Terrified' }
-    ]);
-  })
-  .then(() => {
-    console.log('Inserted data.');
-  });
+  singersTable
+    .insert([
+      {SingerId: '1', FirstName: 'Marc', LastName: 'Richards'},
+      {SingerId: '2', FirstName: 'Catalina', LastName: 'Smith'},
+      {SingerId: '3', FirstName: 'Alice', LastName: 'Trentor'},
+      {SingerId: '4', FirstName: 'Lea', LastName: 'Martin'},
+      {SingerId: '5', FirstName: 'David', LastName: 'Lomond'},
+    ])
+    .then(() => {
+      // Inserts rows into the Albums table
+      albumsTable.insert([
+        {SingerId: '1', AlbumId: '1', AlbumTitle: 'Go, Go, Go'},
+        {SingerId: '1', AlbumId: '2', AlbumTitle: 'Total Junk'},
+        {SingerId: '2', AlbumId: '1', AlbumTitle: 'Green'},
+        {SingerId: '2', AlbumId: '2', AlbumTitle: 'Forever Hold your Peace'},
+        {SingerId: '2', AlbumId: '3', AlbumTitle: 'Terrified'},
+      ]);
+    })
+    .then(() => {
+      console.log('Inserted data.');
+    });
   // [END insert_data]
 }
 
-function queryData (instanceId, databaseId) {
+function queryData(instanceId, databaseId) {
   // [START query_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -109,23 +111,25 @@ function queryData (instanceId, databaseId) {
   const database = instance.database(databaseId);
 
   const query = {
-    sql: 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums'
+    sql: 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums',
   };
 
   // Queries rows from the Albums table
-  database.run(query)
-    .then((results) => {
-      const rows = results[0];
+  database.run(query).then(results => {
+    const rows = results[0];
 
-      rows.forEach((row) => {
-        const json = row.toJSON();
-        console.log(`SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`);
-      });
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+          .value}, AlbumTitle: ${json.AlbumTitle}`
+      );
     });
+  });
   // [END query_data]
 }
 
-function readData (instanceId, databaseId) {
+function readData(instanceId, databaseId) {
   // [START read_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -147,23 +151,25 @@ function readData (instanceId, databaseId) {
   const query = {
     columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
     keySet: {
-      all: true
-    }
+      all: true,
+    },
   };
 
-  albumsTable.read(query)
-    .then((results) => {
-      const rows = results[0];
+  albumsTable.read(query).then(results => {
+    const rows = results[0];
 
-      rows.forEach((row) => {
-        const json = row.toJSON();
-        console.log(`SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`);
-      });
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+          .value}, AlbumTitle: ${json.AlbumTitle}`
+      );
     });
+  });
   // [END read_data]
 }
 
-function readStaleData (instanceId, databaseId) {
+function readStaleData(instanceId, databaseId) {
   // [START read_stale_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -185,28 +191,29 @@ function readStaleData (instanceId, databaseId) {
   const query = {
     columns: ['SingerId', 'AlbumId', 'AlbumTitle', 'MarketingBudget'],
     keySet: {
-      all: true
-    }
+      all: true,
+    },
   };
 
   const options = {
     // Guarantees that all writes committed more than 10 seconds ago are visible
-    exactStaleness: 10
+    exactStaleness: 10,
   };
 
-  albumsTable.read(query, options)
-    .then((results) => {
-      const rows = results[0];
+  albumsTable.read(query, options).then(results => {
+    const rows = results[0];
 
-      rows.forEach((row) => {
-        const json = row.toJSON();
-        const id = json.SingerId.value;
-        const album = json.AlbumId.value;
-        const title = json.AlbumTitle;
-        const budget = json.MarketingBudget ? json.MarketingBudget.value : '';
-        console.log(`SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`);
-      });
+    rows.forEach(row => {
+      const json = row.toJSON();
+      const id = json.SingerId.value;
+      const album = json.AlbumId.value;
+      const title = json.AlbumTitle;
+      const budget = json.MarketingBudget ? json.MarketingBudget.value : '';
+      console.log(
+        `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
+      );
     });
+  });
   // [END read_stale_data]
 }
 
@@ -216,31 +223,31 @@ const cli = require(`yargs`)
     `update <instanceName> <databaseName>`,
     `Modifies existing rows of data in an example Cloud Spanner table.`,
     {},
-    (opts) => updateData(opts.instanceName, opts.databaseName)
+    opts => updateData(opts.instanceName, opts.databaseName)
   )
   .command(
     `query <instanceName> <databaseName>`,
     `Executes a read-only SQL query against an example Cloud Spanner table.`,
     {},
-    (opts) => queryData(opts.instanceName, opts.databaseName)
+    opts => queryData(opts.instanceName, opts.databaseName)
   )
   .command(
     `insert <instanceName> <databaseName>`,
     `Inserts new rows of data into an example Cloud Spanner table.`,
     {},
-    (opts) => insertData(opts.instanceName, opts.databaseName)
+    opts => insertData(opts.instanceName, opts.databaseName)
   )
   .command(
     `read <instanceName> <databaseName>`,
     `Reads data in an example Cloud Spanner table.`,
     {},
-    (opts) => readData(opts.instanceName, opts.databaseName)
+    opts => readData(opts.instanceName, opts.databaseName)
   )
   .command(
     `read-stale <instanceName> <databaseName>`,
     `Reads stale data in an example Cloud Spanner table.`,
     {},
-    (opts) => readStaleData(opts.instanceName, opts.databaseName)
+    opts => readStaleData(opts.instanceName, opts.databaseName)
   )
   .example(`node $0 update "my-instance" "my-database"`)
   .example(`node $0 query "my-instance" "my-database"`)

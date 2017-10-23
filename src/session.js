@@ -150,7 +150,7 @@ function Session(database, name) {
      *   var apiResponse = data[0];
      * });
      */
-    get: true
+    get: true,
   };
 
   commonGrpc.ServiceObject.call(this, {
@@ -168,7 +168,7 @@ function Session(database, name) {
 
         callback(null, self, apiResponse);
       });
-    }
+    },
   });
 }
 
@@ -221,9 +221,12 @@ Session.formatName_ = function(databaseName, name) {
  * });
  */
 Session.prototype.delete = function(callback) {
-  return this.api.Spanner.deleteSession({
-    name: this.formattedName_
-  }, callback);
+  return this.api.Spanner.deleteSession(
+    {
+      name: this.formattedName_,
+    },
+    callback
+  );
 };
 
 /**
@@ -246,9 +249,12 @@ Session.prototype.delete = function(callback) {
  * });
  */
 Session.prototype.getMetadata = function(callback) {
-  return this.api.Spanner.getSession({
-    name: this.formattedName_
-  }, callback);
+  return this.api.Spanner.getSession(
+    {
+      name: this.formattedName_,
+    },
+    callback
+  );
 };
 
 /**
@@ -266,10 +272,13 @@ Session.prototype.getMetadata = function(callback) {
  * });
  */
 Session.prototype.keepAlive = function(callback) {
-  return this.api.Spanner.executeSql({
-    session: this.formattedName_,
-    sql: 'SELECT 1'
-  }, callback);
+  return this.api.Spanner.executeSql(
+    {
+      session: this.formattedName_,
+      sql: 'SELECT 1',
+    },
+    callback
+  );
 };
 
 /**
@@ -293,11 +302,7 @@ Session.prototype.transaction = function(id) {
  * that a callback is omitted.
  */
 common.util.promisifyAll(Session, {
-  exclude: [
-    'delete',
-    'getMetadata',
-    'transaction'
-  ]
+  exclude: ['delete', 'getMetadata', 'transaction'],
 });
 
 module.exports = Session;

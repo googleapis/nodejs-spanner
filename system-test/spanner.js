@@ -18,6 +18,7 @@
 
 var assert = require('assert');
 var async = require('async');
+var Buffer = require('safe-buffer').Buffer;
 var concat = require('concat-stream');
 var crypto = require('crypto');
 var exec = require('methmeth');
@@ -26,29 +27,34 @@ var is = require('is');
 var multiline = require('multiline');
 var uuid = require('uuid');
 
-var env = require('../../../system-test/env.js');
 var Spanner = require('../');
 
 var PREFIX = 'gcloud-tests-';
-var spanner = new Spanner(env);
+var spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
-(env.projectId ? describe : describe.skip)('Spanner', function() {
+describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
 
   before(function(done) {
-    async.series([
-      deleteTestResources,
+    async.series(
+      [
+        deleteTestResources,
 
-      function(next) {
-        instance.create({
-          config: 'regional-us-central1',
-          nodes: 1,
-          labels: {
-            'gcloud-tests': 'true'
-          }
-        }, execAfterOperationComplete(next));
-      }
-    ], done);
+        function(next) {
+          instance.create(
+            {
+              config: 'regional-us-central1',
+              nodes: 1,
+              labels: {
+                'gcloud-tests': 'true',
+              },
+            },
+            execAfterOperationComplete(next)
+          );
+        },
+      ],
+      done
+    );
   });
 
   after(deleteTestResources);
@@ -68,25 +74,30 @@ var spanner = new Spanner(env);
           return;
         }
 
-        database.run({
-          sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
-          params: {
-            id: id
-          }
-        }, function(err, rows) {
-          if (err) {
-            callback(err);
-            return;
-          }
+        database.run(
+          {
+            sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
+            params: {
+              id: id,
+            },
+          },
+          function(err, rows) {
+            if (err) {
+              callback(err);
+              return;
+            }
 
-          callback(null, rows.shift());
-        });
+            callback(null, rows.shift());
+          }
+        );
       });
     }
 
     before(function(done) {
-      database.create({
-        schema: multiline.stripIndent(function() {/*
+      database.create(
+        {
+          schema: multiline.stripIndent(function() {
+            /*
           CREATE TABLE TypeCheck (
             Key STRING(MAX) NOT NULL,
             BytesValue BYTES(MAX),
@@ -104,8 +115,11 @@ var spanner = new Spanner(env);
             StringArray ARRAY<STRING(MAX)>,
             TimestampArray ARRAY<TIMESTAMP>
           ) PRIMARY KEY (Key)
-        */})
-      }, execAfterOperationComplete(done));
+        */
+          }),
+        },
+        execAfterOperationComplete(done)
+      );
     });
 
     describe('uneven rows', function() {
@@ -114,37 +128,40 @@ var spanner = new Spanner(env);
           {
             Key: generateName('id'),
             BoolValue: true,
-            IntValue: spanner.int(10)
+            IntValue: spanner.int(10),
           },
           {
             Key: generateName('id'),
             IntValue: spanner.int(10),
-            BoolValue: true
-          }
+            BoolValue: true,
+          },
         ];
 
         table.insert(data, function(err) {
           assert.ifError(err);
 
-          database.run({
-            sql: `SELECT * FROM \`${table.name}\` WHERE Key = @a OR KEY = @b`,
-            params: {
-              a: data[0].Key,
-              b: data[1].Key
+          database.run(
+            {
+              sql: `SELECT * FROM \`${table.name}\` WHERE Key = @a OR KEY = @b`,
+              params: {
+                a: data[0].Key,
+                b: data[1].Key,
+              },
+            },
+            function(err, rows) {
+              assert.ifError(err);
+
+              var row1 = rows[0].toJSON();
+              assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
+              assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
+
+              var row2 = rows[1].toJSON();
+              assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
+              assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
+
+              done();
             }
-          }, function(err, rows) {
-            assert.ifError(err);
-
-            var row1 = rows[0].toJSON();
-            assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
-            assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
-
-            var row2 = rows[1].toJSON();
-            assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
-            assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
-
-            done();
-          });
+          );
         });
       });
     });
@@ -163,16 +180,16 @@ var spanner = new Spanner(env);
                   {
                     name: '',
                     value: {
-                      value: '1'
-                    }
+                      value: '1',
+                    },
                   },
                   {
                     name: '',
-                    value: 'hello'
-                  }
-                ]
-              ]
-            }
+                    value: 'hello',
+                  },
+                ],
+              ],
+            },
           ]);
           done();
         });
@@ -188,8 +205,8 @@ var spanner = new Spanner(env);
             {
               name: 'id',
               value: {
-                value: '1'
-              }
+                value: '1',
+              },
             },
             {
               name: '',
@@ -198,16 +215,16 @@ var spanner = new Spanner(env);
                   {
                     name: 'id',
                     value: {
-                      value: '2'
-                    }
+                      value: '2',
+                    },
                   },
                   {
                     name: 'name',
-                    value: 'hello'
-                  }
-                ]
-              ]
-            }
+                    value: 'hello',
+                  },
+                ],
+              ],
+            },
           ]);
           done();
         });
@@ -216,7 +233,7 @@ var spanner = new Spanner(env);
 
     describe('booleans', function() {
       it('should write boolean values', function(done) {
-        insert({ BoolValue: true }, function(err, row) {
+        insert({BoolValue: true}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().BoolValue, true);
           done();
@@ -224,7 +241,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null boolean values', function(done) {
-        insert({ BoolValue: null }, function(err, row) {
+        insert({BoolValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().BoolValue, null);
           done();
@@ -232,7 +249,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty boolean array values', function(done) {
-        insert({ BoolArray: [] }, function(err, row) {
+        insert({BoolArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().BoolArray, []);
           done();
@@ -240,7 +257,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null boolean array values', function(done) {
-        insert({ BoolArray: [null] }, function(err, row) {
+        insert({BoolArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().BoolArray, [null]);
           done();
@@ -248,7 +265,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write boolean array values', function(done) {
-        insert({ BoolArray: [true, false] }, function(err, row) {
+        insert({BoolArray: [true, false]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().BoolArray, [true, false]);
           done();
@@ -258,7 +275,7 @@ var spanner = new Spanner(env);
 
     describe('int64s', function() {
       it('should write int64 values', function(done) {
-        insert({ IntValue: spanner.int(1234) }, function(err, row) {
+        insert({IntValue: spanner.int(1234)}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().IntValue, spanner.int(1234));
           done();
@@ -266,18 +283,17 @@ var spanner = new Spanner(env);
       });
 
       it('should write null int64 values', function(done) {
-        insert({ IntValue: null }, function(err, row) {
+        insert({IntValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().IntValue, null);
           done();
         });
       });
 
-
       it('should handle out of bounds integers', function(done) {
         var value = '9223372036854775807';
 
-        insert({ IntValue: value }, function(err, row) {
+        insert({IntValue: value}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().IntValue.value, value);
           done();
@@ -285,7 +301,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty in64 array values', function(done) {
-        insert({ IntArray: [] }, function(err, row) {
+        insert({IntArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().IntArray, []);
           done();
@@ -293,7 +309,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null int64 array values', function(done) {
-        insert({ IntArray: [null] }, function(err, row) {
+        insert({IntArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().IntArray, [null]);
           done();
@@ -303,7 +319,7 @@ var spanner = new Spanner(env);
       it('should write int64 array values', function(done) {
         var values = [1, 2, 3];
 
-        insert({ IntArray: values }, function(err, row) {
+        insert({IntArray: values}, function(err, row) {
           assert.ifError(err);
 
           var expected = values.map(spanner.int);
@@ -315,7 +331,7 @@ var spanner = new Spanner(env);
 
     describe('float64s', function() {
       it('should write float64 values', function(done) {
-        insert({ FloatValue: spanner.float(8.2) }, function(err, row) {
+        insert({FloatValue: spanner.float(8.2)}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().FloatValue, spanner.float(8.2));
           done();
@@ -323,7 +339,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null float64 values', function(done) {
-        insert({ FloatValue: null }, function(err, row) {
+        insert({FloatValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().FloatValue, null);
           done();
@@ -331,7 +347,7 @@ var spanner = new Spanner(env);
       });
 
       it('should accept a Float object with an Int-like value', function(done) {
-        insert({ FloatValue: spanner.float(8) }, function(err, row) {
+        insert({FloatValue: spanner.float(8)}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().FloatValue, spanner.float(8));
           done();
@@ -339,7 +355,7 @@ var spanner = new Spanner(env);
       });
 
       it('should handle Infinity', function(done) {
-        insert({ FloatValue: Infinity }, function(err, row) {
+        insert({FloatValue: Infinity}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().FloatValue, spanner.float(Infinity));
           done();
@@ -347,7 +363,7 @@ var spanner = new Spanner(env);
       });
 
       it('should handle -Infinity', function(done) {
-        insert({ FloatValue: -Infinity }, function(err, row) {
+        insert({FloatValue: -Infinity}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().FloatValue, spanner.float(-Infinity));
           done();
@@ -355,7 +371,7 @@ var spanner = new Spanner(env);
       });
 
       it('should handle NaN', function(done) {
-        insert({ FloatValue: NaN }, function(err, row) {
+        insert({FloatValue: NaN}, function(err, row) {
           assert.ifError(err);
           assert(isNaN(row.toJSON().FloatValue));
           done();
@@ -363,7 +379,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty float64 array values', function(done) {
-        insert({ FloatArray: [] }, function(err, row) {
+        insert({FloatArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().FloatArray, []);
           done();
@@ -371,7 +387,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null float64 array values', function(done) {
-        insert({ FloatArray: [null] }, function(err, row) {
+        insert({FloatArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().FloatArray, [null]);
           done();
@@ -381,7 +397,7 @@ var spanner = new Spanner(env);
       it('should write float64 array values', function(done) {
         var values = [1.2, 2.3, 3.4];
 
-        insert({ FloatArray: values }, function(err, row) {
+        insert({FloatArray: values}, function(err, row) {
           assert.ifError(err);
 
           var expected = values.map(spanner.float);
@@ -393,7 +409,7 @@ var spanner = new Spanner(env);
 
     describe('strings', function() {
       it('should write string values', function(done) {
-        insert({ StringValue: 'abc' }, function(err, row) {
+        insert({StringValue: 'abc'}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().StringValue, 'abc');
           done();
@@ -401,7 +417,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null string values', function(done) {
-        insert({ StringValue: null }, function(err, row) {
+        insert({StringValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().StringValue, null);
           done();
@@ -409,7 +425,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty string array values', function(done) {
-        insert({ StringArray: [] }, function(err, row) {
+        insert({StringArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().StringArray, []);
           done();
@@ -417,7 +433,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null string array values', function(done) {
-        insert({ StringArray: [null] }, function(err, row) {
+        insert({StringArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().StringArray, [null]);
           done();
@@ -425,7 +441,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write string array values', function(done) {
-        insert({ StringArray: ['abc', 'def'] }, function(err, row) {
+        insert({StringArray: ['abc', 'def']}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().StringArray, ['abc', 'def']);
           done();
@@ -435,15 +451,15 @@ var spanner = new Spanner(env);
 
     describe('bytes', function() {
       it('should write bytes values', function(done) {
-        insert({ BytesValue: new Buffer('abc') }, function(err, row) {
+        insert({BytesValue: Buffer.from('abc')}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesValue, new Buffer('abc'));
+          assert.deepEqual(row.toJSON().BytesValue, Buffer.from('abc'));
           done();
         });
       });
 
       it('should write null bytes values', function(done) {
-        insert({ BytesValue: null }, function(err, row) {
+        insert({BytesValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().BytesValue, null);
           done();
@@ -451,7 +467,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty bytes array values', function(done) {
-        insert({ BytesArray: [] }, function(err, row) {
+        insert({BytesArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().BytesArray, []);
           done();
@@ -459,7 +475,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null bytes array values', function(done) {
-        insert({ BytesArray: [null] }, function(err, row) {
+        insert({BytesArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().BytesArray, [null]);
           done();
@@ -467,12 +483,9 @@ var spanner = new Spanner(env);
       });
 
       it('should write bytes array values', function(done) {
-        var values = [
-          new Buffer('a'),
-          new Buffer('b')
-        ];
+        var values = [Buffer.from('a'), Buffer.from('b')];
 
-        insert({ BytesArray: values }, function(err, row) {
+        insert({BytesArray: values}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().BytesArray, values);
           done();
@@ -484,7 +497,7 @@ var spanner = new Spanner(env);
       it('should write timestamp values', function(done) {
         var date = new Date();
 
-        insert({ TimestampValue: date }, function(err, row) {
+        insert({TimestampValue: date}, function(err, row) {
           assert.ifError(err);
           var time = row.toJSON().TimestampValue.getTime();
           assert.strictEqual(time, date.getTime());
@@ -493,7 +506,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null timestamp values', function(done) {
-        insert({ TimestampValue: null }, function(err, row) {
+        insert({TimestampValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().TimestampValue, null);
           done();
@@ -501,7 +514,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty timestamp array values', function(done) {
-        insert({ TimestampArray: [] }, function(err, row) {
+        insert({TimestampArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().TimestampArray, []);
           done();
@@ -509,7 +522,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null timestamp array values', function(done) {
-        insert({ TimestampArray: [null] }, function(err, row) {
+        insert({TimestampArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().TimestampArray, [null]);
           done();
@@ -517,12 +530,9 @@ var spanner = new Spanner(env);
       });
 
       it('should write timestamp array values', function(done) {
-        var values = [
-          new Date(),
-          new Date('3-3-1933')
-        ];
+        var values = [new Date(), new Date('3-3-1933')];
 
-        insert({ TimestampArray: values }, function(err, row) {
+        insert({TimestampArray: values}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().TimestampArray, values);
           done();
@@ -534,7 +544,7 @@ var spanner = new Spanner(env);
       it('should write date values', function(done) {
         var date = spanner.date();
 
-        insert({ DateValue: date }, function(err, row) {
+        insert({DateValue: date}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(spanner.date(row.toJSON().DateValue), date);
           done();
@@ -542,7 +552,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null date values', function(done) {
-        insert({ DateValue: null }, function(err, row) {
+        insert({DateValue: null}, function(err, row) {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().DateValue, null);
           done();
@@ -550,7 +560,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write empty date array values', function(done) {
-        insert({ DateArray: [] }, function(err, row) {
+        insert({DateArray: []}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().DateArray, []);
           done();
@@ -558,7 +568,7 @@ var spanner = new Spanner(env);
       });
 
       it('should write null date array values', function(done) {
-        insert({ DateArray: [null] }, function(err, row) {
+        insert({DateArray: [null]}, function(err, row) {
           assert.ifError(err);
           assert.deepEqual(row.toJSON().DateArray, [null]);
           done();
@@ -566,12 +576,9 @@ var spanner = new Spanner(env);
       });
 
       it('should write date array values', function(done) {
-        var values = [
-          spanner.date(),
-          spanner.date('3-3-1933')
-        ];
+        var values = [spanner.date(), spanner.date('3-3-1933')];
 
-        insert({ DateArray: values }, function(err, row) {
+        insert({DateArray: values}, function(err, row) {
           assert.ifError(err);
 
           var returnedValues = row.toJSON().DateArray.map(spanner.date);
@@ -583,12 +590,11 @@ var spanner = new Spanner(env);
     });
 
     it('should throw an error for incorrect value types', function(done) {
-      table.insert({ BoolValue: 'abc' }, function(err) {
+      table.insert({BoolValue: 'abc'}, function(err) {
         assert(err);
         done();
       });
     });
-
   });
 
   describe('Instances', function() {
@@ -609,7 +615,8 @@ var spanner = new Spanner(env);
     });
 
     it('should list the instances in promise mode', function(done) {
-      spanner.getInstances()
+      spanner
+        .getInstances()
         .then(function(data) {
           var instances = data[0];
           assert(instances.length > 0);
@@ -619,28 +626,34 @@ var spanner = new Spanner(env);
     });
 
     it('should list the instances in stream mode', function(done) {
-      spanner.getInstancesStream()
+      spanner
+        .getInstancesStream()
         .on('error', done)
-        .pipe(concat(function(instances) {
-          assert(instances.length > 0);
-          done();
-        }));
+        .pipe(
+          concat(function(instances) {
+            assert(instances.length > 0);
+            done();
+          })
+        );
     });
 
     it('should update the metadata', function(done) {
       var newData = {
-        displayName: 'new-display-name'
+        displayName: 'new-display-name',
       };
 
-      instance.setMetadata(newData, execAfterOperationComplete(function(err) {
-        assert.ifError(err);
-
-        instance.getMetadata(function(err, metadata) {
+      instance.setMetadata(
+        newData,
+        execAfterOperationComplete(function(err) {
           assert.ifError(err);
-          assert.strictEqual(metadata.displayName, newData.displayName);
-          done();
-        });
-      }));
+
+          instance.getMetadata(function(err, metadata) {
+            assert.ifError(err);
+            assert.strictEqual(metadata.displayName, newData.displayName);
+            done();
+          });
+        })
+      );
     });
   });
 
@@ -654,7 +667,8 @@ var spanner = new Spanner(env);
     });
 
     it('should list the instanceConfigs in promise mode', function(done) {
-      spanner.getInstanceConfigs()
+      spanner
+        .getInstanceConfigs()
         .then(function(data) {
           var instanceConfigs = data[0];
           assert(instanceConfigs.length > 0);
@@ -664,12 +678,15 @@ var spanner = new Spanner(env);
     });
 
     it('should list the instanceConfigs in stream mode', function(done) {
-      spanner.getInstanceConfigsStream()
+      spanner
+        .getInstanceConfigsStream()
         .on('error', done)
-        .pipe(concat(function(instanceConfigs) {
-          assert(instanceConfigs.length > 0);
-          done();
-        }));
+        .pipe(
+          concat(function(instanceConfigs) {
+            assert(instanceConfigs.length > 0);
+            done();
+          })
+        );
     });
   });
 
@@ -708,7 +725,8 @@ var spanner = new Spanner(env);
     });
 
     it('should list the databases in promise mode', function(done) {
-      instance.getDatabases()
+      instance
+        .getDatabases()
         .then(function(data) {
           var databases = data[0];
           assert(databases.length > 0);
@@ -718,35 +736,41 @@ var spanner = new Spanner(env);
     });
 
     it('should list the databases in stream mode', function(done) {
-      instance.getDatabasesStream()
+      instance
+        .getDatabasesStream()
         .on('error', done)
-        .pipe(concat(function(databases) {
-          assert(databases.length > 0);
-          done();
-        }));
+        .pipe(
+          concat(function(databases) {
+            assert(databases.length > 0);
+            done();
+          })
+        );
     });
 
     it('should create a table', function(done) {
-      var createTableStatement = multiline.stripIndent(function() {/*
+      var createTableStatement = multiline.stripIndent(function() {
+        /*
         CREATE TABLE Singers (
           SingerId INT64 NOT NULL,
           FirstName STRING(1024),
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
         ) PRIMARY KEY(SingerId)
-      */});
+      */
+      });
 
-      database.updateSchema([
-        createTableStatement
-      ], execAfterOperationComplete(function(err) {
-        assert.ifError(err);
-
-        database.getSchema(function(err, statements) {
+      database.updateSchema(
+        [createTableStatement],
+        execAfterOperationComplete(function(err) {
           assert.ifError(err);
-          assert.deepEqual(statements, [createTableStatement]);
-          done();
-        });
-      }));
+
+          database.getSchema(function(err, statements) {
+            assert.ifError(err);
+            assert.deepEqual(statements, [createTableStatement]);
+            done();
+          });
+        })
+      );
     });
   });
 
@@ -755,21 +779,29 @@ var spanner = new Spanner(env);
     var session = database.session_();
 
     before(function(done) {
-      async.series([
-        function(next) {
-          database.create({
-            schema: multiline.stripIndent(function() {/*
+      async.series(
+        [
+          function(next) {
+            database.create(
+              {
+                schema: multiline.stripIndent(function() {
+                  /*
               CREATE TABLE Singers (
                 SingerId STRING(1024) NOT NULL,
                 Name STRING(1024),
               ) PRIMARY KEY(SingerId)
-            */})
-          }, execAfterOperationComplete(next));
-        },
-        function(next) {
-          session.create(next);
-        },
-      ], done);
+            */
+                }),
+              },
+              execAfterOperationComplete(next)
+            );
+          },
+          function(next) {
+            session.create(next);
+          },
+        ],
+        done
+      );
     });
 
     after(function(done) {
@@ -805,10 +837,13 @@ var spanner = new Spanner(env);
     var table = database.table('Singers');
 
     before(function() {
-      return database.create()
+      return database
+        .create()
         .then(onPromiseOperationComplete)
         .then(function() {
-          return table.create(multiline.stripIndent(function() {/*
+          return table.create(
+            multiline.stripIndent(function() {
+              /*
             CREATE TABLE Singers (
               SingerId STRING(1024) NOT NULL,
               Name STRING(1024),
@@ -821,13 +856,16 @@ var spanner = new Spanner(env);
               PhoneNumbers ARRAY<INT64>,
               HasGear BOOL,
             ) PRIMARY KEY(SingerId)
-          */}));
+          */
+            })
+          );
         })
         .then(onPromiseOperationComplete);
     });
 
     after(function() {
-      return table.delete()
+      return table
+        .delete()
         .then(onPromiseOperationComplete)
         .then(function() {
           return database.delete();
@@ -837,71 +875,40 @@ var spanner = new Spanner(env);
     it('should throw an error for non-existant tables', function(done) {
       var table = database.table(generateName('nope'));
 
-      table.insert({
-        SingerId: generateName('id')
-      }, function(err) {
-        assert.strictEqual(err.code, 5);
-        done();
-      });
+      table.insert(
+        {
+          SingerId: generateName('id'),
+        },
+        function(err) {
+          assert.strictEqual(err.code, 5);
+          done();
+        }
+      );
     });
 
     it('should throw an error for non-existant columns', function(done) {
-      table.insert({
-        SingerId: generateName('id'),
-        Nope: 'abc'
-      }, function(err) {
-        assert.strictEqual(err.code, 5);
-        done();
-      });
+      table.insert(
+        {
+          SingerId: generateName('id'),
+          Nope: 'abc',
+        },
+        function(err) {
+          assert.strictEqual(err.code, 5);
+          done();
+        }
+      );
     });
 
     it('should read rows as a stream', function(done) {
       var id = generateName('id');
       var name = generateName('name');
 
-      table.insert({
-        SingerId: id,
-        Name: name
-      }, function(err) {
-        assert.ifError(err);
-
-        var rows = [];
-
-        table
-          .createReadStream({
-            keys: [id],
-            columns: ['SingerId', 'name']
-          })
-          .on('error', done)
-          .on('data', function(row) {
-            rows.push(row);
-          })
-          .on('end', function() {
-            rows = rows.map(exec('toJSON'));
-
-            assert.deepEqual(rows, [
-              {
-                SingerId: id,
-                Name: name
-              }
-            ]);
-
-            done();
-          });
-      });
-    });
-
-    it('should insert and delete a row', function(done) {
-      var id = generateName('id');
-      var name = generateName('name');
-
-      table.insert({
-        SingerId: id,
-        Name: name
-      }, function(err) {
-        assert.ifError(err);
-
-        table.deleteRows([id], function(err) {
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
           assert.ifError(err);
 
           var rows = [];
@@ -909,18 +916,61 @@ var spanner = new Spanner(env);
           table
             .createReadStream({
               keys: [id],
-              columns: ['SingerId']
+              columns: ['SingerId', 'name'],
             })
             .on('error', done)
             .on('data', function(row) {
               rows.push(row);
             })
             .on('end', function() {
-              assert.strictEqual(rows.length, 0);
+              rows = rows.map(exec('toJSON'));
+
+              assert.deepEqual(rows, [
+                {
+                  SingerId: id,
+                  Name: name,
+                },
+              ]);
+
               done();
             });
-        });
-      });
+        }
+      );
+    });
+
+    it('should insert and delete a row', function(done) {
+      var id = generateName('id');
+      var name = generateName('name');
+
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
+          assert.ifError(err);
+
+          table.deleteRows([id], function(err) {
+            assert.ifError(err);
+
+            var rows = [];
+
+            table
+              .createReadStream({
+                keys: [id],
+                columns: ['SingerId'],
+              })
+              .on('error', done)
+              .on('data', function(row) {
+                rows.push(row);
+              })
+              .on('end', function() {
+                assert.strictEqual(rows.length, 0);
+                done();
+              });
+          });
+        }
+      );
     });
 
     it('should insert and delete multiple rows', function(done) {
@@ -929,38 +979,41 @@ var spanner = new Spanner(env);
 
       var name = generateName('name');
 
-      table.insert([
-        {
-          SingerId: id,
-          Name: name
-        },
-        {
-          SingerId: id2,
-          Name: name
-        }
-      ], function(err) {
-        assert.ifError(err);
-
-        table.deleteRows([id, id2], function(err) {
+      table.insert(
+        [
+          {
+            SingerId: id,
+            Name: name,
+          },
+          {
+            SingerId: id2,
+            Name: name,
+          },
+        ],
+        function(err) {
           assert.ifError(err);
 
-          var rows = [];
+          table.deleteRows([id, id2], function(err) {
+            assert.ifError(err);
 
-          table
-            .createReadStream({
-              keys: [id, id2],
-              columns: ['SingerId']
-            })
-            .on('error', done)
-            .on('data', function(row) {
-              rows.push(row);
-            })
-            .on('end', function() {
-              assert.strictEqual(rows.length, 0);
-              done();
-            });
-        });
-      });
+            var rows = [];
+
+            table
+              .createReadStream({
+                keys: [id, id2],
+                columns: ['SingerId'],
+              })
+              .on('error', done)
+              .on('data', function(row) {
+                rows.push(row);
+              })
+              .on('end', function() {
+                assert.strictEqual(rows.length, 0);
+                done();
+              });
+          });
+        }
+      );
     });
 
     it('should insert and delete multiple composite key rows', function() {
@@ -972,35 +1025,34 @@ var spanner = new Spanner(env);
 
       var table = database.table('SingersComposite');
 
-      var keys = [
-        [id1, name1],
-        [id2, name2]
-      ];
+      var keys = [[id1, name1], [id2, name2]];
 
       return table
-        .create(`
+        .create(
+          `
           CREATE TABLE SingersComposite (
             SingerId INT64 NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId, Name)
-        `)
+        `
+        )
         .then(onPromiseOperationComplete)
         .then(function() {
           return table.insert([
             {
               SingerId: id1,
-              Name: name1
+              Name: name1,
             },
             {
               SingerId: id2,
-              Name: name2
-            }
+              Name: name2,
+            },
           ]);
         })
         .then(function() {
           return table.read({
             keys: keys,
-            columns: ['SingerId', 'Name']
+            columns: ['SingerId', 'Name'],
           });
         })
         .then(function(data) {
@@ -1013,7 +1065,7 @@ var spanner = new Spanner(env);
         .then(function() {
           return table.read({
             keys: keys,
-            columns: ['SingerId', 'Name']
+            columns: ['SingerId', 'Name'],
           });
         })
         .then(function(data) {
@@ -1029,45 +1081,48 @@ var spanner = new Spanner(env);
       var id2 = generateName('id');
       var name2 = generateName('name');
 
-      table.insert([
-        {
-          SingerId: id1,
-          Name: name1
-        },
-        {
-          SingerId: id2,
-          Name: name2
-        }
-      ], function(err) {
-        assert.ifError(err);
-
-        database.run('SELECT * FROM Singers', function(err, rows) {
+      table.insert(
+        [
+          {
+            SingerId: id1,
+            Name: name1,
+          },
+          {
+            SingerId: id2,
+            Name: name2,
+          },
+        ],
+        function(err) {
           assert.ifError(err);
 
-          // We just want the two most recent ones.
-          rows.splice(0, rows.length - 2);
+          database.run('SELECT * FROM Singers', function(err, rows) {
+            assert.ifError(err);
 
-          rows = rows.map(exec('toJSON'));
+            // We just want the two most recent ones.
+            rows.splice(0, rows.length - 2);
 
-          assert.strictEqual(rows[0].SingerId, id1);
-          assert.strictEqual(rows[0].Name, name1);
+            rows = rows.map(exec('toJSON'));
 
-          assert.strictEqual(rows[1].SingerId, id2);
-          assert.strictEqual(rows[1].Name, name2);
+            assert.strictEqual(rows[0].SingerId, id1);
+            assert.strictEqual(rows[0].Name, name1);
 
-          done();
-        });
-      });
+            assert.strictEqual(rows[1].SingerId, id2);
+            assert.strictEqual(rows[1].Name, name2);
+
+            done();
+          });
+        }
+      );
     });
 
     it('should insert then replace a row', function(done) {
       var originalRow = {
         SingerId: generateName('id'),
-        Name: generateName('name')
+        Name: generateName('name'),
       };
 
       var replacedRow = {
-        SingerId: originalRow.SingerId
+        SingerId: originalRow.SingerId,
       };
 
       table.insert(originalRow, function(err) {
@@ -1076,19 +1131,22 @@ var spanner = new Spanner(env);
         table.replace(replacedRow, function(err) {
           assert.ifError(err);
 
-          table.read({
-            keys: [originalRow.SingerId],
-            columns: Object.keys(originalRow)
-          }, function(err, rows) {
-            assert.ifError(err);
+          table.read(
+            {
+              keys: [originalRow.SingerId],
+              columns: Object.keys(originalRow),
+            },
+            function(err, rows) {
+              assert.ifError(err);
 
-            var row = rows[0].toJSON();
+              var row = rows[0].toJSON();
 
-            assert.strictEqual(row.SingerId, replacedRow.SingerId);
-            assert.strictEqual(row.Name, null);
+              assert.strictEqual(row.SingerId, replacedRow.SingerId);
+              assert.strictEqual(row.Name, null);
 
-            done();
-          });
+              done();
+            }
+          );
         });
       });
     });
@@ -1096,12 +1154,12 @@ var spanner = new Spanner(env);
     it('should insert then update a row', function(done) {
       var originalRow = {
         SingerId: generateName('id'),
-        Name: generateName('name')
+        Name: generateName('name'),
       };
 
       var updatedRow = {
         SingerId: originalRow.SingerId,
-        Name: generateName('name')
+        Name: generateName('name'),
       };
 
       table.insert(originalRow, function(err) {
@@ -1110,19 +1168,22 @@ var spanner = new Spanner(env);
         table.update(updatedRow, function(err) {
           assert.ifError(err);
 
-          table.read({
-            keys: [originalRow.SingerId],
-            columns: Object.keys(originalRow)
-          }, function(err, rows) {
-            assert.ifError(err);
+          table.read(
+            {
+              keys: [originalRow.SingerId],
+              columns: Object.keys(originalRow),
+            },
+            function(err, rows) {
+              assert.ifError(err);
 
-            var row = rows[0].toJSON();
+              var row = rows[0].toJSON();
 
-            assert.strictEqual(row.SingerId, updatedRow.SingerId);
-            assert.strictEqual(row.Name, updatedRow.Name);
+              assert.strictEqual(row.SingerId, updatedRow.SingerId);
+              assert.strictEqual(row.Name, updatedRow.Name);
 
-            done();
-          });
+              done();
+            }
+          );
         });
       });
     });
@@ -1134,11 +1195,11 @@ var spanner = new Spanner(env);
       var NAME = generateName('name');
       var FLOAT = 8.2;
       var INT = 2;
-      var INFO = new Buffer(generateName('info'));
+      var INFO = Buffer.from(generateName('info'));
       var CREATED = new Date();
       var DOB = Spanner.date(DATE);
       var ACCENTS = ['jamaican'];
-      var PHONE_NUMBERS = [123123123,234234234];
+      var PHONE_NUMBERS = [123123123, 234234234];
       var HAS_GEAR = true;
 
       var INSERT_ROW = {
@@ -1151,7 +1212,7 @@ var spanner = new Spanner(env);
         DOB: DOB,
         Accents: ACCENTS,
         PhoneNumbers: PHONE_NUMBERS,
-        HasGear: HAS_GEAR
+        HasGear: HAS_GEAR,
       };
 
       var EXPECTED_ROW = extend(true, {}, INSERT_ROW);
@@ -1160,7 +1221,7 @@ var spanner = new Spanner(env);
       EXPECTED_ROW.Int = Spanner.int(INT);
       EXPECTED_ROW.PhoneNumbers = [
         Spanner.int(PHONE_NUMBERS[0]),
-        Spanner.int(PHONE_NUMBERS[1])
+        Spanner.int(PHONE_NUMBERS[1]),
       ];
 
       before(function() {
@@ -1176,7 +1237,8 @@ var spanner = new Spanner(env);
       });
 
       it('should query in promise mode', function(done) {
-        database.run('SELECT * FROM Singers')
+        database
+          .run('SELECT * FROM Singers')
           .then(function(data) {
             var rows = data[0];
             assert.deepEqual(rows.shift().toJSON(), EXPECTED_ROW);
@@ -1188,7 +1250,8 @@ var spanner = new Spanner(env);
       it('should query in stream mode', function(done) {
         var row;
 
-        database.runStream('SELECT * FROM Singers')
+        database
+          .runStream('SELECT * FROM Singers')
           .on('error', done)
           .once('data', function(row_) {
             row = row_;
@@ -1212,11 +1275,13 @@ var spanner = new Spanner(env);
       });
 
       it('should query an array of structs', function(done) {
-        var query = multiline.stripIndent(function() {/*
+        var query = multiline.stripIndent(function() {
+          /*
           SELECT ARRAY(SELECT AS STRUCT C1, C2
             FROM (SELECT 'a' AS C1, 1 AS C2 UNION ALL SELECT 'b' AS C1, 2 AS C2)
             ORDER BY C1 ASC)
-        */});
+        */
+        });
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
@@ -1225,19 +1290,21 @@ var spanner = new Spanner(env);
           assert.strictEqual(values.length, 2);
 
           assert.strictEqual(values[0][0].value, 'a');
-          assert.deepEqual(values[0][1].value, { value: 1 });
+          assert.deepEqual(values[0][1].value, {value: 1});
 
           assert.strictEqual(values[1][0].value, 'b');
-          assert.deepEqual(values[1][1].value, { value: 2 });
+          assert.deepEqual(values[1][1].value, {value: 2});
 
           done();
         });
       });
 
       it('should query an empty array of structs', function(done) {
-        var query = multiline.stripIndent(function() {/*
+        var query = multiline.stripIndent(function() {
+          /*
           SELECT ARRAY(SELECT AS STRUCT * FROM (SELECT 'a', 1) WHERE 0 = 1)
-        */});
+        */
+        });
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
@@ -1252,8 +1319,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: true
-              }
+                v: true,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1267,11 +1334,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'bool'
-              }
+                v: 'bool',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1287,8 +1354,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1304,14 +1371,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'bool'
-                }
-              }
+                  child: 'bool',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1325,14 +1392,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'bool'
-                }
-              }
+                  child: 'bool',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1348,8 +1415,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: 1234
-              }
+                v: 1234,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1363,11 +1430,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'int64'
-              }
+                v: 'int64',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1383,15 +1450,15 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
 
               var expected = values.map(function(val) {
-                return is.number(val) ? { value: val } : val;
+                return is.number(val) ? {value: val} : val;
               });
 
               assert.deepEqual(rows[0][0].value, expected);
@@ -1405,14 +1472,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'int64'
-                }
-              }
+                  child: 'int64',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1426,14 +1493,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'int64'
-                }
-              }
+                  child: 'int64',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1449,8 +1516,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: 2.2
-              }
+                v: 2.2,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1464,11 +1531,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'float64'
-              }
+                v: 'float64',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1484,15 +1551,15 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
 
               var expected = values.map(function(val) {
-                return is.number(val) ? { value: val } : val;
+                return is.number(val) ? {value: val} : val;
               });
 
               assert.deepEqual(rows[0][0].value, expected);
@@ -1506,14 +1573,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'float64'
-                }
-              }
+                  child: 'float64',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1527,14 +1594,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'float64'
-                }
-              }
+                  child: 'float64',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1548,8 +1615,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: Infinity
-              }
+                v: Infinity,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1563,8 +1630,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: -Infinity
-              }
+                v: -Infinity,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1578,8 +1645,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: NaN
-              }
+                v: NaN,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1595,15 +1662,15 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
 
               var expected = values.map(function(val) {
-                return is.number(val) ? { value: val + '' } : val;
+                return is.number(val) ? {value: val + ''} : val;
               });
 
               assert.deepEqual(rows[0][0].value, expected);
@@ -1617,8 +1684,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: 'abc'
-              }
+                v: 'abc',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1632,11 +1699,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'string'
-              }
+                v: 'string',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1652,8 +1719,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1669,14 +1736,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'string'
-                }
-              }
+                  child: 'string',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1690,14 +1757,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'string'
-                }
-              }
+                  child: 'string',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1710,13 +1777,13 @@ var spanner = new Spanner(env);
 
         describe('bytes', function() {
           it('should bind the value', function(done) {
-            var buffer = new Buffer('abc');
+            var buffer = Buffer.from('abc');
 
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: buffer
-              }
+                v: buffer,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1730,11 +1797,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'bytes'
-              }
+                v: 'bytes',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1745,17 +1812,13 @@ var spanner = new Spanner(env);
           });
 
           it('should bind arrays', function(done) {
-            var values = [
-              new Buffer('a'),
-              new Buffer('b'),
-              null
-            ];
+            var values = [Buffer.from('a'), Buffer.from('b'), null];
 
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1771,14 +1834,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'bytes'
-                }
-              }
+                  child: 'bytes',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1792,14 +1855,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'bytes'
-                }
-              }
+                  child: 'bytes',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1817,8 +1880,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: timestamp
-              }
+                v: timestamp,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1832,11 +1895,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'timestamp'
-              }
+                v: 'timestamp',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1847,17 +1910,13 @@ var spanner = new Spanner(env);
           });
 
           it('should bind arrays', function(done) {
-            var values = [
-              new Date(),
-              new Date('3-3-1999'),
-              null
-            ];
+            var values = [new Date(), new Date('3-3-1999'), null];
 
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1873,14 +1932,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'timestamp'
-                }
-              }
+                  child: 'timestamp',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1894,14 +1953,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'timestamp'
-                }
-              }
+                  child: 'timestamp',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1919,8 +1978,8 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: date
-              }
+                v: date,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1937,11 +1996,11 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
-                v: 'date'
-              }
+                v: 'date',
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1955,14 +2014,14 @@ var spanner = new Spanner(env);
             var values = [
               spanner.date(),
               spanner.date(new Date('3-3-1999')),
-              null
+              null,
             ];
 
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
-              }
+                v: values,
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -1983,14 +2042,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: values
+                v: values,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'date'
-                }
-              }
+                  child: 'date',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -2004,14 +2063,14 @@ var spanner = new Spanner(env);
             var query = {
               sql: 'SELECT @v',
               params: {
-                v: null
+                v: null,
               },
               types: {
                 v: {
                   type: 'array',
-                  child: 'date'
-                }
-              }
+                  child: 'date',
+                },
+              },
             };
 
             database.run(query, function(err, rows) {
@@ -2031,7 +2090,7 @@ var spanner = new Spanner(env);
           StringValue: string(),
           StringArray: [string(), string(), string(), string()],
           BytesValue: bytes(),
-          BytesArray: [bytes(), bytes(), bytes(), bytes()]
+          BytesArray: [bytes(), bytes(), bytes(), bytes()],
         };
 
         function string() {
@@ -2049,11 +2108,14 @@ var spanner = new Spanner(env);
         }
 
         function base64ToBuffer(bytes) {
-          return new Buffer(bytes, 'base64');
+          return Buffer.from(bytes, 'base64');
         }
 
         before(function() {
-          return table.create(multiline.stripIndent(function() {/*
+          return table
+            .create(
+              multiline.stripIndent(function() {
+                /*
             CREATE TABLE LargeReads (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX),
@@ -2061,48 +2123,53 @@ var spanner = new Spanner(env);
               BytesValue BYTES(MAX),
               BytesArray ARRAY<BYTES(MAX)>
             ) PRIMARY KEY (Key)
-          */}))
-          .then(onPromiseOperationComplete)
-          .then(function() {
-            return table.insert(expectedRow);
-          });
+          */
+              })
+            )
+            .then(onPromiseOperationComplete)
+            .then(function() {
+              return table.insert(expectedRow);
+            });
         });
 
         it('should read large datasets', function(done) {
-          table.read({
-            keys: [expectedRow.Key],
-            columns: [
-              'Key',
-              'StringValue',
-              'StringArray',
-              'BytesValue',
-              'BytesArray'
-            ]
-          }, function(err, rows) {
-            assert.ifError(err);
+          table.read(
+            {
+              keys: [expectedRow.Key],
+              columns: [
+                'Key',
+                'StringValue',
+                'StringArray',
+                'BytesValue',
+                'BytesArray',
+              ],
+            },
+            function(err, rows) {
+              assert.ifError(err);
 
-            var row = rows[0].toJSON();
+              var row = rows[0].toJSON();
 
-            assert.strictEqual(row.Key, expectedRow.Key);
-            assert.strictEqual(row.StringValue, expectedRow.StringValue);
-            assert.deepEqual(row.StringArray, expectedRow.StringArray);
+              assert.strictEqual(row.Key, expectedRow.Key);
+              assert.strictEqual(row.StringValue, expectedRow.StringValue);
+              assert.deepEqual(row.StringArray, expectedRow.StringArray);
 
-            row.BytesValue = base64ToBuffer(row.BytesValue);
-            row.BytesArray = row.BytesArray.map(base64ToBuffer);
+              row.BytesValue = base64ToBuffer(row.BytesValue);
+              row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-            assert.deepEqual(row.BytesValue, expectedRow.BytesValue);
-            assert.deepEqual(row.BytesArray, expectedRow.BytesArray);
+              assert.deepEqual(row.BytesValue, expectedRow.BytesValue);
+              assert.deepEqual(row.BytesArray, expectedRow.BytesArray);
 
-            done();
-          });
+              done();
+            }
+          );
         });
 
         it('should query large datasets', function(done) {
           var query = {
             sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
             params: {
-              key: expectedRow.Key
-            }
+              key: expectedRow.Key,
+            },
           };
 
           database.run(query, function(err, rows) {
@@ -2129,13 +2196,13 @@ var spanner = new Spanner(env);
     describe('upsert', function() {
       var ROW = {
         SingerId: generateName('id'),
-        Name: generateName('name')
+        Name: generateName('name'),
       };
 
       it('should update a row', function(done) {
         var row = {
           SingerId: ROW.SingerId,
-          Name: generateName('name')
+          Name: generateName('name'),
         };
 
         table.insert(row, function(err) {
@@ -2144,14 +2211,17 @@ var spanner = new Spanner(env);
           table.upsert(ROW, function(err) {
             assert.ifError(err);
 
-            table.read({
-              keys: [ROW.SingerId],
-              columns: Object.keys(ROW)
-            }, function(err, rows) {
-              assert.ifError(err);
-              assert.deepEqual(rows[0].toJSON(), ROW);
-              done();
-            });
+            table.read(
+              {
+                keys: [ROW.SingerId],
+                columns: Object.keys(ROW),
+              },
+              function(err, rows) {
+                assert.ifError(err);
+                assert.deepEqual(rows[0].toJSON(), ROW);
+                done();
+              }
+            );
           });
         });
       });
@@ -2160,14 +2230,17 @@ var spanner = new Spanner(env);
         table.upsert(ROW, function(err) {
           assert.ifError(err);
 
-          table.read({
-            keys: [ROW.SingerId],
-            columns: Object.keys(ROW)
-          }, function(err, rows) {
-            assert.ifError(err);
-            assert.deepEqual(rows[0].toJSON(), ROW);
-            done();
-          });
+          table.read(
+            {
+              keys: [ROW.SingerId],
+              columns: Object.keys(ROW),
+            },
+            function(err, rows) {
+              assert.ifError(err);
+              assert.deepEqual(rows[0].toJSON(), ROW);
+              done();
+            }
+          );
         });
       });
     });
@@ -2175,23 +2248,29 @@ var spanner = new Spanner(env);
     describe('read', function() {
       var table = database.table('ReadTestTable');
 
-      var ALL_COLUMNS = [
-        'Key',
-        'StringValue'
-      ];
+      var ALL_COLUMNS = ['Key', 'StringValue'];
 
       before(function() {
-        return table.create(multiline.stripIndent(function() {/*
+        return table
+          .create(
+            multiline.stripIndent(function() {
+              /*
             CREATE TABLE ReadTestTable (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
             ) PRIMARY KEY (Key)
-          */}))
+          */
+            })
+          )
           .then(onPromiseOperationComplete)
           .then(function() {
-            return database.updateSchema(multiline.stripIndent(function() {/*
+            return database.updateSchema(
+              multiline.stripIndent(function() {
+                /*
               CREATE INDEX ReadByValue ON ReadTestTable(StringValue)
-            */}));
+            */
+              })
+            );
           })
           .then(onPromiseOperationComplete)
           .then(function() {
@@ -2200,7 +2279,7 @@ var spanner = new Spanner(env);
             for (var i = 0; i < 15; ++i) {
               data.push({
                 Key: 'k' + i,
-                StringValue: 'v' + i
+                StringValue: 'v' + i,
               });
             }
 
@@ -2215,22 +2294,24 @@ var spanner = new Spanner(env);
         {
           test: 'should perform an empty read',
           query: {
-            ranges: [{
-              startClosed: 'k99',
-              endOpen: 'z'
-            }],
-            columns: ALL_COLUMNS
+            ranges: [
+              {
+                startClosed: 'k99',
+                endOpen: 'z',
+              },
+            ],
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 0);
-          }
+          },
         },
         {
           test: 'should read a single key',
           query: {
             keys: ['k1'],
-            columns: ALL_COLUMNS
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2240,27 +2321,29 @@ var spanner = new Spanner(env);
 
             assert.strictEqual(row.Key, 'k1');
             assert.strictEqual(row.StringValue, 'v1');
-          }
+          },
         },
         {
           test: 'should read a non-existant single key',
           query: {
             keys: ['k999'],
-            columns: ALL_COLUMNS
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 0);
-          }
+          },
         },
         {
           test: 'should read using partial keys',
           query: {
-            ranges: [{
-              startClosed: 'k7',
-              endClosed: null
-            }],
-            columns: ALL_COLUMNS
+            ranges: [
+              {
+                startClosed: 'k7',
+                endClosed: null,
+              },
+            ],
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2274,16 +2357,18 @@ var spanner = new Spanner(env);
             assert.strictEqual(rows[0].Key, 'k7');
             assert.strictEqual(rows[1].Key, 'k8');
             assert.strictEqual(rows[2].Key, 'k9');
-          }
+          },
         },
         {
           test: 'should read using an open-open range',
           query: {
-            ranges: [{
-              startOpen: 'k3',
-              endOpen: 'k5'
-            }],
-            columns: ALL_COLUMNS
+            ranges: [
+              {
+                startOpen: 'k3',
+                endOpen: 'k5',
+              },
+            ],
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2292,16 +2377,18 @@ var spanner = new Spanner(env);
             var row = rows[0].toJSON();
 
             assert.strictEqual(row.Key, 'k4');
-          }
+          },
         },
         {
           test: 'should read using an open-closed range',
           query: {
-            ranges: [{
-              startOpen: 'k3',
-              endClosed: 'k5'
-            }],
-            columns: ALL_COLUMNS
+            ranges: [
+              {
+                startOpen: 'k3',
+                endClosed: 'k5',
+              },
+            ],
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2313,16 +2400,18 @@ var spanner = new Spanner(env);
 
             assert.strictEqual(rows[0].Key, 'k4');
             assert.strictEqual(rows[1].Key, 'k5');
-          }
+          },
         },
         {
           test: 'should read using a closed-closed range',
           query: {
-            ranges: [{
-              startClosed: 'k3',
-              endClosed: 'k5'
-            }],
-            columns: ALL_COLUMNS
+            ranges: [
+              {
+                startClosed: 'k3',
+                endClosed: 'k5',
+              },
+            ],
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2335,16 +2424,18 @@ var spanner = new Spanner(env);
             assert.strictEqual(rows[0].Key, 'k3');
             assert.strictEqual(rows[1].Key, 'k4');
             assert.strictEqual(rows[2].Key, 'k5');
-          }
+          },
         },
         {
           test: 'should read using a closed-open range',
           query: {
-            ranges: [{
-              startClosed: 'k3',
-              endOpen: 'k5'
-            }],
-            columns: ALL_COLUMNS
+            ranges: [
+              {
+                startClosed: 'k3',
+                endOpen: 'k5',
+              },
+            ],
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2356,43 +2447,47 @@ var spanner = new Spanner(env);
 
             assert.strictEqual(rows[0].Key, 'k3');
             assert.strictEqual(rows[1].Key, 'k4');
-          }
+          },
         },
         {
           test: 'should accept a limit',
           query: {
-            ranges: [{
-              startClosed: 'k3',
-              endClosed: 'k7'
-            }],
+            ranges: [
+              {
+                startClosed: 'k3',
+                endClosed: 'k7',
+              },
+            ],
             columns: ALL_COLUMNS,
-            limit: 2
+            limit: 2,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
-          }
+          },
         },
         {
           test: 'should ignore limits of 0',
           query: {
-            ranges: [{
-              startClosed: 'k3',
-              endClosed: 'k7'
-            }],
+            ranges: [
+              {
+                startClosed: 'k3',
+                endClosed: 'k7',
+              },
+            ],
             columns: ALL_COLUMNS,
-            limit: 0
+            limit: 0,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 5);
-          }
+          },
         },
         {
           test: 'should read using point keys',
           query: {
             keys: ['k3', 'k5', 'k7'],
-            columns: ALL_COLUMNS
+            columns: ALL_COLUMNS,
           },
           assertions: function(err, rows) {
             assert.ifError(err);
@@ -2405,8 +2500,8 @@ var spanner = new Spanner(env);
             assert.strictEqual(rows[0].Key, 'k3');
             assert.strictEqual(rows[1].Key, 'k5');
             assert.strictEqual(rows[2].Key, 'k7');
-          }
-        }
+          },
+        },
       ].forEach(function(test) {
         // test normally
         it(test.test, function(done) {
@@ -2418,9 +2513,12 @@ var spanner = new Spanner(env);
 
         // test using an index
         it(test.test + ' with an index', function(done) {
-          var query = extend({
-            index: 'ReadByValue'
-          }, test.query);
+          var query = extend(
+            {
+              index: 'ReadByValue',
+            },
+            test.query
+          );
 
           if (query.keys) {
             query.keys = query.keys.map(function(key) {
@@ -2455,7 +2553,7 @@ var spanner = new Spanner(env);
 
         var query = {
           keys: ['k1'],
-          columns: ALL_COLUMNS
+          columns: ALL_COLUMNS,
         };
 
         table.read(query, function(err) {
@@ -2469,7 +2567,7 @@ var spanner = new Spanner(env);
 
         var query = {
           keys: ['k1'],
-          columns: ALL_COLUMNS
+          columns: ALL_COLUMNS,
         };
 
         table.read(query, function(err) {
@@ -2481,7 +2579,7 @@ var spanner = new Spanner(env);
       it('should read over invalid column fails', function(done) {
         var query = {
           keys: ['k1'],
-          columns: ['ohnoes']
+          columns: ['ohnoes'],
         };
 
         table.read(query, function(err) {
@@ -2495,8 +2593,8 @@ var spanner = new Spanner(env);
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 10
-          }
+            timeout: 10,
+          },
         };
 
         table.read(query, function(err) {
@@ -2512,39 +2610,50 @@ var spanner = new Spanner(env);
     var table = database.table('Singers');
 
     before(function(done) {
-      async.series([
-        function(next) {
-          database.create({
-            schema: multiline.stripIndent(function() {/*
+      async.series(
+        [
+          function(next) {
+            database.create(
+              {
+                schema: multiline.stripIndent(function() {
+                  /*
               CREATE TABLE Singers (
                 SingerId STRING(1024) NOT NULL,
                 Name STRING(1024),
               ) PRIMARY KEY(SingerId)
-            */})
-          }, execAfterOperationComplete(next));
-        }
-      ], done);
+            */
+                }),
+              },
+              execAfterOperationComplete(next)
+            );
+          },
+        ],
+        done
+      );
     });
 
     it('should insert and query a row', function(done) {
       var id = generateName('id');
       var name = generateName('name');
 
-      table.insert({
-        SingerId: id,
-        Name: name
-      }, function(err) {
-        assert.ifError(err);
-
-        database.run('SELECT * FROM Singers', function(err, rows) {
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
           assert.ifError(err);
-          assert.deepEqual(rows.pop().toJSON(), {
-            SingerId: id,
-            Name: name
+
+          database.run('SELECT * FROM Singers', function(err, rows) {
+            assert.ifError(err);
+            assert.deepEqual(rows.pop().toJSON(), {
+              SingerId: id,
+              Name: name,
+            });
+            done();
           });
-          done();
-        });
-      });
+        }
+      );
     });
 
     it('should insert and query multiple rows', function(done) {
@@ -2554,106 +2663,118 @@ var spanner = new Spanner(env);
       var id2 = generateName('id');
       var name2 = generateName('name');
 
-      table.insert([
-        {
-          SingerId: id1,
-          Name: name1
-        },
-        {
-          SingerId: id2,
-          Name: name2
-        }
-      ], function(err) {
-        assert.ifError(err);
-
-        database.run('SELECT * FROM Singers', function(err, rows) {
+      table.insert(
+        [
+          {
+            SingerId: id1,
+            Name: name1,
+          },
+          {
+            SingerId: id2,
+            Name: name2,
+          },
+        ],
+        function(err) {
           assert.ifError(err);
 
-          // We just want the two most recent ones.
-          rows.splice(0, rows.length - 2);
+          database.run('SELECT * FROM Singers', function(err, rows) {
+            assert.ifError(err);
 
-          rows = rows.map(exec('toJSON'));
+            // We just want the two most recent ones.
+            rows.splice(0, rows.length - 2);
 
-          assert.deepEqual(rows, [
-            {
-              SingerId: id1,
-              Name: name1
-            },
-            {
-              SingerId: id2,
-              Name: name2
-            }
-          ]);
+            rows = rows.map(exec('toJSON'));
 
-          done();
-        });
-      });
+            assert.deepEqual(rows, [
+              {
+                SingerId: id1,
+                Name: name1,
+              },
+              {
+                SingerId: id2,
+                Name: name2,
+              },
+            ]);
+
+            done();
+          });
+        }
+      );
     });
 
     it('should read rows as a stream', function(done) {
       var id = generateName('id');
       var name = generateName('name');
 
-      table.insert({
-        SingerId: id,
-        Name: name
-      }, function(err) {
-        assert.ifError(err);
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
+          assert.ifError(err);
 
-        var rows = [];
+          var rows = [];
 
-        table
-          .createReadStream({
-            keys: [id],
-            columns: ['SingerId', 'name']
-          })
-          .on('error', done)
-          .on('data', function(row) {
-            rows.push(row);
-          })
-          .on('end', function() {
-            rows = rows.map(exec('toJSON'));
+          table
+            .createReadStream({
+              keys: [id],
+              columns: ['SingerId', 'name'],
+            })
+            .on('error', done)
+            .on('data', function(row) {
+              rows.push(row);
+            })
+            .on('end', function() {
+              rows = rows.map(exec('toJSON'));
 
-            assert.deepEqual(rows, [
-              {
-                SingerId: id,
-                Name: name
-              }
-            ]);
+              assert.deepEqual(rows, [
+                {
+                  SingerId: id,
+                  Name: name,
+                },
+              ]);
 
-            done();
-          });
-      });
+              done();
+            });
+        }
+      );
     });
 
     it('should read rows', function(done) {
       var id = generateName('id');
       var name = generateName('name');
 
-      table.insert({
-        SingerId: id,
-        Name: name
-      }, function(err) {
-        assert.ifError(err);
-
-        table.read({
-          keys: [id],
-          columns: ['SingerId', 'Name']
-        }, function(err, rows) {
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
           assert.ifError(err);
 
-          rows = rows.map(exec('toJSON'));
-
-          assert.deepEqual(rows, [
+          table.read(
             {
-              SingerId: id,
-              Name: name
-            }
-          ]);
+              keys: [id],
+              columns: ['SingerId', 'Name'],
+            },
+            function(err, rows) {
+              assert.ifError(err);
 
-          done();
-        });
-      });
+              rows = rows.map(exec('toJSON'));
+
+              assert.deepEqual(rows, [
+                {
+                  SingerId: id,
+                  Name: name,
+                },
+              ]);
+
+              done();
+            }
+          );
+        }
+      );
     });
   });
 
@@ -2664,16 +2785,21 @@ var spanner = new Spanner(env);
     var records = [];
 
     before(function() {
-      return database.create()
+      return database
+        .create()
         .then(onPromiseOperationComplete)
         .then(function() {
-          return table.create(multiline.stripIndent(function() {/*
+          return table.create(
+            multiline.stripIndent(function() {
+              /*
             CREATE TABLE TxnTable (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX),
               NumberValue INT64
             ) PRIMARY KEY (Key)
-          */}));
+          */
+            })
+          );
         })
         .then(onPromiseOperationComplete)
         .then(function() {
@@ -2682,20 +2808,22 @@ var spanner = new Spanner(env);
           for (var i = 0; i < 5; i++) {
             data.push({
               Key: 'k' + i,
-              StringValue: 'v' + i
+              StringValue: 'v' + i,
             });
           }
 
           return data.reduce(function(promise, entry) {
             return promise.then(function() {
-              var record = extend({
-                timestamp: new Date()
-              }, entry);
+              var record = extend(
+                {
+                  timestamp: new Date(),
+                },
+                entry
+              );
 
               records.push(record);
 
-              return table.insert(entry)
-                .then(wait.bind(null, 1000));
+              return table.insert(entry).then(wait.bind(null, 1000));
             });
           }, Promise.resolve());
         });
@@ -2705,7 +2833,7 @@ var spanner = new Spanner(env);
       it('should run a read only transaction', function(done) {
         var options = {
           readOnly: true,
-          strong: true
+          strong: true,
         };
 
         database.runTransaction(options, function(err, transaction) {
@@ -2722,18 +2850,20 @@ var spanner = new Spanner(env);
 
       it('should read keys from a table', function(done) {
         var options = {
-          readOnly: true
+          readOnly: true,
         };
 
         database.runTransaction(options, function(err, transaction) {
           assert.ifError(err);
 
           var query = {
-            ranges: [{
-              startClosed: 'k0',
-              endClosed: 'k4'
-            }],
-            columns: ['Key']
+            ranges: [
+              {
+                startClosed: 'k0',
+                endClosed: 'k4',
+              },
+            ],
+            columns: ['Key'],
           };
 
           transaction.read(table.name, query, function(err, rows) {
@@ -2748,7 +2878,7 @@ var spanner = new Spanner(env);
       it('should accept a read timestamp', function(done) {
         var options = {
           readOnly: true,
-          readTimestamp: records[1].timestamp
+          readTimestamp: records[1].timestamp,
         };
 
         database.runTransaction(options, function(err, transaction) {
@@ -2773,7 +2903,7 @@ var spanner = new Spanner(env);
         var query = 'SELECT * FROM TxnTable';
 
         var options = {
-          minReadTimestamp: new Date()
+          minReadTimestamp: new Date(),
         };
 
         // minTimestamp can only be used in single use transactions
@@ -2788,7 +2918,7 @@ var spanner = new Spanner(env);
       it('should accept an exact staleness', function(done) {
         var options = {
           readOnly: true,
-          exactStaleness: Math.ceil((Date.now() - records[2].timestamp) / 1000)
+          exactStaleness: Math.ceil((Date.now() - records[2].timestamp) / 1000),
         };
 
         database.runTransaction(options, function(err, transaction) {
@@ -2814,7 +2944,7 @@ var spanner = new Spanner(env);
         var query = 'SELECT * FROM TxnTable';
 
         var options = {
-          maxStaleness: 1
+          maxStaleness: 1,
         };
 
         // minTimestamp can only be used in single use transactions
@@ -2829,7 +2959,7 @@ var spanner = new Spanner(env);
       it('should do a strong read with concurrent updates', function(done) {
         var options = {
           readOnly: true,
-          strong: true
+          strong: true,
         };
 
         database.runTransaction(options, function(err, transaction) {
@@ -2841,21 +2971,24 @@ var spanner = new Spanner(env);
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
-            table.update({
-              Key: 'k4',
-              StringValue: 'v44'
-            }, function(err) {
-              assert.ifError(err);
-
-              transaction.run(query, function(err, rows_) {
+            table.update(
+              {
+                Key: 'k4',
+                StringValue: 'v44',
+              },
+              function(err) {
                 assert.ifError(err);
 
-                var row = rows_.pop().toJSON();
-                assert.strictEqual(row.StringValue, 'v4');
+                transaction.run(query, function(err, rows_) {
+                  assert.ifError(err);
 
-                transaction.end(done);
-              });
-            });
+                  var row = rows_.pop().toJSON();
+                  assert.strictEqual(row.StringValue, 'v4');
+
+                  transaction.end(done);
+                });
+              }
+            );
           });
         });
       });
@@ -2863,7 +2996,7 @@ var spanner = new Spanner(env);
       it('should do an exact read with concurrent updates', function(done) {
         var options = {
           readOnly: true,
-          readTimestamp: records[records.length - 1].timestamp
+          readTimestamp: records[records.length - 1].timestamp,
         };
 
         database.runTransaction(options, function(err, transaction) {
@@ -2877,22 +3010,25 @@ var spanner = new Spanner(env);
             var originalRows = extend(true, {}, rows);
 
             // Make arbitrary update.
-            table.update({
-              Key: rows[0].toJSON().Key,
-              StringValue: 'overridden value'
-            }, function(err) {
-              assert.ifError(err);
-
-              transaction.run(query, function(err, rows_) {
+            table.update(
+              {
+                Key: rows[0].toJSON().Key,
+                StringValue: 'overridden value',
+              },
+              function(err) {
                 assert.ifError(err);
 
-                rows_ = extend(true, {}, rows_);
+                transaction.run(query, function(err, rows_) {
+                  assert.ifError(err);
 
-                assert.deepStrictEqual(rows_, originalRows);
+                  rows_ = extend(true, {}, rows_);
 
-                transaction.end(done);
-              });
-            });
+                  assert.deepStrictEqual(rows_, originalRows);
+
+                  transaction.end(done);
+                });
+              }
+            );
           });
         });
       });
@@ -2900,7 +3036,7 @@ var spanner = new Spanner(env);
       it('should read with staleness & concurrent updates', function(done) {
         var options = {
           readOnly: true,
-          exactStaleness: Math.ceil((Date.now() - records[1].timestamp) / 1000)
+          exactStaleness: Math.ceil((Date.now() - records[1].timestamp) / 1000),
         };
 
         database.runTransaction(options, function(err, transaction) {
@@ -2912,19 +3048,22 @@ var spanner = new Spanner(env);
             assert.ifError(err);
             assert.strictEqual(rows.length, 1);
 
-            table.update({
-              Key: 'k4',
-              StringValue: 'overridden value'
-            }, function(err) {
-              assert.ifError(err);
-
-              transaction.run(query, function(err, rows) {
+            table.update(
+              {
+                Key: 'k4',
+                StringValue: 'overridden value',
+              },
+              function(err) {
                 assert.ifError(err);
-                assert.strictEqual(rows.length, 1);
 
-                transaction.end(done);
-              });
-            });
+                transaction.run(query, function(err, rows) {
+                  assert.ifError(err);
+                  assert.strictEqual(rows.length, 1);
+
+                  transaction.end(done);
+                });
+              }
+            );
           });
         });
       });
@@ -2937,7 +3076,7 @@ var spanner = new Spanner(env);
 
           transaction.insert(table.name, {
             Key: 'k5',
-            StringValue: 'v5'
+            StringValue: 'v5',
           });
 
           transaction.commit(done);
@@ -2958,7 +3097,7 @@ var spanner = new Spanner(env);
       describe('concurrent transactions', function() {
         var defaultRowValues = {
           Key: 'k0',
-          NumberValue: 0
+          NumberValue: 0,
         };
 
         beforeEach(function() {
@@ -2992,7 +3131,7 @@ var spanner = new Spanner(env);
 
                 transaction.update(table.name, {
                   Key: defaultRowValues.Key,
-                  NumberValue: value + 1
+                  NumberValue: value + 1,
                 });
 
                 transaction.commit(callback);
@@ -3001,18 +3140,22 @@ var spanner = new Spanner(env);
           }
 
           function getValue(txn, callback) {
-            txn.read(table.name, {
-              keys: [defaultRowValues.Key],
-              columns: ['NumberValue']
-            }, function(err, rows) {
-              if (err) {
-                callback(err);
-                return;
-              }
+            txn.read(
+              table.name,
+              {
+                keys: [defaultRowValues.Key],
+                columns: ['NumberValue'],
+              },
+              function(err, rows) {
+                if (err) {
+                  callback(err);
+                  return;
+                }
 
-              var row = rows[0].toJSON();
-              callback(null, parseInt(row.NumberValue.value, 10));
-            });
+                var row = rows[0].toJSON();
+                callback(null, parseInt(row.NumberValue.value, 10));
+              }
+            );
           }
         });
 
@@ -3043,7 +3186,7 @@ var spanner = new Spanner(env);
 
                 transaction.update(table.name, {
                   Key: defaultRowValues.Key,
-                  NumberValue: value + 1
+                  NumberValue: value + 1,
                 });
 
                 transaction.commit(callback);
@@ -3052,20 +3195,23 @@ var spanner = new Spanner(env);
           }
 
           function getValue(txn, callback) {
-            txn.run({
-              sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
-              params: {
-                key: defaultRowValues.Key
-              }
-            }, function(err, rows) {
-              if (err) {
-                callback(err);
-                return;
-              }
+            txn.run(
+              {
+                sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
+                params: {
+                  key: defaultRowValues.Key,
+                },
+              },
+              function(err, rows) {
+                if (err) {
+                  callback(err);
+                  return;
+                }
 
-              var row = rows[0].toJSON();
-              callback(null, parseInt(row.NumberValue.value, 10));
-            });
+                var row = rows[0].toJSON();
+                callback(null, parseInt(row.NumberValue.value, 10));
+              }
+            );
           }
         });
       });
@@ -3077,7 +3223,7 @@ var spanner = new Spanner(env);
         var expectedRow = {
           Key: 'k888',
           NumberValue: null,
-          StringValue: 'abc'
+          StringValue: 'abc',
         };
 
         database.runTransaction(function(err, transaction) {
@@ -3096,7 +3242,7 @@ var spanner = new Spanner(env);
 
                 transaction.insert(table.name, {
                   Key: generateName('key'),
-                  StringValue: generateName('val')
+                  StringValue: generateName('val'),
                 });
 
                 transaction.commit(function(err) {
@@ -3145,7 +3291,7 @@ var spanner = new Spanner(env);
         var expectedRow = {
           Key: 'k999',
           NumberValue: null,
-          StringValue: 'abc'
+          StringValue: 'abc',
         };
 
         database.runTransaction(function(err, transaction) {
@@ -3156,7 +3302,7 @@ var spanner = new Spanner(env);
 
             transaction.insert(table.name, {
               Key: generateName('key'),
-              StringValue: generateName('val')
+              StringValue: generateName('val'),
             });
 
             if (attempts++ === 0) {
@@ -3202,7 +3348,7 @@ var spanner = new Spanner(env);
 
       it('should return a deadline error instead of aborted', function(done) {
         var options = {
-          timeout: 10
+          timeout: 10,
         };
 
         var query = `SELECT * FROM ${table.name}`;
@@ -3211,8 +3357,10 @@ var spanner = new Spanner(env);
         database.runTransaction(options, function(err, transaction) {
           if (attempts++ === 1) {
             assert.strictEqual(err.code, 4);
-            assert
-              .strictEqual(err.message, 'Deadline for Transaction exceeded.');
+            assert.strictEqual(
+              err.message,
+              'Deadline for Transaction exceeded.'
+            );
 
             done();
             return;
@@ -3224,7 +3372,7 @@ var spanner = new Spanner(env);
             assert.ifError(err);
 
             transaction.insert(table.name, {
-              Key: generateName('key')
+              Key: generateName('key'),
             });
 
             runOtherTransaction(function(err) {
@@ -3251,7 +3399,7 @@ var spanner = new Spanner(env);
               }
 
               transaction.insert(table.name, {
-                Key: generateName('key')
+                Key: generateName('key'),
               });
 
               transaction.commit(callback);
@@ -3264,7 +3412,15 @@ var spanner = new Spanner(env);
 });
 
 function generateName(resourceType) {
-  return PREFIX + resourceType + '-' + uuid.v1().split('-').shift();
+  return (
+    PREFIX +
+    resourceType +
+    '-' +
+    uuid
+      .v1()
+      .split('-')
+      .shift()
+  );
 }
 
 function onPromiseOperationComplete(data) {
@@ -3283,35 +3439,39 @@ function execAfterOperationComplete(callback) {
       return;
     }
 
-    operation
-      .on('error', callback)
-      .on('complete', function(metadata) {
-        callback(null, metadata);
-      });
+    operation.on('error', callback).on('complete', function(metadata) {
+      callback(null, metadata);
+    });
   };
 }
 
 function deleteTestInstances(callback) {
-  spanner.getInstances({
-    filter: 'labels.gcloud-tests:true'
-  }, function(err, instances) {
-    if (err) {
-      callback(err);
-      return;
-    }
+  spanner.getInstances(
+    {
+      filter: 'labels.gcloud-tests:true',
+    },
+    function(err, instances) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    async.eachLimit(instances, 5, function(instance, callback) {
-      setTimeout(function() {
-        instance.delete(callback);
-      }, 500); // Delay allows the instance and its databases to fully clear.
-    }, callback);
-  });
+      async.eachLimit(
+        instances,
+        5,
+        function(instance, callback) {
+          setTimeout(function() {
+            instance.delete(callback);
+          }, 500); // Delay allows the instance and its databases to fully clear.
+        },
+        callback
+      );
+    }
+  );
 }
 
 function deleteTestResources(callback) {
-  async.series([
-    deleteTestInstances
-  ], callback);
+  async.series([deleteTestInstances], callback);
 }
 
 function wait(time) {

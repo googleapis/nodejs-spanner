@@ -35,8 +35,10 @@ fakeCodec.decode = function() {
 var checkpointStreamOverride;
 function fakeCheckpointStream() {}
 fakeCheckpointStream.obj = function() {
-  return (checkpointStreamOverride || checkpointStream.obj)
-    .apply(null, arguments);
+  return (checkpointStreamOverride || checkpointStream.obj).apply(
+    null,
+    arguments
+  );
 };
 
 var FakeRowBuilderOverrides = {};
@@ -67,25 +69,21 @@ describe('PartialResultStream', function() {
 
   var RESULT_WITH_TOKEN = {
     resumeToken: '...',
-    values: [
-      {}
-    ]
+    values: [{}],
   };
   var RESULT_WITHOUT_TOKEN = {
-    values: [
-      {}
-    ]
+    values: [{}],
   };
   var RESULT_WITHOUT_VALUE = {
     resumeToken: '...',
-    values: []
+    values: [],
   };
 
   before(function() {
     partialResultStreamModule = proxyquire('../src/partial-result-stream.js', {
       'checkpoint-stream': fakeCheckpointStream,
       './codec.js': fakeCodec,
-      './row-builder.js': FakeRowBuilder
+      './row-builder.js': FakeRowBuilder,
     });
     partialResultStreamCached = extend({}, partialResultStreamModule);
   });
@@ -142,12 +140,12 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(RESULT_WITHOUT_VALUE);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows.length, 0);
           done();
-        }));
+        })
+      );
     });
 
     it('should not queue more than 10 results', function(done) {
@@ -156,18 +154,18 @@ describe('PartialResultStream', function() {
       }
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows.length, 11);
           done();
-        }));
+        })
+      );
     });
 
     it('should run chunks through RowBuilder', function(done) {
       var chunks = [
-        extend({ chunkedValue: true }, RESULT_WITHOUT_TOKEN),
-        RESULT_WITH_TOKEN
+        extend({chunkedValue: true}, RESULT_WITHOUT_TOKEN),
+        RESULT_WITH_TOKEN,
       ];
 
       var builtRow = {};
@@ -181,12 +179,12 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(chunks[1]);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows[0], builtRow);
           done();
-        }));
+        })
+      );
     });
 
     it('should cache the metadata', function(done) {
@@ -196,8 +194,8 @@ describe('PartialResultStream', function() {
       var formatCalls = 0;
 
       var chunks = [
-        extend({ metadata: METADATA }, RESULT_WITHOUT_TOKEN),
-        RESULT_WITH_TOKEN
+        extend({metadata: METADATA}, RESULT_WITHOUT_TOKEN),
+        RESULT_WITH_TOKEN,
       ];
 
       partialResultStreamModule.formatRow_ = function(metadata, row) {
@@ -210,13 +208,13 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(chunks[1]);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows[0], formattedRows[0]);
           assert.strictEqual(rows[1], formattedRows[1]);
           done();
-        }));
+        })
+      );
     });
 
     it('should return the formatted row', function(done) {
@@ -230,19 +228,16 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(RESULT_WITH_TOKEN);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows[0], formattedRow);
           done();
-        }));
+        })
+      );
     });
 
     it('should separately emit formatted rows', function(done) {
-      var formattedRows = [
-        {},
-        {}
-      ];
+      var formattedRows = [{}, {}];
 
       partialResultStreamModule.formatRow_ = function() {
         return formattedRows;
@@ -251,20 +246,17 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(RESULT_WITH_TOKEN);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows[0], formattedRows[0]);
           assert.strictEqual(rows[1], formattedRows[1]);
           done();
-        }));
+        })
+      );
     });
 
     it('should correctly handle multiple rows', function(done) {
-      var formattedRows = [[
-        {},
-        {}
-      ]];
+      var formattedRows = [[{}, {}]];
 
       partialResultStreamModule.formatRow_ = function() {
         return formattedRows;
@@ -273,13 +265,13 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(RESULT_WITH_TOKEN);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .pipe(concat(function(rows) {
+      partialResultStream.on('error', done).pipe(
+        concat(function(rows) {
           assert.strictEqual(rows[0], formattedRows[0][0]);
           assert.strictEqual(rows[1], formattedRows[0][1]);
           done();
-        }));
+        })
+      );
     });
 
     it('should resume if there was an error', function(done) {
@@ -338,10 +330,12 @@ describe('PartialResultStream', function() {
 
       partialResultStreamModule(requestFn)
         .on('error', done)
-        .pipe(concat(function(rows) {
-          assert.strictEqual(rows.length, 4);
-          done();
-        }));
+        .pipe(
+          concat(function(rows) {
+            assert.strictEqual(rows.length, 4);
+            done();
+          })
+        );
     });
 
     it('should emit rows and error when there is no token', function(done) {
@@ -432,42 +426,35 @@ describe('PartialResultStream', function() {
     });
   });
 
-
   describe('formatRow_', function() {
     var FIELDS = [
       {
-        name: 'field-1'
+        name: 'field-1',
       },
       {
-        name: 'field-2'
-      }
+        name: 'field-2',
+      },
     ];
 
     var METADATA = {
       rowType: {
-        fields: FIELDS
-      }
+        fields: FIELDS,
+      },
     };
 
-    var VALUES = [
-      'value-1',
-      'value-2'
-    ];
+    var VALUES = ['value-1', 'value-2'];
 
     var ROW = {
       metadata: METADATA,
-      values: VALUES
+      values: VALUES,
     };
 
     it('should omit rows from JSON representation with no name', function() {
       // Define the second field to have no name.
       var metadata = {
         rowType: {
-          fields: [
-            { name: 'field-1' },
-            {}
-          ]
-        }
+          fields: [{name: 'field-1'}, {}],
+        },
       };
 
       var row = {
@@ -505,31 +492,28 @@ describe('PartialResultStream', function() {
       assert.deepEqual(formattedRows[0], [
         {
           name: 'field-1',
-          value: 'value-1'
+          value: 'value-1',
         },
         {
           name: 'field-2',
-          value: 'value-2'
-        }
+          value: 'value-2',
+        },
       ]);
 
       assert.deepEqual(formattedRows[1], [
         {
           name: 'field-1',
-          value: 'value-1'
+          value: 'value-1',
         },
         {
           name: 'field-2',
-          value: 'value-2'
-        }
+          value: 'value-2',
+        },
       ]);
     });
 
     it('should decode values and return a formatted object', function() {
-      var decodedValues = [
-        'decoded-value-1',
-        'decoded-value-2'
-      ];
+      var decodedValues = ['decoded-value-1', 'decoded-value-2'];
 
       var numTimesDecodeValueCalled = 0;
       decodeValueOverride = function(value) {
@@ -551,17 +535,17 @@ describe('PartialResultStream', function() {
       assert.deepEqual(formattedRow, [
         {
           name: 'field-1',
-          value: decodedValues[0]
+          value: decodedValues[0],
         },
         {
           name: 'field-2',
-          value: decodedValues[1]
-        }
+          value: decodedValues[1],
+        },
       ]);
 
       assert.deepEqual(formattedRow.toJSON(), {
         'field-1': decodedValues[0],
-        'field-2': decodedValues[1]
+        'field-2': decodedValues[1],
       });
     });
   });

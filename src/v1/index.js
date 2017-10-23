@@ -20,9 +20,12 @@ var gax = require('google-gax');
 var extend = require('extend');
 
 function v1(options) {
-  options = extend({
-    scopes: v1.ALL_SCOPES
-  }, options);
+  options = extend(
+    {
+      scopes: v1.ALL_SCOPES,
+    },
+    options
+  );
   var gaxGrpc = gax.grpc(options);
   return spannerClient(gaxGrpc);
 }
@@ -30,6 +33,6 @@ v1.SERVICE_ADDRESS = spannerClient.SERVICE_ADDRESS;
 v1.ALL_SCOPES = spannerClient.ALL_SCOPES;
 v1.admin = {
   instance: require('../admin/instance/v1'),
-  database: require('../admin/database/v1')
+  database: require('../admin/database/v1'),
 };
 module.exports = v1;

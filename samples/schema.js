@@ -15,7 +15,7 @@
 
 'use strict';
 
-function createDatabase (instanceId, databaseId) {
+function createDatabase(instanceId, databaseId) {
   // [START create_database]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -45,13 +45,14 @@ function createDatabase (instanceId, databaseId) {
         AlbumId     INT64 NOT NULL,
         AlbumTitle  STRING(MAX)
       ) PRIMARY KEY (SingerId, AlbumId),
-      INTERLEAVE IN PARENT Singers ON DELETE CASCADE`
-    ]
+      INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+    ],
   };
 
   // Creates a database
-  instance.createDatabase(databaseId, request)
-    .then((results) => {
+  instance
+    .createDatabase(databaseId, request)
+    .then(results => {
       const database = results[0];
       const operation = results[1];
 
@@ -64,7 +65,7 @@ function createDatabase (instanceId, databaseId) {
   // [END create_database]
 }
 
-function addColumn (instanceId, databaseId) {
+function addColumn(instanceId, databaseId) {
   // [START add_column]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
@@ -80,13 +81,12 @@ function addColumn (instanceId, databaseId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const request = [
-    'ALTER TABLE Albums ADD COLUMN MarketingBudget INT64'
-  ];
+  const request = ['ALTER TABLE Albums ADD COLUMN MarketingBudget INT64'];
 
   // Creates a new index in the database
-  database.updateSchema(request)
-    .then((results) => {
+  database
+    .updateSchema(request)
+    .then(results => {
       const operation = results[0];
 
       console.log('Waiting for operation to complete...');
@@ -98,7 +98,7 @@ function addColumn (instanceId, databaseId) {
   // [END add_column]
 }
 
-function queryDataWithNewColumn (instanceId, databaseId) {
+function queryDataWithNewColumn(instanceId, databaseId) {
   // [START query_data_with_new_column]
   // This sample uses the `MarketingBudget` column. You can add the column
   // by running the `add_column` sample or by running this DDL statement against
@@ -120,20 +120,24 @@ function queryDataWithNewColumn (instanceId, databaseId) {
   const database = instance.database(databaseId);
 
   const query = {
-    sql: `SELECT SingerId, AlbumId, MarketingBudget FROM Albums`
+    sql: `SELECT SingerId, AlbumId, MarketingBudget FROM Albums`,
   };
 
   // Queries rows from the Albums table
-  database.run(query)
-    .then((results) => {
-      const rows = results[0];
+  database.run(query).then(results => {
+    const rows = results[0];
 
-      rows.forEach((row) => {
-        const json = row.toJSON();
+    rows.forEach(row => {
+      const json = row.toJSON();
 
-        console.log(`SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId.value}, MarketingBudget: ${json.MarketingBudget ? json.MarketingBudget.value : null}`);
-      });
+      console.log(
+        `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+          .value}, MarketingBudget: ${json.MarketingBudget
+          ? json.MarketingBudget.value
+          : null}`
+      );
     });
+  });
   // [END query_data_with_new_column]
 }
 
@@ -143,19 +147,19 @@ const cli = require(`yargs`)
     `createDatabase <instanceName> <databaseName>`,
     `Creates an example database with two tables in a Cloud Spanner instance.`,
     {},
-    (opts) => createDatabase(opts.instanceName, opts.databaseName)
+    opts => createDatabase(opts.instanceName, opts.databaseName)
   )
   .command(
     `addColumn <instanceName> <databaseName>`,
     `Adds an example MarketingBudget column to an example Cloud Spanner table.`,
     {},
-    (opts) => addColumn(opts.instanceName, opts.databaseName)
+    opts => addColumn(opts.instanceName, opts.databaseName)
   )
   .command(
     `queryNewColumn <instanceName> <databaseName>`,
     `Executes a read-only SQL query against an example Cloud Spanner table with an additional column (MarketingBudget) added by addColumn.`,
     {},
-    (opts) => queryDataWithNewColumn(opts.instanceName, opts.databaseName)
+    opts => queryDataWithNewColumn(opts.instanceName, opts.databaseName)
   )
   .example(`node $0 createDatabase "my-instance" "my-database"`)
   .example(`node $0 addColumn "my-instance" "my-database"`)

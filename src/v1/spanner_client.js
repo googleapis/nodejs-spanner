@@ -38,8 +38,10 @@ var DEFAULT_SERVICE_PORT = 443;
 var CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 
 var STREAM_DESCRIPTORS = {
-  executeStreamingSql: new gax.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
-  streamingRead: new gax.StreamDescriptor(gax.StreamType.SERVER_STREAMING)
+  executeStreamingSql: new gax.StreamDescriptor(
+    gax.StreamType.SERVER_STREAMING
+  ),
+  streamingRead: new gax.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
 };
 
 /**
@@ -48,7 +50,7 @@ var STREAM_DESCRIPTORS = {
  */
 var ALL_SCOPES = [
   'https://www.googleapis.com/auth/cloud-platform',
-  'https://www.googleapis.com/auth/spanner.data'
+  'https://www.googleapis.com/auth/spanner.data',
 ];
 
 /**
@@ -70,15 +72,16 @@ var ALL_SCOPES = [
  * @class
  */
 function SpannerClient(gaxGrpc, grpcClients, opts) {
-  opts = extend({
-    servicePath: SERVICE_ADDRESS,
-    port: DEFAULT_SERVICE_PORT,
-    clientConfig: {}
-  }, opts);
+  opts = extend(
+    {
+      servicePath: SERVICE_ADDRESS,
+      port: DEFAULT_SERVICE_PORT,
+      clientConfig: {},
+    },
+    opts
+  );
 
-  var googleApiClient = [
-    'gl-node/' + process.versions.node
-  ];
+  var googleApiClient = ['gl-node/' + process.versions.node];
   if (opts.libName && opts.libVersion) {
     googleApiClient.push(opts.libName + '/' + opts.libVersion);
   }
@@ -89,17 +92,19 @@ function SpannerClient(gaxGrpc, grpcClients, opts) {
   );
 
   var defaults = gaxGrpc.constructSettings(
-      'google.spanner.v1.Spanner',
-      configData,
-      opts.clientConfig,
-      {'x-goog-api-client': googleApiClient.join(' ')});
+    'google.spanner.v1.Spanner',
+    configData,
+    opts.clientConfig,
+    {'x-goog-api-client': googleApiClient.join(' ')}
+  );
 
   var self = this;
 
   this.auth = gaxGrpc.auth;
   var spannerStub = gaxGrpc.createStub(
-      grpcClients.google.spanner.v1.Spanner,
-      opts);
+    grpcClients.google.spanner.v1.Spanner,
+    opts
+  );
   var spannerStubMethods = [
     'createSession',
     'getSession',
@@ -110,7 +115,7 @@ function SpannerClient(gaxGrpc, grpcClients, opts) {
     'streamingRead',
     'beginTransaction',
     'commit',
-    'rollback'
+    'rollback',
   ];
   spannerStubMethods.forEach(function(methodName) {
     self['_' + methodName] = gax.createApiCall(
@@ -121,17 +126,20 @@ function SpannerClient(gaxGrpc, grpcClients, opts) {
         };
       }),
       defaults[methodName],
-      STREAM_DESCRIPTORS[methodName]);
+      STREAM_DESCRIPTORS[methodName]
+    );
   });
 }
 
 // Path templates
 
 var DATABASE_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}/instances/{instance}/databases/{database}');
+  'projects/{project}/instances/{instance}/databases/{database}'
+);
 
 var SESSION_PATH_TEMPLATE = new gax.PathTemplate(
-    'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}');
+  'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}'
+);
 
 /**
  * Returns a fully-qualified database resource name string.
@@ -144,7 +152,7 @@ SpannerClient.prototype.databasePath = function(project, instance, database) {
   return DATABASE_PATH_TEMPLATE.render({
     project: project,
     instance: instance,
-    database: database
+    database: database,
   });
 };
 
@@ -186,12 +194,17 @@ SpannerClient.prototype.matchDatabaseFromDatabaseName = function(databaseName) {
  * @param {String} session
  * @returns {String}
  */
-SpannerClient.prototype.sessionPath = function(project, instance, database, session) {
+SpannerClient.prototype.sessionPath = function(
+  project,
+  instance,
+  database,
+  session
+) {
   return SESSION_PATH_TEMPLATE.render({
     project: project,
     instance: instance,
     database: database,
-    session: session
+    session: session,
   });
 };
 
@@ -786,7 +799,11 @@ SpannerClient.prototype.streamingRead = function(request, options) {
  *     console.error(err);
  * });
  */
-SpannerClient.prototype.beginTransaction = function(request, options, callback) {
+SpannerClient.prototype.beginTransaction = function(
+  request,
+  options,
+  callback
+) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -925,12 +942,13 @@ function SpannerClientBuilder(gaxGrpc) {
     return new SpannerClientBuilder(gaxGrpc);
   }
 
-  var spannerClient = gaxGrpc.load([{
-    root: require('google-proto-files')('..'),
-    file: 'google/spanner/v1/spanner.proto'
-  }]);
+  var spannerClient = gaxGrpc.load([
+    {
+      root: require('google-proto-files')('..'),
+      file: 'google/spanner/v1/spanner.proto',
+    },
+  ]);
   extend(this, spannerClient.google.spanner.v1);
-
 
   /**
    * Build a new instance of {@link SpannerClient}.

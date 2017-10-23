@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var util = require('@google-cloud/common').util;
@@ -30,8 +31,8 @@ describe('codec', function() {
   before(function() {
     codec = proxyquire('../src/codec.js', {
       '@google-cloud/common-grpc': {
-        Service: FakeGrpcService
-      }
+        Service: FakeGrpcService,
+      },
     });
     codecCached = extend({}, codec);
   });
@@ -46,7 +47,7 @@ describe('codec', function() {
     it('should choke on multiple arguments', function() {
       var expectedErrorMessage = [
         'The spanner.date function accepts a Date object or a',
-        'single argument parseable by Date\'s constructor.'
+        "single argument parseable by Date's constructor.",
       ].join(' ');
 
       assert.throws(function() {
@@ -113,8 +114,8 @@ describe('codec', function() {
     // Does not require any special decoding.
     var BYPASS_FIELD = {
       type: {
-        code: 'not-real-code'
-      }
+        code: 'not-real-code',
+      },
     };
 
     beforeEach(function() {
@@ -146,15 +147,15 @@ describe('codec', function() {
     });
 
     it('should decode BYTES', function() {
-      var value = new Buffer('bytes value');
+      var value = Buffer.from('bytes value');
 
       var decoded = codec.decode(value.toString('base64'), {
         type: {
-          code: 'BYTES'
-        }
+          code: 'BYTES',
+        },
       });
 
-      assert.deepEqual(decoded, new Buffer(value, 'base64'));
+      assert.deepEqual(decoded, Buffer.from(value, 'base64'));
     });
 
     it('should decode FLOAT64', function() {
@@ -162,8 +163,8 @@ describe('codec', function() {
 
       var decoded = codec.decode(value, {
         type: {
-          code: 'FLOAT64'
-        }
+          code: 'FLOAT64',
+        },
       });
 
       assert(decoded instanceof codec.Float);
@@ -175,8 +176,8 @@ describe('codec', function() {
 
       var decoded = codec.decode(value, {
         type: {
-          code: 'INT64'
-        }
+          code: 'INT64',
+        },
       });
 
       assert(decoded instanceof codec.Int);
@@ -188,8 +189,8 @@ describe('codec', function() {
 
       var decoded = codec.decode(value.toJSON(), {
         type: {
-          code: 'TIMESTAMP'
-        }
+          code: 'TIMESTAMP',
+        },
       });
 
       assert.deepEqual(decoded, value);
@@ -200,8 +201,8 @@ describe('codec', function() {
 
       var decoded = codec.decode(value.toJSON(), {
         type: {
-          code: 'DATE'
-        }
+          code: 'DATE',
+        },
       });
 
       assert.deepEqual(decoded, value);
@@ -214,9 +215,9 @@ describe('codec', function() {
         type: {
           code: 'ARRAY',
           arrayElementType: {
-            code: 'INT64'
-          }
-        }
+            code: 'INT64',
+          },
+        },
       });
 
       assert(decoded[0] instanceof codec.Int);
@@ -224,10 +225,10 @@ describe('codec', function() {
 
     it('should decode STRUCT and inner members', function() {
       var value = {
-        fieldName: '1'
+        fieldName: '1',
       };
 
-      var int = { int: true };
+      var int = {int: true};
       codec.Int = function(value_) {
         assert.strictEqual(value_, value.fieldName);
         return int;
@@ -241,32 +242,32 @@ describe('codec', function() {
               {
                 name: 'fieldName',
                 type: {
-                  code: 'INT64'
-                }
-              }
-            ]
-          }
-        }
+                  code: 'INT64',
+                },
+              },
+            ],
+          },
+        },
       });
 
       assert.deepEqual(decoded, [
         {
           name: 'fieldName',
-          value: int
-        }
+          value: int,
+        },
       ]);
 
       assert.deepEqual(decoded.toJSON(), {
-        fieldName: int
+        fieldName: int,
       });
     });
 
     it('should skip falsy struct keys in JSON', function() {
       var value = {
-        undefined: '1'
+        undefined: '1',
       };
 
-      var int = { int: true };
+      var int = {int: true};
       codec.Int = function(value_) {
         assert.strictEqual(value_, value[undefined]);
         return int;
@@ -280,30 +281,28 @@ describe('codec', function() {
               {
                 name: undefined,
                 type: {
-                  code: 'INT64'
-                }
-              }
-            ]
-          }
-        }
+                  code: 'INT64',
+                },
+              },
+            ],
+          },
+        },
       });
 
       assert.deepEqual(decoded, [
         {
           name: undefined,
-          value: int
-        }
+          value: int,
+        },
       ]);
 
       assert.deepEqual(decoded.toJSON(), {});
     });
 
     it('should decode STRUCT and inner members by index', function() {
-      var value = [
-        '1'
-      ];
+      var value = ['1'];
 
-      var int = { int: true };
+      var int = {int: true};
       codec.Int = function(value_) {
         assert.strictEqual(value_, value[0]);
         return int;
@@ -317,23 +316,23 @@ describe('codec', function() {
               {
                 name: 'fieldName',
                 type: {
-                  code: 'INT64'
-                }
-              }
-            ]
-          }
-        }
+                  code: 'INT64',
+                },
+              },
+            ],
+          },
+        },
       });
 
       assert.deepEqual(decoded, [
         {
           name: 'fieldName',
-          value: int
-        }
+          value: int,
+        },
       ]);
 
       assert.deepEqual(decoded.toJSON(), {
-        fieldName: int
+        fieldName: int,
       });
     });
   });
@@ -359,7 +358,7 @@ describe('codec', function() {
     });
 
     it('should encode BYTES', function() {
-      var value = new Buffer('bytes value');
+      var value = Buffer.from('bytes value');
 
       var encoded = codec.encode(value);
 
@@ -399,14 +398,12 @@ describe('codec', function() {
     });
 
     it('should encode ARRAY and inner members', function() {
-      var value = [
-        5
-      ];
+      var value = [5];
 
       var encoded = codec.encode(value);
 
       assert.deepEqual(encoded, [
-        value.toString() // (tests that it is stringified)
+        value.toString(), // (tests that it is stringified)
       ]);
     });
 
@@ -453,7 +450,8 @@ describe('codec', function() {
 
     it('should only encode public properties of objects', function() {
       var obj = {
-        hasOwnProperty: function(key) {  // jshint ignore:line
+        hasOwnProperty: function(key) {
+          // jshint ignore:line
           return key === 'public';
         },
         _private: new codec.Int(10),
@@ -488,7 +486,7 @@ describe('codec', function() {
     });
 
     it('should determine if the value is bytes', function() {
-      assert.strictEqual(codec.getType(new Buffer('abc')), 'bytes');
+      assert.strictEqual(codec.getType(Buffer.from('abc')), 'bytes');
     });
 
     it('should determine if the value is a timestamp', function() {
@@ -502,7 +500,7 @@ describe('codec', function() {
     it('should attempt to determine arrays and their values', function() {
       assert.deepEqual(codec.getType([Infinity]), {
         type: 'array',
-        child: 'float64'
+        child: 'float64',
       });
     });
 
@@ -511,7 +509,7 @@ describe('codec', function() {
 
       assert.deepEqual(codec.getType([null]), {
         type: 'array',
-        child: 'unspecified'
+        child: 'unspecified',
       });
     });
   });
@@ -527,7 +525,7 @@ describe('codec', function() {
         'date',
         'string',
         'bytes',
-        'array'
+        'array',
       ]);
     });
   });
