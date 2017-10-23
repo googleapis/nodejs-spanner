@@ -698,10 +698,12 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
       );
     }
 
-    return columns.map(function(column) {
-      var value = keyVal[column];
-      return codec.encode(value);
-    });
+    return {
+      values: columns.map(function(column) {
+        var value = keyVal[column];
+        return codec.encode(value);
+      }),
+    };
   });
 
   var mutation = {
