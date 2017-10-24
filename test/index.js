@@ -47,18 +47,11 @@ var fakeUtil = extend({}, util, {
   },
 });
 
-var fakeV1Override;
-function fakeV1() {
-  if (fakeV1Override) {
-    return fakeV1Override.apply(null, arguments);
-  }
-
-  return {
-    spannerClient: util.noop,
-  };
-}
-
-fakeV1.admin = {}; // defaulted in the beforeEach hook
+var fakeV1 = {
+  DatabaseAdminClient: util.noop,
+  InstanceAdminClient: util.noop,
+  SpannerClient: util.noop,
+};
 
 var fakeCodec = {
   SpannerDate: util.noop,
@@ -101,19 +94,9 @@ describe('Spanner', function() {
   });
 
   beforeEach(function() {
-    fakeV1Override = null;
-    fakeV1.admin = {
-      database: function() {
-        return {
-          databaseAdminClient: util.noop,
-        };
-      },
-      instance: function() {
-        return {
-          instanceAdminClient: util.noop,
-        };
-      },
-    };
+    fakeV1.DatabaseAdminClient = util.noop;
+    fakeV1.InstanceAdminClient = util.noop;
+    fakeV1.SpannerClient = util.noop;
     fakeCodec.SpannerDate = util.noop;
     fakeCodec.Int = util.noop;
     spanner = new Spanner(OPTIONS);
@@ -163,34 +146,19 @@ describe('Spanner', function() {
         projectId: OPTIONS.projectId,
       };
 
-      fakeV1Override = function(options) {
+      fakeV1.SpannerClient = function(options) {
         assert.deepStrictEqual(options, expectedOptions);
-        return {
-          spannerClient: function(options) {
-            assert.deepStrictEqual(options, expectedOptions);
-            return gaxSpannerClient;
-          },
-        };
+        return gaxSpannerClient;
       };
 
-      fakeV1.admin.database = function(options) {
+      fakeV1.DatabaseAdminClient = function(options) {
         assert.deepStrictEqual(options, expectedOptions);
-        return {
-          databaseAdminClient: function(options) {
-            assert.deepStrictEqual(options, expectedOptions);
-            return gaxDatabaseClient;
-          },
-        };
+        return gaxDatabaseClient;
       };
 
-      fakeV1.admin.instance = function(options) {
+      fakeV1.InstanceAdminClient = function(options) {
         assert.deepStrictEqual(options, expectedOptions);
-        return {
-          instanceAdminClient: function(options) {
-            assert.deepStrictEqual(options, expectedOptions);
-            return gaxInstanceClient;
-          },
-        };
+        return gaxInstanceClient;
       };
 
       var spanner = new Spanner(OPTIONS);
