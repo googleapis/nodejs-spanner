@@ -40,7 +40,7 @@ test.before(async () => {
     // Ignore error
   }
 
-  const [_instance, operation] = await instance.create({
+  const response = await instance.create({
     config: 'regional-us-central1',
     nodes: 1,
     labels: {
@@ -48,7 +48,7 @@ test.before(async () => {
     },
   });
 
-  await operation.promise();
+  await response.operation.promise();
 });
 
 test.after.always(async () => {
