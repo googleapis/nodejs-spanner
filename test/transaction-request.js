@@ -797,18 +797,22 @@ describe('TransactionRequest', function() {
       table: TABLE,
       columns: ['anotherNullable', 'key', 'nonNullable', 'nullable'],
       values: [
-        [
-          KEYVALS[0].anotherNullable,
-          KEYVALS[0].key,
-          KEYVALS[0].nonNullable,
-          KEYVALS[0].nullable,
-        ],
-        [
-          KEYVALS[1].anotherNullable,
-          KEYVALS[1].key,
-          KEYVALS[1].nonNullable,
-          KEYVALS[1].nullable,
-        ],
+        {
+          values: [
+            KEYVALS[0].anotherNullable,
+            KEYVALS[0].key,
+            KEYVALS[0].nonNullable,
+            KEYVALS[0].nullable,
+          ],
+        },
+        {
+          values: [
+            KEYVALS[1].anotherNullable,
+            KEYVALS[1].key,
+            KEYVALS[1].nonNullable,
+            KEYVALS[1].nullable,
+          ],
+        },
       ],
     };
 
