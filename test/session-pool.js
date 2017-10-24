@@ -1243,9 +1243,17 @@ describe('SessionPool', function() {
   describe('getNextAvailableSession_', function() {
     var OPTIONS = {};
 
-    it('should accept only a callback', function() {
+    beforeEach(function() {
+      sessionPool.pollForSession_ = util.noop;
+    });
+
+    it('should accept only a callback', function(done) {
+      sessionPool.pollForSession_ = function(options, callback) {
+        callback(); // done()
+      };
+
       assert.doesNotThrow(function() {
-        sessionPool.getNextAvailableSession_(assert.ifError);
+        sessionPool.getNextAvailableSession_(done);
       });
     });
 
