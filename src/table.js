@@ -114,7 +114,7 @@ Table.prototype.create = function(schema, callback) {
  *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
  * @param {string[]} query.columns - The columns of the table to be returned for
  *     each row matching this query.
- * @param {*[]|*[][]} query.keys - The primary keys of the rows in this table to
+ * @param {Array} query.keys - The primary keys of the rows in this table to
  *     be yielded. If using a composite key, provide an array within this array.
  *     See the example below.
  * @param {string=} query.index - The name of an index on the table.
@@ -244,7 +244,7 @@ Table.prototype.delete = function(callback) {
  *
  * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
  *
- * @param {*[]|*[][]} keys - The keys for the rows to delete. If using a
+ * @param {Array} keys - The keys for the rows to delete. If using a
  *     composite key, provide an array within this array. See the example below.
  * @param {function} callback - The callback function.
  * @param {?error} callback.err - An error returned while making this request.
@@ -352,7 +352,7 @@ Table.prototype.insert = function(keyVals, callback) {
  *     the table.
  * @param {string[]} query.columns - The columns of the table to be returned for
  *     each row matching this query.
- * @param {*[]|*[][]} query.keys - The primary keys of the rows in this table to
+ * @param {Array} query.keys - The primary keys of the rows in this table to
  *     be yielded. If using a composite key, provide an array within this array.
  *     See the example below.
  * @param {string=} query.index - The name of an index on the table.

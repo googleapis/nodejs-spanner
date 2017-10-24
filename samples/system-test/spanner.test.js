@@ -39,6 +39,16 @@ test.before(async () => {
   } catch (err) {
     // Ignore error
   }
+
+  const response = await instance.create({
+    config: 'regional-us-central1',
+    nodes: 1,
+    labels: {
+      'gcloud-tests': 'true',
+    },
+  });
+
+  await response.operation.promise();
 });
 
 test.after.always(async () => {
@@ -46,6 +56,12 @@ test.after.always(async () => {
   const database = instance.database(DATABASE_ID);
   try {
     await database.delete();
+  } catch (err) {
+    // Ignore error
+  }
+
+  try {
+    await instance.delete();
   } catch (err) {
     // Ignore error
   }
