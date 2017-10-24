@@ -59,7 +59,12 @@ function SessionPool(database, options) {
   options = options || {};
 
   this.database = database;
-  this.maxIdle = options.maxIdle || options.min || 1;
+  this.maxIdle = is.number(options.maxIdle) ? options.maxIdle : options.min;
+
+  if (!is.number(this.maxIdle)) {
+    this.maxIdle = 1;
+  }
+
   this.fail = !!options.fail;
 
   this.pendingAcquires = [];
