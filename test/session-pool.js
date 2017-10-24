@@ -150,12 +150,12 @@ describe('SessionPool', function() {
 
     describe('options.maxIdle', function() {
       it('should localize the maxIdle option', function() {
-        var pool = new SessionPool(DATABASE, { maxIdle: 7, min: 4 });
+        var pool = new SessionPool(DATABASE, {maxIdle: 7, min: 4});
         assert.strictEqual(pool.maxIdle, 7);
       });
 
       it('should use the min option when maxIdle is absent', function() {
-        var pool = new SessionPool(DATABASE, { min: 4 });
+        var pool = new SessionPool(DATABASE, {min: 4});
         assert.strictEqual(pool.maxIdle, 4);
       });
 
