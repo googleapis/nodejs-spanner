@@ -20,10 +20,12 @@ function createDatabase(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -61,6 +63,9 @@ function createDatabase(instanceId, databaseId) {
     })
     .then(() => {
       console.log(`Created database ${databaseId} on instance ${instanceId}.`);
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
   // [END create_database]
 }
@@ -70,10 +75,12 @@ function addColumn(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -94,6 +101,9 @@ function addColumn(instanceId, databaseId) {
     })
     .then(() => {
       console.log('Added the MarketingBudget column.');
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
   // [END add_column]
 }
@@ -108,10 +118,12 @@ function queryDataWithNewColumn(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -124,20 +136,25 @@ function queryDataWithNewColumn(instanceId, databaseId) {
   };
 
   // Queries rows from the Albums table
-  database.run(query).then(results => {
-    const rows = results[0];
+  database
+    .run(query)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
+      rows.forEach(row => {
+        const json = row.toJSON();
 
-      console.log(
-        `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-          .value}, MarketingBudget: ${json.MarketingBudget
-          ? json.MarketingBudget.value
-          : null}`
-      );
+        console.log(
+          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+            .value}, MarketingBudget: ${json.MarketingBudget
+            ? json.MarketingBudget.value
+            : null}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END query_data_with_new_column]
 }
 

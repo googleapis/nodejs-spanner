@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/partialResultStream
- */
-
 'use strict';
 
 var checkpointStream = require('checkpoint-stream');
@@ -29,16 +25,7 @@ var split = require('split-array-stream');
 var streamEvents = require('stream-events');
 var through = require('through2');
 
-/**
- * @type {module:spanner/codec}
- * @private
- */
 var codec = require('./codec.js');
-
-/**
- * @type {module:spanner/rowBuilder}
- * @private
- */
 var RowBuilder = require('./row-builder.js');
 
 /**
@@ -51,6 +38,7 @@ var RowBuilder = require('./row-builder.js');
  *
  * @private
  *
+ * @class
  * @param {function} requestFn - The function that makes an API request. It will
  *     receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.

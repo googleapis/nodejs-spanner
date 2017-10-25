@@ -20,10 +20,12 @@ function readOnlyTransaction(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -75,6 +77,9 @@ function readOnlyTransaction(instanceId, databaseId) {
         });
         console.log('Successfully executed read-only transaction.');
         transaction.end();
+      })
+      .catch(err => {
+        console.error('ERROR:', err);
       });
   });
   // [END read_only_transaction]
@@ -89,10 +94,12 @@ function readWriteTransaction(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -171,7 +178,7 @@ function readWriteTransaction(instanceId, databaseId) {
         ]);
       })
       // Commits the transaction and send the changes to the database
-      .then(() =>
+      .then(() => {
         transaction.commit(err => {
           if (err) {
             console.error(err);
@@ -180,8 +187,11 @@ function readWriteTransaction(instanceId, databaseId) {
               `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
             );
           }
-        })
-      );
+        });
+      })
+      .catch(err => {
+        console.error('ERROR:', err);
+      });
   });
   // [END read_write_transaction]
 }

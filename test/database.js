@@ -954,7 +954,7 @@ describe('Database', function() {
     });
   });
 
-  describe('createSession_', function() {
+  describe('createSession', function() {
     var OPTIONS = {};
 
     it('should call the generated API', function(done) {
@@ -970,7 +970,7 @@ describe('Database', function() {
         },
       };
 
-      database.createSession_(OPTIONS, assert.ifError);
+      database.createSession(OPTIONS, assert.ifError);
     });
 
     it('should not require options', function(done) {
@@ -986,7 +986,7 @@ describe('Database', function() {
         },
       };
 
-      database.createSession_(assert.ifError);
+      database.createSession(assert.ifError);
     });
 
     describe('error', function() {
@@ -1002,7 +1002,7 @@ describe('Database', function() {
       });
 
       it('should execute callback with error & API response', function(done) {
-        database.createSession_(function(err, session, apiResponse) {
+        database.createSession(function(err, session, apiResponse) {
           assert.strictEqual(err, ERROR);
           assert.strictEqual(session, null);
           assert.strictEqual(apiResponse, API_RESPONSE);
@@ -1032,7 +1032,7 @@ describe('Database', function() {
           return sessionInstance;
         };
 
-        database.createSession_(function(err, session, apiResponse) {
+        database.createSession(function(err, session, apiResponse) {
           assert.ifError(err);
 
           assert.strictEqual(session, sessionInstance);

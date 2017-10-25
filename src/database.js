@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/database
- */
-
 'use strict';
 
 var arrify = require('arrify');
@@ -27,73 +23,43 @@ var extend = require('extend');
 var is = require('is');
 var util = require('util');
 
-/**
- * @type {module:spanner/codec}
- * @private
- */
 var codec = require('./codec.js');
-
-/**
- * @type {module:spanner/partialResultStream}
- * @private
- */
 var PartialResultStream = require('./partial-result-stream.js');
-
-/**
- * @type {module:spanner/session}
- * @private
- */
 var Session = require('./session.js');
-
-/**
- * @type {module:spanner/sessionPool}
- * @private
- */
 var SessionPool = require('./session-pool.js');
-
-/**
- * @type {module:spanner/table}
- * @private
- */
 var Table = require('./table.js');
-
-/**
- * @type {module:spanner/transaction}
- * @private
- */
 var TransactionRequest = require('./transaction-request.js');
 
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
- * @constructor
- * @alias module:spanner/database
+ * @class
  *
- * @param {string} name - Name of the database.
- * @param {object=} options - Session pool configuration options.
- * @param {number} options.acquireTimeout - Time in milliseconds before giving
- *     up trying to acquire a session. If the specified value is `0`, a timeout
- *     will not occur. (Default: `0`)
- * @param {boolean} options.fail - If set to true, an error will be thrown when
- *     there are no available sessions for a request. (Default: `false`)
- * @param {number} options.max - Maximum number of resources to create at any
- *     given time. (Default: `100`)
- * @param {number} options.maxIdle - Maximum number of idle resources to keep
- *     in the pool at any given time. (Default: `1`)
- * @param {number} options.min - Minimum number of resources to keep in the pool
- *     at any given time. (Default: `0`)
- * @param {number} options.keepAlive - How often to ping idle sessions, in
- *     minutes. Must be less than 1 hour. (Default: `59`)
- * @param {number} options.writes - Pre-allocate transactions for the number of
- *     sessions specified. (Default: `0`)
+ * @param {string} name Name of the database.
+ * @param {SessionPoolOptions} options Session pool configuration options.
  *
  * @example
- * var instance = spanner.instance('my-instance');
- * var database = instance.database('my-database');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
  */
 function Database(instance, name, poolOptions) {
   var self = this;
 
+  /**
+   * @name Database#api
+   * @type {object}
+   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
+   *     low-level {@link v1.DatabaseAdminClient} class used by this
+   *     {@link Database} instance.
+   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
+   *     low-level {@link v1.InstanceAdminClient} class used by this
+   *     {@link Database} instance.
+   * @property {v1.SpannerClient} Spanner Reference to an instance of the
+   *     low-level {@link v1.SpannerClient} class used by this {@link Database}
+   *     instance.
+   */
   this.api = instance.api;
   this.formattedName_ = Database.formatName_(instance.formattedName_, name);
   this.pool_ = new SessionPool(this, poolOptions);
@@ -102,9 +68,17 @@ function Database(instance, name, poolOptions) {
     /**
      * Create a database.
      *
-     * @param {object=} options - See {module:spanner/instance#createDatabase}.
+     * @method Database#create
+     * @param {CreateDatabaseRequest} [options] Configuration object.
+     * @param {CreateDatabaseCallback} [callback] Callback function.
+     * @returns {Promise<CreateDatabaseResponse>}
      *
      * @example
+     * const Spanner = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     * const instance = spanner.instance('my-instance');
+     * const database = instance.database('my-database');
+     *
      * database.create(function(err, database, operation, apiResponse) {
      *   if (err) {
      *     // Error handling omitted.
@@ -122,8 +96,8 @@ function Database(instance, name, poolOptions) {
      * //-
      * database.create()
      *   .then(function(data) {
-     *     var operation = data[0];
-     *     var apiResponse = data[1];
+     *     const operation = data[0];
+     *     const apiResponse = data[1];
      *
      *     return operation.promise();
      *   })
@@ -134,25 +108,50 @@ function Database(instance, name, poolOptions) {
     create: true,
 
     /**
+     * @typedef {array} DatabaseExistsResponse
+     * @property {boolean} 0 Whether the {@link Database} exists.
+     */
+    /**
+     * @callback DatabaseExistsCallback
+     * @param {?Error} err Request error, if any.
+     * @param {boolean} exists Whether the {@link Database} exists.
+     */
+    /**
      * Check if a database exists.
      *
-     * @param {function} callback - The callback function.
-     * @param {?error} callback.err - An error returned while making this
-     *     request.
-     * @param {boolean} callback.exists - Whether the database exists or not.
+     * @method Database#exists
+     * @param {DatabaseExistsCallback} [callback] Callback function.
+     * @returns {Promise<DatabaseExistsResponse>}
      *
      * @example
+     * const Spanner = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     *
+     * const instance = spanner.instance('my-instance');
+     * const database = instance.database('my-database');
+     *
      * database.exists(function(err, exists) {});
      *
      * //-
      * // If the callback is omitted, we'll return a Promise.
      * //-
      * database.exists().then(function(data) {
-     *   var exists = data[0];
+     *   const exists = data[0];
      * });
      */
     exists: true,
 
+    /**
+     * @typedef {array} GetDatabaseResponse
+     * @property {Database} 0 The {@link Database}.
+     * @property {object} 1 The full API response.
+     */
+    /**
+     * @callback GetDatabaseCallback
+     * @param {?Error} err Request error, if any.
+     * @param {Database} database The {@link Database}.
+     * @param {object} apiResponse The full API response.
+     */
     /**
      * Get a database if it exists.
      *
@@ -161,11 +160,20 @@ function Database(instance, name, poolOptions) {
      * normally required for the `create` method must be contained within this
      * object as well.
      *
-     * @param {options=} options - Configuration object.
-     * @param {boolean} options.autoCreate - Automatically create the object if
-     *     it does not exist. Default: `false`
+     * @method Database#get
+     * @param {options} [options] Configuration object.
+     * @param {boolean} [options.autoCreate=false] Automatically create the
+     *     object if it does not exist.
+     * @param {GetDatabaseCallback} [callback] Callback function.
+     * @returns {Promise<GetDatabaseResponse>}
      *
      * @example
+     * const Spanner = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     *
+     * const instance = spanner.instance('my-instance');
+     * const database = instance.database('my-database');
+     *
      * database.get(function(err, database, apiResponse) {
      *   // `database.metadata` has been populated.
      * });
@@ -198,8 +206,8 @@ util.inherits(Database, commonGrpc.ServiceObject);
  *
  * @private
  *
- * @param {string} instanceName - The formatted instance name.
- * @param {string} name - The table name.
+ * @param {string} instanceName The formatted instance name.
+ * @param {string} name The table name.
  *
  * @example
  * Database.formatName_(
@@ -219,12 +227,22 @@ Database.formatName_ = function(instanceName, name) {
 };
 
 /**
+ * @callback CloseDatabaseCallback
+ * @param {?Error} err Request error, if any.
+ */
+/**
  * Close the database connection and destroy all sessions associated with it.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
+ * @param {CloseDatabaseCallback} [callback] Callback function.
+ * @returns {Promise}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.close(function(err) {
  *   if (err) {
  *     // Error handling omitted.
@@ -246,18 +264,39 @@ Database.prototype.close = function(callback) {
 };
 
 /**
+ * @typedef {array} CreateTableResponse
+ * @property {Table} 0 The new {@link Table}.
+ * @property {Operation} 1 An {@link Operation} object that can be used to check
+ *     the status of the request.
+ * @property {object} 2 The full API response.
+ */
+/**
+ * @callback CreateTableCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Table} table The new {@link Table}.
+ * @param {Operation} operation An {@link Operation} object that can be used to
+ *     check the status of the request.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Create a table.
  *
- * @param {string} schema - A DDL CREATE statement describing the table.
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {module:spanner/table} callback.table - The Table object.
- * @param {Operation} callback.operation - An operation object that can be used
- *     to check the status of the request.
- * @param {object} callback.apiResponse - The full API response.
+ * Wrapper around {@link Database#updateSchema}.
+ *
+ * @see {@link Database#updateSchema}
+ *
+ * @param {string} schema A DDL CREATE statement describing the table.
+ * @param {CreateTableCallback} [callback] Callback function.
+ * @returns {Promise<CreateTableResponse>}
  *
  * @example
- * var schema =
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const schema =
  *   'CREATE TABLE Singers (' +
  *   '  SingerId INT64 NOT NULL,' +
  *   '  FirstName STRING(1024),' +
@@ -282,8 +321,8 @@ Database.prototype.close = function(callback) {
  * //-
  * database.createTable(schema)
  *   .then(function(data) {
- *     var table = data[0];
- *     var operation = data[1];
+ *     const table = data[0];
+ *     const operation = data[1];
  *
  *     return operation.promise();
  *   })
@@ -310,13 +349,20 @@ Database.prototype.createTable = function(schema, callback) {
 /**
  * Delete the database.
  *
- * @resource [DropDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.DropDatabase)
+ * Wrapper around {@link v1.DatabaseAdminClient#dropDatabase}.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.DatabaseAdminClient#dropDatabase}
+ * @see [DropDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.DropDatabase)
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.delete(function(err, apiResponse) {
  *   if (err) {
  *     // Error handling omitted.
@@ -341,16 +387,34 @@ Database.prototype.delete = function(callback) {
 };
 
 /**
+ * @typedef {array} GetDatabaseMetadataResponse
+ * @property {object} 0 The {@link Database} metadata.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetDatabaseMetadataCallback
+ * @param {?Error} err Request error, if any.
+ * @param {object} metadata The {@link Database} metadata.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Get the database's metadata.
  *
- * @resource [GetDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase)
+ * Wrapper around {@link v1.DatabaseAdminClient#getDatabase}.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.metadata - The database's metadata.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.DatabaseAdminClient#getDatabase}
+ * @see [GetDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase)
+ *
+ * @param {GetDatabaseMetadataCallback} [callback] Callback function.
+ * @returns {Promise<GetDatabaseMetadataResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.getMetadata(function(err, metadata, apiResponse) {
  *   if (err) {
  *     // Error handling omitted.
@@ -363,8 +427,8 @@ Database.prototype.delete = function(callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.getMetadata().then(function(data) {
- *   var metadata = data[0];
- *   var apiResponse = data[1];
+ *   const metadata = data[0];
+ *   const apiResponse = data[1];
  * });
  */
 Database.prototype.getMetadata = function(callback) {
@@ -377,25 +441,43 @@ Database.prototype.getMetadata = function(callback) {
 };
 
 /**
+ * @typedef {array} GetSchemaResponse
+ * @property {string[]} 0 An array of database DDL statements.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetSchemaCallback
+ * @param {?Error} err Request error, if any.
+ * @param {string[]} statements An array of database DDL statements.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Get this database's schema as a list of formatted DDL statements.
  *
- * @resource [Data Definition Language (DDL)](https://cloud.google.com/spanner/docs/data-definition-language)
- * @resource [GetDatabaseDdl API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl)
+ * Wrapper around {@link v1.DatabaseAdminClient#getDatabaseDdl}.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {string[]} callback.statements - An array of database DDL statements.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.DatabaseAdminClient#getDatabaseDdl}
+ * @see [Data Definition Language (DDL)](https://cloud.google.com/spanner/docs/data-definition-language)
+ * @see [GetDatabaseDdl API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl)
+ *
+ * @param {GetSchemaCallback} [callback] Callback function.
+ * @returns {Promise<GetSchemaResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.getSchema(function(err, statements, apiResponse) {});
  *
  * //-
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.getSchema().then(function(data) {
- *   var statements = data[0];
- *   var apiResponse = data[1];
+ *   const statements = data[0];
+ *   const apiResponse = data[1];
  * });
  */
 Database.prototype.getSchema = function(callback) {
@@ -414,38 +496,39 @@ Database.prototype.getSchema = function(callback) {
 };
 
 /**
+ * @typedef {array} GetTransactionResponse
+ * @property {Transaction} 0 The transaction object.
+ */
+/**
+ * @callback GetTransactionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Transaction} transaction The transaction object.
+ */
+/**
  * Get a read/write ready Transaction object.
  *
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.timeout - Specify a timeout for the transaction. The
- *     transaction will be ran in its entirety, however if an abort error is
- *     returned the transaction will be retried if the timeout has not been met.
- *     Default: `60000` (milliseconds)
- * @param {boolean} options.readOnly - Specifies if the transaction is
- *     read-only. Default: `false`.
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old. This is only applicable for read-only
- *     transactions.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp. This is only applicable for read-only transactions.
- * @param {boolean} options.returnTimestamp - If `true`, returns the read
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible. This is only applicable for read-only
- *     transactions.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while getting the
- *     transaction object.
- * @param {module:spanner/transaction} transaction - The transaction object.
+ * Wrapper around {@link v1.SpannerClient#beginTransaction}.
+ *
+ * @see {@link v1.SpannerClient#beginTransaction}
+ *
+ * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @param {GetTransactionCallback} [callback] Callback function.
+ * @returns {Promise<GetTransactionResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.getTransaction(function(err, transaction) {});
  *
  * //-
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.getTransaction().then(function(data) {
- *   var transaction = data[0];
+ *   const transaction = data[0];
  * });
  */
 Database.prototype.getTransaction = function(options, callback) {
@@ -484,36 +567,60 @@ Database.prototype.getTransaction = function(options, callback) {
 };
 
 /**
+ * Transaction options.
+ *
+ * @typedef {object} DatabaseRunRequest
+ * @property {number} [exactStaleness] Executes all reads at the timestamp
+ *     that is `exactStaleness` old.
+ * @property {date} [readTimestamp] Execute all reads at the given
+ *     timestamp.
+ * @property {boolean} [strong] Read at the timestamp where all previously
+ *     committed transactions are visible.
+ */
+/**
+ * @typedef {array} RunResponse
+ * @property {array[]} 0 Rows are returned as an array of objects. Each object
+ *     has a `name` and `value` property. To get a serialized object, call
+ *     `toJSON()`.
+ */
+/**
+ * @callback RunCallback
+ * @param {?Error} err Request error, if any.
+ * @param {array[]} rows Rows are returned as an array of objects. Each object
+ *     has a `name` and `value` property. To get a serialized object, call
+ *     `toJSON()`.
+ */
+/**
  * Execute a SQL statement on this database.
  *
- * @resource [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
- * @resource [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
+ * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
  *
- * @param {string|object} query - A SQL query or query object. See an
+ * @see {@link v1.SpannerClient#executeStreamingSql}
+ * @see [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
+ * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
+ *
+ * @param {string|object} query A SQL query or query object. See an
  *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible.
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {array[]} callback.rows - Rows are returned as an array of objects.
- *     Each object has a `name` and `value` property. To get a serialized
- *     object, call `toJSON()`.
+ * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @param {RunCallback} [callback] Callback function.
+ * @returns {Promise<RunResponse>}
  *
  * @example
- * var query = 'SELECT * FROM Singers';
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const query = 'SELECT * FROM Singers';
  *
  * database.run(query, function(err, rows) {
  *   if (err) {
  *     // Error handling omitted.
  *   }
  *
- *   var row1 = rows[0];
+ *   const row1 = rows[0];
  *
  *   // row1 = [
  *   //   {
@@ -536,7 +643,7 @@ Database.prototype.getTransaction = function(options, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   var row1 = rows[0];
+ *   const row1 = rows[0];
  *
  *   // row1.toJSON() = {
  *   //   SingerId: '1',
@@ -548,7 +655,7 @@ Database.prototype.getTransaction = function(options, callback) {
  * // The SQL query string can contain parameter placeholders. A parameter
  * // placeholder consists of '@' followed by the parameter name.
  * //-
- * var query = {
+ * const query = {
  *   sql: 'SELECT * FROM Singers WHERE name = @name',
  *   params: {
  *     name: 'Eddie Wilson'
@@ -561,7 +668,7 @@ Database.prototype.getTransaction = function(options, callback) {
  * // If you need to enforce a specific param type, a types map can be provided.
  * // This is typically useful if your param value can be null.
  * //-
- * var query = {
+ * const query = {
  *   sql: 'SELECT * FROM Singers WHERE name = @name AND id = @id',
  *   params: {
  *     id: spanner.int(8),
@@ -579,8 +686,16 @@ Database.prototype.getTransaction = function(options, callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.run(query).then(function(data) {
- *   var rows = data[0];
+ *   const rows = data[0];
  * });
+ *
+ * @example <caption>include:samples/crud.js</caption>
+ * region_tag:query_data
+ * Full example:
+ *
+ * @example <caption>include:samples/indexing.js</caption>
+ * region_tag:query_data_with_index
+ * Querying data with an index:
  */
 Database.prototype.run = function(query, options, callback) {
   var rows = [];
@@ -604,24 +719,27 @@ Database.prototype.run = function(query, options, callback) {
  * Create a readable object stream to receive resulting rows from a SQL
  * statement.
  *
- * @resource [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
- * @resource [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
+ * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
  *
- * @param {string|object} query - A SQL query or query object. See an
+ * @see {@link v1.SpannerClient#executeStreamingSql}
+ * @see [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
+ * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
+ *
+ * @param {string|object} query A SQL query or query object. See an
  *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
- * @param {object=} query.params - A map of parameter name to values.
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible.
- * @return {Stream}
+ * @param {object} [query.params] A map of parameter name to values.
+ * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @returns {ReadableStream} A readable stream that emits rows.
  *
  * @example
- * var query = 'SELECT * FROM Singers';
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const query = 'SELECT * FROM Singers';
  *
  * database.runStream(query)
  *   .on('error', function(err) {})
@@ -662,7 +780,7 @@ Database.prototype.run = function(query, options, callback) {
  * // The SQL query string can contain parameter placeholders. A parameter
  * // placeholder consists of '@' followed by the parameter name.
  * //-
- * var query = {
+ * const query = {
  *   sql: 'SELECT * FROM Singers WHERE name = @name',
  *   params: {
  *     name: 'Eddie Wilson'
@@ -678,7 +796,7 @@ Database.prototype.run = function(query, options, callback) {
  * // If you need to enforce a specific param type, a types map can be provided.
  * // This is typically useful if your param value can be null.
  * //-
- * var query = {
+ * const query = {
  *   sql: 'SELECT * FROM Singers WHERE name = @name',
  *   params: {
  *     name: 'Eddie Wilson'
@@ -792,6 +910,18 @@ Database.prototype.runStream = function(query, options) {
 };
 
 /**
+ * @typedef {array} RunTransactionResponse
+ * @property {Transaction} 0 The transaction object. The transaction has already
+ *     been created, and is ready to be queried and committed against.
+ */
+/**
+ * A function to execute in the context of a transaction.
+ * @callback RunTransactionCallback
+ * @param {?Error} err An error returned while making this request.
+ * @param {Transaction} transaction The transaction object. The transaction has
+ *     already been created, and is ready to be queried and committed against.
+ */
+/**
  * A transaction in Cloud Spanner is a set of reads and writes that execute
  * atomically at a single logical point in time across columns, rows, and tables
  * in a database.
@@ -801,49 +931,35 @@ Database.prototype.runStream = function(query, options) {
  * transaction.
  *
  * The callback you provide to this function will become the "run function". It
- * will be executed with either an error or a {module:spanner/transaction}
+ * will be executed with either an error or a {@link Transaction}
  * object. The Transaction object will let you run queries and queue mutations
- * until you are ready to {module:spanner/transaction#commit}.
+ * until you are ready to {@link Transaction#commit}.
  *
  * In the event that an aborted error occurs, we will re-run the `runFn` in its
  * entirety. If you prefer to handle aborted errors for yourself please refer to
- * {module:spanner/database#getTransaction}.
+ * {@link Database#getTransaction}.
  *
  * For a more complete listing of functionality available to a Transaction, see
- * the {module:spanner/transaction} API documentation. For a general overview of
+ * the {@link Transaction} API documentation. For a general overview of
  * transactions within Cloud Spanner, see
  * [Transactions](https://cloud.google.com/spanner/docs/transactions) from the
  * official Cloud Spanner documentation.
  *
- * @resource [Transactions](https://cloud.google.com/spanner/docs/transactions)
- * @resource [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
+ * @see [Transactions](https://cloud.google.com/spanner/docs/transactions)
+ * @see [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
  *
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.timeout - Specify a timeout for the transaction. The
- *     transaction will be ran in its entirety, however if an abort error is
- *     returned the transaction will be retried if the timeout has not been met.
- *     Default: `60000` (milliseconds)
- * @param {boolean} options.readOnly - Specifies if the transaction is
- *     read-only.
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old. This is only applicable for read-only
- *     transactions.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp. This is only applicable for read-only
- *     transactions.
- * @param {boolean} options.returnTimestamp - If `true`, returns the read
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible. This is only applicable for read-only
- *     transactions.
- * @param {function} runFn - A function to execute in the context of a
- *     transaction.
- * @param {?error} runFn.err - An error returned while making this request.
- * @param {module:spanner/transaction} runFn.transaction - The Transaction
- *     object. The transaction has already been created, and is ready to be
- *     queried and committed against.
+ * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @param {RunTransactionCallback} callback A function to execute in the context
+ *     of a transaction.
+ * @returns {Promise<RunTransactionResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.runTransaction(function(err, transaction) {
  *   if (err) {
  *     // Error handling omitted.
@@ -874,7 +990,7 @@ Database.prototype.runStream = function(query, options) {
  * // For read-only transactions, use the `transaction.end()` function to
  * // release the transaction.
  * //-
- * var options = {
+ * const options = {
  *   readOnly: true,
  *   strong: true
  * };
@@ -893,6 +1009,14 @@ Database.prototype.runStream = function(query, options) {
  *     transaction.end();
  *   });
  * });
+ *
+ * @example <caption>include:samples/transaction.js</caption>
+ * region_tag:read_only_transaction
+ * Read-only transaction:
+ *
+ * @example <caption>include:samples/transaction.js</caption>
+ * region_tag:read_write_transaction
+ * Read-write transaction:
  */
 Database.prototype.runTransaction = function(options, runFn) {
   if (is.fn(options)) {
@@ -925,11 +1049,17 @@ Database.prototype.runTransaction = function(options, runFn) {
  *
  * @throws {Error} If a name is not provided.
  *
- * @param {string} name - The name of the table.
- * @return {module:spanner/table} - A Table object.
+ * @param {string} name The name of the table.
+ * @return {Table} A Table object.
  *
  * @example
- * var table = database.table('Singers');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const table = database.table('Singers');
  */
 Database.prototype.table = function(name) {
   if (!name) {
@@ -947,21 +1077,27 @@ Database.prototype.table = function(name) {
  * handlers for the "error" and "complete" events to see how the operation
  * finishes. Follow along with the examples below.
  *
- * @resource [Data Definition Language (DDL)](https://cloud.google.com/spanner/docs/data-definition-language)
- * @resource [Schema and Data Model](https://cloud.google.com/spanner/docs/schema-and-data-model)
- * @resource [UpdateDatabaseDdl API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.UpdateDatabaseDdlRequest)
+ * Wrapper around {@link v1.DatabaseAdminClient#updateDatabaseDdl}.
  *
- * @param {string|string[]|object} statements - An array of database DDL
+ * @see {@link v1.DatabaseAdminClient#updateDatabaseDdl}
+ * @see [Data Definition Language (DDL)](https://cloud.google.com/spanner/docs/data-definition-language)
+ * @see [Schema and Data Model](https://cloud.google.com/spanner/docs/schema-and-data-model)
+ * @see [UpdateDatabaseDdl API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.UpdateDatabaseDdlRequest)
+ *
+ * @param {string|string[]|object} statements An array of database DDL
  *     statements, or an
  *     [`UpdateDatabaseDdlRequest` object](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.UpdateDatabaseDdlRequest).
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {Operation} callback.operation - An operation object that can be used
- *     to check the status of the request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {LongRunningOperationCallback} [callback] Callback function.
+ * @returns {Promise<LongRunningOperationResponse>}
  *
  * @example
- * var statements = [
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const statements = [
  *   'CREATE TABLE Singers (' +
  *   '  SingerId INT64 NOT NULL,' +
  *   '  FirstName STRING(1024),' +
@@ -987,12 +1123,24 @@ Database.prototype.table = function(name) {
  * //-
  * database.updateSchema(statements)
  *   .then(function(data) {
- *     var operation = data[0];
+ *     const operation = data[0];
  *     return operation.promise();
  *   })
  *   .then(function() {
  *     // Database schema updated successfully.
  *   });
+ *
+ * @example <caption>include:samples/schema.js</caption>
+ * region_tag:add_column
+ * Adding a column:
+ *
+ * @example <caption>include:samples/indexing.js</caption>
+ * region_tag:create_index
+ * Creating an index:
+ *
+ * @example <caption>include:samples/indexing.js</caption>
+ * region_tag:create_storing_index
+ * Creating a storing index:
  */
 Database.prototype.updateSchema = function(statements, callback) {
   if (!is.object(statements)) {
@@ -1012,6 +1160,17 @@ Database.prototype.updateSchema = function(statements, callback) {
 };
 
 /**
+ * @typedef {array} CreateSessionResponse
+ * @property {Session} 0 The newly created session.
+ * @property {object} 2 The full API response.
+ */
+/**
+ * @callback CreateSessionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Session} session The newly created session.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Create a new session, which can be used to perform transactions that read
  * and/or modify data.
  *
@@ -1020,21 +1179,27 @@ Database.prototype.updateSchema = function(statements, callback) {
  * Note that standalone reads and queries use a transaction internally, and
  * count toward the one transaction limit.
  *
- * It is unlikely you will need to interact with sessions directly. By default,
- * sessions are created and utilized for maximum performance automatically.
+ * **It is unlikely you will need to interact with sessions directly. By
+ * default, sessions are created and utilized for maximum performance
+ * automatically.**
  *
- * @private
+ * Wrapper around {@link v1.SpannerClient#createSession}.
  *
- * @resource [CreateSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.CreateSession)
+ * @see {@link v1.SpannerClient#createSession}
+ * @see [CreateSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.CreateSession)
  *
- * @param {object=} options - Configuration object.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {module:spanner/session} callback.session - The newly created session.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {object} [options] Configuration object.
+ * @param {CreateSessionCallback} [callback] Callback function.
+ * @returns {Promise<CreateSessionResponse>}
  *
  * @example
- * database.createSession_(function(err, session, apiResponse) {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * database.createSession(function(err, session, apiResponse) {
  *   if (err) {
  *     // Error handling omitted.
  *   }
@@ -1045,12 +1210,12 @@ Database.prototype.updateSchema = function(statements, callback) {
  * //-
  * // If the callback is omitted, we'll return a Promise.
  * //-
- * database.createSession_().then(function(data) {
- *   var session = data[0];
- *   var apiResponse = data[1];
+ * database.createSession().then(function(data) {
+ *   const session = data[0];
+ *   const apiResponse = data[1];
  * });
  */
-Database.prototype.createSession_ = function(options, callback) {
+Database.prototype.createSession = function(options, callback) {
   var self = this;
 
   if (is.function(options)) {
@@ -1084,9 +1249,9 @@ Database.prototype.createSession_ = function(options, callback) {
  *
  * @private
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while getting the session.
- * @param {module:spanner/session} session - The session object.
+ * @param {function} callback The callback function.
+ * @param {?error} callback.err An error returned while getting the session.
+ * @param {Session} session The session object.
  *
  * @example
  * database.getSession(function(err, session) {});
@@ -1095,7 +1260,7 @@ Database.prototype.createSession_ = function(options, callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.getSession_().then(function(data) {
- *   var session = data[0];
+ *   const session = data[0];
  * });
  */
 Database.prototype.getSession_ = function(callback) {
@@ -1110,9 +1275,9 @@ Database.prototype.getSession_ = function(callback) {
  *
  * @private
  *
- * @param {string=} name - The name of the session. If not provided, it is
+ * @param {string} [name] The name of the session. If not provided, it is
  *     assumed you are going to create it.
- * @return {module:spanner/session} - A Session object.
+ * @returns {Session} A Session object.
  *
  * @example
  * var session = database.session_('session-name');
@@ -1137,4 +1302,9 @@ common.util.promisifyAll(Database, {
   ],
 });
 
+/**
+ * Reference to the {@link Database} class.
+ * @name module:@google-cloud/spanner.Database
+ * @see Database
+ */
 module.exports = Database;

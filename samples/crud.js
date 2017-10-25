@@ -20,10 +20,12 @@ function updateData(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -43,6 +45,9 @@ function updateData(instanceId, databaseId) {
     ])
     .then(() => {
       console.log('Updated data.');
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
   // [END update_data]
 }
@@ -52,10 +57,12 @@ function insertData(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -90,6 +97,9 @@ function insertData(instanceId, databaseId) {
     })
     .then(() => {
       console.log('Inserted data.');
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
   // [END insert_data]
 }
@@ -99,10 +109,12 @@ function queryData(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -115,17 +127,22 @@ function queryData(instanceId, databaseId) {
   };
 
   // Queries rows from the Albums table
-  database.run(query).then(results => {
-    const rows = results[0];
+  database
+    .run(query)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-          .value}, AlbumTitle: ${json.AlbumTitle}`
-      );
+      rows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END query_data]
 }
 
@@ -134,10 +151,12 @@ function readData(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -155,17 +174,22 @@ function readData(instanceId, databaseId) {
     },
   };
 
-  albumsTable.read(query).then(results => {
-    const rows = results[0];
+  albumsTable
+    .read(query)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-          .value}, AlbumTitle: ${json.AlbumTitle}`
-      );
+      rows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END read_data]
 }
 
@@ -174,10 +198,12 @@ function readStaleData(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -200,24 +226,29 @@ function readStaleData(instanceId, databaseId) {
     exactStaleness: 10,
   };
 
-  albumsTable.read(query, options).then(results => {
-    const rows = results[0];
+  albumsTable
+    .read(query, options)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      const id = json.SingerId.value;
-      const album = json.AlbumId.value;
-      const title = json.AlbumTitle;
-      const budget = json.MarketingBudget ? json.MarketingBudget.value : '';
-      console.log(
-        `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
-      );
+      rows.forEach(row => {
+        const json = row.toJSON();
+        const id = json.SingerId.value;
+        const album = json.AlbumId.value;
+        const title = json.AlbumTitle;
+        const budget = json.MarketingBudget ? json.MarketingBudget.value : '';
+        console.log(
+          `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END read_stale_data]
 }
 
-const cli = require(`yargs`)
+require(`yargs`)
   .demand(1)
   .command(
     `update <instanceName> <databaseName>`,
@@ -256,8 +287,6 @@ const cli = require(`yargs`)
   .example(`node $0 read-stale "my-instance" "my-database"`)
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`);
-
-if (module === require.main) {
-  cli.help().strict().argv; // eslint-disable-line
-}
+  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .strict()
+  .help().argv;

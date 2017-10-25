@@ -124,7 +124,7 @@ describe('Session', function() {
         };
 
         var databaseInstance = extend({}, DATABASE, {
-          createSession_: function(options_, callback) {
+          createSession: function(options_, callback) {
             assert.strictEqual(options_, options);
             callback(null, createdSession, apiResponse);
           },
@@ -151,7 +151,7 @@ describe('Session', function() {
         var apiResponse = {};
 
         var databaseInstance = extend({}, DATABASE, {
-          createSession_: function(options_, callback) {
+          createSession: function(options_, callback) {
             callback(error, null, apiResponse);
           },
         });
