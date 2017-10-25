@@ -15,19 +15,22 @@
 
 'use strict';
 
-function createIndex(instanceId, databaseId) {
+function createIndex(instanceId, databaseId, projectId) {
   // [START create_index]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -53,7 +56,7 @@ function createIndex(instanceId, databaseId) {
   // [END create_index]
 }
 
-function createStoringIndex(instanceId, databaseId) {
+function createStoringIndex(instanceId, databaseId, projectId) {
   // [START create_storing_index]
   // "Storing" indexes store copies of the columns they index
   // This speeds up queries, but takes more space compared to normal indexes
@@ -63,14 +66,17 @@ function createStoringIndex(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -98,21 +104,30 @@ function createStoringIndex(instanceId, databaseId) {
   // [END create_storing_index]
 }
 
-function queryDataWithIndex(instanceId, databaseId, startTitle, endTitle) {
+function queryDataWithIndex(
+  instanceId,
+  databaseId,
+  startTitle,
+  endTitle,
+  projectId
+) {
   // [START query_data_with_index]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const startTitle = 'Ardvark';
   // const endTitle = 'Goo';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -151,19 +166,22 @@ function queryDataWithIndex(instanceId, databaseId, startTitle, endTitle) {
   // [END query_data_with_index]
 }
 
-function readDataWithIndex(instanceId, databaseId) {
+function readDataWithIndex(instanceId, databaseId, projectId) {
   // [START read_data_with_index]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -198,7 +216,7 @@ function readDataWithIndex(instanceId, databaseId) {
   // [END read_data_with_index]
 }
 
-function readDataWithStoringIndex(instanceId, databaseId) {
+function readDataWithStoringIndex(instanceId, databaseId, projectId) {
   // [START read_data_with_storing_index]
   // "Storing" indexes store copies of the columns they index
   // This speeds up queries, but takes more space compared to normal indexes
@@ -208,14 +226,17 @@ function readDataWithStoringIndex(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -252,22 +273,23 @@ function readDataWithStoringIndex(instanceId, databaseId) {
   // [END read_data_with_storing_index]
 }
 
-const cli = require(`yargs`)
+require(`yargs`)
   .demand(1)
   .command(
-    `createIndex <instanceName> <databaseName>`,
+    `createIndex <instanceName> <databaseName> <projectId>`,
     `Creates a new index in an example Cloud Spanner table.`,
     {},
-    opts => createIndex(opts.instanceName, opts.databaseName)
+    opts => createIndex(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `createStoringIndex <instanceName> <databaseName>`,
+    `createStoringIndex <instanceName> <databaseName> <projectId>`,
     `Creates a new value-storing index in an example Cloud Spanner table.`,
     {},
-    opts => createStoringIndex(opts.instanceName, opts.databaseName)
+    opts =>
+      createStoringIndex(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryIndex <instanceName> <databaseName>`,
+    `queryIndex <instanceName> <databaseName> <projectId>`,
     `Executes a read-only SQL query against an example Cloud Spanner table using an existing index.
     Returns results with titles between a start title (default: 'Ardvark') and an end title (default: 'Goo').`,
     {
@@ -287,30 +309,39 @@ const cli = require(`yargs`)
         opts.instanceName,
         opts.databaseName,
         opts.startTitle,
-        opts.endTitle
+        opts.endTitle,
+        opts.projectId
       )
   )
   .command(
-    `readIndex <instanceName> <databaseName>`,
+    `readIndex <instanceName> <databaseName> <projectId>`,
     `Reads data from an example Cloud Spanner table using an existing index.`,
     {},
-    opts => readDataWithIndex(opts.instanceName, opts.databaseName)
+    opts =>
+      readDataWithIndex(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `readStoringIndex <instanceName> <databaseName>`,
+    `readStoringIndex <instanceName> <databaseName> <projectId>`,
     `Reads data from an example Cloud Spanner table using an existing storing index.`,
     {},
-    opts => readDataWithStoringIndex(opts.instanceName, opts.databaseName)
+    opts =>
+      readDataWithStoringIndex(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
   )
-  .example(`node $0 createIndex "my-instance" "my-database"`)
-  .example(`node $0 createStoringIndex "my-instance" "my-database"`)
-  .example(`node $0 queryIndex "my-instance" "my-database"`)
-  .example(`node $0 readIndex "my-instance" "my-database"`)
-  .example(`node $0 readStoringIndex "my-instance" "my-database"`)
+  .example(`node $0 createIndex "my-instance" "my-database" "my-project-id"`)
+  .example(
+    `node $0 createStoringIndex "my-instance" "my-database" "my-project-id"`
+  )
+  .example(`node $0 queryIndex "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 readIndex "my-instance" "my-database" "my-project-id"`)
+  .example(
+    `node $0 readStoringIndex "my-instance" "my-database" "my-project-id"`
+  )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`);
-
-if (module === require.main) {
-  cli.help().strict().argv; // eslint-disable-line
-}
+  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .strict()
+  .help().argv;

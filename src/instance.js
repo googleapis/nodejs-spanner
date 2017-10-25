@@ -67,7 +67,7 @@ function Instance(spanner, name) {
      * Wrapper around {@link v1.InstanceAdminClient#createInstance}.
      *
      * @see {@link v1.InstanceAdminClient#createInstance}
-     * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
+     * @see [CreateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
      *
      * @method Instance#create
      * @param {CreateInstanceRequest} config Configuration object.
