@@ -17,7 +17,6 @@
 
 const path = require(`path`);
 const Spanner = require(`@google-cloud/spanner`);
-const spanner = new Spanner();
 const test = require(`ava`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
@@ -28,8 +27,13 @@ const transactionCmd = `node transaction.js`;
 
 const cwd = path.join(__dirname, `..`);
 
+const PROJECT_ID = process.env.GCLOUD_PROJECT;
 const INSTANCE_ID = `test-instance`;
 const DATABASE_ID = `test-database-${Date.now()}`;
+
+const spanner = new Spanner({
+  projectId: PROJECT_ID,
+});
 
 test.before(tools.checkCredentials);
 test.before(async () => {
@@ -41,7 +45,7 @@ test.before(async () => {
     // Ignore error
   }
 
-  const response = await instance.create({
+  const [, operation] = await instance.create({
     config: 'regional-us-central1',
     nodes: 1,
     labels: {
@@ -49,7 +53,7 @@ test.before(async () => {
     },
   });
 
-  await response.operation.promise();
+  await operation.promise();
 });
 
 test.after.always(async () => {
@@ -71,7 +75,7 @@ test.after.always(async () => {
 // create_database
 test.serial(`should create an example database`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}"`,
+    `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -88,7 +92,7 @@ test.serial(`should create an example database`, async t => {
 // insert_data
 test.serial(`should insert rows into an example table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -100,7 +104,7 @@ test.serial(
   `should query an example table and return matching rows`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID}`,
+      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -111,7 +115,7 @@ test.serial(
 // read_data
 test.serial(`should read an example table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -121,7 +125,7 @@ test.serial(`should read an example table`, async t => {
 // add_column
 test.serial(`should add a column to a table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -132,7 +136,7 @@ test.serial(`should add a column to a table`, async t => {
 // update_data
 test.serial(`should update existing rows in an example table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -146,7 +150,7 @@ test.serial(`should read stale data from an example table`, t => {
   // 10 seconds have elapsed since the update_data test.
   return new Promise(resolve => setTimeout(resolve, 11000)).then(async () => {
     const results = await tools.runAsyncWithIO(
-      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID}`,
+      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -166,7 +170,7 @@ test.serial(
   `should query an example table with an additional column and return matching rows`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID}`,
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -178,7 +182,7 @@ test.serial(
 // create_index
 test.serial(`should create an index in an example table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -189,7 +193,7 @@ test.serial(`should create an index in an example table`, async t => {
 // create_storing_index
 test.serial(`should create a storing index in an example table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -202,7 +206,7 @@ test.serial(
   `should query an example table with an index and return matching rows`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID}`,
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -217,7 +221,7 @@ test.serial(
   `should respect query boundaries when querying an example table with an index`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} -s Ardvark -e Zoo`,
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -229,7 +233,7 @@ test.serial(
 // read_data_with_index
 test.serial(`should read an example table with an index`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -239,7 +243,7 @@ test.serial(`should read an example table with an index`, async t => {
 // read_data_with_storing_index
 test.serial(`should read an example table with a storing index`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -249,7 +253,7 @@ test.serial(`should read an example table with a storing index`, async t => {
 // read_only_transaction
 test.serial(`should read an example table using transactions`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID}`,
+    `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -262,7 +266,7 @@ test.serial(
   `should read from and write to an example table using transactions`,
   async t => {
     let results = await tools.runAsyncWithIO(
-      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID}`,
+      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     let output = results.stdout + results.stderr;
@@ -274,7 +278,7 @@ test.serial(
     );
 
     results = await tools.runAsyncWithIO(
-      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID}`,
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     output = results.stdout + results.stderr;

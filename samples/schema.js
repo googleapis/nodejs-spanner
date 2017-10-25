@@ -15,19 +15,22 @@
 
 'use strict';
 
-function createDatabase(instanceId, databaseId) {
+function createDatabase(instanceId, databaseId, projectId) {
   // [START create_database]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
@@ -70,19 +73,22 @@ function createDatabase(instanceId, databaseId) {
   // [END create_database]
 }
 
-function addColumn(instanceId, databaseId) {
+function addColumn(instanceId, databaseId, projectId) {
   // [START add_column]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -108,7 +114,7 @@ function addColumn(instanceId, databaseId) {
   // [END add_column]
 }
 
-function queryDataWithNewColumn(instanceId, databaseId) {
+function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   // [START query_data_with_new_column]
   // This sample uses the `MarketingBudget` column. You can add the column
   // by running the `add_column` sample or by running this DDL statement against
@@ -118,14 +124,17 @@ function queryDataWithNewColumn(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -158,33 +167,36 @@ function queryDataWithNewColumn(instanceId, databaseId) {
   // [END query_data_with_new_column]
 }
 
-const cli = require(`yargs`)
+require(`yargs`)
   .demand(1)
   .command(
-    `createDatabase <instanceName> <databaseName>`,
+    `createDatabase <instanceName> <databaseName> <projectId>`,
     `Creates an example database with two tables in a Cloud Spanner instance.`,
     {},
-    opts => createDatabase(opts.instanceName, opts.databaseName)
+    opts => createDatabase(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `addColumn <instanceName> <databaseName>`,
+    `addColumn <instanceName> <databaseName> <projectId>`,
     `Adds an example MarketingBudget column to an example Cloud Spanner table.`,
     {},
-    opts => addColumn(opts.instanceName, opts.databaseName)
+    opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryNewColumn <instanceName> <databaseName>`,
+    `queryNewColumn <instanceName> <databaseName> <projectId>`,
     `Executes a read-only SQL query against an example Cloud Spanner table with an additional column (MarketingBudget) added by addColumn.`,
     {},
-    opts => queryDataWithNewColumn(opts.instanceName, opts.databaseName)
+    opts =>
+      queryDataWithNewColumn(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
   )
-  .example(`node $0 createDatabase "my-instance" "my-database"`)
-  .example(`node $0 addColumn "my-instance" "my-database"`)
-  .example(`node $0 queryNewColumn "my-instance" "my-database"`)
+  .example(`node $0 createDatabase "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 addColumn "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 queryNewColumn "my-instance" "my-database" "my-project-id"`)
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`);
-
-if (module === require.main) {
-  cli.help().strict().argv; // eslint-disable-line
-}
+  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .strict()
+  .help().argv;

@@ -15,19 +15,22 @@
 
 'use strict';
 
-function readOnlyTransaction(instanceId, databaseId) {
+function readOnlyTransaction(instanceId, databaseId, projectId) {
   // [START read_only_transaction]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -85,7 +88,7 @@ function readOnlyTransaction(instanceId, databaseId) {
   // [END read_only_transaction]
 }
 
-function readWriteTransaction(instanceId, databaseId) {
+function readWriteTransaction(instanceId, databaseId, projectId) {
   // [START read_write_transaction]
   // This sample transfers 200,000 from the MarketingBudget field
   // of the second Album to the first Album. Make sure to run the
@@ -94,14 +97,17 @@ function readWriteTransaction(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -196,26 +202,26 @@ function readWriteTransaction(instanceId, databaseId) {
   // [END read_write_transaction]
 }
 
-const cli = require(`yargs`)
+require(`yargs`)
   .demand(1)
   .command(
-    `readOnly <instanceName> <databaseName>`,
+    `readOnly <instanceName> <databaseName> <projectId>`,
     `Execute a read-only transaction on an example Cloud Spanner table.`,
     {},
-    opts => readOnlyTransaction(opts.instanceName, opts.databaseName)
+    opts =>
+      readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `readWrite <instanceName> <databaseName>`,
+    `readWrite <instanceName> <databaseName> <projectId>`,
     `Execute a read-write transaction on an example Cloud Spanner table.`,
     {},
-    opts => readWriteTransaction(opts.instanceName, opts.databaseName)
+    opts =>
+      readWriteTransaction(opts.instanceName, opts.databaseName, opts.projectId)
   )
-  .example(`node $0 readOnly "my-instance" "my-database"`)
-  .example(`node $0 readWrite "my-instance" "my-database"`)
+  .example(`node $0 readOnly "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 readWrite "my-instance" "my-database" "my-project-id"`)
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`);
-
-if (module === require.main) {
-  cli.help().strict().argv; // eslint-disable-line
-}
+  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .strict()
+  .help().argv;

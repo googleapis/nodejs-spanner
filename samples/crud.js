@@ -15,19 +15,22 @@
 
 'use strict';
 
-function updateData(instanceId, databaseId) {
+function updateData(instanceId, databaseId, projectId) {
   // [START update_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -52,21 +55,24 @@ function updateData(instanceId, databaseId) {
   // [END update_data]
 }
 
-function insertData(instanceId, databaseId) {
+function insertData(instanceId, databaseId, projectId) {
   // [START insert_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
-  // Gets a reference to a Spanner instance and database
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
@@ -104,19 +110,22 @@ function insertData(instanceId, databaseId) {
   // [END insert_data]
 }
 
-function queryData(instanceId, databaseId) {
+function queryData(instanceId, databaseId, projectId) {
   // [START query_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -146,19 +155,22 @@ function queryData(instanceId, databaseId) {
   // [END query_data]
 }
 
-function readData(instanceId, databaseId) {
+function readData(instanceId, databaseId, projectId) {
   // [START read_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -193,19 +205,22 @@ function readData(instanceId, databaseId) {
   // [END read_data]
 }
 
-function readStaleData(instanceId, databaseId) {
+function readStaleData(instanceId, databaseId, projectId) {
   // [START read_stale_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner();
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -251,40 +266,40 @@ function readStaleData(instanceId, databaseId) {
 require(`yargs`)
   .demand(1)
   .command(
-    `update <instanceName> <databaseName>`,
+    `update <instanceName> <databaseName> <projectId>`,
     `Modifies existing rows of data in an example Cloud Spanner table.`,
     {},
-    opts => updateData(opts.instanceName, opts.databaseName)
+    opts => updateData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `query <instanceName> <databaseName>`,
+    `query <instanceName> <databaseName> <projectId>`,
     `Executes a read-only SQL query against an example Cloud Spanner table.`,
     {},
-    opts => queryData(opts.instanceName, opts.databaseName)
+    opts => queryData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `insert <instanceName> <databaseName>`,
+    `insert <instanceName> <databaseName> <projectId>`,
     `Inserts new rows of data into an example Cloud Spanner table.`,
     {},
-    opts => insertData(opts.instanceName, opts.databaseName)
+    opts => insertData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `read <instanceName> <databaseName>`,
+    `read <instanceName> <databaseName> <projectId>`,
     `Reads data in an example Cloud Spanner table.`,
     {},
-    opts => readData(opts.instanceName, opts.databaseName)
+    opts => readData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `read-stale <instanceName> <databaseName>`,
+    `read-stale <instanceName> <databaseName> <projectId>`,
     `Reads stale data in an example Cloud Spanner table.`,
     {},
-    opts => readStaleData(opts.instanceName, opts.databaseName)
+    opts => readStaleData(opts.instanceName, opts.databaseName, opts.projectId)
   )
-  .example(`node $0 update "my-instance" "my-database"`)
-  .example(`node $0 query "my-instance" "my-database"`)
-  .example(`node $0 insert "my-instance" "my-database"`)
-  .example(`node $0 read "my-instance" "my-database"`)
-  .example(`node $0 read-stale "my-instance" "my-database"`)
+  .example(`node $0 update "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 query "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 insert "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 read "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 read-stale "my-instance" "my-database" "my-project-id"`)
   .wrap(120)
   .recommendCommands()
   .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
