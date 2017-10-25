@@ -16,7 +16,8 @@
 'use strict';
 
 const path = require(`path`);
-const spanner = require(`@google-cloud/spanner`)();
+const Spanner = require(`@google-cloud/spanner`);
+const spanner = new Spanner();
 const test = require(`ava`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 

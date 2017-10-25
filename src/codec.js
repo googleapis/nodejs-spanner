@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/codec
- */
-
 'use strict';
 
 var codec = module.exports;

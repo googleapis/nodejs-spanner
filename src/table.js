@@ -14,39 +14,60 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/table
- */
-
 'use strict';
 
 var common = require('@google-cloud/common');
 var is = require('is');
 var util = require('util');
 
-/**
- * @type {module:spanner/transactionRequest}
- * @private
- */
 var TransactionRequest = require('./transaction-request.js');
 
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
  *
- * @constructor
- * @alias module:spanner/table
+ * @class
+ * @extends TransactionRequest
  *
- * @param {string} name - Name of the table.
+ * @param {Database} database {@link Database} instance.
+ * @param {string} name Name of the table.
  *
  * @example
- * var instance = spanner.instance('my-instance');
- * var database = instance.database('my-database');
- * var table = database.table('my-table');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = database.table('my-table');
  */
 function Table(database, name) {
+  /**
+   * @name Table#api
+   * @type {object}
+   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
+   *     low-level {@link v1.DatabaseAdminClient} class used by this
+   *     {@link Table} instance.
+   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
+   *     low-level {@link v1.InstanceAdminClient} class used by this
+   *     {@link Table} instance.
+   * @property {v1.SpannerClient} Spanner Reference to an instance of the
+   *     low-level {@link v1.SpannerClient} class used by this {@link Table}
+   *     instance.
+   */
   this.api = database.api;
+
+  /**
+   * The {@link Database} instance of this {@link Table} instance.
+   * @name Table#database
+   * @type {Database}
+   */
   this.database = database;
+
+  /**
+   * The name of this table.
+   * @name Table#name
+   * @type {string}
+   */
   this.name = name;
 
   var pool = database.pool_;
@@ -61,10 +82,19 @@ util.inherits(Table, TransactionRequest);
 /**
  * Create a table.
  *
- * @param {string} schema - See {module:database#createTable}.
+ * @param {string} schema See {@link Database#createTable}.
+ * @param {CreateTableCallback} [callback] Callback function.
+ * @returns {Promise<CreateTableResponse>}
  *
  * @example
- * var schema =
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const schema =
  *   'CREATE TABLE Singers (' +
  *   '  SingerId INT64 NOT NULL,' +
  *   '  FirstName STRING(1024),' +
@@ -89,8 +119,8 @@ util.inherits(Table, TransactionRequest);
  * //-
  * table.create(schema)
  *   .then(function(data) {
- *     var table = data[0];
- *     var operation = data[1];
+ *     const table = data[0];
+ *     const operation = data[1];
  *
  *     return operation.promise();
  *   })
@@ -106,35 +136,23 @@ Table.prototype.create = function(schema, callback) {
  * Create a readable object stream to receive rows from the database using key
  * lookups and scans.
  *
- * @resource [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
- * @resource [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
+ * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
+ * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
  *
- * @param {string} table - The table to read from.
- * @param {object} query - Configuration object. See
+ * @param {string} table The table to read from.
+ * @param {ReadStreamRequestOptions} query Configuration object. See
  *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
- * @param {string[]} query.columns - The columns of the table to be returned for
- *     each row matching this query.
- * @param {Array} query.keys - The primary keys of the rows in this table to
- *     be yielded. If using a composite key, provide an array within this array.
- *     See the example below.
- * @param {string=} query.index - The name of an index on the table.
- * @param {number} query.limit - The number of rows to return.
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old.
- * @param {date} options.minReadTimestamp - Executes all reads at a timestamp
- *     greater than or equal to this.
- * @param {number} options.maxStaleness - Read data at a timestamp that is
- *     greater than or equal to this.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp.
- * @param {boolean} options.returnReadTimestamp - If `true`, returns the read
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible.
- * @return {Stream}
+ * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @returns {ReadableStream}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
  * table.createReadStream({
  *     keys: ['1'],
  *     columns: ['SingerId', 'name']
@@ -153,7 +171,7 @@ Table.prototype.create = function(schema, callback) {
  * //-
  * // Provide an array for `query.keys` to read with a composite key.
  * //-
- * var query = {
+ * const query = {
  *   keys: [
  *     [
  *       'Id1',
@@ -204,13 +222,21 @@ Table.prototype.createReadStream = function(query, options) {
 /**
  * Delete the table.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {Operation} callback.operation - An operation object that can be used
- *     to check the status of the request.
- * @param {object} callback.apiResponse - The full API response.
+ * Wrapper around {@link Database#updateSchema}.
+ *
+ * @see {@link Database#updateSchema}
+ *
+ * @param {LongRunningOperationCallback} [callback] Callback function.
+ * @returns {Promise<LongRunningOperationResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
  * table.delete(function(err, operation, apiResponse) {
  *   if (err) {
  *     // Error handling omitted.
@@ -228,7 +254,7 @@ Table.prototype.createReadStream = function(query, options) {
  * //-
  * table.delete()
  *   .then(function(data) {
- *     var operation = data[0];
+ *     const operation = data[0];
  *     return operation.promise();
  *   })
  *   .then(function() {
@@ -242,23 +268,29 @@ Table.prototype.delete = function(callback) {
 /**
  * Delete rows from this table.
  *
- * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
  *
- * @param {Array} keys - The keys for the rows to delete. If using a
+ * @param {array} keys The keys for the rows to delete. If using a
  *     composite key, provide an array within this array. See the example below.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
- * var keys = ['Id1', 'Id2', 'Id3'];
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const keys = ['Id1', 'Id2', 'Id3'];
  *
  * table.deleteRows(keys, function(err, apiResponse) {});
  *
  * //-
  * // Provide an array for `keys` to delete rows with a composite key.
  * //-
- * var keys = [
+ * const keys = [
  *   [
  *     'Id1',
  *     'Name1'
@@ -274,7 +306,7 @@ Table.prototype.delete = function(callback) {
  * //-
  * table.deleteRows(keys)
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
  */
 Table.prototype.deleteRows = function(keys, callback) {
@@ -289,17 +321,22 @@ Table.prototype.deleteRows = function(keys, callback) {
 /**
  * Insert rows of data into this table.
  *
- * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
  *
- * @param {object|object[]} keyVals - A map of names to values of data to insert
+ * @param {object|object[]} keyVals A map of names to values of data to insert
  *     into this table.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this
- *     request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
- * var row = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const row = {
  *   SingerId: 'Id3',
  *   Name: 'Eddie Wilson'
  * };
@@ -315,7 +352,7 @@ Table.prototype.deleteRows = function(keys, callback) {
  * //-
  * // Multiple rows can be inserted at once.
  * //-
- * var row2 = {
+ * const row2 = {
  *   SingerId: 'Id3b',
  *   Name: 'Joe West'
  * };
@@ -330,57 +367,71 @@ Table.prototype.deleteRows = function(keys, callback) {
  * //-
  * table.insert(row)
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
+ *
+ * @example <caption>include:samples/crud.js</caption>
+ * region_tag:insert_data
+ * Full example:
  */
 Table.prototype.insert = function(keyVals, callback) {
   return this.mutate_('insert', this.name, keyVals, callback);
 };
 
 /**
+ * Configuration object, describing what to read from the table.
+ *
+ * @typedef {object} TableReadRequestOptions
+ * @property {string[]} columns The columns of the table to be returned for each
+ *     row matching this query.
+ * @property {array} keys The primary keys of the rows in this table to be
+ *     yielded. If using a composite key, provide an array within this array.
+ *     See the example below.
+ * @property {string} [index] The name of an index on the table.
+ * @property {object} [keySet] Defines a collection of keys and/or key ranges to
+ *     read.
+ * @property {number} [limit] The number of rows to yield.
+ */
+/**
+ * @typedef {array} TableReadResponse
+ * @property {Table} 0 The new {@link Table}.
+ * @property {array[]} 1 Rows are returned as an array of object arrays. Each
+ *     object has a `name` and `value` property. To get a serialized object,
+ *     call `toJSON()`.
+ */
+/**
+ * @callback TableReadCallback
+ * @param {?Error} err Request error, if any.
+ * @param {array[]} rows Rows are returned as an array of object arrays. Each
+ *     object has a `name` and `value` property. To get a serialized object,
+ *     call `toJSON()`.
+ */
+/**
  * Receive rows from the database using key lookups and scans.
  *
- * <h4>Performance Considerations</h4>
+ * **Performance Considerations:**
  *
  * This method wraps the streaming method,
- * {module:spanner/table#createReadStream} for your convenience. All rows will
+ * {@link Table#createReadStream} for your convenience. All rows will
  * be stored in memory before being released to your callback. If you intend on
  * receiving a lot of results from your query, consider using the streaming
  * method, so you can free each result from memory after consuming it.
  *
- * @param {object} query - Configuration object, describing what to read from
- *     the table.
- * @param {string[]} query.columns - The columns of the table to be returned for
- *     each row matching this query.
- * @param {Array} query.keys - The primary keys of the rows in this table to
- *     be yielded. If using a composite key, provide an array within this array.
- *     See the example below.
- * @param {string=} query.index - The name of an index on the table.
- * @param {object=} query.keySet - Defines a collection of keys and/or key
- *     ranges to read.
- * @param {number} query.limit - The number of rows to return.
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old.
- * @param {date} options.minReadTimestamp - Executes all reads at a timestamp
- *     greater than or equal to this.
- * @param {number} options.maxStaleness - Read data at a timestamp that is
- *     greater than or equal to this.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp.
- * @param {boolean} options.returnReadTimestamp - If `true`, returns the read
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this
- *     request.
- * @param {array[]} callback.rows - Rows are returned as an array of object
- *     arrays. Each object has a `name` and `value` property. To get a
- *     serialized object, call `toJSON()`.
+ * @param {TableReadRequestOptions} query Configuration object, describing
+ *     what to read from the table.
+ * @param {TransactionOptions} options [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @param {TableReadCallback} [callback] Callback function.
+ * @returns {Promise<TableReadResponse>}
  *
  * @example
- * var query = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const query = {
  *   keys: ['1'],
  *   columns: ['SingerId', 'name']
  * };
@@ -390,7 +441,7 @@ Table.prototype.insert = function(keyVals, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   var row1 = rows[0];
+ *   const row1 = rows[0];
  *
  *   // row1 = [
  *   //   {
@@ -407,7 +458,7 @@ Table.prototype.insert = function(keyVals, callback) {
  * //-
  * // Provide an array for `query.keys` to read with a composite key.
  * //-
- * var query = {
+ * const query = {
  *   keys: [
  *     [
  *       'Id1',
@@ -430,7 +481,7 @@ Table.prototype.insert = function(keyVals, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   var row1 = rows[0];
+ *   const row1 = rows[0];
  *
  *   // rows1.toJSON() = {
  *   //   SingerId: '1',
@@ -443,8 +494,24 @@ Table.prototype.insert = function(keyVals, callback) {
  * //-
  * table.read(query)
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
+ *
+ * @example <caption>include:samples/crud.js</caption>
+ * region_tag:read_data
+ * Full example:
+ *
+ * @example <caption>include:samples/crud.js</caption>
+ * region_tag:read_stale_data
+ * Reading stale data:
+ *
+ * @example <caption>include:samples/indexing.js</caption>
+ * region_tag:read_data_with_index
+ * Reading data using an index:
+ *
+ * @example <caption>include:samples/indexing.js</caption>
+ * region_tag:read_data_with_storing_index
+ * Reading data using a storing index:
  */
 Table.prototype.read = function(keyVals, options, callback) {
   var rows = [];
@@ -467,17 +534,22 @@ Table.prototype.read = function(keyVals, options, callback) {
 /**
  * Replace rows of data within this table.
  *
- * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
  *
- * @param {object|object[]} keyVals - A map of names to values of data to insert
+ * @param {object|object[]} keyVals A map of names to values of data to insert
  *     into this table.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this
- *     request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
- * var row = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const row = {
  *   SingerId: 'Id3',
  *   Name: 'Joe West'
  * };
@@ -495,7 +567,7 @@ Table.prototype.read = function(keyVals, options, callback) {
  * //-
  * table.replace(row)
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
  */
 Table.prototype.replace = function(keyVals, callback) {
@@ -505,17 +577,22 @@ Table.prototype.replace = function(keyVals, callback) {
 /**
  * Update rows of data within this table.
  *
- * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
  *
- * @param {object|object[]} keyVals - A map of names to values of data to insert
+ * @param {object|object[]} keyVals A map of names to values of data to insert
  *     into this table.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this
- *     request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
- * var row = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const row = {
  *   SingerId: 'Id3',
  *   Name: 'Joe West'
  * };
@@ -533,8 +610,12 @@ Table.prototype.replace = function(keyVals, callback) {
  * //-
  * table.update(row)
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
+ *
+ * @example <caption>include:samples/crud.js</caption>
+ * region_tag:update_data
+ * Full example:
  */
 Table.prototype.update = function(keyVals, callback) {
   return this.mutate_('update', this.name, keyVals, callback);
@@ -543,17 +624,22 @@ Table.prototype.update = function(keyVals, callback) {
 /**
  * Insert or update rows of data within this table.
  *
- * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
  *
- * @param {object|object[]} keyVals - A map of names to values of data to insert
+ * @param {object|object[]} keyVals A map of names to values of data to insert
  *     into this table.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this
- *     request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
- * var row = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ * const table = instance.database('Singers');
+ *
+ * const row = {
  *   SingerId: 'Id3',
  *   Name: 'Joe West'
  * };
@@ -571,7 +657,7 @@ Table.prototype.update = function(keyVals, callback) {
  * //-
  * table.update(row)
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
  */
 Table.prototype.upsert = function(keyVals, callback) {
@@ -587,4 +673,9 @@ common.util.promisifyAll(Table, {
   exclude: ['delete'],
 });
 
+/**
+ * Reference to the {@link Table} class.
+ * @name module:@google-cloud/spanner.Table
+ * @see Table
+ */
 module.exports = Table;

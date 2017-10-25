@@ -20,10 +20,12 @@ function createIndex(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -44,6 +46,9 @@ function createIndex(instanceId, databaseId) {
     })
     .then(() => {
       console.log('Added the AlbumsByAlbumTitle index.');
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
   // [END create_index]
 }
@@ -58,10 +63,12 @@ function createStoringIndex(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -84,6 +91,9 @@ function createStoringIndex(instanceId, databaseId) {
     })
     .then(() => {
       console.log('Added the AlbumsByAlbumTitle2 index.');
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
   // [END create_storing_index]
 }
@@ -93,14 +103,14 @@ function queryDataWithIndex(instanceId, databaseId, startTitle, endTitle) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
-
-  // Uncomment these lines to specify the start and end title(s)
   // const startTitle = 'Ardvark';
   // const endTitle = 'Goo';
 
@@ -119,20 +129,25 @@ function queryDataWithIndex(instanceId, databaseId, startTitle, endTitle) {
   };
 
   // Queries rows from the Albums table
-  database.run(query).then(results => {
-    const rows = results[0];
+  database
+    .run(query)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      const marketingBudget = json.MarketingBudget
-        ? json.MarketingBudget.value
-        : null; // This value is nullable
-      console.log(
-        `AlbumId: ${json.AlbumId
-          .value}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
-      );
+      rows.forEach(row => {
+        const json = row.toJSON();
+        const marketingBudget = json.MarketingBudget
+          ? json.MarketingBudget.value
+          : null; // This value is nullable
+        console.log(
+          `AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END query_data_with_index]
 }
 
@@ -141,10 +156,12 @@ function readDataWithIndex(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -163,16 +180,21 @@ function readDataWithIndex(instanceId, databaseId) {
   };
 
   // Reads the Albums table using an index
-  albumsTable.read(query).then(results => {
-    const rows = results[0];
+  albumsTable
+    .read(query)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`
-      );
+      rows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END read_data_with_index]
 }
 
@@ -186,10 +208,12 @@ function readDataWithStoringIndex(instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
+  // Creates a client
+  const spanner = new Spanner();
 
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
@@ -208,18 +232,23 @@ function readDataWithStoringIndex(instanceId, databaseId) {
   };
 
   // Reads the Albums table using a storing index
-  albumsTable.read(query).then(results => {
-    const rows = results[0];
+  albumsTable
+    .read(query)
+    .then(results => {
+      const rows = results[0];
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `AlbumId: ${json.AlbumId
-          .value}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${json
-          .MarketingBudget.value}`
-      );
+      rows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${json
+            .MarketingBudget.value}`
+        );
+      });
+    })
+    .catch(err => {
+      console.error('ERROR:', err);
     });
-  });
   // [END read_data_with_storing_index]
 }
 

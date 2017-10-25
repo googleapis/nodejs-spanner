@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/database
- */
-
 'use strict';
 
 var arrify = require('arrify');
@@ -28,26 +24,39 @@ var is = require('is');
 var snakeCase = require('lodash.snakecase');
 var util = require('util');
 
-/**
- * @type {module:spanner/database}
- * @private
- */
 var Database = require('./database.js');
 
 /**
- * Create an Instance object to interact with a Cloud Spanner instance.
+ * The {@link Instance} class represents a [Cloud Spanner instance](https://cloud.google.com/spanner/docs/instances).
  *
- * @constructor
- * @alias module:spanner/instance
+ * Create an `Instance` object to interact with a Cloud Spanner instance.
  *
- * @param {string} name - Name of the instance.
+ * @class
+ *
+ * @param {Spanner} spanner {@link Spanner} instance.
+ * @param {string} name Name of the instance.
  *
  * @example
- * var instance = spanner.instance('my-instance');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instance('my-instance');
  */
 function Instance(spanner, name) {
   var self = this;
 
+  /**
+   * @name Instance#api
+   * @type {object}
+   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
+   *     low-level {@link v1.DatabaseAdminClient} class used by this
+   *     {@link Instance} instance.
+   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
+   *     low-level {@link v1.InstanceAdminClient} class used by this
+   *     {@link Instance} instance.
+   * @property {v1.SpannerClient} Spanner Reference to an instance of the
+   *     low-level {@link v1.SpannerClient} class used by this {@link Instance}
+   *     instance.
+   */
   this.api = spanner.api;
   this.formattedName_ = Instance.formatName_(spanner.projectId, name);
 
@@ -55,9 +64,22 @@ function Instance(spanner, name) {
     /**
      * Create an instance.
      *
-     * @param {object} config - See {module:spanner#createInstance}.
+     * Wrapper around {@link v1.InstanceAdminClient#createInstance}.
+     *
+     * @see {@link v1.InstanceAdminClient#createInstance}
+     * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
+     *
+     * @method Instance#create
+     * @param {CreateInstanceRequest} config Configuration object.
+     * @param {CreateInstanceCallback} [callback] Callback function.
+     * @returns {Promise<CreateInstanceResponse>}
      *
      * @example
+     * const Spanner = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     *
+     * const instance = spanner.instance('my-instance');
+     *
      * instance.create(function(err, instance, operation, apiResponse) {
      *   if (err) {
      *     // Error handling omitted.
@@ -87,14 +109,27 @@ function Instance(spanner, name) {
     create: true,
 
     /**
+     * @typedef {array} InstanceExistsResponse
+     * @property {boolean} 0 Whether the {@link Instance} exists.
+     */
+    /**
+     * @callback InstanceExistsCallback
+     * @param {?Error} err Request error, if any.
+     * @param {boolean} exists Whether the {@link Instance} exists.
+     */
+    /**
      * Check if an instance exists.
      *
-     * @param {function} callback - The callback function.
-     * @param {?error} callback.err - An error returned while making this
-     *     request.
-     * @param {boolean} callback.exists - Whether the instance exists or not.
+     * @method Instance#exists
+     * @param {InstanceExistsCallback} [callback] Callback function.
+     * @returns {Promise<InstanceExistsResponse>}
      *
      * @example
+     * const Spanner = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     *
+     * const instance = spanner.instance('my-instance');
+     *
      * instance.exists(function(err, exists) {});
      *
      * //-
@@ -107,6 +142,17 @@ function Instance(spanner, name) {
     exists: true,
 
     /**
+     * @typedef {array} GetInstanceResponse
+     * @property {Instance} 0 The {@link Instance}.
+     * @property {object} 1 The full API response.
+     */
+    /**
+     * @callback GetInstanceCallback
+     * @param {?Error} err Request error, if any.
+     * @param {Instance} instance The {@link Instance}.
+     * @param {object} apiResponse The full API response.
+     */
+    /**
      * Get an instance if it exists.
      *
      * You may optionally use this to "get or create" an object by providing an
@@ -114,11 +160,19 @@ function Instance(spanner, name) {
      * normally required for the `create` method must be contained within this
      * object as well.
      *
-     * @param {options=} options - Configuration object.
-     * @param {boolean} options.autoCreate - Automatically create the object if
-     *     it does not exist. Default: `false`
+     * @method Instance#get
+     * @param {options} [options] Configuration object.
+     * @param {boolean} [options.autoCreate=false] Automatically create the
+     *     object if it does not exist.
+     * @param {GetInstanceCallback} [callback] Callback function.
+     * @returns {Promise<GetInstanceResponse>}
      *
      * @example
+     * const Spanner = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     *
+     * const instance = spanner.instance('my-instance');
+     *
      * instance.get(function(err, instance, apiResponse) {
      *   // `instance.metadata` has been populated.
      * });
@@ -136,6 +190,10 @@ function Instance(spanner, name) {
 
   commonGrpc.ServiceObject.call(this, {
     parent: spanner,
+    /**
+     * @name Instance#id
+     * @type {string}
+     */
     id: name,
     methods: methods,
     createMethod: function(_, options, callback) {
@@ -153,8 +211,8 @@ util.inherits(Instance, commonGrpc.ServiceObject);
  *
  * @private
  *
- * @param {string} projectId - The project ID.
- * @param {string} name - The instance name.
+ * @param {string} projectId The project ID.
+ * @param {string} name The instance name.
  *
  * @example
  * Instance.formatName_('grape-spaceship-123', 'my-instance');
@@ -171,25 +229,47 @@ Instance.formatName_ = function(projectId, name) {
 };
 
 /**
+ * Config for the new database.
+ *
+ * @typedef {object} CreateDatabaseRequest
+ * @property {SessionPoolOptions} [poolOptions]
+ */
+/**
+ * @typedef {array} CreateDatabaseResponse
+ * @property {Database} 0 The new {@link Database}.
+ * @property {Operation} 1 An {@link Operation} object that can be used to check
+ *     the status of the request.
+ * @property {object} 2 The full API response.
+ */
+/**
+ * @callback CreateDatabaseCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Database} database The new {@link Database}.
+ * @param {Operation} operation An {@link Operation} object that can be used to
+ *     check the status of the request.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Create a database in this instance.
  *
- * @resource [CreateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase)
+ * Wrapper around {@link v1.DatabaseAdminClient#createDatabase}.
+ *
+ * @see {@link v1.DatabaseAdminClient#createDatabase}
+ * @see [CreateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase)
  *
  * @throws {Error} If a name is not provided.
  *
- * @param {name} name - The name of the database to create.
- * @param {object=} options - Configuration object.
- * @param {object} options.poolOptions - See {module:spanner/database#Database}
- *     for all of the available session pool configuration settings.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {module:spanner/database} callback.database - The newly created
- *     database.
- * @param {Operation} callback.operation - An operation object that can be used
- *     to check the status of the request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {name} name The name of the database to create.
+ * @param {CreateDatabaseRequest} [options] Configuration object.
+ * @param {CreateDatabaseCallback} [callback] Callback function.
+ * @returns {Promise<CreateDatabaseResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
  * function callback(err, database, operation, apiResponse) {
  *   if (err) {
  *     // Error handling omitted.
@@ -227,6 +307,10 @@ Instance.formatName_ = function(projectId, name) {
  *   .then(function() {
  *     // Database created successfully.
  *   });
+ *
+ * @example <caption>include:samples/schema.js</caption>
+ * region_tag:create_database
+ * Full example:
  */
 Instance.prototype.createDatabase = function(name, options, callback) {
   var self = this;
@@ -275,13 +359,16 @@ Instance.prototype.createDatabase = function(name, options, callback) {
  *
  * @throws {Error} If a name is not provided.
  *
- * @param {string} name - The name of the instance.
- * @param {object} poolOptions - See {module:spanner/database#Database} for all
- *     of the available session pool configuration settings.
- * @return {module:spanner/database} - A Database object.
+ * @param {string} name The name of the instance.
+ * @param {SessionPoolOptions} [poolOptions] Session pool configuration options.
+ * @return {Database} A Database object.
  *
  * @example
- * var database = instance.database('my-database');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
  */
 Instance.prototype.database = function(name, poolOptions) {
   if (!name) {
@@ -296,15 +383,31 @@ Instance.prototype.database = function(name, poolOptions) {
 };
 
 /**
+ * @typedef {array} DeleteInstanceResponse
+ * @property {object} 0 The full API response.
+ */
+/**
+ * @callback DeleteInstanceCallback
+ * @param {?Error} err Request error, if any.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Delete the instance.
  *
- * @resource [DeleteInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance)
+ * Wrapper around {@link v1.InstanceAdminClient#deleteInstance}.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.InstanceAdminClient#deleteInstance}
+ * @see [DeleteInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance)
+ *
+ * @param {DeleteInstanceCallback} [callback] Callback function.
+ * @returns {Promise<DeleteInstanceResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
  * instance.delete(function(err, apiResponse) {
  *   if (err) {
  *     // Error handling omitted.
@@ -337,24 +440,46 @@ Instance.prototype.delete = function(callback) {
 };
 
 /**
+ * Query object for listing databases.
+ *
+ * @typedef {object} GetDatabasesRequest
+ * @property {boolean} [autoPaginate=true] Have pagination handled
+ *     automatically.
+ * @property {number} [maxApiCalls] Maximum number of API calls to make.
+ * @property {number} [maxResults] Maximum number of items to return.
+ * @property {number} [pageSize] Maximum number of results per page.
+ * @property {string} [pageToken] A previously-returned page token
+ *     representing part of the larger set of results to view.
+ */
+/**
+ * @typedef {array} GetDatabasesResponse
+ * @property {Database[]} 0 Array of {@link Database} instances.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetDatabasesCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Database[]} databases Array of {@link Database} instances.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Get a list of databases.
  *
- * @resource [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
+ * Wrapper around {@link v1.DatabaseAdminClient#listDatabases}.
  *
- * @param {object=} query - Query object.
- * @param {boolean} query.autoPaginate - Have pagination handled
- *     automatically. Default: true.
- * @param {number} query.maxApiCalls - Maximum number of API calls to make.
- * @param {number} query.pageSize - Maximum number of results to return.
- * @param {string} query.pageToken - Token returned from a previous call, to
- *     request the next page of results.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {module:spanner/instance[]} callback.instances - List of all
- *     instances.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.DatabaseAdminClient#listDatabases}
+ * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
+ *
+ * @param {GetDatabasesRequest} [query] Query object for listing databases.
+ * @param {GetDatabasesCallback} [callback] Callback function.
+ * @returns {Promise<GetDatabasesResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
  * instance.getDatabases(function(err, databases) {
  *   // `databases` is an array of `Database` objects.
  * });
@@ -409,13 +534,22 @@ Instance.prototype.getDatabases = function(query, callback) {
 /**
  * Get a list of databases as a readable object stream.
  *
- * @resource [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
+ * Wrapper around {@link v1.DatabaseAdminClient#listDatabases}.
  *
- * @param {object=} options - Configuration object. See
- *     {module:spanner/instance#getDatabases} for a complete list of options.
- * @return {stream}
+ * @see {@link v1.DatabaseAdminClient#listDatabases}
+ * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
+ *
+ * @method Spanner#getDatabasesStream
+ * @param {GetDatabasesRequest} [query] Query object for listing databases.
+ * @returns {ReadableStream} A readable stream that emits {@link Database}
+ *     instances.
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
  * instance.getDatabasesStream()
  *   .on('error', console.error)
  *   .on('data', function(database) {
@@ -439,16 +573,33 @@ Instance.prototype.getDatabasesStream = common.paginator.streamify(
 );
 
 /**
+ * @typedef {array} GetInstanceMetadataResponse
+ * @property {object} 0 The {@link Instance} metadata.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetInstanceMetadataCallback
+ * @param {?Error} err Request error, if any.
+ * @param {object} metadata The {@link Instance} metadata.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Get the instance's metadata.
  *
- * @resource [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
+ * Wrapper around {@link v1.InstanceAdminClient#getInstance}.
  *
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.metadata - The instance's metadata.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.InstanceAdminClient#getInstance}
+ * @see [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
+ *
+ * @param {GetInstanceMetadataCallback} [callback] Callback function.
+ * @returns {Promise<GetInstanceMetadataResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
  * instance.getMetadata(function(err, metadata, apiResponse) {});
  *
  * //-
@@ -472,17 +623,22 @@ Instance.prototype.getMetadata = function(callback) {
  * Update the metadata for this instance. Note that this method follows PATCH
  * semantics, so previously-configured settings will persist.
  *
- * @resource [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
+ * Wrapper around {@link v1.InstanceAdminClient#updateInstance}.
  *
- * @param {object} metadata - New metadata.
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {module:compute/operation} callback.operation - An operation object
- *     that can be used to check the status of the request.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.InstanceAdminClient#updateInstance}
+ * @see [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
+ *
+ * @param {object<string, *>} metadata The metadata you wish to set.
+ * @param {LongRunningOperationCallback} [callback] Callback function.
+ * @returns {Promise<LongRunningOperationResponse>}
  *
  * @example
- * var metadata = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
+ * const metadata = {
  *   displayName: 'My Instance'
  * };
  *
@@ -502,8 +658,8 @@ Instance.prototype.getMetadata = function(callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * instance.setMetadata(metadata).then(function(data) {
- *   var operation = data[0];
- *   var apiResponse = data[1];
+ *   const operation = data[0];
+ *   const apiResponse = data[1];
  * });
  */
 Instance.prototype.setMetadata = function(metadata, callback) {
@@ -532,4 +688,9 @@ common.util.promisifyAll(Instance, {
   exclude: ['database', 'delete', 'getMetadata', 'setMetadata'],
 });
 
+/**
+ * Reference to the {@link Instance} class.
+ * @name module:@google-cloud/spanner.Instance
+ * @see Instance
+ */
 module.exports = Instance;

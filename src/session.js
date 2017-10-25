@@ -25,34 +25,31 @@ var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
 var util = require('util');
 
-/**
- * @type {module:spanner/transaction}
- * @private
- */
 var Transaction = require('./transaction.js');
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
  *
- * It is unlikely you will need to interact with sessions directly. By default,
- * sessions are created and utilized for maximum performance automatically.
+ * **It is unlikely you will need to interact with sessions directly. By
+ * default, sessions are created and utilized for maximum performance
+ * automatically.**
  *
- * @constructor
- * @alias module:spanner/session
- *
- * @private
- *
- * @param {string=} name - The name of the session. If not provided, it is
+ * @class
+ * @param {Database} database Parent {@link Database} instance.
+ * @param {string} [name] The name of the session. If not provided, it is
  *     assumed you are going to create it.
  *
  * @example
- * var instance = spanner.instance('my-instance');
- * var database = instance.database('my-database');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
  *
  * //-
  * // To create a session manually, don't provide a name.
  * //-
- * var session = database.session_();
+ * const session = database.session_();
  *
  * session.create(function(err) {
  *   if (err) {
@@ -66,11 +63,24 @@ var Transaction = require('./transaction.js');
  * //-
  * // To access a previously-created session, provide a name.
  * //-
- * var session = database.session_('session-name');
+ * const session = database.session_('session-name');
  */
 function Session(database, name) {
   var self = this;
 
+  /**
+   * @name Session#api
+   * @type {object}
+   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
+   *     low-level {@link v1.DatabaseAdminClient} class used by this
+   *     {@link Session} instance.
+   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
+   *     low-level {@link v1.InstanceAdminClient} class used by this
+   *     {@link Session} instance.
+   * @property {v1.SpannerClient} Spanner Reference to an instance of the
+   *     low-level {@link v1.SpannerClient} class used by this {@link Session}
+   *     instance.
+   */
   this.api = database.api;
 
   if (name) {
@@ -81,7 +91,10 @@ function Session(database, name) {
     /**
      * Create a session.
      *
-     * @param {object=} options - See {module:spanner/database#createSession}.
+     * @method Session#create
+     * @param {object} [options] See {@link Database#createSession}.
+     * @param {CreateSessionCallback} [callback] Callback function.
+     * @returns {Promise<CreateSessionResponse>}
      *
      * @example
      * session.create(function(err, session, apiResponse) {
@@ -106,12 +119,20 @@ function Session(database, name) {
     create: true,
 
     /**
+     * @typedef {array} SessionExistsResponse
+     * @property {boolean} 0 Whether the {@link Session} exists.
+     */
+    /**
+     * @callback SessionExistsCallback
+     * @param {?Error} err Request error, if any.
+     * @param {boolean} exists Whether the {@link Session} exists.
+     */
+    /**
      * Check if a session exists.
      *
-     * @param {function} callback - The callback function.
-     * @param {?error} callback.err - An error returned while making this
-     *     request.
-     * @param {boolean} callback.exists - Whether the session exists or not.
+     * @method Session#exists
+     * @param {SessionExistsCallback} [callback] Callback function.
+     * @returns {Promise<SessionExistsResponse>}
      *
      * @example
      * session.exists(function(err, exists) {});
@@ -126,6 +147,17 @@ function Session(database, name) {
     exists: true,
 
     /**
+     * @typedef {array} GetSessionResponse
+     * @property {Session} 0 The {@link Session}.
+     * @property {object} 1 The full API response.
+     */
+    /**
+     * @callback GetSessionCallback
+     * @param {?Error} err Request error, if any.
+     * @param {Session} session The {@link Session}.
+     * @param {object} apiResponse The full API response.
+     */
+    /**
      * Get a session if it exists.
      *
      * You may optionally use this to "get or create" an object by providing an
@@ -133,9 +165,12 @@ function Session(database, name) {
      * normally required for the `create` method must be contained within this
      * object as well.
      *
-     * @param {options=} options - Configuration object.
-     * @param {boolean} options.autoCreate - Automatically create the object if
-     *     it does not exist. Default: `false`
+     * @method Session#get
+     * @param {options} [options] Configuration object.
+     * @param {boolean} [options.autoCreate=false] Automatically create the
+     *     object if it does not exist.
+     * @param {GetSessionCallback} [callback] Callback function.
+     * @returns {Promise<GetSessionResponse>}
      *
      * @example
      * session.get(function(err, session, apiResponse) {
@@ -155,10 +190,14 @@ function Session(database, name) {
 
   commonGrpc.ServiceObject.call(this, {
     parent: database,
+    /**
+     * @name Session#id
+     * @type {string}
+     */
     id: name,
     methods: methods,
     createMethod: function(options, callback) {
-      database.createSession_(options, function(err, session, apiResponse) {
+      database.createSession(options, function(err, session, apiResponse) {
         if (err) {
           callback(err, null, apiResponse);
           return;
@@ -179,8 +218,8 @@ util.inherits(Session, commonGrpc.ServiceObject);
  *
  * @private
  *
- * @param {string} databaseName - The parent database's name.
- * @param {string} name - The instance name.
+ * @param {string} databaseName The parent database's name.
+ * @param {string} name The instance name.
  *
  * @example
  * Session.formatName_('my-database', 'my-session');
@@ -200,9 +239,13 @@ Session.formatName_ = function(databaseName, name) {
 /**
  * Delete a session.
  *
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * Wrapper around {@link v1.SpannerClient#deleteSession}.
+ *
+ * @see {@link v1.SpannerClient#deleteSession}
+ * @see [DeleteSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.DeleteSession)
+ *
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
  * session.delete(function(err, apiResponse) {
@@ -230,12 +273,26 @@ Session.prototype.delete = function(callback) {
 };
 
 /**
+ * @typedef {array} GetSessionMetadataResponse
+ * @property {object} 0 The session's metadata.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetSessionMetadataCallback
+ * @param {?Error} err Request error, if any.
+ * @param {object} metadata The session's metadata.
+ * @param {object} apiResponse The full API response.
+ */
+/**
  * Get the session's metadata.
  *
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.metadata - The session's metadata.
- * @param {object} callback.apiResponse - The full API response.
+ * Wrapper around {@link v1.SpannerClient#getSession}.
+ *
+ * @see {@link v1.SpannerClient#getSession}
+ * @see [GetSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.GetSession)
+ *
+ * @param {GetSessionMetadataCallback} [callback] Callback function.
+ * @returns {Promise<GetSessionMetadataResponse>}
  *
  * @example
  * session.getMetadata(function(err, metadata, apiResponse) {});
@@ -260,9 +317,8 @@ Session.prototype.getMetadata = function(callback) {
 /**
  * Ping the session with `SELECT 1` to prevent it from expiring.
  *
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
  * session.keepAlive(function(err) {
@@ -286,8 +342,8 @@ Session.prototype.keepAlive = function(callback) {
  *
  * @throws {Error} If an ID is not provided.
  *
- * @param {string} id - The id of the transaction.
- * @return {module:spanner/transaction} - A Transaction object.
+ * @param {string} id The id of the transaction.
+ * @return {Transaction} A Transaction object.
  *
  * @example
  * var transaction = database.transaction('transaction-id');

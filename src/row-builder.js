@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/rowBuilder
- */
-
 'use strict';
 
 var is = require('is');
@@ -26,6 +22,7 @@ var is = require('is');
  * Combine row chunks from multiple `PartialResultSet` API response objects.
  *
  * @private
+ * @class
  */
 function RowBuilder(metadata, chunks) {
   this.metadata = metadata;
