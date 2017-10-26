@@ -68,20 +68,7 @@ var Transaction = require('./transaction.js');
 function Session(database, name) {
   var self = this;
 
-  /**
-   * @name Session#api
-   * @type {object}
-   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
-   *     low-level {@link v1.DatabaseAdminClient} class used by this
-   *     {@link Session} instance.
-   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
-   *     low-level {@link v1.InstanceAdminClient} class used by this
-   *     {@link Session} instance.
-   * @property {v1.SpannerClient} Spanner Reference to an instance of the
-   *     low-level {@link v1.SpannerClient} class used by this {@link Session}
-   *     instance.
-   */
-  this.api = database.api;
+  this.request = database.request;
 
   if (name) {
     this.formattedName_ = Session.formatName_(database.formattedName_, name);
@@ -264,9 +251,15 @@ Session.formatName_ = function(databaseName, name) {
  * });
  */
 Session.prototype.delete = function(callback) {
-  return this.api.Spanner.deleteSession(
+  var reqOpts = {
+    name: this.formattedName_,
+  };
+
+  return this.request(
     {
-      name: this.formattedName_,
+      client: 'SpannerClient',
+      method: 'deleteSession',
+      reqOpts: reqOpts,
     },
     callback
   );
@@ -306,9 +299,15 @@ Session.prototype.delete = function(callback) {
  * });
  */
 Session.prototype.getMetadata = function(callback) {
-  return this.api.Spanner.getSession(
+  var reqOpts = {
+    name: this.formattedName_,
+  };
+
+  return this.request(
     {
-      name: this.formattedName_,
+      client: 'SpannerClient',
+      method: 'getSession',
+      reqOpts: reqOpts,
     },
     callback
   );
@@ -328,10 +327,16 @@ Session.prototype.getMetadata = function(callback) {
  * });
  */
 Session.prototype.keepAlive = function(callback) {
-  return this.api.Spanner.executeSql(
+  var reqOpts = {
+    session: this.formattedName_,
+    sql: 'SELECT 1',
+  };
+
+  return this.request(
     {
-      session: this.formattedName_,
-      sql: 'SELECT 1',
+      client: 'SpannerClient',
+      method: 'executeSql',
+      reqOpts: reqOpts,
     },
     callback
   );

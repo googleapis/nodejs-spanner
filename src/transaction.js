@@ -99,21 +99,6 @@ var RetryInfo = services.google.rpc.RetryInfo;
  */
 function Transaction(session, options) {
   /**
-   * @name Transaction#api
-   * @type {object}
-   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
-   *     low-level {@link v1.DatabaseAdminClient} class used by this
-   *     {@link Transaction} instance.
-   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
-   *     low-level {@link v1.InstanceAdminClient} class used by this
-   *     {@link Transaction} instance.
-   * @property {v1.SpannerClient} Spanner Reference to an instance of the
-   *     low-level {@link v1.SpannerClient} class used by this
-   *     {@link Transaction} instance.
-   */
-  this.api = session.api;
-
-  /**
    * @name Transaction#session
    * @type {Session}
    */
@@ -224,8 +209,9 @@ Transaction.prototype.begin = function(callback) {
 
   this.request(
     {
+      client: 'SpannerClient',
+      method: 'beginTransaction',
       reqOpts: reqOpts,
-      method: this.api.Spanner.beginTransaction.bind(this.api.Spanner),
     },
     function(err, resp) {
       if (err) {
@@ -301,8 +287,9 @@ Transaction.prototype.commit = function(callback) {
 
   this.request(
     {
+      client: 'SpannerClient',
+      method: 'commit',
       reqOpts: reqOpts,
-      method: this.api.Spanner.commit.bind(this.api.Spanner),
     },
     function(err, resp) {
       if (!err) {
@@ -378,17 +365,14 @@ Transaction.prototype.queue_ = function(mutation) {
 Transaction.prototype.request = function(config, callback) {
   var self = this;
 
-  var reqOpts = extend(
+  config.reqOpts = extend(
     {
       session: this.session.formattedName_,
     },
     config.reqOpts
   );
 
-  var gaxOptions = reqOpts.gaxOptions;
-  delete reqOpts.gaxOptions;
-
-  config.method(reqOpts, gaxOptions, function(err, resp) {
+  this.session.request(config, function(err, resp) {
     if (!self.runFn_ || !err || err.code !== ABORTED) {
       callback(err, resp);
       return;
@@ -414,17 +398,14 @@ Transaction.prototype.request = function(config, callback) {
 Transaction.prototype.requestStream = function(config) {
   var self = this;
 
-  var reqOpts = extend(
+  config.reqOpts = extend(
     {
       session: this.session.formattedName_,
     },
     config.reqOpts
   );
 
-  var gaxOptions = reqOpts.gaxOptions;
-  delete reqOpts.gaxOptions;
-
-  var requestStream = config.method(reqOpts, gaxOptions);
+  var requestStream = this.session.requestStream(config);
 
   if (!is.fn(self.runFn_)) {
     return requestStream;
@@ -519,8 +500,9 @@ Transaction.prototype.rollback = function(callback) {
 
   this.request(
     {
+      client: 'SpannerClient',
+      method: 'rollback',
       reqOpts: reqOpts,
-      method: this.api.Spanner.rollback.bind(this.api.Spanner),
     },
     function(err, resp) {
       if (!err) {
@@ -776,8 +758,9 @@ Transaction.prototype.runStream = function(query) {
 
   function makeRequest(resumeToken) {
     return self.requestStream({
+      client: 'SpannerClient',
+      method: 'executeStreamingSql',
       reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
-      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner),
     });
   }
 

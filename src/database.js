@@ -47,20 +47,9 @@ var TransactionRequest = require('./transaction-request.js');
 function Database(instance, name, poolOptions) {
   var self = this;
 
-  /**
-   * @name Database#api
-   * @type {object}
-   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
-   *     low-level {@link v1.DatabaseAdminClient} class used by this
-   *     {@link Database} instance.
-   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
-   *     low-level {@link v1.InstanceAdminClient} class used by this
-   *     {@link Database} instance.
-   * @property {v1.SpannerClient} Spanner Reference to an instance of the
-   *     low-level {@link v1.SpannerClient} class used by this {@link Database}
-   *     instance.
-   */
-  this.api = instance.api;
+  this.request = instance.request;
+  this.requestStream = instance.requestStream;
+
   this.formattedName_ = Database.formatName_(instance.formattedName_, name);
   this.pool_ = new SessionPool(this, poolOptions);
 
@@ -383,7 +372,14 @@ Database.prototype.delete = function(callback) {
     database: this.formattedName_,
   };
 
-  return this.api.Database.dropDatabase(reqOpts, callback);
+  return this.request(
+    {
+      client: 'DatabaseAdminClient',
+      method: 'dropDatabase',
+      reqOpts: reqOpts,
+    },
+    callback
+  );
 };
 
 /**
@@ -432,9 +428,15 @@ Database.prototype.delete = function(callback) {
  * });
  */
 Database.prototype.getMetadata = function(callback) {
-  return this.api.Database.getDatabase(
+  var reqOpts = {
+    name: this.formattedName_,
+  };
+
+  return this.request(
     {
-      name: this.formattedName_,
+      client: 'DatabaseAdminClient',
+      method: 'getDatabase',
+      reqOpts: reqOpts,
     },
     callback
   );
@@ -481,9 +483,15 @@ Database.prototype.getMetadata = function(callback) {
  * });
  */
 Database.prototype.getSchema = function(callback) {
-  this.api.Database.getDatabaseDdl(
+  var reqOpts = {
+    database: this.formattedName_,
+  };
+
+  this.request(
     {
-      database: this.formattedName_,
+      client: 'DatabaseAdminClient',
+      method: 'getDatabaseDdl',
+      reqOpts: reqOpts,
     },
     function(err, statements) {
       if (statements) {
@@ -901,8 +909,9 @@ Database.prototype.runStream = function(query, options) {
 
   function makeRequest(resumeToken) {
     return self.pool_.requestStream({
+      client: 'SpannerClient',
+      method: 'executeStreamingSql',
       reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
-      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner),
     });
   }
 
@@ -1156,7 +1165,14 @@ Database.prototype.updateSchema = function(statements, callback) {
     statements
   );
 
-  return this.api.Database.updateDatabaseDdl(reqOpts, callback);
+  return this.request(
+    {
+      client: 'DatabaseAdminClient',
+      method: 'updateDatabaseDdl',
+      reqOpts: reqOpts,
+    },
+    callback
+  );
 };
 
 /**
@@ -1225,11 +1241,17 @@ Database.prototype.createSession = function(options, callback) {
 
   options = options || {};
 
-  this.api.Spanner.createSession(
+  var reqOpts = {
+    database: this.formattedName_,
+  };
+
+  this.request(
     {
-      database: this.formattedName_,
+      client: 'SpannerClient',
+      method: 'createSession',
+      reqOpts: reqOpts,
+      gaxOpts: options,
     },
-    options,
     function(err, resp) {
       if (err) {
         callback(err, null, resp);

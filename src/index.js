@@ -20,8 +20,11 @@ var common = require('@google-cloud/common');
 var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
 var format = require('string-format-obj');
+var googleAuth = require('google-auto-auth');
 var is = require('is');
 var path = require('path');
+var streamEvents = require('stream-events');
+var through = require('through2');
 var util = require('util');
 
 var codec = require('./codec.js');
@@ -163,29 +166,32 @@ function Spanner(options) {
     return new Spanner(options);
   }
 
-  options = extend({}, options, {
-    libName: 'gccl',
-    libVersion: require('../package.json').version,
-  });
+  let scopes = [];
+  let clientClasses = [
+    gapic.v1.DatabaseAdminClient,
+    gapic.v1.InstanceAdminClient,
+    gapic.v1.SpannerClient,
+  ];
+  for (let clientClass of clientClasses) {
+    for (let scope of clientClass.scopes) {
+      if (clientClasses.indexOf(scope) === -1) {
+        scopes.push(scope);
+      }
+    }
+  }
 
-  /**
-   * @name Spanner#api
-   * @type {object}
-   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
-   *     low-level {@link v1.DatabaseAdminClient} class used by this
-   *     {@link Spanner} instance.
-   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
-   *     low-level {@link v1.InstanceAdminClient} class used by this
-   *     {@link Spanner} instance.
-   * @property {v1.SpannerClient} Spanner Reference to an instance of the
-   *     low-level {@link v1.SpannerClient} class used by this {@link Spanner}
-   *     instance.
-   */
-  this.api = {
-    Database: new gapic.v1.DatabaseAdminClient(options),
-    Instance: new gapic.v1.InstanceAdminClient(options),
-    Spanner: new gapic.v1.SpannerClient(options),
-  };
+  this.options = extend(
+    {
+      libName: 'gccl',
+      libVersion: require('../package.json').version,
+      scopes: scopes,
+    },
+    options
+  );
+
+  this.auth = googleAuth(this.options);
+
+  this.api = {};
 
   var config = {
     baseUrl: 'spanner.googleapis.com',
@@ -200,7 +206,7 @@ function Spanner(options) {
     packageJson: require('../package.json'),
   };
 
-  commonGrpc.Service.call(this, config, options);
+  commonGrpc.Service.call(this, config, this.options);
 
   this.instances_ = new Map();
 }
@@ -366,16 +372,23 @@ Spanner.prototype.createInstance = function(name, config, callback) {
     });
   }
 
-  this.api.Instance.createInstance(reqOpts, function(err, operation, resp) {
-    if (err) {
-      callback(err, null, null, resp);
-      return;
+  this.request(
+    {
+      client: 'InstanceAdminClient',
+      method: 'createInstance',
+      reqOpts: reqOpts,
+    },
+    function(err, operation, resp) {
+      if (err) {
+        callback(err, null, null, resp);
+        return;
+      }
+
+      var instance = self.instance(formattedName);
+
+      callback(null, instance, operation, resp);
     }
-
-    var instance = self.instance(formattedName);
-
-    callback(null, instance, operation, resp);
-  });
+  );
 };
 
 /**
@@ -469,17 +482,24 @@ Spanner.prototype.getInstances = function(query, callback) {
     parent: 'projects/' + this.projectId,
   });
 
-  this.api.Instance.listInstances(reqOpts, query, function(err, instances) {
-    if (instances) {
-      arguments[1] = instances.map(function(instance) {
-        var instanceInstance = self.instance(instance.name);
-        instanceInstance.metadata = instance;
-        return instanceInstance;
-      });
-    }
+  this.request(
+    {
+      client: 'InstanceAdminClient',
+      method: 'listInstances',
+      reqOpts: reqOpts,
+    },
+    function(err, instances) {
+      if (instances) {
+        arguments[1] = instances.map(function(instance) {
+          var instanceInstance = self.instance(instance.name);
+          instanceInstance.metadata = instance;
+          return instanceInstance;
+        });
+      }
 
-    callback.apply(null, arguments);
-  });
+      callback.apply(null, arguments);
+    }
+  );
 };
 
 /**
@@ -604,7 +624,14 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
     parent: 'projects/' + this.projectId,
   });
 
-  return this.api.Instance.listInstanceConfigs(reqOpts, callback);
+  return this.request(
+    {
+      client: 'InstanceAdminClient',
+      method: 'listInstanceConfigs',
+      reqOpts: reqOpts,
+    },
+    callback
+  );
 };
 
 /**
@@ -645,7 +672,11 @@ Spanner.prototype.getInstanceConfigsStream = function(query) {
     parent: 'projects/' + this.projectId,
   });
 
-  return this.api.Instance.listInstanceConfigsStream(reqOpts);
+  return this.requestStream({
+    client: 'InstanceAdminClient',
+    method: 'listInstanceConfigsStream',
+    reqOpts: reqOpts,
+  });
 };
 
 /**
@@ -692,6 +723,107 @@ Spanner.prototype.operation = function(name) {
   }
 
   return new commonGrpc.Operation(this, name);
+};
+
+/**
+ * Prepare a request for GAX. This will cache the GAX client and replace
+ * {{projectId}} placeholders, if necessary.
+ *
+ * @private
+ */
+Spanner.prototype.prepareGaxRequest_ = function(config, callback) {
+  var self = this;
+
+  this.auth.getProjectId(function(err, projectId) {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    var gaxClient = self.api[config.client];
+
+    if (!gaxClient) {
+      // Lazily instantiate client.
+      gaxClient = new gapic.v1[config.client](self.options);
+      self.api[config.client] = gaxClient;
+    }
+
+    var reqOpts = extend(true, {}, config.reqOpts);
+    reqOpts = common.util.replaceProjectIdToken(reqOpts, projectId);
+
+    var requestFn = gaxClient[config.method].bind(
+      gaxClient,
+      reqOpts,
+      config.gaxOpts
+    );
+
+    callback(null, requestFn);
+  });
+};
+
+/**
+ * Funnel all API requests through this method, to be sure we have a project ID.
+ *
+ * @param {object} config Configuration object.
+ * @param {object} config.gaxOpts GAX options.
+ * @param {function} config.method The gax method to call.
+ * @param {object} config.reqOpts Request options.
+ * @param {function} [callback] Callback function.
+ */
+Spanner.prototype.request = function(config, callback) {
+  this.prepareGaxRequest_(config, function(err, requestFn) {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    requestFn(callback);
+  });
+};
+
+/**
+ * Funnel all API requests through this method, to be sure we have a project ID.
+ *
+ * @param {object} config Configuration object.
+ * @param {object} config.gaxOpts GAX options.
+ * @param {function} config.method The gax method to call.
+ * @param {object} config.reqOpts Request options.
+ * @param {function} [callback] Callback function.
+ */
+Spanner.prototype.requestStream = function(config) {
+  if (global.GCLOUD_SANDBOX_ENV) {
+    return through.obj();
+  }
+
+  var self = this;
+
+  var gaxStream;
+  var stream = streamEvents(through.obj());
+
+  stream.abort = function() {
+    if (gaxStream && gaxStream.cancel) {
+      gaxStream.cancel();
+    }
+  };
+
+  stream.once('reading', function() {
+    self.prepareGaxRequest_(config, function(err, requestFn) {
+      if (err) {
+        stream.destroy(err);
+        return;
+      }
+
+      gaxStream = requestFn();
+
+      gaxStream
+        .on('error', function(err) {
+          stream.destroy(err);
+        })
+        .pipe(stream);
+    });
+  });
+
+  return stream;
 };
 
 /*! Developer Documentation

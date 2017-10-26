@@ -65,6 +65,9 @@ function SessionPool(database, options) {
 
   options = options || {};
 
+  this.request_ = database.request;
+  this.requestStream_ = database.requestStream;
+
   /**
    * @name SessionPool#database
    * @readonly
@@ -375,7 +378,7 @@ SessionPool.prototype.request = function(config, callback) {
 
     config.reqOpts.session = session.formattedName_;
 
-    config.method(config.reqOpts, function() {
+    self.request_(config, function() {
       self.release(session);
       callback.apply(null, arguments);
     });
@@ -421,13 +424,10 @@ SessionPool.prototype.requestStream = function(config) {
         return;
       }
 
-      var gaxOptions = config.reqOpts.gaxOptions;
-
       session = session_;
       config.reqOpts.session = session_.formattedName_;
-      delete config.reqOpts.gaxOptions;
 
-      requestStream = config.method(config.reqOpts, gaxOptions);
+      requestStream = self.requestStream_(config);
 
       requestStream
         .on('error', releaseSession)
