@@ -1,121 +1,137 @@
-# @google-cloud/spanner ([Beta][versioning])
-> Cloud Spanner Client Library for Node.js
+<img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-*Looking for more Google APIs than just Cloud Spanner? You might want to check out [`google-cloud`][google-cloud].*
+# Cloud Spanner: Node.js Client
 
-- [API Documentation][gcloud-spanner-docs]
-- [Official Documentation][cloud-spanner-docs]
+[![release level](https://img.shields.io/badge/release%20level-beta-yellow.svg?style&#x3D;flat)](https://cloud.google.com/terms/launch-stages)
+[![CircleCI](https://img.shields.io/circleci/project/github/googleapis/nodejs-spanner.svg?style=flat)](https://circleci.com/gh/googleapis/nodejs-spanner)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/googleapis/nodejs-spanner?branch=master&svg=true)](https://ci.appveyor.com/project/googleapis/nodejs-spanner)
+[![codecov](https://img.shields.io/codecov/c/github/googleapis/nodejs-spanner/master.svg?style=flat)](https://codecov.io/gh/googleapis/nodejs-spanner)
 
+> Node.js idiomatic client for [Cloud Spanner][product-docs].
 
-```sh
-$ npm install --save @google-cloud/spanner
-```
-```js
-var spanner = require('@google-cloud/spanner')({
-  projectId: 'grape-spaceship-123',
-  keyFilename: '/path/to/keyfile.json'
-});
+[Cloud Spanner](https://cloud.google.com/spanner/docs/) is a fully managed, mission-critical, relational database service that offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication for high availability.
 
-var instance = spanner.instance('my-instance');
-var database = instance.database('my-database');
+* [Cloud Spanner Node.js Client API Reference][client-docs]
+* [Cloud Spanner Documentation][product-docs]
 
-// Create a table.
-var schema = `
-  CREATE TABLE Singers (
-    SingerId INT64 NOT NULL,
-    FirstName STRING(1024),
-    LastName STRING(1024),
-    SingerInfo BYTES(MAX),
-  ) PRIMARY KEY(SingerId)
-`;
+Read more about the client libraries for Cloud APIs, including the older
+Google APIs Client Libraries, in [Client Libraries Explained][explained].
 
-database.createTable(schema, function(err, table, operation) {
-  if (err) {
-    // Error handling omitted.
-  }
+[explained]: https://cloud.google.com/apis/docs/client-libraries-explained
 
-  operation
-    .on('error', function(err) {})
-    .on('complete', function() {
-      // Table created successfully.
-    });
-});
+**Table of contents:**
 
-// Insert data into the table.
-var table = database.table('Singers');
+* [Quickstart](#quickstart)
+  * [Before you begin](#before-you-begin)
+  * [Installing the client library](#installing-the-client-library)
+  * [Using the client library](#using-the-client-library)
+* [Samples](#samples)
+* [Versioning](#versioning)
+* [Contributing](#contributing)
+* [License](#license)
 
-table.insert({
-  SingerId: 10,
-  FirstName: 'Eddie',
-  LastName: 'Wilson'
-}, function(err) {
-  if (!err) {
-    // Row inserted successfully.
-  }
-});
+## Quickstart
 
-// Run a query as a readable object stream.
-database.runStream('SELECT * FROM Singers')
-  .on('error', function(err) {})
-  .on('data', function(row) {
-    // row.toJSON() = {
-    //   SingerId: 10,
-    //   FirstName: 'Eddie',
-    //   LastName: 'Wilson'
-    // }
-  }
-  })
-  .on('end', function() {
-    // All results retrieved.
-  });
-```
+### Before you begin
 
+1.  Select or create a Cloud Platform project.
 
-## Authentication
+    [Go to the projects page][projects]
 
-It's incredibly easy to get authenticated and start using Google's APIs. You can set your credentials on a global basis as well as on a per-API basis. See each individual API section below to see how you can auth on a per-API-basis. This is useful if you want to use different accounts for different Cloud services.
+1.  Enable billing for your project.
 
-### On Google Cloud Platform
+    [Enable billing][billing]
 
-If you are running this client on Google Cloud Platform, we handle authentication for you with no configuration. You just need to make sure that when you [set up the GCE instance][gce-how-to], you add the correct scopes for the APIs you want to access.
+1.  Enable the Cloud Spanner API.
 
-``` js
-var spanner = require('@google-cloud/spanner')();
-// ...you're good to go!
-```
+    [Enable the API][enable_api]
 
-### Elsewhere
+1.  [Set up authentication with a service account][auth] so you can access the
+    API from your local workstation.
 
-If you are not running this client on Google Cloud Platform, you need a Google Developers service account. To create a service account:
+[projects]: https://console.cloud.google.com/project
+[billing]: https://support.google.com/cloud/answer/6293499#enable-billing
+[enable_api]: https://console.cloud.google.com/flows/enableapi?apiid=spanner.googleapis.com
+[auth]: https://cloud.google.com/docs/authentication/getting-started
 
-1. Visit the [Google Developers Console][dev-console].
-2. Create a new project or click on an existing project.
-3. Navigate to  **APIs & auth** > **APIs section** and turn on the following APIs (you may need to enable billing in order to use these services):
-  * Cloud Spanner API
-4. Navigate to **APIs & auth** >  **Credentials** and then:
-  * If you want to use a new service account key, click on **Create credentials** and select **Service account key**. After the account key is created, you will be prompted to download the JSON key file that the library uses to authenticate your requests.
-  * If you want to generate a new service account key for an existing service account, click on **Generate new JSON key** and download the JSON key file.
+### Installing the client library
 
-``` js
-var projectId = process.env.GCLOUD_PROJECT; // E.g. 'grape-spaceship-123'
+    npm install --save @google-cloud/spanner
 
-var spanner = require('@google-cloud/spanner')({
+### Using the client library
+
+```javascript
+// Imports the Google Cloud client library
+const Spanner = require('@google-cloud/spanner');
+
+// Your Google Cloud Platform project ID
+const projectId = 'YOUR_PROJECT_ID';
+
+// Instantiates a client
+const spanner = Spanner({
   projectId: projectId,
-
-  // The path to your key file:
-  keyFilename: '/path/to/keyfile.json'
-
-  // Or the contents of the key file:
-  credentials: require('./path/to/keyfile.json')
 });
 
-// ...you're good to go!
+// Your Cloud Spanner instance ID
+const instanceId = 'my-instance';
+
+// Your Cloud Spanner database ID
+const databaseId = 'my-database';
+
+// Gets a reference to a Cloud Spanner instance and database
+const instance = spanner.instance(instanceId);
+const database = instance.database(databaseId);
+
+// The query to execute
+const query = {
+  sql: 'SELECT 1',
+};
+
+// Execute a simple SQL statement
+database.run(query).then(results => {
+  const rows = results[0];
+
+  rows.forEach(row => console.log(row));
+});
 ```
 
+## Samples
 
-[versioning]: https://github.com/GoogleCloudPlatform/google-cloud-node#versioning
-[google-cloud]: https://github.com/GoogleCloudPlatform/google-cloud-node/
-[gce-how-to]: https://cloud.google.com/compute/docs/authentication#using
-[dev-console]: https://console.developers.google.com/project
-[gcloud-spanner-docs]: https://googlecloudplatform.github.io/google-cloud-node/#/docs/spanner
-[cloud-spanner-docs]: https://cloud.google.com/spanner
+Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/blob/master/samples) directory. The samples' `README.md`
+has instructions for running the samples.
+
+| Sample                      | Source Code                       |
+| --------------------------- | --------------------------------- |
+| Schema | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/schema.js) |
+| CRUD | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/crud.js) |
+| Indexing | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js) |
+| Transactions | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction.js) |
+
+The [Cloud Spanner Node.js Client API Reference][client-docs] documentation
+also contains samples.
+
+## Versioning
+
+This library follows [Semantic Versioning](http://semver.org/).
+
+This library is considered to be in **beta**. This means it is expected to be
+mostly stable while we work toward a general availability release; however,
+complete stability is not guaranteed. We will address issues and requests
+against beta libraries with a high priority.
+
+More Information: [Google Cloud Platform Launch Stages][launch_stages]
+
+[launch_stages]: https://cloud.google.com/terms/launch-stages
+
+## Contributing
+
+Contributions welcome! See the [Contributing Guide](.github/CONTRIBUTING.md).
+
+## License
+
+Apache Version 2.0
+
+See [LICENSE](LICENSE)
+
+[client-docs]: https://cloud.google.com/nodejs/docs/reference/spanner/latest/
+[product-docs]: https://cloud.google.com/spanner/docs/

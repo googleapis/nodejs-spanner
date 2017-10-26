@@ -25,7 +25,7 @@ var util = require('@google-cloud/common').util;
 var fakePaginator = {
   streamify: function(methodName) {
     return methodName;
-  }
+  },
 };
 
 var promisified = false;
@@ -42,26 +42,19 @@ var fakeUtil = extend({}, util, {
       'getInstanceConfigs',
       'instance',
       'int',
-      'operation'
+      'operation',
     ]);
-  }
+  },
 });
 
-var fakeV1Override;
-function fakeV1() {
-  if (fakeV1Override) {
-    return fakeV1Override.apply(null, arguments);
-  }
-
-  return {
-    spannerClient: util.noop
-  };
-}
-
-fakeV1.admin = {}; // defaulted in the beforeEach hook
+var fakeV1 = {
+  DatabaseAdminClient: util.noop,
+  InstanceAdminClient: util.noop,
+  SpannerClient: util.noop,
+};
 
 var fakeCodec = {
-  SpannerDate: util.noop
+  SpannerDate: util.noop,
 };
 
 function FakeGrpcOperation() {
@@ -81,39 +74,29 @@ describe('Spanner', function() {
   var spanner;
 
   var OPTIONS = {
-    projectId: 'project-id'
+    projectId: 'project-id',
   };
 
   before(function() {
     Spanner = proxyquire('../src/index.js', {
       '@google-cloud/common': {
         paginator: fakePaginator,
-        util: fakeUtil
+        util: fakeUtil,
       },
       '@google-cloud/common-grpc': {
         Operation: FakeGrpcOperation,
-        Service: FakeGrpcService
+        Service: FakeGrpcService,
       },
       './codec.js': fakeCodec,
       './instance.js': FakeInstance,
-      './v1': fakeV1
+      './v1': fakeV1,
     });
   });
 
   beforeEach(function() {
-    fakeV1Override = null;
-    fakeV1.admin = {
-      database: function() {
-        return {
-          databaseAdminClient: util.noop
-        };
-      },
-      instance: function() {
-        return {
-          instanceAdminClient: util.noop
-        };
-      }
-    };
+    fakeV1.DatabaseAdminClient = util.noop;
+    fakeV1.InstanceAdminClient = util.noop;
+    fakeV1.SpannerClient = util.noop;
     fakeCodec.SpannerDate = util.noop;
     fakeCodec.Int = util.noop;
     spanner = new Spanner(OPTIONS);
@@ -136,7 +119,7 @@ describe('Spanner', function() {
     it('should normalize the arguments', function() {
       var normalizeArguments = fakeUtil.normalizeArguments;
       var normalizeArgumentsCalled = false;
-      var fakeOptions = { projectId: OPTIONS.projectId };
+      var fakeOptions = {projectId: OPTIONS.projectId};
       var fakeContext = {};
 
       fakeUtil.normalizeArguments = function(context, options) {
@@ -160,37 +143,22 @@ describe('Spanner', function() {
       var expectedOptions = {
         libName: 'gccl',
         libVersion: require('../package.json').version,
-        projectId: OPTIONS.projectId
+        projectId: OPTIONS.projectId,
       };
 
-      fakeV1Override = function(options) {
+      fakeV1.SpannerClient = function(options) {
         assert.deepStrictEqual(options, expectedOptions);
-        return {
-          spannerClient: function(options) {
-            assert.deepStrictEqual(options, expectedOptions);
-            return gaxSpannerClient;
-          }
-        };
+        return gaxSpannerClient;
       };
 
-      fakeV1.admin.database = function(options) {
+      fakeV1.DatabaseAdminClient = function(options) {
         assert.deepStrictEqual(options, expectedOptions);
-        return {
-          databaseAdminClient: function(options) {
-            assert.deepStrictEqual(options, expectedOptions);
-            return gaxDatabaseClient;
-          }
-        };
+        return gaxDatabaseClient;
       };
 
-      fakeV1.admin.instance = function(options) {
+      fakeV1.InstanceAdminClient = function(options) {
         assert.deepStrictEqual(options, expectedOptions);
-        return {
-          instanceAdminClient: function(options) {
-            assert.deepStrictEqual(options, expectedOptions);
-            return gaxInstanceClient;
-          }
-        };
+        return gaxInstanceClient;
       };
 
       var spanner = new Spanner(OPTIONS);
@@ -211,13 +179,11 @@ describe('Spanner', function() {
         protoServices: {
           Operations: {
             path: 'google/longrunning/operations.proto',
-            service: 'longrunning'
-          }
+            service: 'longrunning',
+          },
         },
-        scopes: [
-          'https://www.googleapis.com/auth/cloud-platform'
-        ],
-        packageJson: require('../package.json')
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        packageJson: require('../package.json'),
       });
     });
   });
@@ -284,7 +250,7 @@ describe('Spanner', function() {
     var PATH;
 
     var CONFIG = {
-      a: 'b'
+      a: 'b',
     };
     var ORIGINAL_CONFIG = extend({}, CONFIG);
 
@@ -304,7 +270,7 @@ describe('Spanner', function() {
       PATH = 'projects/' + spanner.projectId + '/instances/' + NAME;
 
       spanner.api.Instance = {
-        createInstance: util.noop
+        createInstance: util.noop,
       };
     });
 
@@ -334,14 +300,17 @@ describe('Spanner', function() {
           assert.deepEqual(reqOpts, {
             parent: 'projects/' + spanner.projectId,
             instanceId: NAME,
-            instance: extend({
-              name: PATH,
-              displayName: NAME
-            }, CONFIG)
+            instance: extend(
+              {
+                name: PATH,
+                displayName: NAME,
+              },
+              CONFIG
+            ),
           });
 
           done();
-        }
+        },
       };
 
       spanner.createInstance(NAME, CONFIG, assert.ifError);
@@ -359,14 +328,14 @@ describe('Spanner', function() {
 
     describe('config.nodes', function() {
       it('should rename to nodeCount', function(done) {
-        var config = extend({}, CONFIG, { nodes: 10 });
+        var config = extend({}, CONFIG, {nodes: 10});
 
         spanner.api.Instance = {
           createInstance: function(reqOpts) {
             assert.strictEqual(reqOpts.instance.nodeCount, config.nodes);
             assert.strictEqual(reqOpts.instance.nodes, undefined);
             done();
-          }
+          },
         };
 
         spanner.createInstance(NAME, config, assert.ifError);
@@ -376,7 +345,7 @@ describe('Spanner', function() {
     describe('config.config', function() {
       it('should format a name', function(done) {
         var name = 'config-name';
-        var config = extend({}, CONFIG, { config: name });
+        var config = extend({}, CONFIG, {config: name});
         var originalConfig = extend({}, config);
 
         spanner.api.Instance = {
@@ -389,7 +358,7 @@ describe('Spanner', function() {
             );
 
             done();
-          }
+          },
         };
 
         spanner.createInstance(NAME, config, assert.ifError);
@@ -404,7 +373,7 @@ describe('Spanner', function() {
         spanner.api.Instance = {
           createInstance: function(reqOpts, callback) {
             callback(ERROR, null, API_RESPONSE);
-          }
+          },
         };
       });
 
@@ -427,7 +396,7 @@ describe('Spanner', function() {
         spanner.api.Instance = {
           createInstance: function(reqOpts, callback) {
             callback(null, OPERATION, API_RESPONSE);
-          }
+          },
         };
       });
 
@@ -456,13 +425,13 @@ describe('Spanner', function() {
 
   describe('getInstances', function() {
     var QUERY = {
-      a: 'b'
+      a: 'b',
     };
     var ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct gax request', function(done) {
       var expectedReqOpts = extend({}, QUERY, {
-        parent: 'projects/' + spanner.projectId
+        parent: 'projects/' + spanner.projectId,
       });
 
       spanner.api.Instance = {
@@ -475,7 +444,7 @@ describe('Spanner', function() {
           assert.strictEqual(query, QUERY);
 
           done();
-        }
+        },
       };
 
       spanner.getInstances(QUERY, assert.ifError);
@@ -485,30 +454,26 @@ describe('Spanner', function() {
       spanner.api.Instance = {
         listInstances: function(reqOpts, query) {
           assert.deepEqual(reqOpts, {
-            parent: 'projects/' + spanner.projectId
+            parent: 'projects/' + spanner.projectId,
           });
 
           assert.deepEqual(query, {});
 
           done();
-        }
+        },
       };
 
       spanner.getInstances(assert.ifError);
     });
 
     describe('error', function() {
-      var GAX_RESPONSE_ARGS = [
-        new Error('Error.'),
-        null,
-        {}
-      ];
+      var GAX_RESPONSE_ARGS = [new Error('Error.'), null, {}];
 
       beforeEach(function() {
         spanner.api.Instance = {
           listInstances: function(reqOpts, query, callback) {
             callback.apply(null, GAX_RESPONSE_ARGS);
-          }
+          },
         };
       });
 
@@ -523,21 +488,17 @@ describe('Spanner', function() {
     describe('success', function() {
       var INSTANCES = [
         {
-          name: 'instance-name'
-        }
+          name: 'instance-name',
+        },
       ];
 
-      var GAX_RESPONSE_ARGS = [
-        null,
-        INSTANCES,
-        {}
-      ];
+      var GAX_RESPONSE_ARGS = [null, INSTANCES, {}];
 
       beforeEach(function() {
         spanner.api.Instance = {
           listInstances: function(reqOpts, query, callback) {
             callback.apply(null, GAX_RESPONSE_ARGS);
-          }
+          },
         };
       });
 
@@ -568,10 +529,10 @@ describe('Spanner', function() {
 
   describe('getInstanceConfigs', function() {
     it('should make and return the correct gax API call', function() {
-      var query = { a: 'b' };
+      var query = {a: 'b'};
       var originalQuery = extend({}, query);
       var expectedQuery = extend({}, query, {
-        parent: 'projects/' + spanner.projectId
+        parent: 'projects/' + spanner.projectId,
       });
 
       function callback() {}
@@ -588,7 +549,7 @@ describe('Spanner', function() {
           assert.strictEqual(callback_, callback);
 
           return gaxMethodReturnValue;
-        }
+        },
       };
 
       var returnedValue = spanner.getInstanceConfigs(query, callback);
@@ -599,10 +560,10 @@ describe('Spanner', function() {
       spanner.api.Instance = {
         listInstanceConfigs: function(reqOpts) {
           assert.deepEqual(reqOpts, {
-            parent: 'projects/' + spanner.projectId
+            parent: 'projects/' + spanner.projectId,
           });
           done();
-        }
+        },
       };
 
       spanner.getInstanceConfigs(assert.ifError);
@@ -611,10 +572,10 @@ describe('Spanner', function() {
 
   describe('getInstanceConfigsStream', function() {
     it('should make and return the correct gax API call', function() {
-      var query = { a: 'b' };
+      var query = {a: 'b'};
       var originalQuery = extend({}, query);
       var expectedQuery = extend({}, query, {
-        parent: 'projects/' + spanner.projectId
+        parent: 'projects/' + spanner.projectId,
       });
       var gaxMethodReturnValue = {};
 
@@ -626,7 +587,7 @@ describe('Spanner', function() {
           assert.deepEqual(query, originalQuery);
 
           return gaxMethodReturnValue;
-        }
+        },
       };
 
       var returnedValue = spanner.getInstanceConfigsStream(query);

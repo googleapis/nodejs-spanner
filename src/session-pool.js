@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/sessionPool
- */
-
 'use strict';
 
 var events = require('events');
@@ -30,26 +26,37 @@ var through = require('through2');
 var util = require('util');
 
 /**
- * @constructor
- * @alias module:spanner/sessionPool
+ * Session pool configuration options.
  *
- * @param {module:spanner/database} database - The DB instance.
- * @param {object=} options - Configuration options.
- * @param {number} options.acquireTimeout - Time in milliseconds before giving
- *     up trying to acquire a session. If the specified value is `0`, a timeout
- *     will not occur. (Default: `0`)
- * @param {boolean} options.fail - If set to true, an error will be thrown when
- *     there are no available sessions for a request. (Default: `false`)
- * @param {number} options.max - Maximum number of resources to create at any
- *     given time. (Default: 100)
- * @param {number} options.maxIdle - Maximum number of idle resources to keep
- *     in the pool at any given time.
- * @param {number} options.min - Minimum number of resources to keep in the pool
- *     at any given time. (Default: `0`)
- * @param {number} options.keepAlive - How often to ping idle sessions, in
+ * @typedef {object} SessionPoolOptions
+ * @property {number} [acquireTimeout=0] Time in milliseconds before giving up
+ *     trying to acquire a session. If the specified value is `0`, a timeout
+ *     will not occur.
+ * @property {boolean} [fail=false] If set to true, an error will be thrown when
+ *     there are no available sessions for a request.
+ * @property {number} [max=100] Maximum number of resources to create at any
+ *     given time.
+ * @property {number} [maxIdle=1] Maximum number of idle resources to keep in
+ *     the pool at any given time.
+ * @property {number} [min=0] Minimum number of resources to keep in the pool at
+ *     any given time.
+ * @property {number} [keepAlive=59] How often to ping idle sessions, in
  *     minutes. Must be less than 1 hour.
- * @param {number} options.writes - Pre-allocate transactions for the number of
+ * @property {number} [writes=0] Pre-allocate transactions for the number of
  *     sessions specified.
+ */
+
+/**
+ * Class used to manage connections to Spanner.
+ *
+ * **You don't need to use this class directly, connections will be handled for
+ * you.**
+ *
+ * @class
+ * @extends {EventEmitter}
+ *
+ * @param {Database} database The DB instance.
+ * @param {SessionPoolOptions} [options] Configuration options.
  */
 function SessionPool(database, options) {
   var self = this;
@@ -58,11 +65,43 @@ function SessionPool(database, options) {
 
   options = options || {};
 
+  /**
+   * @name SessionPool#database
+   * @readonly
+   * @type {Database}
+   */
   this.database = database;
-  this.maxIdle = options.maxIdle || 1;
+
+  /**
+   * @name SessionPool#maxIdle
+   * @readonly
+   * @type {number}
+   */
+  this.maxIdle = is.number(options.maxIdle) ? options.maxIdle : options.min;
+
+  if (!is.number(this.maxIdle)) {
+    this.maxIdle = 1;
+  }
+
+  /**
+   * @name SessionPool#fail
+   * @readonly
+   * @type {boolean}
+   */
   this.fail = !!options.fail;
 
+  /**
+   * @name SessionPool#pendingAcquires
+   * @readonly
+   * @type {array}
+   */
   this.pendingAcquires = [];
+
+  /**
+   * @name SessionPool#acquireTimeout
+   * @readonly
+   * @type {number}
+   */
   this.acquireTimeout = options.acquireTimeout || 0;
 
   var poolOptions = SessionPool.getPoolOptions_(options);
@@ -71,12 +110,17 @@ function SessionPool(database, options) {
   if (options.writes) {
     writePoolOptions = extend({}, poolOptions, {
       max: options.writes,
-      min: Math.ceil(poolOptions.min / 2)
+      min: Math.ceil(poolOptions.min / 2),
     });
 
     poolOptions.max -= options.writes;
     poolOptions.min = Math.floor(poolOptions.min / 2);
 
+    /**
+     * @name SessionPool#writePool
+     * @readonly
+     * @type {object|null}
+     */
     this.writePool = SessionPool.createPool_(writePoolOptions, {
       create: function() {
         return self.createWriteSession_.apply(self, arguments);
@@ -84,25 +128,35 @@ function SessionPool(database, options) {
       destroy: function(transaction) {
         return transaction.session.delete();
       },
-      validate: SessionPool.isSessionActive_
+      validate: SessionPool.isSessionActive_,
     });
   }
 
+  /**
+   * @name SessionPool#pool
+   * @readonly
+   * @type {object}
+   */
   this.pool = SessionPool.createPool_(poolOptions, {
     create: function() {
       return self.createSession_.apply(self, arguments);
     },
     destroy: exec('delete'),
-    validate: SessionPool.isSessionActive_
+    validate: SessionPool.isSessionActive_,
   });
 
+  /**
+   * @name SessionPool#available
+   * @readonly
+   * @type {number}
+   */
   Object.defineProperty(this, 'available', {
     get: function() {
       var availableReads = this.pool.available;
-      var availableWrites = this.writePool && this.writePool.available || 0;
+      var availableWrites = (this.writePool && this.writePool.available) || 0;
 
       return availableReads + availableWrites;
-    }
+    },
   });
 }
 
@@ -129,7 +183,7 @@ SessionPool.createPool_ = function(poolOptions, factory) {
   Object.defineProperty(pool, 'free', {
     get: function() {
       return pool.max - pool.borrowed;
-    }
+    },
   });
 
   return pool;
@@ -149,7 +203,7 @@ SessionPool.getPoolOptions_ = function(userOptions) {
     testOnBorrow: true,
     max: userOptions.max || 100,
     min: userOptions.min || 0,
-    numTestsPerRun: 100
+    numTestsPerRun: 100,
   };
 
   poolOptions.numTestsPerRun = poolOptions.max;
@@ -171,8 +225,8 @@ SessionPool.getPoolOptions_ = function(userOptions) {
  *
  * @private
  *
- * @param {module:spanner/session} session - The session to check.
- * @return {promise}
+ * @param {Session} session - The session to check.
+ * @returns {Promise}
  */
 SessionPool.isSessionActive_ = function(session) {
   // `evicted_` is set by `SessionEvictor`
@@ -182,7 +236,7 @@ SessionPool.isSessionActive_ = function(session) {
 /**
  * Destroys all sessions within the pool.
  *
- * @return {promise}
+ * @returns {Promise}
  */
 SessionPool.prototype.clear = function() {
   var self = this;
@@ -195,20 +249,24 @@ SessionPool.prototype.clear = function() {
     return readClear;
   }
 
-  return readClear.then(function() {
-    return self.writePool.drain();
-  }).then(function() {
-    return self.writePool.clear();
-  });
+  return readClear
+    .then(function() {
+      return self.writePool.drain();
+    })
+    .then(function() {
+      return self.writePool.clear();
+    });
 };
 
 /**
+ * @callback GetSessionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Session} session The session object.
+ */
+/**
  * Retrieve a read session.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error occured trying to retrieve the
- *     session.
- * @param {module:spanner/session} callback.session - The session object.
+ * @param {GetSessionCallback} callback Callback function.
  */
 SessionPool.prototype.getSession = function(callback) {
   var pool = this.pool;
@@ -218,44 +276,48 @@ SessionPool.prototype.getSession = function(callback) {
     return;
   }
 
-  pool.acquire()
-    .then(function(session) {
-      // because of the way generic-pool handles creation errors, we need to
-      // resolve our create calls with any errors that occur. That being said,
-      // it is possible that this instance of `session` will actually be an
-      // error of some kind.
-      // re: https://github.com/coopernurse/node-pool/issues/175
-      if (session instanceof Error) {
-        pool.destroy(session);
-        callback(session);
-        return;
-      }
+  pool.acquire().then(function(session) {
+    // because of the way generic-pool handles creation errors, we need to
+    // resolve our create calls with any errors that occur. That being said,
+    // it is possible that this instance of `session` will actually be an
+    // error of some kind.
+    // re: https://github.com/coopernurse/node-pool/issues/175
+    if (session instanceof Error) {
+      pool.destroy(session);
+      callback(session);
+      return;
+    }
 
-      callback(null, session);
-    }, callback);
+    callback(null, session);
+  }, callback);
 };
 
 /**
+ * @callback GetWriteSessionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Session} session The session object.
+ * @param {Transaction} transaction The transaction object.
+ */
+/**
  * Retrieve the write session.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error occured trying to retrieve the
- *     session.
- * @param {module:spanner/session} callback.session - The session object.
- * @param {module:spanner/transaction} callback.transaction - The transaction
- *     object.
+ * @param {GetWriteSessionCallback} callback Callback function.
  */
 SessionPool.prototype.getWriteSession = function(callback) {
   var pool = this.writePool;
 
   if (!pool || !pool.free) {
-    this.getNextAvailableSession_({
-      write: true
-    }, callback);
+    this.getNextAvailableSession_(
+      {
+        write: true,
+      },
+      callback
+    );
     return;
   }
 
-  pool.acquire()
+  pool
+    .acquire()
     .then(function(session) {
       // because of the way generic-pool handles creation errors, we need to
       // resolve our create calls with any errors that occur. That being said,
@@ -276,7 +338,8 @@ SessionPool.prototype.getWriteSession = function(callback) {
 /**
  * Release a session back into the pool.
  *
- * @param {module:spanner/session} session - The session to be released.
+ * @param {Session} session The session to be released.
+ * @returns {Promise}
  */
 SessionPool.prototype.release = function(session) {
   if (this.available >= this.maxIdle) {
@@ -293,6 +356,9 @@ SessionPool.prototype.release = function(session) {
 
 /**
  * Make an API request, first assuring an active session is used.
+ *
+ * @param {object} config
+ * @param {function} callback
  */
 SessionPool.prototype.request = function(config, callback) {
   if (global.GCLOUD_SANDBOX_ENV) {
@@ -318,6 +384,9 @@ SessionPool.prototype.request = function(config, callback) {
 
 /**
  * Make an API request as a stream, first assuring an active session is used.
+ *
+ * @param {object} config
+ * @returns {Stream}
  */
 SessionPool.prototype.requestStream = function(config) {
   if (global.GCLOUD_SANDBOX_ENV) {
@@ -378,16 +447,19 @@ SessionPool.prototype.requestStream = function(config) {
  *
  * @private
  *
- * @return {Promise} - Resolves to {module:spanner/session}.
+ * @returns {Promise} - Resolves to {Session}.
  */
 SessionPool.prototype.createSession_ = function() {
   var session = this.database.session_();
 
-  return session.create().then(function() {
-    return session;
-  }, function(err) {
-    return err;
-  });
+  return session.create().then(
+    function() {
+      return session;
+    },
+    function(err) {
+      return err;
+    }
+  );
 };
 
 /**
@@ -396,7 +468,7 @@ SessionPool.prototype.createSession_ = function() {
  *
  * @private
  *
- * @return {module:spanner/transaction}
+ * @return {Transaction}
  */
 SessionPool.prototype.createTransaction_ = function(session, options) {
   var self = this;
@@ -417,7 +489,7 @@ SessionPool.prototype.createTransaction_ = function(session, options) {
  *
  * @private
  *
- * @return {Promise} - Resolves to {module:spanner/session}.
+ * @returns {Promise} - Resolves to {Session}.
  */
 SessionPool.prototype.createWriteSession_ = function() {
   var self = this;
@@ -515,7 +587,7 @@ SessionPool.prototype.pollForSession_ = function(options, callback) {
   this.pendingAcquires.push({
     options: options,
     callback: callback,
-    timeout: this.acquireTimeout
+    timeout: this.acquireTimeout,
   });
 
   if (this.acquireIntervalId) {
@@ -528,8 +600,8 @@ SessionPool.prototype.pollForSession_ = function(options, callback) {
   this.acquireIntervalId = setInterval(checkForSession, intervalSpeed);
 
   function checkForSession() {
-    var hasFreeSession = self.pool.free ||
-      self.writePool && self.writePool.free;
+    var hasFreeSession =
+      self.pool.free || (self.writePool && self.writePool.free);
 
     if (hasFreeSession) {
       var acquireReq = self.pendingAcquires.shift();
@@ -562,14 +634,15 @@ SessionPool.prototype.pollForSession_ = function(options, callback) {
  *
  * @private
  *
- * @param {module:spanner/session} session - The session to be released.
- * @return {Promise}
+ * @param {Session} session - The session to be released.
+ * @returns {Promise}
  */
 SessionPool.prototype.releaseWriteSession_ = function(session) {
   var self = this;
   var transaction = self.createTransaction_(session);
 
-  return transaction.begin()
+  return transaction
+    .begin()
     .then(function() {
       session.transaction_ = transaction;
       return self.writePool.release(session);
@@ -584,7 +657,9 @@ SessionPool.prototype.releaseWriteSession_ = function(session) {
  *
  * @private
  *
- * @param {Pool} pool - genericPool instance.
+ * @class
+ *
+ * @param {Pool} pool genericPool instance.
  */
 function SessionEvictor(pool) {
   this.pool = pool;

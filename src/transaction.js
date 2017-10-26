@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/transaction
- */
-
 'use strict';
 
 var common = require('@google-cloud/common');
@@ -26,22 +22,8 @@ var is = require('is');
 var through = require('through2');
 var util = require('util');
 
-/**
- * @type {module:spanner/coded}
- * @private
- */
 var codec = require('./codec.js');
-
-/**
- * @type {module:spanner/partialResultStream}
- * @private
- */
 var PartialResultStream = require('./partial-result-stream.js');
-
-/**
- * @type {module:spanner/transactionRequest}
- * @private
- */
 var TransactionRequest = require('./transaction-request.js');
 
 /**
@@ -51,47 +33,77 @@ var TransactionRequest = require('./transaction-request.js');
  */
 var ABORTED = 10;
 
-/*! Developer Documentation
+/**
+ * Read/write transaction options.
  *
- * @param {module:spanner/session} session - The parent Session object.
- * @param {object=} options - [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- * @param {number} options.exactStaleness - Executes all reads at the timestamp
- *     that is `exactStaleness` old.
- * @param {date} options.minReadTimestamp - Executes all reads at a timestamp
- *     greater than or equal to this. This option can only be used for
- *     single-use transactions.
- * @param {number} options.maxStaleness - Read data at a timestamp that is
- *     greater than or equal to this. This option can only be used for
- *     single-use transactions.
- * @param {date} options.readTimestamp - Execute all reads at the given
- *     timestamp.
- * @param {boolean} options.returnReadTimestamp - If `true`, returns the read
- *     timestamp.
- * @param {boolean} options.strong - Read at the timestamp where all previously
- *     committed transactions are visible.
+ * @typedef {object} TransactionOptions
+ * @property {number} [timeout=60000] Specify a timeout (in milliseconds) for
+ *     the transaction. The transaction will be ran in its entirety, however if
+ *     an abort error is returned the transaction will be retried if the timeout
+ *     has not been met.
+ * @property {boolean} [readOnly=false] Specifies if the transaction is
+ *     read-only.
+ * @property {number} [exactStaleness] Executes all reads at the timestamp
+ *     that is `exactStaleness` old. This is only applicable for read-only
+ *     transactions.
+ * @property {date} [readTimestamp] Execute all reads at the given timestamp.
+ *     This is only applicable for read-only transactions.
+ * @property {boolean} [returnTimestamp] If `true`, returns the read timestamp.
+ * @property {boolean} [strong] Read at the timestamp where all previously
+ *     committed transactions are visible. This is only applicable for read-only
+ *     transactions.
  */
 /**
  * Use a Transaction object to read and write against your Cloud Spanner
  * database.
  *
- * **This object is created and returned from
- * {module:spanner/database#runTransaction}.**
+ * **This object is created and returned from {@link Database#runTransaction}.**
  *
- * @constructor
- * @alias module:spanner/transaction
- * @mixes module:spanner/transaction-request
+ * @class
+ * @extends TransactionRequest
+ *
+ * @param {Session} session The parent Session object.
+ * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  *
  * @example
- * var instance = spanner.instance('my-instance');
- * var database = instance.database('my-database');
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
  *
  * database.runTransaction(function(err, transaction) {
  *   // The `transaction` object is ready for use.
  * });
  */
 function Transaction(session, options) {
+  /**
+   * @name Transaction#api
+   * @type {object}
+   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
+   *     low-level {@link v1.DatabaseAdminClient} class used by this
+   *     {@link Transaction} instance.
+   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
+   *     low-level {@link v1.InstanceAdminClient} class used by this
+   *     {@link Transaction} instance.
+   * @property {v1.SpannerClient} Spanner Reference to an instance of the
+   *     low-level {@link v1.SpannerClient} class used by this
+   *     {@link Transaction} instance.
+   */
   this.api = session.api;
+
+  /**
+   * @name Transaction#session
+   * @type {Session}
+   */
   this.session = session;
+
+  /**
+   * @name Transaction#transaction
+   * @type {boolean}
+   * @default true
+   * @private
+   */
   this.transaction = true;
 
   this.queuedMutations_ = [];
@@ -112,13 +124,13 @@ util.inherits(Transaction, TransactionRequest);
  *
  * @private
  *
- * @param {error} err - The original error.
+ * @param {error} err The original error.
  * @return {object}
  */
 Transaction.createDeadlineError_ = function(err) {
   return extend({}, err, {
     code: 4,
-    message: 'Deadline for Transaction exceeded.'
+    message: 'Deadline for Transaction exceeded.',
   });
 };
 
@@ -130,7 +142,7 @@ Transaction.createDeadlineError_ = function(err) {
  * @return {?number}
  */
 Transaction.createRetryDelay_ = function(retries) {
-  return (Math.pow(2, retries) * 1000) + Math.floor(Math.random() * 1000);
+  return Math.pow(2, retries) * 1000 + Math.floor(Math.random() * 1000);
 };
 
 /**
@@ -138,12 +150,12 @@ Transaction.createRetryDelay_ = function(retries) {
  *
  * @private
  *
- * @resource [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
+ * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
  *
- * @param {object=} options - Timestamp bound options.
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @param {object=} options Timestamp bound options.
+ * @param {function} callback The callback function.
+ * @param {?error} callback.err An error returned while making this request.
+ * @param {object} callback.apiResponse The full API response.
  *
  * @example
  * transaction.begin(function(err) {
@@ -166,52 +178,66 @@ Transaction.prototype.begin = function(callback) {
 
   if (!this.readOnly) {
     options = {
-      readWrite: {}
+      readWrite: {},
     };
   } else {
     options = {
-      readOnly: extend({
-        returnReadTimestamp: true
-      }, this.options)
+      readOnly: extend(
+        {
+          returnReadTimestamp: true,
+        },
+        this.options
+      ),
     };
   }
 
   var reqOpts = {
-    options: options
+    options: options,
   };
 
-  this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.beginTransaction.bind(this.api.Spanner)
-  }, function(err, resp) {
-    if (err) {
-      callback(err);
-      return;
+  this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.beginTransaction.bind(this.api.Spanner),
+    },
+    function(err, resp) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      self.id = resp.id;
+      self.metadata = resp;
+
+      if (resp.readTimestamp) {
+        self.readTimestamp = TransactionRequest.fromProtoTimestamp_(
+          resp.readTimestamp
+        );
+      }
+
+      callback(null, resp);
     }
-
-    self.id = resp.id;
-    self.metadata = resp;
-
-    if (resp.readTimestamp) {
-      self.readTimestamp = TransactionRequest.fromProtoTimestamp_(
-        resp.readTimestamp
-      );
-    }
-
-    callback(null, resp);
-  });
+  );
 };
 
 /**
  * Commit the transaction.
  *
- * @resource [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ * Wrapper around {@link v1.SpannerClient#commit}.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.SpannerClient#commit}
+ * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ *
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.runTransaction(function(err, transaction) {
  *   if (err) {
  *     // Error handling omitted.
@@ -235,38 +261,47 @@ Transaction.prototype.commit = function(callback) {
   var self = this;
 
   var reqOpts = {
-    mutations: this.queuedMutations_
+    mutations: this.queuedMutations_,
   };
 
   if (this.id) {
     reqOpts.transactionId = this.id;
   } else {
     reqOpts.singleUseTransaction = {
-      readWrite: {}
+      readWrite: {},
     };
   }
 
-  this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.commit.bind(this.api.Spanner)
-  }, function(err, resp) {
-    if (!err) {
-      self.end();
-    }
+  this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.commit.bind(this.api.Spanner),
+    },
+    function(err, resp) {
+      if (!err) {
+        self.end();
+      }
 
-    callback(err, resp);
-  });
+      callback(err, resp);
+    }
+  );
 };
 
 /**
  * Let the client know you're done with a particular transaction. This should
  * only be called for read-only transactions.
  *
- * @param {function=} callback - Optional callback function to be called after
+ * @param {function} callback Optional callback function to be called after
  *     transaction has ended.
  *
  * @example
- * var options = {
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const options = {
  *   readOnly: true
  * };
  *
@@ -297,7 +332,7 @@ Transaction.prototype.end = function(callback) {
 };
 
 /**
- * Queue a mutation until {module:spanner/transaction#commit} is called.
+ * Queue a mutation until {@link Transaction#commit} is called.
  *
  * @private
  */
@@ -310,15 +345,18 @@ Transaction.prototype.queue_ = function(mutation) {
  *
  * @private
  *
- * @param {object} config - The request configuration.
- * @param {function} callback - The callback function.
+ * @param {object} config The request configuration.
+ * @param {function} callback The callback function.
  */
 Transaction.prototype.request = function(config, callback) {
   var self = this;
 
-  var reqOpts = extend({
-    session: this.session.formattedName_
-  }, config.reqOpts);
+  var reqOpts = extend(
+    {
+      session: this.session.formattedName_,
+    },
+    config.reqOpts
+  );
 
   var gaxOptions = reqOpts.gaxOptions;
   delete reqOpts.gaxOptions;
@@ -343,15 +381,18 @@ Transaction.prototype.request = function(config, callback) {
  *
  * @private
  *
- * @param {object} config - The request configuration.
- * @return {stream}
+ * @param {object} config The request configuration.
+ * @returns {ReadableStream}
  */
 Transaction.prototype.requestStream = function(config) {
   var self = this;
 
-  var reqOpts = extend({
-    session: this.session.formattedName_
-  }, config.reqOpts);
+  var reqOpts = extend(
+    {
+      session: this.session.formattedName_,
+    },
+    config.reqOpts
+  );
 
   var gaxOptions = reqOpts.gaxOptions;
   delete reqOpts.gaxOptions;
@@ -414,13 +455,21 @@ Transaction.prototype.retry_ = function() {
  * call this for any transaction that includes one or more queries that you
  * decide not to commit.
  *
- * @resource [Rollback API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Rollback)
+ * Wrapper around {@link v1.SpannerClient#rollback}.
  *
- * @param {function} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object} callback.apiResponse - The full API response.
+ * @see {@link v1.SpannerClient#rollback}
+ * @see [Rollback API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Rollback)
+ *
+ * @param {BasicCallback} [callback] Callback function.
+ * @returns {Promise<BasicResponse>}
  *
  * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
  * database.runTransaction(function(err, transaction) {
  *   if (err) {
  *     // Error handling omitted.
@@ -441,44 +490,55 @@ Transaction.prototype.rollback = function(callback) {
   }
 
   var reqOpts = {
-    transactionId: this.id
+    transactionId: this.id,
   };
 
-  this.request({
-    reqOpts: reqOpts,
-    method: this.api.Spanner.rollback.bind(this.api.Spanner)
-  }, function(err, resp) {
-    if (!err) {
-      self.end();
-    }
+  this.request(
+    {
+      reqOpts: reqOpts,
+      method: this.api.Spanner.rollback.bind(this.api.Spanner),
+    },
+    function(err, resp) {
+      if (!err) {
+        self.end();
+      }
 
-    callback(err, resp);
-  });
+      callback(err, resp);
+    }
+  );
 };
 
 /**
  * Execute a SQL statement on this database inside of a transaction.
  *
- * <h4>Performance Considerations</h4>
+ * **Performance Considerations:**
  *
  * This method wraps the streaming method,
- * {module:spanner/transaction#run} for your convenience. All rows will
+ * {@link Transaction#run} for your convenience. All rows will
  * be stored in memory before being released to your callback. If you intend on
  * receiving a lot of results from your query, consider using the streaming
  * method, so you can free each result from memory after consuming it.
  *
- * @resource [ExecuteStreamingSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteStreamingSql)
- * @resource [ExecuteSqlRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+ * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
  *
- * @param {string|object} query - A SQL query or
+ * @see {@link v1.SpannerClient#executeStreamingSql}
+ * @see [ExecuteStreamingSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteStreamingSql)
+ * @see [ExecuteSqlRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+ *
+ * @param {string|object} query A SQL query or
  *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
- * @param {function=} callback - The callback function.
- * @param {?error} callback.err - An error returned while making this request.
- * @param {object[]} callback.rows - The results from the SQL query.
+ * @param {RunCallback} [callback] Callback function.
+ * @returns {Promise<RunResponse>}
  *
  * @example
- * var query = 'SELECT * FROM Singers';
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const query = 'SELECT * FROM Singers';
  *
  * database.runTransaction(function(err, transaction) {
  *   if (err) {
@@ -508,7 +568,7 @@ Transaction.prototype.rollback = function(callback) {
  *     // Error handling omitted.
  *   }
  *
- *   var query = {
+ *   const query = {
  *     sql: 'SELECT * FROM Singers WHERE name = @name',
  *     params: {
  *       name: 'Eddie Wilson'
@@ -535,16 +595,25 @@ Transaction.prototype.run = function(query, callback) {
  * Create a readable object stream to receive resulting rows from a SQL
  * statement.
  *
- * @resource [ExecuteStreamingSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteStreamingSql)
- * @resource [ExecuteSqlRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+ * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
+ *
+ * @see {@link v1.SpannerClient#executeStreamingSql}
+ * @see [ExecuteStreamingSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteStreamingSql)
+ * @see [ExecuteSqlRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *
  * @param {string|object} query - A SQL query or
  *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
- * @return {Stream}
+ * @returns {ReadableStream}
  *
  * @example
- * var query = 'SELECT * FROM Singers';
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const query = 'SELECT * FROM Singers';
  *
  * database.runTransaction(function(err, transaction) {
  *   if (err) {
@@ -573,7 +642,7 @@ Transaction.prototype.run = function(query, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   var query = {
+ *   const query = {
  *     sql: 'SELECT * FROM Singers WHERE name = @name',
  *     params: {
  *       name: 'Eddie Wilson'
@@ -607,14 +676,17 @@ Transaction.prototype.runStream = function(query) {
 
   if (is.string(query)) {
     query = {
-      sql: query
+      sql: query,
     };
   }
 
-  var reqOpts = extend({
-    transaction: {},
-    session: this.formattedName_
-  }, query);
+  var reqOpts = extend(
+    {
+      transaction: {},
+      session: this.formattedName_,
+    },
+    query
+  );
 
   var fields = {};
   var prop;
@@ -633,7 +705,7 @@ Transaction.prototype.runStream = function(query) {
     }
 
     reqOpts.params = {
-      fields: fields
+      fields: fields,
     };
   }
 
@@ -655,14 +727,14 @@ Transaction.prototype.runStream = function(query) {
         code = 0; // unspecified
       }
 
-      types[prop] = { code: code };
+      types[prop] = {code: code};
 
       if (child === -1) {
         child = 0; // unspecified
       }
 
       if (is.number(child)) {
-        types[prop].arrayElementType = { code: child };
+        types[prop].arrayElementType = {code: child};
       }
     }
 
@@ -674,14 +746,14 @@ Transaction.prototype.runStream = function(query) {
     reqOpts.transaction.id = this.id;
   } else {
     reqOpts.transaction.singleUse = {
-      readOnly: this.options || {}
+      readOnly: this.options || {},
     };
   }
 
   function makeRequest(resumeToken) {
     return self.requestStream({
-      reqOpts: extend({}, reqOpts, { resumeToken: resumeToken }),
-      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner)
+      reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
+      method: self.api.Spanner.executeStreamingSql.bind(self.api.Spanner),
     });
   }
 
@@ -696,8 +768,11 @@ Transaction.prototype.runStream = function(query) {
  * @return {boolean}
  */
 Transaction.prototype.shouldRetry_ = function(err) {
-  return err.code === ABORTED && is.fn(this.runFn_) &&
-    (Date.now() - this.beginTime_ < this.timeout_);
+  return (
+    err.code === ABORTED &&
+    is.fn(this.runFn_) &&
+    Date.now() - this.beginTime_ < this.timeout_
+  );
 };
 
 /*! Developer Documentation
@@ -707,4 +782,9 @@ Transaction.prototype.shouldRetry_ = function(err) {
  */
 common.util.promisifyAll(Transaction);
 
+/**
+ * Reference to the {@link Transaction} class.
+ * @name module:@google-cloud/spanner.Transaction
+ * @see Transaction
+ */
 module.exports = Transaction;

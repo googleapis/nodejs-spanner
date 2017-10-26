@@ -17,6 +17,7 @@
 'use strict';
 
 var assert = require('assert');
+var Buffer = require('safe-buffer').Buffer;
 var events = require('events');
 var extend = require('extend');
 var is = require('is');
@@ -26,7 +27,7 @@ var util = require('@google-cloud/common').util;
 
 var fakeGenericPool = {
   DefaultEvictor: util.noop,
-  Pool: util.noop
+  Pool: util.noop,
 };
 var originalFakeGenericPool = extend({}, fakeGenericPool);
 
@@ -40,7 +41,7 @@ describe('SessionPool', function() {
 
   before(function() {
     SessionPool = proxyquire('../src/session-pool.js', {
-      'generic-pool': fakeGenericPool
+      'generic-pool': fakeGenericPool,
     });
     SessionPoolCached = extend({}, SessionPool);
   });
@@ -110,7 +111,7 @@ describe('SessionPool', function() {
           factory.destroy({
             delete: function() {
               deleteCalled = true;
-            }
+            },
           });
 
           assert.strictEqual(deleteCalled, true);
@@ -126,7 +127,7 @@ describe('SessionPool', function() {
 
     it('should calculate available value', function() {
       sessionPool.pool = {
-        available: 10
+        available: 10,
       };
 
       assert.strictEqual(sessionPool.available, sessionPool.pool.available);
@@ -134,11 +135,11 @@ describe('SessionPool', function() {
 
     it('should calculate available value when there are writes', function() {
       sessionPool.pool = {
-        available: 10
+        available: 10,
       };
 
       sessionPool.writePool = {
-        available: 5
+        available: 5,
       };
 
       assert.strictEqual(
@@ -148,23 +149,25 @@ describe('SessionPool', function() {
     });
 
     describe('options.maxIdle', function() {
-      var options = extend({}, OPTIONS, {
-        maxIdle: 5
+      it('should localize the maxIdle option', function() {
+        var pool = new SessionPool(DATABASE, {maxIdle: 7, min: 4});
+        assert.strictEqual(pool.maxIdle, 7);
       });
 
-      it('should default to 1', function() {
-        assert.strictEqual(sessionPool.maxIdle, 1);
+      it('should use the min option when maxIdle is absent', function() {
+        var pool = new SessionPool(DATABASE, {min: 4});
+        assert.strictEqual(pool.maxIdle, 4);
       });
 
-      it('should localize the maxIdle setting', function() {
-        var sessionPool = new SessionPool(DATABASE, options);
-        assert.strictEqual(sessionPool.maxIdle, options.maxIdle);
+      it('should default to 1 if both min and maxIdle are absent', function() {
+        var pool = new SessionPool(DATABASE);
+        assert.strictEqual(pool.maxIdle, 1);
       });
     });
 
     describe('options.fail', function() {
       var options = extend({}, OPTIONS, {
-        fail: true
+        fail: true,
       });
 
       it('should default to false', function() {
@@ -183,13 +186,13 @@ describe('SessionPool', function() {
       var MIN = 25;
 
       var options = extend({}, OPTIONS, {
-        writes: 10
+        writes: 10,
       });
 
       beforeEach(function() {
         POOL_OPTIONS = {
           max: MAX,
-          min: MIN
+          min: MIN,
         };
 
         SessionPool.getPoolOptions_ = function() {
@@ -250,8 +253,8 @@ describe('SessionPool', function() {
               session: {
                 delete: function() {
                   deleteCalled = true;
-                }
-              }
+                },
+              },
             });
 
             assert.strictEqual(deleteCalled, true);
@@ -273,7 +276,7 @@ describe('SessionPool', function() {
 
       it('should localize the fail setting', function() {
         var options = extend({}, OPTIONS, {
-          acquireTimeout: 60000
+          acquireTimeout: 60000,
         });
 
         var sessionPool = new SessionPool(DATABASE, options);
@@ -296,7 +299,7 @@ describe('SessionPool', function() {
           fakeGenericPool.Deque,
           fakeGenericPool.PriorityQueue,
           FACTORY,
-          POOL_OPTIONS
+          POOL_OPTIONS,
         ]);
 
         done();
@@ -342,13 +345,13 @@ describe('SessionPool', function() {
         testOnBorrow: true,
         max: 100,
         min: 0,
-        numTestsPerRun: 100
+        numTestsPerRun: 100,
       });
     });
 
     describe('options.max', function() {
       var OPTIONS = {
-        max: 10
+        max: 10,
       };
 
       var poolOptions;
@@ -368,7 +371,7 @@ describe('SessionPool', function() {
 
     describe('options.fail', function() {
       var OPTIONS = {
-        fail: true
+        fail: true,
       };
 
       var poolOptions;
@@ -384,7 +387,7 @@ describe('SessionPool', function() {
 
     describe('options.keepAlive', function() {
       var OPTIONS = {
-        keepAlive: 10
+        keepAlive: 10,
       };
 
       var EXPECTED_IDLE_TIMEOUT_MILLIS = OPTIONS.keepAlive * 60000;
@@ -413,7 +416,7 @@ describe('SessionPool', function() {
 
   describe('isSessionActive_', function() {
     it('should return Promise that resolves when dead', function(done) {
-      SessionPool.isSessionActive_({ evicted_: false })
+      SessionPool.isSessionActive_({evicted_: false})
         .then(function(isActive) {
           assert.strictEqual(isActive, true);
           done();
@@ -422,7 +425,7 @@ describe('SessionPool', function() {
     });
 
     it('should return Promise that resolves when not dead', function(done) {
-      SessionPool.isSessionActive_({ evicted_: true })
+      SessionPool.isSessionActive_({evicted_: true})
         .then(function(isActive) {
           assert.strictEqual(isActive, false);
           done();
@@ -441,7 +444,7 @@ describe('SessionPool', function() {
         clear: function() {
           sessionPool.pool.clear.called = true;
           return Promise.resolve();
-        }
+        },
       };
     });
 
@@ -463,7 +466,7 @@ describe('SessionPool', function() {
         clear: function() {
           sessionPool.writePool.clear.called = true;
           return Promise.resolve();
-        }
+        },
       };
 
       return sessionPool.clear().then(function() {
@@ -478,7 +481,7 @@ describe('SessionPool', function() {
   describe('getSession', function() {
     it('should get next available if pool is not free', function(done) {
       sessionPool.pool = {
-        free: false
+        free: false,
       };
 
       sessionPool.getNextAvailableSession_ = function(callback) {
@@ -501,7 +504,7 @@ describe('SessionPool', function() {
         free: true,
         acquire: function() {
           return Promise.resolve(session);
-        }
+        },
       };
 
       sessionPool.getSession(callback);
@@ -519,7 +522,7 @@ describe('SessionPool', function() {
         free: true,
         acquire: function() {
           return Promise.reject(error);
-        }
+        },
       };
 
       sessionPool.getSession(callback);
@@ -537,7 +540,7 @@ describe('SessionPool', function() {
         destroy: function(err) {
           assert.strictEqual(err, error);
           destroyed = true;
-        }
+        },
       };
 
       sessionPool.getSession(function(err) {
@@ -553,7 +556,7 @@ describe('SessionPool', function() {
       it('should get the next available session', function(done) {
         sessionPool.getNextAvailableSession_ = function(options, callback) {
           assert.deepEqual(options, {
-            write: true
+            write: true,
           });
           callback(); // done()
         };
@@ -565,12 +568,12 @@ describe('SessionPool', function() {
     describe('nothing is free from the write pool', function() {
       it('should get the next available session', function(done) {
         sessionPool.writePool = {
-          free: false
+          free: false,
         };
 
         sessionPool.getNextAvailableSession_ = function(options, callback) {
           assert.deepEqual(options, {
-            write: true
+            write: true,
           });
           callback(); // done()
         };
@@ -587,7 +590,7 @@ describe('SessionPool', function() {
           free: true,
           acquire: function() {
             return Promise.resolve(session);
-          }
+          },
         };
 
         sessionPool.getWriteSession(function(err, session_) {
@@ -604,7 +607,7 @@ describe('SessionPool', function() {
           free: true,
           acquire: function() {
             return Promise.reject(error);
-          }
+          },
         };
 
         sessionPool.getWriteSession(function(err) {
@@ -625,7 +628,7 @@ describe('SessionPool', function() {
           destroy: function(err) {
             assert.strictEqual(err, error);
             destroyed = true;
-          }
+          },
         };
 
         sessionPool.getSession(function(err) {
@@ -645,7 +648,7 @@ describe('SessionPool', function() {
         // Cannot set `available` directly, i.e. `sessionPool.available = 10`.
         // See the constructor for how `available` is calculated.
         sessionPool.pool = {
-          available: 10
+          available: 10,
         };
 
         sessionPool.maxIdle = 5;
@@ -656,7 +659,7 @@ describe('SessionPool', function() {
 
         beforeEach(function() {
           session = extend({}, SESSION, {
-            isWriteSession_: true
+            isWriteSession_: true,
           });
         });
 
@@ -667,7 +670,7 @@ describe('SessionPool', function() {
             destroy: function(session_) {
               assert.strictEqual(session_, session);
               return returnPromise;
-            }
+            },
           };
 
           var returnVal = sessionPool.release(session);
@@ -680,7 +683,7 @@ describe('SessionPool', function() {
 
         beforeEach(function() {
           session = extend({}, SESSION, {
-            isWriteSession_: false
+            isWriteSession_: false,
           });
         });
 
@@ -703,7 +706,7 @@ describe('SessionPool', function() {
 
       beforeEach(function() {
         session = extend({}, SESSION, {
-          isWriteSession_: true
+          isWriteSession_: true,
         });
       });
 
@@ -736,13 +739,13 @@ describe('SessionPool', function() {
   describe('request', function() {
     var CONFIG;
     var SESSION = {
-      formattedName_: 'formatted-name'
+      formattedName_: 'formatted-name',
     };
 
     beforeEach(function() {
       CONFIG = {
         method: util.noop,
-        reqOpts: {}
+        reqOpts: {},
       };
 
       sessionPool.getSession = function(callback) {
@@ -789,13 +792,16 @@ describe('SessionPool', function() {
 
     it('should call the method with the session', function(done) {
       CONFIG.reqOpts = {
-        a: 'b'
+        a: 'b',
       };
 
       CONFIG.method = function(reqOpts) {
-        assert.deepEqual(reqOpts, extend({}, CONFIG.reqOpts, {
-          session: SESSION.formattedName_
-        }));
+        assert.deepEqual(
+          reqOpts,
+          extend({}, CONFIG.reqOpts, {
+            session: SESSION.formattedName_,
+          })
+        );
         done();
       };
 
@@ -816,11 +822,7 @@ describe('SessionPool', function() {
     });
 
     it('should execute the callback with original arguments', function(done) {
-      var originalArgs = [
-        'a',
-        'b',
-        'c'
-      ];
+      var originalArgs = ['a', 'b', 'c'];
 
       CONFIG.method = function(reqOpts, callback) {
         callback.apply(null, originalArgs);
@@ -845,7 +847,7 @@ describe('SessionPool', function() {
         reqOpts: {},
         method: function() {
           return REQUEST_STREAM;
-        }
+        },
       };
 
       sessionPool.getSession = util.noop;
@@ -873,8 +875,7 @@ describe('SessionPool', function() {
         done();
       };
 
-      sessionPool.requestStream(CONFIG)
-        .emit('reading');
+      sessionPool.requestStream(CONFIG).emit('reading');
     });
 
     describe('could not get session', function() {
@@ -887,7 +888,8 @@ describe('SessionPool', function() {
       });
 
       it('should destroy the stream', function(done) {
-        sessionPool.requestStream(CONFIG)
+        sessionPool
+          .requestStream(CONFIG)
           .on('error', function(err) {
             assert.strictEqual(err, ERROR);
             done();
@@ -898,7 +900,7 @@ describe('SessionPool', function() {
 
     describe('session retrieved successfully', function() {
       var SESSION = {
-        formattedName_: 'formatted-name'
+        formattedName_: 'formatted-name',
       };
 
       beforeEach(function() {
@@ -914,8 +916,7 @@ describe('SessionPool', function() {
           return through.obj();
         };
 
-        sessionPool.requestStream(CONFIG)
-          .emit('reading');
+        sessionPool.requestStream(CONFIG).emit('reading');
       });
 
       it('should respect gax options', function(done) {
@@ -931,18 +932,16 @@ describe('SessionPool', function() {
           return through.obj();
         };
 
-        sessionPool.requestStream(config)
-          .emit('reading');
+        sessionPool.requestStream(config).emit('reading');
       });
 
       it('should make request and pipe to the stream', function(done) {
-        var responseData = new Buffer('response-data');
+        var responseData = Buffer.from('response-data');
 
-        sessionPool.requestStream(CONFIG)
-          .on('data', function(data) {
-            assert.deepEqual(data, responseData);
-            done();
-          });
+        sessionPool.requestStream(CONFIG).on('data', function(data) {
+          assert.deepEqual(data, responseData);
+          done();
+        });
 
         REQUEST_STREAM.end(responseData);
       });
@@ -953,8 +952,7 @@ describe('SessionPool', function() {
           done();
         };
 
-        sessionPool.requestStream(CONFIG)
-          .emit('reading');
+        sessionPool.requestStream(CONFIG).emit('reading');
 
         REQUEST_STREAM.end();
       });
@@ -965,8 +963,7 @@ describe('SessionPool', function() {
           done();
         };
 
-        sessionPool.requestStream(CONFIG)
-          .emit('reading');
+        sessionPool.requestStream(CONFIG).emit('reading');
 
         REQUEST_STREAM.emit('error');
       });
@@ -974,7 +971,8 @@ describe('SessionPool', function() {
       it('should error user stream when request stream errors', function(done) {
         var error = new Error('Error.');
 
-        sessionPool.requestStream(CONFIG)
+        sessionPool
+          .requestStream(CONFIG)
           .on('error', function(err) {
             assert.strictEqual(err, error);
             done();
@@ -992,7 +990,7 @@ describe('SessionPool', function() {
         REQUEST_STREAM.cancel = util.noop;
 
         SESSION = {
-          cancel: util.noop
+          cancel: util.noop,
         };
 
         sessionPool.getSession = function(callback) {
@@ -1050,18 +1048,19 @@ describe('SessionPool', function() {
       SESSION = {
         create: function() {
           return Promise.resolve();
-        }
+        },
       };
 
       sessionPool.database = {
         session_: function() {
           return SESSION;
-        }
+        },
       };
     });
 
     it('should create and return the session', function(done) {
-      sessionPool.createSession_()
+      sessionPool
+        .createSession_()
         .then(function(session_) {
           assert.strictEqual(session_, SESSION);
           done();
@@ -1076,10 +1075,9 @@ describe('SessionPool', function() {
         return Promise.reject(error);
       };
 
-      return sessionPool.createSession_()
-        .then(function(err) {
-          assert.strictEqual(err, error);
-        });
+      return sessionPool.createSession_().then(function(err) {
+        assert.strictEqual(err, error);
+      });
     });
   });
 
@@ -1091,11 +1089,11 @@ describe('SessionPool', function() {
       SESSION = {
         transaction: function() {
           return TRANSACTION;
-        }
+        },
       };
 
       TRANSACTION = {
-        end: util.noop
+        end: util.noop,
       };
     });
 
@@ -1142,7 +1140,7 @@ describe('SessionPool', function() {
       TRANSACTION = {
         begin: function() {
           return Promise.resolve(SESSION);
-        }
+        },
       };
 
       SESSION = {};
@@ -1157,7 +1155,8 @@ describe('SessionPool', function() {
     });
 
     it('should return a session', function(done) {
-      sessionPool.createWriteSession_()
+      sessionPool
+        .createWriteSession_()
         .then(function(session) {
           assert.strictEqual(session, SESSION);
           done();
@@ -1172,7 +1171,8 @@ describe('SessionPool', function() {
         return Promise.reject(error);
       };
 
-      sessionPool.createWriteSession_()
+      sessionPool
+        .createWriteSession_()
         .then(done)
         .catch(function(err) {
           assert.strictEqual(err, error);
@@ -1186,8 +1186,7 @@ describe('SessionPool', function() {
         return TRANSACTION;
       };
 
-      sessionPool.createWriteSession_()
-        .catch(done);
+      sessionPool.createWriteSession_().catch(done);
     });
 
     it('should return error if transaction cannot be created', function(done) {
@@ -1197,7 +1196,8 @@ describe('SessionPool', function() {
         return Promise.reject(error);
       };
 
-      sessionPool.createWriteSession_()
+      sessionPool
+        .createWriteSession_()
         .then(done)
         .catch(function(err) {
           assert.strictEqual(err, error);
@@ -1208,7 +1208,8 @@ describe('SessionPool', function() {
     it('should set isWriteSession_ property', function(done) {
       assert.strictEqual(SESSION.isWriteSession_, undefined);
 
-      sessionPool.createWriteSession_()
+      sessionPool
+        .createWriteSession_()
         .then(function() {
           assert.strictEqual(SESSION.isWriteSession_, true);
           done();
@@ -1219,7 +1220,8 @@ describe('SessionPool', function() {
     it('should set transaction_ property', function(done) {
       assert.strictEqual(SESSION.transaction_, undefined);
 
-      sessionPool.createWriteSession_()
+      sessionPool
+        .createWriteSession_()
         .then(function() {
           assert.strictEqual(SESSION.transaction_, TRANSACTION);
           done();
@@ -1234,25 +1236,32 @@ describe('SessionPool', function() {
         return Promise.resolve(error);
       };
 
-      return sessionPool.createWriteSession_()
-        .then(function(session) {
-          assert.strictEqual(session, error);
-        });
+      return sessionPool.createWriteSession_().then(function(session) {
+        assert.strictEqual(session, error);
+      });
     });
   });
 
   describe('getNextAvailableSession_', function() {
     var OPTIONS = {};
 
-    it('should accept only a callback', function() {
+    beforeEach(function() {
+      sessionPool.pollForSession_ = util.noop;
+    });
+
+    it('should accept only a callback', function(done) {
+      sessionPool.pollForSession_ = function(options, callback) {
+        callback(); // done()
+      };
+
       assert.doesNotThrow(function() {
-        sessionPool.getNextAvailableSession_(assert.ifError);
+        sessionPool.getNextAvailableSession_(done);
       });
     });
 
     it('should get a write session if writePool is free', function(done) {
       sessionPool.writePool = {
-        free: true
+        free: true,
       };
 
       sessionPool.getWriteSession = function(callback) {
@@ -1264,12 +1273,12 @@ describe('SessionPool', function() {
 
     describe('need a write session & a read session is free', function() {
       var WRITE_OPTIONS = extend({}, OPTIONS, {
-        write: true
+        write: true,
       });
 
       beforeEach(function() {
         sessionPool.pool = {
-          free: true
+          free: true,
         };
       });
 
@@ -1303,7 +1312,7 @@ describe('SessionPool', function() {
           setImmediate(done);
 
           return {
-            begin: util.noop
+            begin: util.noop,
           };
         };
 
@@ -1323,7 +1332,7 @@ describe('SessionPool', function() {
           return {
             begin: function(callback) {
               callback(error);
-            }
+            },
           };
         };
 
@@ -1341,13 +1350,13 @@ describe('SessionPool', function() {
         var transaction = {
           begin: function(callback) {
             callback();
-          }
+          },
         };
 
         var session = {
           transaction: function() {
             return transaction;
-          }
+          },
         };
 
         sessionPool.createTransaction_ = function() {
@@ -1370,7 +1379,7 @@ describe('SessionPool', function() {
     describe('pool is free', function() {
       beforeEach(function() {
         sessionPool.pool = {
-          free: true
+          free: true,
         };
       });
 
@@ -1471,7 +1480,7 @@ describe('SessionPool', function() {
         callback(); // done
       };
 
-      sessionPool.pool = { free: true };
+      sessionPool.pool = {free: true};
       sessionPool.pollForSession_(done);
     });
 
@@ -1480,13 +1489,13 @@ describe('SessionPool', function() {
         callback(); // done
       };
 
-      sessionPool.pool = { free: false };
-      sessionPool.writePool = { free: true };
+      sessionPool.pool = {free: false};
+      sessionPool.writePool = {free: true};
       sessionPool.pollForSession_(done);
     });
 
     it('should clear the interval when no pending acquires', function(done) {
-      sessionPool.pool = { free: true };
+      sessionPool.pool = {free: true};
 
       sessionPool.getNextAvailableSession_ = function() {
         sessionPool.pendingAcquires = [];
@@ -1505,7 +1514,7 @@ describe('SessionPool', function() {
     });
 
     it('should not clear the interval when pending acquires', function(done) {
-      sessionPool.pool = { free: true };
+      sessionPool.pool = {free: true};
 
       sessionPool.getNextAvailableSession_ = function() {
         sessionPool.pendingAcquires = [{}, {}, {}];
@@ -1552,8 +1561,10 @@ describe('SessionPool', function() {
       it('should return an error if a timeout occurs', function(done) {
         var callback = function(err) {
           assert(err instanceof Error);
-          assert.strictEqual(err.message,
-            'Unable to acquire Session, timeout occurred.');
+          assert.strictEqual(
+            err.message,
+            'Unable to acquire Session, timeout occurred.'
+          );
           done();
         };
 
@@ -1570,7 +1581,7 @@ describe('SessionPool', function() {
       TRANSACTION = {
         begin: function() {
           return Promise.resolve(SESSION);
-        }
+        },
       };
 
       SESSION = {};
@@ -1581,7 +1592,7 @@ describe('SessionPool', function() {
 
       sessionPool.writePool = {
         release: util.noop,
-        destroy: util.noop
+        destroy: util.noop,
       };
     });
 
@@ -1593,8 +1604,7 @@ describe('SessionPool', function() {
         return originalBegin;
       };
 
-      sessionPool.releaseWriteSession_(SESSION)
-        .catch(done);
+      sessionPool.releaseWriteSession_(SESSION).catch(done);
     });
 
     describe('transaction begins successfully', function() {
@@ -1604,8 +1614,7 @@ describe('SessionPool', function() {
           done();
         };
 
-        sessionPool.releaseWriteSession_(SESSION)
-          .catch(done);
+        sessionPool.releaseWriteSession_(SESSION).catch(done);
       });
 
       it('should return error if the session cannot release', function(done) {
@@ -1615,7 +1624,8 @@ describe('SessionPool', function() {
           return Promise.reject(error);
         };
 
-        sessionPool.releaseWriteSession_(SESSION)
+        sessionPool
+          .releaseWriteSession_(SESSION)
           .then(done)
           .catch(function(err) {
             assert.strictEqual(err, error);
@@ -1640,8 +1650,7 @@ describe('SessionPool', function() {
           return originalDestroy;
         };
 
-        sessionPool.releaseWriteSession_(SESSION)
-          .catch(done);
+        sessionPool.releaseWriteSession_(SESSION).catch(done);
       });
 
       it('should return error if the session cannot destroy', function(done) {
@@ -1651,7 +1660,8 @@ describe('SessionPool', function() {
           return Promise.reject(error);
         };
 
-        sessionPool.releaseWriteSession_(SESSION)
+        sessionPool
+          .releaseWriteSession_(SESSION)
           .then(done)
           .catch(function(err) {
             assert.strictEqual(err, error);
@@ -1671,13 +1681,13 @@ describe('SessionEvictor', function() {
 
   before(function() {
     SessionPool = proxyquire('../src/session-pool.js', {
-      'generic-pool': fakeGenericPool
+      'generic-pool': fakeGenericPool,
     });
   });
 
   beforeEach(function() {
     DEFAULT_EVICTOR = {
-      evict: util.noop
+      evict: util.noop,
     };
 
     fakeGenericPool.DefaultEvictor = function() {
@@ -1706,8 +1716,8 @@ describe('SessionEvictor', function() {
       RESOURCE = {
         obj: {
           evicted_: false,
-          keepAlive: util.noop
-        }
+          keepAlive: util.noop,
+        },
       };
     });
 

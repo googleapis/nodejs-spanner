@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/rowBuilder
- */
-
 'use strict';
 
 var is = require('is');
@@ -26,6 +22,7 @@ var is = require('is');
  * Combine row chunks from multiple `PartialResultSet` API response objects.
  *
  * @private
+ * @class
  */
 function RowBuilder(metadata, chunks) {
   this.metadata = metadata;
@@ -37,7 +34,7 @@ function RowBuilder(metadata, chunks) {
   Object.defineProperty(this, 'currentRow', {
     get: function() {
       return this.rows[this.rows.length - 1];
-    }
+    },
   });
 }
 
@@ -144,8 +141,7 @@ RowBuilder.prototype.build = function() {
       merged.forEach(self.append.bind(self));
     }
 
-    chunk.values.map(RowBuilder.getValue)
-      .forEach(self.append.bind(self));
+    chunk.values.map(RowBuilder.getValue).forEach(self.append.bind(self));
 
     previousChunk = chunk;
   });
@@ -168,7 +164,7 @@ RowBuilder.prototype.toJSON = function() {
 
       var column = {
         name: field.name,
-        value: RowBuilder.formatValue(field.type, value)
+        value: RowBuilder.formatValue(field.type, value),
       };
 
       formattedRow.push(column);
@@ -182,7 +178,7 @@ RowBuilder.prototype.toJSON = function() {
       enumerable: false,
       value: function() {
         return serializedRow;
-      }
+      },
     });
 
     return formattedRow;

@@ -22,9 +22,9 @@ const Spanner = require('@google-cloud/spanner');
 // Your Google Cloud Platform project ID
 const projectId = 'YOUR_PROJECT_ID';
 
-// Instantiates a client
+// Creates a client
 const spanner = Spanner({
-  projectId: projectId
+  projectId: projectId,
 });
 
 // Your Cloud Spanner instance ID
@@ -39,14 +39,18 @@ const database = instance.database(databaseId);
 
 // The query to execute
 const query = {
-  sql: 'SELECT 1'
+  sql: 'SELECT 1',
 };
 
 // Execute a simple SQL statement
-database.run(query)
-  .then((results) => {
+database
+  .run(query)
+  .then(results => {
     const rows = results[0];
 
-    rows.forEach((row) => console.log(row));
+    rows.forEach(row => console.log(row));
+  })
+  .catch(err => {
+    console.error('ERROR:', err);
   });
 // [END spanner_quickstart]

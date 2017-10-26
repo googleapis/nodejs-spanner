@@ -15,17 +15,22 @@
 
 'use strict';
 
-function readOnlyTransaction (instanceId, databaseId) {
+function readOnlyTransaction(instanceId, databaseId, projectId) {
   // [START read_only_transaction]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
-
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -40,40 +45,50 @@ function readOnlyTransaction (instanceId, databaseId) {
     }
     const queryOne = 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums';
 
-      // Read #1, using SQL
-    transaction.run(queryOne)
-      .then((results) => {
+    // Read #1, using SQL
+    transaction
+      .run(queryOne)
+      .then(results => {
         const rows = results[0];
-        rows.forEach((row) => {
+        rows.forEach(row => {
           const json = row.toJSON();
-          console.log(`SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`);
+          console.log(
+            `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+              .value}, AlbumTitle: ${json.AlbumTitle}`
+          );
         });
         const queryTwo = {
           columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
           keySet: {
-            all: true
-          }
+            all: true,
+          },
         };
 
-      // Read #2, using the `read` method. Even if changes occur
-      // in-between the reads, the transaction ensures that both
-      // return the same data.
+        // Read #2, using the `read` method. Even if changes occur
+        // in-between the reads, the transaction ensures that both
+        // return the same data.
         return transaction.read('Albums', queryTwo);
       })
-      .then((results) => {
+      .then(results => {
         const rows = results[0];
-        rows.forEach((row) => {
+        rows.forEach(row => {
           const json = row.toJSON();
-          console.log(`SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`);
+          console.log(
+            `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+              .value}, AlbumTitle: ${json.AlbumTitle}`
+          );
         });
         console.log('Successfully executed read-only transaction.');
         transaction.end();
+      })
+      .catch(err => {
+        console.error('ERROR:', err);
       });
   });
   // [END read_only_transaction]
 }
 
-function readWriteTransaction (instanceId, databaseId) {
+function readWriteTransaction(instanceId, databaseId, projectId) {
   // [START read_write_transaction]
   // This sample transfers 200,000 from the MarketingBudget field
   // of the second Album to the first Album. Make sure to run the
@@ -82,12 +97,17 @@ function readWriteTransaction (instanceId, databaseId) {
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
-  // Instantiates a client
-  const spanner = Spanner();
-
-  // Uncomment these lines to specify the instance and database to use
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -104,86 +124,104 @@ function readWriteTransaction (instanceId, databaseId) {
     let firstBudget, secondBudget;
     const queryOne = {
       columns: [`MarketingBudget`],
-      keys: [[2, 2]] // SingerId: 2, AlbumId: 2
+      keys: [[2, 2]], // SingerId: 2, AlbumId: 2
     };
 
     const queryTwo = {
       columns: ['MarketingBudget'],
-      keys: [[1, 1]] // SingerId: 1, AlbumId: 1
+      keys: [[1, 1]], // SingerId: 1, AlbumId: 1
     };
 
     Promise.all([
       // Reads the second album's budget
-      transaction.read('Albums', queryOne).then((results) => {
+      transaction.read('Albums', queryOne).then(results => {
         // Gets second album's budget
         // Note: MarketingBudget is an INT64, which comes from Cloud Spanner
         // as a string - so we convert it to a number with parseInt()
-        const rows = results[0].map((row) => row.toJSON());
+        const rows = results[0].map(row => row.toJSON());
         secondBudget = parseInt(rows[0].MarketingBudget.value);
         console.log(`The second album's marketing budget: ${secondBudget}`);
 
         // Makes sure the second album's budget is sufficient
         if (secondBudget < minimumAmountToTransfer) {
-          throw new Error(`The second album's budget (${secondBudget}) is less than the minimum required amount to transfer.`);
+          throw new Error(
+            `The second album's budget (${secondBudget}) is less than the minimum required amount to transfer.`
+          );
         }
       }),
 
       // Reads the first album's budget
-      transaction.read('Albums', queryTwo).then((results) => {
+      transaction.read('Albums', queryTwo).then(results => {
         // Gets first album's budget
         // As above, MarketingBudget is an INT64 and comes as a string
-        const rows = results[0].map((row) => row.toJSON());
+        const rows = results[0].map(row => row.toJSON());
         firstBudget = parseInt(rows[0].MarketingBudget.value);
         console.log(`The first album's marketing budget: ${firstBudget}`);
+      }),
+    ])
+      .then(() => {
+        // Transfer the budgets between the albums
+        console.log(firstBudget, secondBudget);
+        firstBudget += transferAmount;
+        secondBudget -= transferAmount;
+
+        console.log(firstBudget, secondBudget);
+
+        // Update the database
+        // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
+        // must be converted (back) to strings before being inserted as INT64s.
+        transaction.update('Albums', [
+          {
+            SingerId: '1',
+            AlbumId: '1',
+            MarketingBudget: firstBudget.toString(),
+          },
+          {
+            SingerId: '2',
+            AlbumId: '2',
+            MarketingBudget: secondBudget.toString(),
+          },
+        ]);
       })
-    ]).then(() => {
-      // Transfer the budgets between the albums
-      console.log(firstBudget, secondBudget);
-      firstBudget += transferAmount;
-      secondBudget -= transferAmount;
-
-      console.log(firstBudget, secondBudget);
-
-      // Update the database
-      // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
-      // must be converted (back) to strings before being inserted as INT64s.
-      transaction.update('Albums', [
-        { SingerId: '1', AlbumId: '1', MarketingBudget: firstBudget.toString() },
-        { SingerId: '2', AlbumId: '2', MarketingBudget: secondBudget.toString() }
-      ]);
-    })
-    // Commits the transaction and send the changes to the database
-    .then(() => transaction.commit((err) => {
-      if (err) {
-        console.error(err);
-      } else {
-        console.log(`Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`);
-      }
-    }));
+      // Commits the transaction and send the changes to the database
+      .then(() => {
+        transaction.commit(err => {
+          if (err) {
+            console.error(err);
+          } else {
+            console.log(
+              `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
+            );
+          }
+        });
+      })
+      .catch(err => {
+        console.error('ERROR:', err);
+      });
   });
   // [END read_write_transaction]
 }
 
-const cli = require(`yargs`)
+require(`yargs`)
   .demand(1)
   .command(
-    `readOnly <instanceName> <databaseName>`,
+    `readOnly <instanceName> <databaseName> <projectId>`,
     `Execute a read-only transaction on an example Cloud Spanner table.`,
     {},
-    (opts) => readOnlyTransaction(opts.instanceName, opts.databaseName)
+    opts =>
+      readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `readWrite <instanceName> <databaseName>`,
+    `readWrite <instanceName> <databaseName> <projectId>`,
     `Execute a read-write transaction on an example Cloud Spanner table.`,
     {},
-    (opts) => readWriteTransaction(opts.instanceName, opts.databaseName)
+    opts =>
+      readWriteTransaction(opts.instanceName, opts.databaseName, opts.projectId)
   )
-  .example(`node $0 readOnly "my-instance" "my-database"`)
-  .example(`node $0 readWrite "my-instance" "my-database"`)
+  .example(`node $0 readOnly "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 readWrite "my-instance" "my-database" "my-project-id"`)
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`);
-
-if (module === require.main) {
-  cli.help().strict().argv; // eslint-disable-line
-}
+  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .strict()
+  .help().argv;

@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/*!
- * @module spanner/partialResultStream
- */
-
 'use strict';
 
 var checkpointStream = require('checkpoint-stream');
@@ -29,16 +25,7 @@ var split = require('split-array-stream');
 var streamEvents = require('stream-events');
 var through = require('through2');
 
-/**
- * @type {module:spanner/codec}
- * @private
- */
 var codec = require('./codec.js');
-
-/**
- * @type {module:spanner/rowBuilder}
- * @private
- */
 var RowBuilder = require('./row-builder.js');
 
 /**
@@ -51,6 +38,7 @@ var RowBuilder = require('./row-builder.js');
  *
  * @private
  *
+ * @class
  * @param {function} requestFn - The function that makes an API request. It will
  *     receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
@@ -73,52 +61,54 @@ function partialResultStream(requestFn) {
     maxQueued: 10,
     isCheckpointFn: function(row) {
       return is.defined(row.resumeToken);
-    }
+    },
   });
 
   var rowChunks = [];
   var metadata;
 
-  var userStream = streamEvents(through.obj(function(row, _, next) {
-    var formattedRows = [];
+  var userStream = streamEvents(
+    through.obj(function(row, _, next) {
+      var formattedRows = [];
 
-    if (row.metadata) {
-      metadata = row.metadata;
-    }
-
-    if (row.chunkedValue) {
-      rowChunks.push(row);
-      next();
-      return;
-    }
-
-    if (is.empty(row.values)) {
-      next();
-      return;
-    }
-
-    if (rowChunks.length > 0) {
-      // Done getting all the chunks. Put them together.
-      var builder = new RowBuilder(metadata, rowChunks.concat(row));
-      formattedRows = formattedRows.concat(builder.toJSON());
-      rowChunks.length = 0;
-    } else {
-      var formattedRow = partialResultStream.formatRow_(metadata, row);
-      var multipleRows = is.array(formattedRow[0]);
-
-      if (multipleRows) {
-        formattedRows = formattedRows.concat(formattedRow);
-      } else {
-        formattedRows.push(formattedRow);
+      if (row.metadata) {
+        metadata = row.metadata;
       }
-    }
 
-    rowChunks = [];
+      if (row.chunkedValue) {
+        rowChunks.push(row);
+        next();
+        return;
+      }
 
-    split(formattedRows, userStream, function() {
-      next();
-    });
-  }));
+      if (is.empty(row.values)) {
+        next();
+        return;
+      }
+
+      if (rowChunks.length > 0) {
+        // Done getting all the chunks. Put them together.
+        var builder = new RowBuilder(metadata, rowChunks.concat(row));
+        formattedRows = formattedRows.concat(builder.toJSON());
+        rowChunks.length = 0;
+      } else {
+        var formattedRow = partialResultStream.formatRow_(metadata, row);
+        var multipleRows = is.array(formattedRow[0]);
+
+        if (multipleRows) {
+          formattedRows = formattedRows.concat(formattedRow);
+        } else {
+          formattedRows.push(formattedRow);
+        }
+      }
+
+      rowChunks = [];
+
+      split(formattedRows, userStream, function() {
+        next();
+      });
+    })
+  );
 
   userStream.abort = function() {
     if (activeRequestStream) {
@@ -188,7 +178,7 @@ partialResultStream.formatRow_ = function(metadata, row) {
 
     var column = {
       name: field.name,
-      value: codec.decode(value, field)
+      value: codec.decode(value, field),
     };
 
     formattedRow.push(column);
@@ -202,7 +192,7 @@ partialResultStream.formatRow_ = function(metadata, row) {
     enumerable: false,
     value: function() {
       return serializedRow;
-    }
+    },
   });
 
   return formattedRow;

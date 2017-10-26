@@ -24,7 +24,7 @@ var util = require('@google-cloud/common').util;
 var fakePaginator = {
   streamify: function(methodName) {
     return methodName;
-  }
+  },
 };
 
 var promisified = false;
@@ -39,9 +39,9 @@ var fakeUtil = extend({}, util, {
       'database',
       'delete',
       'getMetadata',
-      'setMetadata'
+      'setMetadata',
     ]);
-  }
+  },
 });
 
 function FakeDatabase() {
@@ -59,7 +59,7 @@ describe('Instance', function() {
   var SPANNER = {
     api: {},
     projectId: 'project-id',
-    instances_: new Map()
+    instances_: new Map(),
   };
 
   var NAME = 'instance-name';
@@ -68,19 +68,19 @@ describe('Instance', function() {
     Instance = proxyquire('../src/instance.js', {
       '@google-cloud/common': {
         paginator: fakePaginator,
-        util: fakeUtil
+        util: fakeUtil,
       },
       '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject
+        ServiceObject: FakeGrpcServiceObject,
       },
-      './database.js': FakeDatabase
+      './database.js': FakeDatabase,
     });
   });
 
   beforeEach(function() {
     SPANNER.api = {
       Database: {},
-      Instance: {}
+      Instance: {},
     };
 
     instance = new Instance(SPANNER, NAME);
@@ -125,7 +125,7 @@ describe('Instance', function() {
           assert.strictEqual(name, instance.formattedName_);
           assert.strictEqual(options_, options);
           callback(); // done()
-        }
+        },
       });
 
       instance = new Instance(spannerInstance, NAME);
@@ -138,7 +138,7 @@ describe('Instance', function() {
       assert.deepEqual(calledWith.methods, {
         create: true,
         exists: true,
-        get: true
+        get: true,
       });
 
       calledWith.createMethod(null, options, done);
@@ -149,10 +149,7 @@ describe('Instance', function() {
     var PATH = 'projects/' + SPANNER.projectId + '/instances/' + NAME;
 
     it('should return the name if already formatted', function() {
-      assert.strictEqual(
-        Instance.formatName_(SPANNER.projectId, PATH),
-        PATH
-      );
+      assert.strictEqual(Instance.formatName_(SPANNER.projectId, PATH), PATH);
     });
 
     it('should format the name', function() {
@@ -166,7 +163,7 @@ describe('Instance', function() {
     var PATH = 'projects/project-id/databases/' + NAME;
 
     var OPTIONS = {
-      a: 'b'
+      a: 'b',
     };
     var ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
@@ -181,11 +178,11 @@ describe('Instance', function() {
         createDatabase: function(reqOpts) {
           assert.deepEqual(reqOpts, {
             parent: instance.formattedName_,
-            createStatement: 'CREATE DATABASE `' + NAME + '`'
+            createStatement: 'CREATE DATABASE `' + NAME + '`',
           });
 
           done();
-        }
+        },
       };
 
       instance.createDatabase(NAME, assert.ifError);
@@ -196,15 +193,18 @@ describe('Instance', function() {
         createDatabase: function(reqOpts) {
           assert.deepEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-          var expectedReqOpts = extend({
-            parent: instance.formattedName_,
-            createStatement: 'CREATE DATABASE `' + NAME + '`'
-          }, OPTIONS);
+          var expectedReqOpts = extend(
+            {
+              parent: instance.formattedName_,
+              createStatement: 'CREATE DATABASE `' + NAME + '`',
+            },
+            OPTIONS
+          );
 
           assert.deepEqual(reqOpts, expectedReqOpts);
 
           done();
-        }
+        },
       };
 
       instance.createDatabase(NAME, OPTIONS, assert.ifError);
@@ -213,15 +213,18 @@ describe('Instance', function() {
     it('should only use the name in the createStatement', function(done) {
       instance.api.Database = {
         createDatabase: function(reqOpts) {
-          var expectedReqOpts = extend({
-            parent: instance.formattedName_,
-            createStatement: 'CREATE DATABASE `' + NAME + '`'
-          }, OPTIONS);
+          var expectedReqOpts = extend(
+            {
+              parent: instance.formattedName_,
+              createStatement: 'CREATE DATABASE `' + NAME + '`',
+            },
+            OPTIONS
+          );
 
           assert.deepEqual(reqOpts, expectedReqOpts);
 
           done();
-        }
+        },
       };
 
       instance.createDatabase(PATH, OPTIONS, assert.ifError);
@@ -232,14 +235,14 @@ describe('Instance', function() {
         var poolOptions = {};
 
         var options = extend({}, OPTIONS, {
-          poolOptions: poolOptions
+          poolOptions: poolOptions,
         });
 
         instance.api.Database = {
           createDatabase: function(reqOpts, callback) {
             assert.strictEqual(reqOpts.poolOptions, undefined);
             callback();
-          }
+          },
         };
 
         instance.database = function(name, poolOptions_) {
@@ -256,7 +259,7 @@ describe('Instance', function() {
         var SCHEMA = 'schema';
 
         var options = extend({}, OPTIONS, {
-          schema: SCHEMA
+          schema: SCHEMA,
         });
 
         instance.api.Database = {
@@ -264,7 +267,7 @@ describe('Instance', function() {
             assert.deepEqual(reqOpts.extraStatements, [SCHEMA]);
             assert.strictEqual(reqOpts.schema, undefined);
             done();
-          }
+          },
         };
 
         instance.createDatabase(NAME, options, assert.ifError);
@@ -279,7 +282,7 @@ describe('Instance', function() {
         instance.api.Database = {
           createDatabase: function(reqOpts, callback) {
             callback(ERROR, null, API_RESPONSE);
-          }
+          },
         };
       });
 
@@ -301,7 +304,7 @@ describe('Instance', function() {
         instance.api.Database = {
           createDatabase: function(reqOpts, callback) {
             callback(null, OPERATION, API_RESPONSE);
-          }
+          },
         };
       });
 
@@ -371,11 +374,11 @@ describe('Instance', function() {
       instance.api.Instance = {
         deleteInstance: function(reqOpts, callback) {
           assert.deepEqual(reqOpts, {
-            name: instance.formattedName_
+            name: instance.formattedName_,
           });
           setImmediate(callback);
           return gaxReturnValue;
-        }
+        },
       };
 
       var returnValue = instance.delete(done);
@@ -388,7 +391,7 @@ describe('Instance', function() {
       instance.api.Instance = {
         deleteInstance: function(reqOpts, callback) {
           callback(null);
-        }
+        },
       };
 
       cache.set(instance.id, instance);
@@ -404,13 +407,13 @@ describe('Instance', function() {
 
   describe('getDatabases', function() {
     var QUERY = {
-      a: 'b'
+      a: 'b',
     };
     var ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct gax request', function(done) {
       var expectedReqOpts = extend({}, QUERY, {
-        parent: instance.formattedName_
+        parent: instance.formattedName_,
       });
 
       instance.api.Database = {
@@ -423,7 +426,7 @@ describe('Instance', function() {
           assert.strictEqual(query, QUERY);
 
           done();
-        }
+        },
       };
 
       instance.getDatabases(QUERY, assert.ifError);
@@ -433,30 +436,26 @@ describe('Instance', function() {
       instance.api.Database = {
         listDatabases: function(reqOpts, query) {
           assert.deepEqual(reqOpts, {
-            parent: instance.formattedName_
+            parent: instance.formattedName_,
           });
 
           assert.deepEqual(query, {});
 
           done();
-        }
+        },
       };
 
       instance.getDatabases(assert.ifError);
     });
 
     describe('error', function() {
-      var GAX_RESPONSE_ARGS = [
-        new Error('Error.'),
-        null,
-        {}
-      ];
+      var GAX_RESPONSE_ARGS = [new Error('Error.'), null, {}];
 
       beforeEach(function() {
         instance.api.Database = {
           listDatabases: function(reqOpts, query, callback) {
             callback.apply(null, GAX_RESPONSE_ARGS);
-          }
+          },
         };
       });
 
@@ -471,21 +470,17 @@ describe('Instance', function() {
     describe('success', function() {
       var DATABASES = [
         {
-          name: 'database-name'
-        }
+          name: 'database-name',
+        },
       ];
 
-      var GAX_RESPONSE_ARGS = [
-        null,
-        DATABASES,
-        {}
-      ];
+      var GAX_RESPONSE_ARGS = [null, DATABASES, {}];
 
       beforeEach(function() {
         instance.api.Database = {
           listDatabases: function(reqOpts, query, callback) {
             callback.apply(null, GAX_RESPONSE_ARGS);
-          }
+          },
         };
       });
 
@@ -523,11 +518,11 @@ describe('Instance', function() {
       instance.api.Instance = {
         getInstance: function(reqOpts, callback_) {
           assert.deepEqual(reqOpts, {
-            name: instance.formattedName_
+            name: instance.formattedName_,
           });
           assert.strictEqual(callback_, callback);
           return gaxReturnValue;
-        }
+        },
       };
 
       var returnValue = instance.getMetadata(callback);
@@ -537,13 +532,13 @@ describe('Instance', function() {
 
   describe('setMetadata', function() {
     var METADATA = {
-      needsToBeSnakeCased: true
+      needsToBeSnakeCased: true,
     };
     var ORIGINAL_METADATA = extend({}, METADATA);
 
     beforeEach(function() {
       instance.api.Instance = {
-        updateInstance: util.noop
+        updateInstance: util.noop,
       };
     });
 
@@ -555,14 +550,12 @@ describe('Instance', function() {
       instance.api.Instance = {
         updateInstance: function(reqOpts, callback_) {
           var expectedReqOpts = extend({}, METADATA, {
-            name: instance.formattedName_
+            name: instance.formattedName_,
           });
 
           assert.deepEqual(reqOpts.instance, expectedReqOpts);
           assert.deepEqual(reqOpts.fieldMask, {
-            paths: [
-              'needs_to_be_snake_cased'
-            ]
+            paths: ['needs_to_be_snake_cased'],
           });
 
           assert.deepEqual(METADATA, ORIGINAL_METADATA);
@@ -570,7 +563,7 @@ describe('Instance', function() {
           assert.strictEqual(callback_, callback);
 
           return gaxReturnValue;
-        }
+        },
       };
 
       var returnValue = instance.setMetadata(METADATA, callback);

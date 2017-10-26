@@ -8,22 +8,24 @@
 
 ## Table of Contents
 
-* [Setup](#setup)
+* [Before you begin](#before-you-begin)
 * [Samples](#samples)
   * [Schema](#schema)
   * [CRUD](#crud)
   * [Indexing](#indexing)
   * [Transactions](#transactions)
-* [Running the tests](#running-the-tests)
 
-## Setup
+## Before you begin
 
+Before running the samples, make sure you've followed the steps in the
+[Before you begin section](../README.md#before-you-begin) of the client
+library's README.
 
 ## Samples
 
 ### Schema
 
-View the [documentation][schema_0_docs] or the [source code][schema_0_code].
+View the [source code][schema_0_code].
 
 __Usage:__ `node schema.js --help`
 
@@ -51,7 +53,7 @@ For more information, see https://cloud.google.com/spanner/docs
 
 ### CRUD
 
-View the [documentation][crud_1_docs] or the [source code][crud_1_code].
+View the [source code][crud_1_code].
 
 __Usage:__ `node crud.js --help`
 
@@ -61,7 +63,7 @@ Commands:
   query <instanceName> <databaseName>       Executes a read-only SQL query against an example Cloud Spanner table.
   insert <instanceName> <databaseName>      Inserts new rows of data into an example Cloud Spanner table.
   read <instanceName> <databaseName>        Reads data in an example Cloud Spanner table.
-  read-stale <instanceName> <databaseName>  Reads data in an example Cloud Spanner table.
+  read-stale <instanceName> <databaseName>  Reads stale data in an example Cloud Spanner table.
 
 Options:
   --help  Show help                                                                                            [boolean]
@@ -71,6 +73,7 @@ Examples:
   node crud.js query "my-instance" "my-database"
   node crud.js insert "my-instance" "my-database"
   node crud.js read "my-instance" "my-database"
+  node crud.js read-stale "my-instance" "my-database"
 
 For more information, see https://cloud.google.com/spanner/docs
 ```
@@ -80,7 +83,7 @@ For more information, see https://cloud.google.com/spanner/docs
 
 ### Indexing
 
-View the [documentation][indexing_2_docs] or the [source code][indexing_2_code].
+View the [source code][indexing_2_code].
 
 __Usage:__ `node indexing.js --help`
 
@@ -115,7 +118,7 @@ For more information, see https://cloud.google.com/spanner/docs
 
 ### Transactions
 
-View the [documentation][transaction_3_docs] or the [source code][transaction_3_code].
+View the [source code][transaction_3_code].
 
 __Usage:__ `node transaction.js --help`
 
@@ -136,6 +139,3 @@ For more information, see https://cloud.google.com/spanner/docs
 
 [transaction_3_docs]: https://cloud.google.com/spanner/docs
 [transaction_3_code]: transaction.js
-
-## Running the tests
-
