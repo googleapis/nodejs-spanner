@@ -19,10 +19,30 @@
 var assert = require('assert');
 var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
+var grpc = require('grpc');
+var path = require('path');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream');
 var through = require('through2');
 var util = require('@google-cloud/common').util;
+
+var FakeRetryInfo = {
+  decode: util.noop
+};
+
+var fakeGrpc = extend({}, grpc, {
+  load: function(options, type, config) {
+    assert.strictEqual(options.root, path.resolve(__dirname, '../protos'));
+    assert.strictEqual(options.file, 'google/rpc/error_details.proto');
+    assert.strictEqual(type, 'proto');
+    assert.strictEqual(config.binaryAsBase64, true);
+    assert.strictEqual(config.convertFieldsToCamelCase, true);
+
+    var services = grpc.load(options, type, config);
+    services.google.rpc.RetryInfo = FakeRetryInfo;
+    return services;
+  }
+});
 
 var promisified = false;
 var fakeUtil = extend({}, util, {
@@ -66,6 +86,7 @@ describe('Transaction', function() {
 
   before(function() {
     Transaction = proxyquire('../src/transaction.js', {
+      grpc: fakeGrpc,
       '@google-cloud/common': {
         util: fakeUtil,
       },
@@ -82,6 +103,7 @@ describe('Transaction', function() {
 
   beforeEach(function() {
     FakeGrpcService.objToStruct_ = util.noop;
+    FakeRetryInfo.decode = util.noop;
 
     SESSION.api = {
       Spanner: {
@@ -125,10 +147,6 @@ describe('Transaction', function() {
       assert.deepEqual(transaction.queuedMutations_, []);
     });
 
-    it('should initialize retries to 0', function() {
-      assert.strictEqual(transaction.retries_, 0);
-    });
-
     it('should initialize a null run function', function() {
       assert.strictEqual(transaction.runFn_, null);
     });
@@ -166,16 +184,36 @@ describe('Transaction', function() {
     });
   });
 
-  describe('createRetryDelay_', function() {
-    it('should return exponential retry delay', function() {
-      [0, 1].forEach(function(retries) {
-        var min = Math.pow(2, retries) * 1000;
-        var max = Math.pow(2, retries) * 1000 + 1000;
+  describe('getRetryDelay_', function() {
+    it('should return the retry delay', function() {
+      var fakeError = new Error('err');
+      var fakeRetryInfo = new Buffer('hi');
 
-        var time = Transaction.createRetryDelay_(retries);
+      fakeError.metadata = new grpc.Metadata();
+      fakeError.metadata.set('google.rpc.retryinfo-bin', fakeRetryInfo);
 
-        assert(time >= min && time <= max);
-      });
+      var seconds = 25;
+      var nanos = 100;
+
+      FakeRetryInfo.decode = function(retryInfo) {
+        assert.strictEqual(retryInfo, fakeRetryInfo);
+
+        return {
+          retryDelay: {
+            seconds: {
+              toNumber: function() {
+                return seconds;
+              }
+            },
+            nanos
+          }
+        };
+      };
+
+      var expectedDelay = (seconds * 1000) + (nanos / 1e6);
+      var delay = Transaction.getRetryDelay_(fakeError);
+
+      assert.strictEqual(delay, expectedDelay);
     });
   });
 
@@ -389,14 +427,6 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.queuedMutations_.length, 0);
     });
 
-    it('should reset the retry counter', function() {
-      transaction.retries_ = 10;
-
-      transaction.end();
-
-      assert.strictEqual(transaction.retries_, 0);
-    });
-
     it('should nullify the run function', function() {
       transaction.runFn_ = function() {};
 
@@ -474,7 +504,13 @@ describe('Transaction', function() {
     describe('aborted errors', function() {
       var abortedError = {code: 10};
       var resp = {};
+      var fakeDelay = 123;
       var config;
+      var getRetryDelay;
+
+      before(function() {
+        getRetryDelay = Transaction.getRetryDelay_;
+      });
 
       beforeEach(function() {
         config = {
@@ -482,10 +518,26 @@ describe('Transaction', function() {
             callback(abortedError, resp);
           },
         };
+
+        Transaction.getRetryDelay_ = function() {
+          return fakeDelay;
+        };
+      });
+
+      after(function() {
+        Transaction.getRetryDelay_ = getRetryDelay;
       });
 
       it('should retry the txn if abort occurs', function(done) {
-        transaction.retry_ = done;
+        Transaction.getRetryDelay_ = function(err) {
+          assert.strictEqual(err, abortedError);
+          return fakeDelay;
+        };
+
+        transaction.retry_ = function(delay) {
+          assert.strictEqual(delay, fakeDelay);
+          done();
+        };
 
         transaction.shouldRetry_ = function(err) {
           assert.strictEqual(err, abortedError);
@@ -631,7 +683,16 @@ describe('Transaction', function() {
 
       it('should retry the transaction', function(done) {
         var error = {code: 10};
+        var fakeDelay = 123;
         var stream;
+
+        var getRetryDelay = Transaction.getRetryDelay_;
+
+        Transaction.getRetryDelay_ = function(err) {
+          assert.strictEqual(err, error);
+          Transaction.getRetryDelay_ = getRetryDelay;
+          return fakeDelay;
+        };
 
         transaction.shouldRetry_ = function(err) {
           assert.strictEqual(err, error);
@@ -640,7 +701,8 @@ describe('Transaction', function() {
 
         transaction.runFn_ = done; // should not be called
 
-        transaction.retry_ = function() {
+        transaction.retry_ = function(delay) {
+          assert.strictEqual(delay, fakeDelay);
           assert(stream._destroyed);
           done();
         };
@@ -1198,7 +1260,15 @@ describe('Transaction', function() {
     });
 
     describe('transaction began successfully', function() {
+      var fakeDelay = 1123123;
+      var _setTimeout;
+
+      before(function() {
+        _setTimeout = global.setTimeout;
+      });
+
       beforeEach(function() {
+        global.setTimeout = function() {};
         transaction.runFn_ = function() {};
 
         transaction.begin = function(callback) {
@@ -1206,36 +1276,18 @@ describe('Transaction', function() {
         };
       });
 
-      it('should increment the retry counter', function(done) {
-        transaction.retries_ = 0;
-
-        transaction.begin = function(callback) {
-          callback(null);
-          setImmediate(done);
-        };
-
-        transaction.retry_();
-        assert.strictEqual(transaction.retries_, 1);
+      after(function() {
+        global.setTimeout = _setTimeout;
       });
 
       it('should empty queued mutations', function() {
         transaction.queuedMutations_ = [{}];
-        transaction.retry_();
+        transaction.retry_(fakeDelay);
 
         assert.deepEqual(transaction.queuedMutations_, []);
       });
 
       it('should execute run function after timeout', function(done) {
-        var createRetryDelay = Transaction.createRetryDelay_;
-        var fakeDelay = 1123123;
-
-        Transaction.createRetryDelay_ = function(retries) {
-          assert.strictEqual(retries, transaction.retries_);
-          return fakeDelay;
-        };
-
-        var _setTimeout = global.setTimeout;
-
         global.setTimeout = function(cb, timeout) {
           assert.strictEqual(timeout, fakeDelay);
           cb();
@@ -1244,19 +1296,23 @@ describe('Transaction', function() {
         transaction.runFn_ = function(err, txn) {
           assert.strictEqual(err, null);
           assert.strictEqual(txn, transaction);
-
-          Transaction.createRetryDelay_ = createRetryDelay;
-          global.setTimeout = _setTimeout;
           done();
         };
 
-        transaction.retry_();
+        transaction.retry_(fakeDelay);
       });
     });
   });
 
   describe('shouldRetry_', function() {
-    var abortedError = {code: 10};
+    var abortedError;
+
+    beforeEach(function() {
+      abortedError = {
+        code: 10,
+        metadata: new grpc.Metadata()
+      };
+    });
 
     it('should not retry if non-aborted error', function() {
       var shouldRetry = transaction.shouldRetry_({code: 4});
@@ -1278,10 +1334,20 @@ describe('Transaction', function() {
       assert.strictEqual(shouldRetry, false);
     });
 
+    it('should not retry if retry info metadata is absent', function() {
+      transaction.runFn_ = function() {};
+      transaction.timeout_ = 1000;
+      transaction.beginTime_ = Date.now() - 2;
+
+      var shouldRetry = transaction.shouldRetry_(abortedError);
+      assert.strictEqual(shouldRetry, false);
+    });
+
     it('should retry if all conditions are met', function() {
       transaction.runFn_ = function() {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
+      abortedError.metadata.set('google.rpc.retryinfo-bin', new Buffer('hi'));
 
       var shouldRetry = transaction.shouldRetry_(abortedError);
       assert.strictEqual(shouldRetry, true);
