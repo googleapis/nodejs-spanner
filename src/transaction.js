@@ -42,13 +42,17 @@ var ABORTED = 10;
  */
 var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
 
-var services = grpc.load({
-  root: path.resolve(__dirname, '../protos'),
-  file: 'google/rpc/error_details.proto'
-}, 'proto', {
-  binaryAsBase64: true,
-  convertFieldsToCamelCase: true
-});
+var services = grpc.load(
+  {
+    root: path.resolve(__dirname, '../protos'),
+    file: 'google/rpc/error_details.proto',
+  },
+  'proto',
+  {
+    binaryAsBase64: true,
+    convertFieldsToCamelCase: true,
+  }
+);
 
 var RetryInfo = services.google.rpc.RetryInfo;
 
@@ -793,8 +797,8 @@ Transaction.prototype.shouldRetry_ = function(err) {
   return (
     err.code === ABORTED &&
     is.fn(this.runFn_) &&
-    (Date.now() - this.beginTime_ < this.timeout_) &&
-    (err.metadata.get(RETRY_INFO_KEY).length > 0)
+    Date.now() - this.beginTime_ < this.timeout_ &&
+    err.metadata.get(RETRY_INFO_KEY).length > 0
   );
 };
 

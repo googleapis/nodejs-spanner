@@ -27,7 +27,7 @@ var through = require('through2');
 var util = require('@google-cloud/common').util;
 
 var FakeRetryInfo = {
-  decode: util.noop
+  decode: util.noop,
 };
 
 var fakeGrpc = extend({}, grpc, {
@@ -41,7 +41,7 @@ var fakeGrpc = extend({}, grpc, {
     var services = grpc.load(options, type, config);
     services.google.rpc.RetryInfo = FakeRetryInfo;
     return services;
-  }
+  },
 });
 
 var promisified = false;
@@ -203,14 +203,14 @@ describe('Transaction', function() {
             seconds: {
               toNumber: function() {
                 return seconds;
-              }
+              },
             },
-            nanos
-          }
+            nanos,
+          },
         };
       };
 
-      var expectedDelay = (seconds * 1000) + (nanos / 1e6);
+      var expectedDelay = seconds * 1000 + nanos / 1e6;
       var delay = Transaction.getRetryDelay_(fakeError);
 
       assert.strictEqual(delay, expectedDelay);
@@ -1310,7 +1310,7 @@ describe('Transaction', function() {
     beforeEach(function() {
       abortedError = {
         code: 10,
-        metadata: new grpc.Metadata()
+        metadata: new grpc.Metadata(),
       };
     });
 
