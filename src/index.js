@@ -166,6 +166,9 @@ function Spanner(options) {
     return new Spanner(options);
   }
 
+  this.clients_ = new Map();
+  this.instances_ = new Map();
+
   let scopes = [];
   let clientClasses = [
     gapic.v1.DatabaseAdminClient,
@@ -174,7 +177,7 @@ function Spanner(options) {
   ];
   for (let clientClass of clientClasses) {
     for (let scope of clientClass.scopes) {
-      if (clientClasses.indexOf(scope) === -1) {
+      if (scopes.indexOf(scope) === -1) {
         scopes.push(scope);
       }
     }
@@ -191,8 +194,6 @@ function Spanner(options) {
 
   this.auth = googleAuth(this.options);
 
-  this.api = {};
-
   var config = {
     baseUrl: 'spanner.googleapis.com',
     protosDir: path.resolve(__dirname, '../protos'),
@@ -207,8 +208,6 @@ function Spanner(options) {
   };
 
   commonGrpc.Service.call(this, config, this.options);
-
-  this.instances_ = new Map();
 }
 
 util.inherits(Spanner, commonGrpc.Service);
@@ -487,6 +486,7 @@ Spanner.prototype.getInstances = function(query, callback) {
       client: 'InstanceAdminClient',
       method: 'listInstances',
       reqOpts: reqOpts,
+      gaxOpts: query,
     },
     function(err, instances) {
       if (instances) {
@@ -629,6 +629,7 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
       client: 'InstanceAdminClient',
       method: 'listInstanceConfigs',
       reqOpts: reqOpts,
+      gaxOpts: query,
     },
     callback
   );
@@ -676,6 +677,7 @@ Spanner.prototype.getInstanceConfigsStream = function(query) {
     client: 'InstanceAdminClient',
     method: 'listInstanceConfigsStream',
     reqOpts: reqOpts,
+    gaxOpts: query,
   });
 };
 
@@ -726,12 +728,12 @@ Spanner.prototype.operation = function(name) {
 };
 
 /**
- * Prepare a request for GAX. This will cache the GAX client and replace
+ * Prepare a gapic request. This will cache the GAX client and replace
  * {{projectId}} placeholders, if necessary.
  *
  * @private
  */
-Spanner.prototype.prepareGaxRequest_ = function(config, callback) {
+Spanner.prototype.prepareGapicRequest_ = function(config, callback) {
   var self = this;
 
   this.auth.getProjectId(function(err, projectId) {
@@ -740,13 +742,13 @@ Spanner.prototype.prepareGaxRequest_ = function(config, callback) {
       return;
     }
 
-    var gaxClient = self.api[config.client];
+    var clientName = config.client;
 
-    if (!gaxClient) {
-      // Lazily instantiate client.
-      gaxClient = new gapic.v1[config.client](self.options);
-      self.api[config.client] = gaxClient;
+    if (!self.clients_.has(clientName)) {
+      self.clients_.set(clientName, new gapic.v1[clientName](self.options));
     }
+
+    var gaxClient = self.clients_.get(clientName);
 
     var reqOpts = extend(true, {}, config.reqOpts);
     reqOpts = common.util.replaceProjectIdToken(reqOpts, projectId);
@@ -762,7 +764,7 @@ Spanner.prototype.prepareGaxRequest_ = function(config, callback) {
 };
 
 /**
- * Funnel all API requests through this method, to be sure we have a project ID.
+ * Funnel all API requests through this method to be sure we have a project ID.
  *
  * @param {object} config Configuration object.
  * @param {object} config.gaxOpts GAX options.
@@ -771,18 +773,32 @@ Spanner.prototype.prepareGaxRequest_ = function(config, callback) {
  * @param {function} [callback] Callback function.
  */
 Spanner.prototype.request = function(config, callback) {
-  this.prepareGaxRequest_(config, function(err, requestFn) {
-    if (err) {
-      callback(err);
-      return;
-    }
+  var self = this;
 
-    requestFn(callback);
-  });
+  if (is.fn(callback)) {
+    self.prepareGapicRequest_(config, function(err, requestFn) {
+      if (err) {
+        callback(err);
+      } else {
+        requestFn(callback);
+      }
+    });
+  } else {
+    return new this.Promise(function(resolve, reject) {
+      self.prepareGapicRequest_(config, function(err, requestFn) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(requestFn());
+        }
+      });
+    });
+  }
 };
 
 /**
- * Funnel all API requests through this method, to be sure we have a project ID.
+ * Funnel all streaming API requests through this method to be sure we have a
+ * project ID.
  *
  * @param {object} config Configuration object.
  * @param {object} config.gaxOpts GAX options.
@@ -791,31 +807,18 @@ Spanner.prototype.request = function(config, callback) {
  * @param {function} [callback] Callback function.
  */
 Spanner.prototype.requestStream = function(config) {
-  if (global.GCLOUD_SANDBOX_ENV) {
-    return through.obj();
-  }
-
   var self = this;
 
-  var gaxStream;
   var stream = streamEvents(through.obj());
 
-  stream.abort = function() {
-    if (gaxStream && gaxStream.cancel) {
-      gaxStream.cancel();
-    }
-  };
-
   stream.once('reading', function() {
-    self.prepareGaxRequest_(config, function(err, requestFn) {
+    self.prepareGapicRequest_(config, function(err, requestFn) {
       if (err) {
         stream.destroy(err);
         return;
       }
 
-      gaxStream = requestFn();
-
-      gaxStream
+      requestFn()
         .on('error', function(err) {
           stream.destroy(err);
         })
