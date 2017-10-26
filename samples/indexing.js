@@ -260,11 +260,12 @@ function readDataWithStoringIndex(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(
-          `AlbumId: ${json.AlbumId
-            .value}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${json
-            .MarketingBudget.value}`
-        );
+        let rowString = `AlbumId: ${json.AlbumId.value}`;
+        rowString += `, AlbumTitle: ${json.AlbumTitle}`;
+        if (json.MarketingBudget) {
+          rowString += `, MarketingBudget: ${json.MarketingBudget.value}`;
+        }
+        console.log(rowString);
       });
     })
     .catch(err => {

@@ -94,8 +94,8 @@ function insertData(instanceId, databaseId, projectId) {
     .then(() => {
       // Inserts rows into the Albums table
       albumsTable.insert([
-        {SingerId: '1', AlbumId: '1', AlbumTitle: 'Go, Go, Go'},
-        {SingerId: '1', AlbumId: '2', AlbumTitle: 'Total Junk'},
+        {SingerId: '1', AlbumId: '1', AlbumTitle: 'Total Junk'},
+        {SingerId: '1', AlbumId: '2', AlbumTitle: 'Go, Go, Go'},
         {SingerId: '2', AlbumId: '1', AlbumTitle: 'Green'},
         {SingerId: '2', AlbumId: '2', AlbumTitle: 'Forever Hold your Peace'},
         {SingerId: '2', AlbumId: '3', AlbumTitle: 'Terrified'},
