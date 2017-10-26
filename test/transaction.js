@@ -19,7 +19,7 @@
 var assert = require('assert');
 var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
-var grpc = require('grpc');
+var gax = require('google-gax');
 var path = require('path');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream');
@@ -30,7 +30,8 @@ var FakeRetryInfo = {
   decode: util.noop,
 };
 
-var fakeGrpc = extend({}, grpc, {
+var grpc = gax.grpc();
+var fakeGrpc = {
   load: function(options, type, config) {
     assert.strictEqual(options.root, path.resolve(__dirname, '../protos'));
     assert.strictEqual(options.file, 'google/rpc/error_details.proto');
@@ -42,7 +43,13 @@ var fakeGrpc = extend({}, grpc, {
     services.google.rpc.RetryInfo = FakeRetryInfo;
     return services;
   },
-});
+};
+
+var fakeGax = {
+  grpc: function() {
+    return fakeGrpc;
+  },
+};
 
 var promisified = false;
 var fakeUtil = extend({}, util, {
@@ -86,7 +93,7 @@ describe('Transaction', function() {
 
   before(function() {
     Transaction = proxyquire('../src/transaction.js', {
-      grpc: fakeGrpc,
+      'google-gax': fakeGax,
       '@google-cloud/common': {
         util: fakeUtil,
       },
@@ -189,8 +196,12 @@ describe('Transaction', function() {
       var fakeError = new Error('err');
       var fakeRetryInfo = new Buffer('hi');
 
-      fakeError.metadata = new grpc.Metadata();
-      fakeError.metadata.set('google.rpc.retryinfo-bin', fakeRetryInfo);
+      fakeError.metadata = {
+        get: function(key) {
+          assert.strictEqual(key, 'google.rpc.retryinfo-bin');
+          return [fakeRetryInfo];
+        },
+      };
 
       var seconds = 25;
       var nanos = 100;
@@ -1310,7 +1321,11 @@ describe('Transaction', function() {
     beforeEach(function() {
       abortedError = {
         code: 10,
-        metadata: new grpc.Metadata(),
+        metadata: {
+          get: function() {
+            return [];
+          },
+        },
       };
     });
 
@@ -1347,7 +1362,10 @@ describe('Transaction', function() {
       transaction.runFn_ = function() {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
-      abortedError.metadata.set('google.rpc.retryinfo-bin', new Buffer('hi'));
+      abortedError.metadata.get = function(key) {
+        assert.strictEqual(key, 'google.rpc.retryinfo-bin');
+        return [{}];
+      };
 
       var shouldRetry = transaction.shouldRetry_(abortedError);
       assert.strictEqual(shouldRetry, true);

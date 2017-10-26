@@ -18,7 +18,7 @@
 
 var common = require('@google-cloud/common');
 var extend = require('extend');
-var grpc = require('grpc');
+var gax = require('google-gax');
 var is = require('is');
 var path = require('path');
 var through = require('through2');
@@ -42,17 +42,15 @@ var ABORTED = 10;
  */
 var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
 
-var services = grpc.load(
-  {
-    root: path.resolve(__dirname, '../protos'),
-    file: 'google/rpc/error_details.proto',
-  },
-  'proto',
-  {
-    binaryAsBase64: true,
-    convertFieldsToCamelCase: true,
-  }
-);
+var services = gax.grpc().load({
+  root: path.resolve(__dirname, '../protos'),
+  file: 'google/rpc/error_details.proto',
+},
+'proto',
+{
+  binaryAsBase64: true,
+  convertFieldsToCamelCase: true,
+});
 
 var RetryInfo = services.google.rpc.RetryInfo;
 
