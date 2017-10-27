@@ -85,7 +85,7 @@ describe('Transaction', function() {
   var transaction;
 
   var SESSION = {
-    api: {},
+    request: util.noop,
     formattedName_: 'formatted-session-name',
   };
 
@@ -112,23 +112,6 @@ describe('Transaction', function() {
     FakeGrpcService.objToStruct_ = util.noop;
     FakeRetryInfo.decode = util.noop;
 
-    SESSION.api = {
-      Spanner: {
-        beginTransaction: function() {
-          return util.noop;
-        },
-        commit: function() {
-          return util.noop;
-        },
-        executeStreamingSql: function() {
-          return util.noop;
-        },
-        rollback: function() {
-          return util.noop;
-        },
-      },
-    };
-
     extend(Transaction, TransactionCached);
     transaction = new Transaction(SESSION);
   });
@@ -136,10 +119,6 @@ describe('Transaction', function() {
   describe('instantiation', function() {
     it('should promisify all the things', function() {
       assert(promisified);
-    });
-
-    it('should localize the API', function() {
-      assert.strictEqual(transaction.api, SESSION.api);
     });
 
     it('should localize the session', function() {
@@ -246,8 +225,9 @@ describe('Transaction', function() {
 
       transaction.readOnly = true;
       transaction.request = function(config) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'beginTransaction');
         assert.deepEqual(config.reqOpts, EXPECTED_REQ_OPTS);
-        assert.strictEqual(config.method(), util.noop);
         done();
       };
 
@@ -357,12 +337,12 @@ describe('Transaction', function() {
       transaction.id = 'transaction-id';
 
       transaction.request = function(config) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'commit');
         assert.deepEqual(config.reqOpts, {
           transactionId: transaction.id,
           mutations: QUEUED_MUTATIONS,
         });
-
-        assert.strictEqual(config.method(), util.noop);
 
         done();
       };
@@ -477,19 +457,16 @@ describe('Transaction', function() {
         reqOpts: {
           a: 'b',
           c: 'd',
-          gaxOptions: {},
         },
-        method: function(reqOpts, gaxOptions) {
-          var expectedReqOpts = extend({}, config.reqOpts, {
-            session: transaction.session.formattedName_,
-          });
+      };
 
-          delete expectedReqOpts.gaxOptions;
+      transaction.session.request = function(config_) {
+        var expectedReqOpts = extend({}, config.reqOpts, {
+          session: transaction.session.formattedName_,
+        });
 
-          assert.deepEqual(reqOpts, expectedReqOpts);
-          assert.strictEqual(gaxOptions, config.reqOpts.gaxOptions);
-          done();
-        },
+        assert.deepEqual(config_.reqOpts, expectedReqOpts);
+        done();
       };
 
       transaction.request(config, assert.ifError);
@@ -500,9 +477,10 @@ describe('Transaction', function() {
 
       var config = {
         reqOpts: {},
-        method: function(reqOpts, gaxOptions, callback) {
-          callback(null, resp);
-        },
+      };
+
+      transaction.session.request = function(config_, callback) {
+        callback(null, resp);
       };
 
       transaction.request(config, function(err, apiResponse) {
@@ -515,8 +493,9 @@ describe('Transaction', function() {
     describe('aborted errors', function() {
       var abortedError = {code: 10};
       var resp = {};
+
       var fakeDelay = 123;
-      var config;
+      var config = {};
       var getRetryDelay;
 
       before(function() {
@@ -524,10 +503,8 @@ describe('Transaction', function() {
       });
 
       beforeEach(function() {
-        config = {
-          method: function(reqOpts, gaxOptions, callback) {
-            callback(abortedError, resp);
-          },
+        transaction.session.request = function(config, callback) {
+          callback(abortedError, resp);
         };
 
         Transaction.getRetryDelay_ = function() {
@@ -614,39 +591,20 @@ describe('Transaction', function() {
           a: 'b',
           c: 'd',
         },
-        method: function(reqOpts) {
-          var expectedReqOpts = extend({}, config.reqOpts, {
-            session: transaction.session.formattedName_,
-          });
+      };
 
-          assert.deepEqual(reqOpts, expectedReqOpts);
+      transaction.session.requestStream = function(config_) {
+        var expectedReqOpts = extend({}, config.reqOpts, {
+          session: transaction.session.formattedName_,
+        });
 
-          return methodReturnValue;
-        },
+        assert.deepEqual(config_.reqOpts, expectedReqOpts);
+
+        return methodReturnValue;
       };
 
       var returnValue = transaction.requestStream(config);
       assert.strictEqual(returnValue, methodReturnValue);
-    });
-
-    it('should support gaxOptions', function(done) {
-      var fakeGaxOptions = {};
-
-      var fakeReqOpts = {
-        a: 'a',
-        gaxOptions: fakeGaxOptions,
-      };
-
-      var config = {
-        reqOpts: fakeReqOpts,
-        method: function(reqOpts, gaxOptions) {
-          assert.strictEqual(reqOpts.gaxOptions, undefined);
-          assert.deepEqual(gaxOptions, fakeGaxOptions);
-          done();
-        },
-      };
-
-      transaction.requestStream(config);
     });
 
     describe('runTransaction mode', function() {
@@ -654,13 +612,13 @@ describe('Transaction', function() {
 
       var config = {
         reqOpts: {},
-        method: function() {
-          return fakeStream;
-        },
       };
 
       beforeEach(function() {
         fakeStream = through.obj();
+        transaction.session.requestStream = function() {
+          return fakeStream;
+        };
         transaction.runFn_ = function() {};
       });
 
@@ -774,11 +732,11 @@ describe('Transaction', function() {
 
     it('should make the correct request', function(done) {
       transaction.request = function(config) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'rollback');
         assert.deepEqual(config.reqOpts, {
           transactionId: transaction.id,
         });
-
-        assert.strictEqual(config.method(), util.noop);
 
         done();
       };
@@ -919,10 +877,11 @@ describe('Transaction', function() {
       transaction.id = ID;
     });
 
-    it('should accept a query object', function(done) {
-      transaction.requestStream = function(options) {
-        assert.deepEqual(options.reqOpts, EXPECTED_REQ_OPTS);
-        assert.strictEqual(options.method(), util.noop);
+    it('should make the correct request', function(done) {
+      transaction.requestStream = function(config) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'executeStreamingSql');
+        assert.deepEqual(config.reqOpts, EXPECTED_REQ_OPTS);
         done();
       };
 
