@@ -111,16 +111,6 @@ describe('Database', function() {
 
   beforeEach(function() {
     fakeCodec.encode = util.noop;
-
-    INSTANCE.api = {
-      Spanner: {
-        executeStreamingSql: function() {
-          return util.noop;
-        },
-      },
-      Database: {},
-    };
-
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
   });
