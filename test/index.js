@@ -548,7 +548,6 @@ describe('Spanner', function() {
 
     it('should make and return the correct request', function() {
       var query = {a: 'b'};
-      var originalQuery = extend({}, query);
       var expectedQuery = extend({}, query, {
         parent: 'projects/' + spanner.projectId,
       });
@@ -597,7 +596,6 @@ describe('Spanner', function() {
 
     it('should make and return the correct gax API call', function() {
       var query = {a: 'b'};
-      var originalQuery = extend({}, query);
       var expectedQuery = extend({}, query, {
         parent: 'projects/' + spanner.projectId,
       });
@@ -829,8 +827,6 @@ describe('Spanner', function() {
       });
 
       it('should pass callback to request function', function(done) {
-        var gapicRequestFnResult = {};
-
         function gapicRequestFn(callback) {
           callback(); // done()
         }

@@ -946,7 +946,7 @@ describe('Database', function() {
     var OPTIONS = {};
 
     it('should make the correct request', function(done) {
-      database.request = function(config, callback) {
+      database.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'createSession');
         assert.deepEqual(config.reqOpts, {
