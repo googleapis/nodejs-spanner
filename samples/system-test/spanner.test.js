@@ -108,7 +108,7 @@ test.serial(
       cwd
     );
     const output = results.stdout + results.stderr;
-    t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Go, Go, Go/);
+    t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   }
 );
 
@@ -119,7 +119,7 @@ test.serial(`should read an example table`, async t => {
     cwd
   );
   const output = results.stdout + results.stderr;
-  t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Go, Go, Go/);
+  t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
 });
 
 // add_column
@@ -156,7 +156,7 @@ test.serial(`should read stale data from an example table`, t => {
     const output = results.stdout + results.stderr;
     t.regex(
       output,
-      /SingerId: 1, AlbumId: 1, AlbumTitle: Go, Go, Go, MarketingBudget: 100000/
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
     );
     t.regex(
       output,
@@ -210,9 +210,9 @@ test.serial(
       cwd
     );
     const output = results.stdout + results.stderr;
-    t.regex(output, /AlbumId: 1, AlbumTitle: Go, Go, Go, MarketingBudget:/);
+    t.regex(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
     t.false(
-      output.includes(`AlbumId: 2, AlbumTitle: Total Junk, MarketingBudget:`)
+      output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`)
     );
   }
 );
@@ -225,8 +225,8 @@ test.serial(
       cwd
     );
     const output = results.stdout + results.stderr;
-    t.regex(output, /AlbumId: 1, AlbumTitle: Go, Go, Go, MarketingBudget:/);
-    t.regex(output, /AlbumId: 2, AlbumTitle: Total Junk, MarketingBudget:/);
+    t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/);
+    t.regex(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
   }
 );
 
@@ -237,7 +237,7 @@ test.serial(`should read an example table with an index`, async t => {
     cwd
   );
   const output = results.stdout + results.stderr;
-  t.regex(output, /AlbumId: 1, AlbumTitle: Go, Go, Go/);
+  t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk/);
 });
 
 // read_data_with_storing_index
@@ -247,7 +247,7 @@ test.serial(`should read an example table with a storing index`, async t => {
     cwd
   );
   const output = results.stdout + results.stderr;
-  t.regex(output, /AlbumId: 1, AlbumTitle: Go, Go, Go/);
+  t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk/);
 });
 
 // read_only_transaction
@@ -257,7 +257,7 @@ test.serial(`should read an example table using transactions`, async t => {
     cwd
   );
   const output = results.stdout + results.stderr;
-  t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Go, Go, Go/);
+  t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   t.regex(output, /Successfully executed read-only transaction\./);
 });
 
