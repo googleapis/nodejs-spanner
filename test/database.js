@@ -78,7 +78,8 @@ describe('Database', function() {
   var DatabaseCached;
 
   var INSTANCE = {
-    api: {},
+    request: util.noop,
+    requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
   };
@@ -129,8 +130,12 @@ describe('Database', function() {
       assert(promisified);
     });
 
-    it('should localize the API', function() {
-      assert.strictEqual(database.api, INSTANCE.api);
+    it('should localize the request function', function() {
+      assert.strictEqual(database.request, INSTANCE.request);
+    });
+
+    it('should localize the requestStream function', function() {
+      assert.strictEqual(database.requestStream, INSTANCE.requestStream);
     });
 
     it('should format the name', function() {
@@ -347,52 +352,52 @@ describe('Database', function() {
   });
 
   describe('delete', function() {
-    it('should call and return the generated API', function() {
-      var generatedReturnValue = {};
+    it('should call and return the request', function() {
+      var requestReturnValue = {};
 
-      database.api.Database = {
-        dropDatabase: function(reqOpts, callback) {
-          assert.deepEqual(reqOpts, {
-            database: database.formattedName_,
-          });
-          assert.strictEqual(callback, assert.ifError);
-          return generatedReturnValue;
-        },
+      database.request = function(config, callback) {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'dropDatabase');
+        assert.deepEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
+        assert.strictEqual(callback, assert.ifError);
+        return requestReturnValue;
       };
 
       var returnValue = database.delete(assert.ifError);
-      assert.strictEqual(returnValue, generatedReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('getMetadata', function() {
-    it('should call and return the generated API', function() {
-      var generatedReturnValue = {};
+    it('should call and return the request', function() {
+      var requestReturnValue = {};
 
-      database.api.Database = {
-        getDatabase: function(reqOpts, callback) {
-          assert.deepEqual(reqOpts, {
-            name: database.formattedName_,
-          });
-          assert.strictEqual(callback, assert.ifError);
-          return generatedReturnValue;
-        },
+      database.request = function(config, callback) {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'getDatabase');
+        assert.deepEqual(config.reqOpts, {
+          name: database.formattedName_,
+        });
+        assert.strictEqual(callback, assert.ifError);
+        return requestReturnValue;
       };
 
       var returnValue = database.getMetadata(assert.ifError);
-      assert.strictEqual(returnValue, generatedReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('getSchema', function() {
-    it('should call the generated API', function(done) {
-      database.api.Database = {
-        getDatabaseDdl: function(reqOpts) {
-          assert.deepEqual(reqOpts, {
-            database: database.formattedName_,
-          });
-          done();
-        },
+    it('should make the correct request', function(done) {
+      database.request = function(config) {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'getDatabaseDdl');
+        assert.deepEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
+        done();
       };
 
       database.getSchema(assert.ifError);
@@ -406,14 +411,12 @@ describe('Database', function() {
       var ARG_5 = {};
 
       beforeEach(function() {
-        database.api.Database = {
-          getDatabaseDdl: function(reqOpts, callback) {
-            callback(ARG_1, STATEMENTS_ARG, ARG_3, ARG_4, ARG_5);
-          },
+        database.request = function(config, callback) {
+          callback(ARG_1, STATEMENTS_ARG, ARG_3, ARG_4, ARG_5);
         };
       });
 
-      it('should return the arguments from the generated API', function(done) {
+      it('should return the arguments from the request', function(done) {
         database.getSchema(function(arg1, arg2, arg3, arg4, arg5) {
           assert.strictEqual(arg1, ARG_1);
           assert.strictEqual(arg2, STATEMENTS_ARG);
@@ -436,10 +439,8 @@ describe('Database', function() {
       };
 
       beforeEach(function() {
-        database.api.Database = {
-          getDatabaseDdl: function(reqOpts, callback) {
-            callback(ARG_1, STATEMENTS_ARG, ARG_3, ARG_4, ARG_5);
-          },
+        database.request = function(config, callback) {
+          callback(ARG_1, STATEMENTS_ARG, ARG_3, ARG_4, ARG_5);
         };
       });
 
@@ -533,9 +534,10 @@ describe('Database', function() {
     });
 
     it('should accept a query object', function(done) {
-      database.pool_.requestStream = function(options) {
-        assert.deepEqual(options.reqOpts, EXPECTED_REQ_OPTS);
-        assert.strictEqual(options.method(), util.noop);
+      database.pool_.requestStream = function(config) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'executeStreamingSql');
+        assert.deepEqual(config.reqOpts, EXPECTED_REQ_OPTS);
         done();
       };
 
@@ -545,8 +547,8 @@ describe('Database', function() {
     });
 
     it('should accept a query string', function(done) {
-      database.pool_.requestStream = function(options) {
-        assert.deepEqual(options.reqOpts.sql, EXPECTED_REQ_OPTS.sql);
+      database.pool_.requestStream = function(config) {
+        assert.deepEqual(config.reqOpts.sql, EXPECTED_REQ_OPTS.sql);
         done();
       };
 
@@ -581,8 +583,8 @@ describe('Database', function() {
           return encodedValue;
         };
 
-        database.pool_.requestStream = function(options) {
-          assert.strictEqual(options.reqOpts.params.fields.test, encodedValue);
+        database.pool_.requestStream = function(config) {
+          assert.strictEqual(config.reqOpts.params.fields.test, encodedValue);
           done();
         };
 
@@ -619,8 +621,8 @@ describe('Database', function() {
           return type;
         };
 
-        database.pool_.requestStream = function(options) {
-          assert.deepEqual(options.reqOpts.paramTypes, {
+        database.pool_.requestStream = function(config) {
+          assert.deepEqual(config.reqOpts.paramTypes, {
             unspecified: {
               code: 0,
             },
@@ -669,8 +671,8 @@ describe('Database', function() {
           throw new Error('Should not be called');
         };
 
-        database.pool_.requestStream = function(options) {
-          assert.deepEqual(options.reqOpts.paramTypes, {
+        database.pool_.requestStream = function(config) {
+          assert.deepEqual(config.reqOpts.paramTypes, {
             test: {
               code: 6,
             },
@@ -712,8 +714,8 @@ describe('Database', function() {
           };
         };
 
-        database.pool_.requestStream = function(options) {
-          assert.deepEqual(options.reqOpts.paramTypes, {
+        database.pool_.requestStream = function(config) {
+          assert.deepEqual(config.reqOpts.paramTypes, {
             test: {
               code: 8,
               arrayElementType: {
@@ -759,8 +761,8 @@ describe('Database', function() {
           },
         };
 
-        database.pool_.requestStream = function(options) {
-          assert.strictEqual(options.reqOpts.types, undefined);
+        database.pool_.requestStream = function(config) {
+          assert.strictEqual(config.reqOpts.types, undefined);
           done();
         };
 
@@ -778,8 +780,8 @@ describe('Database', function() {
     it('should assign a resumeToken to the request', function(done) {
       var resumeToken = 'resume-token';
 
-      database.pool_.requestStream = function(options) {
-        assert.strictEqual(options.reqOpts.resumeToken, resumeToken);
+      database.pool_.requestStream = function(config) {
+        assert.strictEqual(config.reqOpts.resumeToken, resumeToken);
         done();
       };
 
@@ -797,9 +799,9 @@ describe('Database', function() {
         return FORMATTED_OPTIONS;
       };
 
-      database.pool_.requestStream = function(options) {
+      database.pool_.requestStream = function(config) {
         assert.deepEqual(
-          options.reqOpts.transaction.singleUse.readOnly,
+          config.reqOpts.transaction.singleUse.readOnly,
           FORMATTED_OPTIONS
         );
 
@@ -904,30 +906,28 @@ describe('Database', function() {
   describe('updateSchema', function() {
     var STATEMENTS = ['statement-1', 'statement-2'];
 
-    it('should call and return the generated API', function() {
-      var generatedReturnValue = {};
+    it('should call and return the request', function() {
+      var requestReturnValue = {};
 
-      database.api.Database = {
-        updateDatabaseDdl: function(reqOpts, callback) {
-          assert.deepEqual(reqOpts, {
-            database: database.formattedName_,
-            statements: STATEMENTS,
-          });
-          assert.strictEqual(callback, assert.ifError);
-          return generatedReturnValue;
-        },
+      database.request = function(config, callback) {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'updateDatabaseDdl');
+        assert.deepEqual(config.reqOpts, {
+          database: database.formattedName_,
+          statements: STATEMENTS,
+        });
+        assert.strictEqual(callback, assert.ifError);
+        return requestReturnValue;
       };
 
       var returnValue = database.updateSchema(STATEMENTS, assert.ifError);
-      assert.strictEqual(returnValue, generatedReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
 
     it('should arrify a string statement', function(done) {
-      database.api.Database = {
-        updateDatabaseDdl: function(reqOpts) {
-          assert.deepEqual(reqOpts.statements, [STATEMENTS[0]]);
-          done();
-        },
+      database.request = function(config) {
+        assert.deepEqual(config.reqOpts.statements, [STATEMENTS[0]]);
+        done();
       };
 
       database.updateSchema(STATEMENTS[0], assert.ifError);
@@ -943,11 +943,9 @@ describe('Database', function() {
         database: database.formattedName_,
       });
 
-      database.api.Database = {
-        updateDatabaseDdl: function(reqOpts) {
-          assert.deepEqual(reqOpts, expectedReqOpts);
-          done();
-        },
+      database.request = function(config) {
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        done();
       };
 
       database.updateSchema(config, assert.ifError);
@@ -957,33 +955,31 @@ describe('Database', function() {
   describe('createSession', function() {
     var OPTIONS = {};
 
-    it('should call the generated API', function(done) {
-      database.api.Spanner = {
-        createSession: function(reqOpts, options) {
-          assert.deepEqual(reqOpts, {
-            database: database.formattedName_,
-          });
+    it('should make the correct request', function(done) {
+      database.request = function(config, callback) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'createSession');
+        assert.deepEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
 
-          assert.strictEqual(options, OPTIONS);
+        assert.strictEqual(config.gaxOpts, OPTIONS);
 
-          done();
-        },
+        done();
       };
 
       database.createSession(OPTIONS, assert.ifError);
     });
 
     it('should not require options', function(done) {
-      database.api.Spanner = {
-        createSession: function(reqOpts, options) {
-          assert.deepEqual(reqOpts, {
-            database: database.formattedName_,
-          });
+      database.request = function(config) {
+        assert.deepEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
 
-          assert.deepEqual(options, {});
+        assert.deepEqual(config.gaxOpts, {});
 
-          done();
-        },
+        done();
       };
 
       database.createSession(assert.ifError);
@@ -994,10 +990,8 @@ describe('Database', function() {
       var API_RESPONSE = {};
 
       beforeEach(function() {
-        database.api.Spanner = {
-          createSession: function(reqOpts, options, callback) {
-            callback(ERROR, API_RESPONSE);
-          },
+        database.request = function(config, callback) {
+          callback(ERROR, API_RESPONSE);
         };
       });
 
@@ -1017,10 +1011,8 @@ describe('Database', function() {
       };
 
       beforeEach(function() {
-        database.api.Spanner = {
-          createSession: function(reqOpts, options, callback) {
-            callback(null, API_RESPONSE);
-          },
+        database.request = function(config, callback) {
+          callback(null, API_RESPONSE);
         };
       });
 
