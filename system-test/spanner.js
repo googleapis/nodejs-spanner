@@ -1348,8 +1348,16 @@ describe('Spanner', function() {
         Spanner.int(PHONE_NUMBERS[1]),
       ];
 
-      before(function() {
-        return table.insert(INSERT_ROW);
+      before(function(done) {
+        table.insert(INSERT_ROW, function(err) {
+          if (err) {
+            done(err);
+            return;
+          }
+
+          // Allow Spanner time to insert the data before our tests query it.
+          setTimeout(done, 500);
+        });
       });
 
       it('should query in callback mode', function(done) {
