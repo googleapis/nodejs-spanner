@@ -44,21 +44,9 @@ var Database = require('./database.js');
 function Instance(spanner, name) {
   var self = this;
 
-  /**
-   * @name Instance#api
-   * @type {object}
-   * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
-   *     low-level {@link v1.DatabaseAdminClient} class used by this
-   *     {@link Instance} instance.
-   * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
-   *     low-level {@link v1.InstanceAdminClient} class used by this
-   *     {@link Instance} instance.
-   * @property {v1.SpannerClient} Spanner Reference to an instance of the
-   *     low-level {@link v1.SpannerClient} class used by this {@link Instance}
-   *     instance.
-   */
-  this.api = spanner.api;
   this.formattedName_ = Instance.formatName_(spanner.projectId, name);
+  this.request = spanner.request.bind(spanner);
+  this.requestStream = spanner.requestStream.bind(spanner);
 
   var methods = {
     /**
@@ -342,16 +330,23 @@ Instance.prototype.createDatabase = function(name, options, callback) {
     delete reqOpts.schema;
   }
 
-  this.api.Database.createDatabase(reqOpts, function(err, operation, resp) {
-    if (err) {
-      callback(err, null, null, resp);
-      return;
+  this.request(
+    {
+      client: 'DatabaseAdminClient',
+      method: 'createDatabase',
+      reqOpts: reqOpts,
+    },
+    function(err, operation, resp) {
+      if (err) {
+        callback(err, null, null, resp);
+        return;
+      }
+
+      var database = self.database(name, poolOptions);
+
+      callback(null, database, operation, resp);
     }
-
-    var database = self.database(name, poolOptions);
-
-    callback(null, database, operation, resp);
-  });
+  );
 };
 
 /**
@@ -430,13 +425,20 @@ Instance.prototype.delete = function(callback) {
     name: this.formattedName_,
   };
 
-  return this.api.Instance.deleteInstance(reqOpts, function(err, resp) {
-    if (!err) {
-      self.parent.instances_.delete(self.id);
-    }
+  this.request(
+    {
+      client: 'InstanceAdminClient',
+      method: 'deleteInstance',
+      reqOpts: reqOpts,
+    },
+    function(err, resp) {
+      if (!err) {
+        self.parent.instances_.delete(self.id);
+      }
 
-    callback(err, resp);
-  });
+      callback(err, resp);
+    }
+  );
 };
 
 /**
@@ -518,17 +520,25 @@ Instance.prototype.getDatabases = function(query, callback) {
     parent: this.formattedName_,
   });
 
-  this.api.Database.listDatabases(reqOpts, query, function(err, databases) {
-    if (databases) {
-      arguments[1] = databases.map(function(database) {
-        var databaseInstance = self.database(database.name);
-        databaseInstance.metadata = database;
-        return databaseInstance;
-      });
-    }
+  this.request(
+    {
+      client: 'DatabaseAdminClient',
+      method: 'listDatabases',
+      reqOpts: reqOpts,
+      gaxOpts: query,
+    },
+    function(err, databases) {
+      if (databases) {
+        arguments[1] = databases.map(function(database) {
+          var databaseInstance = self.database(database.name);
+          databaseInstance.metadata = database;
+          return databaseInstance;
+        });
+      }
 
-    callback.apply(null, arguments);
-  });
+      callback.apply(null, arguments);
+    }
+  );
 };
 
 /**
@@ -611,9 +621,15 @@ Instance.prototype.getDatabasesStream = common.paginator.streamify(
  * });
  */
 Instance.prototype.getMetadata = function(callback) {
-  return this.api.Instance.getInstance(
+  var reqOpts = {
+    name: this.formattedName_,
+  };
+
+  return this.request(
     {
-      name: this.formattedName_,
+      client: 'InstanceAdminClient',
+      method: 'getInstance',
+      reqOpts: reqOpts,
     },
     callback
   );
@@ -663,17 +679,23 @@ Instance.prototype.getMetadata = function(callback) {
  * });
  */
 Instance.prototype.setMetadata = function(metadata, callback) {
-  return this.api.Instance.updateInstance(
-    {
-      instance: extend(
-        {
-          name: this.formattedName_,
-        },
-        metadata
-      ),
-      fieldMask: {
-        paths: Object.keys(metadata).map(snakeCase),
+  var reqOpts = {
+    instance: extend(
+      {
+        name: this.formattedName_,
       },
+      metadata
+    ),
+    fieldMask: {
+      paths: Object.keys(metadata).map(snakeCase),
+    },
+  };
+
+  return this.request(
+    {
+      client: 'InstanceAdminClient',
+      method: 'updateInstance',
+      reqOpts: reqOpts,
     },
     callback
   );

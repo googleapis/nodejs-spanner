@@ -57,7 +57,8 @@ describe('Instance', function() {
   var instance;
 
   var SPANNER = {
-    api: {},
+    request: util.noop,
+    requestStream: util.noop,
     projectId: 'project-id',
     instances_: new Map(),
   };
@@ -78,11 +79,6 @@ describe('Instance', function() {
   });
 
   beforeEach(function() {
-    SPANNER.api = {
-      Database: {},
-      Instance: {},
-    };
-
     instance = new Instance(SPANNER, NAME);
   });
 
@@ -93,10 +89,6 @@ describe('Instance', function() {
 
     it('should promisify all the things', function() {
       assert(promisified);
-    });
-
-    it('should localize the API', function() {
-      assert.strictEqual(instance.api, SPANNER.api);
     });
 
     it('should format the name', function() {
@@ -114,6 +106,30 @@ describe('Instance', function() {
 
       var instance = new Instance(SPANNER, NAME);
       assert(instance.formattedName_, formattedName);
+    });
+
+    it('should localize the request function', function(done) {
+      var spannerInstance = extend({}, SPANNER);
+
+      spannerInstance.request = function() {
+        assert.strictEqual(this, spannerInstance);
+        done();
+      };
+
+      var instance = new Instance(spannerInstance, NAME);
+      instance.request();
+    });
+
+    it('should localize the requestStream function', function(done) {
+      var spannerInstance = extend({}, SPANNER);
+
+      spannerInstance.requestStream = function() {
+        assert.strictEqual(this, spannerInstance);
+        done();
+      };
+
+      var instance = new Instance(spannerInstance, NAME);
+      instance.requestStream();
     });
 
     it('should inherit from ServiceObject', function(done) {
@@ -174,57 +190,53 @@ describe('Instance', function() {
     });
 
     it('should make the correct default request', function(done) {
-      instance.api.Database = {
-        createDatabase: function(reqOpts) {
-          assert.deepEqual(reqOpts, {
-            parent: instance.formattedName_,
-            createStatement: 'CREATE DATABASE `' + NAME + '`',
-          });
+      instance.request = function(config) {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'createDatabase');
+        assert.deepEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+          createStatement: 'CREATE DATABASE `' + NAME + '`',
+        });
 
-          done();
-        },
+        done();
       };
 
       instance.createDatabase(NAME, assert.ifError);
     });
 
     it('should accept options', function(done) {
-      instance.api.Database = {
-        createDatabase: function(reqOpts) {
-          assert.deepEqual(OPTIONS, ORIGINAL_OPTIONS);
+      instance.request = function(config) {
+        assert.deepEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-          var expectedReqOpts = extend(
-            {
-              parent: instance.formattedName_,
-              createStatement: 'CREATE DATABASE `' + NAME + '`',
-            },
-            OPTIONS
-          );
+        var expectedReqOpts = extend(
+          {
+            parent: instance.formattedName_,
+            createStatement: 'CREATE DATABASE `' + NAME + '`',
+          },
+          OPTIONS
+        );
 
-          assert.deepEqual(reqOpts, expectedReqOpts);
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
 
-          done();
-        },
+        done();
       };
 
       instance.createDatabase(NAME, OPTIONS, assert.ifError);
     });
 
     it('should only use the name in the createStatement', function(done) {
-      instance.api.Database = {
-        createDatabase: function(reqOpts) {
-          var expectedReqOpts = extend(
-            {
-              parent: instance.formattedName_,
-              createStatement: 'CREATE DATABASE `' + NAME + '`',
-            },
-            OPTIONS
-          );
+      instance.request = function(config) {
+        var expectedReqOpts = extend(
+          {
+            parent: instance.formattedName_,
+            createStatement: 'CREATE DATABASE `' + NAME + '`',
+          },
+          OPTIONS
+        );
 
-          assert.deepEqual(reqOpts, expectedReqOpts);
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
 
-          done();
-        },
+        done();
       };
 
       instance.createDatabase(PATH, OPTIONS, assert.ifError);
@@ -238,11 +250,9 @@ describe('Instance', function() {
           poolOptions: poolOptions,
         });
 
-        instance.api.Database = {
-          createDatabase: function(reqOpts, callback) {
-            assert.strictEqual(reqOpts.poolOptions, undefined);
-            callback();
-          },
+        instance.request = function(config, callback) {
+          assert.strictEqual(config.reqOpts.poolOptions, undefined);
+          callback();
         };
 
         instance.database = function(name, poolOptions_) {
@@ -262,12 +272,10 @@ describe('Instance', function() {
           schema: SCHEMA,
         });
 
-        instance.api.Database = {
-          createDatabase: function(reqOpts) {
-            assert.deepEqual(reqOpts.extraStatements, [SCHEMA]);
-            assert.strictEqual(reqOpts.schema, undefined);
-            done();
-          },
+        instance.request = function(config) {
+          assert.deepEqual(config.reqOpts.extraStatements, [SCHEMA]);
+          assert.strictEqual(config.reqOpts.schema, undefined);
+          done();
         };
 
         instance.createDatabase(NAME, options, assert.ifError);
@@ -279,10 +287,8 @@ describe('Instance', function() {
       var API_RESPONSE = {};
 
       beforeEach(function() {
-        instance.api.Database = {
-          createDatabase: function(reqOpts, callback) {
-            callback(ERROR, null, API_RESPONSE);
-          },
+        instance.request = function(config, callback) {
+          callback(ERROR, null, API_RESPONSE);
         };
       });
 
@@ -301,10 +307,8 @@ describe('Instance', function() {
       var API_RESPONSE = {};
 
       beforeEach(function() {
-        instance.api.Database = {
-          createDatabase: function(reqOpts, callback) {
-            callback(null, OPERATION, API_RESPONSE);
-          },
+        instance.request = function(config, callback) {
+          callback(null, OPERATION, API_RESPONSE);
         };
       });
 
@@ -368,30 +372,24 @@ describe('Instance', function() {
       instance.parent = SPANNER;
     });
 
-    it('should correctly call and return the gax API', function(done) {
-      var gaxReturnValue = {};
-
-      instance.api.Instance = {
-        deleteInstance: function(reqOpts, callback) {
-          assert.deepEqual(reqOpts, {
-            name: instance.formattedName_,
-          });
-          setImmediate(callback);
-          return gaxReturnValue;
-        },
+    it('should make the correct request', function(done) {
+      instance.request = function(config, callback) {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'deleteInstance');
+        assert.deepEqual(config.reqOpts, {
+          name: instance.formattedName_,
+        });
+        callback(); // done()
       };
 
-      var returnValue = instance.delete(done);
-      assert.strictEqual(returnValue, gaxReturnValue);
+      instance.delete(done);
     });
 
     it('should remove the Instance from the cache', function(done) {
       var cache = instance.parent.instances_;
 
-      instance.api.Instance = {
-        deleteInstance: function(reqOpts, callback) {
-          callback(null);
-        },
+      instance.request = function(config, callback) {
+        callback(null);
       };
 
       cache.set(instance.id, instance);
@@ -411,57 +409,53 @@ describe('Instance', function() {
     };
     var ORIGINAL_QUERY = extend({}, QUERY);
 
-    it('should make the correct gax request', function(done) {
+    it('should make the correct request', function(done) {
       var expectedReqOpts = extend({}, QUERY, {
         parent: instance.formattedName_,
       });
 
-      instance.api.Database = {
-        listDatabases: function(reqOpts, query) {
-          assert.deepEqual(reqOpts, expectedReqOpts);
+      instance.request = function(config) {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listDatabases');
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
 
-          assert.notStrictEqual(reqOpts, QUERY);
-          assert.deepEqual(QUERY, ORIGINAL_QUERY);
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepEqual(QUERY, ORIGINAL_QUERY);
 
-          assert.strictEqual(query, QUERY);
+        assert.strictEqual(config.gaxOpts, QUERY);
 
-          done();
-        },
+        done();
       };
 
       instance.getDatabases(QUERY, assert.ifError);
     });
 
     it('should not require a query', function(done) {
-      instance.api.Database = {
-        listDatabases: function(reqOpts, query) {
-          assert.deepEqual(reqOpts, {
-            parent: instance.formattedName_,
-          });
+      instance.request = function(config) {
+        assert.deepEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
 
-          assert.deepEqual(query, {});
+        assert.deepEqual(config.gaxOpts, {});
 
-          done();
-        },
+        done();
       };
 
       instance.getDatabases(assert.ifError);
     });
 
     describe('error', function() {
-      var GAX_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+      var REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
 
       beforeEach(function() {
-        instance.api.Database = {
-          listDatabases: function(reqOpts, query, callback) {
-            callback.apply(null, GAX_RESPONSE_ARGS);
-          },
+        instance.request = function(config, callback) {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
         };
       });
 
       it('should execute callback with original arguments', function(done) {
         instance.getDatabases(QUERY, function() {
-          assert.deepEqual([].slice.call(arguments), GAX_RESPONSE_ARGS);
+          assert.deepEqual([].slice.call(arguments), REQUEST_RESPONSE_ARGS);
           done();
         });
       });
@@ -474,13 +468,11 @@ describe('Instance', function() {
         },
       ];
 
-      var GAX_RESPONSE_ARGS = [null, DATABASES, {}];
+      var REQUEST_RESPONSE_ARGS = [null, DATABASES, {}];
 
       beforeEach(function() {
-        instance.api.Database = {
-          listDatabases: function(reqOpts, query, callback) {
-            callback.apply(null, GAX_RESPONSE_ARGS);
-          },
+        instance.request = function(config, callback) {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
         };
       });
 
@@ -495,13 +487,13 @@ describe('Instance', function() {
         instance.getDatabases(QUERY, function(err) {
           assert.ifError(err);
 
-          assert.strictEqual(arguments[0], GAX_RESPONSE_ARGS[0]);
+          assert.strictEqual(arguments[0], REQUEST_RESPONSE_ARGS[0]);
 
           var database = arguments[1].pop();
           assert.strictEqual(database, fakeDatabaseInstance);
-          assert.strictEqual(database.metadata, GAX_RESPONSE_ARGS[1][0]);
+          assert.strictEqual(database.metadata, REQUEST_RESPONSE_ARGS[1][0]);
 
-          assert.strictEqual(arguments[2], GAX_RESPONSE_ARGS[2]);
+          assert.strictEqual(arguments[2], REQUEST_RESPONSE_ARGS[2]);
 
           done();
         });
@@ -510,23 +502,23 @@ describe('Instance', function() {
   });
 
   describe('getMetadata', function() {
-    it('should correctly call and return gax API', function() {
-      var gaxReturnValue = {};
+    it('should correctly call and return request', function() {
+      var requestReturnValue = {};
 
       function callback() {}
 
-      instance.api.Instance = {
-        getInstance: function(reqOpts, callback_) {
-          assert.deepEqual(reqOpts, {
-            name: instance.formattedName_,
-          });
-          assert.strictEqual(callback_, callback);
-          return gaxReturnValue;
-        },
+      instance.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'getInstance');
+        assert.deepEqual(config.reqOpts, {
+          name: instance.formattedName_,
+        });
+        assert.strictEqual(callback_, callback);
+        return requestReturnValue;
       };
 
       var returnValue = instance.getMetadata(callback);
-      assert.strictEqual(returnValue, gaxReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
@@ -536,38 +528,33 @@ describe('Instance', function() {
     };
     var ORIGINAL_METADATA = extend({}, METADATA);
 
-    beforeEach(function() {
-      instance.api.Instance = {
-        updateInstance: util.noop,
-      };
-    });
-
-    it('should make the correct request', function() {
-      var gaxReturnValue = {};
+    it('should make and return the request', function() {
+      var requestReturnValue = {};
 
       function callback() {}
 
-      instance.api.Instance = {
-        updateInstance: function(reqOpts, callback_) {
-          var expectedReqOpts = extend({}, METADATA, {
-            name: instance.formattedName_,
-          });
+      instance.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'updateInstance');
 
-          assert.deepEqual(reqOpts.instance, expectedReqOpts);
-          assert.deepEqual(reqOpts.fieldMask, {
-            paths: ['needs_to_be_snake_cased'],
-          });
+        var expectedReqOpts = extend({}, METADATA, {
+          name: instance.formattedName_,
+        });
 
-          assert.deepEqual(METADATA, ORIGINAL_METADATA);
+        assert.deepEqual(config.reqOpts.instance, expectedReqOpts);
+        assert.deepEqual(config.reqOpts.fieldMask, {
+          paths: ['needs_to_be_snake_cased'],
+        });
 
-          assert.strictEqual(callback_, callback);
+        assert.deepEqual(METADATA, ORIGINAL_METADATA);
 
-          return gaxReturnValue;
-        },
+        assert.strictEqual(callback_, callback);
+
+        return requestReturnValue;
       };
 
       var returnValue = instance.setMetadata(METADATA, callback);
-      assert.strictEqual(returnValue, gaxReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
 
     it('should not require a callback', function() {

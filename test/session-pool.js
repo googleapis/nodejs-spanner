@@ -36,7 +36,10 @@ describe('SessionPool', function() {
   var SessionPool;
   var sessionPool;
 
-  var DATABASE = {};
+  var DATABASE = {
+    request: util.noop,
+    requestStream: util.noop,
+  };
   var OPTIONS = {};
 
   before(function() {
@@ -61,6 +64,14 @@ describe('SessionPool', function() {
       assert.doesNotThrow(function() {
         new SessionPool(DATABASE);
       });
+    });
+
+    it('should localize the request function', function() {
+      assert.strictEqual(sessionPool.request_, DATABASE.request);
+    });
+
+    it('should localize the requestStream function', function() {
+      assert.strictEqual(sessionPool.requestStream_, DATABASE.requestStream);
     });
 
     it('should localize the database', function() {
@@ -744,7 +755,6 @@ describe('SessionPool', function() {
 
     beforeEach(function() {
       CONFIG = {
-        method: util.noop,
         reqOpts: {},
       };
 
@@ -753,20 +763,6 @@ describe('SessionPool', function() {
       };
 
       sessionPool.release = util.noop;
-    });
-
-    it('should return if in the snippet sandbox', function(done) {
-      sessionPool.getSession = function() {
-        done(new Error('Should not get a session in the sandbox.'));
-      };
-
-      global.GCLOUD_SANDBOX_ENV = true;
-      var returnValue = sessionPool.request(CONFIG, assert.ifError);
-      delete global.GCLOUD_SANDBOX_ENV;
-
-      assert.strictEqual(returnValue, undefined);
-
-      done();
     });
 
     it('should get a session', function(done) {
@@ -795,9 +791,9 @@ describe('SessionPool', function() {
         a: 'b',
       };
 
-      CONFIG.method = function(reqOpts) {
+      sessionPool.request_ = function(config) {
         assert.deepEqual(
-          reqOpts,
+          config.reqOpts,
           extend({}, CONFIG.reqOpts, {
             session: SESSION.formattedName_,
           })
@@ -814,7 +810,7 @@ describe('SessionPool', function() {
         done();
       };
 
-      CONFIG.method = function(reqOpts, callback) {
+      sessionPool.request_ = function(config, callback) {
         callback();
       };
 
@@ -824,7 +820,7 @@ describe('SessionPool', function() {
     it('should execute the callback with original arguments', function(done) {
       var originalArgs = ['a', 'b', 'c'];
 
-      CONFIG.method = function(reqOpts, callback) {
+      sessionPool.request_ = function(config, callback) {
         callback.apply(null, originalArgs);
       };
 
@@ -845,29 +841,14 @@ describe('SessionPool', function() {
 
       CONFIG = {
         reqOpts: {},
-        method: function() {
-          return REQUEST_STREAM;
-        },
+      };
+
+      sessionPool.requestStream_ = function() {
+        return REQUEST_STREAM;
       };
 
       sessionPool.getSession = util.noop;
       sessionPool.release = util.noop;
-    });
-
-    it('should return if in the snippet sandbox', function(done) {
-      sessionPool.getSession = function() {
-        done(new Error('Should not get a session in the sandbox.'));
-      };
-
-      global.GCLOUD_SANDBOX_ENV = true;
-      var returnValue = sessionPool.requestStream(CONFIG);
-      delete global.GCLOUD_SANDBOX_ENV;
-
-      assert(returnValue instanceof require('stream'));
-
-      returnValue.emit('reading');
-
-      done();
     });
 
     it('should get a session when stream opens', function(done) {
@@ -910,29 +891,13 @@ describe('SessionPool', function() {
       });
 
       it('should assign session to request options', function(done) {
-        CONFIG.method = function(reqOpts) {
-          assert.strictEqual(reqOpts.session, SESSION.formattedName_);
+        sessionPool.requestStream_ = function(config) {
+          assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
           setImmediate(done);
           return through.obj();
         };
 
         sessionPool.requestStream(CONFIG).emit('reading');
-      });
-
-      it('should respect gax options', function(done) {
-        var fakeGaxOptions = {};
-        var config = extend({}, CONFIG);
-
-        config.reqOpts.gaxOptions = fakeGaxOptions;
-
-        config.method = function(reqOpts, gaxOptions) {
-          assert.deepEqual(reqOpts, CONFIG.reqOpts);
-          assert.strictEqual(gaxOptions, fakeGaxOptions);
-          setImmediate(done);
-          return through.obj();
-        };
-
-        sessionPool.requestStream(config).emit('reading');
       });
 
       it('should make request and pipe to the stream', function(done) {

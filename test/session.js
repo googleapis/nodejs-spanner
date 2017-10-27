@@ -46,7 +46,7 @@ describe('Session', function() {
   var session;
 
   var DATABASE = {
-    api: {},
+    request: util.noop,
     formattedName_: 'formatted-database-name',
   };
 
@@ -65,11 +65,6 @@ describe('Session', function() {
   });
 
   beforeEach(function() {
-    DATABASE.api = {
-      Database: {},
-      Instance: {},
-    };
-
     session = new Session(DATABASE, NAME);
   });
 
@@ -78,8 +73,12 @@ describe('Session', function() {
       assert(promisified);
     });
 
-    it('should localize the API', function() {
-      assert.strictEqual(session.api, DATABASE.api);
+    it('should localize the request function', function() {
+      assert.strictEqual(session.request, DATABASE.request);
+    });
+
+    it('should localize the requestStream function', function() {
+      assert.strictEqual(session.requestStream, DATABASE.requestStream);
     });
 
     it('should format the name', function() {
@@ -186,66 +185,66 @@ describe('Session', function() {
   });
 
   describe('delete', function() {
-    it('should correctly call and return the gax API', function() {
-      var gaxReturnValue = {};
+    it('should correctly call and return the request', function() {
+      var requestReturnValue = {};
 
       function callback() {}
 
-      session.api.Spanner = {
-        deleteSession: function(reqOpts, callback_) {
-          assert.deepEqual(reqOpts, {
-            name: session.formattedName_,
-          });
-          assert.strictEqual(callback_, callback);
-          return gaxReturnValue;
-        },
+      session.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'deleteSession');
+        assert.deepEqual(config.reqOpts, {
+          name: session.formattedName_,
+        });
+        assert.strictEqual(callback_, callback);
+        return requestReturnValue;
       };
 
       var returnValue = session.delete(callback);
-      assert.strictEqual(returnValue, gaxReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('getMetadata', function() {
-    it('should correctly call and return the gax API', function() {
-      var gaxReturnValue = {};
+    it('should correctly call and return the request', function() {
+      var requestReturnValue = {};
 
       function callback() {}
 
-      session.api.Spanner = {
-        getSession: function(reqOpts, callback_) {
-          assert.deepEqual(reqOpts, {
-            name: session.formattedName_,
-          });
-          assert.strictEqual(callback_, callback);
-          return gaxReturnValue;
-        },
+      session.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'getSession');
+        assert.deepEqual(config.reqOpts, {
+          name: session.formattedName_,
+        });
+        assert.strictEqual(callback_, callback);
+        return requestReturnValue;
       };
 
       var returnValue = session.getMetadata(callback);
-      assert.strictEqual(returnValue, gaxReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('keepAlive', function() {
-    it('should correctly call and return the gax API', function() {
-      var gaxReturnValue = {};
+    it('should correctly call and return the request', function() {
+      var requestReturnValue = {};
 
       function callback() {}
 
-      session.api.Spanner = {
-        executeSql: function(reqOpts, callback_) {
-          assert.deepEqual(reqOpts, {
-            session: session.formattedName_,
-            sql: 'SELECT 1',
-          });
-          assert.strictEqual(callback_, callback);
-          return gaxReturnValue;
-        },
+      session.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'executeSql');
+        assert.deepEqual(config.reqOpts, {
+          session: session.formattedName_,
+          sql: 'SELECT 1',
+        });
+        assert.strictEqual(callback_, callback);
+        return requestReturnValue;
       };
 
       var returnValue = session.keepAlive(callback);
-      assert.strictEqual(returnValue, gaxReturnValue);
+      assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 

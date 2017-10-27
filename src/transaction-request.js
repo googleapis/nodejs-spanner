@@ -278,10 +278,18 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
     delete reqOpts.ranges;
   }
 
+  var gaxOptions = query.gaxOptions;
+
+  if (gaxOptions) {
+    delete reqOpts.gaxOptions;
+  }
+
   function makeRequest(resumeToken) {
     return self.requestStream({
+      client: 'SpannerClient',
+      method: 'streamingRead',
       reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
-      method: self.api.Spanner.streamingRead.bind(self.api.Spanner),
+      gaxOpts: gaxOptions,
     });
   }
 
@@ -365,8 +373,9 @@ TransactionRequest.prototype.deleteRows = function(table, keys, callback) {
 
   return this.request(
     {
+      client: 'SpannerClient',
+      method: 'commit',
       reqOpts: reqOpts,
-      method: this.api.Spanner.commit.bind(this.api.Spanner),
     },
     callback
   );
@@ -776,8 +785,9 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
 
   return this.request(
     {
+      client: 'SpannerClient',
+      method: 'commit',
       reqOpts: reqOpts,
-      method: this.api.Spanner.commit.bind(this.api.Spanner),
     },
     cb
   );

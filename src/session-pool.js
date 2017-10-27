@@ -65,6 +65,9 @@ function SessionPool(database, options) {
 
   options = options || {};
 
+  this.request_ = database.request;
+  this.requestStream_ = database.requestStream;
+
   /**
    * @name SessionPool#database
    * @readonly
@@ -361,10 +364,6 @@ SessionPool.prototype.release = function(session) {
  * @param {function} callback
  */
 SessionPool.prototype.request = function(config, callback) {
-  if (global.GCLOUD_SANDBOX_ENV) {
-    return;
-  }
-
   var self = this;
 
   this.getSession(function(err, session) {
@@ -375,7 +374,7 @@ SessionPool.prototype.request = function(config, callback) {
 
     config.reqOpts.session = session.formattedName_;
 
-    config.method(config.reqOpts, function() {
+    self.request_(config, function() {
       self.release(session);
       callback.apply(null, arguments);
     });
@@ -389,10 +388,6 @@ SessionPool.prototype.request = function(config, callback) {
  * @returns {Stream}
  */
 SessionPool.prototype.requestStream = function(config) {
-  if (global.GCLOUD_SANDBOX_ENV) {
-    return through.obj();
-  }
-
   var self = this;
 
   var requestStream;
@@ -421,13 +416,10 @@ SessionPool.prototype.requestStream = function(config) {
         return;
       }
 
-      var gaxOptions = config.reqOpts.gaxOptions;
-
       session = session_;
       config.reqOpts.session = session_.formattedName_;
-      delete config.reqOpts.gaxOptions;
 
-      requestStream = config.method(config.reqOpts, gaxOptions);
+      requestStream = self.requestStream_(config);
 
       requestStream
         .on('error', releaseSession)

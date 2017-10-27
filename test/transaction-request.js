@@ -67,16 +67,8 @@ describe('TransactionRequest', function() {
     FakeGrpcService.encodeValue_ = util.noop;
     fakeCodec.encode = util.noop;
     transactionRequest = new TransactionRequest();
-    transactionRequest.api = {
-      Spanner: {
-        commit: function() {
-          return util.noop;
-        },
-        streamingRead: function() {
-          return util.noop;
-        },
-      },
-    };
+    transactionRequest.request = util.noop;
+    transactionRequest.requestStream = util.noop;
   });
 
   describe('instantiation', function() {
@@ -502,9 +494,26 @@ describe('TransactionRequest', function() {
           resumeToken: undefined,
         });
 
-        transactionRequest.requestStream = function(options) {
-          assert.deepEqual(options.reqOpts, expectedQuery);
-          assert.strictEqual(options.method(), util.noop);
+        transactionRequest.requestStream = function(config) {
+          assert.strictEqual(config.client, 'SpannerClient');
+          assert.strictEqual(config.method, 'streamingRead');
+          assert.deepEqual(config.reqOpts, expectedQuery);
+          assert.strictEqual(config.gaxOpts, undefined);
+          done();
+        };
+
+        var stream = transactionRequest.createReadStream(TABLE, query);
+        var makeRequestFn = stream.calledWith_[0];
+        makeRequestFn();
+      });
+
+      it('should respect gaxOptions', function(done) {
+        var query = {
+          gaxOptions: {},
+        };
+
+        transactionRequest.requestStream = function(config) {
+          assert.strictEqual(config.gaxOpts, query.gaxOptions);
           done();
         };
 
@@ -516,8 +525,8 @@ describe('TransactionRequest', function() {
       it('should assign a resumeToken to the request', function(done) {
         var resumeToken = 'resume-token';
 
-        transactionRequest.requestStream = function(options) {
-          assert.strictEqual(options.reqOpts.resumeToken, resumeToken);
+        transactionRequest.requestStream = function(config) {
+          assert.strictEqual(config.reqOpts.resumeToken, resumeToken);
           done();
         };
 
@@ -593,10 +602,11 @@ describe('TransactionRequest', function() {
         mutations: [EXPECTED_MUTATION],
       };
 
-      transactionRequest.request = function(options, callback_) {
-        assert.deepEqual(options.reqOpts, expectedReqOpts);
+      transactionRequest.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'commit');
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
         assert.strictEqual(callback_, callback);
-        assert.strictEqual(options.method(), util.noop);
         return requestReturnValue;
       };
 
@@ -876,10 +886,11 @@ describe('TransactionRequest', function() {
         mutations: [EXPECTED_MUTATION],
       };
 
-      transactionRequest.request = function(options, callback_) {
-        assert.deepEqual(options.reqOpts, expectedReqOpts);
+      transactionRequest.request = function(config, callback_) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'commit');
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
         assert.strictEqual(callback_, callback);
-        assert.strictEqual(options.method(), util.noop);
         return requestReturnValue;
       };
 
