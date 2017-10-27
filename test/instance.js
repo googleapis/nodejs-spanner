@@ -52,7 +52,7 @@ function FakeGrpcServiceObject() {
   this.calledWith_ = arguments;
 }
 
-describe.only('Instance', function() {
+describe('Instance', function() {
   var Instance;
   var instance;
 

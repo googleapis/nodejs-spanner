@@ -364,10 +364,6 @@ SessionPool.prototype.release = function(session) {
  * @param {function} callback
  */
 SessionPool.prototype.request = function(config, callback) {
-  if (global.GCLOUD_SANDBOX_ENV) {
-    return;
-  }
-
   var self = this;
 
   this.getSession(function(err, session) {
@@ -392,10 +388,6 @@ SessionPool.prototype.request = function(config, callback) {
  * @returns {Stream}
  */
 SessionPool.prototype.requestStream = function(config) {
-  if (global.GCLOUD_SANDBOX_ENV) {
-    return through.obj();
-  }
-
   var self = this;
 
   var requestStream;
