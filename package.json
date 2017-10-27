@@ -80,7 +80,7 @@
     "through2": "^2.0.3"
   },
   "devDependencies": {
-    "@google-cloud/nodejs-repo-tools": "^2.0.11",
+    "@google-cloud/nodejs-repo-tools": "^2.1.0",
     "async": "^2.5.0",
     "codecov": "^3.0.0",
     "concat-stream": "^1.6.0",

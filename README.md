@@ -1,6 +1,6 @@
 <img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-# Cloud Spanner: Node.js Client
+# [Cloud Spanner: Node.js Client](https://github.com/googleapis/nodejs-spanner)
 
 [![release level](https://img.shields.io/badge/release%20level-beta-yellow.svg?style&#x3D;flat)](https://cloud.google.com/terms/launch-stages)
 [![CircleCI](https://img.shields.io/circleci/project/github/googleapis/nodejs-spanner.svg?style=flat)](https://circleci.com/gh/googleapis/nodejs-spanner)
@@ -11,7 +11,9 @@
 
 [Cloud Spanner](https://cloud.google.com/spanner/docs/) is a fully managed, mission-critical, relational database service that offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication for high availability.
 
+
 * [Cloud Spanner Node.js Client API Reference][client-docs]
+* [github.com/googleapis/nodejs-spanner](https://github.com/googleapis/nodejs-spanner)
 * [Cloud Spanner Documentation][product-docs]
 
 Read more about the client libraries for Cloud APIs, including the older
@@ -67,7 +69,7 @@ const Spanner = require('@google-cloud/spanner');
 // Your Google Cloud Platform project ID
 const projectId = 'YOUR_PROJECT_ID';
 
-// Instantiates a client
+// Creates a client
 const spanner = Spanner({
   projectId: projectId,
 });
@@ -88,24 +90,29 @@ const query = {
 };
 
 // Execute a simple SQL statement
-database.run(query).then(results => {
-  const rows = results[0];
+database
+  .run(query)
+  .then(results => {
+    const rows = results[0];
 
-  rows.forEach(row => console.log(row));
-});
+    rows.forEach(row => console.log(row));
+  })
+  .catch(err => {
+    console.error('ERROR:', err);
+  });
 ```
 
 ## Samples
 
-Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/blob/master/samples) directory. The samples' `README.md`
+Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tree/master/samples) directory. The samples' `README.md`
 has instructions for running the samples.
 
-| Sample                      | Source Code                       |
-| --------------------------- | --------------------------------- |
-| Schema | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/schema.js) |
-| CRUD | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/crud.js) |
-| Indexing | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js) |
-| Transactions | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction.js) |
+| Sample                      | Source Code                       | Try it |
+| --------------------------- | --------------------------------- | ------ |
+| Schema | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/schema.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/schema.js,samples/README.md) |
+| CRUD | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/crud.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/crud.js,samples/README.md) |
+| Indexing | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/indexing.js,samples/README.md) |
+| Transactions | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction.js,samples/README.md) |
 
 The [Cloud Spanner Node.js Client API Reference][client-docs] documentation
 also contains samples.
@@ -125,13 +132,14 @@ More Information: [Google Cloud Platform Launch Stages][launch_stages]
 
 ## Contributing
 
-Contributions welcome! See the [Contributing Guide](.github/CONTRIBUTING.md).
+Contributions welcome! See the [Contributing Guide](https://github.com/googleapis/nodejs-spanner/blob/master/.github/CONTRIBUTING.md).
 
 ## License
 
 Apache Version 2.0
 
-See [LICENSE](LICENSE)
+See [LICENSE](https://github.com/googleapis/nodejs-spanner/blob/master/LICENSE)
 
 [client-docs]: https://cloud.google.com/nodejs/docs/reference/spanner/latest/
 [product-docs]: https://cloud.google.com/spanner/docs/
+[shell_img]: http://gstatic.com/cloudssh/images/open-btn.png
