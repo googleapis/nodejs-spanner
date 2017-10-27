@@ -18,7 +18,9 @@
 
 var common = require('@google-cloud/common');
 var extend = require('extend');
+var gax = require('google-gax');
 var is = require('is');
+var path = require('path');
 var through = require('through2');
 var util = require('util');
 
@@ -32,6 +34,25 @@ var TransactionRequest = require('./transaction-request.js');
  * @private
  */
 var ABORTED = 10;
+
+/**
+ * Metadata retry info key.
+ *
+ * @private
+ */
+var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
+
+var services = gax.grpc().load({
+  root: path.resolve(__dirname, '../protos'),
+  file: 'google/rpc/error_details.proto',
+},
+'proto',
+{
+  binaryAsBase64: true,
+  convertFieldsToCamelCase: true,
+});
+
+var RetryInfo = services.google.rpc.RetryInfo;
 
 /**
  * Read/write transaction options.
@@ -107,7 +128,6 @@ function Transaction(session, options) {
   this.transaction = true;
 
   this.queuedMutations_ = [];
-  this.retries_ = 0;
   this.runFn_ = null;
 
   this.timeout_ = 60000;
@@ -135,14 +155,21 @@ Transaction.createDeadlineError_ = function(err) {
 };
 
 /**
- * Create a retry backoff time based on the number of attempts already made.
+ * Extracts retry delay and formats into milliseconds.
  *
  * @private
  *
- * @return {?number}
+ * @param {error} error A request error.
+ * @return {number}
  */
-Transaction.createRetryDelay_ = function(retries) {
-  return Math.pow(2, retries) * 1000 + Math.floor(Math.random() * 1000);
+Transaction.getRetryDelay_ = function(err) {
+  var retryInfo = err.metadata.get(RETRY_INFO_KEY)[0];
+  var retryDelay = RetryInfo.decode(retryInfo).retryDelay;
+
+  var seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
+  var milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
+
+  return seconds + milliseconds;
 };
 
 /**
@@ -322,8 +349,8 @@ Transaction.prototype.commit = function(callback) {
  */
 Transaction.prototype.end = function(callback) {
   this.queuedMutations_ = [];
-  this.retries_ = 0;
   this.runFn_ = null;
+
   delete this.id;
 
   if (is.fn(callback)) {
@@ -368,7 +395,7 @@ Transaction.prototype.request = function(config, callback) {
     }
 
     if (self.shouldRetry_(err)) {
-      self.retry_();
+      self.retry_(Transaction.getRetryDelay_(err));
       return;
     }
 
@@ -414,7 +441,7 @@ Transaction.prototype.requestStream = function(config) {
     userStream.destroy();
 
     if (self.shouldRetry_(err)) {
-      self.retry_();
+      self.retry_(Transaction.getRetryDelay_(err));
       return;
     }
 
@@ -430,7 +457,7 @@ Transaction.prototype.requestStream = function(config) {
  *
  * @private
  */
-Transaction.prototype.retry_ = function() {
+Transaction.prototype.retry_ = function(delay) {
   var self = this;
 
   this.begin(function(err) {
@@ -439,14 +466,11 @@ Transaction.prototype.retry_ = function() {
       return;
     }
 
-    var timeout = Transaction.createRetryDelay_(self.retries_);
-
-    self.retries_ += 1;
     self.queuedMutations_ = [];
 
     setTimeout(function() {
       self.runFn_(null, self);
-    }, timeout);
+    }, delay);
   });
 };
 
@@ -771,7 +795,8 @@ Transaction.prototype.shouldRetry_ = function(err) {
   return (
     err.code === ABORTED &&
     is.fn(this.runFn_) &&
-    Date.now() - this.beginTime_ < this.timeout_
+    Date.now() - this.beginTime_ < this.timeout_ &&
+    err.metadata.get(RETRY_INFO_KEY).length > 0
   );
 };
 
