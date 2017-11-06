@@ -368,18 +368,22 @@ Database.prototype.createTable = function(schema, callback) {
  * });
  */
 Database.prototype.delete = function(callback) {
+  var self = this;
   var reqOpts = {
     database: this.formattedName_,
   };
 
-  return this.request(
-    {
-      client: 'DatabaseAdminClient',
-      method: 'dropDatabase',
-      reqOpts: reqOpts,
-    },
-    callback
-  );
+  this.close(function() {
+    self.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'dropDatabase',
+        reqOpts: reqOpts,
+      },
+      callback
+    );
+  });
+
 };
 
 /**
@@ -560,17 +564,11 @@ Database.prototype.getTransaction = function(options, callback) {
       return;
     }
 
-    var transaction = self.pool_.createTransaction_(session, options);
-
-    transaction.begin(function(err) {
-      if (err) {
-        transaction.end();
-        callback(err);
-        return;
-      }
-
-      callback(null, transaction);
-    });
+    self.pool_
+      .createTransaction_(session, options)
+      .then(function(transaction) {
+        callback(null, transaction);
+      }, callback);
   });
 };
 
