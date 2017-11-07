@@ -75,7 +75,9 @@ test.after.always(async () => {
 // create_database
 test.serial(`should create an example database`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
+    `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${
+      PROJECT_ID
+    }`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -193,7 +195,9 @@ test.serial(`should create an index in an example table`, async t => {
 // create_storing_index
 test.serial(`should create a storing index in an example table`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${
+      PROJECT_ID
+    }`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -221,7 +225,9 @@ test.serial(
   `should respect query boundaries when querying an example table with an index`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${
+        PROJECT_ID
+      } -s Ardvark -e Zoo`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -243,7 +249,9 @@ test.serial(`should read an example table with an index`, async t => {
 // read_data_with_storing_index
 test.serial(`should read an example table with a storing index`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${
+      PROJECT_ID
+    }`,
     cwd
   );
   const output = results.stdout + results.stderr;
