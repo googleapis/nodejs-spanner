@@ -18,7 +18,7 @@
 
 var is = require('is');
 
-/**
+/*!
  * Combine row chunks from multiple `PartialResultSet` API response objects.
  *
  * @private
