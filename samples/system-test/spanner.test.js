@@ -146,9 +146,9 @@ test.serial(`should update existing rows in an example table`, async t => {
 // read_stale_data
 test.serial(`should read stale data from an example table`, t => {
   t.plan(2);
-  // read-stale-data reads data that is exactly 10 seconds old.  So, make sure
-  // 10 seconds have elapsed since the update_data test.
-  return new Promise(resolve => setTimeout(resolve, 11000)).then(async () => {
+  // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
+  // 15 seconds have elapsed since the update_data test.
+  return new Promise(resolve => setTimeout(resolve, 16000)).then(async () => {
     const results = await tools.runAsyncWithIO(
       `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
