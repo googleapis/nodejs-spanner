@@ -237,8 +237,8 @@ function readStaleData(instanceId, databaseId, projectId) {
   };
 
   const options = {
-    // Guarantees that all writes committed more than 10 seconds ago are visible
-    exactStaleness: 10,
+    // Guarantees that all writes committed more than 15 seconds ago are visible
+    exactStaleness: 15,
   };
 
   albumsTable
