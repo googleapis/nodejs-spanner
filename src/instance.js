@@ -370,11 +370,13 @@ Instance.prototype.database = function(name, poolOptions) {
     throw new Error('A name is required to access a Database object.');
   }
 
-  if (!this.databases_.has(name)) {
-    this.databases_.set(name, new Database(this, name, poolOptions));
+  var key = name.split('/').pop();
+
+  if (!this.databases_.has(key)) {
+    this.databases_.set(key, new Database(this, name, poolOptions));
   }
 
-  return this.databases_.get(name);
+  return this.databases_.get(key);
 };
 
 /**
@@ -424,6 +426,12 @@ Instance.prototype.delete = function(callback) {
   var reqOpts = {
     name: this.formattedName_,
   };
+
+  this.databases_.forEach(function(database) {
+    database.close();
+  });
+
+  this.databases_.clear();
 
   this.request(
     {
