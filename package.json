@@ -64,7 +64,7 @@
     "generic-pool": "^3.1.4",
     "google-auto-auth": "^0.7.2",
     "google-gax": "^0.14.2",
-    "google-proto-files": "^0.13.1",
+    "google-proto-files": "^0.14.0",
     "is": "^3.1.0",
     "lodash.chunk": "^4.2.0",
     "lodash.flatten": "^4.4.0",
