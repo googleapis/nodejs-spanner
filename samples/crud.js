@@ -144,8 +144,9 @@ function queryData(instanceId, databaseId, projectId) {
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-            .value}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId.value}, AlbumId: ${
+            json.AlbumId.value
+          }, AlbumTitle: ${json.AlbumTitle}`
         );
       });
     })
@@ -194,8 +195,9 @@ function readData(instanceId, databaseId, projectId) {
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-            .value}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId.value}, AlbumId: ${
+            json.AlbumId.value
+          }, AlbumTitle: ${json.AlbumTitle}`
         );
       });
     })
@@ -253,7 +255,9 @@ function readStaleData(instanceId, databaseId, projectId) {
         const title = json.AlbumTitle;
         const budget = json.MarketingBudget ? json.MarketingBudget.value : '';
         console.log(
-          `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
+          `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${
+            title
+          }, MarketingBudget: ${budget}`
         );
       });
     })

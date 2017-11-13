@@ -154,10 +154,11 @@ function queryDataWithNewColumn(instanceId, databaseId, projectId) {
         const json = row.toJSON();
 
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-            .value}, MarketingBudget: ${json.MarketingBudget
-            ? json.MarketingBudget.value
-            : null}`
+          `SingerId: ${json.SingerId.value}, AlbumId: ${
+            json.AlbumId.value
+          }, MarketingBudget: ${
+            json.MarketingBudget ? json.MarketingBudget.value : null
+          }`
         );
       });
     })
