@@ -52,6 +52,10 @@ function createIndex(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END create_index]
 }
@@ -100,6 +104,10 @@ function createStoringIndex(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END create_storing_index]
 }
@@ -163,6 +171,10 @@ function queryDataWithIndex(
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END query_data_with_index]
 }
@@ -213,6 +225,10 @@ function readDataWithIndex(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END read_data_with_index]
 }
@@ -271,6 +287,10 @@ function readDataWithStoringIndex(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END read_data_with_storing_index]
 }

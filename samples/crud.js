@@ -51,6 +51,10 @@ function updateData(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END update_data]
 }
@@ -93,7 +97,7 @@ function insertData(instanceId, databaseId, projectId) {
     ])
     .then(() => {
       // Inserts rows into the Albums table
-      albumsTable.insert([
+      return albumsTable.insert([
         {SingerId: '1', AlbumId: '1', AlbumTitle: 'Total Junk'},
         {SingerId: '1', AlbumId: '2', AlbumTitle: 'Go, Go, Go'},
         {SingerId: '2', AlbumId: '1', AlbumTitle: 'Green'},
@@ -106,6 +110,10 @@ function insertData(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END insert_data]
 }
@@ -152,6 +160,10 @@ function queryData(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END query_data]
 }
@@ -203,6 +215,10 @@ function readData(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END read_data]
 }
@@ -261,6 +277,10 @@ function readStaleData(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END read_stale_data]
 }

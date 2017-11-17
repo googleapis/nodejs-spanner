@@ -110,6 +110,10 @@ function addColumn(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END add_column]
 }
@@ -164,6 +168,10 @@ function queryDataWithNewColumn(instanceId, databaseId, projectId) {
     })
     .catch(err => {
       console.error('ERROR:', err);
+    })
+    .then(() => {
+      // Close the database when finished.
+      return database.close();
     });
   // [END query_data_with_new_column]
 }

@@ -85,6 +85,10 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
       })
       .catch(err => {
         console.error('ERROR:', err);
+      })
+      .then(() => {
+        // Close the database when finished.
+        return database.close();
       });
   });
   // [END read_only_transaction]
@@ -185,20 +189,21 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
           },
         ]);
       })
-      // Commits the transaction and send the changes to the database
       .then(() => {
-        transaction.commit(err => {
-          if (err) {
-            console.error(err);
-          } else {
-            console.log(
-              `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
-            );
-          }
-        });
+        // Commits the transaction and send the changes to the database
+        return transaction.commit();
+      })
+      .then(() => {
+        console.log(
+          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
+        );
       })
       .catch(err => {
         console.error('ERROR:', err);
+      })
+      .then(() => {
+        // Close the database when finished.
+        return database.close();
       });
   });
   // [END read_write_transaction]
