@@ -17,7 +17,9 @@
 'use strict';
 
 var assert = require('assert');
+var events = require('events');
 var extend = require('extend');
+var nodeutil = require('util');
 var proxyquire = require('proxyquire');
 var through = require('through2');
 var util = require('@google-cloud/common').util;
@@ -55,7 +57,10 @@ function FakeSession() {
 
 function FakeSessionPool() {
   this.calledWith_ = arguments;
+  events.EventEmitter.call(this);
 }
+nodeutil.inherits(FakeSessionPool, events.EventEmitter);
+FakeSessionPool.prototype.open = util.noop;
 
 function FakeTable() {
   this.calledWith_ = arguments;
@@ -70,6 +75,13 @@ var fakeCodec = {
   Int: function() {},
   Float: function() {},
   SpannerDate: function() {},
+};
+
+var fakeModelo = {
+  inherits: function() {
+    this.calledWith_ = arguments;
+    return require('modelo').inherits.apply(this, arguments);
+  },
 };
 
 describe('Database', function() {
@@ -98,6 +110,7 @@ describe('Database', function() {
       '@google-cloud/common-grpc': {
         ServiceObject: FakeGrpcServiceObject,
       },
+      modelo: fakeModelo,
       './codec.js': fakeCodec,
       './partial-result-stream.js': FakePartialResultStream,
       './session-pool.js': FakeSessionPool,
@@ -112,6 +125,7 @@ describe('Database', function() {
     fakeCodec.encode = util.noop;
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
+    database.parent = INSTANCE;
   });
 
   describe('instantiation', function() {
@@ -150,6 +164,26 @@ describe('Database', function() {
       assert.strictEqual(database.pool_.calledWith_[1], POOL_OPTIONS);
     });
 
+    it('should re-emit SessionPool errors', function(done) {
+      var error = new Error('err');
+
+      database.on('error', function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+
+      database.pool_.emit('error', error);
+    });
+
+    it('should open the pool', function(done) {
+      FakeSessionPool.prototype.open = function() {
+        FakeSessionPool.prototype.open = util.noop;
+        done();
+      };
+
+      new Database(INSTANCE, NAME);
+    });
+
     it('should inherit from ServiceObject', function(done) {
       var database;
       var options = {};
@@ -177,6 +211,12 @@ describe('Database', function() {
 
       calledWith.createMethod(null, options, done);
     });
+
+    it('should inherit from EventEmitter', function() {
+      var args = fakeModelo.calledWith_;
+      assert.strictEqual(args[0], Database);
+      assert.strictEqual(args[2], events.EventEmitter);
+    });
   });
 
   describe('formatName_', function() {
@@ -198,8 +238,8 @@ describe('Database', function() {
       beforeEach(function() {
         database.parent = INSTANCE;
         database.pool_ = {
-          clear: function() {
-            return Promise.resolve();
+          close: function(callback) {
+            callback(null);
           },
         };
       });
@@ -227,30 +267,13 @@ describe('Database', function() {
         var error = new Error('err.');
 
         database.pool_ = {
-          clear: function() {
-            return Promise.reject(error);
+          close: function(callback) {
+            callback(error);
           },
         };
 
         database.close(function(err) {
           assert.strictEqual(err, error);
-          done();
-        });
-      });
-
-      it('should provide a default error message', function(done) {
-        database.pool_ = {
-          clear: function() {
-            return Promise.reject();
-          },
-        };
-
-        database.close(function(err) {
-          assert(err instanceof Error);
-          assert.strictEqual(
-            err.message,
-            'Unable to close database connection.'
-          );
           done();
         });
       });
@@ -341,9 +364,21 @@ describe('Database', function() {
   });
 
   describe('delete', function() {
-    it('should call and return the request', function() {
-      var requestReturnValue = {};
+    beforeEach(function() {
+      database.close = function(callback) {
+        callback();
+      };
+    });
 
+    it('should close the database', function(done) {
+      database.close = function() {
+        done();
+      };
+
+      database.delete();
+    });
+
+    it('should make the correct request', function() {
       database.request = function(config, callback) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'dropDatabase');
@@ -351,11 +386,9 @@ describe('Database', function() {
           database: database.formattedName_,
         });
         assert.strictEqual(callback, assert.ifError);
-        return requestReturnValue;
       };
 
-      var returnValue = database.delete(assert.ifError);
-      assert.strictEqual(returnValue, requestReturnValue);
+      database.delete(assert.ifError);
     });
   });
 
@@ -825,18 +858,6 @@ describe('Database', function() {
     });
   });
 
-  describe('getSession_', function() {
-    it('should get a session from the pool', function(done) {
-      database.pool_ = {
-        getSession: function(callback) {
-          callback(); // done()
-        },
-      };
-
-      database.getSession_(done);
-    });
-  });
-
   describe('getTransaction', function() {
     describe('write mode', function() {
       it('should get a session from the pool', function(done) {
@@ -864,11 +885,18 @@ describe('Database', function() {
         a: 'a',
       };
 
-      it('should get a session from the pool', function(done) {
+      beforeEach(function() {
         database.pool_ = {
-          getSession: function() {
-            done();
+          prepareTransaction_: function() {
+            return Promise.resolve();
           },
+        };
+      });
+
+      it('should get a session from the pool', function(done) {
+        database.pool_.getSession = function() {
+          setImmediate(done);
+          return Promise.resolve();
         };
 
         database.getTransaction(OPTIONS, assert.ifError);
@@ -877,10 +905,8 @@ describe('Database', function() {
       it('should return an error if could not get session', function(done) {
         var error = new Error('err.');
 
-        database.pool_ = {
-          getSession: function(callback) {
-            callback(error);
-          },
+        database.pool_.getSession = function() {
+          return Promise.reject(error);
         };
 
         database.getTransaction(OPTIONS, function(err) {
@@ -896,71 +922,38 @@ describe('Database', function() {
         };
 
         database.pool_ = {
-          getSession: function(callback) {
-            callback(null, SESSION);
+          getSession: function() {
+            return Promise.resolve(SESSION);
           },
-          createTransaction_: function(session, options) {
+          prepareTransaction_: function(session, options) {
             assert.strictEqual(session, SESSION);
             assert.strictEqual(options, OPTIONS);
 
             setImmediate(done);
-            return TRANSACTION;
+
+            return Promise.resolve(TRANSACTION);
           },
         };
 
         database.getTransaction(OPTIONS, assert.ifError);
       });
 
-      it('should begin a transaction', function(done) {
-        var SESSION = {};
-        var TRANSACTION = {
-          begin: function(callback) {
-            callback(null);
-          },
-        };
-
-        database.pool_ = {
-          getSession: function(callback) {
-            callback(null, SESSION);
-          },
-          createTransaction_: function() {
-            return TRANSACTION;
-          },
-        };
-
-        database.getTransaction(OPTIONS, function(err, transaction) {
-          assert.ifError(err);
-          assert.strictEqual(transaction, TRANSACTION);
-          done();
-        });
-      });
-
       it('should return an error if transaction cannot begin', function(done) {
         var error = new Error('err');
-        var endCalled = false;
 
         var SESSION = {};
-        var TRANSACTION = {
-          begin: function(callback) {
-            callback(error);
-          },
-          end: function() {
-            endCalled = true;
-          },
-        };
 
         database.pool_ = {
-          getSession: function(callback) {
-            callback(null, SESSION);
+          getSession: function() {
+            return Promise.resolve(SESSION);
           },
-          createTransaction_: function() {
-            return TRANSACTION;
+          prepareTransaction_: function() {
+            return Promise.reject(error);
           },
         };
 
         database.getTransaction(OPTIONS, function(err) {
           assert.strictEqual(err, error);
-          assert.strictEqual(endCalled, true);
           done();
         });
       });

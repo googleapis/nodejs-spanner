@@ -44,9 +44,9 @@ var READWRITE = 'readwrite';
  * Session pool configuration options.
  *
  * @typedef {object} SessionPoolOptions
- * @property {number} [acquireTimeout=0] Time in milliseconds before giving up
- *     trying to acquire a session. If the specified value is `0`, a timeout
- *     will not occur.
+ * @property {number} [acquireTimeout=Infinity] Time in milliseconds before
+ *     giving up trying to acquire a session. If the specified value is
+ *     `Infinity`, a timeout will not occur.
  * @property {number} [concurrency=10] How many concurrent requests the pool is
  *     allowed to make.
  * @property {boolean} [fail=false] If set to true, an error will be thrown when
@@ -114,7 +114,7 @@ function SessionPool(database, options) {
   this.borrowed_ = [];
 
   this.acquireQueue_ = new PQueue({concurrency: 1});
-  this.requestQueue_ = new PQueue(this.options);
+  this.requestQueue_ = new PQueue({concurrency: this.options.concurrency});
 
   this.evictHandle_ = null;
   this.pingHandle_ = null;
@@ -234,12 +234,13 @@ SessionPool.prototype.open = function(callback) {
   var neededReadOnly = this.options.min - neededReadWrite;
 
   var requests = [];
+  var i;
 
-  for (var i = 0; i < neededReadWrite; i++) {
+  for (i = 0; i < neededReadWrite; i++) {
     requests.push(this.createSessionInBackground_(READWRITE));
   }
 
-  for (var i = 0; i < neededReadOnly; i++) {
+  for (i = 0; i < neededReadOnly; i++) {
     requests.push(this.createSessionInBackground_(READONLY));
   }
 
@@ -249,7 +250,9 @@ SessionPool.prototype.open = function(callback) {
     return promise;
   }
 
-  promise.then(callback, callback);
+  promise.then(function() {
+    callback(null);
+  }, callback);
 };
 
 /**
@@ -563,7 +566,7 @@ SessionPool.prototype.getSession_ = function(type) {
       return Promise.reject(new Error('No resources available.'));
     }
 
-    if (!this.isFull() && !this.pendingCreates_) {
+    if (!this.isFull()) {
       return this.race_(function() {
         return self.createSession_(type);
       });
