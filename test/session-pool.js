@@ -101,7 +101,8 @@ describe('SessionPool', function() {
     });
 
     it('should create arrays for available and borrowed sessions', function() {
-      assert.deepEqual(sessionPool.available_, []);
+      assert.deepEqual(sessionPool.reads_, []);
+      assert.deepEqual(sessionPool.writes_, []);
       assert.deepEqual(sessionPool.borrowed_, []);
     });
 
@@ -164,11 +165,14 @@ describe('SessionPool', function() {
     });
 
     it('should destroy all sessions', function() {
-      var fakeAvailable = [{}, {}, {}];
+      var fakeReads = [{}, {}];
+      var fakeWrites = [{}];
       var fakeBorrowed = [{}, {}, {}];
-      var fakeAll = fakeAvailable.concat(fakeBorrowed);
 
-      sessionPool.available_ = fakeAvailable;
+      var fakeAll = fakeReads.concat(fakeWrites, fakeBorrowed);
+
+      sessionPool.reads_ = fakeReads;
+      sessionPool.writes_ = fakeWrites;
       sessionPool.borrowed_ = fakeBorrowed;
 
       var destroyCallCount = 0;
@@ -179,14 +183,15 @@ describe('SessionPool', function() {
       sessionPool.close();
 
       assert.strictEqual(destroyCallCount, fakeAll.length);
-      assert.deepEqual(sessionPool.available_, []);
+      assert.deepEqual(sessionPool.reads_, []);
+      assert.deepEqual(sessionPool.writes_, []);
       assert.deepEqual(sessionPool.borrowed_, []);
     });
 
     it('should settle once all sessions are destroyed', function() {
       var delay = 500;
 
-      sessionPool.available_ = [{}];
+      sessionPool.reads_ = [{}];
       sessionPool.destroySession_ = function() {
         return new Promise(function(resolve) {
           setTimeout(resolve, delay);
@@ -207,7 +212,7 @@ describe('SessionPool', function() {
     it('should send errors to the callback', function(done) {
       var error = new Error('err');
 
-      sessionPool.available_ = [{}];
+      sessionPool.reads_ = [{}];
       sessionPool.destroySession_ = function() {
         return Promise.reject(error);
       };
@@ -442,9 +447,15 @@ describe('SessionPool', function() {
         type: 'readonly',
       };
 
+      var madeAvailable = false;
+      sessionPool.makeSessionAvailable_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        madeAvailable = true;
+      };
+
       sessionPool.once('available', function() {
         assert.deepEqual(sessionPool.borrowed_, []);
-        assert.deepEqual(sessionPool.available_, [fakeSession]);
+        assert.strictEqual(madeAvailable, true);
         done();
       });
 
@@ -472,13 +483,20 @@ describe('SessionPool', function() {
       });
 
       it('should make the session available', function(done) {
+        var madeAvailable = false;
+
+        sessionPool.makeSessionAvailable_ = function(session) {
+          assert.strictEqual(session, fakeSession);
+          madeAvailable = true;
+        };
+
         sessionPool.prepareTransaction_ = function() {
           return Promise.resolve();
         };
 
         sessionPool.once('available', function() {
           assert.deepEqual(sessionPool.borrowed_, []);
-          assert.deepEqual(sessionPool.available_, [fakeSession]);
+          assert.strictEqual(madeAvailable, true);
           done();
         });
 
@@ -811,7 +829,7 @@ describe('SessionPool', function() {
 
   describe('size', function() {
     it('should return the total number of sessions', function() {
-      sessionPool.available_ = [{}, {}];
+      sessionPool.reads_ = [{}, {}];
       sessionPool.borrowed_ = [{}, {}, {}];
 
       assert.strictEqual(sessionPool.size(), 5);
@@ -822,8 +840,13 @@ describe('SessionPool', function() {
     it('should borrow a session', function() {
       var fakeSession = {};
       var fakeType = 'readonly';
+      var madeUnavailable = false;
 
-      sessionPool.available_ = [fakeSession];
+      sessionPool.makeSessionUnavailable_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        madeUnavailable = true;
+      };
+
       sessionPool.getSession_ = function(type) {
         assert.strictEqual(type, fakeType);
         return Promise.resolve(fakeSession);
@@ -831,7 +854,7 @@ describe('SessionPool', function() {
 
       return sessionPool.borrowSession_(fakeType).then(function(session) {
         assert.strictEqual(session, fakeSession);
-        assert.deepEqual(sessionPool.available_, []);
+        assert.strictEqual(madeUnavailable, true);
         assert.deepEqual(sessionPool.borrowed_, [fakeSession]);
         assert(isAround(Date.now(), session.lastUsed));
       });
@@ -861,8 +884,14 @@ describe('SessionPool', function() {
         return Promise.resolve();
       };
 
+      var madeAvailable = false;
+      sessionPool.makeSessionAvailable_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        madeAvailable = true;
+      };
+
       return sessionPool.createSession_(fakeType).then(function(session) {
-        assert.deepEqual(sessionPool.available_, [fakeSession]);
+        assert.strictEqual(madeAvailable, true);
         assert.strictEqual(sessionPool.pendingCreates_, 0);
         assert.strictEqual(session, fakeSession);
       });
@@ -923,12 +952,16 @@ describe('SessionPool', function() {
         },
       };
 
-      sessionPool.available_ = [fakeSession];
+      sessionPool.reads_ = [fakeSession];
     });
 
-    it('should remove the session from the pool', function() {
+    it('should remove the session from the pool', function(done) {
+      sessionPool.makeSessionUnavailable_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        done();
+      };
+
       sessionPool.destroySession_(fakeSession);
-      assert.deepEqual(sessionPool.available_, []);
     });
 
     it('should emit a destroy event', function(done) {
@@ -1071,13 +1104,14 @@ describe('SessionPool', function() {
       var idlesAfter = (sessionPool.options.idlesAfter = 1); // 1 minute
       var idleTimestamp = Date.now() - idlesAfter * 60000;
 
-      var fakeSessions = (sessionPool.available_ = [
-        {lastUsed: idleTimestamp},
+      var fakeReads = (sessionPool.reads_ = [
         {lastUsed: Date.now()},
         {lastUsed: idleTimestamp},
       ]);
 
-      var expectedSessions = [fakeSessions[0], fakeSessions[2]];
+      var fakeWrites = (sessionPool.writes_ = [{lastUsed: idleTimestamp}]);
+
+      var expectedSessions = [fakeReads[1], fakeWrites[0]];
       var idleSessions = sessionPool.getIdleSessions_();
 
       assert.deepEqual(idleSessions, expectedSessions);
@@ -1085,11 +1119,69 @@ describe('SessionPool', function() {
   });
 
   describe('getSession_', function() {
-    describe('none available', function() {
-      beforeEach(function() {
-        sessionPool.available_.length = 0;
+    describe('readonly', function() {
+      it('should return a readonly session when available', function() {
+        var fakeType = 'readonly';
+        var fakeSession = {type: fakeType};
+
+        sessionPool.reads_ = [fakeSession];
+
+        return sessionPool.getSession_(fakeType).then(function(session) {
+          assert.strictEqual(session, fakeSession);
+          assert.deepEqual(sessionPool.reads_, []);
+        });
       });
 
+      it('should return a readwrite session when available', function() {
+        var fakeSession = {type: 'readwrite'};
+
+        sessionPool.writes_ = [fakeSession];
+
+        return sessionPool.getSession_('readonly').then(function(session) {
+          assert.strictEqual(session, fakeSession);
+          assert.deepEqual(sessionPool.writes_, []);
+        });
+      });
+    });
+
+    describe('readwrite', function() {
+      it('should return a readwrite session when available', function() {
+        var fakeType = 'readwrite';
+        var fakeSession = {type: fakeType};
+
+        sessionPool.writes_ = [fakeSession];
+
+        return sessionPool.getSession_(fakeType).then(function(session) {
+          assert.strictEqual(session, fakeSession);
+          assert.deepEqual(sessionPool.writes_, []);
+        });
+      });
+
+      it('should prepare a readonly session when available', function() {
+        var fakeSession = {type: 'readonly'};
+
+        sessionPool.reads_ = [fakeSession];
+
+        sessionPool.race_ = function(fn) {
+          return fn();
+        };
+
+        var txnPrepared = false;
+        sessionPool.prepareTransaction_ = function(session) {
+          assert.strictEqual(session, fakeSession);
+          txnPrepared = true;
+          return Promise.resolve();
+        };
+
+        return sessionPool.getSession_('readwrite').then(function(session) {
+          assert.strictEqual(session, fakeSession);
+          assert.deepEqual(sessionPool.reads_, []);
+          assert.strictEqual(txnPrepared, true);
+        });
+      });
+    });
+
+    describe('none available', function() {
       it('should error if fail is set to true', function() {
         sessionPool.options.fail = true;
 
@@ -1139,11 +1231,11 @@ describe('SessionPool', function() {
             return Promise.resolve(fakeSession);
           };
 
-          setImmediate(function() {
-            sessionPool.emit('available');
-          });
-
           return fn();
+        };
+
+        sessionPool.onAvailable_ = function() {
+          return Promise.resolve();
         };
 
         return sessionPool.getSession_(fakeType).then(function(session) {
@@ -1151,52 +1243,21 @@ describe('SessionPool', function() {
         });
       });
     });
+  });
 
-    describe('available', function() {
-      it('should return the correct type when available', function() {
-        var fakeType = 'readonly';
-        var fakeSession = {
-          type: fakeType,
-        };
+  describe('getSessionGroup_', function() {
+    it('should get the read group for readonly sessions', function() {
+      var fakeSession = {type: 'readonly'};
+      var group = sessionPool.getSessionGroup_(fakeSession);
 
-        sessionPool.available_ = [fakeSession];
+      assert.strictEqual(group, sessionPool.reads_);
+    });
 
-        return sessionPool.getSession_(fakeType).then(function(session) {
-          assert.strictEqual(session, fakeSession);
-        });
-      });
+    it('should get the writes group for readwrite sessions', function() {
+      var fakeSession = {type: 'readwrite'};
+      var group = sessionPool.getSessionGroup_(fakeSession);
 
-      it('should return write sessions when no readonly', function() {
-        var fakeSession = {
-          type: 'readwrite',
-        };
-
-        sessionPool.available_ = [fakeSession];
-
-        return sessionPool.getSession_('readonly').then(function(session) {
-          assert.strictEqual(session, fakeSession);
-        });
-      });
-
-      it('should prepare a transaction for readonly', function() {
-        var fakeTxn = {};
-        var fakeSession = {
-          type: 'readonly',
-        };
-
-        sessionPool.available_ = [fakeSession];
-
-        sessionPool.prepareTransaction_ = function(session) {
-          assert.strictEqual(session, fakeSession);
-          fakeSession.txn = fakeTxn;
-          return Promise.resolve();
-        };
-
-        return sessionPool.getSession_('readwrite').then(function(session) {
-          assert.strictEqual(session, fakeSession);
-          assert.strictEqual(session.txn, fakeTxn);
-        });
-      });
+      assert.strictEqual(group, sessionPool.writes_);
     });
   });
 
@@ -1263,7 +1324,7 @@ describe('SessionPool', function() {
       assert.strictEqual(sessionPool.evictHandle_, 2);
     });
 
-    it('should not kill the intervals if there are sessions', function() {
+    it('should not kill the intervals if there are read sessions', function() {
       global.clearInterval = function() {
         throw new Error('Should not be called.');
       };
@@ -1271,7 +1332,19 @@ describe('SessionPool', function() {
       sessionPool.listenForEvents_();
       sessionPool.emit('available');
 
-      sessionPool.available_ = [{}];
+      sessionPool.reads_ = [{}];
+      sessionPool.emit('destroy');
+    });
+
+    it('should not kill the intervals if there are write sessions', function() {
+      global.clearInterval = function() {
+        throw new Error('Should not be called.');
+      };
+
+      sessionPool.listenForEvents_();
+      sessionPool.emit('available');
+
+      sessionPool.writes_ = [{}];
       sessionPool.emit('destroy');
     });
 
@@ -1285,7 +1358,7 @@ describe('SessionPool', function() {
       sessionPool.listenForEvents_();
       sessionPool.emit('available');
 
-      sessionPool.available_.length = 0;
+      sessionPool.reads_.length = 0;
       sessionPool.emit('destroy');
 
       assert.strictEqual(clearCallCount, 2);
@@ -1307,7 +1380,7 @@ describe('SessionPool', function() {
       sessionPool.listenForEvents_();
       sessionPool.emit('available');
 
-      sessionPool.available_.length = 0;
+      sessionPool.reads_.length = 0;
       sessionPool.emit('destroy');
 
       sessionPool.emit('available');
@@ -1327,7 +1400,7 @@ describe('SessionPool', function() {
       sessionPool.emit('available');
       sessionPool.emit('close');
 
-      sessionPool.available_.length = 0;
+      sessionPool.reads_.length = 0;
 
       sessionPool.emit('destroy'); //should do nothing
       sessionPool.emit('available'); // should do nothing
@@ -1335,6 +1408,51 @@ describe('SessionPool', function() {
       assert.strictEqual(clearCallCount, 2);
       assert.strictEqual(pingCallCount, 1);
       assert.strictEqual(evictCallCount, 1);
+    });
+  });
+
+  describe('makeSessionAvailable_', function() {
+    it('should make the session available', function() {
+      var fakeSession = {};
+      var fakeGroup = [];
+
+      sessionPool.getSessionGroup_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        return fakeGroup;
+      };
+
+      sessionPool.makeSessionAvailable_(fakeSession);
+      assert.deepEqual(fakeGroup, [fakeSession]);
+    });
+  });
+
+  describe('makeSessionUnavailable_', function() {
+    it('should make the session unavailable', function() {
+      var fakeSession = {};
+      var fakeGroup = [fakeSession];
+
+      sessionPool.getSessionGroup_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        return fakeGroup;
+      };
+
+      sessionPool.makeSessionUnavailable_(fakeSession);
+      assert.deepEqual(fakeGroup, []);
+    });
+  });
+
+  describe('onAvailable_', function() {
+    it('should settle once the available event fires', function() {
+      var delay = 500;
+      var end = timeSpan();
+
+      setTimeout(function() {
+        sessionPool.emit('available');
+      }, delay);
+
+      return sessionPool.onAvailable_().then(function() {
+        assert(isAround(delay, end()));
+      });
     });
   });
 
