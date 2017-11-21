@@ -516,11 +516,12 @@ SessionPool.prototype.evictIdleSessions_ = function() {
 
   var maxIdle = this.options.maxIdle;
   var min = this.options.min;
+  var size = this.size();
 
   var idle = this.getIdleSessions_();
   var count = idle.length;
 
-  while (count-- > maxIdle && count >= min) {
+  while (count-- > maxIdle && size - evicted.length >= min) {
     evicted.push(idle.pop());
   }
 
