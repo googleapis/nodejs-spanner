@@ -62,7 +62,7 @@
     "events-intercept": "^2.0.0",
     "extend": "^3.0.0",
     "generic-pool": "^3.1.4",
-    "google-auto-auth": "^0.7.2",
+    "google-auto-auth": "^0.8.0",
     "google-gax": "^0.14.2",
     "google-proto-files": "^0.14.0",
     "is": "^3.1.0",
