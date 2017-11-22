@@ -17,7 +17,6 @@
 'use strict';
 
 var assert = require('assert');
-var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var through = require('through2');
@@ -519,15 +518,24 @@ describe('Database', function() {
       c: 'd',
     };
 
-    var EXPECTED_REQ_OPTS = extend(QUERY, {
-      session: DATABASE_FORMATTED_NAME,
+    var ENCODED_QUERY = extend({}, QUERY);
+
+    beforeEach(function() {
+      fakeCodec.encodeQuery = function() {
+        return ENCODED_QUERY;
+      };
     });
 
     it('should accept a query object', function(done) {
+      fakeCodec.encodeQuery = function(query) {
+        assert.strictEqual(query, QUERY);
+        return ENCODED_QUERY;
+      };
+
       database.pool_.requestStream = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeStreamingSql');
-        assert.deepEqual(config.reqOpts, EXPECTED_REQ_OPTS);
+        assert.deepEqual(config.reqOpts, ENCODED_QUERY);
         done();
       };
 
@@ -537,229 +545,18 @@ describe('Database', function() {
     });
 
     it('should accept a query string', function(done) {
+      fakeCodec.encodeQuery = function(query) {
+        assert.strictEqual(query.sql, QUERY.sql);
+        return ENCODED_QUERY;
+      };
       database.pool_.requestStream = function(config) {
-        assert.deepEqual(config.reqOpts.sql, EXPECTED_REQ_OPTS.sql);
+        assert.deepEqual(config.reqOpts, ENCODED_QUERY);
         done();
       };
 
       var stream = database.runStream(QUERY.sql);
       var makeRequestFn = stream.calledWith_[0];
       makeRequestFn();
-    });
-
-    describe('query parameters', function() {
-      var getType;
-
-      before(function() {
-        getType = fakeCodec.getType;
-      });
-
-      afterEach(function() {
-        fakeCodec.getType = getType;
-      });
-
-      it('should encode query parameters', function(done) {
-        var query = {
-          sql: QUERY,
-          params: {
-            test: 'value',
-          },
-        };
-
-        var encodedValue = {};
-
-        fakeCodec.encode = function(field) {
-          assert.strictEqual(field, query.params.test);
-          return encodedValue;
-        };
-
-        database.pool_.requestStream = function(config) {
-          assert.strictEqual(config.reqOpts.params.fields.test, encodedValue);
-          done();
-        };
-
-        var stream = database.runStream(query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should attempt to guess the parameter types', function(done) {
-        var params = {
-          unspecified: null,
-          bool: true,
-          int64: 1234,
-          float64: 2.2,
-          timestamp: new Date(),
-          date: new fakeCodec.SpannerDate(),
-          string: 'abc',
-          bytes: Buffer.from('abc'),
-        };
-
-        var types = Object.keys(params);
-
-        var query = {
-          sql: QUERY,
-          params: params,
-        };
-
-        var getTypeCallCount = 0;
-
-        fakeCodec.getType = function(field) {
-          var type = types[getTypeCallCount++];
-
-          assert.strictEqual(params[type], field);
-          return type;
-        };
-
-        database.pool_.requestStream = function(config) {
-          assert.deepEqual(config.reqOpts.paramTypes, {
-            unspecified: {
-              code: 0,
-            },
-            bool: {
-              code: 1,
-            },
-            int64: {
-              code: 2,
-            },
-            float64: {
-              code: 3,
-            },
-            timestamp: {
-              code: 4,
-            },
-            date: {
-              code: 5,
-            },
-            string: {
-              code: 6,
-            },
-            bytes: {
-              code: 7,
-            },
-          });
-
-          done();
-        };
-
-        var stream = database.runStream(query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should not overwrite existing type definitions', function(done) {
-        var query = {
-          params: {
-            test: 123,
-          },
-          types: {
-            test: 'string',
-          },
-        };
-
-        fakeCodec.getType = function() {
-          throw new Error('Should not be called');
-        };
-
-        database.pool_.requestStream = function(config) {
-          assert.deepEqual(config.reqOpts.paramTypes, {
-            test: {
-              code: 6,
-            },
-          });
-          done();
-        };
-
-        var stream = database.runStream(query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should throw an error for unknown types', function() {
-        var query = {
-          params: {
-            test: 'abc',
-          },
-          types: {
-            test: 'unicorn',
-          },
-        };
-
-        assert.throws(function() {
-          database.runStream(query);
-        }, /Unknown param type: unicorn/);
-      });
-
-      it('should attempt to guess array types', function(done) {
-        var query = {
-          params: {
-            test: ['abc'],
-          },
-        };
-
-        fakeCodec.getType = function() {
-          return {
-            type: 'array',
-            child: 'string',
-          };
-        };
-
-        database.pool_.requestStream = function(config) {
-          assert.deepEqual(config.reqOpts.paramTypes, {
-            test: {
-              code: 8,
-              arrayElementType: {
-                code: 6,
-              },
-            },
-          });
-
-          done();
-        };
-
-        var stream = database.runStream(query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should throw an error for unknown child types', function() {
-        var query = {
-          params: {
-            test: [null],
-          },
-        };
-
-        fakeCodec.getType = function() {
-          return {
-            type: 'array',
-            child: 'unicorn',
-          };
-        };
-
-        assert.throws(function() {
-          database.runStream(query);
-        }, /Unknown param type: unicorn/);
-      });
-
-      it('should delete the type map from the request options', function(done) {
-        var query = {
-          params: {
-            test: 'abc',
-          },
-          types: {
-            test: 'string',
-          },
-        };
-
-        database.pool_.requestStream = function(config) {
-          assert.strictEqual(config.reqOpts.types, undefined);
-          done();
-        };
-
-        var stream = database.runStream(query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
     });
 
     it('should return PartialResultStream', function() {

@@ -610,6 +610,8 @@ Database.prototype.getTransaction = function(options, callback) {
  * @param {string|object} query A SQL query or query object. See an
  *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
+ * @param {object} [query.params] A map of parameter name to values.
+ * @param {object} [query.types] A map of parameter types.
  * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  * @param {RunCallback} [callback] Callback function.
  * @returns {Promise<RunResponse>}
@@ -737,6 +739,7 @@ Database.prototype.run = function(query, options, callback) {
  *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
  * @param {object} [query.params] A map of parameter name to values.
+ * @param {object} [query.types] A map of parameter types.
  * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  * @returns {ReadableStream} A readable stream that emits rows.
  *
@@ -837,67 +840,7 @@ Database.prototype.runStream = function(query, options) {
     };
   }
 
-  var reqOpts = extend({}, query, {
-    session: this.formattedName_,
-  });
-
-  var fields = {};
-  var prop;
-
-  if (reqOpts.params) {
-    reqOpts.types = reqOpts.types || {};
-
-    for (prop in reqOpts.params) {
-      var field = reqOpts.params[prop];
-
-      if (!reqOpts.types[prop]) {
-        reqOpts.types[prop] = codec.getType(field);
-      }
-
-      fields[prop] = codec.encode(field);
-    }
-
-    reqOpts.params = {
-      fields: fields,
-    };
-  }
-
-  if (reqOpts.types) {
-    var types = {};
-
-    for (prop in reqOpts.types) {
-      var type = reqOpts.types[prop];
-      var childType;
-      var child;
-
-      // if a type is an ARRAY, then we'll accept an object specifying
-      // the type and the child type
-      if (is.object(type)) {
-        childType = type.child;
-        child = codec.TYPES.indexOf(childType);
-        type = type.type;
-      }
-
-      var code = codec.TYPES.indexOf(type);
-
-      if (code === -1) {
-        throw new Error('Unknown param type: ' + type);
-      }
-
-      types[prop] = {code: code};
-
-      if (child === -1) {
-        throw new Error('Unknown param type: ' + childType);
-      }
-
-      if (is.number(child)) {
-        types[prop].arrayElementType = {code: child};
-      }
-    }
-
-    reqOpts.paramTypes = types;
-    delete reqOpts.types;
-  }
+  var reqOpts = codec.encodeQuery(query);
 
   if (options) {
     reqOpts.transaction = {
@@ -911,7 +854,7 @@ Database.prototype.runStream = function(query, options) {
     return self.pool_.requestStream({
       client: 'SpannerClient',
       method: 'executeStreamingSql',
-      reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
+      reqOpts: extend(reqOpts, {resumeToken}),
     });
   }
 
