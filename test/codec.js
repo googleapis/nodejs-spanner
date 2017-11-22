@@ -529,4 +529,202 @@ describe('codec', function() {
       ]);
     });
   });
+
+  describe('encodeQuery', function() {
+    var QUERY = {
+      sql: 'SELECT * FROM table',
+      a: 'b',
+      c: 'd',
+    };
+
+    it('should return the query', function() {
+      var fakeQuery = {};
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+
+      assert.strictEqual(fakeQuery, encodedQuery);
+    });
+
+    it('should encode query parameters', function() {
+      var fakeQuery = {
+        sql: QUERY,
+        params: {
+          test: 'value',
+        },
+      };
+
+      var encodedValue = {};
+
+      codec.encode = function(field) {
+        assert.strictEqual(field, fakeQuery.params.test);
+        return encodedValue;
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+      assert.strictEqual(encodedQuery.params.fields.test, encodedValue);
+    });
+
+    it('should attempt to guess the parameter types', function() {
+      var params = {
+        unspecified: null,
+        bool: true,
+        int64: 1234,
+        float64: 2.2,
+        timestamp: new Date(),
+        date: new codec.SpannerDate(),
+        string: 'abc',
+        bytes: Buffer.from('abc'),
+      };
+
+      var types = Object.keys(params);
+
+      var fakeQuery = {
+        sql: QUERY,
+        params: params,
+      };
+
+      var getTypeCallCount = 0;
+
+      codec.getType = function(field) {
+        var type = types[getTypeCallCount++];
+
+        assert.strictEqual(params[type], field);
+        return type;
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+
+      assert.deepEqual(encodedQuery.paramTypes, {
+        unspecified: {
+          code: 0,
+        },
+        bool: {
+          code: 1,
+        },
+        int64: {
+          code: 2,
+        },
+        float64: {
+          code: 3,
+        },
+        timestamp: {
+          code: 4,
+        },
+        date: {
+          code: 5,
+        },
+        string: {
+          code: 6,
+        },
+        bytes: {
+          code: 7,
+        },
+      });
+    });
+
+    it('should not overwrite existing type definitions', function() {
+      var fakeQuery = {
+        params: {
+          test: 123,
+        },
+        types: {
+          test: 'string',
+        },
+      };
+
+      codec.getType = function() {
+        throw new Error('Should not be called');
+      };
+
+      codec.encodeQuery(fakeQuery);
+    });
+
+    it('should set type to unspecified for unknown types', function() {
+      var fakeQuery = {
+        params: {
+          test: 'abc',
+        },
+        types: {
+          test: 'unicorn',
+        },
+      };
+
+      codec.getType = function() {
+        throw new Error('Should not be called');
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+
+      assert.deepEqual(encodedQuery.paramTypes, {
+        test: {
+          code: 0,
+        },
+      });
+    });
+
+    it('should attempt to guess array types', function() {
+      var fakeQuery = {
+        params: {
+          test: ['abc'],
+        },
+      };
+
+      codec.getType = function() {
+        return {
+          type: 'array',
+          child: 'string',
+        };
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+
+      assert.deepEqual(encodedQuery.paramTypes, {
+        test: {
+          code: 8,
+          arrayElementType: {
+            code: 6,
+          },
+        },
+      });
+    });
+
+    it('should set the child to unspecified if unsure', function() {
+      var fakeQuery = {
+        params: {
+          test: [null],
+        },
+      };
+
+      codec.getType = function() {
+        return {
+          type: 'array',
+          child: 'unicorn',
+        };
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+
+      assert.deepEqual(encodedQuery.paramTypes, {
+        test: {
+          code: 8,
+          arrayElementType: {
+            code: 0,
+          },
+        },
+      });
+    });
+
+    it('should delete the type map from the request options', function() {
+      var fakeQuery = {
+        params: {
+          test: 'abc',
+        },
+        types: {
+          test: 'string',
+        },
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+      assert.strictEqual(encodedQuery.types, undefined);
+    });
+  });
 });

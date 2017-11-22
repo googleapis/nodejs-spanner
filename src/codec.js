@@ -274,3 +274,76 @@ var TYPES = [
 ];
 
 codec.TYPES = TYPES;
+
+/**
+ * Encodes a ExecuteSqlRequest object into the correct format.
+ *
+ * @private
+ *
+ * @param {object} query The query object.
+ * @param {object} [query.params] A map of parameter name to values.
+ * @param {object} [query.types] A map of parameter types.
+ * @returns {object}
+ */
+function encodeQuery(query) {
+  if (query.params) {
+    let fields = {};
+
+    if (!query.types) {
+      query.types = {};
+    }
+
+    for (let prop in query.params) {
+      let field = query.params[prop];
+
+      if (!query.types[prop]) {
+        query.types[prop] = codec.getType(field);
+      }
+
+      fields[prop] = codec.encode(field);
+    }
+
+    query.params = {fields};
+  }
+
+  if (query.types) {
+    let formattedTypes = {};
+
+    for (let prop in query.types) {
+      let type = query.types[prop];
+      let childType;
+      let child;
+
+      // if a type is an ARRAY, then we'll accept an object specifying
+      // the type and the child type
+      if (is.object(type)) {
+        childType = type.child;
+        child = codec.TYPES.indexOf(childType);
+        type = type.type;
+      }
+
+      let code = codec.TYPES.indexOf(type);
+
+      if (code === -1) {
+        code = 0; // unspecified
+      }
+
+      formattedTypes[prop] = {code};
+
+      if (child === -1) {
+        child = 0; // unspecified
+      }
+
+      if (is.number(child)) {
+        formattedTypes[prop].arrayElementType = {code: child};
+      }
+    }
+
+    delete query.types;
+    query.paramTypes = formattedTypes;
+  }
+
+  return query;
+}
+
+codec.encodeQuery = encodeQuery;

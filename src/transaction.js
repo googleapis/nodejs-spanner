@@ -536,6 +536,8 @@ Transaction.prototype.rollback = function(callback) {
  * @param {string|object} query A SQL query or
  *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
+ * @param {object} [query.params] A map of parameter name to values.
+ * @param {object} [query.types] A map of parameter types.
  * @param {RunCallback} [callback] Callback function.
  * @returns {Promise<RunResponse>}
  *
@@ -585,6 +587,30 @@ Transaction.prototype.rollback = function(callback) {
  *
  *   transaction.run(query, function(err, rows) {});
  * });
+ *
+ * //-
+ * // If you need to enforce a specific param type, a types map can be provided.
+ * // This is typically useful if your param value can be null.
+ * //-
+ * database.runTransaction(function(err, transaction) {
+ *   if (err) {
+ *     // Error handling omitted.
+ *   }
+ *
+ *   const query = {
+ *     sql: 'SELECT * FROM Singers WHERE name = @name AND id = @id',
+ *     params: {
+ *       id: spanner.int(8),
+ *       name: null
+ *     },
+ *     types: {
+ *       id: 'int64',
+ *       name: 'string'
+ *     }
+ *   };
+ *
+ *   transaction.run(query, function(err, rows) {});
+ * });
  */
 Transaction.prototype.run = function(query, callback) {
   var rows = [];
@@ -612,6 +638,8 @@ Transaction.prototype.run = function(query, callback) {
  * @param {string|object} query - A SQL query or
  *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
+ * @param {object} [query.params] A map of parameter name to values.
+ * @param {object} [query.types] A map of parameter types.
  * @returns {ReadableStream}
  *
  * @example
@@ -691,64 +719,9 @@ Transaction.prototype.runStream = function(query) {
   var reqOpts = extend(
     {
       transaction: {},
-      session: this.formattedName_,
     },
-    query
+    codec.encodeQuery(query)
   );
-
-  var fields = {};
-  var prop;
-
-  if (reqOpts.params) {
-    reqOpts.types = reqOpts.types || {};
-
-    for (prop in reqOpts.params) {
-      var field = reqOpts.params[prop];
-
-      if (!reqOpts.types[prop]) {
-        reqOpts.types[prop] = codec.getType(field);
-      }
-
-      fields[prop] = codec.encode(field);
-    }
-
-    reqOpts.params = {
-      fields: fields,
-    };
-  }
-
-  if (reqOpts.types) {
-    var types = {};
-
-    for (prop in reqOpts.types) {
-      var type = reqOpts.types[prop];
-      var child;
-
-      if (is.object(type)) {
-        child = codec.TYPES.indexOf(type.child);
-        type = type.type;
-      }
-
-      var code = codec.TYPES.indexOf(type);
-
-      if (code === -1) {
-        code = 0; // unspecified
-      }
-
-      types[prop] = {code: code};
-
-      if (child === -1) {
-        child = 0; // unspecified
-      }
-
-      if (is.number(child)) {
-        types[prop].arrayElementType = {code: child};
-      }
-    }
-
-    reqOpts.paramTypes = types;
-    delete reqOpts.types;
-  }
 
   if (this.id) {
     reqOpts.transaction.id = this.id;
