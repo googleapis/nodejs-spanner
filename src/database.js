@@ -247,10 +247,8 @@ Database.formatName_ = function(instanceName, name) {
 Database.prototype.close = function(callback) {
   var self = this;
 
-  this.pool_.close(function(err) {
-    self.parent.databases_.delete(self.id);
-    callback(err);
-  });
+  this.parent.databases_.delete(self.id);
+  this.pool_.close().then(() => callback(null), callback);
 };
 
 /**
@@ -552,16 +550,16 @@ Database.prototype.getTransaction = function(options, callback) {
   }
 
   if (!options || !options.readOnly) {
-    pool.getWriteSession(function(err, session, transaction) {
-      callback(err, transaction);
-    });
+    pool.getWriteSession().then(function(session) {
+      callback(null, session.txn);
+    }, callback);
     return;
   }
 
   pool
     .getSession()
     .then(function(session) {
-      return pool.prepareTransaction_(session, options);
+      return pool.createTransaction_(session, options);
     })
     .then(function(transaction) {
       callback(null, transaction);

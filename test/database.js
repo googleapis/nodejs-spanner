@@ -238,8 +238,8 @@ describe('Database', function() {
       beforeEach(function() {
         database.parent = INSTANCE;
         database.pool_ = {
-          close: function(callback) {
-            callback(null);
+          close: function() {
+            return Promise.resolve();
           },
         };
       });
@@ -267,8 +267,8 @@ describe('Database', function() {
         var error = new Error('err.');
 
         database.pool_ = {
-          close: function(callback) {
-            callback(error);
+          close: function() {
+            return Promise.reject(error);
           },
         };
 
@@ -861,19 +861,33 @@ describe('Database', function() {
   describe('getTransaction', function() {
     describe('write mode', function() {
       it('should get a session from the pool', function(done) {
-        var error = new Error('Error.');
-        var session = {};
         var transaction = {};
+        var session = {txn: transaction};
 
         database.pool_ = {
-          getWriteSession: function(callback) {
-            callback(error, session, transaction);
+          getWriteSession: function() {
+            return Promise.resolve(session);
           },
         };
 
         database.getTransaction(function(err, transaction_) {
-          assert.strictEqual(err, error);
+          assert.ifError(err);
           assert.strictEqual(transaction_, transaction);
+          done();
+        });
+      });
+
+      it('should return errors to the callback', function(done) {
+        var error = new Error('Error.');
+
+        database.pool_ = {
+          getWriteSession: function() {
+            return Promise.reject(error);
+          },
+        };
+
+        database.getTransaction(function(err) {
+          assert.strictEqual(err, error);
           done();
         });
       });
@@ -887,7 +901,7 @@ describe('Database', function() {
 
       beforeEach(function() {
         database.pool_ = {
-          prepareTransaction_: function() {
+          createTransaction_: function() {
             return Promise.resolve();
           },
         };
@@ -925,7 +939,7 @@ describe('Database', function() {
           getSession: function() {
             return Promise.resolve(SESSION);
           },
-          prepareTransaction_: function(session, options) {
+          createTransaction_: function(session, options) {
             assert.strictEqual(session, SESSION);
             assert.strictEqual(options, OPTIONS);
 
@@ -947,7 +961,7 @@ describe('Database', function() {
           getSession: function() {
             return Promise.resolve(SESSION);
           },
-          prepareTransaction_: function() {
+          createTransaction_: function() {
             return Promise.reject(error);
           },
         };

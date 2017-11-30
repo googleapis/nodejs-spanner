@@ -61,9 +61,8 @@ var READWRITE = 'readwrite';
  *     any given time.
  * @property {number} [keepAlive=50] How often to ping idle sessions, in
  *     minutes. Must be less than 1 hour.
- * @property {number} [writes=0] Pre-allocate transactions for the number of
- *     sessions specified.
- */
+ * @property {number} [writes=0] Percentage of session to be pre-allocated as
+ *     write sessions.
 
 /**
  * Class used to manage connections to Spanner.
@@ -78,8 +77,6 @@ var READWRITE = 'readwrite';
  * @param {SessionPoolOptions} [options] Configuration options.
  */
 function SessionPool(database, options) {
-  var self = this;
-
   /**
    * @name SessionPool#database
    * @readonly
@@ -101,19 +98,14 @@ function SessionPool(database, options) {
    */
   this.isOpen = false;
 
-  if (this.options.min < this.options.writes) {
-    this.options.min = this.options.writes;
-  }
-
   this.request_ = database.request;
   this.requestStream_ = database.requestStream;
-
-  this.pendingCreates_ = 0;
 
   this.reads_ = [];
   this.writes_ = [];
   this.borrowed_ = [];
 
+  this.pendingCreates_ = 0;
   this.acquireQueue_ = new PQueue({concurrency: 1});
   this.requestQueue_ = new PQueue({concurrency: this.options.concurrency});
 
@@ -121,89 +113,98 @@ function SessionPool(database, options) {
   this.pingHandle_ = null;
 
   EventEmitter.call(this);
-
-  this.onClose_ = new Promise(function(resolve) {
-    self.once('close', resolve);
-  });
 }
 
 util.inherits(SessionPool, EventEmitter);
 
 /**
+ * Returns the number of available sessions.
+ *
+ * @return {number}
+ */
+SessionPool.prototype.available = function() {
+  return this.reads_.length + this.writes_.length;
+};
+
+/**
+ * Returns the number of borrowed sessions.
+ *
+ * @return {number}
+ */
+SessionPool.prototype.borrowed = function() {
+  return this.borrowed_.length;
+};
+
+/**
  * Closes and the pool.
  *
  * @emits SessionPool#close
- * @param {function} [callback] A callback function.
  * @returns {Promise}
  */
-SessionPool.prototype.close = function(callback) {
+SessionPool.prototype.close = function() {
   var self = this;
   var sessions = this.reads_.concat(this.writes_, this.borrowed_);
 
   this.isOpen = false;
-  this.reads_.length = this.writes_.length = this.borrowed_.length = 0;
+
+  this.reads_ = [];
+  this.writes_ = [];
+  this.borrowed_ = [];
+
+  this.stopHouseKeeping_();
+
+  this.emit('empty');
   this.emit('close');
 
-  var promise = Promise.all(
+  return Promise.all(
     sessions.map(function(session) {
       return self.destroySession_(session);
     })
   );
-
-  if (!is.fn(callback)) {
-    return promise;
-  }
-
-  promise.then(function() {
-    callback(null);
-  }, callback);
 };
 
 /**
- * @callback GetSessionCallback
- * @param {?Error} err Request error, if any.
- * @param {Session} session The session object.
+ * Fills the pool with the minimum number of sessions.
+ *
+ * @return {Promise}
  */
+SessionPool.prototype.fill = function() {
+  var requests = [];
+  var i;
+
+  var minReadWrite = Math.floor(this.options.min * this.options.writes);
+  var neededReadWrite = Math.max(minReadWrite - this.writes_.length, 0);
+
+  for (i = 0; i < neededReadWrite; i++) {
+    requests.push(this.createSessionInBackground_(READWRITE));
+  }
+
+  var minReadOnly = Math.ceil(this.options.min - minReadWrite);
+  var neededReadOnly = Math.max(minReadOnly - this.reads_.length, 0);
+
+  for (i = 0; i < neededReadOnly; i++) {
+    requests.push(this.createSessionInBackground_(READONLY));
+  }
+
+  return Promise.all(requests);
+};
+
 /**
  * Retrieve a read session.
  *
- * @param {GetSessionCallback} [callback] Callback function.
  * @returns {Promise<Session>}
  */
-SessionPool.prototype.getSession = function(callback) {
-  var promise = this.borrowSession_(READONLY);
-
-  if (!is.fn(callback)) {
-    return promise;
-  }
-
-  promise.then(function(session) {
-    callback(null, session);
-  }, callback);
+SessionPool.prototype.getSession = function() {
+  return this.acquireSession_(READONLY);
 };
 
 /**
- * @callback GetWriteSessionCallback
- * @param {?Error} err Request error, if any.
- * @param {Session} session The session object.
- * @param {Transaction} transaction The transaction object.
- */
-/**
  * Retrieve the write session.
  *
- * @param {GetWriteSessionCallback} [callback] Callback function.
  * @returns {Promise<Session>}
  */
-SessionPool.prototype.getWriteSession = function(callback) {
-  var promise = this.borrowSession_(READWRITE);
-
-  if (!is.fn(callback)) {
-    return promise;
-  }
-
-  promise.then(function(session) {
-    callback(null, session, session.txn);
-  }, callback);
+SessionPool.prototype.getWriteSession = function() {
+  return this.acquireSession_(READWRITE);
 };
 
 /**
@@ -221,37 +222,20 @@ SessionPool.prototype.isFull = function() {
  * sessions.
  *
  * @emits SessionPool#open
- * @param {function} [callback] The callback function.
  * @return {Promise}
  */
-SessionPool.prototype.open = function(callback) {
+SessionPool.prototype.open = function() {
+  var self = this;
+
   this.isOpen = true;
-  this.listenForEvents_();
+  this.onClose_ = new Promise(function(resolve) {
+    self.once('close', resolve);
+  });
+
+  this.startHouseKeeping_();
   this.emit('open');
 
-  var neededReadWrite = this.options.writes;
-  var neededReadOnly = this.options.min - neededReadWrite;
-
-  var requests = [];
-  var i;
-
-  for (i = 0; i < neededReadWrite; i++) {
-    requests.push(this.createSessionInBackground_(READWRITE));
-  }
-
-  for (i = 0; i < neededReadOnly; i++) {
-    requests.push(this.createSessionInBackground_(READONLY));
-  }
-
-  var promise = Promise.all(requests);
-
-  if (!is.fn(callback)) {
-    return promise;
-  }
-
-  promise.then(function() {
-    callback(null);
-  }, callback);
+  return this.fill();
 };
 
 /**
@@ -265,26 +249,23 @@ SessionPool.prototype.open = function(callback) {
  */
 SessionPool.prototype.release = function(session) {
   var self = this;
-  var index = this.borrowed_.indexOf(session);
 
-  if (index === -1) {
+  if (this.borrowed_.indexOf(session) === -1) {
     throw new Error('Unable to release unknown session.');
   }
 
   if (session.type !== READWRITE) {
-    release();
+    this.release_(session);
     return;
   }
 
-  this.prepareTransaction_(session).then(release, function(err) {
-    self.emit('error', err);
-  });
-
-  function release() {
-    self.borrowed_.splice(index, 1);
-    self.makeSessionAvailable_(session);
-    self.emit('available');
-  }
+  this.createTransaction_(session)
+    .catch(function() {
+      session.type = READONLY;
+    })
+    .then(function() {
+      self.release_(session);
+    });
 };
 
 /**
@@ -296,19 +277,14 @@ SessionPool.prototype.release = function(session) {
 SessionPool.prototype.request = function(config, callback) {
   var self = this;
 
-  this.getSession(function(err, session) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
+  this.getSession().then(function(session) {
     config.reqOpts.session = session.formattedName_;
 
     self.request_(config, function() {
       self.release(session);
       callback.apply(null, arguments);
     });
-  });
+  }, callback);
 };
 
 /**
@@ -332,6 +308,10 @@ SessionPool.prototype.requestStream = function(config) {
     }
   };
 
+  function destroyStream(err) {
+    waitForSessionStream.destroy(err);
+  }
+
   function releaseSession() {
     if (session) {
       self.release(session);
@@ -340,12 +320,7 @@ SessionPool.prototype.requestStream = function(config) {
   }
 
   waitForSessionStream.on('reading', function() {
-    self.getSession(function(err, session_) {
-      if (err) {
-        waitForSessionStream.destroy(err);
-        return;
-      }
-
+    self.getSession().then(function(session_) {
       session = session_;
       config.reqOpts.session = session_.formattedName_;
 
@@ -353,40 +328,13 @@ SessionPool.prototype.requestStream = function(config) {
 
       requestStream
         .on('error', releaseSession)
-        .on('error', function(err) {
-          waitForSessionStream.destroy(err);
-        })
+        .on('error', destroyStream)
         .on('end', releaseSession)
         .pipe(waitForSessionStream);
-    });
+    }, destroyStream);
   });
 
   return waitForSessionStream;
-};
-
-/**
- * Creates a half initialized Session object.
- *
- * @param {string} type The session type.
- * @returns {Session}
- */
-SessionPool.prototype.session = function(type) {
-  var self = this;
-  var session = this.database.session_();
-
-  session.type = type;
-  session.lastUsed = Date.now();
-
-  if (type === READWRITE) {
-    var create = session.create;
-    session.create = function() {
-      return create.call(session).then(function() {
-        return self.prepareTransaction_(session);
-      });
-    };
-  }
-
-  return session;
 };
 
 /**
@@ -395,7 +343,7 @@ SessionPool.prototype.session = function(type) {
  * @returns {number}
  */
 SessionPool.prototype.size = function() {
-  return this.reads_.length + this.writes_.length + this.borrowed_.length;
+  return this.available() + this.borrowed();
 };
 
 /**
@@ -406,17 +354,76 @@ SessionPool.prototype.size = function() {
  * @param {string} type The desired type to borrow.
  * @returns {Promise<Session>}
  */
-SessionPool.prototype.borrowSession_ = function(type) {
+SessionPool.prototype.acquireSession_ = function(type) {
   var self = this;
+
+  if (!this.isOpen) {
+    return Promise.reject(new Error('Database is closed.'));
+  }
 
   return this.getSession_(type).then(function(session) {
     session.lastUsed = Date.now();
+    self.borrowSession_(session);
 
-    self.makeSessionUnavailable_(session);
-    self.borrowed_.push(session);
+    if (!self.available()) {
+      self.emit('empty');
+    }
 
     return session;
   });
+};
+
+/**
+ * Moves a session into the borrowed group.
+ *
+ * @private
+ *
+ * @param {Session} session The session object.
+ */
+SessionPool.prototype.borrowSession_ = function(session) {
+  this.spliceSession_(session);
+  this.borrowed_.push(session);
+};
+
+/**
+ * Creates a read session.
+ *
+ * @private
+ *
+ * @return {Promise<Session>}
+ */
+SessionPool.prototype.createReadSession_ = function() {
+  var session = this.session_();
+
+  return session.create().then(function() {
+    session.type = READONLY;
+    return session;
+  });
+};
+
+/**
+ * Attemps to create a write session - may return a read session.
+ *
+ * @private
+ *
+ * @return {Promise<Session>}
+ */
+SessionPool.prototype.createWriteSession_ = function() {
+  var self = this;
+  var session = this.session_();
+
+  return session
+    .create()
+    .then(function() {
+      session.type = READWRITE;
+
+      return self.createTransaction_(session).catch(function() {
+        session.type = READONLY;
+      });
+    })
+    .then(function() {
+      return session;
+    });
 };
 
 /**
@@ -429,19 +436,21 @@ SessionPool.prototype.borrowSession_ = function(type) {
  */
 SessionPool.prototype.createSession_ = function(type) {
   var self = this;
-  var session = this.session(type);
 
   this.pendingCreates_ += 1;
 
   return this.requestQueue_
     .add(function() {
-      return session.create();
+      if (type === READWRITE) {
+        return self.createWriteSession_();
+      }
+
+      return self.createReadSession_();
     })
     .then(
-      function() {
-        self.makeSessionAvailable_(session);
+      function(session) {
+        self.getSessionGroup_(session).push(session);
         self.pendingCreates_ -= 1;
-        return session;
       },
       function(err) {
         self.pendingCreates_ -= 1;
@@ -474,6 +483,31 @@ SessionPool.prototype.createSessionInBackground_ = function(type) {
 };
 
 /**
+ * Creates a transaction for a session.
+ *
+ * @private
+ *
+ * @param {Session} session The session object.
+ * @param {object} options The transaction options.
+ * @returns {Promise<Transaction>}
+ */
+SessionPool.prototype.createTransaction_ = function(session, options) {
+  var self = this;
+  var transaction = session.transaction(options);
+  var end = transaction.end.bind(transaction);
+
+  transaction.end = function(callback) {
+    self.release(session);
+    return end(callback);
+  };
+
+  return transaction.begin().then(function() {
+    session.txn = transaction;
+    return transaction;
+  });
+};
+
+/**
  * Attempts to delete a session, optionally creating a new one of the same type
  * if the pool is still open and we're under the configured min value.
  *
@@ -487,11 +521,14 @@ SessionPool.prototype.createSessionInBackground_ = function(type) {
 SessionPool.prototype.destroySession_ = function(session) {
   var self = this;
 
-  this.makeSessionUnavailable_(session);
-  this.emit('destroy');
+  this.spliceSession_(session);
 
-  if (this.isOpen && this.size() < this.options.min) {
-    this.createSessionInBackground_(session.type);
+  if (!this.available()) {
+    this.emit('empty');
+  }
+
+  if (this.isOpen && this.needsFill_()) {
+    this.fill();
   }
 
   return this.requestQueue_
@@ -521,15 +558,15 @@ SessionPool.prototype.evictIdleSessions_ = function() {
   var idle = this.getIdleSessions_();
   var count = idle.length;
 
-  while (count-- > maxIdle && size - evicted.length >= min) {
+  while (count-- > maxIdle && size - evicted.length > min) {
     evicted.push(idle.pop());
   }
 
-  var requests = evicted.map(function(session) {
-    return self.destroySession_(session);
-  });
-
-  return Promise.all(requests);
+  return Promise.all(
+    evicted.map(function(session) {
+      return self.destroySession_(session);
+    })
+  );
 };
 
 /**
@@ -572,7 +609,7 @@ SessionPool.prototype.getSession_ = function(type) {
     var session = this.reads_.shift();
 
     return this.race_(function() {
-      return self.prepareTransaction_(session);
+      return self.createTransaction_(session);
     }).then(function() {
       return session;
     });
@@ -582,14 +619,14 @@ SessionPool.prototype.getSession_ = function(type) {
     return Promise.reject(new Error('No resources available.'));
   }
 
+  var raceFn = self.onAvailable_;
+
   if (!this.isFull()) {
-    return this.race_(function() {
-      return self.createSession_(type);
-    });
+    raceFn = self.createSession_;
   }
 
   return this.race_(function() {
-    return self.onAvailable_();
+    return raceFn.call(self, type);
   }).then(function() {
     return self.getSession_(type);
   });
@@ -608,75 +645,14 @@ SessionPool.prototype.getSessionGroup_ = function(session) {
 };
 
 /**
- * Listens for coming and going sessions and starts and stops cleanup tasks.
- *
- * @private
- */
-SessionPool.prototype.listenForEvents_ = function() {
-  var self = this;
-
-  var keepAliveInterval = this.options.keepAlive * 60000;
-  var evictInterval = this.options.idlesAfter * 60000;
-
-  this.once('available', startIntervals);
-
-  this.once('close', function() {
-    killIntervals();
-
-    self.removeListener('available', startIntervals);
-    self.removeListener('destroy', onDestroy);
-  });
-
-  function startIntervals() {
-    self.on('destroy', onDestroy);
-
-    self.pingHandle_ = setInterval(function() {
-      self.pingIdleSessions_();
-    }, keepAliveInterval);
-
-    self.evictHandle_ = setInterval(function() {
-      self.evictIdleSessions_();
-    }, evictInterval);
-  }
-
-  function onDestroy() {
-    if (!self.reads_.length && !self.writes_.length) {
-      killIntervals();
-
-      self.removeListener('destroy', onDestroy);
-      self.once('available', startIntervals);
-    }
-  }
-
-  function killIntervals() {
-    clearInterval(self.pingHandle_);
-    clearInterval(self.evictHandle_);
-  }
-};
-
-/**
- * Makes a Session available to be acquired.
+ * Indicates whether or not the pool needs to be filled.
  *
  * @private
  *
- * @param {Session} session The session to make available.
+ * @return {boolean}
  */
-SessionPool.prototype.makeSessionAvailable_ = function(session) {
-  this.getSessionGroup_(session).unshift(session);
-};
-
-/**
- * Makes a session unavailable.
- *
- * @private
- *
- * @param {Session} session The session to make unavailable.
- */
-SessionPool.prototype.makeSessionUnavailable_ = function(session) {
-  var group = this.getSessionGroup_(session);
-  var index = group.indexOf(session);
-
-  group.splice(index, 1);
+SessionPool.prototype.needsFill_ = function() {
+  return this.pendingCreates_ + this.size() < this.options.min;
 };
 
 /**
@@ -704,53 +680,50 @@ SessionPool.prototype.onAvailable_ = function() {
  */
 SessionPool.prototype.pingIdleSessions_ = function() {
   var self = this;
-
   var sessions = this.getIdleSessions_();
-  var requests = sessions.map(function(session) {
-    return self.requestQueue_
-      .add(function() {
-        return session.keepAlive();
-      })
-      .catch(function(err) {
-        self.destroySession_(session);
-        self.emit('error', err);
-      });
-  });
 
-  return Promise.all(requests);
+  return Promise.all(
+    sessions.map(function(session) {
+      return self.pingSession_(session);
+    })
+  ).then(function() {
+    if (self.needsFill_()) {
+      self.fill();
+    }
+  });
 };
 
 /**
- * Prepares a transaction.
+ * Pings an individual session.
  *
  * @private
  *
- * @param {Session} session The session to prepare the transaction for.
- * @param {TransactionOptions} [options] The transaction options.
- * @returns {Promise<Transaction>}
+ * @returns {Promise}
  */
-SessionPool.prototype.prepareTransaction_ = function(session, options) {
+SessionPool.prototype.pingSession_ = function(session) {
   var self = this;
 
-  var transaction = session.transaction(options);
-  var end = transaction.end;
+  this.borrowSession_(session);
 
-  transaction.end = function(callback) {
-    self.release(session);
-    return end.call(transaction, callback);
-  };
+  return this.requestQueue_
+    .add(function() {
+      return session
+        .keepAlive()
+        .catch(function(err) {
+          self.emit('error', err);
 
-  return transaction.begin().then(
-    function() {
-      session.txn = transaction;
-      return transaction;
-    },
-    function(err) {
-      transaction.end();
-      self.destroySession_(session);
-      throw err;
-    }
-  );
+          if (err.code === 404) {
+            throw err;
+          }
+        })
+        .then(function() {
+          self.release(session);
+        });
+    })
+    .catch(function() {
+      var index = self.borrowed_.indexOf(session);
+      self.borrowed_.splice(index, 1);
+    });
 };
 
 /**
@@ -762,7 +735,7 @@ SessionPool.prototype.prepareTransaction_ = function(session, options) {
  * @returns {Promise}
  */
 SessionPool.prototype.race_ = function(fn) {
-  var acquireTimeout = this.options.acquireTimeout;
+  var timeout = this.options.acquireTimeout;
   var promises = [
     this.onClose_.then(function() {
       throw new Error('Database is closed.');
@@ -770,13 +743,103 @@ SessionPool.prototype.race_ = function(fn) {
     this.acquireQueue_.add(fn),
   ];
 
-  if (!is.infinite(acquireTimeout)) {
+  if (!is.infinite(timeout)) {
     promises.push(
-      delay.reject(acquireTimeout, new Error('Timed out acquiring session.'))
+      delay.reject(timeout, new Error('Timed out acquiring session.'))
     );
   }
 
   return Promise.race(promises);
+};
+
+/**
+ * Releases a session back into the pool.
+ *
+ * @private
+ *
+ * @fires SessionPool#available
+ * @param {Session} session The session object.
+ */
+SessionPool.prototype.release_ = function(session) {
+  var index = this.borrowed_.indexOf(session);
+
+  this.borrowed_.splice(index, 1);
+  this.getSessionGroup_(session).unshift(session);
+
+  this.emit('available');
+};
+
+/**
+ * Creates a session object.
+ *
+ * @private
+ *
+ * @returns {Session}
+ */
+SessionPool.prototype.session_ = function() {
+  var session = this.database.session_();
+  session.lastUsed = Date.now();
+  return session;
+};
+
+/**
+ * Removes a session from its group.
+ *
+ * @private
+ *
+ * @param {Session} session The session to splice.
+ */
+SessionPool.prototype.spliceSession_ = function(session) {
+  var group = this.getSessionGroup_(session);
+  var index = group.indexOf(session);
+
+  group.splice(index, 1);
+};
+
+/**
+ * Starts housekeeping (pinging/evicting) of idle sessions.
+ *
+ * @private
+ */
+SessionPool.prototype.startHouseKeeping_ = function() {
+  var self = this;
+  var keepAliveInterval = this.options.keepAlive * 60000;
+  var evictInterval = this.options.idlesAfter * 60000;
+
+  this.once('available', onavailable);
+  this.once('close', onclose);
+
+  function onempty() {
+    self.once('available', onavailable);
+    self.stopHouseKeeping_();
+  }
+
+  function onavailable() {
+    self.pingHandle_ = setInterval(function() {
+      self.pingIdleSessions_();
+    }, keepAliveInterval);
+
+    self.evictHandle_ = setInterval(function() {
+      self.evictIdleSessions_();
+    }, evictInterval);
+
+    self.once('empty', onempty);
+  }
+
+  function onclose() {
+    self.removeListener('available', onavailable);
+    self.removeListener('empty', onempty);
+  }
+};
+
+/**
+ * Stops housekeeping.
+ *
+ * @private
+ */
+SessionPool.prototype.stopHouseKeeping_ = function() {
+  clearInterval(this.pingHandle_);
+  clearInterval(this.evictHandle_);
 };
 
 module.exports = SessionPool;
