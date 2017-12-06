@@ -798,7 +798,9 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(TransactionRequest);
+common.util.promisifyAll(TransactionRequest, {
+  exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert']
+});
 
 /**
  * Reference to the {@link TransactionRequest} class.
