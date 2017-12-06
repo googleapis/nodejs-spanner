@@ -753,9 +753,7 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
     if (missingColumns.length > 0) {
       throw new Error(
         [
-          `Row at index ${
-            index
-          } does not contain the correct number of columns.`,
+          `Row at index ${index} does not contain the correct number of columns.`,
           `Missing columns: ${JSON.stringify(missingColumns)}`,
         ].join('\n\n')
       );
