@@ -38,7 +38,7 @@ var fakeUtil = extend({}, util, {
 
     promisified = true;
     assert.deepEqual(options, {
-      exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert']
+      exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
     });
     util.promisifyAll(Class, options);
   },

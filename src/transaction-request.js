@@ -799,7 +799,7 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
  * that a callback is omitted.
  */
 common.util.promisifyAll(TransactionRequest, {
-  exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert']
+  exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
 });
 
 /**
