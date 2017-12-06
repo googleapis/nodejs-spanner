@@ -4,7 +4,7 @@ Implements [YCSB](https://github.com/brianfrankcooper/YCSB) clients for cloud
 Spanner in Node.js.
 
 Visit [YCSBClientCloudSpanner](https://github.com/haih-g/YCSBClientCloudSpanner)
-for a more details.
+for more details.
 
 ## Setup
 
