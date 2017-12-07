@@ -3070,6 +3070,34 @@ describe('Spanner', function() {
     });
 
     describe('read/write', function() {
+      it('should throw an error for mismatched columns', function(done) {
+        database.runTransaction(function(err, transaction) {
+          assert.ifError(err);
+
+          var rows = [
+            {
+              Key: 'k1',
+              StringValue: 'hi',
+            },
+            {
+              Key: 'k2',
+              NumberValue: 4,
+            },
+          ];
+
+          var expectedMessage = [
+            'Row at index 0 does not contain the correct number of columns.',
+            'Missing columns: ["NumberValue"]',
+          ].join('\n\n');
+
+          assert.throws(function() {
+            transaction.insert(table.name, rows);
+          }, expectedMessage);
+
+          transaction.end(done);
+        });
+      });
+
       it('should commit a transaction', function(done) {
         database.runTransaction(function(err, transaction) {
           assert.ifError(err);
