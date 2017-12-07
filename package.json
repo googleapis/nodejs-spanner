@@ -59,6 +59,7 @@
     "array-uniq": "^1.0.3",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.0",
+    "delay": "^2.0.0",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.0",
     "generic-pool": "^3.1.4",
@@ -72,6 +73,8 @@
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^1.0.1",
     "methmeth": "^1.1.0",
+    "modelo": "^4.2.0",
+    "p-queue": "^2.2.0",
     "protobufjs": "^6.8.0",
     "safe-buffer": "^5.1.1",
     "split-array-stream": "^1.0.0",
@@ -97,6 +100,7 @@
     "power-assert": "^1.4.4",
     "prettier": "^1.7.4",
     "proxyquire": "^1.7.11",
+    "time-span": "^2.0.0",
     "uuid": "^3.0.1"
   }
 }

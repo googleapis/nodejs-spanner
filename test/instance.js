@@ -372,6 +372,24 @@ describe('Instance', function() {
       instance.parent = SPANNER;
     });
 
+    it('should close all cached databases', function(done) {
+      var closed = false;
+
+      instance.databases_.set('key', {
+        close: function() {
+          closed = true;
+        },
+      });
+
+      instance.request = function() {
+        assert.strictEqual(closed, true);
+        assert.strictEqual(instance.databases_.size, 0);
+        done();
+      };
+
+      instance.delete(assert.ifError);
+    });
+
     it('should make the correct request', function(done) {
       instance.request = function(config, callback) {
         assert.strictEqual(config.client, 'InstanceAdminClient');

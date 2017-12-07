@@ -699,11 +699,13 @@ Spanner.prototype.instance = function(name) {
     throw new Error('A name is required to access an Instance object.');
   }
 
-  if (!this.instances_.has(name)) {
-    this.instances_.set(name, new Instance(this, name));
+  var key = name.split('/').pop();
+
+  if (!this.instances_.has(key)) {
+    this.instances_.set(key, new Instance(this, name));
   }
 
-  return this.instances_.get(name);
+  return this.instances_.get(key);
 };
 
 /**

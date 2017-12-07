@@ -19,9 +19,10 @@
 var arrify = require('arrify');
 var common = require('@google-cloud/common');
 var commonGrpc = require('@google-cloud/common-grpc');
+var events = require('events');
 var extend = require('extend');
 var is = require('is');
-var util = require('util');
+var modelo = require('modelo');
 
 var codec = require('./codec.js');
 var PartialResultStream = require('./partial-result-stream.js');
@@ -51,7 +52,10 @@ function Database(instance, name, poolOptions) {
   this.requestStream = instance.requestStream;
 
   this.formattedName_ = Database.formatName_(instance.formattedName_, name);
+
   this.pool_ = new SessionPool(this, poolOptions);
+  this.pool_.on('error', this.emit.bind(this, 'error'));
+  this.pool_.open();
 
   var methods = {
     /**
@@ -186,9 +190,11 @@ function Database(instance, name, poolOptions) {
       return instance.createDatabase(self.formattedName_, options, callback);
     },
   });
+
+  events.EventEmitter.call(this);
 }
 
-util.inherits(Database, commonGrpc.ServiceObject);
+modelo.inherits(Database, commonGrpc.ServiceObject, events.EventEmitter);
 
 /**
  * Format the database name to include the instance name.
@@ -241,15 +247,8 @@ Database.formatName_ = function(instanceName, name) {
 Database.prototype.close = function(callback) {
   var self = this;
 
-  this.pool_.clear().then(
-    function() {
-      self.parent.databases_.delete(self.id);
-      callback(null);
-    },
-    function(err) {
-      callback(err || new Error('Unable to close database connection.'));
-    }
-  );
+  this.parent.databases_.delete(self.id);
+  this.pool_.close().then(() => callback(null), callback);
 };
 
 /**
@@ -368,18 +367,21 @@ Database.prototype.createTable = function(schema, callback) {
  * });
  */
 Database.prototype.delete = function(callback) {
+  var self = this;
   var reqOpts = {
     database: this.formattedName_,
   };
 
-  return this.request(
-    {
-      client: 'DatabaseAdminClient',
-      method: 'dropDatabase',
-      reqOpts: reqOpts,
-    },
-    callback
-  );
+  this.close(function() {
+    self.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'dropDatabase',
+        reqOpts: reqOpts,
+      },
+      callback
+    );
+  });
 };
 
 /**
@@ -540,7 +542,7 @@ Database.prototype.getSchema = function(callback) {
  * });
  */
 Database.prototype.getTransaction = function(options, callback) {
-  var self = this;
+  var pool = this.pool_;
 
   if (is.fn(options)) {
     callback = options;
@@ -548,30 +550,21 @@ Database.prototype.getTransaction = function(options, callback) {
   }
 
   if (!options || !options.readOnly) {
-    this.pool_.getWriteSession(function(err, session, transaction) {
-      callback(err, transaction);
-    });
+    pool.getWriteSession().then(function(session) {
+      callback(null, session.txn);
+    }, callback);
     return;
   }
 
-  this.pool_.getSession(function(err, session) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
-    var transaction = self.pool_.createTransaction_(session, options);
-
-    transaction.begin(function(err) {
-      if (err) {
-        transaction.end();
-        callback(err);
-        return;
-      }
-
+  pool
+    .getSession()
+    .then(function(session) {
+      return pool.createTransaction_(session, options);
+    })
+    .then(function(transaction) {
       callback(null, transaction);
-    });
-  });
+    })
+    .catch(callback);
 };
 
 /**
@@ -1207,29 +1200,6 @@ Database.prototype.createSession = function(options, callback) {
       callback(null, session, resp);
     }
   );
-};
-
-/**
- * Get a database session.
- *
- * @private
- *
- * @param {function} callback The callback function.
- * @param {?error} callback.err An error returned while getting the session.
- * @param {Session} session The session object.
- *
- * @example
- * database.getSession(function(err, session) {});
- *
- * //-
- * // If the callback is omitted, we'll return a Promise.
- * //-
- * database.getSession_().then(function(data) {
- *   const session = data[0];
- * });
- */
-Database.prototype.getSession_ = function(callback) {
-  this.pool_.getSession(callback);
 };
 
 /**
