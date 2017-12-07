@@ -14,7 +14,7 @@
     "test": "repo-tools test run --cmd npm -- run cover"
   },
   "dependencies": {
-    "@google-cloud/spanner": "0.8.2",
+    "@google-cloud/spanner": "0.9.0",
     "yargs": "10.0.3"
   },
   "devDependencies": {
