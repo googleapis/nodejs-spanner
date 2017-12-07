@@ -37,7 +37,9 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.strictEqual(options, undefined);
+    assert.deepEqual(options, {
+      exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
+    });
     util.promisifyAll(Class, options);
   },
 });
