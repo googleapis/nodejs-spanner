@@ -163,9 +163,8 @@ function queryDataWithIndex(
           ? json.MarketingBudget.value
           : null; // This value is nullable
         console.log(
-          `AlbumId: ${json.AlbumId.value}, AlbumTitle: ${
-            json.AlbumTitle
-          }, MarketingBudget: ${marketingBudget}`
+          `AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
         );
       });
     })
