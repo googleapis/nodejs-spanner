@@ -1610,6 +1610,14 @@ describe('SessionPool', function() {
 
     var _setInterval;
 
+    function FakeTimer() {
+      this.called = false;
+    }
+
+    FakeTimer.prototype.unref = function() {
+      this.called = true;
+    };
+
     before(function() {
       _setInterval = global.setInterval;
     });
@@ -1622,7 +1630,7 @@ describe('SessionPool', function() {
       fakeHandle = 0;
 
       global.setInterval = function() {
-        return fakeHandle++;
+        return new FakeTimer();
       };
     });
 
@@ -1630,8 +1638,20 @@ describe('SessionPool', function() {
       sessionPool.startHouseKeeping_();
       sessionPool.emit('available');
 
-      assert.strictEqual(sessionPool.pingHandle_, 0);
-      assert.strictEqual(sessionPool.evictHandle_, 1);
+      assert(sessionPool.pingHandle_ instanceof FakeTimer);
+      assert(sessionPool.evictHandle_ instanceof FakeTimer);
+    });
+
+    it('should unref the intervals', function() {
+      global.setInterval = function() {
+        return new FakeTimer();
+      };
+
+      sessionPool.startHouseKeeping_();
+      sessionPool.emit('available');
+
+      assert.strictEqual(sessionPool.pingHandle_.called, true);
+      assert.strictEqual(sessionPool.evictHandle_.called, true);
     });
 
     it('should call pingIdleSessions_', function(done) {
@@ -1644,6 +1664,8 @@ describe('SessionPool', function() {
           assert.strictEqual(speed, sessionPool.options.keepAlive * 60000);
           cb();
         }
+
+        return new FakeTimer();
       };
 
       sessionPool.startHouseKeeping_();
@@ -1660,6 +1682,8 @@ describe('SessionPool', function() {
           assert.strictEqual(speed, sessionPool.options.idlesAfter * 60000);
           cb();
         }
+
+        return new FakeTimer();
       };
 
       sessionPool.startHouseKeeping_();
