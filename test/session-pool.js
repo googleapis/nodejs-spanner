@@ -1606,8 +1606,6 @@ describe('SessionPool', function() {
   });
 
   describe('startHouseKeeping_', function() {
-    var fakeHandle;
-
     var _setInterval;
 
     function FakeTimer() {
@@ -1627,8 +1625,6 @@ describe('SessionPool', function() {
     });
 
     beforeEach(function() {
-      fakeHandle = 0;
-
       global.setInterval = function() {
         return new FakeTimer();
       };
