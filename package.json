@@ -34,13 +34,15 @@
     "Evawere Ogbe <eoogbe@gmail.com>",
     "JJ Geewax <jjg@google.com>",
     "Jason Dobry <jdobry@google.com>",
+    "Jeffrey Rennie <rennie@google.com>",
     "Jun Mukai <mukai@google.com>",
     "Luke Sneeringer <lukesneeringer@google.com>",
     "Ryan Matsumoto <ryanmats@google.com>",
     "Song Wang <songwang@google.com>",
     "Stephen Sawchuk <sawchuk@gmail.com>",
     "Tim Swast <swast@google.com>",
-    "Vikas Kedia <vikask@google.com>"
+    "Vikas Kedia <vikask@google.com>",
+    "greenkeeper[bot] <greenkeeper[bot]@users.noreply.github.com>"
   ],
   "scripts": {
     "cover": "nyc --reporter=lcov mocha --require intelli-espower-loader test/*.js && nyc report",
@@ -83,7 +85,7 @@
     "through2": "^2.0.3"
   },
   "devDependencies": {
-    "@google-cloud/nodejs-repo-tools": "^2.1.0",
+    "@google-cloud/nodejs-repo-tools": "^2.1.3",
     "async": "^2.5.0",
     "codecov": "^3.0.0",
     "concat-stream": "^1.6.0",

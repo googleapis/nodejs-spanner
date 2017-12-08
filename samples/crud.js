@@ -152,9 +152,8 @@ function queryData(instanceId, databaseId, projectId) {
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${
-            json.AlbumId.value
-          }, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}`
         );
       });
     })
@@ -207,9 +206,8 @@ function readData(instanceId, databaseId, projectId) {
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${
-            json.AlbumId.value
-          }, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
+            .value}, AlbumTitle: ${json.AlbumTitle}`
         );
       });
     })
