@@ -221,12 +221,8 @@ describe('Spanner', function() {
         return customValue;
       };
 
-      var date = spanner.date(value);
+      var date = Spanner.date(value);
       assert.strictEqual(date, customValue);
-    });
-
-    it('should be a static method', function() {
-      assert(Spanner.date() instanceof fakeCodec.SpannerDate);
     });
   });
 
@@ -240,12 +236,8 @@ describe('Spanner', function() {
         return customValue;
       };
 
-      var float = spanner.float(value);
+      var float = Spanner.float(value);
       assert.strictEqual(float, customValue);
-    });
-
-    it('should be a static method', function() {
-      assert(Spanner.date() instanceof fakeCodec.SpannerDate);
     });
   });
 
@@ -259,12 +251,8 @@ describe('Spanner', function() {
         return customValue;
       };
 
-      var int = spanner.int(value);
+      var int = Spanner.int(value);
       assert.strictEqual(int, customValue);
-    });
-
-    it('should be a static method', function() {
-      assert(Spanner.int() instanceof fakeCodec.Int);
     });
   });
 
