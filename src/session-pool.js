@@ -823,6 +823,9 @@ SessionPool.prototype.startHouseKeeping_ = function() {
       self.evictIdleSessions_();
     }, evictInterval);
 
+    self.pingHandle_.unref();
+    self.evictHandle_.unref();
+
     self.once('empty', onempty);
   }
 
