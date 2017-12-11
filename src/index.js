@@ -215,8 +215,23 @@ util.inherits(Spanner, commonGrpc.Service);
 /**
  * Helper function to get a Cloud Spanner Date object.
  *
- * @param {string|date} value - The date as a string or Date object.
- * @return {object}
+ * @method Spanner.date
+ * @param {string|date} value The date as a string or Date object.
+ * @returns {object}
+ * @see {@link Spanner#date}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const date = Spanner.date('08-20-1969');
+ */
+
+/**
+ * Helper function to get a Cloud Spanner Date object.
+ *
+ * @method Spanner#date
+ * @param {string|date} value The date as a string or Date object.
+ * @returns {object}
+ * @see {@link Spanner.date}
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
@@ -230,8 +245,23 @@ Spanner.prototype.date = Spanner.date = function(value) {
 /**
  * Helper function to get a Cloud Spanner Float64 object.
  *
- * @param {string|number} value - The float as a number or string.
- * @return {object}
+ * @method Spanner.float
+ * @param {string|number} value The float as a number or string.
+ * @returns {object}
+ * @see {@link Spanner#float}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const float = Spanner.float(10);
+ */
+
+/**
+ * Helper function to get a Cloud Spanner Float64 object.
+ *
+ * @method Spanner#float
+ * @param {string|number} value The float as a number or string.
+ * @returns {object}
+ * @see {@link Spanner.float}
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
@@ -245,8 +275,23 @@ Spanner.prototype.float = Spanner.float = function(value) {
 /**
  * Helper function to get a Cloud Spanner Int64 object.
  *
- * @param {string|number} value - The int as a number or string.
- * @return {object}
+ * @method Spanner.int
+ * @param {string|number} value The int as a number or string.
+ * @returns {object}
+ * @see {@link Spanner#int}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const int = Spanner.int(10);
+ */
+
+/**
+ * Helper function to get a Cloud Spanner Int64 object.
+ *
+ * @method Spanner#int
+ * @param {string|number} value The int as a number or string.
+ * @returns {object}
+ * @see {@link Spanner.int}
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
@@ -687,7 +732,7 @@ Spanner.prototype.getInstanceConfigsStream = function(query) {
  * @throws {Error} If a name is not provided.
  *
  * @param {string} name The name of the instance.
- * @return {Instance} An Instance object.
+ * @returns {Instance} An Instance object.
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
@@ -714,7 +759,7 @@ Spanner.prototype.instance = function(name) {
  * @throws {Error} If a name is not provided.
  *
  * @param {string} name The name of the operation.
- * @return {Operation} An Operation object.
+ * @returns {Operation} An Operation object.
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
