@@ -42,15 +42,17 @@ var ABORTED = 10;
  */
 var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
 
-var services = gax.grpc().load({
-  root: path.resolve(__dirname, '../protos'),
-  file: 'google/rpc/error_details.proto',
-},
-'proto',
-{
-  binaryAsBase64: true,
-  convertFieldsToCamelCase: true,
-});
+var services = gax.grpc().load(
+  {
+    root: path.resolve(__dirname, '../protos'),
+    file: 'google/rpc/error_details.proto',
+  },
+  'proto',
+  {
+    binaryAsBase64: true,
+    convertFieldsToCamelCase: true,
+  }
+);
 
 var RetryInfo = services.google.rpc.RetryInfo;
 

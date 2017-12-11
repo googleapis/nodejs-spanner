@@ -53,8 +53,9 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
         rows.forEach(row => {
           const json = row.toJSON();
           console.log(
-            `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-              .value}, AlbumTitle: ${json.AlbumTitle}`
+            `SingerId: ${json.SingerId.value}, AlbumId: ${
+              json.AlbumId.value
+            }, AlbumTitle: ${json.AlbumTitle}`
           );
         });
         const queryTwo = {
@@ -74,8 +75,9 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
         rows.forEach(row => {
           const json = row.toJSON();
           console.log(
-            `SingerId: ${json.SingerId.value}, AlbumId: ${json.AlbumId
-              .value}, AlbumTitle: ${json.AlbumTitle}`
+            `SingerId: ${json.SingerId.value}, AlbumId: ${
+              json.AlbumId.value
+            }, AlbumTitle: ${json.AlbumTitle}`
           );
         });
         console.log('Successfully executed read-only transaction.');
