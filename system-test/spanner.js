@@ -128,11 +128,11 @@ describe('Spanner', function() {
           {
             Key: generateName('id'),
             BoolValue: true,
-            IntValue: spanner.int(10),
+            IntValue: Spanner.int(10),
           },
           {
             Key: generateName('id'),
-            IntValue: spanner.int(10),
+            IntValue: Spanner.int(10),
             BoolValue: true,
           },
         ];
@@ -275,9 +275,9 @@ describe('Spanner', function() {
 
     describe('int64s', function() {
       it('should write int64 values', function(done) {
-        insert({IntValue: spanner.int(1234)}, function(err, row) {
+        insert({IntValue: Spanner.int(1234)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().IntValue, spanner.int(1234));
+          assert.deepEqual(row.toJSON().IntValue, Spanner.int(1234));
           done();
         });
       });
@@ -322,7 +322,7 @@ describe('Spanner', function() {
         insert({IntArray: values}, function(err, row) {
           assert.ifError(err);
 
-          var expected = values.map(spanner.int);
+          var expected = values.map(Spanner.int);
           assert.deepEqual(row.toJSON().IntArray, expected);
           done();
         });
@@ -331,9 +331,9 @@ describe('Spanner', function() {
 
     describe('float64s', function() {
       it('should write float64 values', function(done) {
-        insert({FloatValue: spanner.float(8.2)}, function(err, row) {
+        insert({FloatValue: Spanner.float(8.2)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, spanner.float(8.2));
+          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(8.2));
           done();
         });
       });
@@ -347,9 +347,9 @@ describe('Spanner', function() {
       });
 
       it('should accept a Float object with an Int-like value', function(done) {
-        insert({FloatValue: spanner.float(8)}, function(err, row) {
+        insert({FloatValue: Spanner.float(8)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, spanner.float(8));
+          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(8));
           done();
         });
       });
@@ -357,7 +357,7 @@ describe('Spanner', function() {
       it('should handle Infinity', function(done) {
         insert({FloatValue: Infinity}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, spanner.float(Infinity));
+          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(Infinity));
           done();
         });
       });
@@ -365,7 +365,7 @@ describe('Spanner', function() {
       it('should handle -Infinity', function(done) {
         insert({FloatValue: -Infinity}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, spanner.float(-Infinity));
+          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(-Infinity));
           done();
         });
       });
@@ -400,7 +400,7 @@ describe('Spanner', function() {
         insert({FloatArray: values}, function(err, row) {
           assert.ifError(err);
 
-          var expected = values.map(spanner.float);
+          var expected = values.map(Spanner.float);
           assert.deepEqual(row.toJSON().FloatArray, expected);
           done();
         });
@@ -542,11 +542,11 @@ describe('Spanner', function() {
 
     describe('dates', function() {
       it('should write date values', function(done) {
-        var date = spanner.date();
+        var date = Spanner.date();
 
         insert({DateValue: date}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(spanner.date(row.toJSON().DateValue), date);
+          assert.deepEqual(Spanner.date(row.toJSON().DateValue), date);
           done();
         });
       });
@@ -576,12 +576,12 @@ describe('Spanner', function() {
       });
 
       it('should write date array values', function(done) {
-        var values = [spanner.date(), spanner.date('3-3-1933')];
+        var values = [Spanner.date(), Spanner.date('3-3-1933')];
 
         insert({DateArray: values}, function(err, row) {
           assert.ifError(err);
 
-          var returnedValues = row.toJSON().DateArray.map(spanner.date);
+          var returnedValues = row.toJSON().DateArray.map(Spanner.date);
           assert.deepEqual(returnedValues, values);
 
           done();
@@ -1973,7 +1973,7 @@ describe('Spanner', function() {
 
         describe('date', function() {
           it('should bind the value', function(done) {
-            var date = spanner.date();
+            var date = Spanner.date();
 
             var query = {
               sql: 'SELECT @v',
@@ -1985,7 +1985,7 @@ describe('Spanner', function() {
             database.run(query, function(err, rows) {
               assert.ifError(err);
 
-              var returnedDate = spanner.date(rows[0][0].value);
+              var returnedDate = Spanner.date(rows[0][0].value);
               assert.deepEqual(returnedDate, date);
 
               done();
@@ -2012,8 +2012,8 @@ describe('Spanner', function() {
 
           it('should bind arrays', function(done) {
             var values = [
-              spanner.date(),
-              spanner.date(new Date('3-3-1999')),
+              Spanner.date(),
+              Spanner.date(new Date('3-3-1999')),
               null,
             ];
 
@@ -2028,7 +2028,7 @@ describe('Spanner', function() {
               assert.ifError(err);
 
               var returnedValues = rows[0][0].value.map(function(val) {
-                return is.nil(val) ? val : spanner.date(val);
+                return is.nil(val) ? val : Spanner.date(val);
               });
 
               assert.deepEqual(returnedValues, values);
