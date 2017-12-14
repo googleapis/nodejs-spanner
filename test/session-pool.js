@@ -1737,6 +1737,6 @@ describe('SessionPool', function() {
   });
 
   function isAround(expected, actual) {
-    return actual > expected - 10 && actual < expected + 10;
+    return actual > expected - 10 && actual < expected + 50;
   }
 });

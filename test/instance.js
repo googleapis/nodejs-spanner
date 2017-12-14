@@ -35,12 +35,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, [
-      'database',
-      'delete',
-      'getMetadata',
-      'setMetadata',
-    ]);
+    assert.deepEqual(options.exclude, ['database']);
   },
 });
 
@@ -378,12 +373,27 @@ describe('Instance', function() {
       instance.databases_.set('key', {
         close: function() {
           closed = true;
+          return Promise.resolve();
         },
       });
 
       instance.request = function() {
         assert.strictEqual(closed, true);
         assert.strictEqual(instance.databases_.size, 0);
+        done();
+      };
+
+      instance.delete(assert.ifError);
+    });
+
+    it('should ignore closing errors', function(done) {
+      instance.databases_.set('key', {
+        close: function() {
+          return Promise.reject(new Error('err'));
+        },
+      });
+
+      instance.request = function() {
         done();
       };
 

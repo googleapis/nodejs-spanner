@@ -151,7 +151,9 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
         // Makes sure the second album's budget is sufficient
         if (secondBudget < minimumAmountToTransfer) {
           throw new Error(
-            `The second album's budget (${secondBudget}) is less than the minimum required amount to transfer.`
+            `The second album's budget (${
+              secondBudget
+            }) is less than the minimum required amount to transfer.`
           );
         }
       }),
@@ -195,7 +197,9 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
+          `Successfully executed read-write transaction to transfer ${
+            transferAmount
+          } from Album 2 to Album 1.`
         );
       })
       .catch(err => {
