@@ -38,7 +38,15 @@ const spanner = new Spanner({
 test.before(tools.checkCredentials);
 test.before(async () => {
   const instance = spanner.instance(INSTANCE_ID);
+
+  try {
+    await instance.delete();
+  } catch (err) {
+    // Ignore error
+  }
+
   const database = instance.database(DATABASE_ID);
+
   try {
     await database.delete();
   } catch (err) {

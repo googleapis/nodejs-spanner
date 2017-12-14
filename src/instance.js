@@ -427,26 +427,30 @@ Instance.prototype.delete = function(callback) {
     name: this.formattedName_,
   };
 
-  this.databases_.forEach(function(database) {
-    database.close();
-  });
+  Promise.all(
+    Array.from(this.databases_.values()).map(function(database) {
+      return database.close();
+    })
+  )
+    .catch(common.util.noop)
+    .then(function() {
+      self.databases_.clear();
 
-  this.databases_.clear();
+      self.request(
+        {
+          client: 'InstanceAdminClient',
+          method: 'deleteInstance',
+          reqOpts: reqOpts,
+        },
+        function(err, resp) {
+          if (!err) {
+            self.parent.instances_.delete(self.id);
+          }
 
-  this.request(
-    {
-      client: 'InstanceAdminClient',
-      method: 'deleteInstance',
-      reqOpts: reqOpts,
-    },
-    function(err, resp) {
-      if (!err) {
-        self.parent.instances_.delete(self.id);
-      }
-
-      callback(err, resp);
-    }
-  );
+          callback(err, resp);
+        }
+      );
+    });
 };
 
 /**
@@ -715,7 +719,7 @@ Instance.prototype.setMetadata = function(metadata, callback) {
  * that a callback is omitted.
  */
 common.util.promisifyAll(Instance, {
-  exclude: ['database', 'delete', 'getMetadata', 'setMetadata'],
+  exclude: ['database'],
 });
 
 /**

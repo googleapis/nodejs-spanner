@@ -265,7 +265,7 @@ describe('SessionPool', function() {
       };
 
       return sessionPool.fill().then(function() {
-        assert(isAround(end(), 500));
+        assert(isAround(500, end()));
       });
     });
   });
@@ -1737,6 +1737,6 @@ describe('SessionPool', function() {
   });
 
   function isAround(expected, actual) {
-    return actual > expected - 10 && actual < expected + 10;
+    return actual > expected - 10 && actual < expected + 50;
   }
 });
