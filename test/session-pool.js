@@ -23,6 +23,7 @@ var events = require('events');
 var extend = require('extend');
 var PQueue = require('p-queue');
 var proxyquire = require('proxyquire');
+var stackTrace = require('stack-trace');
 var through = require('through2');
 var timeSpan = require('time-span');
 
@@ -30,6 +31,8 @@ var pQueueOverride = null;
 function FakePQueue(options) {
   return new (pQueueOverride || PQueue)(options);
 }
+
+var fakeStackTrace = extend({}, stackTrace);
 
 describe('SessionPool', function() {
   var SessionPool;
@@ -43,6 +46,7 @@ describe('SessionPool', function() {
   before(function() {
     SessionPool = proxyquire('../src/session-pool.js', {
       'p-queue': FakePQueue,
+      'stack-trace': fakeStackTrace,
     });
   });
 
@@ -52,6 +56,7 @@ describe('SessionPool', function() {
 
   afterEach(function() {
     pQueueOverride = null;
+    fakeStackTrace.get = stackTrace.get;
   });
 
   describe('instantiation', function() {
@@ -130,6 +135,56 @@ describe('SessionPool', function() {
 
     it('should inherit from EventEmitter', function() {
       assert(sessionPool instanceof events.EventEmitter);
+    });
+  });
+
+  describe('formatTrace_', function() {
+    var fakeFileName = 'path/to/file.js';
+    var fakeLineNumber = '99';
+    var fakeColumnNumber = '13';
+    var file = `${fakeFileName}:${fakeLineNumber}:${fakeColumnNumber}`;
+
+    var fakeFunction;
+    var fakeMethod;
+
+    var fakeTrace = [
+      {},
+      {},
+      {
+        getFunctionName: function() {
+          return fakeFunction;
+        },
+        getMethodName: function() {
+          return fakeMethod;
+        },
+        getFileName: function() {
+          return fakeFileName;
+        },
+        getLineNumber: function() {
+          return fakeLineNumber;
+        },
+        getColumnNumber: function() {
+          return fakeColumnNumber;
+        },
+      },
+    ];
+
+    it('should return a trace with the method name', function() {
+      fakeMethod = 'MyClass.myMethod';
+
+      var expected = `Session leak detected!\n    at ${fakeMethod} (${file})`;
+      var actual = SessionPool.formatTrace_(fakeTrace);
+
+      assert.strictEqual(expected, actual);
+    });
+
+    it('should return a trace with the function name', function() {
+      fakeFunction = 'myFunction';
+
+      var expected = `Session leak detected!\n    at ${fakeFunction} (${file})`;
+      var actual = SessionPool.formatTrace_(fakeTrace);
+
+      assert.strictEqual(expected, actual);
     });
   });
 
@@ -270,6 +325,41 @@ describe('SessionPool', function() {
     });
   });
 
+  describe('getLeaks', function() {
+    var formatTrace_;
+
+    before(function() {
+      formatTrace_ = SessionPool.formatTrace_;
+    });
+
+    after(function() {
+      SessionPool.formatTrace_ = formatTrace_;
+    });
+
+    it('should return a list of leaks', function() {
+      var fakeTraces = ['abc', 'def'];
+
+      sessionPool.traces_ = new Map(
+        fakeTraces.map(function(t, i) {
+          return [i, t];
+        })
+      );
+
+      var formatCallCount = 0;
+      SessionPool.formatTrace_ = function(trace) {
+        assert.strictEqual(trace, fakeTraces[formatCallCount++]);
+        return trace
+          .split('')
+          .reverse()
+          .join('');
+      };
+
+      var traces = sessionPool.getLeaks();
+
+      assert.deepEqual(traces, ['cba', 'fed']);
+    });
+  });
+
   describe('getSession', function() {
     it('should call through to acquireSession_', function() {
       var fakeSession = {};
@@ -371,6 +461,19 @@ describe('SessionPool', function() {
       assert.throws(function() {
         sessionPool.release({});
       }, /Unable to release unknown session\./);
+    });
+
+    it('should delete the stack trace associated with the session', function() {
+      var fakeId = 'abc';
+      var fakeSession = {id: fakeId};
+
+      sessionPool.borrowed_ = [fakeSession];
+      sessionPool.traces_.set(fakeId, [{}]);
+
+      sessionPool.release(fakeSession);
+
+      var hasTrace = sessionPool.traces_.has(fakeId);
+      assert.strictEqual(hasTrace, false);
     });
 
     it('should release readonly sessions', function(done) {
@@ -754,6 +857,25 @@ describe('SessionPool', function() {
         assert.strictEqual(session, fakeSession);
         assert(isAround(session.lastUsed, Date.now()));
         assert.strictEqual(borrowCalled, true);
+      });
+    });
+
+    it('should capture the stack trace', function() {
+      var fakeId = 'abc';
+      var fakeSession = {id: fakeId};
+      var fakeTrace = [{}];
+
+      fakeStackTrace.get = function() {
+        return fakeTrace;
+      };
+
+      sessionPool.getSession_ = function() {
+        return Promise.resolve(fakeSession);
+      };
+
+      return sessionPool.acquireSession_().then(function() {
+        var trace = sessionPool.traces_.get(fakeId);
+        assert.strictEqual(trace, fakeTrace);
       });
     });
 

@@ -130,9 +130,8 @@ util.inherits(SessionPool, EventEmitter);
  */
 SessionPool.formatTrace_ = function(trace) {
   var formatted = trace.slice(2).map(function(t) {
-    return `    at ${
-      t.getFunctionName() || t.getMethodName()
-    } (${t.getFileName()}:${t.getLineNumber()}:${t.getColumnNumber()})`;
+    return `    at ${t.getFunctionName() ||
+      t.getMethodName()} (${t.getFileName()}:${t.getLineNumber()}:${t.getColumnNumber()})`;
   });
 
   return `Session leak detected!\n${formatted.join('\n')}`;
