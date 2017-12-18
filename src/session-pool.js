@@ -121,7 +121,12 @@ function SessionPool(database, options) {
 util.inherits(SessionPool, EventEmitter);
 
 /**
+ * Formats stack trace objects into Node-like stack trace.
  *
+ * @private
+ *
+ * @param {object[]} trace The trace object.
+ * @return {string}
  */
 SessionPool.formatTrace_ = function(trace) {
   var formatted = trace.slice(2).map(function(t) {
@@ -206,7 +211,9 @@ SessionPool.prototype.fill = function() {
 };
 
 /**
+ * Returns stack traces for sessions that have not been released.
  *
+ * @return {string[]}
  */
 SessionPool.prototype.getLeaks = function() {
   return Array.from(this.traces_.values()).map(SessionPool.formatTrace_);

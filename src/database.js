@@ -243,6 +243,18 @@ Database.formatName_ = function(instanceName, name) {
  *     // Error handling omitted.
  *   }
  * });
+ *
+ * //-
+ * // In the event of a session leak, the error object will contain a
+ * // `messages` field.
+ * //-
+ * database.close(function(err) {
+ *   if (err && err.messages) {
+ *     err.messages.forEach(function(message) {
+ *       console.error(message);
+ *     });
+ *   }
+ * });
  */
 Database.prototype.close = function(callback) {
   var self = this;
