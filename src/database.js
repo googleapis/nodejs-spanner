@@ -243,12 +243,31 @@ Database.formatName_ = function(instanceName, name) {
  *     // Error handling omitted.
  *   }
  * });
+ *
+ * //-
+ * // In the event of a session leak, the error object will contain a
+ * // `messages` field.
+ * //-
+ * database.close(function(err) {
+ *   if (err && err.messages) {
+ *     err.messages.forEach(function(message) {
+ *       console.error(message);
+ *     });
+ *   }
+ * });
  */
 Database.prototype.close = function(callback) {
   var self = this;
+  var leakError = null;
+  var leaks = this.pool_.getLeaks();
+
+  if (leaks.length) {
+    leakError = new Error(`${leaks.length} session leak(s) found.`);
+    leakError.messages = leaks;
+  }
 
   this.parent.databases_.delete(self.id);
-  this.pool_.close().then(() => callback(null), callback);
+  this.pool_.close().then(() => callback(leakError), callback);
 };
 
 /**

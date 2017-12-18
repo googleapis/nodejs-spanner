@@ -80,6 +80,7 @@
     "protobufjs": "^6.8.0",
     "safe-buffer": "^5.1.1",
     "split-array-stream": "^1.0.0",
+    "stack-trace": "0.0.10",
     "stream-events": "^1.0.1",
     "string-format-obj": "^1.1.0",
     "through2": "^2.0.3"
