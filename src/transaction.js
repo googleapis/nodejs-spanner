@@ -125,7 +125,7 @@ function Transaction(session, options) {
    */
   this.transaction = true;
 
-  options = options || {};
+  options = extend({}, options);
 
   this.queuedMutations_ = [];
   this.runFn_ = null;
@@ -133,7 +133,7 @@ function Transaction(session, options) {
   this.beginTime_ = null;
   this.timeout_ = DEFAULT_TRANSACTION_TIMEOUT;
 
-  if (options.timeout) {
+  if (is.number(options.timeout)) {
     this.timeout_ = options.timeout;
     delete options.timeout;
   }

@@ -151,19 +151,6 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.runFn_, null);
     });
 
-    it('should capture the user timeout', function() {
-      var timeout = 321;
-      var transaction = new Transaction(SESSION, {timeout});
-
-      assert.strictEqual(transaction.timeout_, timeout);
-      // check to make sure the timeout isn't captured for requests
-      assert.deepEqual(transaction.calledWith_[0], {});
-    });
-
-    it('should default to the commit timeout', function() {
-      assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
-    });
-
     it('should inherit from TransactionRequest', function() {
       var OPTIONS = {};
 
@@ -171,6 +158,36 @@ describe('Transaction', function() {
 
       assert(transaction instanceof FakeTransactionRequest);
       assert(transaction.calledWith_[0], OPTIONS);
+    });
+
+    describe('timeout_', function() {
+      it('should default to the commit timeout', function() {
+        assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
+      });
+
+      it('should capture the user timeout', function() {
+        var timeout = 321;
+        var transaction = new Transaction(SESSION, {timeout});
+
+        assert.strictEqual(transaction.timeout_, timeout);
+        // check to make sure the timeout isn't captured for requests
+        assert.deepEqual(transaction.calledWith_[0], {});
+      });
+
+      it('should ignore non-number values', function() {
+        var timeout = 'abc';
+        var transaction = new Transaction(SESSION, {timeout});
+
+        assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
+      });
+
+      it('should not alter user options', function() {
+        var options = {timeout: 1234};
+        var optionsCopy = Object.assign({}, options);
+        var transaction = new Transaction(SESSION, options);
+
+        assert.deepEqual(options, optionsCopy);
+      });
     });
   });
 
