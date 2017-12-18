@@ -21,6 +21,7 @@ var delay = require('delay');
 var extend = require('extend');
 var is = require('is');
 var PQueue = require('p-queue');
+var stackTrace = require('stack-trace');
 var streamEvents = require('stream-events');
 var through = require('through2');
 var util = require('util');
@@ -112,10 +113,25 @@ function SessionPool(database, options) {
   this.evictHandle_ = null;
   this.pingHandle_ = null;
 
+  this.traces_ = new Map();
+
   EventEmitter.call(this);
 }
 
 util.inherits(SessionPool, EventEmitter);
+
+/**
+ *
+ */
+SessionPool.formatTrace_ = function(trace) {
+  var formatted = trace.slice(2).map(function(t) {
+    return `  at ${
+      t.getFunctionName() || t.getMethodName()
+    } (${t.getFileName()}:${t.getLineNumber()}:${t.getColumnNumber()})`;
+  });
+
+  return `Session leak detected!\n${formatted.join('\n')}`;
+};
 
 /**
  * Returns the number of available sessions.
@@ -190,6 +206,13 @@ SessionPool.prototype.fill = function() {
 };
 
 /**
+ *
+ */
+SessionPool.prototype.getLeaks = function() {
+  return Array.from(this.traces_.values()).map(SessionPool.formatTrace_);
+};
+
+/**
  * Retrieve a read session.
  *
  * @returns {Promise<Session>}
@@ -253,6 +276,8 @@ SessionPool.prototype.release = function(session) {
   if (this.borrowed_.indexOf(session) === -1) {
     throw new Error('Unable to release unknown session.');
   }
+
+  this.traces_.delete(session.id);
 
   if (session.type !== READWRITE) {
     this.release_(session);
@@ -361,9 +386,13 @@ SessionPool.prototype.acquireSession_ = function(type) {
     return Promise.reject(new Error('Database is closed.'));
   }
 
+  var trace = stackTrace.get();
+
   return this.getSession_(type).then(function(session) {
     session.lastUsed = Date.now();
+
     self.borrowSession_(session);
+    self.traces_.set(session.id, trace);
 
     if (!self.available()) {
       self.emit('empty');
