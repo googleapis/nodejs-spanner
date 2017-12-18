@@ -125,7 +125,7 @@ util.inherits(SessionPool, EventEmitter);
  */
 SessionPool.formatTrace_ = function(trace) {
   var formatted = trace.slice(2).map(function(t) {
-    return `  at ${
+    return `    at ${
       t.getFunctionName() || t.getMethodName()
     } (${t.getFileName()}:${t.getLineNumber()}:${t.getColumnNumber()})`;
   });
