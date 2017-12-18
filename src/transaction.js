@@ -24,6 +24,10 @@ var path = require('path');
 var through = require('through2');
 var util = require('util');
 
+var config = require('./v1/spanner_client_config.json').interfaces[
+  'google.spanner.v1.Spanner'
+];
+
 var codec = require('./codec.js');
 var PartialResultStream = require('./partial-result-stream.js');
 var TransactionRequest = require('./transaction-request.js');
@@ -41,6 +45,13 @@ var ABORTED = 10;
  * @private
  */
 var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
+
+/**
+ * Default timeout for Transactions.
+ *
+ * @private
+ */
+var DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
 var services = gax.grpc().load(
   {
@@ -117,7 +128,7 @@ function Transaction(session, options) {
   this.queuedMutations_ = [];
   this.runFn_ = null;
 
-  this.timeout_ = 60000;
+  this.timeout_ = DEFAULT_TRANSACTION_TIMEOUT;
   this.beginTime_ = null;
 
   TransactionRequest.call(this, options);

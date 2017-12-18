@@ -79,6 +79,19 @@ var fakeCodec = {
   encode: util.noop,
 };
 
+var FAKE_COMMIT_TIMEOUT = 12345;
+var fakeConfig = {
+  interfaces: {
+    'google.spanner.v1.Spanner': {
+      methods: {
+        Commit: {
+          timeout_millis: FAKE_COMMIT_TIMEOUT,
+        },
+      },
+    },
+  },
+};
+
 describe('Transaction', function() {
   var TransactionCached;
   var Transaction;
@@ -103,6 +116,7 @@ describe('Transaction', function() {
       './codec.js': fakeCodec,
       './partial-result-stream.js': FakePartialResultStream,
       './transaction-request.js': FakeTransactionRequest,
+      './v1/spanner_client_config.json': fakeConfig,
     });
 
     TransactionCached = extend({}, Transaction);
@@ -135,6 +149,10 @@ describe('Transaction', function() {
 
     it('should initialize a null run function', function() {
       assert.strictEqual(transaction.runFn_, null);
+    });
+
+    it('should capture the commit timeout', function() {
+      assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
     });
 
     it('should inherit from TransactionRequest', function() {
