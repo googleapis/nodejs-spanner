@@ -186,6 +186,7 @@ describe('Transaction', function() {
         var optionsCopy = Object.assign({}, options);
         var transaction = new Transaction(SESSION, options);
 
+        assert.strictEqual(transaction.timeout_, options.timeout);
         assert.deepEqual(options, optionsCopy);
       });
     });
