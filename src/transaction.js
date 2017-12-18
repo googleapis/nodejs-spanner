@@ -71,7 +71,7 @@ var RetryInfo = services.google.rpc.RetryInfo;
  * Read/write transaction options.
  *
  * @typedef {object} TransactionOptions
- * @property {number} [timeout=60000] Specify a timeout (in milliseconds) for
+ * @property {number} [timeout=3600000] Specify a timeout (in milliseconds) for
  *     the transaction. The transaction will be ran in its entirety, however if
  *     an abort error is returned the transaction will be retried if the timeout
  *     has not been met.
