@@ -125,11 +125,18 @@ function Transaction(session, options) {
    */
   this.transaction = true;
 
+  options = options || {};
+
   this.queuedMutations_ = [];
   this.runFn_ = null;
 
-  this.timeout_ = DEFAULT_TRANSACTION_TIMEOUT;
   this.beginTime_ = null;
+  this.timeout_ = DEFAULT_TRANSACTION_TIMEOUT;
+
+  if (options.timeout) {
+    this.timeout_ = options.timeout;
+    delete options.timeout;
+  }
 
   TransactionRequest.call(this, options);
 }

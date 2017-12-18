@@ -151,7 +151,16 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.runFn_, null);
     });
 
-    it('should capture the commit timeout', function() {
+    it('should capture the user timeout', function() {
+      var timeout = 321;
+      var transaction = new Transaction(SESSION, {timeout});
+
+      assert.strictEqual(transaction.timeout_, timeout);
+      // check to make sure the timeout isn't captured for requests
+      assert.deepEqual(transaction.calledWith_[0], {});
+    });
+
+    it('should default to the commit timeout', function() {
       assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
     });
 
