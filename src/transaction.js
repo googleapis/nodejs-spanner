@@ -24,6 +24,10 @@ var path = require('path');
 var through = require('through2');
 var util = require('util');
 
+var config = require('./v1/spanner_client_config.json').interfaces[
+  'google.spanner.v1.Spanner'
+];
+
 var codec = require('./codec.js');
 var PartialResultStream = require('./partial-result-stream.js');
 var TransactionRequest = require('./transaction-request.js');
@@ -41,6 +45,13 @@ var ABORTED = 10;
  * @private
  */
 var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
+
+/**
+ * Default timeout for Transactions.
+ *
+ * @private
+ */
+var DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
 var services = gax.grpc().load(
   {
@@ -60,7 +71,7 @@ var RetryInfo = services.google.rpc.RetryInfo;
  * Read/write transaction options.
  *
  * @typedef {object} TransactionOptions
- * @property {number} [timeout=60000] Specify a timeout (in milliseconds) for
+ * @property {number} [timeout=3600000] Specify a timeout (in milliseconds) for
  *     the transaction. The transaction will be ran in its entirety, however if
  *     an abort error is returned the transaction will be retried if the timeout
  *     has not been met.
@@ -114,11 +125,18 @@ function Transaction(session, options) {
    */
   this.transaction = true;
 
+  options = extend({}, options);
+
   this.queuedMutations_ = [];
   this.runFn_ = null;
 
-  this.timeout_ = 60000;
   this.beginTime_ = null;
+  this.timeout_ = DEFAULT_TRANSACTION_TIMEOUT;
+
+  if (is.number(options.timeout)) {
+    this.timeout_ = options.timeout;
+    delete options.timeout;
+  }
 
   TransactionRequest.call(this, options);
 }

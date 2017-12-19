@@ -79,6 +79,19 @@ var fakeCodec = {
   encode: util.noop,
 };
 
+var FAKE_COMMIT_TIMEOUT = 12345;
+var fakeConfig = {
+  interfaces: {
+    'google.spanner.v1.Spanner': {
+      methods: {
+        Commit: {
+          timeout_millis: FAKE_COMMIT_TIMEOUT,
+        },
+      },
+    },
+  },
+};
+
 describe('Transaction', function() {
   var TransactionCached;
   var Transaction;
@@ -103,6 +116,7 @@ describe('Transaction', function() {
       './codec.js': fakeCodec,
       './partial-result-stream.js': FakePartialResultStream,
       './transaction-request.js': FakeTransactionRequest,
+      './v1/spanner_client_config.json': fakeConfig,
     });
 
     TransactionCached = extend({}, Transaction);
@@ -144,6 +158,37 @@ describe('Transaction', function() {
 
       assert(transaction instanceof FakeTransactionRequest);
       assert(transaction.calledWith_[0], OPTIONS);
+    });
+
+    describe('timeout_', function() {
+      it('should default to the commit timeout', function() {
+        assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
+      });
+
+      it('should capture the user timeout', function() {
+        var timeout = 321;
+        var transaction = new Transaction(SESSION, {timeout});
+
+        assert.strictEqual(transaction.timeout_, timeout);
+        // check to make sure the timeout isn't captured for requests
+        assert.deepEqual(transaction.calledWith_[0], {});
+      });
+
+      it('should ignore non-number values', function() {
+        var timeout = 'abc';
+        var transaction = new Transaction(SESSION, {timeout});
+
+        assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
+      });
+
+      it('should not alter user options', function() {
+        var options = {timeout: 1234};
+        var optionsCopy = Object.assign({}, options);
+        var transaction = new Transaction(SESSION, options);
+
+        assert.strictEqual(transaction.timeout_, options.timeout);
+        assert.deepEqual(options, optionsCopy);
+      });
     });
   });
 
