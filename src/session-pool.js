@@ -17,6 +17,7 @@
 'use strict';
 
 var EventEmitter = require('events').EventEmitter;
+var arrify = require('arrify');
 var delay = require('delay');
 var extend = require('extend');
 var is = require('is');
@@ -621,6 +622,32 @@ SessionPool.prototype.getIdleSessions_ = function() {
 };
 
 /**
+ *
+ */
+SessionPool.prototype.getNextAvailableSession_ = function(type) {
+  var self = this;
+
+  if (type === READONLY && this.reads_.length) {
+    return Promise.resolve(this.reads_.shift());
+  }
+
+  if (this.writes_.length) {
+    return Promise.resolve(this.writes_.shift());
+  }
+
+  var session = this.reads_.shift();
+
+  return this.race_(self.createTransaction_(session))
+    .then(function() {
+      return session;
+    })
+    .catch(function(err) {
+      self.release_(session);
+      throw err;
+    });
+};
+
+/**
  * Attempts to get a session of a specific type. If the type is unavailable it
  * may try to use a different type.
  *
@@ -632,38 +659,31 @@ SessionPool.prototype.getIdleSessions_ = function() {
 SessionPool.prototype.getSession_ = function(type) {
   var self = this;
 
-  if (type === READONLY && this.reads_.length) {
-    return Promise.resolve(this.reads_.shift());
-  }
+  var available = this.available();
+  var acquires = this.acquireQueue_.size;
 
-  if (this.writes_.length) {
-    return Promise.resolve(this.writes_.shift());
-  }
-
-  if (type === READWRITE && this.reads_.length) {
-    var session = this.reads_.shift();
-
-    return this.race_(function() {
-      return self.createTransaction_(session);
-    }).then(function() {
-      return session;
-    });
+  if (available && !acquires) {
+    return this.getNextAvailableSession_(type);
   }
 
   if (this.options.fail) {
     return Promise.reject(new Error('No resources available.'));
   }
 
-  var raceFn = self.onAvailable_;
+  var promises = [self.waitForNextAvailable_()];
 
-  if (!this.isFull()) {
-    raceFn = self.createSession_;
+  if (!this.isFull() && available + this.pendingCreates_ < acquires + 1) {
+    var createPromise = new Promise(function(resolve, reject) {
+      self.createSession_(type).then(function() {
+        self.emit('available');
+      }, reject);
+    });
+
+    promises.push(createPromise);
   }
 
-  return this.race_(function() {
-    return raceFn.call(self, type);
-  }).then(function() {
-    return self.getSession_(type);
+  return this.race_(promises).then(function() {
+    return self.getNextAvailableSession_(type);
   });
 };
 
@@ -699,6 +719,10 @@ SessionPool.prototype.needsFill_ = function() {
  */
 SessionPool.prototype.onAvailable_ = function() {
   var self = this;
+
+  if (this.available() > 0) {
+    return Promise.resolve();
+  }
 
   return new Promise(function(resolve) {
     self.once('available', resolve);
@@ -767,16 +791,19 @@ SessionPool.prototype.pingSession_ = function(session) {
  *
  * @private
  *
+ * @param {Promise[]} promises The promises to race.
  * @returns {Promise}
  */
-SessionPool.prototype.race_ = function(fn) {
+SessionPool.prototype.race_ = function(promises) {
   var timeout = this.options.acquireTimeout;
-  var promises = [
+
+  promises = arrify(promises);
+
+  promises.push(
     this.onClose_.then(function() {
       throw new Error('Database is closed.');
-    }),
-    this.acquireQueue_.add(fn),
-  ];
+    })
+  );
 
   if (!is.infinite(timeout)) {
     promises.push(
@@ -878,6 +905,17 @@ SessionPool.prototype.startHouseKeeping_ = function() {
 SessionPool.prototype.stopHouseKeeping_ = function() {
   clearInterval(this.pingHandle_);
   clearInterval(this.evictHandle_);
+};
+
+/**
+ *
+ */
+SessionPool.prototype.waitForNextAvailable_ = function() {
+  var self = this;
+
+  return this.acquireQueue_.add(function() {
+    return self.onAvailable_();
+  });
 };
 
 module.exports = SessionPool;
