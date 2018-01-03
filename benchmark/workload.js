@@ -25,7 +25,7 @@ const OPERATIONS = [
   'readproportion',
   'updateproportion',
   'scanproportion',
-  'insertproportion'
+  'insertproportion',
 ];
 
 class Workload {
@@ -75,13 +75,15 @@ class Workload {
     for (let i = 0; i < operationCount; i++) {
       let randomWeight = Math.random() * this.totalWeight;
 
-      this.weights.forEach((weight, j) => {
-        const operation = this.operations[j];
+      for (let j = 0; j < this.weights.length; j++) {
+        let weight = this.weights[j];
+        let operation = this.operations[j];
 
         if (randomWeight <= weight) {
           this.queue.add(() => this.runOperation(operation));
+          break;
         }
-      });
+      }
     }
 
     return this.queue.onIdle().then(() => (this.duration = end()));
@@ -98,23 +100,24 @@ class Workload {
   }
 
   read() {
-    const table = this.options.get('table');
+    const tableName = this.options.get('table');
     const id = this.getRandomKey();
-    const query = `SELECT u.* FROM ${table} u WHERE u.id="${id}"`;
+    const query = `SELECT u.* FROM ${tableName} u WHERE u.id="${id}"`;
 
-    return this.database.getTransaction({ readonly: true }).then(data => {
-      const txn = data[0];
-      return txn.run(query).then(() => txn.end());
-    });
+    return this.database.run(query, {readOnly: true});
   }
 
   update() {
-    const table = this.database.table(this.options.get('table'));
+    const tableName = this.options.get('table');
     const id = this.getRandomKey();
     const field = `field${random(9)}`;
     const value = crypto.randomBytes(100).toString('hex');
 
-    return table.update({ id, [field]: value });
+    return this.database.getTransaction().then(data => {
+      const txn = data[0];
+      txn.update(tableName, {id, [field]: value});
+      return txn.commit();
+    });
   }
 }
 

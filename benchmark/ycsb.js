@@ -36,26 +36,26 @@ require('yargs')
         alias: 'workload',
         type: 'string',
         description: 'The path to a YCSB workload file',
-        coerce: parseWorkloadFile
+        coerce: parseWorkloadFile,
       },
       p: {
         alias: 'parameter',
         description: 'The key=value pair of parameter',
-        coerce: parseKeyValuePairs
+        coerce: parseKeyValuePairs,
       },
       b: {
         alias: 'num_bucket',
         default: 1000,
         type: 'number',
-        describe: 'The number of buckets in output'
-      }
+        describe: 'The number of buckets in output',
+      },
     },
-    runWorkload
+    runWorkloads
   ).argv;
 
 function formatOptions(argv) {
   const options = argv.workload.concat(argv.parameter, [
-    ['numBucket', argv.num_bucket]
+    ['numBucket', argv.num_bucket],
   ]);
 
   return new Map(options);
@@ -91,7 +91,7 @@ function printMetrics(workload) {
     const opName = `[${operation.toUpperCase()}]`;
 
     console.log(
-      dedent`${opName}, Operations ${operationCount}
+      dedent`${opName}, Operations ${ops}
       ${opName}, AverageLatency(us), ${stats.mean(lats)}
       ${opName}, LatencyVariance(us), ${stats.stdev(lats)}
       ${opName}, MinLatency(us), ${lats[0]}
@@ -113,17 +113,7 @@ function printMetrics(workload) {
   });
 }
 
-function runWorkload(argv) {
-  const options = formatOptions(argv);
-
-  const spanner = new Spanner({
-    projectId: options.get('cloudspanner.project')
-  });
-
-  const database = spanner
-    .instance(options.get('cloudspanner.instance'))
-    .database(options.get('cloudspanner.database'));
-
+function runWorkload(database, options) {
   const workload = new Workload(database, options);
 
   return workload
@@ -131,4 +121,22 @@ function runWorkload(argv) {
     .then(() => workload.run())
     .then(() => printMetrics(workload))
     .catch(err => console.error(err));
+}
+
+function runWorkloads(argv) {
+  const options = formatOptions(argv);
+
+  const spanner = new Spanner({
+    projectId: options.get('cloudspanner.project'),
+  });
+
+  const database = spanner
+    .instance(options.get('cloudspanner.instance'))
+    .database(options.get('cloudspanner.database'));
+
+  return Promise.all(
+    Array(options.get('num_worker') || 1)
+      .fill(0)
+      .map(() => runWorkload(database, options))
+  );
 }
