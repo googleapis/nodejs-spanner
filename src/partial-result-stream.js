@@ -190,9 +190,7 @@ partialResultStream.formatRow_ = function(metadata, row) {
 
   Object.defineProperty(formattedRow, 'toJSON', {
     enumerable: false,
-    value: function() {
-      return serializedRow;
-    },
+    value: codec.generateToJSONFromRow(formattedRow),
   });
 
   return formattedRow;

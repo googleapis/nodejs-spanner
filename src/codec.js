@@ -67,6 +67,44 @@ Int.prototype.valueOf = function() {
 
 codec.Int = Int;
 
+function generateToJSONFromRow(row) {
+  return function(options) {
+    options = options || {
+      wrapNumbers: false,
+    };
+
+    var serializedRow = {};
+
+    row.forEach(function(keyVal) {
+      var name = keyVal.name;
+      var value = keyVal.value;
+
+      if (!name) {
+        return;
+      }
+
+      var isNumber = value instanceof Float || value instanceof Int;
+      if (!options.wrapNumbers && isNumber) {
+        try {
+          value = value.valueOf();
+        } catch (e) {
+          e.message = [
+            `Serializing column "${name}" encountered an error: ${e.message}`,
+            'Pass { wrapNumbers: true } to toJSON() to receive a custom type.',
+          ].join(' ');
+          throw e;
+        }
+      }
+
+      serializedRow[name] = value;
+    });
+
+    return serializedRow;
+  };
+}
+
+codec.generateToJSONFromRow = generateToJSONFromRow;
+
 /**
  * Re-decode after the generic gRPC decoding step.
  *
@@ -104,8 +142,6 @@ function decode(value, field) {
       }
       case 'STRUCT': {
         var formattedRow = [];
-        var serializedRow = {};
-
         var fields = type.structType.fields;
 
         fields.forEach(function(field, index) {
@@ -117,17 +153,11 @@ function decode(value, field) {
           };
 
           formattedRow.push(column);
-
-          if (column.name) {
-            serializedRow[column.name] = column.value;
-          }
         });
 
         Object.defineProperty(formattedRow, 'toJSON', {
           enumerable: false,
-          value: function() {
-            return serializedRow;
-          },
+          value: generateToJSONFromRow(formattedRow),
         });
 
         decoded = formattedRow;

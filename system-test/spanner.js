@@ -24,7 +24,6 @@ var crypto = require('crypto');
 var exec = require('methmeth');
 var extend = require('extend');
 var is = require('is');
-var multiline = require('multiline');
 var uuid = require('uuid');
 
 var Spanner = require('../');
@@ -96,27 +95,25 @@ describe('Spanner', function() {
     before(function(done) {
       database.create(
         {
-          schema: multiline.stripIndent(function() {
-            /*
-          CREATE TABLE TypeCheck (
-            Key STRING(MAX) NOT NULL,
-            BytesValue BYTES(MAX),
-            BoolValue BOOL,
-            DateValue DATE,
-            FloatValue FLOAT64,
-            IntValue INT64,
-            StringValue STRING(MAX),
-            TimestampValue TIMESTAMP,
-            BytesArray ARRAY<BYTES(MAX)>,
-            BoolArray ARRAY<BOOL>,
-            DateArray ARRAY<DATE>,
-            FloatArray ARRAY<FLOAT64>,
-            IntArray ARRAY<INT64>,
-            StringArray ARRAY<STRING(MAX)>,
-            TimestampArray ARRAY<TIMESTAMP>
-          ) PRIMARY KEY (Key)
-        */
-          }),
+          schema: `
+            CREATE TABLE TypeCheck (
+              Key STRING(MAX) NOT NULL,
+              BytesValue BYTES(MAX),
+              BoolValue BOOL,
+              DateValue DATE,
+              FloatValue FLOAT64,
+              IntValue INT64,
+              StringValue STRING(MAX),
+              TimestampValue TIMESTAMP,
+              BytesArray ARRAY<BYTES(MAX)>,
+              BoolArray ARRAY<BOOL>,
+              DateArray ARRAY<DATE>,
+              FloatArray ARRAY<FLOAT64>,
+              IntArray ARRAY<INT64>,
+              StringArray ARRAY<STRING(MAX)>,
+              TimestampArray ARRAY<TIMESTAMP>
+            ) PRIMARY KEY (Key)
+          `,
         },
         execAfterOperationComplete(done)
       );
@@ -128,11 +125,11 @@ describe('Spanner', function() {
           {
             Key: generateName('id'),
             BoolValue: true,
-            IntValue: Spanner.int(10),
+            IntValue: 10,
           },
           {
             Key: generateName('id'),
-            IntValue: Spanner.int(10),
+            IntValue: 10,
             BoolValue: true,
           },
         ];
@@ -277,7 +274,7 @@ describe('Spanner', function() {
       it('should write int64 values', function(done) {
         insert({IntValue: Spanner.int(1234)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().IntValue, Spanner.int(1234));
+          assert.deepEqual(row.toJSON().IntValue, 1234);
           done();
         });
       });
@@ -290,12 +287,27 @@ describe('Spanner', function() {
         });
       });
 
-      it('should handle out of bounds integers', function(done) {
+      it('should throw for of bounds integers', function(done) {
         var value = '9223372036854775807';
 
         insert({IntValue: value}, function(err, row) {
           assert.ifError(err);
-          assert.strictEqual(row.toJSON().IntValue.value, value);
+
+          assert.throws(function() {
+            row.toJSON();
+          }, new RegExp('Serializing column "IntValue" encountered an error'));
+
+          done();
+        });
+      });
+
+      it('should optionally wrap out of bounds integers', function(done) {
+        var value = '9223372036854775807';
+
+        insert({IntValue: value}, function(err, row) {
+          assert.ifError(err);
+          var intValue = row.toJSON({wrapNumbers: true}).IntValue.value;
+          assert.strictEqual(intValue, value);
           done();
         });
       });
@@ -333,7 +345,7 @@ describe('Spanner', function() {
       it('should write float64 values', function(done) {
         insert({FloatValue: Spanner.float(8.2)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(8.2));
+          assert.deepEqual(row.toJSON().FloatValue, 8.2);
           done();
         });
       });
@@ -349,7 +361,7 @@ describe('Spanner', function() {
       it('should accept a Float object with an Int-like value', function(done) {
         insert({FloatValue: Spanner.float(8)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(8));
+          assert.deepEqual(row.toJSON().FloatValue, 8);
           done();
         });
       });
@@ -357,7 +369,7 @@ describe('Spanner', function() {
       it('should handle Infinity', function(done) {
         insert({FloatValue: Infinity}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(Infinity));
+          assert.deepEqual(row.toJSON().FloatValue, Infinity);
           done();
         });
       });
@@ -365,7 +377,7 @@ describe('Spanner', function() {
       it('should handle -Infinity', function(done) {
         insert({FloatValue: -Infinity}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, Spanner.float(-Infinity));
+          assert.deepEqual(row.toJSON().FloatValue, -Infinity);
           done();
         });
       });
@@ -748,25 +760,29 @@ describe('Spanner', function() {
     });
 
     it('should create a table', function(done) {
-      var createTableStatement = multiline.stripIndent(function() {
-        /*
+      var createTableStatement = `
         CREATE TABLE Singers (
           SingerId INT64 NOT NULL,
           FirstName STRING(1024),
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
-        ) PRIMARY KEY(SingerId)
-      */
-      });
+        ) PRIMARY KEY(SingerId)`;
 
       database.updateSchema(
         [createTableStatement],
         execAfterOperationComplete(function(err) {
           assert.ifError(err);
 
+          function replaceNewLinesAndSpacing(str) {
+            return str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
+          }
+
           database.getSchema(function(err, statements) {
             assert.ifError(err);
-            assert.deepEqual(statements, [createTableStatement]);
+            assert.strictEqual(
+              replaceNewLinesAndSpacing(statements[0]),
+              replaceNewLinesAndSpacing(createTableStatement)
+            );
             done();
           });
         })
@@ -784,14 +800,11 @@ describe('Spanner', function() {
           function(next) {
             database.create(
               {
-                schema: multiline.stripIndent(function() {
-                  /*
-              CREATE TABLE Singers (
-                SingerId STRING(1024) NOT NULL,
-                Name STRING(1024),
-              ) PRIMARY KEY(SingerId)
-            */
-                }),
+                schema: `
+                  CREATE TABLE Singers (
+                    SingerId STRING(1024) NOT NULL,
+                    Name STRING(1024),
+                  ) PRIMARY KEY(SingerId)`,
               },
               execAfterOperationComplete(next)
             );
@@ -841,9 +854,7 @@ describe('Spanner', function() {
         .create()
         .then(onPromiseOperationComplete)
         .then(function() {
-          return table.create(
-            multiline.stripIndent(function() {
-              /*
+          return table.create(`
             CREATE TABLE Singers (
               SingerId STRING(1024) NOT NULL,
               Name STRING(1024),
@@ -855,10 +866,7 @@ describe('Spanner', function() {
               Accents ARRAY<STRING(1024)>,
               PhoneNumbers ARRAY<INT64>,
               HasGear BOOL,
-            ) PRIMARY KEY(SingerId)
-          */
-            })
-          );
+            ) PRIMARY KEY(SingerId)`);
         })
         .then(onPromiseOperationComplete);
     });
@@ -1217,8 +1225,8 @@ describe('Spanner', function() {
 
       var EXPECTED_ROW = extend(true, {}, INSERT_ROW);
       EXPECTED_ROW.DOB = DATE;
-      EXPECTED_ROW.Float = Spanner.float(FLOAT);
-      EXPECTED_ROW.Int = Spanner.int(INT);
+      EXPECTED_ROW.Float = FLOAT;
+      EXPECTED_ROW.Int = INT;
       EXPECTED_ROW.PhoneNumbers = [
         Spanner.int(PHONE_NUMBERS[0]),
         Spanner.int(PHONE_NUMBERS[1]),
@@ -1275,13 +1283,10 @@ describe('Spanner', function() {
       });
 
       it('should query an array of structs', function(done) {
-        var query = multiline.stripIndent(function() {
-          /*
+        var query = `
           SELECT ARRAY(SELECT AS STRUCT C1, C2
             FROM (SELECT 'a' AS C1, 1 AS C2 UNION ALL SELECT 'b' AS C1, 2 AS C2)
-            ORDER BY C1 ASC)
-        */
-        });
+            ORDER BY C1 ASC)`;
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
@@ -1300,11 +1305,8 @@ describe('Spanner', function() {
       });
 
       it('should query an empty array of structs', function(done) {
-        var query = multiline.stripIndent(function() {
-          /*
-          SELECT ARRAY(SELECT AS STRUCT * FROM (SELECT 'a', 1) WHERE 0 = 1)
-        */
-        });
+        var query = `
+          SELECT ARRAY(SELECT AS STRUCT * FROM (SELECT 'a', 1) WHERE 0 = 1)`;
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
@@ -2114,17 +2116,14 @@ describe('Spanner', function() {
         before(function() {
           return table
             .create(
-              multiline.stripIndent(function() {
-                /*
-            CREATE TABLE LargeReads (
-              Key STRING(MAX) NOT NULL,
-              StringValue STRING(MAX),
-              StringArray ARRAY<STRING(MAX)>,
-              BytesValue BYTES(MAX),
-              BytesArray ARRAY<BYTES(MAX)>
-            ) PRIMARY KEY (Key)
-          */
-              })
+              `
+              CREATE TABLE LargeReads (
+                Key STRING(MAX) NOT NULL,
+                StringValue STRING(MAX),
+                StringArray ARRAY<STRING(MAX)>,
+                BytesValue BYTES(MAX),
+                BytesArray ARRAY<BYTES(MAX)>
+              ) PRIMARY KEY (Key)`
             )
             .then(onPromiseOperationComplete)
             .then(function() {
@@ -2253,24 +2252,16 @@ describe('Spanner', function() {
       before(function() {
         return table
           .create(
-            multiline.stripIndent(function() {
-              /*
+            `
             CREATE TABLE ReadTestTable (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
-            ) PRIMARY KEY (Key)
-          */
-            })
+            ) PRIMARY KEY (Key)`
           )
           .then(onPromiseOperationComplete)
           .then(function() {
-            return database.updateSchema(
-              multiline.stripIndent(function() {
-                /*
-              CREATE INDEX ReadByValue ON ReadTestTable(StringValue)
-            */
-              })
-            );
+            return database.updateSchema(`
+              CREATE INDEX ReadByValue ON ReadTestTable(StringValue)`);
           })
           .then(onPromiseOperationComplete)
           .then(function() {
@@ -2615,14 +2606,11 @@ describe('Spanner', function() {
           function(next) {
             database.create(
               {
-                schema: multiline.stripIndent(function() {
-                  /*
-              CREATE TABLE Singers (
-                SingerId STRING(1024) NOT NULL,
-                Name STRING(1024),
-              ) PRIMARY KEY(SingerId)
-            */
-                }),
+                schema: `
+                  CREATE TABLE Singers (
+                    SingerId STRING(1024) NOT NULL,
+                    Name STRING(1024),
+                  ) PRIMARY KEY(SingerId)`,
               },
               execAfterOperationComplete(next)
             );
@@ -2789,17 +2777,12 @@ describe('Spanner', function() {
         .create()
         .then(onPromiseOperationComplete)
         .then(function() {
-          return table.create(
-            multiline.stripIndent(function() {
-              /*
+          return table.create(`
             CREATE TABLE TxnTable (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX),
               NumberValue INT64
-            ) PRIMARY KEY (Key)
-          */
-            })
-          );
+            ) PRIMARY KEY (Key)`);
         })
         .then(onPromiseOperationComplete)
         .then(function() {
