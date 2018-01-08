@@ -399,7 +399,8 @@ Table.prototype.insert = function(keyVals, callback) {
  *     object has a `name` and `value` property. To get a serialized object,
  *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
  *     specifying `wrapNumbers: true` to protect large integer values outside of
- *     the range of JavaScript Number.
+ *     the range of JavaScript Number. If set, FLOAT64 values will be returned
+ *     as {@link Spanner.Float} objects and INT64 values as @{link Spanner.Int}.
  */
 /**
  * @callback TableReadCallback
@@ -408,7 +409,8 @@ Table.prototype.insert = function(keyVals, callback) {
  *     object has a `name` and `value` property. To get a serialized object,
  *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
  *     specifying `wrapNumbers: true` to protect large integer values outside of
- *     the range of JavaScript Number.
+ *     the range of JavaScript Number. If set, FLOAT64 values will be returned
+ *     as {@link Spanner.Float} objects and INT64 values as @{link Spanner.Int}.
  */
 /**
  * Receive rows from the database using key lookups and scans.
