@@ -676,8 +676,8 @@ SessionPool.prototype.getSession_ = function(type) {
   }
 
   var promises = [this.waitForNextAvailable_(type)];
-  var shouldCreate = !this.isFull() &&
-    available + this.pendingCreates_ < acquires + 1
+  var shouldCreate =
+    !this.isFull() && available + this.pendingCreates_ < acquires + 1;
 
   if (shouldCreate) {
     var createPromise = new Promise(function(resolve, reject) {
