@@ -20,6 +20,7 @@ var codec = module.exports;
 
 var Buffer = require('safe-buffer').Buffer;
 var commonGrpc = require('@google-cloud/common-grpc');
+var extend = require('extend');
 var is = require('is');
 
 function SpannerDate(value) {
@@ -73,18 +74,16 @@ codec.Int = Int;
  */
 function generateToJSONFromRow(row) {
   return function(options) {
-    options = options || {
+    options = extend({
       wrapNumbers: false,
-    };
+    }, options);
 
-    var serializedRow = {};
-
-    row.forEach(function(keyVal) {
+    return row.reduce(function(serializedRow, keyVal) {
       var name = keyVal.name;
       var value = keyVal.value;
 
       if (!name) {
-        return;
+        return serializedRow;
       }
 
       var isNumber = value instanceof Float || value instanceof Int;
@@ -101,9 +100,9 @@ function generateToJSONFromRow(row) {
       }
 
       serializedRow[name] = value;
-    });
 
-    return serializedRow;
+      return serializedRow;
+    }, {});
   };
 }
 
