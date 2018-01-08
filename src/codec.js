@@ -67,6 +67,10 @@ Int.prototype.valueOf = function() {
 
 codec.Int = Int;
 
+/**
+ * Wherever a row object is returned, it is assigned a "toJSON" function. This
+ * function will create that function in a consistent format.
+ */
 function generateToJSONFromRow(row) {
   return function(options) {
     options = options || {
@@ -90,7 +94,7 @@ function generateToJSONFromRow(row) {
         } catch (e) {
           e.message = [
             `Serializing column "${name}" encountered an error: ${e.message}`,
-            'Pass { wrapNumbers: true } to toJSON() to receive a custom type.',
+            'Call row.toJSON({ wrapNumbers: true }) to receive a custom type.',
           ].join(' ');
           throw e;
         }
@@ -157,7 +161,7 @@ function decode(value, field) {
 
         Object.defineProperty(formattedRow, 'toJSON', {
           enumerable: false,
-          value: generateToJSONFromRow(formattedRow),
+          value: codec.generateToJSONFromRow(formattedRow),
         });
 
         decoded = formattedRow;

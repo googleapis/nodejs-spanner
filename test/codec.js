@@ -110,6 +110,96 @@ describe('codec', function() {
     });
   });
 
+  describe('generateToJSONFromRow', function() {
+    var ROW = [
+      {
+        name: 'name',
+        value: 'value',
+      },
+    ];
+    var OPTIONS = {};
+
+    var toJSON;
+
+    beforeEach(function() {
+      toJSON = codec.generateToJSONFromRow(ROW);
+    });
+
+    it('should return a function', function() {
+      assert.strictEqual(typeof toJSON, 'function');
+    });
+
+    it('should not require options', function() {
+      assert.doesNotThrow(function() {
+        toJSON();
+      });
+    });
+
+    it('should return serialized rows', function() {
+      assert.deepEqual(toJSON(), {
+        name: 'value',
+      });
+    });
+
+    it('should not return nameless values', function() {
+      var row = [
+        {
+          value: 'value',
+        },
+      ];
+
+      var toJSON = codec.generateToJSONFromRow(row);
+      assert.deepEqual(toJSON(), {});
+    });
+
+    it('should not wrap numbers by default', function() {
+      var row = [
+        {
+          name: 'Number',
+          value: new codec.Int(3),
+        },
+      ];
+
+      var toJSON = codec.generateToJSONFromRow(row);
+      assert.strictEqual(typeof toJSON().Number, 'number');
+      assert.strictEqual(toJSON().Number, 3);
+    });
+
+    it('should wrap numbers with option', function() {
+      var int = new codec.Int(3);
+
+      var row = [
+        {
+          name: 'Number',
+          value: int,
+        },
+      ];
+
+      var toJSON = codec.generateToJSONFromRow(row);
+      var value = toJSON({wrapNumbers: true}).Number;
+
+      assert(value instanceof codec.Int);
+      assert.deepEqual(value, int);
+    });
+
+    it('should throw an error if number is out of bounds', function() {
+      var int = new codec.Int('9223372036854775807');
+
+      var row = [
+        {
+          name: 'Number',
+          value: int,
+        },
+      ];
+
+      var toJSON = codec.generateToJSONFromRow(row);
+
+      assert.throws(function() {
+        toJSON();
+      }, new RegExp('Serializing column "Number" encountered an error'));
+    });
+  });
+
   describe('decode', function() {
     // Does not require any special decoding.
     var BYPASS_FIELD = {
@@ -262,77 +352,46 @@ describe('codec', function() {
       });
     });
 
-    it('should skip falsy struct keys in JSON', function() {
-      var value = {
-        undefined: '1',
-      };
+    describe('toJSON', function() {
+      var toJSONOverride = function() {};
+      var FORMATTED_ROW;
 
-      var int = {int: true};
-      codec.Int = function(value_) {
-        assert.strictEqual(value_, value[undefined]);
-        return int;
-      };
+      beforeEach(function() {
+        codec.generateToJSONFromRow = function() {
+          return toJSONOverride;
+        };
 
-      var decoded = codec.decode(value, {
-        type: {
-          code: 'STRUCT',
-          structType: {
-            fields: [
-              {
-                name: undefined,
-                type: {
-                  code: 'INT64',
+        var value = {
+          fieldName: '1',
+        };
+
+        FORMATTED_ROW = codec.decode(value, {
+          type: {
+            code: 'STRUCT',
+            structType: {
+              fields: [
+                {
+                  name: 'fieldName',
+                  type: {
+                    code: 'INT64',
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
+        });
       });
 
-      assert.deepEqual(decoded, [
-        {
-          name: undefined,
-          value: int,
-        },
-      ]);
-
-      assert.deepEqual(decoded.toJSON(), {});
-    });
-
-    it('should decode STRUCT and inner members by index', function() {
-      var value = ['1'];
-
-      var int = {int: true};
-      codec.Int = function(value_) {
-        assert.strictEqual(value_, value[0]);
-        return int;
-      };
-
-      var decoded = codec.decode(value, {
-        type: {
-          code: 'STRUCT',
-          structType: {
-            fields: [
-              {
-                name: 'fieldName',
-                type: {
-                  code: 'INT64',
-                },
-              },
-            ],
-          },
-        },
+      it('should assign a toJSON method', function() {
+        assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
       });
 
-      assert.deepEqual(decoded, [
-        {
-          name: 'fieldName',
-          value: int,
-        },
-      ]);
-
-      assert.deepEqual(decoded.toJSON(), {
-        fieldName: int,
+      it('should not include toJSON when iterated', function() {
+        for (var keyVal in FORMATTED_ROW) {
+          if (keyVal === 'toJSON') {
+            throw new Error('toJSON should not be iterated.');
+          }
+        }
       });
     });
   });

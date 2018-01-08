@@ -170,22 +170,12 @@ partialResultStream.formatRow_ = function(metadata, row) {
     });
   }
 
-  var formattedRow = [];
-  var serializedRow = {};
-
-  row.values.forEach(function(value, index) {
+  var formattedRow = row.values.map(function(value, index) {
     var field = fields[index];
-
-    var column = {
+    return {
       name: field.name,
       value: codec.decode(value, field),
     };
-
-    formattedRow.push(column);
-
-    if (column.name) {
-      serializedRow[column.name] = column.value;
-    }
   });
 
   Object.defineProperty(formattedRow, 'toJSON', {

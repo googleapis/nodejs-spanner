@@ -3164,7 +3164,7 @@ describe('Spanner', function() {
                 }
 
                 var row = rows[0].toJSON();
-                callback(null, parseInt(row.NumberValue.value, 10));
+                callback(null, row.NumberValue);
               }
             );
           }
@@ -3220,7 +3220,7 @@ describe('Spanner', function() {
                 }
 
                 var row = rows[0].toJSON();
-                callback(null, parseInt(row.NumberValue.value, 10));
+                callback(null, row.NumberValue);
               }
             );
           }

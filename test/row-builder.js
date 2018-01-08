@@ -18,12 +18,24 @@
 
 var assert = require('assert');
 var extend = require('extend');
+var proxyquire = require('proxyquire');
 var util = require('@google-cloud/common').util;
 
-var RowBuilder = require('../src/row-builder.js');
-var RowBuilderCached = extend({}, RowBuilder);
+var codec = require('../src/codec');
+
+var generateToJSONFromRowOverride;
+var fakeCodec = {
+  generateToJSONFromRow: function() {
+    return (generateToJSONFromRowOverride || codec.generateToJSONFromRow).apply(
+      null,
+      arguments
+    );
+  },
+};
 
 describe('RowBuilder', function() {
+  var RowBuilder;
+  var RowBuilderCached;
   var rowBuilder;
 
   var METADATA = {
@@ -38,7 +50,16 @@ describe('RowBuilder', function() {
     },
   ];
 
+  before(function() {
+    RowBuilder = proxyquire('../src/row-builder.js', {
+      './codec.js': fakeCodec,
+    });
+
+    RowBuilderCached = extend({}, RowBuilder);
+  });
+
   beforeEach(function() {
+    generateToJSONFromRowOverride = null;
     extend(RowBuilder, RowBuilderCached);
     rowBuilder = new RowBuilder(METADATA, CHUNKS);
   });
@@ -428,6 +449,46 @@ describe('RowBuilder', function() {
 
       assert.deepEqual(row.toJSON(), {
         fieldName: formattedValue,
+      });
+    });
+
+    describe('toJSON', function() {
+      var toJSONOverride = function() {};
+      var FORMATTED_ROW;
+
+      beforeEach(function() {
+        generateToJSONFromRowOverride = function() {
+          return toJSONOverride;
+        };
+
+        var formattedValue = {};
+
+        RowBuilder.formatValue = function(type, value) {
+          return formattedValue;
+        };
+
+        rowBuilder.fields = [
+          {
+            name: 'fieldName',
+            type: {},
+          },
+        ];
+
+        rowBuilder.rows = [[{}]];
+
+        FORMATTED_ROW = rowBuilder.toJSON()[0];
+      });
+
+      it('should assign a toJSON method', function() {
+        assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
+      });
+
+      it('should not include toJSON when iterated', function() {
+        for (var keyVal in FORMATTED_ROW) {
+          if (keyVal === 'toJSON') {
+            throw new Error('toJSON should not be iterated.');
+          }
+        }
       });
     });
   });

@@ -466,14 +466,18 @@ TransactionRequest.prototype.insert = function(table, keyVals, callback) {
  * @typedef {array} TransactionRequestReadResponse
  * @property {array[]} 0 Rows are returned as an array of object arrays. Each
  *     object has a `name` and `value` property. To get a serialized object,
- *     call `toJSON()`.
+ *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
+ *     specifying `wrapNumbers: true` to protect large integer values outside of
+ *     the range of JavaScript Number.
  */
 /**
  * @callback TransactionRequestReadCallback
  * @param {?Error} err Request error, if any.
  * @param {array[]} rows Rows are returned as an array of object arrays. Each
  *     object has a `name` and `value` property. To get a serialized object,
- *     call `toJSON()`.
+ *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
+ *     specifying `wrapNumbers: true` to protect large integer values outside of
+ *     the range of JavaScript Number.
  */
 /**
  * Performs a read request against the specified Table.

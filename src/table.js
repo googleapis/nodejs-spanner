@@ -397,14 +397,18 @@ Table.prototype.insert = function(keyVals, callback) {
  * @property {Table} 0 The new {@link Table}.
  * @property {array[]} 1 Rows are returned as an array of object arrays. Each
  *     object has a `name` and `value` property. To get a serialized object,
- *     call `toJSON()`.
+ *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
+ *     specifying `wrapNumbers: true` to protect large integer values outside of
+ *     the range of JavaScript Number.
  */
 /**
  * @callback TableReadCallback
  * @param {?Error} err Request error, if any.
  * @param {array[]} rows Rows are returned as an array of object arrays. Each
  *     object has a `name` and `value` property. To get a serialized object,
- *     call `toJSON()`.
+ *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
+ *     specifying `wrapNumbers: true` to protect large integer values outside of
+ *     the range of JavaScript Number.
  */
 /**
  * Receive rows from the database using key lookups and scans.
