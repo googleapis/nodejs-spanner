@@ -622,7 +622,12 @@ SessionPool.prototype.getIdleSessions_ = function() {
 };
 
 /**
+ * Grabs the next available session.
  *
+ * @private
+ *
+ * @param {string} type The desired session type.
+ * @returns {Promise<Session>}
  */
 SessionPool.prototype.getNextAvailableSession_ = function(type) {
   var self = this;
@@ -670,9 +675,11 @@ SessionPool.prototype.getSession_ = function(type) {
     return Promise.reject(new Error('No resources available.'));
   }
 
-  var promises = [self.waitForNextAvailable_()];
+  var promises = [this.waitForNextAvailable_(type)];
+  var shouldCreate = !this.isFull() &&
+    available + this.pendingCreates_ < acquires + 1
 
-  if (!this.isFull() && available + this.pendingCreates_ < acquires + 1) {
+  if (shouldCreate) {
     var createPromise = new Promise(function(resolve, reject) {
       self.createSession_(type).then(function() {
         self.emit('available');
@@ -682,9 +689,7 @@ SessionPool.prototype.getSession_ = function(type) {
     promises.push(createPromise);
   }
 
-  return this.race_(promises).then(function() {
-    return self.getNextAvailableSession_(type);
-  });
+  return this.race_(promises);
 };
 
 /**
@@ -908,13 +913,20 @@ SessionPool.prototype.stopHouseKeeping_ = function() {
 };
 
 /**
+ * Waits for the next available session and returns it.
  *
+ * @private
+ *
+ * @param {string} type The desired session type.
+ * @return {Promise<Session>}
  */
-SessionPool.prototype.waitForNextAvailable_ = function() {
+SessionPool.prototype.waitForNextAvailable_ = function(type) {
   var self = this;
 
   return this.acquireQueue_.add(function() {
-    return self.onAvailable_();
+    return self.onAvailable_().then(function() {
+      return self.getNextAvailableSession_(type);
+    });
   });
 };
 
