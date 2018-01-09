@@ -530,10 +530,6 @@ describe('PartialResultStream', function() {
           return toJSONOverride;
         };
 
-        var value = {
-          fieldName: '1',
-        };
-
         FORMATTED_ROW = partialResultStreamModule.formatRow_(METADATA, ROW);
       });
 

@@ -463,7 +463,7 @@ describe('RowBuilder', function() {
 
         var formattedValue = {};
 
-        RowBuilder.formatValue = function(type, value) {
+        RowBuilder.formatValue = function() {
           return formattedValue;
         };
 

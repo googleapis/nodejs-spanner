@@ -117,7 +117,6 @@ describe('codec', function() {
         value: 'value',
       },
     ];
-    var OPTIONS = {};
 
     var toJSON;
 
