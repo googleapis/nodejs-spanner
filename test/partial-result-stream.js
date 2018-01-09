@@ -27,9 +27,16 @@ var util = require('@google-cloud/common').util;
 var codec = require('../src/codec.js');
 
 var decodeValueOverride;
+var generateToJSONFromRowOverride;
 var fakeCodec = extend({}, codec);
 fakeCodec.decode = function() {
   return (decodeValueOverride || codec.decode).apply(null, arguments);
+};
+fakeCodec.generateToJSONFromRow = function() {
+  return (generateToJSONFromRowOverride || codec.generateToJSONFromRow).apply(
+    null,
+    arguments
+  );
 };
 
 var checkpointStreamOverride;
@@ -92,6 +99,7 @@ describe('PartialResultStream', function() {
     FakeRowBuilderOverrides = {};
     checkpointStreamOverride = null;
     decodeValueOverride = null;
+    generateToJSONFromRowOverride = null;
     fakeRequestStream = through.obj();
 
     extend(partialResultStreamModule, partialResultStreamCached);
@@ -474,9 +482,6 @@ describe('PartialResultStream', function() {
       assert.strictEqual(formattedRows.length, 2);
       assert.strictEqual(formattedRows[0].value, 'value-1');
       assert.strictEqual(formattedRows[1].value, 'value-2');
-
-      // Only the field with a name should exist in the JSON serialization.
-      assert.deepEqual(formattedRows.toJSON(), {'field-1': 'value-1'});
     });
 
     it('should chunk rows with more values than fields', function() {
@@ -512,40 +517,32 @@ describe('PartialResultStream', function() {
       ]);
     });
 
-    it('should decode values and return a formatted object', function() {
-      var decodedValues = ['decoded-value-1', 'decoded-value-2'];
+    describe('toJSON', function() {
+      var toJSONOverride = function() {};
+      var FORMATTED_ROW;
 
-      var numTimesDecodeValueCalled = 0;
-      decodeValueOverride = function(value) {
-        numTimesDecodeValueCalled++;
+      beforeEach(function() {
+        decodeValueOverride = function(value) {
+          return value;
+        };
 
-        if (numTimesDecodeValueCalled === 1) {
-          assert.strictEqual(value, VALUES[0]);
-          return decodedValues[0];
+        generateToJSONFromRowOverride = function() {
+          return toJSONOverride;
+        };
+
+        FORMATTED_ROW = partialResultStreamModule.formatRow_(METADATA, ROW);
+      });
+
+      it('should assign a toJSON method', function() {
+        assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
+      });
+
+      it('should not include toJSON when iterated', function() {
+        for (var keyVal in FORMATTED_ROW) {
+          if (keyVal === 'toJSON') {
+            throw new Error('toJSON should not be iterated.');
+          }
         }
-
-        if (numTimesDecodeValueCalled === 2) {
-          assert.strictEqual(value, VALUES[1]);
-          return decodedValues[1];
-        }
-      };
-
-      var formattedRow = partialResultStreamModule.formatRow_(METADATA, ROW);
-
-      assert.deepEqual(formattedRow, [
-        {
-          name: 'field-1',
-          value: decodedValues[0],
-        },
-        {
-          name: 'field-2',
-          value: decodedValues[1],
-        },
-      ]);
-
-      assert.deepEqual(formattedRow.toJSON(), {
-        'field-1': decodedValues[0],
-        'field-2': decodedValues[1],
       });
     });
   });
