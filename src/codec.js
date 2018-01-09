@@ -74,9 +74,12 @@ codec.Int = Int;
  */
 function generateToJSONFromRow(row) {
   return function(options) {
-    options = extend({
-      wrapNumbers: false,
-    }, options);
+    options = extend(
+      {
+        wrapNumbers: false,
+      },
+      options
+    );
 
     return row.reduce(function(serializedRow, keyVal) {
       var name = keyVal.name;
