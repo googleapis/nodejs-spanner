@@ -16,6 +16,7 @@
 
 'use strict';
 
+var codec = require('./codec.js');
 var is = require('is');
 
 /*!
@@ -176,9 +177,7 @@ RowBuilder.prototype.toJSON = function() {
 
     Object.defineProperty(formattedRow, 'toJSON', {
       enumerable: false,
-      value: function() {
-        return serializedRow;
-      },
+      value: codec.generateToJSONFromRow(formattedRow),
     });
 
     return formattedRow;
