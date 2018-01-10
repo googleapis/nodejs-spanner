@@ -3098,7 +3098,7 @@ describe('Spanner', function() {
         database.runTransaction(function(err, transaction) {
           assert.ifError(err);
 
-          transaction.run('SELECT * FROM TxnTable', function() {
+          transaction.run('SELECT * FROM TxnTable', function(err) {
             assert.ifError(err);
             transaction.rollback(done);
           });
