@@ -152,9 +152,9 @@ function queryData(instanceId, databaseId, projectId) {
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${
-            json.AlbumId.value
-          }, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+            json.AlbumTitle
+          }`
         );
       });
     })
@@ -207,9 +207,9 @@ function readData(instanceId, databaseId, projectId) {
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${
-            json.AlbumId.value
-          }, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+            json.AlbumTitle
+          }`
         );
       });
     })
@@ -266,10 +266,10 @@ function readStaleData(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        const id = json.SingerId.value;
-        const album = json.AlbumId.value;
+        const id = json.SingerId;
+        const album = json.AlbumId;
         const title = json.AlbumTitle;
-        const budget = json.MarketingBudget ? json.MarketingBudget.value : '';
+        const budget = json.MarketingBudget ? json.MarketingBudget : '';
         console.log(
           `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
         );

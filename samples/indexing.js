@@ -160,10 +160,10 @@ function queryDataWithIndex(
       rows.forEach(row => {
         const json = row.toJSON();
         const marketingBudget = json.MarketingBudget
-          ? json.MarketingBudget.value
+          ? json.MarketingBudget
           : null; // This value is nullable
         console.log(
-          `AlbumId: ${json.AlbumId.value}, AlbumTitle: ${
+          `AlbumId: ${json.AlbumId}, AlbumTitle: ${
             json.AlbumTitle
           }, MarketingBudget: ${marketingBudget}`
         );
@@ -218,9 +218,7 @@ function readDataWithIndex(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(
-          `AlbumId: ${json.AlbumId.value}, AlbumTitle: ${json.AlbumTitle}`
-        );
+        console.log(`AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`);
       });
     })
     .catch(err => {
@@ -277,10 +275,10 @@ function readDataWithStoringIndex(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        let rowString = `AlbumId: ${json.AlbumId.value}`;
+        let rowString = `AlbumId: ${json.AlbumId}`;
         rowString += `, AlbumTitle: ${json.AlbumTitle}`;
         if (json.MarketingBudget) {
-          rowString += `, MarketingBudget: ${json.MarketingBudget.value}`;
+          rowString += `, MarketingBudget: ${json.MarketingBudget}`;
         }
         console.log(rowString);
       });

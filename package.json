@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -29,6 +29,7 @@
   ],
   "contributors": [
     "Ace Nassri <anassri@google.com>",
+    "Alexander Fenster <fenster@google.com>",
     "Dave Gramlich <callmehiphop@gmail.com>",
     "Eric Uldall <ericuldall@gmail.com>",
     "Evawere Ogbe <eoogbe@gmail.com>",
@@ -77,7 +78,7 @@
     "merge-stream": "^1.0.1",
     "methmeth": "^1.1.0",
     "modelo": "^4.2.0",
-    "p-queue": "^2.2.0",
+    "p-queue": "^2.3.0",
     "protobufjs": "^6.8.0",
     "safe-buffer": "^5.1.1",
     "split-array-stream": "^1.0.0",
@@ -103,7 +104,6 @@
     "lodash.random": "^3.2.0",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
-    "p-queue": "^2.3.0",
     "power-assert": "^1.4.4",
     "prettier": "^1.7.4",
     "proxyquire": "^1.7.11",
