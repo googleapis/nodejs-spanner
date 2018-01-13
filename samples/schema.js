@@ -158,10 +158,10 @@ function queryDataWithNewColumn(instanceId, databaseId, projectId) {
         const json = row.toJSON();
 
         console.log(
-          `SingerId: ${json.SingerId.value}, AlbumId: ${
-            json.AlbumId.value
+          `SingerId: ${json.SingerId}, AlbumId: ${
+            json.AlbumId
           }, MarketingBudget: ${
-            json.MarketingBudget ? json.MarketingBudget.value : null
+            json.MarketingBudget ? json.MarketingBudget : null
           }`
         );
       });
