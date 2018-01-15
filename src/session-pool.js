@@ -633,14 +633,14 @@ SessionPool.prototype.getNextAvailableSession_ = function(type) {
   var self = this;
 
   if (type === READONLY && this.reads_.length) {
-    return Promise.resolve(this.reads_.shift());
+    return Promise.resolve(this.reads_[0]);
   }
 
   if (this.writes_.length) {
-    return Promise.resolve(this.writes_.shift());
+    return Promise.resolve(this.writes_[0]);
   }
 
-  var session = this.reads_.shift();
+  var session = this.reads_[0];
 
   return this.race_(self.createTransaction_(session))
     .then(function() {
