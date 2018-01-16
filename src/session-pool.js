@@ -860,7 +860,9 @@ SessionPool.prototype.spliceSession_ = function(session) {
   var group = this.getSessionGroup_(session);
   var index = group.indexOf(session);
 
-  group.splice(index, 1);
+  if (index > -1) {
+    group.splice(index, 1);
+  }
 };
 
 /**
