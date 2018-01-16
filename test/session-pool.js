@@ -1807,6 +1807,18 @@ describe('SessionPool', function() {
       sessionPool.spliceSession_(fakeSession);
       assert.deepEqual(fakeGroup, []);
     });
+
+    it('should not remove sessions unnecessarily', function() {
+      var fakeSession = {};
+      var fakeGroup = [{}];
+
+      sessionPool.getSessionGroup_ = function() {
+        return fakeGroup;
+      };
+
+      sessionPool.spliceSession_(fakeSession);
+      assert.strictEqual(fakeGroup.length, 1);
+    });
   });
 
   describe('startHouseKeeping_', function() {
