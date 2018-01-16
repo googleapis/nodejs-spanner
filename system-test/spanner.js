@@ -946,6 +946,44 @@ describe('Spanner', function() {
       );
     });
 
+    it('should automatically convert to JSON', function(done) {
+      var id = generateName('id');
+      var name = generateName('name');
+
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
+          assert.ifError(err);
+
+          var rows = [];
+
+          table
+            .createReadStream({
+              keys: [id],
+              columns: ['SingerId', 'name'],
+              toJSON: true,
+            })
+            .on('error', done)
+            .on('data', function(row) {
+              rows.push(row);
+            })
+            .on('end', function() {
+              assert.deepEqual(rows, [
+                {
+                  SingerId: id,
+                  Name: name,
+                },
+              ]);
+
+              done();
+            });
+        }
+      );
+    });
+
     it('should insert and delete a row', function(done) {
       var id = generateName('id');
       var name = generateName('name');

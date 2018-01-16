@@ -19,6 +19,8 @@
 var checkpointStream = require('checkpoint-stream');
 var chunk = require('lodash.chunk');
 var eventsIntercept = require('events-intercept');
+var exec = require('methmeth');
+var extend = require('extend');
 var is = require('is');
 var mergeStream = require('merge-stream');
 var split = require('split-array-stream');
@@ -43,9 +45,11 @@ var RowBuilder = require('./row-builder.js');
  *     receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
  */
-function partialResultStream(requestFn) {
+function partialResultStream(requestFn, options) {
   var lastResumeToken;
   var activeRequestStream;
+
+  options = extend({toJSON: false}, options);
 
   // mergeStream allows multiple streams to be connected into one. This is good
   // if we need to retry a request and pipe more data to the user's stream.
@@ -103,6 +107,10 @@ function partialResultStream(requestFn) {
       }
 
       rowChunks = [];
+
+      if (options.toJSON) {
+        formattedRows = formattedRows.map(exec('toJSON'));
+      }
 
       split(formattedRows, userStream, function() {
         next();
