@@ -61,6 +61,10 @@ RowBuilder.getValue = function(obj) {
  * object.
  */
 RowBuilder.formatValue = function(field, value) {
+  if (value === 'NULL_VALUE') {
+    return null;
+  }
+
   if (field.code === 'ARRAY') {
     return value.map(function(value) {
       return RowBuilder.formatValue(field.arrayElementType, value);
