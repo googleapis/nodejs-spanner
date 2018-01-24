@@ -162,9 +162,10 @@ const gapic = Object.freeze({
  */
 function Spanner(options) {
   if (!(this instanceof Spanner)) {
-    options = common.util.normalizeArguments(this, options);
     return new Spanner(options);
   }
+
+  options = common.util.normalizeArguments(this, options);
 
   this.clients_ = new Map();
   this.instances_ = new Map();

@@ -47,6 +47,7 @@ var fakeUtil = extend({}, util, {
     ]);
   },
 });
+var originalFakeUtil = extend(true, {}, fakeUtil);
 
 var fakeGapicClient = util.noop;
 fakeGapicClient.scopes = [];
@@ -105,6 +106,7 @@ describe('Spanner', function() {
   });
 
   beforeEach(function() {
+    extend(fakeUtil, originalFakeUtil);
     fakeGapicClient = util.noop;
     fakeGapicClient.scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
@@ -135,23 +137,24 @@ describe('Spanner', function() {
       assert.strictEqual(spanner.getInstancesStream, 'getInstances');
     });
 
-    it('should normalize the arguments', function() {
-      var normalizeArguments = fakeUtil.normalizeArguments;
-      var normalizeArgumentsCalled = false;
-      var fakeOptions = {projectId: OPTIONS.projectId};
-      var fakeContext = {};
+    it('should work without new', function() {
+      assert.doesNotThrow(function() {
+        Spanner(OPTIONS);
+      });
+    });
 
-      fakeUtil.normalizeArguments = function(context, options) {
+    it('should normalize the arguments', function() {
+      var normalizeArgumentsCalled = false;
+      var options = {};
+
+      fakeUtil.normalizeArguments = function(context, options_) {
         normalizeArgumentsCalled = true;
-        assert.strictEqual(context, fakeContext);
-        assert.strictEqual(options, fakeOptions);
-        return options;
+        assert.strictEqual(options_, options);
+        return options_;
       };
 
-      Spanner.call(fakeContext, fakeOptions);
-      assert(normalizeArgumentsCalled);
-
-      fakeUtil.normalizeArguments = normalizeArguments;
+      new Spanner(options);
+      assert.strictEqual(normalizeArgumentsCalled, true);
     });
 
     it('should create an auth instance from google-auto-auth', function() {
