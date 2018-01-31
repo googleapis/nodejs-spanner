@@ -151,6 +151,10 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.runFn_, null);
     });
 
+    it('should set ended_ to false', function() {
+      assert.strictEqual(transaction.ended_, false);
+    });
+
     it('should inherit from TransactionRequest', function() {
       var OPTIONS = {};
 
@@ -317,6 +321,14 @@ describe('Transaction', function() {
         };
       });
 
+      it('should set ended_ to false', function(done) {
+        transaction.begin(function(err) {
+          assert.ifError(err);
+          assert.strictEqual(transaction.ended_, false);
+          done();
+        });
+      });
+
       it('should update ID', function(done) {
         transaction.begin(function(err) {
           assert.ifError(err);
@@ -376,6 +388,14 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       transaction.queuedMutations_ = QUEUED_MUTATIONS;
+    });
+
+    it('should throw an error if the transaction was ended', function() {
+      transaction.ended_ = true;
+
+      assert.throws(function() {
+        transaction.commit(assert.ifError);
+      }, /Transaction has already been ended\./);
     });
 
     it('should make the correct request with an ID', function(done) {
@@ -455,6 +475,20 @@ describe('Transaction', function() {
   });
 
   describe('end', function() {
+    it('should throw an error if the transaction was ended', function() {
+      transaction.ended_ = true;
+
+      assert.throws(function() {
+        transaction.end(assert.ifError);
+      }, /Transaction has already been ended\./);
+    });
+
+    it('should set ended_ to true', function() {
+      transaction.end();
+
+      assert.strictEqual(transaction.ended_, true);
+    });
+
     it('should empty the queue', function() {
       transaction.queuedMutations_ = [{}, {}];
 
