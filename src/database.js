@@ -862,6 +862,9 @@ Database.prototype.runStream = function(query, options) {
     };
   }
 
+  delete reqOpts.toJSON;
+  delete reqOpts.toJSONOptions;
+
   function makeRequest(resumeToken) {
     return self.pool_.requestStream({
       client: 'SpannerClient',
@@ -870,7 +873,10 @@ Database.prototype.runStream = function(query, options) {
     });
   }
 
-  return new PartialResultStream(makeRequest);
+  return new PartialResultStream(makeRequest, {
+    toJSON: query.toJSON,
+    toJSONOptions: query.toJSONOptions,
+  });
 };
 
 /**

@@ -623,6 +623,34 @@ describe('Database', function() {
       assert(stream instanceof FakePartialResultStream);
     });
 
+    it('should pass toJSON, toJSONOptions to PartialResultStream', function() {
+      var query = extend({}, QUERY);
+      query.toJSON = {};
+      query.toJSONOptions = {};
+
+      var stream = database.runStream(query);
+      assert.deepStrictEqual(stream.calledWith_[1], {
+        toJSON: query.toJSON,
+        toJSONOptions: query.toJSONOptions,
+      });
+    });
+
+    it('should not pass toJSON, toJSONOptions to request', function(done) {
+      database.pool_.requestStream = function(config) {
+        assert.strictEqual(config.reqOpts.toJSON, undefined);
+        assert.strictEqual(config.reqOpts.toJSONOptions, undefined);
+        done();
+      };
+
+      var query = extend({}, QUERY);
+      query.toJSON = {};
+      query.toJSONOptions = {};
+
+      var stream = database.runStream(query);
+      var makeRequestFn = stream.calledWith_[0];
+      makeRequestFn();
+    });
+
     it('should assign a resumeToken to the request', function(done) {
       var resumeToken = 'resume-token';
 

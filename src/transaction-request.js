@@ -245,6 +245,7 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
   );
 
   delete reqOpts.toJSON;
+  delete reqOpts.toJSONOptions;
 
   if (this.transaction && this.id) {
     reqOpts.transaction = {
@@ -295,7 +296,10 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
     });
   }
 
-  return new PartialResultStream(makeRequest, {toJSON: query.toJSON});
+  return new PartialResultStream(makeRequest, {
+    toJSON: query.toJSON,
+    toJSONOptions: query.toJSONOptions,
+  });
 };
 
 /**
