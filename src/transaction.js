@@ -132,6 +132,7 @@ function Transaction(session, options) {
 
   this.beginTime_ = null;
   this.timeout_ = DEFAULT_TRANSACTION_TIMEOUT;
+  this.ended_ = false;
 
   if (is.number(options.timeout)) {
     this.timeout_ = options.timeout;
@@ -239,6 +240,7 @@ Transaction.prototype.begin = function(callback) {
         return;
       }
 
+      self.ended_ = false;
       self.id = resp.id;
       self.metadata = resp;
 
@@ -260,6 +262,8 @@ Transaction.prototype.begin = function(callback) {
  *
  * @see {@link v1.SpannerClient#commit}
  * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+ *
+ * @throws {Error} If transaction has already been ended.
  *
  * @param {BasicCallback} [callback] Callback function.
  * @returns {Promise<BasicResponse>}
@@ -293,6 +297,10 @@ Transaction.prototype.begin = function(callback) {
 Transaction.prototype.commit = function(callback) {
   var self = this;
 
+  if (this.ended_) {
+    throw new Error('Transaction has already been ended.');
+  }
+
   var reqOpts = {
     mutations: this.queuedMutations_,
   };
@@ -325,6 +333,8 @@ Transaction.prototype.commit = function(callback) {
  * Let the client know you're done with a particular transaction. This should
  * only be called for read-only transactions.
  *
+ * @throws {Error} If transaction has already been ended.
+ *
  * @param {function} callback Optional callback function to be called after
  *     transaction has ended.
  *
@@ -355,6 +365,11 @@ Transaction.prototype.commit = function(callback) {
  * });
  */
 Transaction.prototype.end = function(callback) {
+  if (this.ended_) {
+    throw new Error('Transaction has already been ended.');
+  }
+
+  this.ended_ = true;
   this.queuedMutations_ = [];
   this.runFn_ = null;
 

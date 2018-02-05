@@ -155,6 +155,18 @@ describe('RowBuilder', function() {
       assert.strictEqual(formattedValue[0], value[0]);
     });
 
+    it('should return null if value is NULL_VALUE', function() {
+      var field = {
+        code: 'ARRAY',
+        arrayElementType: 'type',
+      };
+
+      var value = 'NULL_VALUE';
+
+      var formattedValue = RowBuilder.formatValue(field, value);
+      assert.strictEqual(formattedValue, null);
+    });
+
     it('should return the original value if not an array', function() {
       var field = {
         code: 'NOT_STRUCT_OR_ARRAY', // so it returns original value
