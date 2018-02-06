@@ -197,6 +197,9 @@ jobs:
           environment:
             NPM_CONFIG_PREFIX: /home/node/.npm-global
       - run:
+          name: Wait for other samples-test jobs to finish.
+          command: node samples/system-test/util/circleci_wait.js
+      - run:
           name: Run sample tests.
           command: npm run samples-test
           environment:
