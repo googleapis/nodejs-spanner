@@ -946,6 +946,76 @@ describe('Spanner', function() {
       );
     });
 
+    it('should automatically convert to JSON', function(done) {
+      var id = generateName('id');
+      var name = generateName('name');
+
+      table.insert(
+        {
+          SingerId: id,
+          Name: name,
+        },
+        function(err) {
+          assert.ifError(err);
+
+          var rows = [];
+
+          table
+            .createReadStream({
+              keys: [id],
+              columns: ['SingerId', 'name'],
+              toJSON: true,
+            })
+            .on('error', done)
+            .on('data', function(row) {
+              rows.push(row);
+            })
+            .on('end', function() {
+              assert.deepEqual(rows, [
+                {
+                  SingerId: id,
+                  Name: name,
+                },
+              ]);
+
+              done();
+            });
+        }
+      );
+    });
+
+    it('should automatically convert to JSON with options', function(done) {
+      var id = generateName('id');
+
+      table.insert(
+        {
+          SingerId: id,
+          Int: 8,
+        },
+        function(err) {
+          assert.ifError(err);
+
+          var rows = [];
+
+          table
+            .createReadStream({
+              keys: [id],
+              columns: ['SingerId', 'Int'],
+              toJSON: true,
+              toJSONOptions: {wrapNumbers: true},
+            })
+            .on('error', done)
+            .on('data', function(row) {
+              rows.push(row);
+            })
+            .on('end', function() {
+              assert.strictEqual(rows[0].Int.value, '8');
+              done();
+            });
+        }
+      );
+    });
+
     it('should insert and delete a row', function(done) {
       var id = generateName('id');
       var name = generateName('name');

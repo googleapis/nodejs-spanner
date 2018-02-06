@@ -244,6 +244,33 @@ describe('PartialResultStream', function() {
       );
     });
 
+    it('should return the formatted row as JSON', function(done) {
+      var options = {
+        toJSON: true,
+        toJSONOptions: {},
+      };
+
+      var partialResultStream = partialResultStreamModule(function() {
+        return fakeRequestStream;
+      }, options);
+
+      var formattedRow = {
+        toJSON: function(options_) {
+          assert.strictEqual(options_, options.toJSONOptions);
+          done();
+        },
+      };
+
+      partialResultStreamModule.formatRow_ = function() {
+        return formattedRow;
+      };
+
+      fakeRequestStream.push(RESULT_WITH_TOKEN);
+      fakeRequestStream.push(null);
+
+      partialResultStream.on('error', done).resume();
+    });
+
     it('should separately emit formatted rows', function(done) {
       var formattedRows = [{}, {}];
 
