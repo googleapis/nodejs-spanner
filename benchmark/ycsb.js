@@ -91,7 +91,7 @@ function printMetrics(workload) {
     const opName = `[${operation.toUpperCase()}]`;
 
     console.log(
-      dedent`${opName}, Operations ${ops}
+      dedent`${opName}, Operations, ${ops}
       ${opName}, AverageLatency(us), ${stats.mean(lats)}
       ${opName}, LatencyVariance(us), ${stats.stdev(lats)}
       ${opName}, MinLatency(us), ${lats[0]}
@@ -99,7 +99,7 @@ function printMetrics(workload) {
       ${opName}, 95thPercentileLatency(us), ${stats.percentile(lats, 0.95)}
       ${opName}, 99thPercentileLatency(us), ${stats.percentile(lats, 0.99)}
       ${opName}, 99.9thPercentileLatency(us), ${stats.percentile(lats, 0.999)}
-      ${opName}, Return=OK ${ops}`
+      ${opName}, Return=OK, ${ops}`
     );
 
     for (let i = 0; i < numBucket; i++) {
