@@ -536,6 +536,36 @@ describe('TransactionRequest', function() {
         var makeRequestFn = stream.calledWith_[0];
         makeRequestFn(resumeToken);
       });
+
+      it('should accept toJSON and toJSONOptions', function() {
+        var query = {
+          toJSON: {},
+          toJSONOptions: {},
+        };
+
+        var stream = transactionRequest.createReadStream(TABLE, query);
+        var streamOptions = stream.calledWith_[1];
+
+        assert.strictEqual(streamOptions.toJSON, query.toJSON);
+        assert.strictEqual(streamOptions.toJSONOptions, query.toJSONOptions);
+      });
+
+      it('should delete toJSON, toJSONOptions from reqOpts', function(done) {
+        var query = {
+          toJSON: {},
+          toJSONOptions: {},
+        };
+
+        transactionRequest.requestStream = function(config) {
+          assert.strictEqual(config.reqOpts.toJSON, undefined);
+          assert.strictEqual(config.reqOpts.toJSONOptions, undefined);
+          done();
+        };
+
+        var stream = transactionRequest.createReadStream(TABLE, query);
+        var makeRequestFn = stream.calledWith_[0];
+        makeRequestFn();
+      });
     });
   });
 
