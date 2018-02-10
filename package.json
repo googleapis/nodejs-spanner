@@ -55,7 +55,9 @@
     "system-test": "repo-tools test run --cmd mocha -- system-test/*.js --no-timeouts",
     "test-no-cover": "repo-tools test run --cmd mocha -- test/*.js --no-timeouts",
     "test": "repo-tools test run --cmd npm -- run cover",
-    "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb"
+    "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@google-cloud/common": "^0.16.0",
@@ -85,7 +87,8 @@
     "stack-trace": "0.0.10",
     "stream-events": "^1.0.1",
     "string-format-obj": "^1.1.0",
-    "through2": "^2.0.3"
+    "through2": "^2.0.3",
+    "snyk": "^1.69.7"
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^2.1.3",
@@ -111,5 +114,6 @@
     "time-span": "^2.0.0",
     "uuid": "^3.2.1",
     "yargs": "^11.0.0"
-  }
+  },
+  "snyk": true
 }
