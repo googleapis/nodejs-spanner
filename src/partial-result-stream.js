@@ -108,10 +108,8 @@ function partialResultStream(requestFn, options) {
 
       rowChunks = [];
 
-      if (options.toJSON) {
-        formattedRows = formattedRows.map(
-          exec('toJSON', options.toJSONOptions)
-        );
+      if (options.json) {
+        formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
 
       split(formattedRows, userStream, function() {

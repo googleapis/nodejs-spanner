@@ -622,6 +622,12 @@ Database.prototype.getTransaction = function(options, callback) {
  * @param {string|object} query A SQL query or query object. See an
  *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
+ * @param {boolean} [query.json=false] Receive the rows as serialized objects.
+ *     This is the equivalent of calling `toJSON()` on each row.
+ * @param {object} [query.jsonOptions] Configuration options for the serialized
+ *     objects.
+ * @param {boolean} [query.jsonOptions.wrapNumbers=false] Protect large integer
+ *     values outside of the range of JavaScript Number.
  * @param {object} [query.params] A map of parameter name to values.
  * @param {object} [query.types] A map of parameter types.
  * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
@@ -668,6 +674,23 @@ Database.prototype.getTransaction = function(options, callback) {
  *   const row1 = rows[0];
  *
  *   // row1.toJSON() = {
+ *   //   SingerId: '1',
+ *   //   Name: 'Eddie Wilson'
+ *   // }
+ * });
+ *
+ * //-
+ * // Alternatively, set `query.json` to `true`, and this step will be performed
+ * // automaticaly.
+ * //-
+ * database.run(query, function(err, rows) {
+ *   if (err) {
+ *     // Error handling omitted.
+ *   }
+ *
+ *   const row1 = rows[0];
+ *
+ *   // row1 = {
  *   //   SingerId: '1',
  *   //   Name: 'Eddie Wilson'
  *   // }
@@ -800,6 +823,24 @@ Database.prototype.run = function(query, options, callback) {
  *   });
  *
  * //-
+ * // Alternatively, set `query.json` to `true`, and this step will be performed
+ * // automaticaly.
+ * //-
+ * query.json = true;
+ *
+ * database.runStream(query)
+ *   .on('error', function(err) {})
+ *   .on('data', function(row) {
+ *     // row = {
+ *     //   SingerId: '1',
+ *     //   Name: 'Eddie Wilson'
+ *     // }
+ *   })
+ *   .on('end', function() {
+ *     // All results retrieved.
+ *   });
+ *
+ * //-
  * // The SQL query string can contain parameter placeholders. A parameter
  * // placeholder consists of '@' followed by the parameter name.
  * //-
@@ -862,8 +903,8 @@ Database.prototype.runStream = function(query, options) {
     };
   }
 
-  delete reqOpts.toJSON;
-  delete reqOpts.toJSONOptions;
+  delete reqOpts.json;
+  delete reqOpts.jsonOptions;
 
   function makeRequest(resumeToken) {
     return self.pool_.requestStream({
@@ -874,8 +915,8 @@ Database.prototype.runStream = function(query, options) {
   }
 
   return new PartialResultStream(makeRequest, {
-    toJSON: query.toJSON,
-    toJSONOptions: query.toJSONOptions,
+    json: query.json,
+    jsonOptions: query.jsonOptions,
   });
 };
 
