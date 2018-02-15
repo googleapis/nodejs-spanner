@@ -211,6 +211,32 @@ TransactionRequest.fromProtoTimestamp_ = function(value) {
  * });
  *
  * //-
+ * // Alternatively, set `query.json` to `true`, and this step will be performed
+ * // automaticaly.
+ * //-
+ * database.runTransaction(function(err, transaction) {
+ *   if (err) {
+ *     // Error handling omitted.
+ *   }
+ *
+ *   transaction.createReadStream('Singers', {
+ *       keys: ['1'],
+ *       columns: ['SingerId', 'name'],
+ *       json: true,
+ *     })
+ *     .on('error', function(err) {})
+ *     .on('data', function(row) {
+ *       // row = {
+ *       //   SingerId: '1',
+ *       //   Name: 'Eddie Wilson'
+ *       // }
+ *     })
+ *     .on('end', function() {
+ *       // All results retrieved.
+ *     });
+ * });
+ *
+ * //-
  * // If you anticipate many results, you can end a stream early to prevent
  * // unnecessary processing and API requests.
  * //-
@@ -244,8 +270,8 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
     query
   );
 
-  delete reqOpts.toJSON;
-  delete reqOpts.toJSONOptions;
+  delete reqOpts.json;
+  delete reqOpts.jsonOptions;
 
   if (this.transaction && this.id) {
     reqOpts.transaction = {
@@ -297,8 +323,8 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
   }
 
   return new PartialResultStream(makeRequest, {
-    toJSON: query.toJSON,
-    toJSONOptions: query.toJSONOptions,
+    json: query.json,
+    jsonOptions: query.jsonOptions,
   });
 };
 
@@ -467,6 +493,12 @@ TransactionRequest.prototype.insert = function(table, keyVals, callback) {
  *     yielded. If using a composite key, provide an array within this array.
  *     See the example below.
  * @property {string} [index] The name of an index on the table.
+ * @property {boolean} [json=false] Receive the rows as serialized objects. This
+ *     is the equivalent of calling `toJSON()` on each row.
+ * @property {object} [jsonOptions] Configuration options for the serialized
+ *     objects.
+ * @property {boolean} [jsonOptions.wrapNumbers=false] Protect large integer
+ *     values outside of the range of JavaScript Number.
  */
 /**
  * @typedef {array} TransactionRequestReadResponse
@@ -522,9 +554,9 @@ TransactionRequest.prototype.insert = function(table, keyVals, callback) {
  *       // Error handling omitted.
  *     }
  *
- *     const row1 = rows[0];
+ *     const firstRow = rows[0];
  *
- *     // row1 = [
+ *     // firstRow = [
  *     //   {
  *     //     name: 'SingerId',
  *     //     value: '1'
@@ -571,9 +603,37 @@ TransactionRequest.prototype.insert = function(table, keyVals, callback) {
  *       // Error handling omitted.
  *     }
  *
- *     const row1 = rows[0];
+ *     const firstRow = rows[0];
  *
- *     // row1.toJSON() = {
+ *     // firstRow.toJSON() = {
+ *     //   SingerId: '1',
+ *     //   Name: 'Eddie Wilson'
+ *     // }
+ *
+ *     // End the transaction. Note that no callback is provided.
+ *     transaction.end();
+ *   });
+ * });
+ *
+ * //-
+ * // Alternatively, set `query.json` to `true`, and this step will be performed
+ * // automaticaly.
+ * //-
+ * database.runTransaction(function(err, transaction) {
+ *   if (err) {
+ *     // Error handling omitted.
+ *   }
+ *
+ *   query.json = true;
+ *
+ *   transaction.read('Singers', query, function(err, rows) {
+ *     if (err) {
+ *       // Error handling omitted.
+ *     }
+ *
+ *     const firstRow = rows[0];
+ *
+ *     // firstRow = {
  *     //   SingerId: '1',
  *     //   Name: 'Eddie Wilson'
  *     // }

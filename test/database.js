@@ -623,28 +623,28 @@ describe('Database', function() {
       assert(stream instanceof FakePartialResultStream);
     });
 
-    it('should pass toJSON, toJSONOptions to PartialResultStream', function() {
+    it('should pass json, jsonOptions to PartialResultStream', function() {
       var query = extend({}, QUERY);
-      query.toJSON = {};
-      query.toJSONOptions = {};
+      query.json = {};
+      query.jsonOptions = {};
 
       var stream = database.runStream(query);
       assert.deepStrictEqual(stream.calledWith_[1], {
-        toJSON: query.toJSON,
-        toJSONOptions: query.toJSONOptions,
+        json: query.json,
+        jsonOptions: query.jsonOptions,
       });
     });
 
-    it('should not pass toJSON, toJSONOptions to request', function(done) {
+    it('should not pass json, jsonOptions to request', function(done) {
       database.pool_.requestStream = function(config) {
-        assert.strictEqual(config.reqOpts.toJSON, undefined);
-        assert.strictEqual(config.reqOpts.toJSONOptions, undefined);
+        assert.strictEqual(config.reqOpts.json, undefined);
+        assert.strictEqual(config.reqOpts.jsonOptions, undefined);
         done();
       };
 
       var query = extend({}, QUERY);
-      query.toJSON = {};
-      query.toJSONOptions = {};
+      query.json = {};
+      query.jsonOptions = {};
 
       var stream = database.runStream(query);
       var makeRequestFn = stream.calledWith_[0];

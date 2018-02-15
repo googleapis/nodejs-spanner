@@ -246,8 +246,8 @@ describe('PartialResultStream', function() {
 
     it('should return the formatted row as JSON', function(done) {
       var options = {
-        toJSON: true,
-        toJSONOptions: {},
+        json: true,
+        jsonOptions: {},
       };
 
       var partialResultStream = partialResultStreamModule(function() {
@@ -256,7 +256,7 @@ describe('PartialResultStream', function() {
 
       var formattedRow = {
         toJSON: function(options_) {
-          assert.strictEqual(options_, options.toJSONOptions);
+          assert.strictEqual(options_, options.jsonOptions);
           done();
         },
       };
