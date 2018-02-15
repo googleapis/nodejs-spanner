@@ -537,28 +537,28 @@ describe('TransactionRequest', function() {
         makeRequestFn(resumeToken);
       });
 
-      it('should accept toJSON and toJSONOptions', function() {
+      it('should accept json and jsonOptions', function() {
         var query = {
-          toJSON: {},
-          toJSONOptions: {},
+          json: {},
+          jsonOptions: {},
         };
 
         var stream = transactionRequest.createReadStream(TABLE, query);
         var streamOptions = stream.calledWith_[1];
 
-        assert.strictEqual(streamOptions.toJSON, query.toJSON);
-        assert.strictEqual(streamOptions.toJSONOptions, query.toJSONOptions);
+        assert.strictEqual(streamOptions.json, query.json);
+        assert.strictEqual(streamOptions.jsonOptions, query.jsonOptions);
       });
 
-      it('should delete toJSON, toJSONOptions from reqOpts', function(done) {
+      it('should delete json, jsonOptions from reqOpts', function(done) {
         var query = {
-          toJSON: {},
-          toJSONOptions: {},
+          json: {},
+          jsonOptions: {},
         };
 
         transactionRequest.requestStream = function(config) {
-          assert.strictEqual(config.reqOpts.toJSON, undefined);
-          assert.strictEqual(config.reqOpts.toJSONOptions, undefined);
+          assert.strictEqual(config.reqOpts.json, undefined);
+          assert.strictEqual(config.reqOpts.jsonOptions, undefined);
           done();
         };
 

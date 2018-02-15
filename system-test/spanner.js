@@ -964,7 +964,7 @@ describe('Spanner', function() {
             .createReadStream({
               keys: [id],
               columns: ['SingerId', 'name'],
-              toJSON: true,
+              json: true,
             })
             .on('error', done)
             .on('data', function(row) {
@@ -1001,8 +1001,8 @@ describe('Spanner', function() {
             .createReadStream({
               keys: [id],
               columns: ['SingerId', 'Int'],
-              toJSON: true,
-              toJSONOptions: {wrapNumbers: true},
+              json: true,
+              jsonOptions: {wrapNumbers: true},
             })
             .on('error', done)
             .on('data', function(row) {

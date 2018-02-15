@@ -388,6 +388,12 @@ Table.prototype.insert = function(keyVals, callback) {
  *     yielded. If using a composite key, provide an array within this array.
  *     See the example below.
  * @property {string} [index] The name of an index on the table.
+ * @property {boolean} [json=false] Receive the rows as serialized objects. This
+ *     is the equivalent of calling `toJSON()` on each row.
+ * @property {object} [jsonOptions] Configuration options for the serialized
+ *     objects.
+ * @property {boolean} [jsonOptions.wrapNumbers=false] Protect large integer
+ *     values outside of the range of JavaScript Number.
  * @property {object} [keySet] Defines a collection of keys and/or key ranges to
  *     read.
  * @property {number} [limit] The number of rows to yield.
@@ -447,9 +453,9 @@ Table.prototype.insert = function(keyVals, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   const row1 = rows[0];
+ *   const firstRow = rows[0];
  *
- *   // row1 = [
+ *   // firstRow = [
  *   //   {
  *   //     name: 'SingerId',
  *   //     value: '1'
@@ -481,15 +487,18 @@ Table.prototype.insert = function(keyVals, callback) {
  * //-
  * // Rows are returned as an array of object arrays. Each object has a `name`
  * // and `value` property. To get a serialized object, call `toJSON()`.
+ * //
+ * // Alternatively, set `query.json` to `true`, and this step will be performed
+ * // automaticaly.
  * //-
  * table.read(query, function(err, rows) {
  *   if (err) {
  *     // Error handling omitted.
  *   }
  *
- *   const row1 = rows[0];
+ *   const firstRow = rows[0];
  *
- *   // rows1.toJSON() = {
+ *   // firstRow.toJSON() = {
  *   //   SingerId: '1',
  *   //   Name: 'Eddie Wilson'
  *   // }
