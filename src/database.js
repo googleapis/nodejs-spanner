@@ -648,9 +648,9 @@ Database.prototype.getTransaction = function(options, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   const row1 = rows[0];
+ *   const firstRow = rows[0];
  *
- *   // row1 = [
+ *   // firstRow = [
  *   //   {
  *   //     name: 'SingerId',
  *   //     value: '1'
@@ -671,9 +671,9 @@ Database.prototype.getTransaction = function(options, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   const row1 = rows[0];
+ *   const firstRow = rows[0];
  *
- *   // row1.toJSON() = {
+ *   // firstRow.toJSON() = {
  *   //   SingerId: '1',
  *   //   Name: 'Eddie Wilson'
  *   // }
@@ -688,9 +688,9 @@ Database.prototype.getTransaction = function(options, callback) {
  *     // Error handling omitted.
  *   }
  *
- *   const row1 = rows[0];
+ *   const firstRow = rows[0];
  *
- *   // row1 = {
+ *   // firstRow = {
  *   //   SingerId: '1',
  *   //   Name: 'Eddie Wilson'
  *   // }
