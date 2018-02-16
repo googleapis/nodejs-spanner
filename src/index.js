@@ -214,6 +214,13 @@ function Spanner(options) {
 util.inherits(Spanner, commonGrpc.Service);
 
 /**
+ * Placeholder used to auto populate a column with the commit timestamp.
+ *
+ * @type {string}
+ */
+Spanner.COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
+
+/**
  * Helper function to get a Cloud Spanner Date object.
  *
  * @method Spanner.date
