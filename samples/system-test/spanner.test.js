@@ -323,7 +323,7 @@ test.serial(`should create query partitions`, async t => {
 
   let output = results.stdout + results.stderr;
 
-  t.regex(output, /Successfully created query partitions\./);
+  t.regex(output, /Successfully created \d query partitions\./);
 
   await transaction.close();
 });
@@ -342,7 +342,7 @@ test.serial(`should create read partitions`, async t => {
 
   let output = results.stdout + results.stderr;
 
-  t.regex(output, /Successfully created read partitions\./);
+  t.regex(output, /Successfully created \d read partitions\./);
 
   await transaction.close();
 });
@@ -365,7 +365,7 @@ test.serial(`should execute a partition`, async t => {
 
   let output = results.stdout + results.stderr;
 
-  t.regex(output, /Successfully executed partition\./);
+  t.regex(output, /Successfully received \d from executed partition\./);
 
   await transaction.close();
 });

@@ -86,7 +86,9 @@ function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
     .createQueryPartitions(query)
     .then(data => {
       const partitions = data[0];
-      console.log(`Successfully created query partitions.`);
+      console.log(
+        `Successfully created ${partitions.length} query partitions.`
+      );
     })
     .catch(err => {
       console.error('ERROR:', err);
@@ -127,7 +129,7 @@ function createReadPartitions(instanceId, databaseId, identifier, projectId) {
     .createReadPartitions(options)
     .then(data => {
       const partitions = data[0];
-      console.log(`Successfully created read partitions.`);
+      console.log(`Successfully created ${partitions.length} read partitions.`);
     })
     .catch(err => {
       console.error('ERROR:', err);
@@ -169,7 +171,9 @@ function executePartition(
     .execute(partition)
     .then(data => {
       const rows = data[0];
-      console.log(`Successfully executed partition.`);
+      console.log(
+        `Successfully received ${rows.length} from executed partition.`
+      );
     })
     .catch(err => {
       console.error('ERROR:', err);
