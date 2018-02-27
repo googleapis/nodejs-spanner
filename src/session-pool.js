@@ -244,7 +244,7 @@ SessionPool.prototype.getWriteSession = function() {
  * @return {boolean}
  */
 SessionPool.prototype.isFull = function() {
-  return this.size() + this.pendingCreates_ === this.options.max;
+  return this.size() + this.pendingCreates_ >= this.options.max;
 };
 
 /**
@@ -398,7 +398,6 @@ SessionPool.prototype.acquireSession_ = function(type) {
   return this.getSession_(type).then(function(session) {
     session.lastUsed = Date.now();
 
-    self.borrowSession_(session);
     self.traces_.set(session.id, trace);
 
     if (!self.available()) {
@@ -631,16 +630,24 @@ SessionPool.prototype.getIdleSessions_ = function() {
  */
 SessionPool.prototype.getNextAvailableSession_ = function(type) {
   var self = this;
+  var session = null;
 
   if (type === READONLY && this.reads_.length) {
-    return Promise.resolve(this.reads_.shift());
+    session = this.reads_[0];
   }
 
   if (this.writes_.length) {
-    return Promise.resolve(this.writes_.shift());
+    session = this.writes_[0];
   }
 
-  var session = this.reads_.shift();
+  if (session) {
+    self.borrowSession_(session);
+    return Promise.resolve(session);
+  }
+
+  // if session is not defined then create a ReadWrite session
+  session = this.reads_[0];
+  self.borrowSession_(session);
 
   return this.race_(self.createTransaction_(session))
     .then(function() {
@@ -785,8 +792,9 @@ SessionPool.prototype.pingSession_ = function(session) {
         });
     })
     .catch(function() {
-      var index = self.borrowed_.indexOf(session);
-      self.borrowed_.splice(index, 1);
+      // var index = self.borrowed_.indexOf(session);
+      // self.borrowed_.splice(index, 1);
+      self.release(session); // session is borrowed but not released, it will cause a session leak.
     });
 };
 
@@ -860,6 +868,7 @@ SessionPool.prototype.spliceSession_ = function(session) {
   var group = this.getSessionGroup_(session);
   var index = group.indexOf(session);
 
+  // if index is -1 then definitely there is a session leak. In an ideal situation, index should never be -1
   if (index > -1) {
     group.splice(index, 1);
   }
