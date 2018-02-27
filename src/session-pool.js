@@ -634,9 +634,7 @@ SessionPool.prototype.getNextAvailableSession_ = function(type) {
 
   if (type === READONLY && this.reads_.length) {
     session = this.reads_[0];
-  }
-
-  if (type === READWRITE && this.writes_.length) {
+  } else if (this.writes_.length) {
     session = this.writes_[0];
   }
 
