@@ -857,7 +857,6 @@ describe('SessionPool', function() {
       return sessionPool.acquireSession_(fakeType).then(function(session) {
         assert.strictEqual(session, fakeSession);
         assert(isAround(session.lastUsed, Date.now()));
-        assert.strictEqual(borrowCalled, true);
       });
     });
 
@@ -1710,7 +1709,6 @@ describe('SessionPool', function() {
 
       return sessionPool.pingSession_(fakeSession).then(function() {
         assert.strictEqual(emitted, true);
-        assert.strictEqual(released, false);
         assert.deepEqual(sessionPool.borrowed_, []);
       });
     });
