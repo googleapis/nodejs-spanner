@@ -1317,10 +1317,16 @@ describe('SessionPool', function() {
 
       sessionPool.reads_ = [fakeSession];
 
+      var borrowCalled = false;
+      sessionPool.borrowSession_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        borrowCalled = true;
+      };
       return sessionPool
         .getNextAvailableSession_('readonly')
         .then(function(session) {
           assert.strictEqual(session, fakeSession);
+          assert.strictEqual(borrowCalled, true);
         });
     });
 
@@ -1329,10 +1335,17 @@ describe('SessionPool', function() {
 
       sessionPool.writes_ = [fakeSession];
 
+      var borrowCalled = false;
+      sessionPool.borrowSession_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        borrowCalled = true;
+      };
+
       return sessionPool
         .getNextAvailableSession_('readonly')
         .then(function(session) {
           assert.strictEqual(session, fakeSession);
+          assert.strictEqual(borrowCalled, true);
         });
     });
 
@@ -1341,10 +1354,16 @@ describe('SessionPool', function() {
 
       sessionPool.writes_ = [fakeSession];
 
+      var borrowCalled = false;
+      sessionPool.borrowSession_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        borrowCalled = true;
+      };
       return sessionPool
         .getNextAvailableSession_('readwrite')
         .then(function(session) {
           assert.strictEqual(session, fakeSession);
+          assert.strictEqual(borrowCalled, true);
         });
     });
 
@@ -1352,6 +1371,12 @@ describe('SessionPool', function() {
       var fakeSession = {};
 
       sessionPool.reads_ = [fakeSession];
+
+      var borrowCalled = false;
+      sessionPool.borrowSession_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        borrowCalled = true;
+      };
 
       var transformed = false;
       var fakePromise = Promise.resolve();
@@ -1371,6 +1396,7 @@ describe('SessionPool', function() {
         .then(function(session) {
           assert.strictEqual(transformed, true);
           assert.strictEqual(session, fakeSession);
+          assert.strictEqual(borrowCalled, true);
         });
     });
 
@@ -1390,6 +1416,12 @@ describe('SessionPool', function() {
         released = true;
       };
 
+      var borrowCalled = false;
+      sessionPool.borrowSession_ = function(session) {
+        assert.strictEqual(session, fakeSession);
+        borrowCalled = true;
+      };
+
       sessionPool.race_ = function(promise) {
         return promise;
       };
@@ -1401,6 +1433,7 @@ describe('SessionPool', function() {
         function(err) {
           assert.strictEqual(err, fakeError);
           assert.strictEqual(released, true);
+          assert.strictEqual(borrowCalled, true);
         }
       );
     });
@@ -1709,7 +1742,7 @@ describe('SessionPool', function() {
 
       return sessionPool.pingSession_(fakeSession).then(function() {
         assert.strictEqual(emitted, true);
-        assert.deepEqual(sessionPool.borrowed_, []);
+        assert.strictEqual(released, true);
       });
     });
   });
