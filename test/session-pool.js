@@ -842,16 +842,10 @@ describe('SessionPool', function() {
     it('should get a session', function() {
       var fakeType = 'readonly';
       var fakeSession = {};
-      var borrowCalled = false;
 
       sessionPool.getSession_ = function(type) {
         assert.strictEqual(type, fakeType);
         return Promise.resolve(fakeSession);
-      };
-
-      sessionPool.borrowSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        borrowCalled = true;
       };
 
       return sessionPool.acquireSession_(fakeType).then(function(session) {
