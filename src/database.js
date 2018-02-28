@@ -677,7 +677,7 @@ Database.prototype.getSchema = function(callback) {
  * // To control how many API requests are made and page through the results
  * // manually, set `autoPaginate` to `false`.
  * //-
- * function callback(err, instances, nextQuery, apiResponse) {
+ * function callback(err, sessions, nextQuery, apiResponse) {
  *   if (nextQuery) {
  *     // More results exist.
  *     database.getSessions(nextQuery, callback);

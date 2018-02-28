@@ -108,10 +108,12 @@ BatchTransaction.prototype.close = function(callback) {
  * @param {string|object} query A SQL query or
  *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
  *     object.
+ * @param {object} [query.gaxOptions] Request configuration options, outlined
+ *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
  * @param {object} [query.params] A map of parameter name to values.
  * @param {object} [query.partitionOptions] A map of partition options.
  * @param {object} [query.types] A map of parameter types.
- * @param {CreateQueryPartitionsCallback} [callback] Callback function.
+ * @param {CreateQueryPartitionsCallback} [callback] Callback callback function.
  * @returns {Promise<CreateQueryPartitionsResponse>}
  *
  * @example <caption>include:samples/batch.js</caption>
@@ -185,6 +187,8 @@ BatchTransaction.prototype.createPartitions_ = function(config, callback) {
  * @typedef {object} ReadPartition
  * @mixes ReadRequestOptions
  * @property {string} partitionToken The partition token.
+ * @property {object} [gaxOptions] Request configuration options, outlined
+ *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
  */
 /**
  * @typedef {array} CreateReadPartitionsResponse
@@ -236,6 +240,8 @@ BatchTransaction.prototype.createReadPartitions = function(options, callback) {
  * @see {@link Transaction#run} when using {@link QueryParition}.
  *
  * @param {ReadPartition|QueryParition} partition The partition object.
+ * @param {object} [partition.gaxOptions] Request configuration options,
+ *     outlined here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
  * @param {TransactionRequestReadCallback|RunCallback} callback Callback
  *     function.
  * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}
@@ -256,7 +262,7 @@ BatchTransaction.prototype.execute = function(partition, callback) {
  * Executes partition in streaming mode.
  *
  * @see {@link Transaction#createReadStream} when using {@link ReadPartition}.
- * @see {@link Transaction#runStream} when using {@link QueryParition}.
+ * @see {@link Transaction#runStream} when using {@link QueryPartition}.
  *
  * @param {ReadPartition|QueryPartition} partition The partition object.
  * @returns {ReadableStream} A readable stream that emits rows.
