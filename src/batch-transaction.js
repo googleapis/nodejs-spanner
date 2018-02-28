@@ -273,29 +273,34 @@ BatchTransaction.prototype.execute = function(partition, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const transaction = database.batchTransaction(identifier);
  *
- * transaction.createReadPartitions(options, function(err, partitions) {
- *   const partition = partitions[0];
+ * database.createBatchTransaction(function(err, transaction) {
+ *   if (err) {
+ *     // Error handling omitted.
+ *   }
  *
- *   transaction
- *     .executeStream(partition)
- *     .on('error', function(err) {})
- *     .on('data', function(row) {
- *       // row = [
- *       //   {
- *       //     name: 'SingerId',
- *       //     value: '1'
- *       //   },
- *       //   {
- *       //     name: 'Name',
- *       //     value: 'Eddie Wilson'
- *       //   }
- *       // ]
- *     })
- *     .on('end', function() {
- *       // All results retrieved
- *     });
+ *   transaction.createReadPartitions(options, function(err, partitions) {
+ *     const partition = partitions[0];
+ *
+ *     transaction
+ *       .executeStream(partition)
+ *       .on('error', function(err) {})
+ *       .on('data', function(row) {
+ *         // row = [
+ *         //   {
+ *         //     name: 'SingerId',
+ *         //     value: '1'
+ *         //   },
+ *         //   {
+ *         //     name: 'Name',
+ *         //     value: 'Eddie Wilson'
+ *         //   }
+ *         // ]
+ *       })
+ *       .on('end', function() {
+ *         // All results retrieved
+ *       });
+ *   });
  * });
  */
 BatchTransaction.prototype.executeStream = function(partition) {
