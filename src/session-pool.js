@@ -790,9 +790,8 @@ SessionPool.prototype.pingSession_ = function(session) {
         });
     })
     .catch(function() {
-      // var index = self.borrowed_.indexOf(session);
-      // self.borrowed_.splice(index, 1);
-      self.release(session); // session is borrowed but not released, it will cause a session leak.
+      // session is borrowed but not released, it will cause a session leak.
+      self.release(session);
     });
 };
 
