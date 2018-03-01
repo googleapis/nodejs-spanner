@@ -191,7 +191,7 @@ describe('Spanner', function() {
       var options = spanner.calledWith_[1];
 
       assert.deepEqual(config, {
-        baseUrl: 'spanner.googleapis.com',
+        baseUrl: fakeV1.SpannerClient.servicePath,
         protosDir: path.resolve(__dirname, '../protos'),
         protoServices: {
           Operations: {
@@ -211,6 +211,15 @@ describe('Spanner', function() {
           scopes: [],
         })
       );
+    });
+
+    it('should optionally accept a servicePath', function() {
+      var SERVICE_PATH = 'abc.def.ghi';
+      var spanner = new Spanner({servicePath: SERVICE_PATH});
+
+      var config = spanner.calledWith_[0];
+
+      assert.strictEqual(config.baseUrl, SERVICE_PATH);
     });
   });
 

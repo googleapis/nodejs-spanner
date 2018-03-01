@@ -257,18 +257,9 @@ TransactionRequest.fromProtoTimestamp_ = function(value) {
 TransactionRequest.prototype.createReadStream = function(table, query) {
   var self = this;
 
-  if (is.array(query) || is.string(query)) {
-    query = {
-      keys: query,
-    };
-  }
+  var reqOpts = codec.encodeRead(query);
 
-  var reqOpts = extend(
-    {
-      table: table,
-    },
-    query
-  );
+  reqOpts.table = table;
 
   delete reqOpts.json;
   delete reqOpts.jsonOptions;
@@ -277,34 +268,6 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
     reqOpts.transaction = {
       id: this.id,
     };
-  }
-
-  if (query.keys || query.ranges) {
-    reqOpts.keySet = {};
-  }
-
-  if (query.keys) {
-    reqOpts.keySet.keys = arrify(query.keys).map(function(key) {
-      return {
-        values: arrify(key).map(codec.encode),
-      };
-    });
-    delete reqOpts.keys;
-  }
-
-  if (query.ranges) {
-    reqOpts.keySet.ranges = arrify(query.ranges).map(function(rawRange) {
-      var range = extend({}, rawRange);
-
-      for (var bound in range) {
-        range[bound] = {
-          values: arrify(range[bound]).map(codec.encode),
-        };
-      }
-
-      return range;
-    });
-    delete reqOpts.ranges;
   }
 
   var gaxOptions = query.gaxOptions;

@@ -197,7 +197,13 @@ describe('TransactionRequest', function() {
 
   describe('createReadStream', function() {
     var TABLE = 'table-name';
-    var QUERY = {};
+    var QUERY = {e: 'f'};
+
+    beforeEach(function() {
+      fakeCodec.encodeRead = function() {
+        return QUERY;
+      };
+    });
 
     it('should accept a query object', function(done) {
       var query = {
@@ -205,9 +211,14 @@ describe('TransactionRequest', function() {
         c: 'd',
       };
 
-      var expectedReqOpts = extend({}, query, {
+      var expectedReqOpts = extend({}, QUERY, {
         table: TABLE,
       });
+
+      fakeCodec.encodeRead = function(readRequest) {
+        assert.strictEqual(readRequest, query);
+        return QUERY;
+      };
 
       transactionRequest.requestStream = function(options) {
         assert.deepEqual(options.reqOpts, expectedReqOpts);
@@ -225,12 +236,15 @@ describe('TransactionRequest', function() {
       transactionRequest.transaction = true;
       transactionRequest.id = ID;
 
-      var expectedReqOpts = {
-        table: TABLE,
-        transaction: {
-          id: ID,
+      var expectedReqOpts = extend(
+        {
+          table: TABLE,
+          transaction: {
+            id: ID,
+          },
         },
-      };
+        QUERY
+      );
 
       transactionRequest.requestStream = function(options) {
         assert.deepEqual(options.reqOpts, expectedReqOpts);
@@ -241,243 +255,6 @@ describe('TransactionRequest', function() {
       var makeRequestFn = stream.calledWith_[0];
 
       makeRequestFn();
-    });
-
-    describe('query.keys', function() {
-      it('should encode and map input to keySet.keys[].values', function(done) {
-        var query = {
-          keys: ['key', ['composite', 'key']],
-        };
-
-        var encodedValue = {};
-        var numEncodeRequests = 0;
-
-        fakeCodec.encode = function(key) {
-          numEncodeRequests++;
-
-          switch (numEncodeRequests) {
-            case 1: {
-              assert.strictEqual(key, query.keys[0]);
-              break;
-            }
-            case 2: {
-              assert.strictEqual(key, query.keys[1][0]);
-              break;
-            }
-            case 3: {
-              assert.strictEqual(key, query.keys[1][1]);
-              break;
-            }
-          }
-
-          return encodedValue;
-        };
-
-        transactionRequest.requestStream = function(options) {
-          var expectedKeys = [
-            {
-              values: [encodedValue],
-            },
-            {
-              values: [encodedValue, encodedValue],
-            },
-          ];
-
-          assert.deepStrictEqual(options.reqOpts.keySet.keys, expectedKeys);
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should accept just a key', function(done) {
-        var query = 'key';
-
-        var encodedValue = {};
-        fakeCodec.encode = function(key) {
-          assert.strictEqual(key, query);
-          return encodedValue;
-        };
-
-        transactionRequest.requestStream = function(options) {
-          assert.strictEqual(
-            options.reqOpts.keySet.keys[0].values[0],
-            encodedValue
-          );
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should accept just an array of keys', function(done) {
-        var query = ['key'];
-
-        var encodedValue = {};
-        fakeCodec.encode = function(key) {
-          assert.strictEqual(key, query[0]);
-          return encodedValue;
-        };
-
-        transactionRequest.requestStream = function(options) {
-          assert.strictEqual(
-            options.reqOpts.keySet.keys[0].values[0],
-            encodedValue
-          );
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should arrify query.keys', function(done) {
-        var query = {
-          keys: 'key',
-        };
-
-        var encodedValue = {};
-        fakeCodec.encode = function(key) {
-          assert.strictEqual(key, query.keys);
-          return encodedValue;
-        };
-
-        transactionRequest.requestStream = function(options) {
-          assert.strictEqual(
-            options.reqOpts.keySet.keys[0].values[0],
-            encodedValue
-          );
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should remove keys property from request object', function(done) {
-        var query = {
-          keys: ['key'],
-        };
-
-        transactionRequest.requestStream = function(options) {
-          assert.strictEqual(options.reqOpts.keys, undefined);
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-    });
-
-    describe('query.ranges', function() {
-      it('should encode/map the inputs', function(done) {
-        var query = {
-          ranges: [
-            {
-              startOpen: 'key',
-              endClosed: ['composite', 'key'],
-            },
-          ],
-        };
-
-        var encodedValue = {};
-        var numEncodeRequests = 0;
-
-        fakeCodec.encode = function(key) {
-          var keys = ['key', 'composite', 'key'];
-
-          assert.strictEqual(key, keys[numEncodeRequests++]);
-          return encodedValue;
-        };
-
-        transactionRequest.requestStream = function(options) {
-          var expectedRanges = [
-            {
-              startOpen: {
-                values: [encodedValue],
-              },
-              endClosed: {
-                values: [encodedValue, encodedValue],
-              },
-            },
-          ];
-
-          assert.strictEqual(numEncodeRequests, 3);
-          assert.deepStrictEqual(options.reqOpts.keySet.ranges, expectedRanges);
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should arrify query.ranges', function(done) {
-        var query = {
-          ranges: [
-            {
-              startOpen: 'start',
-              endClosed: 'end',
-            },
-          ],
-        };
-
-        var encodedValue = {};
-        var numEncodeRequests = 0;
-
-        fakeCodec.encode = function(key) {
-          assert.strictEqual(key, ['start', 'end'][numEncodeRequests++]);
-          return encodedValue;
-        };
-
-        transactionRequest.requestStream = function(options) {
-          var expectedRanges = [
-            {
-              startOpen: {
-                values: [encodedValue],
-              },
-              endClosed: {
-                values: [encodedValue],
-              },
-            },
-          ];
-
-          assert.strictEqual(numEncodeRequests, 2);
-          assert.deepStrictEqual(options.reqOpts.keySet.ranges, expectedRanges);
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
-
-      it('should remove the ranges property from the query', function(done) {
-        var query = {
-          ranges: [
-            {
-              startOpen: 'start',
-              endClosed: 'end',
-            },
-          ],
-        };
-
-        transactionRequest.requestStream = function(options) {
-          assert.strictEqual(options.reqOpts.ranges, undefined);
-          done();
-        };
-
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
-      });
     });
 
     describe('PartialResultStream', function() {
@@ -491,7 +268,7 @@ describe('TransactionRequest', function() {
           a: 'b',
         };
 
-        var expectedQuery = extend({}, query, {
+        var expectedQuery = extend({}, QUERY, {
           table: TABLE,
           resumeToken: undefined,
         });

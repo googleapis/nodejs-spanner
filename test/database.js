@@ -33,6 +33,7 @@ var fakeUtil = extend({}, util, {
 
     promisified = true;
     assert.deepEqual(options.exclude, [
+      'batchTransaction',
       'delete',
       'getMetadata',
       'runTransaction',
@@ -42,6 +43,10 @@ var fakeUtil = extend({}, util, {
     ]);
   },
 });
+
+function FakeBatchTransaction() {
+  this.calledWith_ = arguments;
+}
 
 function FakeGrpcServiceObject() {
   this.calledWith_ = arguments;
@@ -111,6 +116,7 @@ describe('Database', function() {
         ServiceObject: FakeGrpcServiceObject,
       },
       modelo: fakeModelo,
+      './batch-transaction.js': FakeBatchTransaction,
       './codec.js': fakeCodec,
       './partial-result-stream.js': FakePartialResultStream,
       './session-pool.js': FakeSessionPool,
@@ -233,6 +239,43 @@ describe('Database', function() {
     });
   });
 
+  describe('batchTransaction', function() {
+    var SESSION = {id: 'hijklmnop'};
+    var ID = 'abcdefg';
+    var READ_TIMESTAMP = {seconds: 0, nanos: 0};
+
+    it('should create a transaction object', function() {
+      var identifier = {
+        session: SESSION,
+        transaction: ID,
+        readTimestamp: READ_TIMESTAMP,
+      };
+
+      var transaction = database.batchTransaction(identifier);
+
+      assert(transaction instanceof FakeBatchTransaction);
+      assert.deepEqual(transaction.calledWith_[0], SESSION);
+      assert.strictEqual(transaction.id, ID);
+      assert.strictEqual(transaction.readTimestamp, READ_TIMESTAMP);
+    });
+
+    it('should optionally accept a session id', function() {
+      var identifier = {
+        session: SESSION.id,
+        transaction: ID,
+        readTimestamp: READ_TIMESTAMP,
+      };
+
+      database.session_ = function(id) {
+        assert.strictEqual(id, SESSION.id);
+        return SESSION;
+      };
+
+      var transaction = database.batchTransaction(identifier);
+      assert.deepEqual(transaction.calledWith_[0], SESSION);
+    });
+  });
+
   describe('close', function() {
     describe('success', function() {
       beforeEach(function() {
@@ -302,6 +345,77 @@ describe('Database', function() {
           assert.strictEqual(err.messages, fakeLeaks);
           done();
         });
+      });
+    });
+  });
+
+  describe('createBatchTransaction', function() {
+    var SESSION = {};
+    var RESPONSE = {a: 'b'};
+
+    beforeEach(function() {
+      database.createSession = function(callback) {
+        callback(null, SESSION, RESPONSE);
+      };
+    });
+
+    it('should return any session creation errors', function(done) {
+      var error = new Error('err');
+      var apiResponse = {c: 'd'};
+
+      database.createSession = function(callback) {
+        callback(error, null, apiResponse);
+      };
+
+      database.createBatchTransaction(function(err, transaction, resp) {
+        assert.strictEqual(err, error);
+        assert.strictEqual(transaction, null);
+        assert.strictEqual(resp, apiResponse);
+        done();
+      });
+    });
+
+    it('should create a transaction', function(done) {
+      var opts = {a: 'b'};
+
+      var fakeTransaction = {
+        begin: function(callback) {
+          callback(null, RESPONSE);
+        },
+      };
+
+      database.batchTransaction = function(identifier) {
+        assert.deepEqual(identifier, {session: SESSION});
+        return fakeTransaction;
+      };
+
+      database.createBatchTransaction(opts, function(err, transaction, resp) {
+        assert.strictEqual(err, null);
+        assert.strictEqual(transaction, fakeTransaction);
+        assert.deepEqual(transaction.options, opts);
+        assert.strictEqual(resp, RESPONSE);
+        done();
+      });
+    });
+
+    it('should return any transaction errors', function(done) {
+      var error = new Error('err');
+
+      var fakeTransaction = {
+        begin: function(callback) {
+          callback(error, RESPONSE);
+        },
+      };
+
+      database.batchTransaction = function() {
+        return fakeTransaction;
+      };
+
+      database.createBatchTransaction(function(err, transaction, resp) {
+        assert.strictEqual(err, error);
+        assert.strictEqual(transaction, null);
+        assert.strictEqual(resp, RESPONSE);
+        done();
       });
     });
   });
@@ -1024,6 +1138,77 @@ describe('Database', function() {
           assert.strictEqual(err, error);
           done();
         });
+      });
+    });
+  });
+
+  describe('getSessions', function() {
+    it('should make the correct request', function(done) {
+      var gaxOpts = {};
+      var options = {a: 'a', gaxOptions: gaxOpts};
+
+      var expectedReqOpts = extend({}, options, {
+        database: database.formattedName_,
+      });
+
+      delete expectedReqOpts.gaxOptions;
+
+      database.request = function(config) {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'listSessions');
+        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.strictEqual(config.gaxOpts, gaxOpts);
+        done();
+      };
+
+      database.getSessions(options, assert.ifError);
+    });
+
+    it('should not require a query', function(done) {
+      database.request = function(config) {
+        assert.deepEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
+
+        done();
+      };
+
+      database.getSessions(assert.ifError);
+    });
+
+    it('should return all arguments on error', function(done) {
+      var ARGS = [new Error('err'), null, {}];
+
+      database.request = function(config, callback) {
+        callback.apply(null, ARGS);
+      };
+
+      database.getSessions(function() {
+        var args = [].slice.call(arguments);
+        assert.deepEqual(args, ARGS);
+        done();
+      });
+    });
+
+    it('should create and return Session objects', function(done) {
+      var SESSIONS = [{name: 'abc'}];
+      var SESSION_INSTANCE = {};
+      var RESPONSE = {};
+
+      database.request = function(config, callback) {
+        callback(null, SESSIONS, RESPONSE);
+      };
+
+      database.session_ = function(name) {
+        assert.strictEqual(name, SESSIONS[0].name);
+        return SESSION_INSTANCE;
+      };
+
+      database.getSessions(function(err, sessions, resp) {
+        assert.ifError(err);
+        assert.strictEqual(sessions[0], SESSION_INSTANCE);
+        assert.strictEqual(resp, RESPONSE);
+        done();
       });
     });
   });
