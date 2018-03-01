@@ -478,7 +478,7 @@ describe('Instance', function() {
       });
 
       it('should call create', function(done) {
-        instance.create = function(options, callback) {
+        instance.create = function(options) {
           assert.strictEqual(options, OPTIONS);
           done();
         };
@@ -513,7 +513,6 @@ describe('Instance', function() {
       });
 
       it('should execute callback if opereation succeeded', function(done) {
-        var error = new Error('Error.');
         var metadata = {};
 
         setImmediate(function() {

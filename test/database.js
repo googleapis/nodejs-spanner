@@ -579,7 +579,7 @@ describe('Database', function() {
       });
 
       it('should call create', function(done) {
-        database.create = function(options, callback) {
+        database.create = function(options) {
           assert.strictEqual(options, OPTIONS);
           done();
         };
@@ -614,7 +614,6 @@ describe('Database', function() {
       });
 
       it('should execute callback if opereation succeeded', function(done) {
-        var error = new Error('Error.');
         var metadata = {};
 
         setImmediate(function() {
