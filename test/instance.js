@@ -149,7 +149,6 @@ describe('Instance', function() {
       assert.deepEqual(calledWith.methods, {
         create: true,
         exists: true,
-        get: true,
       });
 
       calledWith.createMethod(null, options, done);
@@ -426,6 +425,175 @@ describe('Instance', function() {
       instance.delete(function(err) {
         assert.ifError(err);
         assert.strictEqual(cache.has(instance.id), false);
+        done();
+      });
+    });
+  });
+
+  describe('get', function() {
+    it('should call getMetadata', function(done) {
+      var options = {};
+
+      instance.getMetadata = function() {
+        done();
+      };
+
+      instance.get(options, assert.ifError);
+    });
+
+    it('should not require an options object', function(done) {
+      instance.getMetadata = function() {
+        done();
+      };
+
+      instance.get(assert.ifError);
+    });
+
+    describe('autoCreate', function() {
+      var error = new Error('Error.');
+      error.code = 5;
+
+      var OPTIONS = {
+        autoCreate: true,
+      };
+
+      var OPERATION = {
+        listeners: {},
+        on: function(eventName, callback) {
+          OPERATION.listeners[eventName] = callback;
+          return OPERATION;
+        },
+      };
+
+      beforeEach(function() {
+        OPERATION.listeners = {};
+
+        instance.getMetadata = function(callback) {
+          callback(error);
+        };
+
+        instance.create = function(options, callback) {
+          callback(null, null, OPERATION);
+        };
+      });
+
+      it('should call create', function(done) {
+        instance.create = function(options, callback) {
+          assert.strictEqual(options, OPTIONS);
+          done();
+        };
+
+        instance.get(OPTIONS, assert.ifError);
+      });
+
+      it('should return error if create failed', function(done) {
+        var error = new Error('Error.');
+
+        instance.create = function(options, callback) {
+          callback(error);
+        };
+
+        instance.get(OPTIONS, function(err) {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should return operation error', function(done) {
+        var error = new Error('Error.');
+
+        setImmediate(function() {
+          OPERATION.listeners['error'](error);
+        });
+
+        instance.get(OPTIONS, function(err) {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should execute callback if opereation succeeded', function(done) {
+        var error = new Error('Error.');
+        var metadata = {};
+
+        setImmediate(function() {
+          OPERATION.listeners['complete'](metadata);
+        });
+
+        instance.get(OPTIONS, function(err, instance_, apiResponse) {
+          assert.ifError(err);
+          assert.strictEqual(instance_, instance);
+          assert.strictEqual(instance.metadata, metadata);
+          assert.strictEqual(metadata, apiResponse);
+          done();
+        });
+      });
+    });
+
+    it('should not auto create without error code 5', function(done) {
+      var error = new Error('Error.');
+      error.code = 'NOT-5';
+
+      var options = {
+        autoCreate: true,
+      };
+
+      instance.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      instance.create = function() {
+        throw new Error('Should not create.');
+      };
+
+      instance.get(options, function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should not auto create unless requested', function(done) {
+      var error = new Error('Error.');
+      error.code = 5;
+
+      instance.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      instance.create = function() {
+        throw new Error('Should not create.');
+      };
+
+      instance.get(function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should return an error from getMetadata', function(done) {
+      var error = new Error('Error.');
+
+      instance.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      instance.get(function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should return self and API response', function(done) {
+      var apiResponse = {};
+
+      instance.getMetadata = function(callback) {
+        callback(null, apiResponse);
+      };
+
+      instance.get(function(err, instance_, apiResponse_) {
+        assert.ifError(err);
+        assert.strictEqual(instance_, instance);
+        assert.strictEqual(apiResponse_, apiResponse);
         done();
       });
     });

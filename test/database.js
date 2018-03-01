@@ -212,7 +212,6 @@ describe('Database', function() {
       assert.deepEqual(calledWith.methods, {
         create: true,
         exists: true,
-        get: true,
       });
 
       calledWith.createMethod(null, options, done);
@@ -529,6 +528,175 @@ describe('Database', function() {
       };
 
       database.delete(assert.ifError);
+    });
+  });
+
+  describe('get', function() {
+    it('should call getMetadata', function(done) {
+      var options = {};
+
+      database.getMetadata = function() {
+        done();
+      };
+
+      database.get(options, assert.ifError);
+    });
+
+    it('should not require an options object', function(done) {
+      database.getMetadata = function() {
+        done();
+      };
+
+      database.get(assert.ifError);
+    });
+
+    describe('autoCreate', function() {
+      var error = new Error('Error.');
+      error.code = 5;
+
+      var OPTIONS = {
+        autoCreate: true,
+      };
+
+      var OPERATION = {
+        listeners: {},
+        on: function(eventName, callback) {
+          OPERATION.listeners[eventName] = callback;
+          return OPERATION;
+        },
+      };
+
+      beforeEach(function() {
+        OPERATION.listeners = {};
+
+        database.getMetadata = function(callback) {
+          callback(error);
+        };
+
+        database.create = function(options, callback) {
+          callback(null, null, OPERATION);
+        };
+      });
+
+      it('should call create', function(done) {
+        database.create = function(options, callback) {
+          assert.strictEqual(options, OPTIONS);
+          done();
+        };
+
+        database.get(OPTIONS, assert.ifError);
+      });
+
+      it('should return error if create failed', function(done) {
+        var error = new Error('Error.');
+
+        database.create = function(options, callback) {
+          callback(error);
+        };
+
+        database.get(OPTIONS, function(err) {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should return operation error', function(done) {
+        var error = new Error('Error.');
+
+        setImmediate(function() {
+          OPERATION.listeners['error'](error);
+        });
+
+        database.get(OPTIONS, function(err) {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should execute callback if opereation succeeded', function(done) {
+        var error = new Error('Error.');
+        var metadata = {};
+
+        setImmediate(function() {
+          OPERATION.listeners['complete'](metadata);
+        });
+
+        database.get(OPTIONS, function(err, database_, apiResponse) {
+          assert.ifError(err);
+          assert.strictEqual(database_, database);
+          assert.strictEqual(database.metadata, metadata);
+          assert.strictEqual(metadata, apiResponse);
+          done();
+        });
+      });
+    });
+
+    it('should not auto create without error code 5', function(done) {
+      var error = new Error('Error.');
+      error.code = 'NOT-5';
+
+      var options = {
+        autoCreate: true,
+      };
+
+      database.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      database.create = function() {
+        throw new Error('Should not create.');
+      };
+
+      database.get(options, function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should not auto create unless requested', function(done) {
+      var error = new Error('Error.');
+      error.code = 5;
+
+      database.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      database.create = function() {
+        throw new Error('Should not create.');
+      };
+
+      database.get(function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should return an error from getMetadata', function(done) {
+      var error = new Error('Error.');
+
+      database.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      database.get(function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should return self and API response', function(done) {
+      var apiResponse = {};
+
+      database.getMetadata = function(callback) {
+        callback(null, apiResponse);
+      };
+
+      database.get(function(err, database_, apiResponse_) {
+        assert.ifError(err);
+        assert.strictEqual(database_, database);
+        assert.strictEqual(apiResponse_, apiResponse);
+        done();
+      });
     });
   });
 

@@ -34,22 +34,21 @@ var spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
 
+  var INSTANCE_CONFIG = {
+    config: 'regional-us-central1',
+    nodes: 1,
+    labels: {
+      'gcloud-tests': 'true',
+    },
+  };
+
   before(function(done) {
     async.series(
       [
         deleteTestResources,
 
         function(next) {
-          instance.create(
-            {
-              config: 'regional-us-central1',
-              nodes: 1,
-              labels: {
-                'gcloud-tests': 'true',
-              },
-            },
-            execAfterOperationComplete(next)
-          );
+          instance.create(INSTANCE_CONFIG, execAfterOperationComplete(next));
         },
       ],
       done
@@ -618,6 +617,19 @@ describe('Spanner', function() {
       });
     });
 
+    it('should auto create an instance', function(done) {
+      var instance = spanner.instance(generateName('instance'));
+
+      var config = extend({
+        autoCreate: true,
+      }, INSTANCE_CONFIG);
+
+      instance.get(config, function(err) {
+        assert.ifError(err);
+        instance.getMetadata(done);
+      });
+    });
+
     it('should list the instances', function(done) {
       spanner.getInstances(function(err, instances) {
         assert.ifError(err);
@@ -716,6 +728,15 @@ describe('Spanner', function() {
         }
 
         database.delete(done);
+      });
+    });
+
+    it('should auto create a database', function(done) {
+      var database = instance.database(generateName('database'));
+
+      database.get({ autoCreate: true }, function(err) {
+        assert.ifError(err);
+        database.getMetadata(done);
       });
     });
 

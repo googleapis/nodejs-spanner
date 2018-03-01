@@ -134,53 +134,6 @@ function Database(instance, name, poolOptions) {
      * });
      */
     exists: true,
-
-    /**
-     * @typedef {array} GetDatabaseResponse
-     * @property {Database} 0 The {@link Database}.
-     * @property {object} 1 The full API response.
-     */
-    /**
-     * @callback GetDatabaseCallback
-     * @param {?Error} err Request error, if any.
-     * @param {Database} database The {@link Database}.
-     * @param {object} apiResponse The full API response.
-     */
-    /**
-     * Get a database if it exists.
-     *
-     * You may optionally use this to "get or create" an object by providing an
-     * object with `autoCreate` set to `true`. Any extra configuration that is
-     * normally required for the `create` method must be contained within this
-     * object as well.
-     *
-     * @method Database#get
-     * @param {options} [options] Configuration object.
-     * @param {boolean} [options.autoCreate=false] Automatically create the
-     *     object if it does not exist.
-     * @param {GetDatabaseCallback} [callback] Callback function.
-     * @returns {Promise<GetDatabaseResponse>}
-     *
-     * @example
-     * const Spanner = require('@google-cloud/spanner');
-     * const spanner = new Spanner();
-     *
-     * const instance = spanner.instance('my-instance');
-     * const database = instance.database('my-database');
-     *
-     * database.get(function(err, database, apiResponse) {
-     *   // `database.metadata` has been populated.
-     * });
-     *
-     * //-
-     * // If the callback is omitted, we'll return a Promise.
-     * //-
-     * database.get().then(function(data) {
-     *   var database = data[0];
-     *   var apiResponse = data[0];
-     * });
-     */
-    get: true,
   };
 
   commonGrpc.ServiceObject.call(this, {
@@ -489,6 +442,85 @@ Database.prototype.delete = function(callback) {
       },
       callback
     );
+  });
+};
+
+/**
+ * @typedef {array} GetDatabaseResponse
+ * @property {Database} 0 The {@link Database}.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetDatabaseCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Database} database The {@link Database}.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * Get a database if it exists.
+ *
+ * You may optionally use this to "get or create" an object by providing an
+ * object with `autoCreate` set to `true`. Any extra configuration that is
+ * normally required for the `create` method must be contained within this
+ * object as well.
+ *
+ * @param {options} [options] Configuration object.
+ * @param {boolean} [options.autoCreate=false] Automatically create the
+ *     object if it does not exist.
+ * @param {GetDatabaseCallback} [callback] Callback function.
+ * @returns {Promise<GetDatabaseResponse>}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * database.get(function(err, database, apiResponse) {
+ *   // `database.metadata` has been populated.
+ * });
+ *
+ * //-
+ * // If the callback is omitted, we'll return a Promise.
+ * //-
+ * database.get().then(function(data) {
+ *   var database = data[0];
+ *   var apiResponse = data[0];
+ * });
+ */
+Database.prototype.get = function(options, callback) {
+  var self = this;
+
+  if (is.fn(options)) {
+    callback = options;
+    options = {};
+  }
+
+  this.getMetadata(function(err, metadata) {
+    if (err) {
+      if (options.autoCreate && err.code === 5) {
+        self.create(options, function(err, database, operation) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          operation
+            .on('error', callback)
+            .on('complete', function(metadata) {
+              self.metadata = metadata;
+              callback(null, self, metadata);
+            });
+        });
+        return;
+      }
+
+      callback(err);
+      return;
+    }
+
+    callback(null, self, metadata);
   });
 };
 
