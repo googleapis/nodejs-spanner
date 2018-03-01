@@ -620,9 +620,12 @@ describe('Spanner', function() {
     it('should auto create an instance', function(done) {
       var instance = spanner.instance(generateName('instance'));
 
-      var config = extend({
-        autoCreate: true,
-      }, INSTANCE_CONFIG);
+      var config = extend(
+        {
+          autoCreate: true,
+        },
+        INSTANCE_CONFIG
+      );
 
       instance.get(config, function(err) {
         assert.ifError(err);
@@ -734,7 +737,7 @@ describe('Spanner', function() {
     it('should auto create a database', function(done) {
       var database = instance.database(generateName('database'));
 
-      database.get({ autoCreate: true }, function(err) {
+      database.get({autoCreate: true}, function(err) {
         assert.ifError(err);
         database.getMetadata(done);
       });

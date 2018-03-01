@@ -407,7 +407,6 @@ Instance.prototype.delete = function(callback) {
     });
 };
 
-
 /**
  * @typedef {array} GetInstanceResponse
  * @property {Instance} 0 The {@link Instance}.
@@ -468,12 +467,10 @@ Instance.prototype.get = function(options, callback) {
             return;
           }
 
-          operation
-            .on('error', callback)
-            .on('complete', function(metadata) {
-              self.metadata = metadata;
-              callback(null, self, metadata);
-            });
+          operation.on('error', callback).on('complete', function(metadata) {
+            self.metadata = metadata;
+            callback(null, self, metadata);
+          });
         });
         return;
       }

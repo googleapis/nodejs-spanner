@@ -506,12 +506,10 @@ Database.prototype.get = function(options, callback) {
             return;
           }
 
-          operation
-            .on('error', callback)
-            .on('complete', function(metadata) {
-              self.metadata = metadata;
-              callback(null, self, metadata);
-            });
+          operation.on('error', callback).on('complete', function(metadata) {
+            self.metadata = metadata;
+            callback(null, self, metadata);
+          });
         });
         return;
       }
