@@ -297,7 +297,7 @@ Instance.formatName_ = function(projectId, name) {
  *   });
  *
  * @example <caption>include:samples/schema.js</caption>
- * region_tag:create_database
+ * region_tag:spanner_create_database
  * Full example:
  */
 Instance.prototype.createDatabase = function(name, options, callback) {

@@ -16,7 +16,7 @@
 'use strict';
 
 function createDatabase(instanceId, databaseId, projectId) {
-  // [START create_database]
+  // [START spanner_create_database]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -70,11 +70,11 @@ function createDatabase(instanceId, databaseId, projectId) {
     .catch(err => {
       console.error('ERROR:', err);
     });
-  // [END create_database]
+  // [END spanner_create_database]
 }
 
 function addColumn(instanceId, databaseId, projectId) {
-  // [START add_column]
+  // [START spanner_add_column]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -115,11 +115,11 @@ function addColumn(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END add_column]
+  // [END spanner_add_column]
 }
 
 function queryDataWithNewColumn(instanceId, databaseId, projectId) {
-  // [START query_data_with_new_column]
+  // [START spanner_query_data_with_new_column]
   // This sample uses the `MarketingBudget` column. You can add the column
   // by running the `add_column` sample or by running this DDL statement against
   // your database:
@@ -173,7 +173,7 @@ function queryDataWithNewColumn(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END query_data_with_new_column]
+  // [END spanner_query_data_with_new_column]
 }
 
 require(`yargs`)

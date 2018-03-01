@@ -16,7 +16,7 @@
 'use strict';
 
 function createIndex(instanceId, databaseId, projectId) {
-  // [START create_index]
+  // [START spanner_create_index]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -57,11 +57,11 @@ function createIndex(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END create_index]
+  // [END spanner_create_index]
 }
 
 function createStoringIndex(instanceId, databaseId, projectId) {
-  // [START create_storing_index]
+  // [START spanner_create_storing_index]
   // "Storing" indexes store copies of the columns they index
   // This speeds up queries, but takes more space compared to normal indexes
   // See the link below for more information:
@@ -109,7 +109,7 @@ function createStoringIndex(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END create_storing_index]
+  // [END spanner_create_storing_index]
 }
 
 function queryDataWithIndex(
@@ -119,7 +119,7 @@ function queryDataWithIndex(
   endTitle,
   projectId
 ) {
-  // [START query_data_with_index]
+  // [START spanner_query_data_with_index]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -176,11 +176,11 @@ function queryDataWithIndex(
       // Close the database when finished.
       return database.close();
     });
-  // [END query_data_with_index]
+  // [END spanner_query_data_with_index]
 }
 
 function readDataWithIndex(instanceId, databaseId, projectId) {
-  // [START read_data_with_index]
+  // [START spanner_read_data_with_index]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -228,11 +228,11 @@ function readDataWithIndex(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END read_data_with_index]
+  // [END spanner_read_data_with_index]
 }
 
 function readDataWithStoringIndex(instanceId, databaseId, projectId) {
-  // [START read_data_with_storing_index]
+  // [START spanner_read_data_with_storing_index]
   // "Storing" indexes store copies of the columns they index
   // This speeds up queries, but takes more space compared to normal indexes
   // See the link below for more information:
@@ -290,7 +290,7 @@ function readDataWithStoringIndex(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END read_data_with_storing_index]
+  // [END spanner_read_data_with_storing_index]
 }
 
 require(`yargs`)
