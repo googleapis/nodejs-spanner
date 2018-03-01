@@ -735,11 +735,11 @@ Database.prototype.getTransaction = function(options, callback) {
  * });
  *
  * @example <caption>include:samples/crud.js</caption>
- * region_tag:query_data
+ * region_tag:spanner_query_data
  * Full example:
  *
  * @example <caption>include:samples/indexing.js</caption>
- * region_tag:query_data_with_index
+ * region_tag:spanner_query_data_with_index
  * Querying data with an index:
  */
 Database.prototype.run = function(query, options, callback) {
@@ -1022,11 +1022,11 @@ Database.prototype.runStream = function(query, options) {
  * });
  *
  * @example <caption>include:samples/transaction.js</caption>
- * region_tag:read_only_transaction
+ * region_tag:spanner_read_only_transaction
  * Read-only transaction:
  *
  * @example <caption>include:samples/transaction.js</caption>
- * region_tag:read_write_transaction
+ * region_tag:spanner_read_write_transaction
  * Read-write transaction:
  */
 Database.prototype.runTransaction = function(options, runFn) {
@@ -1142,15 +1142,15 @@ Database.prototype.table = function(name) {
  *   });
  *
  * @example <caption>include:samples/schema.js</caption>
- * region_tag:add_column
+ * region_tag:spanner_add_column
  * Adding a column:
  *
  * @example <caption>include:samples/indexing.js</caption>
- * region_tag:create_index
+ * region_tag:spanner_create_index
  * Creating an index:
  *
  * @example <caption>include:samples/indexing.js</caption>
- * region_tag:create_storing_index
+ * region_tag:spanner_create_storing_index
  * Creating a storing index:
  */
 Database.prototype.updateSchema = function(statements, callback) {
