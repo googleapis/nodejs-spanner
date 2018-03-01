@@ -785,4 +785,193 @@ describe('codec', function() {
       assert.strictEqual(encodedQuery.types, undefined);
     });
   });
+
+  describe('encodeRead', function() {
+    describe('query.keys', function() {
+      it('should encode and map input to keySet', function() {
+        var query = {
+          keys: ['key', ['composite', 'key']],
+        };
+
+        var encodedValue = {};
+        var numEncodeRequests = 0;
+
+        codec.encode = function(key) {
+          numEncodeRequests++;
+
+          switch (numEncodeRequests) {
+            case 1: {
+              assert.strictEqual(key, query.keys[0]);
+              break;
+            }
+            case 2: {
+              assert.strictEqual(key, query.keys[1][0]);
+              break;
+            }
+            case 3: {
+              assert.strictEqual(key, query.keys[1][1]);
+              break;
+            }
+          }
+
+          return encodedValue;
+        };
+
+        var expectedKeys = [
+          {
+            values: [encodedValue],
+          },
+          {
+            values: [encodedValue, encodedValue],
+          },
+        ];
+
+        var encoded = codec.encodeRead(query);
+        assert.deepStrictEqual(encoded.keySet.keys, expectedKeys);
+      });
+
+      it('should accept just a key', function() {
+        var query = 'key';
+
+        var encodedValue = {};
+        codec.encode = function(key) {
+          assert.strictEqual(key, query);
+          return encodedValue;
+        };
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
+      });
+
+      it('should accept just an array of keys', function() {
+        var query = ['key'];
+
+        var encodedValue = {};
+        codec.encode = function(key) {
+          assert.strictEqual(key, query[0]);
+          return encodedValue;
+        };
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
+      });
+
+      it('should arrify query.keys', function() {
+        var query = {
+          keys: 'key',
+        };
+
+        var encodedValue = {};
+        codec.encode = function(key) {
+          assert.strictEqual(key, query.keys);
+          return encodedValue;
+        };
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
+      });
+
+      it('should remove keys property from request object', function() {
+        var query = {
+          keys: ['key'],
+        };
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(encoded.keys, undefined);
+      });
+    });
+
+    describe('query.ranges', function() {
+      it('should encode/map the inputs', function() {
+        var query = {
+          ranges: [
+            {
+              startOpen: 'key',
+              endClosed: ['composite', 'key'],
+            },
+          ],
+        };
+
+        var encodedValue = {};
+        var numEncodeRequests = 0;
+
+        codec.encode = function(key) {
+          var keys = ['key', 'composite', 'key'];
+
+          assert.strictEqual(key, keys[numEncodeRequests++]);
+          return encodedValue;
+        };
+
+        var expectedRanges = [
+          {
+            startOpen: {
+              values: [encodedValue],
+            },
+            endClosed: {
+              values: [encodedValue, encodedValue],
+            },
+          },
+        ];
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(numEncodeRequests, 3);
+        assert.deepStrictEqual(encoded.keySet.ranges, expectedRanges);
+      });
+
+      it('should arrify query.ranges', function() {
+        var query = {
+          ranges: [
+            {
+              startOpen: 'start',
+              endClosed: 'end',
+            },
+          ],
+        };
+
+        var encodedValue = {};
+        var numEncodeRequests = 0;
+
+        codec.encode = function(key) {
+          assert.strictEqual(key, ['start', 'end'][numEncodeRequests++]);
+          return encodedValue;
+        };
+
+        var expectedRanges = [
+          {
+            startOpen: {
+              values: [encodedValue],
+            },
+            endClosed: {
+              values: [encodedValue],
+            },
+          },
+        ];
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(numEncodeRequests, 2);
+        assert.deepStrictEqual(encoded.keySet.ranges, expectedRanges);
+      });
+
+      it('should remove the ranges property from the query', function() {
+        var query = {
+          ranges: [
+            {
+              startOpen: 'start',
+              endClosed: 'end',
+            },
+          ],
+        };
+
+        var encoded = codec.encodeRead(query);
+
+        assert.strictEqual(encoded.ranges, undefined);
+      });
+    });
+  });
 });

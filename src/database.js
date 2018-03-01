@@ -24,6 +24,7 @@ var extend = require('extend');
 var is = require('is');
 var modelo = require('modelo');
 
+var BatchTransaction = require('./batch-transaction.js');
 var codec = require('./codec.js');
 var PartialResultStream = require('./partial-result-stream.js');
 var Session = require('./session.js');
@@ -222,6 +223,44 @@ Database.formatName_ = function(instanceName, name) {
 };
 
 /**
+ * Get a reference to a {@link BatchTransaction} object.
+ *
+ * @see {@link BatchTransaction#identifier} to generate an identifier.
+ *
+ * @param {TransactionIdentifier} identifier The transaction identifier.
+ * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @returns {BatchTransaction} A batch transaction object.
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const transaction = database.batchTransaction({
+ *   session: 'my-session',
+ *   transaction: 'my-transaction',
+ *   readTimestamp: 1518464696657
+ * });
+ */
+Database.prototype.batchTransaction = function(identifier) {
+  var session = identifier.session;
+  var id = identifier.transaction;
+
+  if (is.string(session)) {
+    session = this.session_(session);
+  }
+
+  var transaction = new BatchTransaction(session);
+
+  transaction.id = id;
+  transaction.readTimestamp = identifier.readTimestamp;
+
+  return transaction;
+};
+
+/**
  * @callback CloseDatabaseCallback
  * @param {?Error} err Request error, if any.
  */
@@ -268,6 +307,56 @@ Database.prototype.close = function(callback) {
 
   this.parent.databases_.delete(self.id);
   this.pool_.close().then(() => callback(leakError), callback);
+};
+
+/**
+ * @typedef {array} CreateTransactionResponse
+ * @property {BatchTransaction} 0 The {@link BatchTransaction}.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback CreateTransactionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {BatchTransaction} transaction The {@link BatchTransaction}.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * Create a transaction that can be used for batch querying.
+ *
+ * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @param {CreateTransactionCallback} [callback] Callback function.
+ * @returns {Promise<CreateTransactionResponse>}
+ *
+ * @example <caption>include:samples/batch.js</caption>
+ * region_tag:create_batch_transaction
+ */
+Database.prototype.createBatchTransaction = function(options, callback) {
+  var self = this;
+
+  if (is.fn(options)) {
+    callback = options;
+    options = null;
+  }
+
+  this.createSession(function(err, session, resp) {
+    if (err) {
+      callback(err, null, resp);
+      return;
+    }
+
+    var transaction = self.batchTransaction({session});
+
+    transaction.options = extend({}, options);
+
+    transaction.begin(function(err, resp) {
+      if (err) {
+        callback(err, null, resp);
+        return;
+      }
+
+      callback(null, transaction, resp);
+    });
+  });
 };
 
 /**
@@ -517,6 +606,121 @@ Database.prototype.getSchema = function(callback) {
     function(err, statements) {
       if (statements) {
         arguments[1] = statements.statements;
+      }
+
+      callback.apply(null, arguments);
+    }
+  );
+};
+
+/**
+ * Options object for listing sessions.
+ *
+ * @typedef {object} GetSessionsRequest
+ * @property {boolean} [autoPaginate=true] Have pagination handled
+ *     automatically.
+ * @property {string} [filter] An expression for filtering the results of the
+ *     request. Filter rules are case insensitive. The fields eligible for
+ *     filtering are:
+ *     - **`name`**
+ *     - **`display_name`**
+ *     - **`labels.key`** where key is the name of a label
+ *
+ *     Some examples of using filters are:
+ *     - **`name:*`** The instance has a name.
+ *     - **`name:Howl`** The instance's name is howl.
+ *     - **`labels.env:*`** The instance has the label env.
+ *     - **`labels.env:dev`** The instance's label env has the value dev.
+ *     - **`name:howl labels.env:dev`** The instance's name is howl and it has
+ *       the label env with value dev.
+ * @property {number} [maxApiCalls] Maximum number of API calls to make.
+ * @property {number} [maxResults] Maximum number of items to return.
+ * @property {number} [pageSize] Maximum number of results per page.
+ * @property {string} [pageToken] A previously-returned page token
+ *     representing part of the larger set of results to view.
+ */
+/**
+ * @typedef {array} GetSessionsResponse
+ * @property {Session[]} 0 Array of {@link Session} instances.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetSessionsCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Session[]} instances Array of {@link Session} instances.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * Geta a list of sessions.
+ *
+ * Wrapper around {@link v1.SpannerClient#listSessions}
+ *
+ * @see {@link v1.SpannerClient#listSessions}
+ * @see [ListSessions API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ListSessions)
+ *
+ * @param {GetSessionsRequest} [options] Options object for listing sessions.
+ * @param {GetSessionsCallback} [callback] Callback function.
+ * @returns {Promise<GetSessionsResponse>}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * database.getSessions(function(err, sessions) {
+ *   // `sessions` is an array of `Session` objects.
+ * });
+ *
+ * //-
+ * // To control how many API requests are made and page through the results
+ * // manually, set `autoPaginate` to `false`.
+ * //-
+ * function callback(err, sessions, nextQuery, apiResponse) {
+ *   if (nextQuery) {
+ *     // More results exist.
+ *     database.getSessions(nextQuery, callback);
+ *   }
+ * }
+ *
+ * database.getInstances({
+ *   autoPaginate: false
+ * }, callback);
+ *
+ * //-
+ * // If the callback is omitted, we'll return a Promise.
+ * //-
+ * database.getInstances().then(function(data) {
+ *   const sessions = data[0];
+ * });
+ */
+Database.prototype.getSessions = function(options, callback) {
+  var self = this;
+
+  if (is.fn(options)) {
+    callback = options;
+    options = {};
+  }
+
+  var gaxOpts = options.gaxOptions;
+  var reqOpts = extend({}, options, {database: this.formattedName_});
+  delete reqOpts.gaxOptions;
+
+  this.request(
+    {
+      client: 'SpannerClient',
+      method: 'listSessions',
+      reqOpts,
+      gaxOpts,
+    },
+    function(err, sessions) {
+      if (sessions) {
+        arguments[1] = sessions.map(function(metadata) {
+          var session = self.session_(metadata.name);
+          session.metadata = metadata;
+          return session;
+        });
       }
 
       callback.apply(null, arguments);
@@ -1294,6 +1498,7 @@ Database.prototype.session_ = function(name) {
  */
 common.util.promisifyAll(Database, {
   exclude: [
+    'batchTransaction',
     'delete',
     'getMetadata',
     'runTransaction',
