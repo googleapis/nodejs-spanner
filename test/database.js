@@ -276,6 +276,12 @@ describe('Database', function() {
   });
 
   describe('close', function() {
+    var FAKE_ID = 'a/c/b/d';
+
+    beforeEach(function() {
+      database.id = FAKE_ID;
+    });
+
     describe('success', function() {
       beforeEach(function() {
         database.parent = INSTANCE;
@@ -295,13 +301,14 @@ describe('Database', function() {
 
       it('should remove the database cache', function(done) {
         var cache = INSTANCE.databases_;
+        var cacheId = FAKE_ID.split('/').pop();
 
-        cache.set(database.id, database);
-        assert(cache.has(database.id));
+        cache.set(cacheId, database);
+        assert(cache.has(cacheId));
 
         database.close(function(err) {
           assert.ifError(err);
-          assert.strictEqual(cache.has(database.id), false);
+          assert.strictEqual(cache.has(cacheId), false);
           done();
         });
       });
