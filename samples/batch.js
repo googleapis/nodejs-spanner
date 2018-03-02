@@ -16,7 +16,6 @@
 'use strict';
 
 function createBatchTransaction(instanceId, databaseId, projectId) {
-  // [START create_batch_transaction]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -54,11 +53,9 @@ function createBatchTransaction(instanceId, databaseId, projectId) {
         console.error('ERROR:', err);
       }
     );
-  // [END create_batch_transaction]
 }
 
 function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
-  // [START create_query_partitions]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -82,6 +79,7 @@ function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
 
   const query = 'SELECT * FROM Singers';
 
+// [START spanner_batch_client]
   transaction
     .createQueryPartitions(query)
     .then(data => {
@@ -93,11 +91,10 @@ function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
     .catch(err => {
       console.error('ERROR:', err);
     });
-  // [END create_query_partitions]
+// [END spanner_batch_client]
 }
 
 function createReadPartitions(instanceId, databaseId, identifier, projectId) {
-  // [START create_read_partitions]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -134,7 +131,6 @@ function createReadPartitions(instanceId, databaseId, identifier, projectId) {
     .catch(err => {
       console.error('ERROR:', err);
     });
-  // [END create_read_partitions]
 }
 
 function executePartition(
@@ -144,7 +140,6 @@ function executePartition(
   partition,
   projectId
 ) {
-  // [START execute_partition]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -167,6 +162,7 @@ function executePartition(
   const database = instance.database(databaseId);
   const transaction = database.batchTransaction(identifier);
 
+// [START spanner_batch_execute_partitions]
   transaction
     .execute(partition)
     .then(data => {
@@ -178,7 +174,7 @@ function executePartition(
     .catch(err => {
       console.error('ERROR:', err);
     });
-  // [END execute_partition]
+// [END spanner_batch_execute_partitions]
 }
 
 require(`yargs`)
