@@ -371,7 +371,7 @@ Table.prototype.deleteRows = function(keys, callback) {
  *   });
  *
  * @example <caption>include:samples/crud.js</caption>
- * region_tag:insert_data
+ * region_tag:spanner_insert_data
  * Full example:
  */
 Table.prototype.insert = function(keyVals, callback) {
@@ -513,19 +513,19 @@ Table.prototype.insert = function(keyVals, callback) {
  *   });
  *
  * @example <caption>include:samples/crud.js</caption>
- * region_tag:read_data
+ * region_tag:spanner_read_data
  * Full example:
  *
  * @example <caption>include:samples/crud.js</caption>
- * region_tag:read_stale_data
+ * region_tag:spanner_read_stale_data
  * Reading stale data:
  *
  * @example <caption>include:samples/indexing.js</caption>
- * region_tag:read_data_with_index
+ * region_tag:spanner_read_data_with_index
  * Reading data using an index:
  *
  * @example <caption>include:samples/indexing.js</caption>
- * region_tag:read_data_with_storing_index
+ * region_tag:spanner_read_data_with_storing_index
  * Reading data using a storing index:
  */
 Table.prototype.read = function(keyVals, options, callback) {
@@ -629,7 +629,7 @@ Table.prototype.replace = function(keyVals, callback) {
  *   });
  *
  * @example <caption>include:samples/crud.js</caption>
- * region_tag:update_data
+ * region_tag:spanner_update_data
  * Full example:
  */
 Table.prototype.update = function(keyVals, callback) {

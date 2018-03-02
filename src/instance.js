@@ -128,52 +128,6 @@ function Instance(spanner, name) {
      * });
      */
     exists: true,
-
-    /**
-     * @typedef {array} GetInstanceResponse
-     * @property {Instance} 0 The {@link Instance}.
-     * @property {object} 1 The full API response.
-     */
-    /**
-     * @callback GetInstanceCallback
-     * @param {?Error} err Request error, if any.
-     * @param {Instance} instance The {@link Instance}.
-     * @param {object} apiResponse The full API response.
-     */
-    /**
-     * Get an instance if it exists.
-     *
-     * You may optionally use this to "get or create" an object by providing an
-     * object with `autoCreate` set to `true`. Any extra configuration that is
-     * normally required for the `create` method must be contained within this
-     * object as well.
-     *
-     * @method Instance#get
-     * @param {options} [options] Configuration object.
-     * @param {boolean} [options.autoCreate=false] Automatically create the
-     *     object if it does not exist.
-     * @param {GetInstanceCallback} [callback] Callback function.
-     * @returns {Promise<GetInstanceResponse>}
-     *
-     * @example
-     * const Spanner = require('@google-cloud/spanner');
-     * const spanner = new Spanner();
-     *
-     * const instance = spanner.instance('my-instance');
-     *
-     * instance.get(function(err, instance, apiResponse) {
-     *   // `instance.metadata` has been populated.
-     * });
-     *
-     * //-
-     * // If the callback is omitted, we'll return a Promise.
-     * //-
-     * instance.get().then(function(data) {
-     *   var instance = data[0];
-     *   var apiResponse = data[0];
-     * });
-     */
-    get: true,
   };
 
   commonGrpc.ServiceObject.call(this, {
@@ -297,7 +251,7 @@ Instance.formatName_ = function(projectId, name) {
  *   });
  *
  * @example <caption>include:samples/schema.js</caption>
- * region_tag:create_database
+ * region_tag:spanner_create_database
  * Full example:
  */
 Instance.prototype.createDatabase = function(name, options, callback) {
@@ -451,6 +405,82 @@ Instance.prototype.delete = function(callback) {
         }
       );
     });
+};
+
+/**
+ * @typedef {array} GetInstanceResponse
+ * @property {Instance} 0 The {@link Instance}.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback GetInstanceCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Instance} instance The {@link Instance}.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * Get an instance if it exists.
+ *
+ * You may optionally use this to "get or create" an object by providing an
+ * object with `autoCreate` set to `true`. Any extra configuration that is
+ * normally required for the `create` method must be contained within this
+ * object as well.
+ *
+ * @param {options} [options] Configuration object.
+ * @param {boolean} [options.autoCreate=false] Automatically create the
+ *     object if it does not exist.
+ * @param {GetInstanceCallback} [callback] Callback function.
+ * @returns {Promise<GetInstanceResponse>}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ *
+ * instance.get(function(err, instance, apiResponse) {
+ *   // `instance.metadata` has been populated.
+ * });
+ *
+ * //-
+ * // If the callback is omitted, we'll return a Promise.
+ * //-
+ * instance.get().then(function(data) {
+ *   var instance = data[0];
+ *   var apiResponse = data[0];
+ * });
+ */
+Instance.prototype.get = function(options, callback) {
+  var self = this;
+
+  if (is.fn(options)) {
+    callback = options;
+    options = {};
+  }
+
+  this.getMetadata(function(err, metadata) {
+    if (err) {
+      if (err.code === 5 && options.autoCreate) {
+        self.create(options, function(err, database, operation) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          operation.on('error', callback).on('complete', function(metadata) {
+            self.metadata = metadata;
+            callback(null, self, metadata);
+          });
+        });
+        return;
+      }
+
+      callback(err);
+      return;
+    }
+
+    callback(null, self, metadata);
+  });
 };
 
 /**

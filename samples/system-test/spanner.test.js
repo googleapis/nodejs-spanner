@@ -20,6 +20,7 @@ const Spanner = require(`@google-cloud/spanner`);
 const test = require(`ava`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
+const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
 const schemaCmd = `node schema.js`;
 const indexingCmd = `node indexing.js`;
@@ -294,3 +295,77 @@ test.serial(
     t.regex(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
   }
 );
+
+// create_batch_transaction
+test.serial(`should create a batch transaction`, async t => {
+  let results = await tools.runAsyncWithIO(
+    `${batchCmd} create-batch-transaction ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+
+  let output = results.stdout + results.stderr;
+
+  t.regex(output, new RegExp(`Created batch transaction for ${DATABASE_ID}`));
+  t.regex(output, new RegExp(`Closed batch transaction`));
+});
+
+// create_query_partitions
+test.serial(`should create query partitions`, async t => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+  const [transaction] = await database.createBatchTransaction();
+  const identifier = JSON.stringify(transaction.identifier());
+
+  let results = await tools.runAsyncWithIO(
+    `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
+    cwd
+  );
+
+  let output = results.stdout + results.stderr;
+
+  t.regex(output, /Successfully created \d query partitions\./);
+
+  await transaction.close();
+});
+
+// create_read_partitions
+test.serial(`should create read partitions`, async t => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+  const [transaction] = await database.createBatchTransaction();
+  const identifier = JSON.stringify(transaction.identifier());
+
+  let results = await tools.runAsyncWithIO(
+    `${batchCmd} create-read-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
+    cwd
+  );
+
+  let output = results.stdout + results.stderr;
+
+  t.regex(output, /Successfully created \d read partitions\./);
+
+  await transaction.close();
+});
+
+// execute_partition
+test.serial(`should execute a partition`, async t => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+  const [transaction] = await database.createBatchTransaction();
+  const identifier = JSON.stringify(transaction.identifier());
+
+  const query = `SELECT SingerId FROM Albums`;
+  const [partitions] = await transaction.createQueryPartitions(query);
+  const partition = JSON.stringify(partitions[0]);
+
+  let results = await tools.runAsyncWithIO(
+    `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`,
+    cwd
+  );
+
+  let output = results.stdout + results.stderr;
+
+  t.regex(output, /Successfully received \d from executed partition\./);
+
+  await transaction.close();
+});

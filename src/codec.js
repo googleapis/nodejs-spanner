@@ -18,6 +18,7 @@
 
 var codec = module.exports;
 
+var arrify = require('arrify');
 var Buffer = require('safe-buffer').Buffer;
 var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
@@ -383,3 +384,53 @@ function encodeQuery(query) {
 }
 
 codec.encodeQuery = encodeQuery;
+
+/**
+ * Encodes a ReadRequest into the correct format.
+ *
+ * @private
+ *
+ * @param {object|string|string[]} query The query
+ * @returns {object}
+ */
+function encodeRead(query) {
+  if (is.array(query) || is.string(query)) {
+    query = {
+      keys: query,
+    };
+  }
+
+  var encoded = extend({}, query);
+
+  if (query.keys || query.ranges) {
+    encoded.keySet = {};
+  }
+
+  if (query.keys) {
+    encoded.keySet.keys = arrify(query.keys).map(function(key) {
+      return {
+        values: arrify(key).map(codec.encode),
+      };
+    });
+    delete encoded.keys;
+  }
+
+  if (query.ranges) {
+    encoded.keySet.ranges = arrify(query.ranges).map(function(rawRange) {
+      var range = extend({}, rawRange);
+
+      for (var bound in range) {
+        range[bound] = {
+          values: arrify(range[bound]).map(codec.encode),
+        };
+      }
+
+      return range;
+    });
+    delete encoded.ranges;
+  }
+
+  return encoded;
+}
+
+codec.encodeRead = encodeRead;
