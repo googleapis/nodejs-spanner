@@ -249,7 +249,7 @@ Database.prototype.batchTransaction = function(identifier) {
  * });
  */
 Database.prototype.close = function(callback) {
-  var self = this;
+  var key = this.id.split('/').pop();
   var leakError = null;
   var leaks = this.pool_.getLeaks();
 
@@ -258,7 +258,7 @@ Database.prototype.close = function(callback) {
     leakError.messages = leaks;
   }
 
-  this.parent.databases_.delete(self.id);
+  this.parent.databases_.delete(key);
   this.pool_.close().then(() => callback(leakError), callback);
 };
 
