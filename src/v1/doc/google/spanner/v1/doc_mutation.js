@@ -1,10 +1,10 @@
-// Copyright 2017, Google Inc. All rights reserved.
+// Copyright 2018 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -102,6 +102,8 @@ var Mutation = {
    *
    * @property {Object} keySet
    *   Required. The primary keys of the rows within table to delete.
+   *   Delete is idempotent. The transaction will succeed even if some or all
+   *   rows do not exist.
    *
    *   This object should have the same structure as [KeySet]{@link google.spanner.v1.KeySet}
    *

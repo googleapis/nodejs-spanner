@@ -59,24 +59,33 @@ service Spanner {
   // Idle sessions can be kept alive by sending a trivial SQL query
   // periodically, e.g., `"SELECT 1"`.
   rpc CreateSession(CreateSessionRequest) returns (Session) {
-    option (google.api.http) = { post: "/v1/{database=projects/*/instances/*/databases/*}/sessions" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{database=projects/*/instances/*/databases/*}/sessions"
+      body: "*"
+    };
   }
 
   // Gets a session. Returns `NOT_FOUND` if the session does not exist.
   // This is mainly useful for determining whether a session is still
   // alive.
   rpc GetSession(GetSessionRequest) returns (Session) {
-    option (google.api.http) = { get: "/v1/{name=projects/*/instances/*/databases/*/sessions/*}" };
+    option (google.api.http) = {
+      get: "/v1/{name=projects/*/instances/*/databases/*/sessions/*}"
+    };
   }
 
   // Lists all sessions in a given database.
   rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse) {
-    option (google.api.http) = { get: "/v1/{database=projects/*/instances/*/databases/*}/sessions" };
+    option (google.api.http) = {
+      get: "/v1/{database=projects/*/instances/*/databases/*}/sessions"
+    };
   }
 
   // Ends a session, releasing server resources associated with it.
   rpc DeleteSession(DeleteSessionRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = { delete: "/v1/{name=projects/*/instances/*/databases/*/sessions/*}" };
+    option (google.api.http) = {
+      delete: "/v1/{name=projects/*/instances/*/databases/*/sessions/*}"
+    };
   }
 
   // Executes an SQL query, returning all rows in a single reply. This
@@ -91,7 +100,10 @@ service Spanner {
   // Larger result sets can be fetched in streaming fashion by calling
   // [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.
   rpc ExecuteSql(ExecuteSqlRequest) returns (ResultSet) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeSql" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeSql"
+      body: "*"
+    };
   }
 
   // Like [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], except returns the result
@@ -100,7 +112,10 @@ service Spanner {
   // individual row in the result set can exceed 100 MiB, and no
   // column value can exceed 10 MiB.
   rpc ExecuteStreamingSql(ExecuteSqlRequest) returns (stream PartialResultSet) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeStreamingSql" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeStreamingSql"
+      body: "*"
+    };
   }
 
   // Reads rows from the database using key lookups and scans, as a
@@ -117,7 +132,10 @@ service Spanner {
   // Larger result sets can be yielded in streaming fashion by calling
   // [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.
   rpc Read(ReadRequest) returns (ResultSet) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:read" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:read"
+      body: "*"
+    };
   }
 
   // Like [Read][google.spanner.v1.Spanner.Read], except returns the result set as a
@@ -126,7 +144,10 @@ service Spanner {
   // the result set can exceed 100 MiB, and no column value can exceed
   // 10 MiB.
   rpc StreamingRead(ReadRequest) returns (stream PartialResultSet) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:streamingRead" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:streamingRead"
+      body: "*"
+    };
   }
 
   // Begins a new transaction. This step can often be skipped:
@@ -134,7 +155,10 @@ service Spanner {
   // [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a
   // side-effect.
   rpc BeginTransaction(BeginTransactionRequest) returns (Transaction) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:beginTransaction" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:beginTransaction"
+      body: "*"
+    };
   }
 
   // Commits a transaction. The request includes the mutations to be
@@ -146,7 +170,10 @@ service Spanner {
   // reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
   // the transaction from the beginning, re-using the same session.
   rpc Commit(CommitRequest) returns (CommitResponse) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:commit" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:commit"
+      body: "*"
+    };
   }
 
   // Rolls back a transaction, releasing any locks it holds. It is a good
@@ -158,7 +185,10 @@ service Spanner {
   // transaction was already aborted, or the transaction is not
   // found. `Rollback` never returns `ABORTED`.
   rpc Rollback(RollbackRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:rollback" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:rollback"
+      body: "*"
+    };
   }
 
   // Creates a set of partition tokens that can be used to execute a query
@@ -170,7 +200,10 @@ service Spanner {
   // Partition tokens become invalid when the session used to create them
   // is deleted or begins a new transaction.
   rpc PartitionQuery(PartitionQueryRequest) returns (PartitionResponse) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionQuery" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionQuery"
+      body: "*"
+    };
   }
 
   // Creates a set of partition tokens that can be used to execute a read
@@ -182,7 +215,10 @@ service Spanner {
   // Partition tokens become invalid when the session used to create them
   // is deleted or begins a new transaction.
   rpc PartitionRead(PartitionReadRequest) returns (PartitionResponse) {
-    option (google.api.http) = { post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionRead" body: "*" };
+    option (google.api.http) = {
+      post: "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionRead"
+      body: "*"
+    };
   }
 }
 
