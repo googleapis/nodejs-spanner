@@ -1,10 +1,10 @@
-// Copyright 2017, Google Inc. All rights reserved.
+// Copyright 2018 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,7 +38,8 @@ var CreateSessionRequest = {
  * A session in the Cloud Spanner API.
  *
  * @property {string} name
- *   The name of the session.
+ *   The name of the session. This is always system-assigned; values provided
+ *   when creating a session are ignored.
  *
  * @property {Object.<string, string>} labels
  *   The labels for the session.
@@ -208,9 +209,16 @@ var DeleteSessionRequest = {
  *
  * @property {number} queryMode
  *   Used to control the amount of debugging information returned in
- *   ResultSetStats.
+ *   ResultSetStats. If partition_token is set, query_mode can only
+ *   be set to QueryMode.NORMAL.
  *
  *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
+ *
+ * @property {string} partitionToken
+ *   If present, results will be restricted to the specified partition
+ *   previously created using PartitionQuery().  There must be an exact
+ *   match for the values of fields common to this message and the
+ *   PartitionQueryRequest message used to create this partition_token.
  *
  * @typedef ExecuteSqlRequest
  * @memberof google.spanner.v1
@@ -248,6 +256,178 @@ var ExecuteSqlRequest = {
 };
 
 /**
+ * Options for a PartitionQueryRequest and
+ * PartitionReadRequest.
+ *
+ * @property {number} partitionSizeBytes
+ *   The desired data size for each partition generated.  The default for this
+ *   option is currently 1 GiB.  This is only a hint. The actual size of each
+ *   partition may be smaller or larger than this size request.
+ *
+ * @property {number} maxPartitions
+ *   The desired maximum number of partitions to return.  For example, this may
+ *   be set to the number of workers available.  The default for this option
+ *   is currently 10,000. The maximum value is currently 200,000.  This is only
+ *   a hint.  The actual number of partitions returned may be smaller or larger
+ *   than this maximum count request.
+ *
+ * @typedef PartitionOptions
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.PartitionOptions definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+var PartitionOptions = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
+ * The request for PartitionQuery
+ *
+ * @property {string} session
+ *   Required. The session used to create the partitions.
+ *
+ * @property {Object} transaction
+ *   Read only snapshot transactions are supported, read/write and single use
+ *   transactions are not.
+ *
+ *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
+ *
+ * @property {string} sql
+ *   The query request to generate partitions for. The request will fail if
+ *   the query is not root partitionable. The query plan of a root
+ *   partitionable query has a single distributed union operator. A distributed
+ *   union operator conceptually divides one or more tables into multiple
+ *   splits, remotely evaluates a subquery independently on each split, and
+ *   then unions all results.
+ *
+ * @property {Object} params
+ *   The SQL query string can contain parameter placeholders. A parameter
+ *   placeholder consists of `'@'` followed by the parameter
+ *   name. Parameter names consist of any combination of letters,
+ *   numbers, and underscores.
+ *
+ *   Parameters can appear anywhere that a literal value is expected.  The same
+ *   parameter name can be used more than once, for example:
+ *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
+ *
+ *   It is an error to execute an SQL query with unbound parameters.
+ *
+ *   Parameter values are specified using `params`, which is a JSON
+ *   object whose keys are parameter names, and whose values are the
+ *   corresponding parameter values.
+ *
+ *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
+ *
+ * @property {Object.<string, Object>} paramTypes
+ *   It is not always possible for Cloud Spanner to infer the right SQL type
+ *   from a JSON value.  For example, values of type `BYTES` and values
+ *   of type `STRING` both appear in params as JSON strings.
+ *
+ *   In these cases, `param_types` can be used to specify the exact
+ *   SQL type for some or all of the SQL query parameters. See the
+ *   definition of Type for more information
+ *   about SQL types.
+ *
+ * @property {Object} partitionOptions
+ *   Additional options that affect how many partitions are created.
+ *
+ *   This object should have the same structure as [PartitionOptions]{@link google.spanner.v1.PartitionOptions}
+ *
+ * @typedef PartitionQueryRequest
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.PartitionQueryRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+var PartitionQueryRequest = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
+ * The request for PartitionRead
+ *
+ * @property {string} session
+ *   Required. The session used to create the partitions.
+ *
+ * @property {Object} transaction
+ *   Read only snapshot transactions are supported, read/write and single use
+ *   transactions are not.
+ *
+ *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
+ *
+ * @property {string} table
+ *   Required. The name of the table in the database to be read.
+ *
+ * @property {string} index
+ *   If non-empty, the name of an index on table. This index is
+ *   used instead of the table primary key when interpreting key_set
+ *   and sorting result rows. See key_set for further information.
+ *
+ * @property {string[]} columns
+ *   The columns of table to be returned for each row matching
+ *   this request.
+ *
+ * @property {Object} keySet
+ *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
+ *   primary keys of the rows in table to be yielded, unless index
+ *   is present. If index is present, then key_set instead names
+ *   index keys in index.
+ *
+ *   It is not an error for the `key_set` to name rows that do not
+ *   exist in the database. Read yields nothing for nonexistent rows.
+ *
+ *   This object should have the same structure as [KeySet]{@link google.spanner.v1.KeySet}
+ *
+ * @property {Object} partitionOptions
+ *   Additional options that affect how many partitions are created.
+ *
+ *   This object should have the same structure as [PartitionOptions]{@link google.spanner.v1.PartitionOptions}
+ *
+ * @typedef PartitionReadRequest
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.PartitionReadRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+var PartitionReadRequest = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
+ * Information returned for each partition returned in a
+ * PartitionResponse.
+ *
+ * @property {string} partitionToken
+ *   This token can be passed to Read, StreamingRead, ExecuteSql, or
+ *   ExecuteStreamingSql requests to restrict the results to those identified by
+ *   this partition token.
+ *
+ * @typedef Partition
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.Partition definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+var Partition = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
+ * The response for PartitionQuery
+ * or PartitionRead
+ *
+ * @property {Object[]} partitions
+ *   Partitions created by this request.
+ *
+ *   This object should have the same structure as [Partition]{@link google.spanner.v1.Partition}
+ *
+ * @property {Object} transaction
+ *   Transaction created by this request.
+ *
+ *   This object should have the same structure as [Transaction]{@link google.spanner.v1.Transaction}
+ *
+ * @typedef PartitionResponse
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.PartitionResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+var PartitionResponse = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
  * The request for Read and
  * StreamingRead.
  *
@@ -278,8 +458,10 @@ var ExecuteSqlRequest = {
  *   is present. If index is present, then key_set instead names
  *   index keys in index.
  *
- *   Rows are yielded in table primary key order (if index is empty)
- *   or index key order (if index is non-empty).
+ *   If the partition_token field is empty, rows are yielded
+ *   in table primary key order (if index is empty) or index key order
+ *   (if index is non-empty).  If the partition_token field is not
+ *   empty, rows will be yielded in an unspecified order.
  *
  *   It is not an error for the `key_set` to name rows that do not
  *   exist in the database. Read yields nothing for nonexistent rows.
@@ -288,7 +470,8 @@ var ExecuteSqlRequest = {
  *
  * @property {number} limit
  *   If greater than zero, only the first `limit` rows are yielded. If `limit`
- *   is zero, the default is no limit.
+ *   is zero, the default is no limit. A limit cannot be specified if
+ *   `partition_token` is set.
  *
  * @property {string} resumeToken
  *   If this request is resuming a previously interrupted read,
@@ -297,6 +480,12 @@ var ExecuteSqlRequest = {
  *   enables the new read to resume where the last read left off. The
  *   rest of the request parameters must exactly match the request
  *   that yielded this token.
+ *
+ * @property {string} partitionToken
+ *   If present, results will be restricted to the specified partition
+ *   previously created using PartitionRead().    There must be an exact
+ *   match for the values of fields common to this message and the
+ *   PartitionReadRequest message used to create this partition_token.
  *
  * @typedef ReadRequest
  * @memberof google.spanner.v1
