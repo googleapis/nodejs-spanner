@@ -249,7 +249,6 @@ Database.prototype.batchTransaction = function(identifier) {
  * });
  */
 Database.prototype.close = function(callback) {
-  var self = this;
   var key = this.id.split('/').pop();
   var leakError = null;
   var leaks = this.pool_.getLeaks();
