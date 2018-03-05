@@ -15,47 +15,8 @@
 
 'use strict';
 
-function createBatchTransaction(instanceId, databaseId, projectId) {
-  // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-
-  database
-    .createBatchTransaction()
-    .then(data => {
-      const transaction = data[0];
-
-      console.log(`Created batch transaction for ${databaseId}`);
-
-      // Close the transaction when finished.
-      return transaction.close();
-    })
-    .then(
-      () => {
-        console.log(`Closed batch transaction`);
-      },
-      err => {
-        console.error('ERROR:', err);
-      }
-    );
-}
-
 function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
+  // [START spanner_batch_client]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -79,7 +40,6 @@ function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
 
   const query = 'SELECT * FROM Singers';
 
-// [START spanner_batch_client]
   transaction
     .createQueryPartitions(query)
     .then(data => {
@@ -91,46 +51,7 @@ function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
     .catch(err => {
       console.error('ERROR:', err);
     });
-// [END spanner_batch_client]
-}
-
-function createReadPartitions(instanceId, databaseId, identifier, projectId) {
-  // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-  // const identifier = {};
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-  const transaction = database.batchTransaction(identifier);
-
-  const options = {
-    table: 'Singers',
-    keys: ['1'],
-    columns: ['SingerId'],
-  };
-
-  transaction
-    .createReadPartitions(options)
-    .then(data => {
-      const partitions = data[0];
-      console.log(`Successfully created ${partitions.length} read partitions.`);
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    });
+  // [END spanner_batch_client]
 }
 
 function executePartition(
@@ -140,6 +61,7 @@ function executePartition(
   partition,
   projectId
 ) {
+  // [START spanner_batch_execute_partitions]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -162,7 +84,6 @@ function executePartition(
   const database = instance.database(databaseId);
   const transaction = database.batchTransaction(identifier);
 
-// [START spanner_batch_execute_partitions]
   transaction
     .execute(partition)
     .then(data => {
@@ -174,40 +95,17 @@ function executePartition(
     .catch(err => {
       console.error('ERROR:', err);
     });
-// [END spanner_batch_execute_partitions]
+  // [END spanner_batch_execute_partitions]
 }
 
 require(`yargs`)
   .demand(1)
-  .command(
-    `create-batch-transaction <instanceName> <databaseName> <projectId>`,
-    'Creates a batch transaction for an example Cloud Spanner database.',
-    {},
-    opts =>
-      createBatchTransaction(
-        opts.instanceName,
-        opts.databaseName,
-        opts.projectId
-      )
-  )
   .command(
     `create-query-partitions <instanceName> <databaseName> <identifier> <projectId>`,
     'Creates query partitions.',
     {},
     opts =>
       createQueryPartitions(
-        opts.instanceName,
-        opts.databaseName,
-        JSON.parse(opts.identifier),
-        opts.projectId
-      )
-  )
-  .command(
-    `create-read-partitions <instanceName> <databaseName> <identifier> <projectId>`,
-    'Creates read partitions.',
-    {},
-    opts =>
-      createReadPartitions(
         opts.instanceName,
         opts.databaseName,
         JSON.parse(opts.identifier),
@@ -228,13 +126,7 @@ require(`yargs`)
       )
   )
   .example(
-    `node $0 create-batch-transaction "my-instance" "my-database" "{}" "my-project-id"`
-  )
-  .example(
     `node $0 create-query-partitions "my-instance" "my-database" "{}" "my-project-id"`
-  )
-  .example(
-    `node $0 create-read-partitions "my-instance" "my-database" "{}" "my-project-id"`
   )
   .example(
     `node $0 execute-partition "my-instance" "my-database" "{}" "{}" "my-project-id"`
