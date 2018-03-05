@@ -106,7 +106,7 @@
     "nyc": "^11.2.1",
     "power-assert": "^1.4.4",
     "prettier": "^1.7.4",
-    "proxyquire": "^1.7.11",
+    "proxyquire": "^2.0.0",
     "stats-lite": "^2.1.0",
     "time-span": "^2.0.0",
     "uuid": "^3.2.1",
