@@ -323,6 +323,8 @@ codec.TYPES = TYPES;
  * @returns {object}
  */
 function encodeQuery(query) {
+  query = extend({}, query);
+
   if (query.params) {
     let fields = {};
 
