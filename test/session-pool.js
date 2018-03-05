@@ -1736,7 +1736,7 @@ describe('SessionPool', function() {
 
       return sessionPool.pingSession_(fakeSession).then(function() {
         assert.strictEqual(emitted, true);
-        assert.strictEqual(released, true);
+        assert.strictEqual(released, false);
       });
     });
   });
