@@ -596,10 +596,26 @@ describe('codec', function() {
     };
 
     it('should return the query', function() {
-      var fakeQuery = {};
+      var fakeQuery = {
+        a: 'b',
+        c: 'd',
+      };
+
       var encodedQuery = codec.encodeQuery(fakeQuery);
 
-      assert.strictEqual(fakeQuery, encodedQuery);
+      assert.deepStrictEqual(fakeQuery, encodedQuery);
+    });
+
+    it('should clone the query', function() {
+      var fakeQuery = {
+        a: 'b',
+      };
+
+      var encodedQuery = codec.encodeQuery(fakeQuery);
+      assert.notStrictEqual(fakeQuery, encodedQuery);
+
+      delete encodedQuery.a;
+      assert.strictEqual(fakeQuery.a, 'b');
     });
 
     it('should encode query parameters', function() {
