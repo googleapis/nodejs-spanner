@@ -196,7 +196,7 @@ function Spanner(options) {
   this.auth = googleAuth(this.options);
 
   var config = {
-    baseUrl: 'spanner.googleapis.com',
+    baseUrl: this.options.servicePath || gapic.v1.SpannerClient.servicePath,
     protosDir: path.resolve(__dirname, '../protos'),
     protoServices: {
       Operations: {

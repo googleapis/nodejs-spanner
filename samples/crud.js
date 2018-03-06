@@ -16,7 +16,7 @@
 'use strict';
 
 function updateData(instanceId, databaseId, projectId) {
-  // [START update_data]
+  // [START spanner_update_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -56,11 +56,11 @@ function updateData(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END update_data]
+  // [END spanner_update_data]
 }
 
 function insertData(instanceId, databaseId, projectId) {
-  // [START insert_data]
+  // [START spanner_insert_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -115,11 +115,11 @@ function insertData(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END insert_data]
+  // [END spanner_insert_data]
 }
 
 function queryData(instanceId, databaseId, projectId) {
-  // [START query_data]
+  // [START spanner_query_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -165,11 +165,11 @@ function queryData(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END query_data]
+  // [END spanner_query_data]
 }
 
 function readData(instanceId, databaseId, projectId) {
-  // [START read_data]
+  // [START spanner_read_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -220,11 +220,11 @@ function readData(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END read_data]
+  // [END spanner_read_data]
 }
 
 function readStaleData(instanceId, databaseId, projectId) {
-  // [START read_stale_data]
+  // [START spanner_read_stale_data]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -282,7 +282,7 @@ function readStaleData(instanceId, databaseId, projectId) {
       // Close the database when finished.
       return database.close();
     });
-  // [END read_stale_data]
+  // [END spanner_read_stale_data]
 }
 
 require(`yargs`)

@@ -16,7 +16,7 @@
 'use strict';
 
 function readOnlyTransaction(instanceId, databaseId, projectId) {
-  // [START read_only_transaction]
+  // [START spanner_read_only_transaction]
   // Imports the Google Cloud client library
   const Spanner = require('@google-cloud/spanner');
 
@@ -91,11 +91,11 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
         return database.close();
       });
   });
-  // [END read_only_transaction]
+  // [END spanner_read_only_transaction]
 }
 
 function readWriteTransaction(instanceId, databaseId, projectId) {
-  // [START read_write_transaction]
+  // [START spanner_read_write_transaction]
   // This sample transfers 200,000 from the MarketingBudget field
   // of the second Album to the first Album. Make sure to run the
   // addColumn and updateData samples first (in that order).
@@ -203,7 +203,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
         return database.close();
       });
   });
-  // [END read_write_transaction]
+  // [END spanner_read_write_transaction]
 }
 
 require(`yargs`)
