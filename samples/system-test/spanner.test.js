@@ -65,22 +65,6 @@ test.before(async () => {
   await operation.promise();
 });
 
-test.after.always(async () => {
-  const instance = spanner.instance(INSTANCE_ID);
-  const database = instance.database(DATABASE_ID);
-  try {
-    await database.delete();
-  } catch (err) {
-    // Ignore error
-  }
-
-  try {
-    await instance.delete();
-  } catch (err) {
-    // Ignore error
-  }
-});
-
 // create_database
 test.serial(`should create an example database`, async t => {
   const results = await tools.runAsyncWithIO(
