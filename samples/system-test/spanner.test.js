@@ -296,19 +296,6 @@ test.serial(
   }
 );
 
-// create_batch_transaction
-test.serial(`should create a batch transaction`, async t => {
-  let results = await tools.runAsyncWithIO(
-    `${batchCmd} create-batch-transaction ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-    cwd
-  );
-
-  let output = results.stdout + results.stderr;
-
-  t.regex(output, new RegExp(`Created batch transaction for ${DATABASE_ID}`));
-  t.regex(output, new RegExp(`Closed batch transaction`));
-});
-
 // create_query_partitions
 test.serial(`should create query partitions`, async t => {
   const instance = spanner.instance(INSTANCE_ID);
@@ -324,25 +311,6 @@ test.serial(`should create query partitions`, async t => {
   let output = results.stdout + results.stderr;
 
   t.regex(output, /Successfully created \d query partitions\./);
-
-  await transaction.close();
-});
-
-// create_read_partitions
-test.serial(`should create read partitions`, async t => {
-  const instance = spanner.instance(INSTANCE_ID);
-  const database = instance.database(DATABASE_ID);
-  const [transaction] = await database.createBatchTransaction();
-  const identifier = JSON.stringify(transaction.identifier());
-
-  let results = await tools.runAsyncWithIO(
-    `${batchCmd} create-read-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
-    cwd
-  );
-
-  let output = results.stdout + results.stderr;
-
-  t.regex(output, /Successfully created \d read partitions\./);
 
   await transaction.close();
 });
