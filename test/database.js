@@ -34,7 +34,6 @@ var fakeUtil = extend({}, util, {
     promisified = true;
     assert.deepEqual(options.exclude, [
       'batchTransaction',
-      'delete',
       'getMetadata',
       'runTransaction',
       'table',

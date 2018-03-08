@@ -1529,7 +1529,6 @@ Database.prototype.session_ = function(name) {
 common.util.promisifyAll(Database, {
   exclude: [
     'batchTransaction',
-    'delete',
     'getMetadata',
     'runTransaction',
     'table',
