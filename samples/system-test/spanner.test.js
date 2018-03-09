@@ -16,7 +16,7 @@
 'use strict';
 
 const path = require(`path`);
-const request = require('request');
+const request = require(`request`);
 const Spanner = require(`@google-cloud/spanner`);
 const test = require(`ava`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
@@ -87,7 +87,7 @@ test.before(async () => {
 
         return instanceCreated < yesterday;
       })
-      .forEach(async operation => await instance.delete());
+      .forEach(async () => await instance.delete());
   });
 });
 

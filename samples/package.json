@@ -21,6 +21,7 @@
     "@google-cloud/nodejs-repo-tools": "2.1.0",
     "ava": "0.22.0",
     "proxyquire": "1.8.0",
+    "request": "^2.83.0",
     "sinon": "3.2.1"
   }
 }
