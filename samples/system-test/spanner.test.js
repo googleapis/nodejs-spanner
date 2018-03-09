@@ -38,7 +38,7 @@ const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 
-test.before(tools.checkCredentials());
+test.before(tools.checkCredentials);
 
 test.before(async () => {
   const instance = spanner.instance(INSTANCE_ID);
