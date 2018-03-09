@@ -16,6 +16,7 @@
 'use strict';
 
 const path = require(`path`);
+const request = require(`request`);
 const Spanner = require(`@google-cloud/spanner`);
 const test = require(`ava`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
@@ -28,25 +29,26 @@ const transactionCmd = `node transaction.js`;
 
 const cwd = path.join(__dirname, `..`);
 
+const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
-const INSTANCE_ID = `test-instance`;
-const DATABASE_ID = `test-database-${Date.now()}`;
+const INSTANCE_ID = `test-instance-${date}`;
+const DATABASE_ID = `test-database-${date}`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 
 test.before(tools.checkCredentials);
+
 test.before(async () => {
   const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
 
   try {
     await instance.delete();
   } catch (err) {
     // Ignore error
   }
-
-  const database = instance.database(DATABASE_ID);
 
   try {
     await database.delete();
@@ -63,6 +65,47 @@ test.before(async () => {
   });
 
   await operation.promise();
+});
+
+test.before(async () => {
+  const [instances] = await spanner.getInstances({
+    filter: 'labels.gcloud-tests:true',
+  });
+
+  instances.forEach(async instance => {
+    const {operations} = await getOperations(instance.metadata.name);
+
+    operations
+      .filter(operation => {
+        return operation.metadata['@type'].includes('CreateInstance');
+      })
+      .filter(operation => {
+        const yesterday = new Date();
+        yesterday.setHours(-24);
+
+        const instanceCreated = new Date(operation.metadata.startTime);
+
+        return instanceCreated < yesterday;
+      })
+      .forEach(async () => await instance.delete());
+  });
+});
+
+test.after.always(async () => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+
+  try {
+    await database.delete();
+  } catch (err) {
+    // Ignore error
+  }
+
+  try {
+    await instance.delete();
+  } catch (err) {
+    // Ignore error
+  }
 });
 
 // create_database
@@ -321,3 +364,34 @@ test.serial(`should execute a partition`, async t => {
 
   await transaction.close();
 });
+
+function apiRequest(reqOpts) {
+  return new Promise((resolve, reject) => {
+    spanner.auth.authorizeRequest(reqOpts, (err, reqOpts) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      request(reqOpts, (err, response) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        try {
+          resolve(JSON.parse(response.body));
+        } catch (e) {
+          reject(e);
+          return;
+        }
+      });
+    });
+  });
+}
+
+function getOperations(instanceName) {
+  return apiRequest({
+    uri: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
+  });
+}
