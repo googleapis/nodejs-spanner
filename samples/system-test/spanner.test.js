@@ -28,16 +28,18 @@ const transactionCmd = `node transaction.js`;
 
 const cwd = path.join(__dirname, `..`);
 
+const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
-const INSTANCE_ID = `test-instance`;
-const DATABASE_ID = `test-database-${Date.now()}`;
+const INSTANCE_ID = `test-instance-${date}`;
+const DATABASE_ID = `test-database-${date}`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 
-test.before(tools.checkCredentials);
 test.before(async () => {
+  tools.checkCredentials();
+
   const instance = spanner.instance(INSTANCE_ID);
 
   try {
@@ -63,6 +65,22 @@ test.before(async () => {
   });
 
   await operation.promise();
+});
+
+test.after.always(async () => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+  try {
+    await database.delete();
+  } catch (err) {
+    // Ignore error
+  }
+
+  try {
+    await instance.delete();
+  } catch (err) {
+    // Ignore error
+  }
 });
 
 // create_database
