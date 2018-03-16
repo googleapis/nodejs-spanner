@@ -169,5 +169,5 @@ For more information, see https://cloud.google.com/spanner/docs
 [transaction_3_docs]: https://cloud.google.com/spanner/docs
 [transaction_3_code]: transaction.js
 
-[shell_img]: http://gstatic.com/cloudssh/images/open-btn.png
+[shell_img]: //gstatic.com/cloudssh/images/open-btn.png
 [shell_link]: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/README.md
