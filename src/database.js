@@ -279,9 +279,6 @@ Database.prototype.close = function(callback) {
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  * @param {CreateTransactionCallback} [callback] Callback function.
  * @returns {Promise<CreateTransactionResponse>}
- *
- * @example <caption>include:samples/batch.js</caption>
- * region_tag:create_batch_transaction
  */
 Database.prototype.createBatchTransaction = function(options, callback) {
   var self = this;
