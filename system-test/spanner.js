@@ -66,7 +66,7 @@ describe('Spanner', function() {
 
       insertData.Key = id;
 
-      table.insert(insertData, function(err) {
+      table.insert(insertData, function(err, insertResp) {
         if (err) {
           callback(err);
           return;
@@ -79,13 +79,13 @@ describe('Spanner', function() {
               id: id,
             },
           },
-          function(err, rows) {
+          function(err, rows, readResp) {
             if (err) {
               callback(err);
               return;
             }
 
-            callback(null, rows.shift());
+            callback(null, rows.shift(), insertResp, readResp);
           }
         );
       });
@@ -110,7 +110,8 @@ describe('Spanner', function() {
               FloatArray ARRAY<FLOAT64>,
               IntArray ARRAY<INT64>,
               StringArray ARRAY<STRING(MAX)>,
-              TimestampArray ARRAY<TIMESTAMP>
+              TimestampArray ARRAY<TIMESTAMP>,
+              CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
             ) PRIMARY KEY (Key)
           `,
         },
@@ -595,6 +596,24 @@ describe('Spanner', function() {
           var returnedValues = row.toJSON().DateArray.map(Spanner.date);
           assert.deepEqual(returnedValues, values);
 
+          done();
+        });
+      });
+    });
+
+    describe('commit timestamp', function() {
+      it('should accept the commit timestamp placeholder', function(done) {
+        var data = {CommitTimestamp: Spanner.COMMIT_TIMESTAMP};
+
+        insert(data, function(err, row, commitResponse) {
+          assert.ifError(err);
+
+          var timestampFromCommit = fromProtoToDate(
+            commitResponse.commitTimestamp
+          );
+          var timestampFromRead = row.toJSON().CommitTimestamp;
+
+          assert.deepEqual(timestampFromCommit, timestampFromRead);
           done();
         });
       });
@@ -3583,4 +3602,9 @@ function wait(time) {
   return new Promise(function(resolve) {
     setTimeout(resolve, time);
   });
+}
+
+function fromProtoToDate(obj) {
+  var milliseconds = parseInt(obj.nanos, 10) / 1e6;
+  return new Date(parseInt(obj.seconds, 10) * 1000 + milliseconds);
 }
