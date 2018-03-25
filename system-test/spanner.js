@@ -864,7 +864,7 @@ describe('Spanner', function() {
       session.delete(done);
     });
 
-    it('should have created the session', function(done) {
+    it.only('should have created the session', function(done) {
       session.getMetadata(function(err, metadata) {
         assert.ifError(err);
         assert.strictEqual(session.formattedName_, metadata.name);
@@ -872,18 +872,21 @@ describe('Spanner', function() {
       });
     });
 
-    it('should get a session by name', function(done) {
+    it.only('should get a session by name', function(done) {
       var shortName = session.formattedName_.split('/').pop();
       var sessionByShortName = database.session_(shortName);
 
-      sessionByShortName.getMetadata(function(err, metadata) {
+      sessionByShortName.getMetadata(function(err, metadataByName) {
         assert.ifError(err);
-        assert.strictEqual(metadata.name, session.metadata.name);
-        done();
+        session.getMetadata(function(err, metadata) {
+          assert.ifError(err);
+          assert.strictEqual(metadataByName.name, metadata.name);
+          done();
+        });
       });
     });
 
-    it('should keep the session alive', function(done) {
+    it.only('should keep the session alive', function(done) {
       session.keepAlive(done);
     });
   });
