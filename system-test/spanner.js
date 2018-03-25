@@ -864,7 +864,7 @@ describe('Spanner', function() {
       session.delete(done);
     });
 
-    it.only('should have created the session', function(done) {
+    it('should have created the session', function(done) {
       session.getMetadata(function(err, metadata) {
         assert.ifError(err);
         assert.strictEqual(session.formattedName_, metadata.name);
@@ -872,7 +872,7 @@ describe('Spanner', function() {
       });
     });
 
-    it.only('should get a session by name', function(done) {
+    it('should get a session by name', function(done) {
       var shortName = session.formattedName_.split('/').pop();
       var sessionByShortName = database.session_(shortName);
 
@@ -886,7 +886,7 @@ describe('Spanner', function() {
       });
     });
 
-    it.only('should keep the session alive', function(done) {
+    it('should keep the session alive', function(done) {
       session.keepAlive(done);
     });
   });
