@@ -876,10 +876,13 @@ describe('Spanner', function() {
       var shortName = session.formattedName_.split('/').pop();
       var sessionByShortName = database.session_(shortName);
 
-      sessionByShortName.getMetadata(function(err, metadata) {
+      sessionByShortName.getMetadata(function(err, metadataByName) {
         assert.ifError(err);
-        assert.strictEqual(metadata.name, session.metadata.name);
-        done();
+        session.getMetadata(function(err, metadata) {
+          assert.ifError(err);
+          assert.strictEqual(metadataByName.name, metadata.name);
+          done();
+        });
       });
     });
 
