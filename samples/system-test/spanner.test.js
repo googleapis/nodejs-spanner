@@ -26,6 +26,7 @@ const crudCmd = `node crud.js`;
 const schemaCmd = `node schema.js`;
 const indexingCmd = `node indexing.js`;
 const transactionCmd = `node transaction.js`;
+const timestampCmd = `node timestamp.js`;
 
 const cwd = path.join(__dirname, `..`);
 
@@ -364,6 +365,100 @@ test.serial(`should execute a partition`, async t => {
 
   await transaction.close();
 });
+
+// add_timestamp_column
+test.serial(`should add a timestamp column to a table`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /Waiting for operation to complete\.\.\./);
+  t.regex(
+    output,
+    /Added LastUpdateTime as a commit timestamp column in Albums table\./
+  );
+});
+
+// update_data_with_timestamp_column
+test.serial(
+  `should update existing rows in an example table with commit timestamp column`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Updated data\./);
+  }
+);
+
+// query_data_with_timestamp_column
+test.serial(
+  `should query an example table with an additional timestamp column and return matching rows`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
+    );
+    t.regex(
+      output,
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
+    );
+  }
+);
+
+// create_table_with_timestamp_column
+test.serial(
+  `should create an example table with a timestamp column`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    t.regex(
+      output,
+      new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
+    );
+  }
+);
+
+// insert_data_with_timestamp
+test.serial(
+  `should insert rows into an example table with timestamp column`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Inserted data\./);
+  }
+);
+
+// query_new_table_with_timestamp
+test.serial(
+  `should query a example table with a non-null timestamp column and return matching rows`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 1, VenueId: 4, EventDate:/);
+    t.regex(output, /Revenue: 15000, LastUpdateTime:/);
+  }
+);
 
 function apiRequest(reqOpts) {
   return new Promise((resolve, reject) => {
