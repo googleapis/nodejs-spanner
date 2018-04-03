@@ -1152,11 +1152,6 @@ Database.prototype.runStream = function(query, options) {
 };
 
 /**
- * @typedef {array} RunTransactionResponse
- * @property {Transaction} 0 The transaction object. The transaction has already
- *     been created, and is ready to be queried and committed against.
- */
-/**
  * A function to execute in the context of a transaction.
  * @callback RunTransactionCallback
  * @param {?Error} err An error returned while making this request.
@@ -1193,7 +1188,6 @@ Database.prototype.runStream = function(query, options) {
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  * @param {RunTransactionCallback} callback A function to execute in the context
  *     of a transaction.
- * @returns {Promise<RunTransactionResponse>}
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
