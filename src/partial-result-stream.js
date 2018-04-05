@@ -23,7 +23,7 @@ var exec = require('methmeth');
 var extend = require('extend');
 var is = require('is');
 var mergeStream = require('merge-stream');
-var split = require('split-array-stream');
+var split = require('split-array-stream').split;
 var streamEvents = require('stream-events');
 var through = require('through2');
 
