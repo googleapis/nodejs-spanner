@@ -112,9 +112,7 @@ function partialResultStream(requestFn, options) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
 
-      split(formattedRows, userStream, function() {
-        next();
-      });
+      split(formattedRows, userStream).then(() => next());
     })
   );
 
