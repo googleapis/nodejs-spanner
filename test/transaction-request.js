@@ -494,7 +494,7 @@ describe('TransactionRequest', function() {
         var stream = through.obj();
 
         setImmediate(function() {
-          split(rows, stream, function() {
+          split(rows, stream).then(function() {
             stream.end();
           });
         });
