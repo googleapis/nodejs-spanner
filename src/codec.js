@@ -69,6 +69,39 @@ Int.prototype.valueOf = function() {
 
 codec.Int = Int;
 
+var TYPE = Symbol();
+
+var Struct = {
+  TYPE: 'struct',
+  create: function() {
+    var struct = [];
+
+    struct[TYPE] = Struct.TYPE;
+
+    Object.defineProperty(struct, 'toJSON', {
+      enumerable: false,
+      value: generateToJSONFromRow(struct)
+    });
+
+    return struct;
+  },
+  createFromJSON: function(json) {
+    var struct = Struct.create();
+
+    Object.keys(json || {}).forEach(name => {
+      let value = json[name];
+      struct.push({name, value});
+    });
+
+    return struct;
+  },
+  isStruct: function(thing) {
+    return thing && thing[TYPE] === Struct.TYPE;
+  },
+};
+
+module.exports.Struct = Struct;
+
 /**
  * Wherever a row object is returned, it is assigned a "toJSON" function. This
  * function will create that function in a consistent format.
@@ -148,27 +181,18 @@ function decode(value, field) {
         break;
       }
       case 'STRUCT': {
-        var formattedRow = [];
-        var fields = type.structType.fields;
+        let struct = Struct.create();
+        let fields = type.structType.fields;
 
-        fields.forEach(function(field, index) {
-          var value = decoded[field.name] || decoded[index];
+        fields.forEach((field, index) => {
+          let name = field.name;
+          let value = decoded[name] || decoded[index];
 
-          var column = {
-            name: field.name,
-            value: decodeValue_(value, field.type),
-          };
-
-          formattedRow.push(column);
+          value = decodeValue_(value, field.type);
+          struct.push({name, value});
         });
 
-        Object.defineProperty(formattedRow, 'toJSON', {
-          enumerable: false,
-          value: codec.generateToJSONFromRow(formattedRow),
-        });
-
-        decoded = formattedRow;
-
+        decoded = struct;
         break;
       }
     }
@@ -204,6 +228,8 @@ function encode(value) {
       value = value.value;
     } else if (Buffer.isBuffer(value)) {
       value = value.toString('base64');
+    } else if (Struct.isStruct(value)) {
+      value = value.map(field => preEncode(field.value));
     } else if (is.array(value)) {
       value = value.map(preEncode);
     } else if (is.object(value) && is.fn(value.hasOwnProperty)) {
@@ -270,10 +296,22 @@ function getType(field) {
     return 'date';
   }
 
-  if (is.array(field)) {
-    var child;
+  if (Struct.isStruct(field)) {
+    let fields = field.map(({name, value}) => {
+      let type = getType(value);
+      return {name, type};
+    });
 
-    for (var i = 0; i < field.length; i++) {
+    return {
+      type: 'struct',
+      fields,
+    };
+  }
+
+  if (is.array(field)) {
+    let child;
+
+    for (let i = 0; i < field.length; i++) {
       child = field[i];
 
       if (!is.nil(child)) {
@@ -308,6 +346,7 @@ var TYPES = [
   'string',
   'bytes',
   'array',
+  'struct',
 ];
 
 codec.TYPES = TYPES;
@@ -348,34 +387,8 @@ function encodeQuery(query) {
   if (query.types) {
     let formattedTypes = {};
 
-    for (let prop in query.types) {
-      let type = query.types[prop];
-      let childType;
-      let child;
-
-      // if a type is an ARRAY, then we'll accept an object specifying
-      // the type and the child type
-      if (is.object(type)) {
-        childType = type.child;
-        child = codec.TYPES.indexOf(childType);
-        type = type.type;
-      }
-
-      let code = codec.TYPES.indexOf(type);
-
-      if (code === -1) {
-        code = 0; // unspecified
-      }
-
-      formattedTypes[prop] = {code};
-
-      if (child === -1) {
-        child = 0; // unspecified
-      }
-
-      if (is.number(child)) {
-        formattedTypes[prop].arrayElementType = {code: child};
-      }
+    for (let field in query.types) {
+      formattedTypes[field] = createTypeObject(query.types[field]);
     }
 
     delete query.types;
@@ -436,3 +449,41 @@ function encodeRead(query) {
 }
 
 codec.encodeRead = encodeRead;
+
+/**
+ *
+ */
+function createTypeObject(config = 'unspecified') {
+  if (is.string(config)) {
+    config = {type: config};
+  }
+
+  let type = config.type;
+  let code = TYPES.indexOf(type);
+
+  if (code === -1) {
+    code = 0; // unspecified
+  }
+
+  let typeObject = {code};
+
+  if (type === 'array') {
+    typeObject.arrayElementType = createTypeObject(config.child);
+  }
+
+  if (type === 'struct') {
+    typeObject.structType = {};
+    typeObject.structType.fields = arrify(config.fields).map(field => {
+      let fieldConfig = is.object(field.type) ? field.type : field;
+
+      return {
+        name: field.name,
+        type: createTypeObject(fieldConfig),
+      };
+    });
+  }
+
+  return typeObject;
+}
+
+codec.createTypeObject = createTypeObject;

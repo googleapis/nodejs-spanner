@@ -29,13 +29,16 @@ var uuid = require('uuid');
 var Spanner = require('../');
 
 var PREFIX = 'gcloud-tests-';
-var spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
+var spanner = new Spanner({
+  projectId: process.env.GCLOUD_PROJECT,
+  servicePath: 'staging-wrenchworks.sandbox.googleapis.com',
+});
 
 describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
 
   var INSTANCE_CONFIG = {
-    config: 'regional-us-central1',
+    config: 'cloud-devel-staging-config',
     nodes: 1,
     labels: {
       'gcloud-tests': 'true',
@@ -2194,6 +2197,316 @@ describe('Spanner', function() {
             database.run(query, function(err, rows) {
               assert.ifError(err);
               assert.deepEqual(rows[0][0].value, null);
+              done();
+            });
+          });
+        });
+
+        describe.only('structs', function() {
+          it('should bind a simple struct', function(done) {
+            var query = {
+              sql: 'SELECT @structParam.userf, @p4',
+              params: {
+                structParam: Spanner.struct({
+                  userf: 'bob',
+                  threadf: Spanner.int(1),
+                }),
+                p4: Spanner.int(10),
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0].toJSON();
+              assert.strictEqual(row.userf, 'bob');
+
+              done();
+            });
+          });
+
+          it('should bind null structs', function(done) {
+            var query = {
+              sql: 'SELECT @structParam.userf',
+              params: {
+                structParam: null,
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0].toJSON();
+              assert.strictEqual(row.userf, null);
+
+              done();
+            });
+          });
+
+          it('should bind nested structs', function(done) {
+            var query = {
+              sql: 'SELECT @structParam.structf.nestedf',
+              params: {
+                structParam: Spanner.struct({
+                  structf: Spanner.struct({
+                    nestedf: 'bob',
+                  }),
+                }),
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0].toJSON();
+              assert.strictEqual(row.nestedf, 'bob');
+
+              done();
+            });
+          });
+
+          it('should bind null nested structs', function(done) {
+            var query = {
+              sql: 'SELECT @structParam.structf.nestedf',
+              params: {
+                structParam: null,
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'structf',
+                      type: 'struct',
+                      fields: [
+                        {
+                          name: 'nestedf',
+                          type: 'string',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0].toJSON();
+              assert.strictEqual(row.nestedf, null);
+
+              done();
+            });
+          });
+
+          it('should bind empty structs', function(done) {
+            var query = {
+              sql: 'SELECT @structParam IS NULL',
+              params: {
+                structParam: Spanner.struct(),
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0];
+              assert.strictEqual(row[0].value, false);
+
+              done();
+            });
+          });
+
+          it('should bind null structs with no fields', function(done) {
+            var query = {
+              sql: 'SELECT @structParam IS NULL',
+              params: {
+                structParam: null,
+              },
+              types: {
+                structParam: 'struct',
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0];
+              assert.strictEqual(row[0].value, true);
+
+              done();
+            });
+          });
+
+          it('should bind structs with null fields', function(done) {
+            var query = {
+              sql: 'SELECT @structParam.f1',
+              params: {
+                structParam: Spanner.struct({
+                  f1: null,
+                }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'f1',
+                      type: 'int64',
+                    },
+                  ],
+                },
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0].toJSON();
+              assert.strictEqual(row.f1, null);
+
+              done();
+            });
+          });
+
+          it.skip('should allow equality checks', function(done) {
+            var query = {
+              sql:
+                'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
+              params: {
+                structParam: Spanner.struct({
+                  userf: 'bob',
+                  threadf: Spanner.int(1),
+                }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+              done();
+            });
+          });
+
+          it('should allow nullness checks', function(done) {
+            var query = {
+              sql: 'SELECT @structParam IS NULL',
+              params: {
+                structParam: Spanner.struct({
+                  userf: 'bob',
+                  threadf: Spanner.int(1),
+                }),
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0];
+              assert.strictEqual(row[0].value, false);
+
+              done();
+            });
+          });
+
+          it('should allow an array of structs with null fields', function(done) {
+            var query = {
+              sql: 'SELECT a.threadid FROM UNNEST(@structParam.arraysf) a',
+              params: {
+                structParam: Spanner.struct({
+                  intf: Spanner.int(10),
+                  arraysf: null,
+                }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'intf',
+                      type: 'int64',
+                    },
+                    {
+                      name: 'arraysf',
+                      type: 'array',
+                      child: {
+                        type: 'struct',
+                        fields: [
+                          {
+                            name: 'threadid',
+                            type: 'int64',
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, 0);
+
+              done();
+            });
+          });
+
+          it('should allow a null array of structs', function(done) {
+            var query = {
+              sql: 'SELECT a.threadid FROM UNNEST(@structParamArray) a',
+              params: {
+                structParamArray: null,
+              },
+              types: {
+                structParamArray: {
+                  type: 'array',
+                  child: {
+                    type: 'struct',
+                    fields: [
+                      {
+                        name: 'threadid',
+                        type: 'int64',
+                      },
+                    ],
+                  },
+                },
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, 0);
               done();
             });
           });
