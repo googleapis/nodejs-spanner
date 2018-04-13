@@ -730,10 +730,6 @@ SessionPool.prototype.needsFill_ = function() {
 SessionPool.prototype.onAvailable_ = function() {
   var self = this;
 
-  if (this.available() > 0) {
-    return Promise.resolve();
-  }
-
   return new Promise(function(resolve) {
     self.once('available', resolve);
   });
@@ -932,6 +928,10 @@ SessionPool.prototype.waitForNextAvailable_ = function(type) {
   var self = this;
 
   return this.acquireQueue_.add(function() {
+    if (self.available() > 0) {
+      return self.getNextAvailableSession_(type);
+    }
+
     return self.onAvailable_().then(function() {
       return self.getNextAvailableSession_(type);
     });
