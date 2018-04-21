@@ -21,6 +21,7 @@ var extend = require('extend');
 var gax = require('google-gax');
 var is = require('is');
 var path = require('path');
+var protobuf = require('protobufjs');
 var through = require('through2');
 var util = require('util');
 
@@ -53,19 +54,18 @@ var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
  */
 var DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
-var services = gax.grpc().load(
-  {
-    root: path.resolve(__dirname, '../protos'),
-    file: 'google/rpc/error_details.proto',
-  },
-  'proto',
-  {
-    binaryAsBase64: true,
-    convertFieldsToCamelCase: true,
-  }
+var protoFilesRoot = new gax.grpc.GoogleProtoFilesRoot();
+protoFilesRoot = protobuf.loadSync(
+  path.join(
+    __dirname,
+    '..',
+    'protos',
+    'google/rpc/error_details.proto'
+  ),
+  protoFilesRoot
 );
 
-var RetryInfo = services.google.rpc.RetryInfo;
+var RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
 
 /**
  * Read/write transaction options.
