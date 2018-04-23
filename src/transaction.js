@@ -56,12 +56,7 @@ var DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
 var protoFilesRoot = new gax.grpc.GoogleProtoFilesRoot();
 protoFilesRoot = protobuf.loadSync(
-  path.join(
-    __dirname,
-    '..',
-    'protos',
-    'google/rpc/error_details.proto'
-  ),
+  path.join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
   protoFilesRoot
 );
 
