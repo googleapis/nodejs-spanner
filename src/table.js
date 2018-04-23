@@ -92,7 +92,7 @@ util.inherits(Table, TransactionRequest);
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const schema =
  *   'CREATE TABLE Singers (' +
@@ -151,7 +151,7 @@ Table.prototype.create = function(schema, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * table.createReadStream({
  *     keys: ['1'],
@@ -235,7 +235,7 @@ Table.prototype.createReadStream = function(query, options) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * table.delete(function(err, operation, apiResponse) {
  *   if (err) {
@@ -281,7 +281,7 @@ Table.prototype.delete = function(callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const keys = ['Id1', 'Id2', 'Id3'];
  *
@@ -334,7 +334,7 @@ Table.prototype.deleteRows = function(keys, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const row = {
  *   SingerId: 'Id3',
@@ -441,7 +441,7 @@ Table.prototype.insert = function(keyVals, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const query = {
  *   keys: ['1'],
@@ -562,7 +562,7 @@ Table.prototype.read = function(keyVals, options, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const row = {
  *   SingerId: 'Id3',
@@ -605,7 +605,7 @@ Table.prototype.replace = function(keyVals, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const row = {
  *   SingerId: 'Id3',
@@ -652,7 +652,7 @@ Table.prototype.update = function(keyVals, callback) {
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
- * const table = instance.database('Singers');
+ * const table = database.table('Singers');
  *
  * const row = {
  *   SingerId: 'Id3',
