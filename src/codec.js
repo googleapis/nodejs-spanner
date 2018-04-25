@@ -454,7 +454,12 @@ function encodeRead(query) {
 codec.encodeRead = encodeRead;
 
 /**
+ * Encodes paramTypes into correct structure.
  *
+ * @private
+ *
+ * @param {object|string} [config='unspecified'] Type config.
+ * @return {object}
  */
 function createTypeObject(config = 'unspecified') {
   if (is.string(config)) {
