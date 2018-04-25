@@ -32,9 +32,6 @@ var Transaction = require('./transaction.js');
  * @extends Transaction
  *
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
- *
- * @example <caption>include:samples/batch.js</caption>
- * region_tag:create_batch_transaction
  */
 function BatchTransaction(session) {
   Transaction.call(this, session, {readOnly: true});
@@ -117,7 +114,7 @@ BatchTransaction.prototype.close = function(callback) {
  * @returns {Promise<CreateQueryPartitionsResponse>}
  *
  * @example <caption>include:samples/batch.js</caption>
- * region_tag:create_query_partitions
+ * region_tag:spanner_batch_client
  */
 BatchTransaction.prototype.createQueryPartitions = function(query, callback) {
   if (is.string(query)) {
@@ -210,9 +207,6 @@ BatchTransaction.prototype.createPartitions_ = function(config, callback) {
  *     read from.
  * @param {CreateReadPartitionsCallback} [callback] Callback function.
  * @returns {Promise<CreateReadPartitionsResponse>}
- *
- * @example <caption>include:samples/batch.js</caption>
- * region_tag:create_read_partitions
  */
 BatchTransaction.prototype.createReadPartitions = function(options, callback) {
   var reqOpts = codec.encodeRead(options);
@@ -247,7 +241,7 @@ BatchTransaction.prototype.createReadPartitions = function(options, callback) {
  * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}
  *
  * @example <caption>include:samples/batch.js</caption>
- * region_tag:execute_partition
+ * region_tag:spanner_batch_execute_partitions
  */
 BatchTransaction.prototype.execute = function(partition, callback) {
   if (is.string(partition.table)) {

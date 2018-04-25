@@ -22,7 +22,7 @@ var extend = require('extend');
 var gax = require('google-gax');
 var path = require('path');
 var proxyquire = require('proxyquire');
-var split = require('split-array-stream');
+var split = require('split-array-stream').split;
 var through = require('through2');
 var util = require('@google-cloud/common').util;
 
@@ -871,7 +871,7 @@ describe('Transaction', function() {
         var stream = through.obj();
 
         setImmediate(function() {
-          split(rows, stream, function() {
+          split(rows, stream).then(function() {
             stream.end();
           });
         });
@@ -916,7 +916,7 @@ describe('Transaction', function() {
         var stream = through.obj();
 
         setImmediate(function() {
-          split(rows, stream, function() {
+          split(rows, stream).then(function() {
             stream.end();
           });
         });

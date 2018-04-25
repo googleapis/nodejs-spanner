@@ -19,7 +19,7 @@
 var assert = require('assert');
 var extend = require('extend');
 var proxyquire = require('proxyquire');
-var split = require('split-array-stream');
+var split = require('split-array-stream').split;
 var through = require('through2');
 var util = require('@google-cloud/common').util;
 
@@ -494,7 +494,7 @@ describe('TransactionRequest', function() {
         var stream = through.obj();
 
         setImmediate(function() {
-          split(rows, stream, function() {
+          split(rows, stream).then(function() {
             stream.end();
           });
         });
