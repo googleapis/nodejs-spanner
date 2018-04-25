@@ -284,7 +284,7 @@ Spanner.int = function(value) {
  * });
  */
 Spanner.struct = function(value) {
-  return codec.Struct.createFromJSON(value);
+  return codec.Struct.fromJSON(value);
 };
 
 /**

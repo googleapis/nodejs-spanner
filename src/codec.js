@@ -24,6 +24,8 @@ var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
 var is = require('is');
 
+var TYPE = Symbol();
+
 function SpannerDate(value) {
   if (arguments.length > 1) {
     throw new TypeError(
@@ -69,35 +71,34 @@ Int.prototype.valueOf = function() {
 
 codec.Int = Int;
 
-var TYPE = Symbol();
+function Struct() {
+  var struct = [];
 
-var Struct = {
-  TYPE: 'struct',
-  create: function() {
-    var struct = [];
+  struct[TYPE] = Struct.TYPE;
 
-    struct[TYPE] = Struct.TYPE;
+  Object.defineProperty(struct, 'toJSON', {
+    enumerable: false,
+    value: generateToJSONFromRow(struct),
+  });
 
-    Object.defineProperty(struct, 'toJSON', {
-      enumerable: false,
-      value: generateToJSONFromRow(struct)
-    });
+  return struct;
+}
 
-    return struct;
-  },
-  createFromJSON: function(json) {
-    var struct = Struct.create();
+Struct.TYPE = 'struct';
 
-    Object.keys(json || {}).forEach(name => {
-      let value = json[name];
-      struct.push({name, value});
-    });
+Struct.fromJSON = function(json) {
+  var struct = new Struct();
 
-    return struct;
-  },
-  isStruct: function(thing) {
-    return thing && thing[TYPE] === Struct.TYPE;
-  },
+  Object.keys(json || {}).forEach(function(name) {
+    var value = json[name];
+    struct.push({name, value});
+  });
+
+  return struct;
+};
+
+Struct.isStruct = function(thing) {
+  return thing && thing[TYPE] === Struct.TYPE;
 };
 
 module.exports.Struct = Struct;
