@@ -24,8 +24,6 @@ var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
 var is = require('is');
 
-var TYPE = Symbol();
-
 function SpannerDate(value) {
   if (arguments.length > 1) {
     throw new TypeError(
@@ -71,6 +69,10 @@ Int.prototype.valueOf = function() {
 
 codec.Int = Int;
 
+var TYPE = Symbol();
+
+codec.TYPE = TYPE;
+
 function Struct() {
   var struct = [];
 
@@ -78,7 +80,7 @@ function Struct() {
 
   Object.defineProperty(struct, 'toJSON', {
     enumerable: false,
-    value: generateToJSONFromRow(struct),
+    value: codec.generateToJSONFromRow(struct),
   });
 
   return struct;
@@ -98,7 +100,7 @@ Struct.fromJSON = function(json) {
 };
 
 Struct.isStruct = function(thing) {
-  return thing && thing[TYPE] === Struct.TYPE;
+  return !!(thing && thing[TYPE] === Struct.TYPE);
 };
 
 module.exports.Struct = Struct;
@@ -182,7 +184,7 @@ function decode(value, field) {
         break;
       }
       case 'STRUCT': {
-        let struct = Struct.create();
+        let struct = new Struct();
         let fields = type.structType.fields;
 
         fields.forEach((field, index) => {
@@ -389,7 +391,7 @@ function encodeQuery(query) {
     let formattedTypes = {};
 
     for (let field in query.types) {
-      formattedTypes[field] = createTypeObject(query.types[field]);
+      formattedTypes[field] = codec.createTypeObject(query.types[field]);
     }
 
     delete query.types;

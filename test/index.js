@@ -268,6 +268,24 @@ describe('Spanner', function() {
     });
   });
 
+  describe('struct', function() {
+    it('should create a struct from JSON', function() {
+      var json = {};
+      var fakeStruct = [];
+
+      fakeCodec.Struct = {
+        fromJSON: function(value) {
+          assert.strictEqual(value, json);
+          return fakeStruct;
+        },
+      };
+
+      var struct = Spanner.struct(json);
+
+      assert.strictEqual(struct, fakeStruct);
+    });
+  });
+
   describe('createInstance', function() {
     var NAME = 'instance-name';
     var PATH;
