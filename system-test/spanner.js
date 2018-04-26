@@ -2385,35 +2385,24 @@ describe('Spanner', function() {
             });
           });
 
-          it.skip('should allow equality checks', function(done) {
+          it('should allow equality checks', function(done) {
             var query = {
               sql:
                 'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
               params: {
                 structParam: Spanner.struct({
-                  userf: 'bob',
                   threadf: Spanner.int(1),
+                  userf: 'bob',
                 }),
-              },
-              types: {
-                structParam: {
-                  type: 'struct',
-                  fields: [
-                    {
-                      name: 'userf',
-                      type: 'string',
-                    },
-                    {
-                      name: 'threadf',
-                      type: 'int64',
-                    },
-                  ],
-                },
               },
             };
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
+
+              var row = rows[0];
+              assert.strictEqual(row[0].value, true);
+
               done();
             });
           });

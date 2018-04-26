@@ -28,6 +28,19 @@ describe('codec', function() {
   var codecCached;
   var codec;
 
+  var TYPES = [
+    'unspecified',
+    'bool',
+    'int64',
+    'float64',
+    'timestamp',
+    'date',
+    'string',
+    'bytes',
+    'array',
+    'struct',
+  ];
+
   before(function() {
     codec = proxyquire('../src/codec.js', {
       '@google-cloud/common-grpc': {
@@ -619,18 +632,7 @@ describe('codec', function() {
 
   describe('TYPES', function() {
     it('should export types', function() {
-      assert.deepEqual(codec.TYPES, [
-        'unspecified',
-        'bool',
-        'int64',
-        'float64',
-        'timestamp',
-        'date',
-        'string',
-        'bytes',
-        'array',
-        'struct',
-      ]);
+      assert.deepEqual(codec.TYPES, TYPES);
     });
   });
 
@@ -992,29 +994,18 @@ describe('codec', function() {
   });
 
   describe('createTypeObject', function() {
-    var TYPES = [
-      'unspecified',
-      'bool',
-      'int64',
-      'float64',
-      'timestamp',
-      'date',
-      'string',
-      'bytes',
-    ];
-
     it('should convert the type to its int value', function() {
       TYPES.forEach(function(typeName, i) {
         var type = codec.createTypeObject(typeName);
 
-        assert.deepEqual(type, {code: i});
+        assert.deepEqual(type.code, i);
       });
     });
 
     it('should default to unspecified for unknown types', function() {
       var type = codec.createTypeObject('unicorn');
 
-      assert.deepEqual(type, {code: 0});
+      assert.deepEqual(type, {code: TYPES.indexOf('unspecified')});
     });
 
     it('should set the arrayElementType', function() {
@@ -1024,9 +1015,9 @@ describe('codec', function() {
       });
 
       assert.deepEqual(type, {
-        code: 8,
+        code: TYPES.indexOf('array'),
         arrayElementType: {
-          code: 1,
+          code: TYPES.indexOf('bool'),
         },
       });
     });
@@ -1041,19 +1032,19 @@ describe('codec', function() {
       });
 
       assert.deepEqual(type, {
-        code: 9,
+        code: TYPES.indexOf('struct'),
         structType: {
           fields: [
             {
               name: 'boolKey',
               type: {
-                code: 1,
+                code: TYPES.indexOf('bool'),
               },
             },
             {
               name: 'intKey',
               type: {
-                code: 2,
+                code: TYPES.indexOf('int64'),
               },
             },
           ],
@@ -1081,18 +1072,18 @@ describe('codec', function() {
       });
 
       assert.deepEqual(type, {
-        code: 9,
+        code: TYPES.indexOf('struct'),
         structType: {
           fields: [
             {
               name: 'nestedStruct',
               type: {
-                code: 9,
+                code: TYPES.indexOf('struct'),
                 structType: {
                   fields: [
                     {
                       name: 'boolKey',
-                      type: {code: 1},
+                      type: {code: TYPES.indexOf('bool')},
                     },
                   ],
                 },

@@ -69,10 +69,27 @@ Int.prototype.valueOf = function() {
 
 codec.Int = Int;
 
+/**
+ * We use this symbol as a means to identify if an array is actually a struct.
+ * We need to do this because changing Structs from an object to an array would
+ * be a major breaking change.
+ *
+ * @private
+ *
+ * @example
+ * var struct = [];
+ * struct[TYPE] = 'struct';
+ */
 var TYPE = Symbol();
 
 codec.TYPE = TYPE;
 
+/**
+ * Struct wrapper. This returns an array, but will decorate the array to give it
+ * struct characteristics.
+ *
+ * @private
+ */
 function Struct() {
   var struct = [];
 
@@ -86,8 +103,21 @@ function Struct() {
   return struct;
 }
 
+/**
+ * Use this to assign/check the type when dealing with structs.
+ *
+ * @private
+ */
 Struct.TYPE = 'struct';
 
+/**
+ * Converts a JSON object to a struct array.
+ *
+ * @private
+ *
+ * @param {object} json Struct JSON.
+ * @return {Struct}
+ */
 Struct.fromJSON = function(json) {
   var struct = new Struct();
 
@@ -99,6 +129,14 @@ Struct.fromJSON = function(json) {
   return struct;
 };
 
+/**
+ * Checks to see if the provided object is a Struct.
+ *
+ * @private
+ *
+ * @param {*} thing The object to check.
+ * @returns {boolean}
+ */
 Struct.isStruct = function(thing) {
   return !!(thing && thing[TYPE] === Struct.TYPE);
 };
@@ -300,9 +338,11 @@ function getType(field) {
   }
 
   if (Struct.isStruct(field)) {
-    let fields = field.map(({name, value}) => {
-      let type = getType(value);
-      return {name, type};
+    let fields = field.map(function(field) {
+      return {
+        name: field.name,
+        type: getType(field.value),
+      };
     });
 
     return {
@@ -461,7 +501,9 @@ codec.encodeRead = encodeRead;
  * @param {object|string} [config='unspecified'] Type config.
  * @return {object}
  */
-function createTypeObject(config = 'unspecified') {
+function createTypeObject(config) {
+  config = config || 'unspecified';
+
   if (is.string(config)) {
     config = {type: config};
   }
