@@ -1587,18 +1587,6 @@ describe('SessionPool', function() {
   });
 
   describe('onAvailable_', function() {
-    it('should resolve right away if there are available sessions', function() {
-      var end = timeSpan();
-
-      sessionPool.available = function() {
-        return 1;
-      };
-
-      return sessionPool.onAvailable_().then(function() {
-        assert(isAround(0, end()));
-      });
-    });
-
     it('should settle once the available event fires', function() {
       var delay = 500;
       var end = timeSpan();
@@ -1978,8 +1966,17 @@ describe('SessionPool', function() {
   });
 
   describe('waitForNextAvailable_', function() {
+    var TYPE = 'readwrite';
+
+    beforeEach(function() {
+      sessionPool.acquireQueue_ = {
+        add: function(fn) {
+          return fn();
+        },
+      };
+    });
+
     it('should queue an acquire request', function() {
-      var fakeType = 'readwrite';
       var fakeSession = {};
 
       var queued = false;
@@ -1999,15 +1996,33 @@ describe('SessionPool', function() {
 
       sessionPool.getNextAvailableSession_ = function(type) {
         assert.strictEqual(available, true);
-        assert.strictEqual(type, fakeType);
+        assert.strictEqual(type, TYPE);
         return fakeSession;
       };
 
-      return sessionPool
-        .waitForNextAvailable_(fakeType)
-        .then(function(session) {
-          assert.strictEqual(session, fakeSession);
-        });
+      return sessionPool.waitForNextAvailable_(TYPE).then(function(session) {
+        assert.strictEqual(session, fakeSession);
+      });
+    });
+
+    it('should resolve right away if there are available sessions', function() {
+      var fakeSession = {};
+
+      sessionPool.available = function() {
+        return 1;
+      };
+
+      sessionPool.onAvailable_ = function() {
+        throw new Error('Should not be called.');
+      };
+
+      sessionPool.getNextAvailableSession_ = function(type) {
+        assert.strictEqual(type, TYPE);
+        return fakeSession;
+      };
+
+      var session = sessionPool.waitForNextAvailable_(TYPE);
+      assert.strictEqual(session, fakeSession);
     });
   });
 
