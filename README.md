@@ -1,3 +1,5 @@
+[//]: # "This README.md file is auto-generated, all changes to this file will be lost."
+[//]: # "To regenerate it, use `npm run generate-scaffolding`."
 <img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
 # [Cloud Spanner: Node.js Client](https://github.com/googleapis/nodejs-spanner)
@@ -143,4 +145,4 @@ See [LICENSE](https://github.com/googleapis/nodejs-spanner/blob/master/LICENSE)
 
 [client-docs]: https://cloud.google.com/nodejs/docs/reference/spanner/latest/
 [product-docs]: https://cloud.google.com/spanner/docs/
-[shell_img]: //gstatic.com/cloudssh/images/open-btn.png
+[shell_img]: https://gstatic.com/cloudssh/images/open-btn.png
