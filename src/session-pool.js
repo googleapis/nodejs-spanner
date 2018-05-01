@@ -63,8 +63,9 @@ var READWRITE = 'readwrite';
  *     any given time.
  * @property {number} [keepAlive=50] How often to ping idle sessions, in
  *     minutes. Must be less than 1 hour.
- * @property {number} [writes=0] Percentage of session to be pre-allocated as
- *     write sessions.
+ * @property {number} [writes=0.0] Percentage of sessions to be pre-allocated as
+ *     write sessions represented as a float.
+ */
 
 /**
  * Class used to manage connections to Spanner.
@@ -92,6 +93,12 @@ function SessionPool(database, options) {
    * @type {SessionPoolOptions}
    */
   this.options = extend({}, DEFAULTS, options);
+
+  if (this.options.writes > 1) {
+    throw new TypeError(
+      'write percentage should be represented as a float between 0.0 and 1.0'
+    );
+  }
 
   /**
    * @name SessionPool#isOpen
