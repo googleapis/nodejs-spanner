@@ -96,7 +96,7 @@ function SessionPool(database, options) {
 
   if (this.options.writes > 1) {
     throw new TypeError(
-      'write percentage should be represented as a float between 0.0 and 1.0'
+      'Write percentage should be represented as a float between 0.0 and 1.0.'
     );
   }
 
