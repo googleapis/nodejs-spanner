@@ -82,6 +82,12 @@ describe('SessionPool', function() {
         sessionPool = new SessionPool(DATABASE, {acquireTimeout: 0});
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
       });
+
+      it('should throw when writes is greater than 1', function() {
+        assert.throws(function() {
+          return new SessionPool(DATABASE, {writes: 50});
+        }, /Write percentage should be represented as a float between 0\.0 and 1\.0\./);
+      });
     });
 
     it('should set isOpen to false', function() {
