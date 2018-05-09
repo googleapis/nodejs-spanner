@@ -106,8 +106,6 @@ function partialResultStream(requestFn, options) {
         }
       }
 
-      rowChunks = [];
-
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
@@ -165,6 +163,11 @@ function partialResultStream(requestFn, options) {
  */
 partialResultStream.formatRow_ = function(metadata, row) {
   var fields = metadata.rowType.fields;
+
+  if (row.values.length < fields.length) {
+    // This will only print when we end up with a faulty row.
+    console.log('something is wrong here')
+  }
 
   if (row.values.length > fields.length) {
     // More than one row exists. Return an array of formatted rows.
