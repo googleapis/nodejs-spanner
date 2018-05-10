@@ -61,7 +61,7 @@ test.before(async () => {
     config: 'regional-us-central1',
     nodes: 1,
     labels: {
-      'gcloud-tests': 'true',
+      'gcloud-sample-tests': 'true',
     },
   });
 
@@ -70,7 +70,7 @@ test.before(async () => {
 
 test.before(async () => {
   const [instances] = await spanner.getInstances({
-    filter: 'labels.gcloud-tests:true',
+    filter: 'labels.gcloud-sample-tests:true',
   });
 
   instances.forEach(async instance => {
