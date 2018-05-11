@@ -169,17 +169,6 @@ describe('Database', function() {
       assert.strictEqual(database.pool_.calledWith_[1], POOL_OPTIONS);
     });
 
-    it('should re-emit SessionPool errors', function(done) {
-      var error = new Error('err');
-
-      database.on('error', function(err) {
-        assert.strictEqual(err, error);
-        done();
-      });
-
-      database.pool_.emit('error', error);
-    });
-
     it('should open the pool', function(done) {
       FakeSessionPool.prototype.open = function() {
         FakeSessionPool.prototype.open = util.noop;
