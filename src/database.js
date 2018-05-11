@@ -213,6 +213,13 @@ Database.prototype.batchTransaction = function(identifier) {
 };
 
 /**
+ * This method returns the current state of session pool
+ * This could be useful in monitoring the session pool and debugging.
+ */
+Database.prototype.getSessionPoolStatus = function() {
+  return this.pool_.getStats();
+};
+/**
  * @callback CloseDatabaseCallback
  * @param {?Error} err Request error, if any.
  */

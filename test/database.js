@@ -263,6 +263,17 @@ describe('Database', function() {
     });
   });
 
+  describe('getSessionPoolStatus', function() {
+    it('should return the status of session pool', () => {
+      let getStatsCalled = false;
+      database.pool_.getStats = () => {
+        getStatsCalled = true;
+        return {};
+      };
+      database.getSessionPoolStatus();
+      assert.strictEqual(getStatsCalled, true);
+    });
+  });
   describe('close', function() {
     var FAKE_ID = 'a/c/b/d';
 
