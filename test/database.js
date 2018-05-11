@@ -331,26 +331,6 @@ describe('Database', function() {
           done();
         });
       });
-
-      it('should report session leaks', function(done) {
-        var fakeLeaks = ['abc', 'def'];
-
-        database.pool_ = {
-          close: function() {
-            return Promise.resolve();
-          },
-          getLeaks: function() {
-            return fakeLeaks;
-          },
-        };
-
-        database.close(function(err) {
-          assert(err instanceof Error);
-          assert.strictEqual(err.message, '2 session leak(s) found.');
-          assert.strictEqual(err.messages, fakeLeaks);
-          done();
-        });
-      });
     });
   });
 
@@ -1249,7 +1229,7 @@ describe('Database', function() {
       });
 
       it('should get a session from the pool', function(done) {
-        database.pool_.getSession = function() {
+        database.pool_.getReadSession = function() {
           setImmediate(done);
           return Promise.resolve();
         };
@@ -1260,7 +1240,7 @@ describe('Database', function() {
       it('should return an error if could not get session', function(done) {
         var error = new Error('err.');
 
-        database.pool_.getSession = function() {
+        database.pool_.getReadSession = function() {
           return Promise.reject(error);
         };
 
@@ -1277,7 +1257,7 @@ describe('Database', function() {
         };
 
         database.pool_ = {
-          getSession: function() {
+          getReadSession: function() {
             return Promise.resolve(SESSION);
           },
           createTransaction_: function(session, options) {
@@ -1299,12 +1279,13 @@ describe('Database', function() {
         var SESSION = {};
 
         database.pool_ = {
-          getSession: function() {
+          getReadSession: function() {
             return Promise.resolve(SESSION);
           },
           createTransaction_: function() {
             return Promise.reject(error);
           },
+          release: () => Promise.resolve(),
         };
 
         database.getTransaction(OPTIONS, function(err) {

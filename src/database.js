@@ -251,12 +251,6 @@ Database.prototype.batchTransaction = function(identifier) {
 Database.prototype.close = function(callback) {
   var key = this.id.split('/').pop();
   var leakError = null;
-  var leaks = this.pool_.getLeaks();
-
-  if (leaks.length) {
-    leakError = new Error(`${leaks.length} session leak(s) found.`);
-    leakError.messages = leaks;
-  }
 
   this.parent.databases_.delete(key);
   this.pool_.close().then(() => callback(leakError), callback);
@@ -807,9 +801,12 @@ Database.prototype.getTransaction = function(options, callback) {
   }
 
   pool
-    .getSession()
+    .getReadSession()
     .then(function(session) {
-      return pool.createTransaction_(session, options);
+      return pool.createTransaction_(session, options).catch(ex => {
+        pool.release(session);
+        throw ex;
+      });
     })
     .then(function(transaction) {
       callback(null, transaction);
