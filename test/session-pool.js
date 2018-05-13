@@ -263,7 +263,7 @@ describe('SessionPool', function() {
           assert.strictEqual(sessionPool.isOpen, false);
           assert.strictEqual(sessionPool.getStats().readPool.size, 0);
           assert.strictEqual(sessionPool.getStats().writePool.size, 0);
-        }, 50);
+        }, 1000); // this is because p-queue does not get enough time to execute its pending queue
       });
     });
   });
@@ -867,7 +867,7 @@ describe('SessionPool', function() {
       setTimeout(() => {
         assert.strictEqual(readKeepAlive, 10);
         assert.strictEqual(writeKeepAlive, 5);
-      }, 0);
+      }, 100);
     });
   });
 
