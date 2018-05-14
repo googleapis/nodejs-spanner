@@ -358,8 +358,7 @@ describe('SessionPool', function() {
         return Promise.all([
           sessionPool.getReadSession(),
           sessionPool.getWriteSession(),
-        ])
-        .then(function(sessions) {
+        ]).then(function(sessions) {
           const readSession = sessions[0];
           const writeSession = sessions[1];
           assert.strictEqual(sessionPool.getStats().writePool.borrowed, 1);
@@ -387,9 +386,7 @@ describe('SessionPool', function() {
           });
         };
         sessionPool.open();
-        return sessionPool
-        .getWriteSession()
-        .then((session) => {
+        return sessionPool.getWriteSession().then(session => {
           sessionPool.release(session);
           assert.strictEqual(sessionPool.getStats().writePool.available, 0);
         });
@@ -784,7 +781,7 @@ describe('SessionPool', function() {
       let readSession = null;
       let writeSession = null;
       beforeEach(function() {
-        sessionPool.createTransaction_ = (a) => Promise.resolve(a);
+        sessionPool.createTransaction_ = a => Promise.resolve(a);
         sessionPool.session_ = function() {
           return new Object({
             create: () => Promise.resolve(),
@@ -800,12 +797,11 @@ describe('SessionPool', function() {
         });
       });
 
-      afterEach(function () {
+      afterEach(function() {
         return Promise.all([
           sessionPool.release(readSession),
           sessionPool.release(writeSession),
-        ])
-        .catch((err) => {
+        ]).catch(err => {
           // Tests which destroy sessions will cause this error
           if (err.message !== 'Resource not currently part of this pool') {
             throw err;
@@ -931,7 +927,7 @@ describe('SessionPool', function() {
       sessionPool.open();
       // Clear timeout open() call sets
       clearTimeout(sessionPool.pingTimeoutHandle);
-      sessionPool.pingSessions_()
+      sessionPool.pingSessions_();
       return new Promise(resolve => {
         setTimeout(() => {
           assert.strictEqual(readKeepAlive, 10);
