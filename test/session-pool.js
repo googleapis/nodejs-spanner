@@ -18,7 +18,6 @@
 
 const assert = require('assert');
 const common = require('@google-cloud/common');
-const events = require('events');
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const through = require('through2');
