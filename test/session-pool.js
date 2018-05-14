@@ -359,7 +359,9 @@ describe('SessionPool', function() {
           sessionPool.getReadSession(),
           sessionPool.getWriteSession(),
         ])
-        .then(function([readSession, writeSession]) {
+        .then(function(sessions) {
+          const readSession = sessions[0];
+          const writeSession = sessions[1];
           assert.strictEqual(sessionPool.getStats().writePool.borrowed, 1);
           assert.strictEqual(sessionPool.getStats().readPool.borrowed, 1);
           return Promise.all([
