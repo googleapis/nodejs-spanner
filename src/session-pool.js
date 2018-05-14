@@ -128,8 +128,6 @@ function SessionPool(database, options) {
       idleTimeoutMillis: this.options.idlesAfter * 60000,
     }
   );
-
-  this.pingSessions_();
 }
 
 /**
@@ -139,7 +137,10 @@ function SessionPool(database, options) {
  * @return {Promise}
  */
 SessionPool.prototype.open = function() {
+  // Start the pinging of sessions
+  this.pingSessions_();
   this.isOpen = true;
+  // Start both pools creation & internal processes
   this.readPool.start();
   this.writePool.start();
 };
@@ -152,12 +153,15 @@ SessionPool.prototype.open = function() {
 SessionPool.prototype.close = function() {
   const self = this;
   self.isOpen = false;
-  return Promise.all([self.readPool.drain(), self.writePool.drain()]).then(
-    () => {
-      self.readPool.clear();
-      self.writePool.clear();
-    }
-  );
+  clearTimeout(self.pingIntervalHandle);
+  return Promise.all([
+    self.readPool.drain(),
+    self.writePool.drain(),
+    self.requestQueue_.onEmpty(),
+  ]).then(() => {
+    self.readPool.clear();
+    self.writePool.clear();
+  });
 };
 
 /**
@@ -436,8 +440,8 @@ SessionPool.prototype.pingSessions_ = function() {
   const readPool = self.readPool;
   const writePool = self.writePool;
 
-  // call itself based on the keepAlive options provided
-  setTimeout(
+  // Setup next call based on the keepAlive options provided
+  self.pingTimeoutHandle = setTimeout(
     () => self.pingSessions_.call(self),
     60000 * self.options.keepAlive
   );
