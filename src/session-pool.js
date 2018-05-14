@@ -153,7 +153,7 @@ SessionPool.prototype.open = function() {
 SessionPool.prototype.close = function() {
   const self = this;
   self.isOpen = false;
-  clearTimeout(self.pingIntervalHandle);
+  clearTimeout(self.pingTimeoutHandle);
   return Promise.all([
     self.readPool.drain(),
     self.writePool.drain(),
