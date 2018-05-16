@@ -26,12 +26,15 @@ const DEFAULTS = {
   acquireTimeout: 0,
   concurrency: 10,
   maxWait: 50,
-  idlesAfter: 10,
-  keepAlive: 50,
-  maxReads: 100,
-  maxWrites: 100,
-  minReads: 0,
-  minWrites: 0,
+  fail: false,
+  idlesAfter: 50,
+  max: 100,
+  min: 0,
+  writes: 0,
+  maxReads: 0,
+  maxWrites: 0,
+  minReads: -1,
+  minWrites: -1,
 };
 
 const READONLY = 'readonly';
@@ -44,22 +47,30 @@ const READWRITE = 'readwrite';
  * @property {number} [acquireTimeout=0] Time in milliseconds before
  *     giving up trying to acquire a session. If the specified value is
  *     `0`, a timeout will not occur. A non-zero positive integer
+ * @property {boolean} [fail=false] If set to true, an error will be thrown when
+ *     there are no available sessions for a request.
+ * @property {number} [min=0] Minimum number of resources to keep in the pool at
+ *     any given time.
+ * @property {number} [max=100] Maximum number of resources to create at any
+ *     given time.
+ * @property {number} [writes=0.0] Percentage of sessions to be pre-allocated as
+ *     write sessions represented as a float.
  * @property {number} [concurrency=10] How many concurrent requests the pool is
  *     allowed to make.
  * @property {number} [maxWait=50] This property specifies how many acquire sessions call are allowed
- *     to wait before returning an error. Default is 50
- * @property {number} [idlesAfter=10] How long until a resource becomes idle, in
- *     minutes.
+ *     to wait before returning an error. Default is 50. This supercedes fail property
+ * @property {number} [idlesAfter=50] How long until a resource becomes idle, in
+ *     minutes after which the resource will be destroyed and if required, a recourd will be created
+ *     to respect the minReads or minWrites options. It will default to 50 if provide more than 50 minutes
  * @property {number} [maxReads=100] Maximum number of write sessions to create at any
- *     given time.
+ *     given time. This supercedes max property
  * @property {number} [maxWrites=100] Maximum number of read sessions to create at any
- *     given time.
+ *     given time. This supercedes min property and writes property
  * @property {number} [minReads=0] Minimum number of read sessions to create at any
- *     given time.
+ *     given time. This supercedes min property
  * @property {number} [minWrites=0] Minimum number of write sessions to keep in the pool at
- *     any given time.
- * @property {number} [keepAlive=50] How often to ping idle sessions, in
- *     minutes. Must be less than 1 hour.
+ *     any given time. This supercedes max property and writes property
+
 
 /**
  * Class used to manage connections to Spanner.
@@ -99,10 +110,51 @@ function SessionPool(database, options) {
   this.requestStream_ = database.requestStream;
   this.requestQueue_ = new PQueue({concurrency: this.options.concurrency});
 
+  if (this.options.writes > 1) {
+    throw new TypeError(
+      'Write percentage should be represented as a float between 0.0 and 1.0.'
+    );
+  }
+
+  // this code is for backward compatibility. Convert the max value provided into maxReads and maxWrites
+  if (this.options.maxWrites === 0) {
+    if (this.options.maxReads === 0) {
+      // create 20% write session
+      this.options.maxWrites = Math.floor(0.2 * this.options.max);
+
+      if (this.options.writes !== 0) {
+        // create dedicated write sessions based on maxWrites
+        this.options.maxWrites = Math.floor(
+          this.options.writes * this.options.max
+        );
+      }
+    } else {
+      this.options.maxWrites = this.options.max - this.options.maxReads;
+    }
+  }
+
+  if (this.options.maxReads === 0) {
+    this.options.maxReads = this.options.max - this.options.maxWrites;
+  }
+
+  // this code is for backward compatibility. Initialize the minReads value
+  if (this.options.minReads === -1) {
+    this.options.minReads = Math.min(this.options.min, this.options.maxReads);
+  }
+
+  // this code is for backward compatibility. Initialize the minWrites value
+  if (this.options.minWrites === -1) {
+    this.options.minWrites = Math.min(this.options.min, this.options.maxWrites);
+  }
+
+  this.maxIdleResourceTimeout =
+    Math.min(this.options.idlesAfter, DEFAULTS.idlesAfter) * 60000;
+
   this.readPool = Pool.createPool(
     {
       create: this.createReadSession.bind(this),
       destroy: this.destroySession.bind(this),
+      validate: validateSession.bind(this),
     },
     {
       max: this.options.maxReads,
@@ -110,7 +162,10 @@ function SessionPool(database, options) {
       acquireTimeoutMillis: this.options.acquireTimeout,
       autostart: false,
       maxWaitingClients: this.options.maxWait,
-      idleTimeoutMillis: this.options.idlesAfter * 60000,
+      evictionRunIntervalMillis: this.maxIdleResourceTimeout,
+      numTestsPerEvictionRun: this.options.minReads,
+      idleTimeoutMillis: this.maxIdleResourceTimeout,
+      testOnBorrow: true,
     }
   );
 
@@ -118,18 +173,37 @@ function SessionPool(database, options) {
     {
       create: this.createWriteSession.bind(this),
       destroy: this.destroySession.bind(this),
+      validate: validateSession.bind(this),
     },
     {
       max: this.options.maxWrites,
       min: this.options.minWrites,
       acquireTimeoutMillis: this.options.acquireTimeout,
       autostart: false,
+      evictionRunIntervalMillis: this.maxIdleResourceTimeout,
       maxWaitingClients: this.options.maxWait,
-      idleTimeoutMillis: this.options.idlesAfter * 60000,
+      numTestsPerEvictionRun: this.options.minWrites,
+      idleTimeoutMillis: this.maxIdleResourceTimeout,
+      testOnBorrow: true,
     }
   );
 }
 
+/**
+ * This method validates the session. The session is invalid if the session is idle for more than the maxIdleResourceTimeout
+ * This is internally used by generic-pool and hence there is no need to make it a method of the class.
+ *
+ * @param {Object} session
+ */
+function validateSession(session) {
+  const now = Date.now();
+  if (!session || !session.lastUsed) {
+    return Promise.resolve(false);
+  }
+  const flag = now - session.lastUsed < this.maxIdleResourceTimeout;
+  session.lastUsed = now;
+  return Promise.resolve(flag);
+}
 /**
  * Opens the pool, filling it to the configured number of read and write
  * sessions.
@@ -138,7 +212,6 @@ function SessionPool(database, options) {
  */
 SessionPool.prototype.open = function() {
   // Start the pinging of sessions
-  this.pingSessions_();
   this.isOpen = true;
   // Start both pools creation & internal processes
   this.readPool.start();
@@ -249,17 +322,13 @@ SessionPool.prototype.getWriteSession = function() {
  */
 SessionPool.prototype.release = function(session) {
   const self = this;
-
-  return self.requestQueue_.add(() => {
-    if (session.type !== READWRITE) {
-      return self.readPool.release(session);
-    }
-
-    return self
-      .createTransaction_(session)
-      .then(() => self.writePool.release(session))
-      .catch(() => self.writePool.destroy(session));
-  });
+  if (session.type !== READWRITE) {
+    return self.readPool.release(session);
+  }
+  return self
+    .createTransaction_(session)
+    .then(() => self.writePool.release(session))
+    .catch(() => self.writePool.destroy(session));
 };
 
 /**
@@ -295,21 +364,19 @@ SessionPool.prototype.createTransaction_ = function(session, options) {
  */
 SessionPool.prototype.createWriteSession = function() {
   const self = this;
-  return self.requestQueue_.add(() => {
-    const session = self.session_();
+  const session = self.session_();
 
-    return session
-      .create()
-      .then(function() {
-        session.type = READWRITE;
-        return self.createTransaction_(session);
-      })
-      .then(() => session)
-      .catch(err => {
-        self.destroySession(session);
-        throw err;
-      });
-  });
+  return session
+    .create()
+    .then(function() {
+      session.type = READWRITE;
+      return self.createTransaction_(session);
+    })
+    .then(() => session)
+    .catch(err => {
+      self.destroySession(session);
+      throw err;
+    });
 };
 
 /**
@@ -320,19 +387,17 @@ SessionPool.prototype.createWriteSession = function() {
  */
 SessionPool.prototype.createReadSession = function() {
   const self = this;
-  return self.requestQueue_.add(() => {
-    const session = self.session_();
-    return session
-      .create()
-      .then(() => {
-        session.type = READONLY;
-        return session;
-      })
-      .catch(err => {
-        self.destroySession(session);
-        throw err;
-      });
-  });
+  const session = self.session_();
+  return session
+    .create()
+    .then(() => {
+      session.type = READONLY;
+      return session;
+    })
+    .catch(err => {
+      self.destroySession(session);
+      throw err;
+    });
 };
 
 /**
@@ -344,7 +409,7 @@ SessionPool.prototype.createReadSession = function() {
  */
 SessionPool.prototype.session_ = function() {
   const session = this.database.session_();
-  session.created = Date.now();
+  session.lastUsed = Date.now();
   return session;
 };
 
@@ -405,61 +470,7 @@ SessionPool.prototype.getStats = function() {
  * @returns {Promise}
  */
 SessionPool.prototype.destroySession = function(session) {
-  return this.requestQueue_.add(() => session.delete());
-};
-
-/**
- * Send a keep alive request on the session
- *
- * @returns {Promise}
- */
-SessionPool.prototype.sendKeepAlive = function(session) {
-  if (!session) {
-    return Promise.resolve();
-  }
-  const self = this;
-  return self.requestQueue_.add(() =>
-    session
-      .keepAlive()
-      .then(() => self.release(session))
-      .catch(() => {
-        if (session.type === READWRITE) {
-          return self.writePool.destroy(session);
-        }
-        return self.readPool.destroy(session);
-      })
-  );
-};
-
-/**
- * Pings read and write sessions pool to maintain the min sessions.
- *
- */
-SessionPool.prototype.pingSessions_ = function() {
-  const self = this;
-  const readPool = self.readPool;
-  const writePool = self.writePool;
-
-  // Setup next call based on the keepAlive options provided
-  self.pingTimeoutHandle = setTimeout(
-    () => self.pingSessions_.call(self),
-    60000 * self.options.keepAlive
-  );
-
-  /*
-    if the readPool or writePool size is less than min values, then no need to send the keep alive message
-    as the pool is not yet ready
-  */
-  if (readPool.size >= readPool.min) {
-    for (let i = 0; i < readPool.min; i++) {
-      self.getReadSession().then(self.sendKeepAlive.bind(self));
-    }
-  }
-  if (writePool.size >= writePool.min) {
-    for (let i = 0; i < writePool.min; i++) {
-      self.getWriteSession().then(self.sendKeepAlive.bind(self));
-    }
-  }
+  return session.delete();
 };
 
 module.exports = SessionPool;
