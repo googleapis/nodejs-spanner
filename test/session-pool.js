@@ -46,7 +46,8 @@ describe('SessionPool', function() {
       });
     });
 
-    afterEach(function() {
+    afterEach(function () {
+      clearTimeout(sessionPool.pingTimeoutHandle);
       if (sessionPool.isOpen) {
         return sessionPool.close();
       }
@@ -395,6 +396,7 @@ describe('SessionPool', function() {
           assert.strictEqual(sessionPool.isOpen, true);
           assert.strictEqual(sessionPool.getStats().readPool.size, 4);
           assert.strictEqual(sessionPool.getStats().writePool.size, 4);
+          clearTimeout(sessionPool.pingTimeoutHandle);
           return sessionPool.close();
         });
       });
@@ -415,6 +417,7 @@ describe('SessionPool', function() {
           assert.strictEqual(sessionPool.isOpen, true);
           assert.strictEqual(sessionPool.getStats().readPool.size, 4);
           assert.strictEqual(sessionPool.getStats().writePool.size, 4);
+          clearTimeout(sessionPool.pingTimeoutHandle)
           return sessionPool.close().then(() => {
             assert.strictEqual(sessionPool.isOpen, false);
             assert.strictEqual(sessionPool.getStats().readPool.size, 0);
@@ -431,6 +434,10 @@ describe('SessionPool', function() {
           minWrites: 2,
           acquireTimeout: 50,
         });
+      });
+
+      afterEach(() => {
+        clearTimeout(sessionPool.pingTimeoutHandle)
       });
 
       it('should get a read session', function() {
@@ -503,6 +510,7 @@ describe('SessionPool', function() {
           });
         };
         sessionPool.open();
+        clearTimeout(sessionPool.pingTimeoutHandle)
         return Promise.all([
           sessionPool.getReadSession(),
           sessionPool.getWriteSession(),
@@ -534,6 +542,7 @@ describe('SessionPool', function() {
           });
         };
         sessionPool.open();
+        clearTimeout(sessionPool.pingTimeoutHandle)
         return sessionPool.getWriteSession().then(session =>
           sessionPool.release(session).then(() => {
             assert.strictEqual(sessionPool.getStats().writePool.available, 0);
@@ -906,6 +915,185 @@ describe('SessionPool', function() {
     });
   });
 
+  describe('tests with min session pool before hook', function() {
+    let sessionPool;
+    // Because we create a sessionPool here for every test tests which want to open
+    // their own pool must first close this one and wait on its returned promise.
+    // Otherwise the tests will have resource leaks.
+    beforeEach(function() {
+      sessionPool = new SessionPool(DATABASE, {
+        minReads: 10,
+        minWrites: 5,
+        acquireTimeout: 50,
+      });
+    });
+
+    afterEach(function () {
+      clearTimeout(sessionPool.pingTimeoutHandle);
+      if (sessionPool.isOpen) {
+        return sessionPool.close();
+      }
+    });
+
+    describe('sendKeepAlive_', function() {
+      let readSession = null;
+      let writeSession = null;
+      beforeEach(function() {
+        sessionPool.createTransaction_ = a => Promise.resolve(a);
+        sessionPool.session_ = function() {
+          return new Object({
+            create: () => Promise.resolve(),
+            delete: () => Promise.resolve(),
+          });
+        };
+        sessionPool.open();
+        return sessionPool.getReadSession().then(function(rs) {
+          readSession = rs;
+          return sessionPool.getWriteSession().then(function(ws) {
+            writeSession = ws;
+          });
+        });
+      });
+
+      afterEach(function () {
+        clearTimeout(sessionPool.pingTimeoutHandle)
+        return Promise.all([
+          sessionPool.release(readSession),
+          sessionPool.release(writeSession),
+        ]).catch(err => {
+          // Tests which destroy sessions will cause this error
+          if (err.message !== 'Resource not currently part of this pool') {
+            throw err;
+          }
+        });
+      });
+
+      it('should send keep alive on read session', function() {
+        let keptAlive = false;
+        readSession.keepAlive = function() {
+          keptAlive = true;
+          return Promise.resolve();
+        };
+        return sessionPool.sendKeepAlive_(readSession).then(function() {
+          assert.strictEqual(keptAlive, true);
+        });
+      });
+
+      it('should send keep alive on write session', function() {
+        let keptAlive = false;
+        writeSession.keepAlive = function() {
+          keptAlive = true;
+          return Promise.resolve();
+        };
+        return sessionPool.sendKeepAlive_(writeSession).then(function() {
+          assert.strictEqual(keptAlive, true);
+        });
+      });
+
+      it('should destroy the read session when keep alive message fails', function() {
+        let keptAlive = false;
+        let deleted = false;
+        readSession.keepAlive = function() {
+          keptAlive = false;
+          return Promise.reject();
+        };
+        readSession.delete = function() {
+          deleted = true;
+          return Promise.resolve();
+        };
+
+        return sessionPool.sendKeepAlive_(readSession).then(function() {
+          assert.strictEqual(keptAlive, false);
+          assert.strictEqual(deleted, true);
+          assert.strictEqual(sessionPool.getStats().readPool.available, 9);
+        });
+      });
+
+      it('should destroy the write session when keep alive message fails', function() {
+        let keptAlive = false;
+        let deleted = false;
+        writeSession.keepAlive = function() {
+          keptAlive = false;
+          return Promise.reject();
+        };
+        writeSession.delete = function() {
+          deleted = true;
+          return Promise.resolve();
+        };
+
+        return sessionPool.sendKeepAlive_(writeSession).then(function() {
+          assert.strictEqual(keptAlive, false);
+          assert.strictEqual(deleted, true);
+        });
+      });
+
+      it('should handle when invalid session is passed', function() {
+        let keptAlive = false;
+        let deleted = false;
+        writeSession.keepAlive = function() {
+          keptAlive = false;
+          return Promise.reject();
+        };
+        writeSession.delete = function() {
+          deleted = true;
+          return Promise.resolve();
+        };
+
+        sessionPool.sendKeepAlive_().then(function() {
+          assert.strictEqual(keptAlive, false);
+          assert.strictEqual(deleted, false);
+        });
+      });
+    });
+  });
+
+  describe('pingSession', function () {
+    let sessionPool;
+    beforeEach(function() {
+      sessionPool = new SessionPool(DATABASE, {
+        maxReads: 10,
+        minReads:10,
+        minWrites: 5,
+        acquireTimeout: 1,
+      });
+    });
+
+    it('should ping min read and write session', function() {
+      let readKeepAlive = 0;
+      let writeKeepAlive = 0;
+      sessionPool.createTransaction_ = () => Promise.resolve();
+      sessionPool.sendKeepAlive_ = s => {
+        if (s.type === 'readonly') {
+          readKeepAlive++;
+        } else {
+          writeKeepAlive++;
+        }
+        sessionPool.release(s);
+        return Promise.resolve();
+      };
+      sessionPool.session_ = function() {
+        return new Object({
+          create: () => Promise.resolve(),
+          delete: () => Promise.resolve(),
+        });
+      };
+      sessionPool.open();
+      clearTimeout(sessionPool.pingTimeoutHandle);
+      // Clear timeout open() call sets
+      sessionPool.pingSessions_();
+      return new Promise(resolve => {
+        setTimeout(() => {
+          assert.strictEqual(readKeepAlive, 10);
+          assert.strictEqual(writeKeepAlive, 5);
+          return resolve();
+        }, 100);
+      });
+    });
+
+    afterEach(function () {
+      return sessionPool.close();
+    });
+  });
   function isAround(expected, actual) {
     return actual > expected - 10 && actual < expected + 50;
   }

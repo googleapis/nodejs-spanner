@@ -35,6 +35,7 @@ const DEFAULTS = {
   maxWrites: 0,
   minReads: -1,
   minWrites: -1,
+  keepAlive: 50,
 };
 
 const READONLY = 'readonly';
@@ -70,7 +71,8 @@ const READWRITE = 'readwrite';
  *     given time. This supercedes min property
  * @property {number} [minWrites=0] Minimum number of write sessions to keep in the pool at
  *     any given time. This supercedes max property and writes property
-
+ * @property {number} [keepAlive=50] How often to ping idle sessions, in
+ *     minutes. Must be less than 1 hour.
 
 /**
  * Class used to manage connections to Spanner.
@@ -210,12 +212,17 @@ function validateSession(session) {
  *
  * @return {Promise}
  */
-SessionPool.prototype.open = function() {
+SessionPool.prototype.open = function () {
+  const self = this;
   // Start the pinging of sessions
   this.isOpen = true;
   // Start both pools creation & internal processes
   this.readPool.start();
   this.writePool.start();
+  self.pingTimeoutHandle = setTimeout(
+    () => self.pingSessions_.call(self),
+    60000 * self.options.keepAlive
+  );
 };
 
 /**
@@ -472,5 +479,49 @@ SessionPool.prototype.getStats = function() {
 SessionPool.prototype.destroySession = function(session) {
   return session.delete();
 };
+
+/**
+ * Send a keep alive request on the session
+ *
+ * @returns {Promise}
+ */
+SessionPool.prototype.sendKeepAlive_ = function(session) {
+  if (!session) {
+    return Promise.resolve();
+  }
+  const self = this;
+  return session
+    .keepAlive()
+    .then(() => self.release(session))
+    .catch(() => {
+      if (session.type === READWRITE) {
+        return self.writePool.destroy(session);
+      }
+      return self.readPool.destroy(session);
+    });
+}
+
+
+/**
+ * Pings read and write sessions pool to maintain the min sessions.
+ *
+ */
+SessionPool.prototype.pingSessions_ = function () {
+  const self = this;
+  const readPool = self.readPool;
+  const writePool = self.writePool;
+
+  // Setup next call based on the keepAlive options provided
+  self.pingTimeoutHandle = setTimeout(
+    () => self.pingSessions_.call(self),
+    60000 * self.options.keepAlive
+  );
+  for (let i = 0; i < readPool.min; i++) {
+    self.getReadSession().then(self.sendKeepAlive_.bind(self));
+  }
+  for (let i = 0; i < writePool.min; i++) {
+    self.getWriteSession().then(self.sendKeepAlive_.bind(self));
+  }
+}
 
 module.exports = SessionPool;
