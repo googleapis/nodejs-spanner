@@ -212,7 +212,7 @@ function validateSession(session) {
  *
  * @return {Promise}
  */
-SessionPool.prototype.open = function () {
+SessionPool.prototype.open = function() {
   const self = this;
   // Start the pinging of sessions
   this.isOpen = true;
@@ -499,14 +499,13 @@ SessionPool.prototype.sendKeepAlive_ = function(session) {
       }
       return self.readPool.destroy(session);
     });
-}
-
+};
 
 /**
  * Pings read and write sessions pool to maintain the min sessions.
  *
  */
-SessionPool.prototype.pingSessions_ = function () {
+SessionPool.prototype.pingSessions_ = function() {
   const self = this;
   const readPool = self.readPool;
   const writePool = self.writePool;
@@ -522,6 +521,6 @@ SessionPool.prototype.pingSessions_ = function () {
   for (let i = 0; i < writePool.min; i++) {
     self.getWriteSession().then(self.sendKeepAlive_.bind(self));
   }
-}
+};
 
 module.exports = SessionPool;

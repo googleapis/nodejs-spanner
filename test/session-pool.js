@@ -46,7 +46,7 @@ describe('SessionPool', function() {
       });
     });
 
-    afterEach(function () {
+    afterEach(function() {
       clearTimeout(sessionPool.pingTimeoutHandle);
       if (sessionPool.isOpen) {
         return sessionPool.close();
@@ -417,7 +417,7 @@ describe('SessionPool', function() {
           assert.strictEqual(sessionPool.isOpen, true);
           assert.strictEqual(sessionPool.getStats().readPool.size, 4);
           assert.strictEqual(sessionPool.getStats().writePool.size, 4);
-          clearTimeout(sessionPool.pingTimeoutHandle)
+          clearTimeout(sessionPool.pingTimeoutHandle);
           return sessionPool.close().then(() => {
             assert.strictEqual(sessionPool.isOpen, false);
             assert.strictEqual(sessionPool.getStats().readPool.size, 0);
@@ -437,7 +437,7 @@ describe('SessionPool', function() {
       });
 
       afterEach(() => {
-        clearTimeout(sessionPool.pingTimeoutHandle)
+        clearTimeout(sessionPool.pingTimeoutHandle);
       });
 
       it('should get a read session', function() {
@@ -510,7 +510,7 @@ describe('SessionPool', function() {
           });
         };
         sessionPool.open();
-        clearTimeout(sessionPool.pingTimeoutHandle)
+        clearTimeout(sessionPool.pingTimeoutHandle);
         return Promise.all([
           sessionPool.getReadSession(),
           sessionPool.getWriteSession(),
@@ -542,7 +542,7 @@ describe('SessionPool', function() {
           });
         };
         sessionPool.open();
-        clearTimeout(sessionPool.pingTimeoutHandle)
+        clearTimeout(sessionPool.pingTimeoutHandle);
         return sessionPool.getWriteSession().then(session =>
           sessionPool.release(session).then(() => {
             assert.strictEqual(sessionPool.getStats().writePool.available, 0);
@@ -928,7 +928,7 @@ describe('SessionPool', function() {
       });
     });
 
-    afterEach(function () {
+    afterEach(function() {
       clearTimeout(sessionPool.pingTimeoutHandle);
       if (sessionPool.isOpen) {
         return sessionPool.close();
@@ -955,8 +955,8 @@ describe('SessionPool', function() {
         });
       });
 
-      afterEach(function () {
-        clearTimeout(sessionPool.pingTimeoutHandle)
+      afterEach(function() {
+        clearTimeout(sessionPool.pingTimeoutHandle);
         return Promise.all([
           sessionPool.release(readSession),
           sessionPool.release(writeSession),
@@ -1047,12 +1047,12 @@ describe('SessionPool', function() {
     });
   });
 
-  describe('pingSession', function () {
+  describe('pingSession', function() {
     let sessionPool;
     beforeEach(function() {
       sessionPool = new SessionPool(DATABASE, {
         maxReads: 10,
-        minReads:10,
+        minReads: 10,
         minWrites: 5,
         acquireTimeout: 1,
       });
@@ -1090,7 +1090,7 @@ describe('SessionPool', function() {
       });
     });
 
-    afterEach(function () {
+    afterEach(function() {
       return sessionPool.close();
     });
   });
