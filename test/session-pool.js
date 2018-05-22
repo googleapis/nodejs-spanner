@@ -1055,6 +1055,7 @@ describe('SessionPool', function() {
         minReads: 10,
         minWrites: 5,
         acquireTimeout: 1,
+        keepAlive: 0.001,
       });
     });
 
@@ -1078,15 +1079,15 @@ describe('SessionPool', function() {
         });
       };
       sessionPool.open();
-      clearTimeout(sessionPool.pingTimeoutHandle);
       // Clear timeout open() call sets
-      sessionPool.pingSessions_();
+      // sessionPool.pingSessions_();
       return new Promise(resolve => {
         setTimeout(() => {
-          assert.strictEqual(readKeepAlive, 10);
-          assert.strictEqual(writeKeepAlive, 5);
+          assert.strictEqual(readKeepAlive, 20);
+          assert.strictEqual(writeKeepAlive, 10);
+          clearTimeout(sessionPool.pingTimeoutHandle);
           return resolve();
-        }, 100);
+        }, 130);
       });
     });
 
