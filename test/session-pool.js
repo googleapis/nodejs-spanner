@@ -1087,7 +1087,7 @@ describe('SessionPool', function() {
           assert.strictEqual(writeKeepAlive, 10);
           clearTimeout(sessionPool.pingTimeoutHandle);
           return resolve();
-        }, 130);
+        }, 160);
       });
     });
 
