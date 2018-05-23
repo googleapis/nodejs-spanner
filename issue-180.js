@@ -78,7 +78,7 @@ function prepareDatabase() {
 
 function prepareTable() {
   const schema = `
-    CREATE TABLE account (
+    CREATE TABLE accounts (
       recordId STRING(36) NOT NULL,
       account_CID STRING(255),
       account_created_on STRING(1024),
