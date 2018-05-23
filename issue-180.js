@@ -5,18 +5,16 @@ const Spanner = require('./src')
 const spanner = new Spanner()
 
 const instance = spanner.instance('issue-180-instance')
-const database = instance.database('issue-180-database');
-const table = database.table('accounts');
+const database = instance.database('issue-180-database')
+const table = database.table('accounts')
 
-const NUM_ROWS_TO_INSERT = 3000
+const NUM_ROWS_TO_INSERT_AND_QUERY = 99000
 
 async function init() {
   await prepareInstance()
   await prepareDatabase()
   await prepareTable()
-  await insertData()
-  await insertData()
-  await insertData()
+  await insertRows()
 
   async.times(5, runQueryBatches, err => {
     if (err) throw err
@@ -31,7 +29,7 @@ async function init() {
 
   function runQuery(_, callback) {
     const query = {
-      sql: 'SELECT `root`.`account_created_on` as `field0`, `root`.`Short_Text` as `field1`, `root`.`Short_Text1` as `field2`, `root`.`account_CID` as `field3`, `root`.`recordId` as `recordId` FROM `accounts` AS root',
+      sql: 'SELECT `root`.`account_created_on` as `field0`, `root`.`Short_Text` as `field1`, `root`.`Short_Text1` as `field2`, `root`.`account_CID` as `field3`, `root`.`recordId` as `recordId` FROM `accounts` AS root LIMIT ' + NUM_ROWS_TO_INSERT_AND_QUERY,
       json: true,
     }
 
@@ -64,7 +62,7 @@ async function init() {
         }
       })
       .on('end', () => {
-        assert.strictEqual(numRowsReceived % NUM_ROWS_TO_INSERT, 0)
+        assert.strictEqual(numRowsReceived, NUM_ROWS_TO_INSERT_AND_QUERY)
         callback()
       })
   }
@@ -158,18 +156,28 @@ function prepareTable() {
   })
 }
 
-function insertData() {
-  const rows = []
+function insertRows() {
+  function insertRows(n) {
+    const rows = []
 
-  for (var i = 0; i < NUM_ROWS_TO_INSERT; i++) {
-    rows.push({
-      account_created_on: 'account_created_on',
-      Short_Text: 'Short_Text',
-      Short_Text1: 'Short_Text1',
-      account_CID: 'account_CID',
-      recordId: Math.round(Date.now() * Math.random())
-    })
+    for (var i = 0; i < n; i++) {
+      rows.push({
+        account_created_on: 'account_created_on',
+        Short_Text: 'Short_Text',
+        Short_Text1: 'Short_Text1',
+        account_CID: 'account_CID',
+        recordId: Math.round(Date.now() * Math.random())
+      })
+    }
+
+    return table.insert(rows)
   }
 
-  return table.insert(rows)
+  const numRowsPerAPICall = 3000
+  let numAPICallsRequired = NUM_ROWS_TO_INSERT_AND_QUERY / numRowsPerAPICall
+
+  const apiCallPromises = []
+  while (numAPICallsRequired--) apiCallPromises.push(insertRows(numRowsPerAPICall))
+
+  return Promise.all(apiCallPromises)
 }
