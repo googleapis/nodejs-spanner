@@ -25,8 +25,6 @@ async function init() {
     async.times(5, runQuery, callback)
   }
 
-  let invalidRowReceived = false
-
   function runQuery(_, callback) {
     const query = {
       sql: 'SELECT `root`.`account_created_on` as `field0`, `root`.`Short_Text` as `field1`, `root`.`Short_Text1` as `field2`, `root`.`account_CID` as `field3`, `root`.`recordId` as `recordId` FROM `accounts` AS root LIMIT ' + NUM_ROWS_TO_INSERT_AND_QUERY,
@@ -37,30 +35,7 @@ async function init() {
 
     database.runStream(query)
       .on('error', callback)
-      .on('data', function (row) {
-        if (invalidRowReceived) {
-          this.end()
-          return
-        }
-
-        numRowsReceived++
-
-        const tests = {
-          field0: /.*account_created_on/,
-          field1: /.*Short_Text/,
-          field2: /.*Short_Text1/,
-          field3: /.*account_CID/,
-          recordId: /^\d+$/,
-        }
-
-        const isValidRow = Object.keys(row).every(key => tests[key].test(row[key]))
-
-        if (!isValidRow && !invalidRowReceived) {
-          invalidRowReceived = true
-          console.log('Faulty row', row)
-          this.destroy(new Error('Faulty row'))
-        }
-      })
+      .on('data', () => numRowsReceived++)
       .on('end', () => {
         assert.strictEqual(numRowsReceived, NUM_ROWS_TO_INSERT_AND_QUERY)
         callback()

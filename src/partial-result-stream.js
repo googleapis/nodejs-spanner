@@ -64,7 +64,7 @@ function partialResultStream(requestFn, options) {
   var batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
     isCheckpointFn: function(row) {
-      return is.defined(row.resumeToken);
+      return Buffer.isBuffer(row.resumeToken);
     },
   });
 
@@ -96,6 +96,19 @@ function partialResultStream(requestFn, options) {
         formattedRows = formattedRows.concat(builder.toJSON());
         rowChunks.length = 0;
       } else {
+        if (row.values.length % metadata.rowType.fields.length !== 0) {
+          const fs = require('fs')
+          fs.writeFileSync('./bad-row-data.json', JSON.stringify(row, null, 2))
+          fs.writeFileSync('./bad-row-metadata.json', JSON.stringify(metadata, null, 2))
+
+          userStream.destroy(new Error(`
+            The values in this object, ${row.values.length}, is not evenly divisible by the number of fields, ${metadata.rowType.fields.length}.
+            Check "bad-row-data.json" and "bad-row-metadata.json" for a JSON readout from the faulty data
+          `))
+
+          return
+        }
+
         var formattedRow = partialResultStream.formatRow_(metadata, row);
         var multipleRows = is.array(formattedRow[0]);
 
@@ -163,11 +176,6 @@ function partialResultStream(requestFn, options) {
  */
 partialResultStream.formatRow_ = function(metadata, row) {
   var fields = metadata.rowType.fields;
-
-  if (row.values.length < fields.length) {
-    // This will only print when we end up with a faulty row.
-    console.log('something is wrong here')
-  }
 
   if (row.values.length > fields.length) {
     // More than one row exists. Return an array of formatted rows.
