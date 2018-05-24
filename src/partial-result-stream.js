@@ -70,6 +70,7 @@ function partialResultStream(requestFn, options) {
 
   var rowChunks = [];
   var metadata;
+  var pendingRowValues;
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
@@ -79,18 +80,9 @@ function partialResultStream(requestFn, options) {
         metadata = row.metadata;
       }
 
-      // A streamed result set consists of a stream of values, which might
-      // be split into many `PartialResultSet` messages to accommodate
-      // large rows and/or large values. If we are missing the resumeToken
-      // this is likely due to the PartialResultSet hitting size restrictions.
-      // In this case it is also necessary to combine this with the next obj.
-      if (
-        (!row.resumeToken || row.resumeToken.length === 0) &&
-        row.values.length % metadata.rowType.fields.length !== 0
-      ) {
-        rowChunks.push(row);
-        next();
-        return;
+      if (pendingRowValues) {
+        row.values = pendingRowValues.concat(row.values);
+        pendingRowValues = null;
       }
 
       if (row.chunkedValue) {
@@ -110,6 +102,16 @@ function partialResultStream(requestFn, options) {
         formattedRows = formattedRows.concat(builder.toJSON());
         rowChunks.length = 0;
       } else {
+        // A streamed result set consists of a stream of values, which might
+        // be split into many `PartialResultSet` messages to accommodate
+        // large rows and/or large values. Large values will be chunked. Large
+        // rows may be split across objects. In this case it is necessary to 
+        // combine this with the next obj.
+        var numExtraFields = row.values.length % metadata.rowType.fields.length;
+        if (numExtraFields > 0) {
+          pendingRowValues = row.values.splice(-numExtraFields);
+        }
+
         var formattedRow = partialResultStream.formatRow_(metadata, row);
         var multipleRows = is.array(formattedRow[0]);
 
