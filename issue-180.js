@@ -9,6 +9,7 @@ const database = instance.database('issue-180-database')
 const table = database.table('accounts')
 
 const NUM_ROWS_TO_INSERT_AND_QUERY = 99000
+const NUM_ATTEMPTS = process.argv[2] || 5
 
 async function init() {
   await prepareInstance()
@@ -16,13 +17,13 @@ async function init() {
   await prepareTable()
   await insertRows()
 
-  async.times(5, runQueryBatches, err => {
+  async.times(NUM_ATTEMPTS, runQueryBatches, err => {
     if (err) throw err
     console.log('Query was successful')
   })
 
   function runQueryBatches(_, callback) {
-    async.times(5, runQuery, callback)
+    async.times(NUM_ATTEMPTS, runQuery, callback)
   }
 
   function runQuery(_, callback) {

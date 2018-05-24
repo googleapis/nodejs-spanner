@@ -64,12 +64,22 @@ function partialResultStream(requestFn, options) {
   var batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
     isCheckpointFn: function(row) {
-      return Buffer.isBuffer(row.resumeToken);
+      if (
+        (!row.resumeToken || row.resumeToken.length === 0) &&
+        is.defined(metadata) &&
+        row.values.length % metadata.rowType.fields.length !== 0
+      ) {
+        return false;
+      }
+
+      return true;
     },
   });
 
   var rowChunks = [];
   var metadata;
+
+  let numRowsThatShouldBeCreated = 0;
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
@@ -79,10 +89,23 @@ function partialResultStream(requestFn, options) {
         metadata = row.metadata;
       }
 
-      if (row.chunkedValue) {
+      // A streamed result set consists of a stream of values, which might
+      // be split into many `PartialResultSet` messages to accommodate
+      // large rows and/or large values. If we are missing the resumeToken
+      // this is likely due to the PartialResultSet hitting size restrictions.
+      // In this case it is also necessary to combine this with the next obj.
+      if (
+        (!row.resumeToken || row.resumeToken.length === 0) &&
+        row.values.length % metadata.rowType.fields.length !== 0
+      ) {
         rowChunks.push(row);
         next();
         return;
+      }
+
+      if (row.chunkedValue) {
+        rowChunks.push(row);
+        next();
       }
 
       if (is.empty(row.values)) {
@@ -96,19 +119,6 @@ function partialResultStream(requestFn, options) {
         formattedRows = formattedRows.concat(builder.toJSON());
         rowChunks.length = 0;
       } else {
-        if (row.values.length % metadata.rowType.fields.length !== 0) {
-          const fs = require('fs')
-          fs.writeFileSync('./bad-row-data.json', JSON.stringify(row, null, 2))
-          fs.writeFileSync('./bad-row-metadata.json', JSON.stringify(metadata, null, 2))
-
-          userStream.destroy(new Error(`
-            The values in this object, ${row.values.length}, is not evenly divisible by the number of fields, ${metadata.rowType.fields.length}.
-            Check "bad-row-data.json" and "bad-row-metadata.json" for a JSON readout from the faulty data
-          `))
-
-          return
-        }
-
         var formattedRow = partialResultStream.formatRow_(metadata, row);
         var multipleRows = is.array(formattedRow[0]);
 
@@ -118,6 +128,8 @@ function partialResultStream(requestFn, options) {
           formattedRows.push(formattedRow);
         }
       }
+
+      rowChunks = [];
 
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
