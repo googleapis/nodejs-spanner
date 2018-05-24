@@ -79,8 +79,6 @@ function partialResultStream(requestFn, options) {
   var rowChunks = [];
   var metadata;
 
-  let numRowsThatShouldBeCreated = 0;
-
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
       var formattedRows = [];
