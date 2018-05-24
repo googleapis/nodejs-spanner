@@ -13,8 +13,11 @@ const NUM_ATTEMPTS = process.argv[2] || 5
 
 async function init() {
   await prepareInstance()
+  console.log("prepareInstance done")
   await prepareDatabase()
+  console.log("prepareDatabase done")
   await prepareTable()
+  console.log("prepareTable done")
 }
 
 init()

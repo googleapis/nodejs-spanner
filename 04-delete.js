@@ -13,6 +13,7 @@ const NUM_ATTEMPTS = process.argv[2] || 5
 
 async function init() {
   await deleteTable()
+  console.log("deleteTable done");
 }
 
 init()
