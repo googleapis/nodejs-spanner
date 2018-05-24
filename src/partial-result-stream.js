@@ -127,8 +127,6 @@ function partialResultStream(requestFn, options) {
         }
       }
 
-      rowChunks = [];
-
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
