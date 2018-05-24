@@ -64,7 +64,7 @@ function partialResultStream(requestFn, options) {
   var batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
     isCheckpointFn: function(row) {
-      return Buffer.isBuffer(row.resumeToken);
+      return is.defined(row.resumeToken);
     },
   });
 
@@ -84,7 +84,10 @@ function partialResultStream(requestFn, options) {
       // large rows and/or large values. If we are missing the resumeToken
       // this is likely due to the PartialResultSet hitting size restrictions.
       // In this case it is also necessary to combine this with the next obj.
-      if (!row.resumeToken || row.resumeToken.length === 0) {
+      if (
+        (!row.resumeToken || row.resumeToken.length === 0) &&
+        row.values.length % metadata.rowType.fields.length !== 0
+      ) {
         rowChunks.push(row);
         next();
         return;
