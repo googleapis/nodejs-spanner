@@ -150,6 +150,20 @@ RowBuilder.prototype.build = function() {
 
     previousChunk = chunk;
   });
+
+  // remove chunks that are now in rows.
+  if (this.chunks.length > 0){
+    var lastChunk = this.chunks.splice(-1)[0];
+    this.chunks.length = 0
+    // if the last chunk was chunked, strip off just that value and add the chunk
+    // back to be processed in the next build
+    if (lastChunk.chunkedValue){
+      lastChunk.values = lastChunk.values.splice(-1);
+      this.chunks = [ lastChunk ];
+      // There is a partial row added to rows. Remove this.
+      this.rows.pop()
+    }
+  }
 };
 
 /**
