@@ -103,7 +103,7 @@ function partialResultStream(requestFn, options) {
         // Stop using json on these rows.
         builder.build();
         formattedRows = formattedRows.concat(builder.rows);
-        if(formattedRows[formattedRows.length -1].length != metadata.rowType.field.length){
+        if(formattedRows[formattedRows.length -1].length != metadata.rowType.fields.length){
           console.log("incomplete final row");
           rowChunks.push(formattedRows.splice(-1));
         } else {
