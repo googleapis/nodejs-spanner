@@ -86,9 +86,10 @@ function partialResultStream(requestFn, options) {
       }
 
       if (row.chunkedValue) {
+        // TODO: intermittently process rowChunks and extract full rows.
         rowChunks.push(row);
-        next();
-        return;
+        //next();
+        //return;
       }
 
       if (is.empty(row.values)) {
@@ -99,8 +100,15 @@ function partialResultStream(requestFn, options) {
       if (rowChunks.length > 0) {
         // Done getting all the chunks. Put them together.
         var builder = new RowBuilder(metadata, rowChunks.concat(row));
-        formattedRows = formattedRows.concat(builder.toJSON());
-        rowChunks.length = 0;
+        // Stop using json on these rows.
+        builder.build();
+        formattedRows = formattedRows.concat(builder.rows);
+        if(formattedRows[formattedRows.length -1].length != metadata.rowType.field.length){
+          console.log("incomplete final row");
+          rowChunks.push(formattedRows.splice(-1));
+        } else {
+          rowChunks.length = 0;
+        }
       } else {
         // A streamed result set consists of a stream of values, which might
         // be split into many `PartialResultSet` messages to accommodate
@@ -121,7 +129,7 @@ function partialResultStream(requestFn, options) {
           formattedRows.push(formattedRow);
         }
       }
-
+      // if formatted rows is not aligned, then we should take the end and lob it off
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
