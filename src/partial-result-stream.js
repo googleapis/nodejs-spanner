@@ -71,6 +71,8 @@ function partialResultStream(requestFn, options) {
   var rowChunks = [];
   var metadata;
   var pendingRowValues;
+  var partialRow;
+  var builder;
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
@@ -87,7 +89,7 @@ function partialResultStream(requestFn, options) {
 
       if (row.chunkedValue) {
         // TODO: intermittently process rowChunks and extract full rows.
-        rowChunks.push(row);
+        // rowChunks.push(row);
         //next();
         //return;
       }
@@ -97,42 +99,34 @@ function partialResultStream(requestFn, options) {
         return;
       }
 
-      if (rowChunks.length > 0) {
-        // Done getting all the chunks. Put them together.
+      // Done getting all the chunks. Put them together.
+      if (builder == undefined){
         var builder = new RowBuilder(metadata, rowChunks.concat(row));
-        // Stop using json on these rows.
-        builder.build();
-        formattedRows = formattedRows.concat(builder.rows);
-        if(formattedRows[formattedRows.length -1].length != metadata.rowType.fields.length){
-          console.log("incomplete final row");
-          rowChunks.push(formattedRows.splice(-1));
-        } else {
-          rowChunks.length = 0;
-        }
       } else {
-        // A streamed result set consists of a stream of values, which might
-        // be split into many `PartialResultSet` messages to accommodate
-        // large rows and/or large values. Large values will be chunked. Large
-        // rows may be split across objects. In this case it is necessary to 
-        // combine this with the next obj.
-        var numExtraFields = row.values.length % metadata.rowType.fields.length;
-        if (numExtraFields > 0) {
-          pendingRowValues = row.values.splice(-numExtraFields);
-        }
-
-        var formattedRow = partialResultStream.formatRow_(metadata, row);
-        var multipleRows = is.array(formattedRow[0]);
-
-        if (multipleRows) {
-          formattedRows = formattedRows.concat(formattedRow);
-        } else {
-          formattedRows.push(formattedRow);
+        builder.chunks.concat(row)
+        builder.metadata = metadata
+      }
+      builder.build();
+      // Create formatted rows
+      formattedRows = formattedRows.concat(builder.collectRows());
+      // store chunks that haven't been used
+      rowChunks = builder.chunks;
+      // we may have a partial final row. If this happens, we should put this back in rowChunks
+      if(formattedRows[formattedRows.length -1].length != metadata.rowType.fields.length){
+        console.log("incomplete final row in formatted rows");
+        partialRow = formattedRows.splice(-1);
+        console.log(partialRow)
+      } else {
+        partialRow = null
+        if (rowChunks.length != 0){
+          console.log('rowChunk from chunking:' + rowChunks)
         }
       }
-      // if formatted rows is not aligned, then we should take the end and lob it off
-      if (options.json) {
-        formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
-      }
+
+
+      // if (options.json) {
+      //   formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
+      // }
 
       split(formattedRows, userStream).then(() => next());
     })

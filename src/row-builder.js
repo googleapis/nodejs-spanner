@@ -29,14 +29,32 @@ function RowBuilder(metadata, chunks) {
   this.metadata = metadata;
   this.fields = this.metadata.rowType.fields;
   this.chunks = chunks;
-
-  this.rows = [[]];
-
+  this.rows = [[]]
+  
   Object.defineProperty(this, 'currentRow', {
     get: function() {
       return this.rows[this.rows.length - 1];
     },
   });
+}
+
+/** 
+ * Return complete rows and remove from builder
+ */
+RowBuilder.prototype.collectRows = function(){
+  var partialRow
+  if(this.rows[this.rows.length -1].length != this.metadata.rowType.fields.length){
+    console.log("incomplete final row in formatted rows");
+    partialRow = this.rows.splice(-1);
+    console.log(partialRow)
+  }
+  var rowsToReturn = this.rows
+  if (partialRow){
+    this.rows = [ partialRow ];
+  } else {
+    this.rows = [[]];
+  }
+  return rowsToReturn;
 }
 
 /**
