@@ -86,6 +86,9 @@ function partialResultStream(requestFn, options) {
         return;
       }
 
+      if (row.values[0].stringValue.endsWith('9197')) {
+        console.log('magic off error')
+      }
       // Use RowBuilder to construct rows returning rows as complete.
       if (builder == undefined){
         builder = new RowBuilder(metadata, rowChunks.concat(row));

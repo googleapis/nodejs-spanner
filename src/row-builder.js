@@ -154,6 +154,11 @@ RowBuilder.prototype.build = function() {
   var previousChunk;
 
   this.chunks.forEach(function(chunk) {
+    chunk.values.forEach(val => {
+      if (val.stringValue.endsWith('account_creted_on_      9197')) {
+        console.log('magic off error')
+      }
+    })
     if (previousChunk && previousChunk.chunkedValue) {
       var type = self.fields[self.currentRow.length - 1].type;
       var merged = RowBuilder.merge(
@@ -180,7 +185,8 @@ RowBuilder.prototype.build = function() {
       lastChunk.values = lastChunk.values.splice(-1);
       this.chunks = [ lastChunk ];
       // There is a partial row added to rows. Remove this.
-      this.rows.pop()
+      // TODO: This may not be needed
+      this.currentRow.pop() // the partial row need this to build the row
     }
   }
 };
