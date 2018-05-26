@@ -43,7 +43,8 @@ function RowBuilder(metadata, chunks) {
  */
 RowBuilder.prototype.collectRows = function(){
   var partialRow
-  if(this.rows[this.rows.length -1].length != this.metadata.rowType.fields.length){
+  if(!is.empty(this.rows) &&
+     this.rows[this.rows.length -1].length != this.metadata.rowType.fields.length){
     console.log("incomplete final row in formatted rows");
     partialRow = this.rows.splice(-1);
     console.log(partialRow)
@@ -193,6 +194,38 @@ RowBuilder.prototype.toJSON = function() {
   var fields = this.fields;
 
   return this.rows.map(function(values) {
+    var formattedRow = [];
+    var serializedRow = {};
+
+    values.forEach(function(value, index) {
+      var field = fields[index];
+
+      var column = {
+        name: field.name,
+        value: RowBuilder.formatValue(field.type, value),
+      };
+
+      formattedRow.push(column);
+
+      if (column.name) {
+        serializedRow[column.name] = column.value;
+      }
+    });
+
+    Object.defineProperty(formattedRow, 'toJSON', {
+      enumerable: false,
+      value: codec.generateToJSONFromRow(formattedRow),
+    });
+
+    return formattedRow;
+  });
+};
+
+RowBuilder.prototype.toJSONnobuild = function (rows) {
+
+  var fields = this.fields;
+
+  return rows.map(function(values) {
     var formattedRow = [];
     var serializedRow = {};
 
