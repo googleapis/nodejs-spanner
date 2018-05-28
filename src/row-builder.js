@@ -45,13 +45,13 @@ RowBuilder.prototype.collectRows = function(){
   var partialRow
   if(!is.empty(this.rows) &&
      this.rows[this.rows.length -1].length != this.metadata.rowType.fields.length){
-    console.log("incomplete final row in formatted rows");
     partialRow = this.rows.splice(-1);
-    console.log(partialRow)
+    // console.log("incomplete final row in formatted rows");
+    // console.log(partialRow)
   }
   var rowsToReturn = this.rows
   if (partialRow){
-    this.rows = [ partialRow ];
+    this.rows = partialRow;
   } else {
     this.rows = [[]];
   }
@@ -154,11 +154,11 @@ RowBuilder.prototype.build = function() {
   var previousChunk;
 
   this.chunks.forEach(function(chunk) {
-    chunk.values.forEach(val => {
-      if (val.stringValue.endsWith('account_creted_on_      9197')) {
-        console.log('magic off error')
-      }
-    })
+    // chunk.values.forEach(val => {
+    //   if (val.stringValue.endsWith('account_created_on_      9197')) {
+    //     console.log('magic off error')
+    //   } 
+    // })
     if (previousChunk && previousChunk.chunkedValue) {
       var type = self.fields[self.currentRow.length - 1].type;
       var merged = RowBuilder.merge(
@@ -175,19 +175,17 @@ RowBuilder.prototype.build = function() {
     previousChunk = chunk;
   });
 
-  // remove chunks that are now in rows.
-  if (this.chunks.length > 0){
-    var lastChunk = this.chunks.splice(-1)[0];
-    this.chunks.length = 0
-    // if the last chunk was chunked, strip off just that value and add the chunk
-    // back to be processed in the next build
-    if (lastChunk.chunkedValue){
-      lastChunk.values = lastChunk.values.splice(-1);
-      this.chunks = [ lastChunk ];
-      // There is a partial row added to rows. Remove this.
-      // TODO: This may not be needed
-      this.currentRow.pop() // the partial row need this to build the row
-    }
+  // As chunks are now in rows, remove them
+  this.chunks.length = 0
+
+  // Examine the last chunk. If it was 'chunked' strip that off and place it
+  // back to be processed in the next build
+  if (previousChunk && previousChunk.chunkedValue){
+    previousChunk.values = previousChunk.values.splice(-1);
+    this.chunks = [ previousChunk ];
+    // There is a partial row added to rows. Remove this.
+    // TODO: This may not be needed
+    this.currentRow.pop() // the partial row need this to build the row
   }
 };
 
