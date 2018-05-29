@@ -17,7 +17,6 @@
 'use strict';
 
 var checkpointStream = require('checkpoint-stream');
-var chunk = require('lodash.chunk');
 var eventsIntercept = require('events-intercept');
 var exec = require('methmeth');
 var extend = require('extend');
@@ -27,7 +26,6 @@ var split = require('split-array-stream').split;
 var streamEvents = require('stream-events');
 var through = require('through2');
 
-var codec = require('./codec.js');
 var RowBuilder = require('./row-builder.js');
 
 /**
@@ -68,16 +66,10 @@ function partialResultStream(requestFn, options) {
     },
   });
 
-  var rowChunks = [];
-  var metadata;
   var builder;
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
-      if (row.metadata) {
-        metadata = row.metadata;
-      }
-
       if (is.empty(row.values)) {
         next();
         return;
@@ -85,7 +77,7 @@ function partialResultStream(requestFn, options) {
 
       // Use RowBuilder to construct and return complete, formatted rows.
       if (!builder) {
-        builder = new RowBuilder(metadata);
+        builder = new RowBuilder(row.metadata);
       }
 
       builder.addRow(row);
