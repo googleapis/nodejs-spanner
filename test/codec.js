@@ -177,6 +177,16 @@ describe('codec', function() {
       });
     });
 
+    describe('fromArray', function() {
+      it('should convert array to struct array', function() {
+        var arr = [{name: 'a', value: 1}, {name: 'b', value: 2}];
+        var struct = codec.Struct.fromArray(arr);
+
+        assert(codec.Struct.isStruct(struct));
+        assert.deepEqual(struct, arr);
+      });
+    });
+
     describe('isStruct', function() {
       it('should return true for structs', function() {
         var struct = new codec.Struct();

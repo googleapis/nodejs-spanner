@@ -284,6 +284,22 @@ describe('Spanner', function() {
 
       assert.strictEqual(struct, fakeStruct);
     });
+
+    it('should create a struct from an Array', function() {
+      var arr = [];
+      var fakeStruct = [];
+
+      fakeCodec.Struct = {
+        fromArray: function(value) {
+          assert.strictEqual(value, arr);
+          return fakeStruct;
+        },
+      };
+
+      var struct = Spanner.struct(arr);
+
+      assert.strictEqual(struct, fakeStruct);
+    });
   });
 
   describe('createInstance', function() {

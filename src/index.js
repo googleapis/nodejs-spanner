@@ -284,6 +284,10 @@ Spanner.int = function(value) {
  * });
  */
 Spanner.struct = function(value) {
+  if (Array.isArray(value)) {
+    return codec.Struct.fromArray(value);
+  }
+
   return codec.Struct.fromJSON(value);
 };
 

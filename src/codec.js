@@ -111,6 +111,22 @@ function Struct() {
 Struct.TYPE = 'struct';
 
 /**
+ * Converts an array of objects to a struct array.
+ *
+ * @private
+ *
+ * @param {object[]} arr Struct array.
+ * @return {Struct}
+ */
+Struct.fromArray = function(arr) {
+  var struct = new Struct();
+
+  struct.push.apply(struct, arr);
+
+  return struct;
+};
+
+/**
  * Converts a JSON object to a struct array.
  *
  * @private
