@@ -104,7 +104,7 @@ function partialResultStream(requestFn, options) {
         return;
       }
 
-      formattedRows = builder.toJSONnobuild(formattedRows);
+      formattedRows = builder.toJSON(formattedRows);
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }

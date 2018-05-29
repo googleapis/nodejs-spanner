@@ -188,40 +188,7 @@ RowBuilder.prototype.build = function() {
 /**
  * Transforms values into JSON format.
  */
-RowBuilder.prototype.toJSON = function() {
-  this.build();
-
-  var fields = this.fields;
-
-  return this.rows.map(function(values) {
-    var formattedRow = [];
-    var serializedRow = {};
-
-    values.forEach(function(value, index) {
-      var field = fields[index];
-
-      var column = {
-        name: field.name,
-        value: RowBuilder.formatValue(field.type, value),
-      };
-
-      formattedRow.push(column);
-
-      if (column.name) {
-        serializedRow[column.name] = column.value;
-      }
-    });
-
-    Object.defineProperty(formattedRow, 'toJSON', {
-      enumerable: false,
-      value: codec.generateToJSONFromRow(formattedRow),
-    });
-
-    return formattedRow;
-  });
-};
-
-RowBuilder.prototype.toJSONnobuild = function(rows) {
+RowBuilder.prototype.toJSON = function(rows) {
   var fields = this.fields;
 
   return rows.map(function(values) {
