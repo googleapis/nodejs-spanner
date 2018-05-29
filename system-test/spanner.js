@@ -2385,6 +2385,51 @@ describe('Spanner', function() {
             });
           });
 
+          it('should bind structs with duplicate fields', function(done) {
+            var query = {
+              sql: 'SELECT @structParam=STRUCT<f1 INT64, f1 INT64>(10, 11)',
+              params: {
+                structParam: Spanner.struct([
+                  {
+                    name: 'f1',
+                    value: Spanner.int(10),
+                  },
+                  {
+                    name: 'f1',
+                    value: Spanner.int(11),
+                  },
+                ]),
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0];
+              assert.strictEqual(row[0].value, true);
+
+              done();
+            });
+          });
+
+          it('should bind structs with missing field names', function(done) {
+            var query = {
+              sql: 'SELECT @structParam=STRUCT<INT64>(5)',
+              params: {
+                structParam: Spanner.struct([{value: Spanner.int(5)}]),
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              var row = rows[0];
+              assert.strictEqual(row[0].value, true);
+
+              done();
+            });
+          });
+
           it('should allow equality checks', function(done) {
             var query = {
               sql:
@@ -2423,6 +2468,34 @@ describe('Spanner', function() {
 
               var row = rows[0];
               assert.strictEqual(row[0].value, false);
+
+              done();
+            });
+          });
+
+          it('should allow an array of non-null structs', function(done) {
+            var query = {
+              sql: 'SELECT a.threadid FROM UNNEST(@arraysf) a',
+              params: {
+                arraysf: [
+                  Spanner.struct({
+                    threadid: Spanner.int(12),
+                  }),
+                  Spanner.struct({
+                    threadid: Spanner.int(13),
+                  }),
+                ],
+              },
+            };
+
+            database.run(query, function(err, rows) {
+              assert.ifError(err);
+
+              rows = rows.map(row => row.toJSON());
+
+              assert.strictEqual(rows.length, 2);
+              assert.strictEqual(rows[0].threadid, 12);
+              assert.strictEqual(rows[1].threadid, 13);
 
               done();
             });
