@@ -74,8 +74,6 @@ function partialResultStream(requestFn, options) {
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
-      var formattedRows = [];
-
       if (row.metadata) {
         metadata = row.metadata;
       }
@@ -85,26 +83,18 @@ function partialResultStream(requestFn, options) {
         return;
       }
 
-      // Use RowBuilder to construct rows returning rows as complete.
-      if (builder === undefined) {
-        builder = new RowBuilder(metadata, rowChunks.concat(row));
-      } else {
-        builder.chunks = builder.chunks.concat(row);
-        builder.metadata = metadata;
+      // Use RowBuilder to construct and return complete, formatted rows.
+      if (!builder) {
+        builder = new RowBuilder(metadata);
       }
+
+      builder.addRow(row);
+
       // Build the chunks to rows.
       builder.build();
 
-      // Create formatted rows
-      formattedRows = formattedRows.concat(builder.collectRows());
+      var formattedRows = builder.toJSON(builder.flush());
 
-      // This isn't likely, but we could have zero rows. Continue if so.
-      if (is.empty(formattedRows)) {
-        next();
-        return;
-      }
-
-      formattedRows = builder.toJSON(formattedRows);
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
@@ -151,42 +141,5 @@ function partialResultStream(requestFn, options) {
     })
     .pipe(userStream);
 }
-
-/**
- * Format a PartialResultSet response from the API. A row object will be created
- * to map each field name to its decoded value.
- *
- * If multiple rows exist in a single PartialResultSet, an array is returned.
- *
- * @param {object} row - A `PartialResultSet` object.
- */
-partialResultStream.formatRow_ = function(metadata, row) {
-  var fields = metadata.rowType.fields;
-
-  if (row.values.length > fields.length) {
-    // More than one row exists. Return an array of formatted rows.
-    var valueSets = chunk(row.values, fields.length);
-
-    return valueSets.map(function(valueSet) {
-      row.values = valueSet;
-      return partialResultStream.formatRow_(metadata, row);
-    });
-  }
-
-  var formattedRow = row.values.map(function(value, index) {
-    var field = fields[index];
-    return {
-      name: field.name,
-      value: codec.decode(value, field),
-    };
-  });
-
-  Object.defineProperty(formattedRow, 'toJSON', {
-    enumerable: false,
-    value: codec.generateToJSONFromRow(formattedRow),
-  });
-
-  return formattedRow;
-};
 
 module.exports = partialResultStream;

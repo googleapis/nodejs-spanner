@@ -25,10 +25,9 @@ var is = require('is');
  * @private
  * @class
  */
-function RowBuilder(metadata, chunks) {
-  this.metadata = metadata;
-  this.fields = this.metadata.rowType.fields;
-  this.chunks = chunks;
+function RowBuilder(metadata) {
+  this.fields = metadata.rowType.fields;
+  this.chunks = [];
   this.rows = [[]];
 
   Object.defineProperty(this, 'currentRow', {
@@ -39,24 +38,25 @@ function RowBuilder(metadata, chunks) {
 }
 
 /**
- * Return complete rows and remove from builder
+ * Add a PartialResultSet response object to the pending rows.
  */
-RowBuilder.prototype.collectRows = function() {
-  var partialRow;
-  if (
-    !is.empty(this.rows) &&
-    this.rows[this.rows.length - 1].length !==
-      this.metadata.rowType.fields.length
-  ) {
-    // Don't return the partial row. Hold onto it for the next iteration
-    partialRow = this.rows.splice(-1);
-  }
+RowBuilder.prototype.addRow = function(row) {
+  this.chunks = this.chunks.concat(row);
+};
+
+/**
+ * Flush already complete rows.
+ */
+RowBuilder.prototype.flush = function() {
   var rowsToReturn = this.rows;
-  if (partialRow) {
-    this.rows = partialRow;
+
+  if (!is.empty(this.rows) && this.currentRow.length !== this.fields.length) {
+    // Don't return the partial row. Hold onto it for the next iteration.
+    this.rows = this.rows.splice(-1);
   } else {
     this.rows = [[]];
   }
+
   return rowsToReturn;
 };
 
@@ -172,11 +172,11 @@ RowBuilder.prototype.build = function() {
     previousChunk = chunk;
   });
 
-  // As chunks are now in rows, remove them
+  // As chunks are now in rows, remove them.
   this.chunks.length = 0;
 
-  // Examine the last chunk. If it was 'chunked' strip that off and place it
-  // back to be processed in the next build
+  // Examine the last chunk. If it was 'chunked', strip that off and place it
+  // back to be processed in the next build.
   if (previousChunk && previousChunk.chunkedValue) {
     previousChunk.values = previousChunk.values.splice(-1);
     this.chunks = [previousChunk];
