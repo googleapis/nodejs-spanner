@@ -2227,7 +2227,7 @@ describe('Spanner', function() {
 
           it('should bind null structs', function(done) {
             var query = {
-              sql: 'SELECT @structParam.userf',
+              sql: 'SELECT @structParam.userf is NULL',
               params: {
                 structParam: null,
               },
@@ -2251,8 +2251,8 @@ describe('Spanner', function() {
             database.run(query, function(err, rows) {
               assert.ifError(err);
 
-              var row = rows[0].toJSON();
-              assert.strictEqual(row.userf, null);
+              var row = rows[0];
+              assert.strictEqual(row[0].value, true);
 
               done();
             });
