@@ -29,8 +29,8 @@ function RowBuilder(metadata, chunks) {
   this.metadata = metadata;
   this.fields = this.metadata.rowType.fields;
   this.chunks = chunks;
-  this.rows = [[]]
-  
+  this.rows = [[]];
+
   Object.defineProperty(this, 'currentRow', {
     get: function() {
       return this.rows[this.rows.length - 1];
@@ -38,25 +38,27 @@ function RowBuilder(metadata, chunks) {
   });
 }
 
-/** 
+/**
  * Return complete rows and remove from builder
  */
-RowBuilder.prototype.collectRows = function(){
-  var partialRow
-  if(!is.empty(this.rows) &&
-     this.rows[this.rows.length -1].length != this.metadata.rowType.fields.length){
+RowBuilder.prototype.collectRows = function() {
+  var partialRow;
+  if (
+    !is.empty(this.rows) &&
+    this.rows[this.rows.length - 1].length !==
+      this.metadata.rowType.fields.length
+  ) {
+    // Don't return the partial row. Hold onto it for the next iteration
     partialRow = this.rows.splice(-1);
-    // console.log("incomplete final row in formatted rows");
-    // console.log(partialRow)
   }
-  var rowsToReturn = this.rows
-  if (partialRow){
+  var rowsToReturn = this.rows;
+  if (partialRow) {
     this.rows = partialRow;
   } else {
     this.rows = [[]];
   }
   return rowsToReturn;
-}
+};
 
 /**
  * Extracts value from chunk.
@@ -154,11 +156,6 @@ RowBuilder.prototype.build = function() {
   var previousChunk;
 
   this.chunks.forEach(function(chunk) {
-    // chunk.values.forEach(val => {
-    //   if (val.stringValue.endsWith('account_created_on_      9197')) {
-    //     console.log('magic off error')
-    //   } 
-    // })
     if (previousChunk && previousChunk.chunkedValue) {
       var type = self.fields[self.currentRow.length - 1].type;
       var merged = RowBuilder.merge(
@@ -176,16 +173,15 @@ RowBuilder.prototype.build = function() {
   });
 
   // As chunks are now in rows, remove them
-  this.chunks.length = 0
+  this.chunks.length = 0;
 
   // Examine the last chunk. If it was 'chunked' strip that off and place it
   // back to be processed in the next build
-  if (previousChunk && previousChunk.chunkedValue){
+  if (previousChunk && previousChunk.chunkedValue) {
     previousChunk.values = previousChunk.values.splice(-1);
-    this.chunks = [ previousChunk ];
+    this.chunks = [previousChunk];
     // There is a partial row added to rows. Remove this.
-    // TODO: This may not be needed
-    this.currentRow.pop() // the partial row need this to build the row
+    this.currentRow.pop();
   }
 };
 
@@ -225,8 +221,7 @@ RowBuilder.prototype.toJSON = function() {
   });
 };
 
-RowBuilder.prototype.toJSONnobuild = function (rows) {
-
+RowBuilder.prototype.toJSONnobuild = function(rows) {
   var fields = this.fields;
 
   return rows.map(function(values) {

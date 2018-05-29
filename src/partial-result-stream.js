@@ -74,7 +74,6 @@ function partialResultStream(requestFn, options) {
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
-      //console.log("rowcount:" + row.values.length + " firstid:" + row.values[0].stringValue)
       var formattedRows = [];
 
       if (row.metadata) {
@@ -86,15 +85,12 @@ function partialResultStream(requestFn, options) {
         return;
       }
 
-      if (row.values[0].stringValue.endsWith('9197')) {
-        console.log('magic off error')
-      }
       // Use RowBuilder to construct rows returning rows as complete.
-      if (builder == undefined){
+      if (builder === undefined) {
         builder = new RowBuilder(metadata, rowChunks.concat(row));
       } else {
-        builder.chunks = builder.chunks.concat(row)
-        builder.metadata = metadata
+        builder.chunks = builder.chunks.concat(row);
+        builder.metadata = metadata;
       }
       // Build the chunks to rows.
       builder.build();
@@ -103,12 +99,12 @@ function partialResultStream(requestFn, options) {
       formattedRows = formattedRows.concat(builder.collectRows());
 
       // This isn't likely, but we could have zero rows. Continue if so.
-      if (is.empty(formattedRows)){
+      if (is.empty(formattedRows)) {
         next();
         return;
       }
 
-      formattedRows = builder.toJSONnobuild(formattedRows)
+      formattedRows = builder.toJSONnobuild(formattedRows);
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
       }
