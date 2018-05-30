@@ -24,21 +24,6 @@ var proxyquire = require('proxyquire');
 var through = require('through2');
 var util = require('@google-cloud/common').util;
 
-var codec = require('../src/codec.js');
-
-var decodeValueOverride;
-var generateToJSONFromRowOverride;
-var fakeCodec = extend({}, codec);
-fakeCodec.decode = function() {
-  return (decodeValueOverride || codec.decode).apply(null, arguments);
-};
-fakeCodec.generateToJSONFromRow = function() {
-  return (generateToJSONFromRowOverride || codec.generateToJSONFromRow).apply(
-    null,
-    arguments
-  );
-};
-
 var checkpointStreamOverride;
 function fakeCheckpointStream() {}
 fakeCheckpointStream.obj = function() {
@@ -53,11 +38,25 @@ function FakeRowBuilder() {
   this.calledWith_ = arguments;
 }
 
+FakeRowBuilder.prototype.addRow = function() {
+  if (!FakeRowBuilderOverrides.addRow) {
+    return this;
+  }
+  return FakeRowBuilderOverrides.addRow.apply(this, arguments);
+};
+
 FakeRowBuilder.prototype.build = function() {
   if (!FakeRowBuilderOverrides.build) {
     return this;
   }
   return FakeRowBuilderOverrides.build.apply(this, arguments);
+};
+
+FakeRowBuilder.prototype.flush = function() {
+  if (!FakeRowBuilderOverrides.flush) {
+    return this;
+  }
+  return FakeRowBuilderOverrides.flush.apply(this, arguments);
 };
 
 FakeRowBuilder.prototype.toJSON = function() {
@@ -89,7 +88,6 @@ describe('PartialResultStream', function() {
   before(function() {
     partialResultStreamModule = proxyquire('../src/partial-result-stream.js', {
       'checkpoint-stream': fakeCheckpointStream,
-      './codec.js': fakeCodec,
       './row-builder.js': FakeRowBuilder,
     });
     partialResultStreamCached = extend({}, partialResultStreamModule);
@@ -98,8 +96,6 @@ describe('PartialResultStream', function() {
   beforeEach(function() {
     FakeRowBuilderOverrides = {};
     checkpointStreamOverride = null;
-    decodeValueOverride = null;
-    generateToJSONFromRowOverride = null;
     fakeRequestStream = through.obj();
 
     extend(partialResultStreamModule, partialResultStreamCached);
@@ -109,10 +105,20 @@ describe('PartialResultStream', function() {
     });
   });
 
-  describe('stream', function() {
+  describe.only('stream', function() {
     beforeEach(function() {
-      partialResultStreamModule.formatRow_ = function(metadata, row) {
-        return row;
+      FakeRowBuilderOverrides.addRow = function(row) {
+        this.row = row;
+      };
+
+      FakeRowBuilderOverrides.build = util.noop;
+
+      FakeRowBuilderOverrides.flush = function() {
+        return this.row;
+      };
+
+      FakeRowBuilderOverrides.toJSON = function(obj) {
+        return [obj];
       };
     });
 
@@ -170,143 +176,76 @@ describe('PartialResultStream', function() {
       );
     });
 
-    it('should run chunks through RowBuilder', function(done) {
-      var chunks = [
-        extend({chunkedValue: true}, RESULT_WITHOUT_TOKEN),
-        RESULT_WITH_TOKEN,
-      ];
+    describe('RowBuilder', function() {
+      it('should create a RowBuiler instance', function(done) {
+        var metadata = {};
+        var row = extend({metadata}, RESULT_WITH_TOKEN);
 
-      var builtRow = {};
-
-      FakeRowBuilderOverrides.toJSON = function() {
-        assert.deepEqual(this.calledWith_[1], chunks);
-        return builtRow;
-      };
-
-      fakeRequestStream.push(chunks[0]);
-      fakeRequestStream.push(chunks[1]);
-      fakeRequestStream.push(null);
-
-      partialResultStream.on('error', done).pipe(
-        concat(function(rows) {
-          assert.strictEqual(rows[0], builtRow);
+        FakeRowBuilderOverrides.addRow = function() {
+          assert.strictEqual(this.calledWith_[0], metadata);
           done();
-        })
-      );
-    });
+        };
 
-    it('should cache the metadata', function(done) {
-      var METADATA = {};
+        fakeRequestStream.push(row);
+        fakeRequestStream.push(null);
 
-      var formattedRows = [{}, {}];
-      var formatCalls = 0;
+        partialResultStream.on('error', done).resume();
+      });
 
-      var chunks = [
-        extend({metadata: METADATA}, RESULT_WITHOUT_TOKEN),
-        RESULT_WITH_TOKEN,
-      ];
+      it('should run chunks through RowBuilder', function(done) {
+        var builtRow = {};
+        var wasBuildCalled = false;
 
-      partialResultStreamModule.formatRow_ = function(metadata, row) {
-        assert.strictEqual(metadata, METADATA);
-        assert.strictEqual(row, chunks[formatCalls]);
-        return formattedRows[formatCalls++];
-      };
+        FakeRowBuilderOverrides.addRow = function(row) {
+          assert.strictEqual(row, RESULT_WITH_TOKEN);
+        };
 
-      fakeRequestStream.push(chunks[0]);
-      fakeRequestStream.push(chunks[1]);
-      fakeRequestStream.push(null);
+        FakeRowBuilderOverrides.build = function() {
+          wasBuildCalled = true;
+        };
 
-      partialResultStream.on('error', done).pipe(
-        concat(function(rows) {
-          assert.strictEqual(rows[0], formattedRows[0]);
-          assert.strictEqual(rows[1], formattedRows[1]);
-          done();
-        })
-      );
-    });
+        FakeRowBuilderOverrides.flush = function() {
+          return builtRow;
+        };
 
-    it('should return the formatted row', function(done) {
-      var formattedRow = {};
+        fakeRequestStream.push(RESULT_WITH_TOKEN);
+        fakeRequestStream.push(null);
 
-      partialResultStreamModule.formatRow_ = function(metadata, row) {
-        assert.strictEqual(row, RESULT_WITH_TOKEN);
-        return formattedRow;
-      };
+        partialResultStream.on('error', done).pipe(
+          concat(function(rows) {
+            assert.strictEqual(wasBuildCalled, true);
+            assert.strictEqual(rows[0], builtRow);
+            done();
+          })
+        );
+      });
 
-      fakeRequestStream.push(RESULT_WITH_TOKEN);
-      fakeRequestStream.push(null);
+      it('should return the formatted row as JSON', function(done) {
+        var options = {
+          json: true,
+          jsonOptions: {},
+        };
 
-      partialResultStream.on('error', done).pipe(
-        concat(function(rows) {
-          assert.strictEqual(rows[0], formattedRow);
-          done();
-        })
-      );
-    });
+        var partialResultStream = partialResultStreamModule(function() {
+          return fakeRequestStream;
+        }, options);
 
-    it('should return the formatted row as JSON', function(done) {
-      var options = {
-        json: true,
-        jsonOptions: {},
-      };
+        var formattedRow = {
+          toJSON: function(options_) {
+            assert.strictEqual(options_, options.jsonOptions);
+            done();
+          },
+        };
 
-      var partialResultStream = partialResultStreamModule(function() {
-        return fakeRequestStream;
-      }, options);
+        FakeRowBuilderOverrides.flush = function() {
+          return formattedRow;
+        };
 
-      var formattedRow = {
-        toJSON: function(options_) {
-          assert.strictEqual(options_, options.jsonOptions);
-          done();
-        },
-      };
+        fakeRequestStream.push(RESULT_WITH_TOKEN);
+        fakeRequestStream.push(null);
 
-      partialResultStreamModule.formatRow_ = function() {
-        return formattedRow;
-      };
-
-      fakeRequestStream.push(RESULT_WITH_TOKEN);
-      fakeRequestStream.push(null);
-
-      partialResultStream.on('error', done).resume();
-    });
-
-    it('should separately emit formatted rows', function(done) {
-      var formattedRows = [{}, {}];
-
-      partialResultStreamModule.formatRow_ = function() {
-        return formattedRows;
-      };
-
-      fakeRequestStream.push(RESULT_WITH_TOKEN);
-      fakeRequestStream.push(null);
-
-      partialResultStream.on('error', done).pipe(
-        concat(function(rows) {
-          assert.strictEqual(rows[0], formattedRows[0]);
-          assert.strictEqual(rows[1], formattedRows[1]);
-          done();
-        })
-      );
-    });
-
-    it('should correctly handle multiple rows', function(done) {
-      var formattedRows = [[{}, {}]];
-
-      partialResultStreamModule.formatRow_ = function() {
-        return formattedRows;
-      };
-
-      fakeRequestStream.push(RESULT_WITH_TOKEN);
-      fakeRequestStream.push(null);
-
-      partialResultStream.on('error', done).pipe(
-        concat(function(rows) {
-          assert.strictEqual(rows[0], formattedRows[0][0]);
-          assert.strictEqual(rows[1], formattedRows[0][1]);
-          done();
-        })
-      );
+        partialResultStream.on('error', done).resume();
+      });
     });
 
     it('should resume if there was an error', function(done) {
@@ -458,119 +397,6 @@ describe('PartialResultStream', function() {
       partialResultStream.on('error', util.noop);
       fakeRequestStream.push(RESULT_WITH_TOKEN);
       fakeRequestStream.destroy(new Error('Error.'));
-    });
-  });
-
-  describe('formatRow_', function() {
-    var FIELDS = [
-      {
-        name: 'field-1',
-      },
-      {
-        name: 'field-2',
-      },
-    ];
-
-    var METADATA = {
-      rowType: {
-        fields: FIELDS,
-      },
-    };
-
-    var VALUES = ['value-1', 'value-2'];
-
-    var ROW = {
-      metadata: METADATA,
-      values: VALUES,
-    };
-
-    it('should omit rows from JSON representation with no name', function() {
-      // Define the second field to have no name.
-      var metadata = {
-        rowType: {
-          fields: [{name: 'field-1'}, {}],
-        },
-      };
-
-      var row = {
-        metadata: metadata,
-        values: ['value-1', 'value-2'],
-      };
-
-      // Override our `decode` function to pass through the value.
-      decodeValueOverride = function(value) {
-        return value;
-      };
-
-      // Format the row.
-      var formattedRows = partialResultStreamModule.formatRow_(metadata, row);
-
-      // Both fields should exist in the formattedRows array.
-      assert.strictEqual(formattedRows.length, 2);
-      assert.strictEqual(formattedRows[0].value, 'value-1');
-      assert.strictEqual(formattedRows[1].value, 'value-2');
-    });
-
-    it('should chunk rows with more values than fields', function() {
-      decodeValueOverride = function(value) {
-        return value;
-      };
-
-      var row = extend({}, ROW);
-      row.values = row.values.concat(row.values);
-
-      var formattedRows = partialResultStreamModule.formatRow_(METADATA, row);
-
-      assert.deepEqual(formattedRows[0], [
-        {
-          name: 'field-1',
-          value: 'value-1',
-        },
-        {
-          name: 'field-2',
-          value: 'value-2',
-        },
-      ]);
-
-      assert.deepEqual(formattedRows[1], [
-        {
-          name: 'field-1',
-          value: 'value-1',
-        },
-        {
-          name: 'field-2',
-          value: 'value-2',
-        },
-      ]);
-    });
-
-    describe('toJSON', function() {
-      var toJSONOverride = function() {};
-      var FORMATTED_ROW;
-
-      beforeEach(function() {
-        decodeValueOverride = function(value) {
-          return value;
-        };
-
-        generateToJSONFromRowOverride = function() {
-          return toJSONOverride;
-        };
-
-        FORMATTED_ROW = partialResultStreamModule.formatRow_(METADATA, ROW);
-      });
-
-      it('should assign a toJSON method', function() {
-        assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
-      });
-
-      it('should not include toJSON when iterated', function() {
-        for (var keyVal in FORMATTED_ROW) {
-          if (keyVal === 'toJSON') {
-            throw new Error('toJSON should not be iterated.');
-          }
-        }
-      });
     });
   });
 });
