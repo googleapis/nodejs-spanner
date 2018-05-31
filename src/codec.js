@@ -118,7 +118,7 @@ codec.generateToJSONFromRow = generateToJSONFromRow;
  * @private
  */
 function decode(value, field) {
-  function decodeValue_(decoded, type, options) {
+  function decodeValue_(decoded, type) {
     if (is.null(decoded)) {
       return null;
     }

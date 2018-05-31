@@ -75,7 +75,7 @@ RowBuilder.formatValue = function(field, value) {
   }
 
   return field.structType.fields.reduce(function(struct, field, index) {
-    struct[field.name] = RowBuilder.formatValue(field.type, value[index]);
+    struct[field.name] = RowBuilder.formatValue(field, value[index]);
     return struct;
   }, {});
 };
