@@ -178,7 +178,7 @@ RowBuilder.prototype.flush = function() {
 
   if (!is.empty(this.rows[0]) && this.currentRow.length !== this.fields.length) {
     // Don't return the partial row. Hold onto it for the next iteration.
-    this.rows = [this.rows.splice(-1)];
+    this.rows = this.rows.splice(-1);
   } else {
     this.rows = [[]];
   }

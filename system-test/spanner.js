@@ -2261,7 +2261,6 @@ describe('Spanner', function() {
             },
             function(err, rows) {
               assert.ifError(err);
-              console.log(rows)
 
               var row = rows[0].toJSON();
 
