@@ -2247,7 +2247,7 @@ describe('Spanner', function() {
             });
         });
 
-        it.skip('should read large datasets', function(done) {
+        it.only('should read large datasets', function(done) {
           table.read(
             {
               keys: [expectedRow.Key],
@@ -2261,8 +2261,10 @@ describe('Spanner', function() {
             },
             function(err, rows) {
               assert.ifError(err);
+              console.log(rows)
 
               var row = rows[0].toJSON();
+
 
               assert.strictEqual(row.Key, expectedRow.Key);
               assert.strictEqual(row.StringValue, expectedRow.StringValue);
@@ -2279,7 +2281,7 @@ describe('Spanner', function() {
           );
         });
 
-        it.only('should query large datasets', function(done) {
+        it.skip('should query large datasets', function(done) {
           var query = {
             sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
             params: {

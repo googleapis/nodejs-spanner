@@ -42,7 +42,17 @@ function RowBuilder(fields) {
  * Extracts value from chunk.
  */
 RowBuilder.getValue = function(obj) {
-  return commonGrpc.Service.decodeValue_(obj);
+  var value = obj;
+
+  if (obj && obj.kind) {
+    value = commonGrpc.Service.decodeValue_(obj);
+  }
+
+  if (value && value.values) {
+    value = value.values;
+  }
+
+  return value;
 };
 
 /**
@@ -166,9 +176,9 @@ RowBuilder.prototype.build = function() {
 RowBuilder.prototype.flush = function() {
   var rowsToReturn = this.rows;
 
-  if (!is.empty(this.rows) && this.currentRow.length !== this.fields.length) {
+  if (!is.empty(this.rows[0]) && this.currentRow.length !== this.fields.length) {
     // Don't return the partial row. Hold onto it for the next iteration.
-    this.rows = this.rows.splice(-1);
+    this.rows = [this.rows.splice(-1)];
   } else {
     this.rows = [[]];
   }
