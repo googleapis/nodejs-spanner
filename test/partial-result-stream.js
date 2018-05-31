@@ -74,13 +74,28 @@ describe('PartialResultStream', function() {
   var partialResultStream;
 
   var RESULT_WITH_TOKEN = {
+    metadata: {
+      rowType: {
+        fields: [],
+      },
+    },
     resumeToken: '...',
     values: [{}],
   };
   var RESULT_WITHOUT_TOKEN = {
+    metadata: {
+      rowType: {
+        fields: [],
+      },
+    },
     values: [{}],
   };
   var RESULT_WITHOUT_VALUE = {
+    metadata: {
+      rowType: {
+        fields: [],
+      },
+    },
     resumeToken: '...',
     values: [],
   };
@@ -105,7 +120,7 @@ describe('PartialResultStream', function() {
     });
   });
 
-  describe.only('stream', function() {
+  describe('stream', function() {
     beforeEach(function() {
       FakeRowBuilderOverrides.addRow = function(row) {
         this.row = row;
@@ -178,11 +193,12 @@ describe('PartialResultStream', function() {
 
     describe('RowBuilder', function() {
       it('should create a RowBuiler instance', function(done) {
-        var metadata = {};
-        var row = extend({metadata}, RESULT_WITH_TOKEN);
+        var fields = [];
+        var row = extend(true, {}, RESULT_WITH_TOKEN);
+        row.metadata.rowType.fields = fields;
 
         FakeRowBuilderOverrides.addRow = function() {
-          assert.strictEqual(this.calledWith_[0], metadata);
+          assert.strictEqual(this.calledWith_[0], fields);
           done();
         };
 

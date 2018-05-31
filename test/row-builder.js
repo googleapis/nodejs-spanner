@@ -38,17 +38,7 @@ describe('RowBuilder', function() {
   var RowBuilderCached;
   var rowBuilder;
 
-  var METADATA = {
-    rowType: {
-      fields: [],
-    },
-  };
-
-  var CHUNKS = [
-    {
-      metadata: METADATA,
-    },
-  ];
+  var FIELDS = [{}, {}];
 
   before(function() {
     RowBuilder = proxyquire('../src/row-builder.js', {
@@ -61,7 +51,7 @@ describe('RowBuilder', function() {
   beforeEach(function() {
     generateToJSONFromRowOverride = null;
     extend(RowBuilder, RowBuilderCached);
-    rowBuilder = new RowBuilder(METADATA, CHUNKS);
+    rowBuilder = new RowBuilder(FIELDS);
   });
 
   describe('acceptance tests', function() {
@@ -69,9 +59,11 @@ describe('RowBuilder', function() {
 
     TESTS.forEach(function(test) {
       it('should pass acceptance test: ' + test.name, function() {
-        var metadata = JSON.parse(test.chunks[0]).metadata;
+        var fields = JSON.parse(test.chunks[0]).metadata.rowType.fields;
+        var builder = new RowBuilder(fields);
+
         var chunkJson = JSON.parse('[' + test.chunks.join() + ']');
-        var builder = new RowBuilder(metadata, chunkJson);
+        builder.addRow(chunkJson);
 
         builder.build();
 
@@ -81,20 +73,16 @@ describe('RowBuilder', function() {
   });
 
   describe('instantiation', function() {
-    it('should localize chunks', function() {
-      assert.strictEqual(rowBuilder.chunks, CHUNKS);
+    it('should localize fields', function() {
+      assert.strictEqual(rowBuilder.fields, FIELDS);
+    });
+
+    it('should correctly initialize a chunks array', function() {
+      assert.deepEqual(rowBuilder.chunks, []);
     });
 
     it('should correctly initialize a rows array', function() {
       assert.deepEqual(rowBuilder.rows, [[]]);
-    });
-
-    it('should localize metadata', function() {
-      assert.strictEqual(rowBuilder.metadata, CHUNKS[0].metadata);
-    });
-
-    it('should localize fields', function() {
-      assert.strictEqual(rowBuilder.fields, CHUNKS[0].metadata.rowType.fields);
     });
 
     it('should return the last row when accessing currentRow', function() {
@@ -316,6 +304,17 @@ describe('RowBuilder', function() {
     });
   });
 
+  describe('addRow', function() {
+    it('should combine row with chunks', function() {
+      rowBuilder.chunks = [];
+
+      var row = {};
+      rowBuilder.addRow(row);
+
+      assert.deepStrictEqual(rowBuilder.chunks, [row]);
+    });
+  });
+
   describe('append', function() {
     var ROWS = [[{}, {}], [{}, {}]];
 
@@ -354,23 +353,7 @@ describe('RowBuilder', function() {
   });
 
   describe('build', function() {
-    it('should append values from a chunk', function(done) {
-      rowBuilder.chunks = [
-        {
-          values: [{}],
-        },
-      ];
-
-      rowBuilder.append = function(value) {
-        assert.strictEqual(this, rowBuilder);
-        assert.strictEqual(value, rowBuilder.chunks[0].values[0]);
-        done();
-      };
-
-      rowBuilder.build();
-    });
-
-    it('should merge chunked values', function() {
+    beforeEach(function() {
       rowBuilder.rows = [[{}, {}]];
 
       rowBuilder.fields = [
@@ -391,6 +374,28 @@ describe('RowBuilder', function() {
         },
       ];
 
+      RowBuilder.merge = function() {
+        return [];
+      };
+    });
+
+    it('should append values from a chunk', function(done) {
+      rowBuilder.chunks = [
+        {
+          values: [{}],
+        },
+      ];
+
+      rowBuilder.append = function(value) {
+        assert.strictEqual(this, rowBuilder);
+        assert.strictEqual(value, rowBuilder.chunks[0].values[0]);
+        done();
+      };
+
+      rowBuilder.build();
+    });
+
+    it('should merge chunked values', function() {
       var expectedHead = rowBuilder.rows[0][1];
       var expectedTail = rowBuilder.chunks[1].values[0];
 
@@ -412,21 +417,85 @@ describe('RowBuilder', function() {
         appended.push(value);
       };
 
+      var expectedChunkValues = rowBuilder.chunks[0].values[0];
+
       rowBuilder.build();
 
-      assert.strictEqual(appended[0], rowBuilder.chunks[0].values[0]);
+      assert.strictEqual(appended[0], expectedChunkValues);
       assert.strictEqual(appended[1], mergedValues[0]);
+    });
+
+    it('should remove chunks', function() {
+      rowBuilder.build();
+      assert.deepStrictEqual(rowBuilder.chunks, []);
+    });
+
+    it('should retain a trailing chunked value', function() {
+      var partialChunk = {
+        chunkedValue: true,
+        values: [
+          {},
+          {partial: true},
+        ],
+      };
+
+      var expectedRetainedChunk = {
+        chunkedValue: true,
+        values: [
+          {partial: true},
+        ]
+      };
+
+      rowBuilder.chunks.push(partialChunk);
+
+      rowBuilder.build();
+
+      assert.deepStrictEqual(partialChunk.values, [{partial: true}]);
+      assert.deepStrictEqual(rowBuilder.chunks, [expectedRetainedChunk]);
+      assert.deepStrictEqual(rowBuilder.rows, [[{}, {}], [{}]]);
+    });
+  });
+
+  describe('flush', function() {
+    var ROWS = [[]];
+
+    for (var i = 0; i < FIELDS.length; i++) {
+      ROWS[0].push({});
+    }
+
+    beforeEach(function() {
+      rowBuilder.rows = ROWS;
+    });
+
+    it('should return rows', function() {
+      var expectedRows = rowBuilder.rows;
+      assert.deepStrictEqual(rowBuilder.flush(), expectedRows);
+    });
+
+    it('should reset rows', function() {
+      rowBuilder.flush();
+      assert.deepEqual(rowBuilder.rows, [[]]);
+    });
+
+    it('should retain a partial row', function() {
+      var partialRow = [{partial: true}];
+      rowBuilder.rows = rowBuilder.rows.concat(partialRow);
+
+      assert.deepStrictEqual(rowBuilder.flush(), ROWS);
+      assert.deepStrictEqual(rowBuilder.rows, partialRow);
     });
   });
 
   describe('toJSON', function() {
-    beforeEach(function() {
-      rowBuilder.build = util.noop;
-    });
+    var ROWS = [[{}]];
 
-    it('should run build', function(done) {
-      rowBuilder.build = done;
-      rowBuilder.toJSON();
+    beforeEach(function() {
+      rowBuilder.fields = [
+        {
+          name: 'fieldName',
+          type: {},
+        },
+      ];
     });
 
     it('should format the values', function() {
@@ -434,22 +503,13 @@ describe('RowBuilder', function() {
         formatted: true,
       };
 
-      rowBuilder.fields = [
-        {
-          name: 'fieldName',
-          type: {},
-        },
-      ];
-
-      rowBuilder.rows = [[{}]];
-
       RowBuilder.formatValue = function(type, value) {
         assert.strictEqual(type, rowBuilder.fields[0].type);
-        assert.strictEqual(value, rowBuilder.rows[0][0]);
+        assert.strictEqual(value, ROWS[0][0]);
         return formattedValue;
       };
 
-      var rows = rowBuilder.toJSON();
+      var rows = rowBuilder.toJSON(ROWS);
       var row = rows[0];
 
       assert.deepEqual(row, [
@@ -486,9 +546,7 @@ describe('RowBuilder', function() {
           },
         ];
 
-        rowBuilder.rows = [[{}]];
-
-        FORMATTED_ROW = rowBuilder.toJSON()[0];
+        FORMATTED_ROW = rowBuilder.toJSON(ROWS)[0];
       });
 
       it('should assign a toJSON method', function() {

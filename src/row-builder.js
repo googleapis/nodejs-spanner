@@ -17,6 +17,7 @@
 'use strict';
 
 var codec = require('./codec.js');
+var commonGrpc = require('@google-cloud/common-grpc');
 var is = require('is');
 
 /*!
@@ -25,8 +26,8 @@ var is = require('is');
  * @private
  * @class
  */
-function RowBuilder(metadata) {
-  this.fields = metadata.rowType.fields;
+function RowBuilder(fields) {
+  this.fields = fields;
   this.chunks = [];
   this.rows = [[]];
 
@@ -38,43 +39,10 @@ function RowBuilder(metadata) {
 }
 
 /**
- * Add a PartialResultSet response object to the pending rows.
- */
-RowBuilder.prototype.addRow = function(row) {
-  this.chunks = this.chunks.concat(row);
-};
-
-/**
- * Flush already complete rows.
- */
-RowBuilder.prototype.flush = function() {
-  var rowsToReturn = this.rows;
-
-  if (!is.empty(this.rows) && this.currentRow.length !== this.fields.length) {
-    // Don't return the partial row. Hold onto it for the next iteration.
-    this.rows = this.rows.splice(-1);
-  } else {
-    this.rows = [[]];
-  }
-
-  return rowsToReturn;
-};
-
-/**
  * Extracts value from chunk.
  */
 RowBuilder.getValue = function(obj) {
-  var value = obj;
-
-  if (obj && obj.kind) {
-    value = obj[obj.kind];
-  }
-
-  if (value && value.values) {
-    value = value.values;
-  }
-
-  return value;
+  return commonGrpc.Service.decodeValue_(obj);
 };
 
 /**
@@ -93,7 +61,7 @@ RowBuilder.formatValue = function(field, value) {
   }
 
   if (field.code !== 'STRUCT') {
-    return value;
+    return codec.decode(value, field);
   }
 
   return field.structType.fields.reduce(function(struct, field, index) {
@@ -135,6 +103,13 @@ RowBuilder.merge = function(type, head, tail) {
   return merged.filter(function(value) {
     return !is.string(value) || value.length;
   });
+};
+
+/**
+ * Add a PartialResultSet response object to the pending rows.
+ */
+RowBuilder.prototype.addRow = function(row) {
+  this.chunks = this.chunks.concat(row);
 };
 
 /**
@@ -186,6 +161,22 @@ RowBuilder.prototype.build = function() {
 };
 
 /**
+ * Flush already complete rows.
+ */
+RowBuilder.prototype.flush = function() {
+  var rowsToReturn = this.rows;
+
+  if (!is.empty(this.rows) && this.currentRow.length !== this.fields.length) {
+    // Don't return the partial row. Hold onto it for the next iteration.
+    this.rows = this.rows.splice(-1);
+  } else {
+    this.rows = [[]];
+  }
+
+  return rowsToReturn;
+};
+
+/**
  * Transforms values into JSON format.
  */
 RowBuilder.prototype.toJSON = function(rows) {
@@ -200,7 +191,7 @@ RowBuilder.prototype.toJSON = function(rows) {
 
       var column = {
         name: field.name,
-        value: RowBuilder.formatValue(field.type, value),
+        value: RowBuilder.formatValue(field, value),
       };
 
       formattedRow.push(column);

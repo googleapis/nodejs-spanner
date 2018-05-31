@@ -77,7 +77,7 @@ function partialResultStream(requestFn, options) {
 
       // Use RowBuilder to construct and return complete, formatted rows.
       if (!builder) {
-        builder = new RowBuilder(row.metadata);
+        builder = new RowBuilder(row.metadata.rowType.fields);
       }
 
       builder.addRow(row);

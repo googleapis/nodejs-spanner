@@ -2247,7 +2247,7 @@ describe('Spanner', function() {
             });
         });
 
-        it('should read large datasets', function(done) {
+        it.skip('should read large datasets', function(done) {
           table.read(
             {
               keys: [expectedRow.Key],
@@ -2279,7 +2279,7 @@ describe('Spanner', function() {
           );
         });
 
-        it('should query large datasets', function(done) {
+        it.only('should query large datasets', function(done) {
           var query = {
             sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
             params: {
