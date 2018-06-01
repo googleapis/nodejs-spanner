@@ -95,8 +95,8 @@ describe('SessionPool', function() {
             assert.strictEqual(sessionPool.options.max, 100);
             assert.strictEqual(sessionPool.options.writes, 0);
             assert.strictEqual(sessionPool.options.min, 0);
-            assert.strictEqual(sessionPool.options.maxReads, 80);
-            assert.strictEqual(sessionPool.options.maxWrites, 20);
+            assert.strictEqual(sessionPool.options.maxReads, 100);
+            assert.strictEqual(sessionPool.options.maxWrites, 0);
             assert.strictEqual(sessionPool.options.minReads, 0);
             assert.strictEqual(sessionPool.options.minWrites, 0);
           });
@@ -177,8 +177,8 @@ describe('SessionPool', function() {
             assert.strictEqual(sessionPool.options.min, 70);
             assert.strictEqual(sessionPool.options.maxReads, 40);
             assert.strictEqual(sessionPool.options.maxWrites, 60);
-            assert.strictEqual(sessionPool.options.minReads, 41);
-            assert.strictEqual(sessionPool.options.minWrites, 61);
+            assert.strictEqual(sessionPool.options.minReads, 40);
+            assert.strictEqual(sessionPool.options.minWrites, 60);
           });
         });
 
@@ -395,7 +395,7 @@ describe('SessionPool', function() {
           sessionPool.open();
           assert.strictEqual(sessionPool.isOpen, true);
           assert.strictEqual(sessionPool.getStats().readPool.size, 4);
-          assert.strictEqual(sessionPool.getStats().writePool.size, 4);
+          assert.strictEqual(sessionPool.getStats().writePool.size, 0);
           clearTimeout(sessionPool.pingTimeoutHandle);
           return sessionPool.close();
         });
@@ -416,7 +416,7 @@ describe('SessionPool', function() {
           sessionPool.open();
           assert.strictEqual(sessionPool.isOpen, true);
           assert.strictEqual(sessionPool.getStats().readPool.size, 4);
-          assert.strictEqual(sessionPool.getStats().writePool.size, 4);
+          assert.strictEqual(sessionPool.getStats().writePool.size, 0);
           clearTimeout(sessionPool.pingTimeoutHandle);
           return sessionPool.close().then(() => {
             assert.strictEqual(sessionPool.isOpen, false);
@@ -1086,7 +1086,7 @@ describe('SessionPool', function() {
           assert.strictEqual(readKeepAlive, 20);
           assert.strictEqual(writeKeepAlive, 10);
           return resolve();
-        }, 20);
+        }, 16);
       });
     });
 

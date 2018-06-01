@@ -122,9 +122,6 @@ function SessionPool(database, options) {
   // this code is for backward compatibility. Convert the max value provided into maxReads and maxWrites
   if (this.options.maxWrites === 0) {
     if (this.options.maxReads === 0) {
-      // create 20% write session
-      this.options.maxWrites = Math.floor(0.2 * this.options.max);
-
       if (this.options.writes !== 0) {
         // create dedicated write sessions based on maxWrites
         this.options.maxWrites = Math.floor(
@@ -140,11 +137,19 @@ function SessionPool(database, options) {
     this.options.maxReads = this.options.max - this.options.maxWrites;
   }
 
+  this.options.minReads = Math.min(
+    this.options.minReads,
+    this.options.maxReads
+  );
   // this code is for backward compatibility. Initialize the minReads value
   if (this.options.minReads === -1) {
     this.options.minReads = Math.min(this.options.min, this.options.maxReads);
   }
 
+  this.options.minWrites = Math.min(
+    this.options.minWrites,
+    this.options.maxWrites
+  );
   // this code is for backward compatibility. Initialize the minWrites value
   if (this.options.minWrites === -1) {
     this.options.minWrites = Math.min(this.options.min, this.options.maxWrites);
