@@ -141,8 +141,9 @@ RowBuilder.prototype.build = function() {
   this.chunks.forEach(function(chunk) {
     // If we have a chunk to merge, merge the values now.
     if (self.pendingChunk) {
+      var currentColumn = self.currentRow.length % self.fields.length
       var merged = RowBuilder.merge(
-        self.fields[self.currentRow.length].type,
+        self.fields[currentColumn].type,
         self.pendingChunk,
         chunk.values.shift()
       );
