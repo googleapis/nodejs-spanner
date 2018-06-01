@@ -19,7 +19,6 @@
 var assert = require('assert');
 var extend = require('extend');
 var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common').util;
 
 var codec = require('../src/codec');
 
@@ -433,17 +432,12 @@ describe('RowBuilder', function() {
     it('should retain a trailing chunked value', function() {
       var partialChunk = {
         chunkedValue: true,
-        values: [
-          {},
-          {partial: true},
-        ],
+        values: [{}, {partial: true}],
       };
 
       var expectedRetainedChunk = {
         chunkedValue: true,
-        values: [
-          {partial: true},
-        ]
+        values: [{partial: true}],
       };
 
       rowBuilder.chunks.push(partialChunk);

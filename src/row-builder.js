@@ -30,7 +30,6 @@ function RowBuilder(fields) {
   this.fields = fields;
   this.chunks = [];
   this.rows = [[]];
-  this.pendingChunk = undefined;
 
   Object.defineProperty(this, 'currentRow', {
     get: function() {
@@ -138,23 +137,23 @@ RowBuilder.prototype.append = function(value) {
  */
 RowBuilder.prototype.build = function() {
   var self = this;
+
   this.chunks.forEach(function(chunk) {
     // If we have a chunk to merge, merge the values now.
-    if (self.pendingChunk){
-      var type = self.fields[self.currentRow.length].type;
+    if (self.pendingChunk) {
       var merged = RowBuilder.merge(
-        type,
+        self.fields[self.currentRow.length].type,
         self.pendingChunk,
         chunk.values.shift()
       );
-      self.pendingChunk = undefined
-      chunk.values = merged.concat(chunk.values)
+      chunk.values = merged.concat(chunk.values);
+      delete self.pendingChunk;
     }
 
-    // If the chunk is chunked, store the last value for merging with the 
-    // next chunk to be processed
-    if (chunk.chunkedValue){
-      self.pendingChunk = chunk.values.pop()
+    // If the chunk is chunked, store the last value for merging with the next
+    // chunk to be processed.
+    if (chunk.chunkedValue) {
+      self.pendingChunk = chunk.values.pop();
     }
 
     chunk.values.map(RowBuilder.getValue).forEach(self.append.bind(self));
@@ -170,7 +169,10 @@ RowBuilder.prototype.build = function() {
 RowBuilder.prototype.flush = function() {
   var rowsToReturn = this.rows;
 
-  if (!is.empty(this.rows[0]) && this.currentRow.length !== this.fields.length) {
+  if (
+    !is.empty(this.rows[0]) &&
+    this.currentRow.length !== this.fields.length
+  ) {
     // Don't return the partial row. Hold onto it for the next iteration.
     this.rows = this.rows.splice(-1);
   } else {
