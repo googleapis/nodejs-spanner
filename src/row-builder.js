@@ -30,6 +30,7 @@ function RowBuilder(fields) {
   this.fields = fields;
   this.chunks = [];
   this.rows = [[]];
+  this.pendingChunk = undefined;
 
   Object.defineProperty(this, 'currentRow', {
     get: function() {
@@ -129,7 +130,6 @@ RowBuilder.prototype.append = function(value) {
   if (this.currentRow.length === this.fields.length) {
     this.rows.push([]);
   }
-
   this.currentRow.push(value);
 };
 
@@ -138,36 +138,30 @@ RowBuilder.prototype.append = function(value) {
  */
 RowBuilder.prototype.build = function() {
   var self = this;
-  var previousChunk;
-
   this.chunks.forEach(function(chunk) {
-    if (previousChunk && previousChunk.chunkedValue) {
-      var type = self.fields[self.currentRow.length - 1].type;
+    // If we have a chunk to merge, merge the values now.
+    if (self.pendingChunk){
+      var type = self.fields[self.currentRow.length].type;
       var merged = RowBuilder.merge(
         type,
-        self.currentRow.pop(),
+        self.pendingChunk,
         chunk.values.shift()
       );
+      self.pendingChunk = undefined
+      chunk.values = merged.concat(chunk.values)
+    }
 
-      merged.forEach(self.append.bind(self));
+    // If the chunk is chunked, store the last value for merging with the 
+    // next chunk to be processed
+    if (chunk.chunkedValue){
+      self.pendingChunk = chunk.values.pop()
     }
 
     chunk.values.map(RowBuilder.getValue).forEach(self.append.bind(self));
-
-    previousChunk = chunk;
   });
 
   // As chunks are now in rows, remove them.
   this.chunks.length = 0;
-
-  // Examine the last chunk. If it was 'chunked', strip that off and place it
-  // back to be processed in the next build.
-  if (previousChunk && previousChunk.chunkedValue) {
-    previousChunk.values = previousChunk.values.splice(-1);
-    this.chunks = [previousChunk];
-    // There is a partial row added to rows. Remove this.
-    this.currentRow.pop();
-  }
 };
 
 /**
