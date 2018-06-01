@@ -23,7 +23,7 @@ const through = require('through2');
 const Pool = require('generic-pool');
 
 const DEFAULTS = {
-  acquireTimeout: 0,
+  acquireTimeout: Infinity,
   concurrency: 10,
   maxWait: 50,
   fail: false,
@@ -45,9 +45,9 @@ const READWRITE = 'readwrite';
  * Session pool configuration options.
  *
  * @typedef {object} SessionPoolOptions
- * @property {number} [acquireTimeout=0] Time in milliseconds before
+ * @property {number} [acquireTimeout=Infinity] Time in milliseconds before
  *     giving up trying to acquire a session. If the specified value is
- *     `0`, a timeout will not occur. A non-zero positive integer
+ *     Infinity, a timeout will not occur. A non-zero positive integer
  * @property {boolean} [fail=false] If set to true, an error will be thrown when
  *     there are no available sessions for a request.
  * @property {number} [min=0] Minimum number of resources to keep in the pool at
@@ -111,6 +111,7 @@ function SessionPool(database, options) {
   this.request_ = database.request;
   this.requestStream_ = database.requestStream;
   this.requestQueue_ = new PQueue({concurrency: this.options.concurrency});
+  this.acquireQueue_ = new PQueue({concurrency: 1});
 
   if (this.options.writes > 1) {
     throw new TypeError(
@@ -161,7 +162,10 @@ function SessionPool(database, options) {
     {
       max: this.options.maxReads,
       min: this.options.minReads,
-      acquireTimeoutMillis: this.options.acquireTimeout,
+      acquireTimeoutMillis:
+        this.options.acquireTimeout === Infinity
+          ? 0
+          : this.options.acquireTimeout,
       autostart: false,
       maxWaitingClients: this.options.maxWait,
       evictionRunIntervalMillis: this.maxIdleResourceTimeout,
@@ -180,7 +184,10 @@ function SessionPool(database, options) {
     {
       max: this.options.maxWrites,
       min: this.options.minWrites,
-      acquireTimeoutMillis: this.options.acquireTimeout,
+      acquireTimeoutMillis:
+        this.options.acquireTimeout === Infinity
+          ? 0
+          : this.options.acquireTimeout,
       autostart: false,
       evictionRunIntervalMillis: this.maxIdleResourceTimeout,
       maxWaitingClients: this.options.maxWait,
@@ -305,7 +312,20 @@ SessionPool.prototype.getReadSession = function() {
   if (!self.isOpen) {
     return Promise.reject(new Error('Database is closed.'));
   }
-  return self.requestQueue_.add(() => self.readPool.acquire());
+  /*
+    if readpool is maxed and there are no available session
+    and if writePool has any available session then use it
+  */
+
+  if (
+    self.readPool.spareResourceCapacity === 0 &&
+    self.readPool.available === 0 &&
+    (self.writePool.spareResourceCapacity || self.writePool.available > 0)
+  ) {
+    return self.getWriteSession();
+  }
+
+  return self.acquireQueue_.add(() => self.readPool.acquire());
 };
 
 /**
@@ -319,7 +339,22 @@ SessionPool.prototype.getWriteSession = function() {
   if (!self.isOpen) {
     return Promise.reject(new Error('Database is closed.'));
   }
-  return self.requestQueue_.add(() => self.writePool.acquire());
+
+  /*
+    if writepool is maxed and there are no available session
+    and if readpool has any available session then use it
+  */
+
+  if (
+    self.writePool.spareResourceCapacity === 0 &&
+    self.writePool.available === 0 &&
+    (self.readPool.spareResourceCapacity || self.readPool.available > 0)
+  ) {
+    return self
+      .getReadSession()
+      .then(session => self.createTransaction_(session));
+  }
+  return self.acquireQueue_.add(() => self.writePool.acquire());
 };
 
 /**
@@ -371,19 +406,21 @@ SessionPool.prototype.createTransaction_ = function(session, options) {
  */
 SessionPool.prototype.createWriteSession = function() {
   const self = this;
-  const session = self.session_();
+  return self.requestQueue_.add(() => {
+    const session = self.session_();
 
-  return session
-    .create()
-    .then(function() {
-      session.type = READWRITE;
-      return self.createTransaction_(session);
-    })
-    .then(() => session)
-    .catch(err => {
-      self.destroySession(session);
-      throw err;
-    });
+    return session
+      .create()
+      .then(function() {
+        session.type = READWRITE;
+        return self.createTransaction_(session);
+      })
+      .then(() => session)
+      .catch(err => {
+        self.destroySession(session);
+        throw err;
+      });
+  });
 };
 
 /**
@@ -394,17 +431,19 @@ SessionPool.prototype.createWriteSession = function() {
  */
 SessionPool.prototype.createReadSession = function() {
   const self = this;
-  const session = self.session_();
-  return session
-    .create()
-    .then(() => {
-      session.type = READONLY;
-      return session;
-    })
-    .catch(err => {
-      self.destroySession(session);
-      throw err;
-    });
+  return self.requestQueue_.add(() => {
+    const session = self.session_();
+    return session
+      .create()
+      .then(() => {
+        session.type = READONLY;
+        return session;
+      })
+      .catch(err => {
+        self.destroySession(session);
+        throw err;
+      });
+  });
 };
 
 /**
@@ -477,7 +516,7 @@ SessionPool.prototype.getStats = function() {
  * @returns {Promise}
  */
 SessionPool.prototype.destroySession = function(session) {
-  return session.delete();
+  return this.requestQueue_.add(() => session.delete());
 };
 
 /**
@@ -490,15 +529,17 @@ SessionPool.prototype.sendKeepAlive_ = function(session) {
     return Promise.resolve();
   }
   const self = this;
-  return session
-    .keepAlive()
-    .then(() => self.release(session))
-    .catch(() => {
-      if (session.type === READWRITE) {
-        return self.writePool.destroy(session);
-      }
-      return self.readPool.destroy(session);
-    });
+  return self.requestQueue_.add(() => {
+    return session
+      .keepAlive()
+      .then(() => self.release(session))
+      .catch(() => {
+        if (session.type === READWRITE) {
+          return self.writePool.destroy(session);
+        }
+        return self.readPool.destroy(session);
+      });
+  });
 };
 
 /**
