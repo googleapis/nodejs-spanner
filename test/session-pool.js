@@ -1054,7 +1054,7 @@ describe('SessionPool', function() {
         maxReads: 10,
         minReads: 10,
         minWrites: 5,
-        keepAlive: 0.0001,
+        keepAlive: 0.001,
       });
     });
 
@@ -1086,7 +1086,7 @@ describe('SessionPool', function() {
           assert.strictEqual(readKeepAlive, 20);
           assert.strictEqual(writeKeepAlive, 10);
           return resolve();
-        }, 16);
+        }, 150);
       });
     });
 
