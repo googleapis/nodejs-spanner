@@ -2264,7 +2264,6 @@ describe('Spanner', function() {
 
               var row = rows[0].toJSON();
 
-
               assert.strictEqual(row.Key, expectedRow.Key);
               assert.strictEqual(row.StringValue, expectedRow.StringValue);
               assert.deepEqual(row.StringArray, expectedRow.StringArray);
