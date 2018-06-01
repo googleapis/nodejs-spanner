@@ -1207,7 +1207,7 @@ describe('SessionPool', function() {
 
     it('convert a read session into a write session', () => {
       let allSessions = [];
-      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+      return new Promise(resolve => setTimeout(resolve, 200)).then(() =>
         Promise.all([
           sessionPool.getReadSession(),
           sessionPool.getReadSession(),
