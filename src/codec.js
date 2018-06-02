@@ -122,6 +122,9 @@ function decode(value, field) {
     if (is.null(decoded)) {
       return null;
     }
+    if (type === undefined) {
+      return decoded;
+    }
 
     switch (type.code) {
       case 'BYTES': {

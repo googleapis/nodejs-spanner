@@ -26,9 +26,13 @@ var is = require('is');
  * @private
  * @class
  */
-function RowBuilder(fields) {
+function RowBuilder(fields, initial_chunks = undefined) {
   this.fields = fields;
   this.chunks = [];
+  if (initial_chunks) {
+    this.chunks = initial_chunks;
+  }
+
   this.rows = [[]];
 
   Object.defineProperty(this, 'currentRow', {
@@ -44,7 +48,9 @@ function RowBuilder(fields) {
 RowBuilder.getValue = function(obj) {
   var value = obj;
 
-  if (obj && obj.kind) {
+  if (obj && obj.kind === 'listValue') {
+    return obj.listValue.values.map(v => RowBuilder.getValue(v));
+  } else if (obj && obj.kind) {
     value = commonGrpc.Service.decodeValue_(obj);
   }
 
@@ -66,6 +72,10 @@ RowBuilder.formatValue = function(field, value) {
 
   if (field.code === 'ARRAY') {
     return value.map(function(value) {
+      //if value isn't set, just return it as is.
+      if (value === undefined || value === {}) {
+        return value;
+      }
       return RowBuilder.formatValue(field.arrayElementType, value);
     });
   }
@@ -141,7 +151,7 @@ RowBuilder.prototype.build = function() {
   this.chunks.forEach(function(chunk) {
     // If we have a chunk to merge, merge the values now.
     if (self.pendingChunk) {
-      var currentColumn = self.currentRow.length % self.fields.length
+      var currentColumn = self.currentRow.length % self.fields.length;
       var merged = RowBuilder.merge(
         self.fields[currentColumn].type,
         self.pendingChunk,
@@ -168,6 +178,7 @@ RowBuilder.prototype.build = function() {
  * Flush already complete rows.
  */
 RowBuilder.prototype.flush = function() {
+  this.build();
   var rowsToReturn = this.rows;
 
   if (
@@ -187,6 +198,9 @@ RowBuilder.prototype.flush = function() {
  * Transforms values into JSON format.
  */
 RowBuilder.prototype.toJSON = function(rows) {
+  if (rows === undefined) {
+    rows = this.flush();
+  }
   var fields = this.fields;
 
   return rows.map(function(values) {
