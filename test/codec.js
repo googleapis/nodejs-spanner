@@ -213,17 +213,11 @@ describe('codec', function() {
       };
     });
 
-    it('should return the value from the common decoder', function() {
+    it('should return the same value if not a special type', function() {
       var value = {};
-      var defaultDecodedValue = {};
-
-      FakeGrpcService.decodeValue_ = function(value_) {
-        assert.strictEqual(value_, value);
-        return defaultDecodedValue;
-      };
 
       var decoded = codec.decode(value, BYPASS_FIELD);
-      assert.strictEqual(decoded, defaultDecodedValue);
+      assert.strictEqual(decoded, value);
     });
 
     it('should return null values as null', function() {

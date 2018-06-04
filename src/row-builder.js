@@ -17,6 +17,7 @@
 'use strict';
 
 var codec = require('./codec.js');
+var commonGrpc = require('@google-cloud/common-grpc');
 var is = require('is');
 
 /*!
@@ -25,11 +26,9 @@ var is = require('is');
  * @private
  * @class
  */
-function RowBuilder(metadata, chunks) {
-  this.metadata = metadata;
-  this.fields = this.metadata.rowType.fields;
-  this.chunks = chunks;
-
+function RowBuilder(fields) {
+  this.fields = fields;
+  this.chunks = [];
   this.rows = [[]];
 
   Object.defineProperty(this, 'currentRow', {
@@ -46,7 +45,7 @@ RowBuilder.getValue = function(obj) {
   var value = obj;
 
   if (obj && obj.kind) {
-    value = obj[obj.kind];
+    value = commonGrpc.Service.decodeValue_(obj);
   }
 
   if (value && value.values) {
@@ -72,11 +71,11 @@ RowBuilder.formatValue = function(field, value) {
   }
 
   if (field.code !== 'STRUCT') {
-    return value;
+    return codec.decode(value, field);
   }
 
   return field.structType.fields.reduce(function(struct, field, index) {
-    struct[field.name] = RowBuilder.formatValue(field.type, value[index]);
+    struct[field.name] = RowBuilder.formatValue(field, value[index]);
     return struct;
   }, {});
 };
@@ -117,13 +116,19 @@ RowBuilder.merge = function(type, head, tail) {
 };
 
 /**
+ * Add a PartialResultSet response object to the pending rows.
+ */
+RowBuilder.prototype.addRow = function(row) {
+  this.chunks = this.chunks.concat(row);
+};
+
+/**
  * Appends element to row.
  */
 RowBuilder.prototype.append = function(value) {
   if (this.currentRow.length === this.fields.length) {
     this.rows.push([]);
   }
-
   this.currentRow.push(value);
 };
 
@@ -132,35 +137,59 @@ RowBuilder.prototype.append = function(value) {
  */
 RowBuilder.prototype.build = function() {
   var self = this;
-  var previousChunk;
 
   this.chunks.forEach(function(chunk) {
-    if (previousChunk && previousChunk.chunkedValue) {
-      var type = self.fields[self.currentRow.length - 1].type;
+    // If we have a chunk to merge, merge the values now.
+    if (self.pendingChunk) {
+      var currentColumn = self.currentRow.length % self.fields.length;
       var merged = RowBuilder.merge(
-        type,
-        self.currentRow.pop(),
+        self.fields[currentColumn].type,
+        self.pendingChunk,
         chunk.values.shift()
       );
+      chunk.values = merged.concat(chunk.values);
+      delete self.pendingChunk;
+    }
 
-      merged.forEach(self.append.bind(self));
+    // If the chunk is chunked, store the last value for merging with the next
+    // chunk to be processed.
+    if (chunk.chunkedValue) {
+      self.pendingChunk = chunk.values.pop();
     }
 
     chunk.values.map(RowBuilder.getValue).forEach(self.append.bind(self));
-
-    previousChunk = chunk;
   });
+
+  // As chunks are now in rows, remove them.
+  this.chunks.length = 0;
+};
+
+/**
+ * Flush already complete rows.
+ */
+RowBuilder.prototype.flush = function() {
+  var rowsToReturn = this.rows;
+
+  if (
+    !is.empty(this.rows[0]) &&
+    this.currentRow.length !== this.fields.length
+  ) {
+    // Don't return the partial row. Hold onto it for the next iteration.
+    this.rows = this.rows.splice(-1);
+  } else {
+    this.rows = [[]];
+  }
+
+  return rowsToReturn;
 };
 
 /**
  * Transforms values into JSON format.
  */
-RowBuilder.prototype.toJSON = function() {
-  this.build();
-
+RowBuilder.prototype.toJSON = function(rows) {
   var fields = this.fields;
 
-  return this.rows.map(function(values) {
+  return rows.map(function(values) {
     var formattedRow = [];
     var serializedRow = {};
 
@@ -169,7 +198,7 @@ RowBuilder.prototype.toJSON = function() {
 
       var column = {
         name: field.name,
-        value: RowBuilder.formatValue(field.type, value),
+        value: RowBuilder.formatValue(field, value),
       };
 
       formattedRow.push(column);

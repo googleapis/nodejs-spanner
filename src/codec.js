@@ -176,7 +176,7 @@ function decode(value, field) {
     return decoded;
   }
 
-  return decodeValue_(commonGrpc.Service.decodeValue_(value), field.type);
+  return decodeValue_(value, field.type);
 }
 
 codec.decode = decode;

@@ -17,7 +17,6 @@
 'use strict';
 
 var checkpointStream = require('checkpoint-stream');
-var chunk = require('lodash.chunk');
 var eventsIntercept = require('events-intercept');
 var exec = require('methmeth');
 var extend = require('extend');
@@ -27,7 +26,6 @@ var split = require('split-array-stream').split;
 var streamEvents = require('stream-events');
 var through = require('through2');
 
-var codec = require('./codec.js');
 var RowBuilder = require('./row-builder.js');
 
 /**
@@ -68,45 +66,26 @@ function partialResultStream(requestFn, options) {
     },
   });
 
-  var rowChunks = [];
-  var metadata;
+  var builder;
 
   var userStream = streamEvents(
     through.obj(function(row, _, next) {
-      var formattedRows = [];
-
-      if (row.metadata) {
-        metadata = row.metadata;
-      }
-
-      if (row.chunkedValue) {
-        rowChunks.push(row);
-        next();
-        return;
-      }
-
       if (is.empty(row.values)) {
         next();
         return;
       }
 
-      if (rowChunks.length > 0) {
-        // Done getting all the chunks. Put them together.
-        var builder = new RowBuilder(metadata, rowChunks.concat(row));
-        formattedRows = formattedRows.concat(builder.toJSON());
-        rowChunks.length = 0;
-      } else {
-        var formattedRow = partialResultStream.formatRow_(metadata, row);
-        var multipleRows = is.array(formattedRow[0]);
-
-        if (multipleRows) {
-          formattedRows = formattedRows.concat(formattedRow);
-        } else {
-          formattedRows.push(formattedRow);
-        }
+      // Use RowBuilder to construct and return complete, formatted rows.
+      if (!builder) {
+        builder = new RowBuilder(row.metadata.rowType.fields);
       }
 
-      rowChunks = [];
+      builder.addRow(row);
+
+      // Build the chunks to rows.
+      builder.build();
+
+      var formattedRows = builder.toJSON(builder.flush());
 
       if (options.json) {
         formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
@@ -154,42 +133,5 @@ function partialResultStream(requestFn, options) {
     })
     .pipe(userStream);
 }
-
-/**
- * Format a PartialResultSet response from the API. A row object will be created
- * to map each field name to its decoded value.
- *
- * If multiple rows exist in a single PartialResultSet, an array is returned.
- *
- * @param {object} row - A `PartialResultSet` object.
- */
-partialResultStream.formatRow_ = function(metadata, row) {
-  var fields = metadata.rowType.fields;
-
-  if (row.values.length > fields.length) {
-    // More than one row exists. Return an array of formatted rows.
-    var valueSets = chunk(row.values, fields.length);
-
-    return valueSets.map(function(valueSet) {
-      row.values = valueSet;
-      return partialResultStream.formatRow_(metadata, row);
-    });
-  }
-
-  var formattedRow = row.values.map(function(value, index) {
-    var field = fields[index];
-    return {
-      name: field.name,
-      value: codec.decode(value, field),
-    };
-  });
-
-  Object.defineProperty(formattedRow, 'toJSON', {
-    enumerable: false,
-    value: codec.generateToJSONFromRow(formattedRow),
-  });
-
-  return formattedRow;
-};
 
 module.exports = partialResultStream;
