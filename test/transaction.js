@@ -603,7 +603,7 @@ describe('Transaction', function() {
           done();
         };
 
-        transaction.request(config, function(err) {});
+        transaction.request(config, function() {});
       });
 
       it('should retry the txn if abort occurs', function(done) {
@@ -1213,13 +1213,15 @@ describe('Transaction', function() {
     });
 
     it('should pass error code to isRetryableErrorCode', function() {
+      var error = {code: 'sentinel'};
+
       var isRetryableErrorCode = Transaction.isRetryableErrorCode_;
       Transaction.isRetryableErrorCode_ = function(code) {
         assert.strictEqual(code, error.code);
         return isRetryableErrorCode(code);
       };
 
-      var shouldRetry = transaction.shouldRetry_({code: 'sentinel'});
+      transaction.shouldRetry_(error);
     });
 
     it('should not retry if non-aborted error', function() {
