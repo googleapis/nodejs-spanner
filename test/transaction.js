@@ -729,7 +729,6 @@ describe('Transaction', function() {
         var error = {code: 2};
         var fakeDelay = 123;
         var stream;
-
         var getRetryDelay = Transaction.getRetryDelay_;
 
         Transaction.getRetryDelay_ = function(err) {
@@ -1163,6 +1162,7 @@ describe('Transaction', function() {
 
   describe('shouldRetry_', function() {
     var abortedError;
+    var unknownError;
 
     beforeEach(function() {
       abortedError = {
@@ -1173,6 +1173,24 @@ describe('Transaction', function() {
           },
         },
       };
+      unknownError = {
+        code: 2,
+        metadata: {
+          get: function() {
+            return [];
+          },
+        },
+      };
+    });
+
+    it('should pass error code to isRetryableErrorCode', function() {
+      var isRetryableErrorCode = Transaction.isRetryableErrorCode_;
+      Transaction.isRetryableErrorCode_ = function(code) {
+        assert.strictEqual(code, error.code);
+        return isRetryableErrorCode(code);
+      };
+
+      var shouldRetry = transaction.shouldRetry_({code: 'sentinel'});
     });
 
     it('should not retry if non-aborted error', function() {
@@ -1204,7 +1222,7 @@ describe('Transaction', function() {
       assert.strictEqual(shouldRetry, false);
     });
 
-    it('should retry if all conditions are met', function() {
+    it('should retry if all conditions are met - Aborted', function() {
       transaction.runFn_ = function() {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
@@ -1215,6 +1233,39 @@ describe('Transaction', function() {
 
       var shouldRetry = transaction.shouldRetry_(abortedError);
       assert.strictEqual(shouldRetry, true);
+    });
+
+    it('should retry if all conditions are met - Unknown', function() {
+      transaction.runFn_ = function() {};
+      transaction.timeout_ = 1000;
+      transaction.beginTime_ = Date.now() - 2;
+      unknownError.metadata.get = function(key) {
+        assert.strictEqual(key, 'google.rpc.retryinfo-bin');
+        return [{}];
+      };
+
+      var shouldRetry = transaction.shouldRetry_(unknownError);
+      assert.strictEqual(shouldRetry, true);
+    });
+  });
+
+  describe('isRetryableErrorCode_', function() {
+    var abortedErrorCode = 10;
+    var unknownErrorCode = 2;
+
+    it('should return true for ABORTED', function() {
+      var isRetryable = transaction.isRetryableErrorCode_(abortedErrorCode);
+      assert.strictEqual(isRetryable, true);
+    });
+
+    it('should return true for UNKNOWN', function() {
+      var isRetryable = transaction.isRetryableErrorCode_(unknownErrorCode);
+      assert.strictEqual(isRetryable, true);
+    });
+
+    it('should return false for other error codes', function() {
+      var isRetryable = transaction.isRetryableErrorCode_(4);
+      assert.strictEqual(isRetryable, false);
     });
   });
 });
