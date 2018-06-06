@@ -34,6 +34,13 @@ var PartialResultStream = require('./partial-result-stream.js');
 var TransactionRequest = require('./transaction-request.js');
 
 /**
+ * The gRPC `UNKNOWN` error code.
+ *
+ * @private
+ */
+var UNKNOWN = 2;
+
+/**
  * The gRPC `ABORTED` error code.
  *
  * @private
@@ -403,7 +410,7 @@ Transaction.prototype.request = function(config, callback) {
   );
 
   this.session.request(config, function(err, resp) {
-    if (!self.runFn_ || !err || err.code !== ABORTED) {
+    if (!self.runFn_ || !err || !self.isRetryableErrorCode_(err.code)) {
       callback(err, resp);
       return;
     }
@@ -444,7 +451,7 @@ Transaction.prototype.requestStream = function(config) {
   var userStream = through.obj();
 
   requestStream.on('error', function(err) {
-    if (err.code !== ABORTED) {
+    if (!self.isRetryableErrorCode_(err.code)) {
       userStream.destroy(err);
       return;
     }
@@ -772,18 +779,28 @@ Transaction.prototype.runStream = function(query) {
 
 /**
  * Determines whether or not this Transaction should be retried in the event
- * of an ABORTED error.
+ * of a retryable error.
  *
  * @param {error} err - The request error.
  * @return {boolean}
  */
 Transaction.prototype.shouldRetry_ = function(err) {
   return (
-    err.code === ABORTED &&
+    this.isRetryableErrorCode_(err.code) &&
     is.fn(this.runFn_) &&
     Date.now() - this.beginTime_ < this.timeout_ &&
     err.metadata.get(RETRY_INFO_KEY).length > 0
   );
+};
+
+/**
+ * Specifies whether a specific error code can be retried.
+ *
+ * @param {number} errCode - the error code
+ * @return {boolean}
+ */
+Transaction.prototype.isRetryableErrorCode_ = function(errCode) {
+  return errCode === ABORTED || errCode === UNKNOWN;
 };
 
 /*! Developer Documentation
