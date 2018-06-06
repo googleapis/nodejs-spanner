@@ -740,6 +740,20 @@ describe('Transaction', function() {
         fakeStream.emit('error', error);
       });
 
+      it('isRetryableErrorCode should be called on error', function(done) {
+        var error = {code: 'sentinel'};
+        var userStream = transaction.requestStream(config);
+
+        transaction.isRetryableErrorCode_ = function(code) {
+          assert.strictEqual(code, error.code);
+          done();
+        };
+
+        userStream.destroy = function() {};
+
+        fakeStream.emit('error', error);
+      });
+
       it('should retry the transaction for UNKNOWN', function(done) {
         var error = {code: 2};
         var fakeDelay = 123;
