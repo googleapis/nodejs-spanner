@@ -725,7 +725,39 @@ describe('Transaction', function() {
         fakeStream.emit('error', error);
       });
 
-      it('should retry the transaction', function(done) {
+      it('should retry the transaction for UNKNOWN', function(done) {
+        var error = {code: 2};
+        var fakeDelay = 123;
+        var stream;
+
+        var getRetryDelay = Transaction.getRetryDelay_;
+
+        Transaction.getRetryDelay_ = function(err) {
+          assert.strictEqual(err, error);
+          Transaction.getRetryDelay_ = getRetryDelay;
+          return fakeDelay;
+        };
+
+        transaction.shouldRetry_ = function(err) {
+          assert.strictEqual(err, error);
+          return true;
+        };
+
+        transaction.runFn_ = done; // should not be called
+
+        transaction.retry_ = function(delay) {
+          assert.strictEqual(delay, fakeDelay);
+          assert(stream._destroyed);
+          done();
+        };
+
+        stream = transaction.requestStream(config);
+        stream.on('error', done); // should not be called
+
+        fakeStream.emit('error', error);
+      });
+
+      it('should retry the transaction for ABORTED', function(done) {
         var error = {code: 10};
         var fakeDelay = 123;
         var stream;
