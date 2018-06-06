@@ -591,6 +591,21 @@ describe('Transaction', function() {
         Transaction.getRetryDelay_ = getRetryDelay;
       });
 
+      it('should pass error code to isRetryableErrorCode', function(done) {
+        transaction.runFn_ = function() {};
+
+        var config = {
+          reqOpts: {},
+        };
+
+        transaction.isRetryableErrorCode_ = function(code) {
+          assert.strictEqual(code, abortedError.code);
+          done();
+        };
+
+        transaction.request(config, function(err) {});
+      });
+
       it('should retry the txn if abort occurs', function(done) {
         Transaction.getRetryDelay_ = function(err) {
           assert.strictEqual(err, abortedError);
