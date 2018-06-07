@@ -253,6 +253,7 @@ SessionPool.prototype.close = function() {
   ]).then(() => {
     self.readPool.clear();
     self.writePool.clear();
+    return self.readPool.borrowed + self.writePool.borrowed;
   });
 };
 

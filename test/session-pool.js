@@ -1125,6 +1125,10 @@ describe('SessionPool', function() {
       }
     });
 
+    function delay(ttl) {
+      return new Promise(resolve => setTimeout(resolve, ttl));
+    }
+
     function releaseAllSessions(sessions, sessionpool) {
       const promises = [];
       sessions.forEach(session => {
@@ -1137,13 +1141,13 @@ describe('SessionPool', function() {
 
     it('convert a write session into a read session', () => {
       let allSessions = [];
-      return new Promise(resolve => setTimeout(resolve, 200)).then(() =>
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
         Promise.all([
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getReadSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+          delay(50).then(() => sessionPool.getWriteSession()),
         ])
           .then(sessions => {
             allSessions = allSessions.concat(sessions);
@@ -1207,13 +1211,13 @@ describe('SessionPool', function() {
 
     it('convert a read session into a write session', () => {
       let allSessions = [];
-      return new Promise(resolve => setTimeout(resolve, 200)).then(() =>
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
         Promise.all([
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+          delay(50).then(() => sessionPool.getWriteSession()),
         ])
           .then(sessions => {
             allSessions = allSessions.concat(sessions);
@@ -1279,12 +1283,12 @@ describe('SessionPool', function() {
       let allSessions = [];
       return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
         Promise.all([
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getReadSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+          delay(50).then(() => sessionPool.getWriteSession()),
+          delay(60).then(() => sessionPool.getWriteSession()),
         ])
           .then(sessions => {
             allSessions = sessions;
@@ -1361,6 +1365,10 @@ describe('SessionPool', function() {
       clearTimeout(sessionPool.pingTimeoutHandle);
     });
 
+    function delay(ttl) {
+      return new Promise(resolve => setTimeout(resolve, ttl));
+    }
+
     afterEach(() => {
       if (sessionPool.isOpen) {
         return sessionPool.close();
@@ -1381,10 +1389,10 @@ describe('SessionPool', function() {
       let allSessions = [];
       return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
         Promise.all([
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
         ])
           .then(sessions => {
             allSessions = allSessions.concat(sessions);
@@ -1456,10 +1464,10 @@ describe('SessionPool', function() {
       let allSessions = [];
       return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
         Promise.all([
-          sessionPool.getReadSession(),
-          sessionPool.getReadSession(),
-          sessionPool.getWriteSession(),
-          sessionPool.getWriteSession(),
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
         ])
           .then(sessions => {
             allSessions = allSessions.concat(sessions);
