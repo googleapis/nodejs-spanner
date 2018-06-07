@@ -256,10 +256,8 @@ Database.prototype.getSessionPoolStatus = function() {
  */
 Database.prototype.close = function(callback) {
   var key = this.id.split('/').pop();
-  var leakError = null;
-
   this.parent.databases_.delete(key);
-  this.pool_.close().then(() => callback(leakError), callback);
+  this.pool_.close().then(() => callback(), callback);
 };
 
 /**

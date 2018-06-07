@@ -307,27 +307,69 @@ SessionPool.prototype.requestStream = function(config) {
 };
 
 /**
+ * This method returns a read/write session (which ever is available)
+ */
+SessionPool.prototype.getNextAvailableSession_ = function() {
+  const self = this;
+  let resolved = false;
+
+  function getRead() {
+    return self.getReadSession('race').then(session => {
+      if (resolved) {
+        return self.release(session);
+      }
+      resolved = true;
+      return session;
+    });
+  }
+
+  function getWrite() {
+    return self.getWriteSession('race').then(session => {
+      if (resolved) {
+        return self.release(session);
+      }
+      resolved = true;
+      return session;
+    });
+  }
+
+  return self.acquireQueue_.add(() => Promise.race([getRead(), getWrite()]));
+};
+
+/**
  * Returns a read session
  *
  * @returns {Promise}
  */
-SessionPool.prototype.getReadSession = function() {
+SessionPool.prototype.getReadSession = function(callee) {
   const self = this;
 
   if (!self.isOpen) {
     return Promise.reject(new Error('Database is closed.'));
   }
   /*
+    getReadSession calling race_, race_ calling getReadSession and the loop continues.
+    If race_ method calls getReadSession then it should skip this check.
+    Also, we do not want to get stuck in the acquire queue loop as we want the first session available
+  */
+  if (callee === 'race') {
+    return self.readPool.acquire();
+  }
+
+  /*
     if readpool is maxed and there are no available session
     and if writePool has any available session then use it
-  */
-
+   */
   if (
     self.readPool.spareResourceCapacity === 0 &&
-    self.readPool.available === 0 &&
-    (self.writePool.spareResourceCapacity || self.writePool.available > 0)
+    self.readPool.available === 0
   ) {
-    return self.getWriteSession();
+    if (self.writePool.spareResourceCapacity || self.writePool.available > 0) {
+      return self.getWriteSession();
+    } else {
+      // return the first available session
+      return self.getNextAvailableSession_();
+    }
   }
 
   return self.acquireQueue_.add(() => self.readPool.acquire());
@@ -338,7 +380,7 @@ SessionPool.prototype.getReadSession = function() {
  *
  * @returns {Promise}
  */
-SessionPool.prototype.getWriteSession = function() {
+SessionPool.prototype.getWriteSession = function(callee) {
   const self = this;
 
   if (!self.isOpen) {
@@ -346,18 +388,37 @@ SessionPool.prototype.getWriteSession = function() {
   }
 
   /*
+    getWriteSession calling race_, race_ calling getWriteSession and the loop continues.
+    If race_ method calls getWriteSession then it should skip this check
+    Also, we do not want to get stuck in the acquire queue loop as we want the first session available
+  */
+  if (callee === 'race') {
+    return self.writePool.acquire();
+  }
+  /*
     if writepool is maxed and there are no available session
     and if readpool has any available session then use it
   */
-
   if (
     self.writePool.spareResourceCapacity === 0 &&
-    self.writePool.available === 0 &&
-    (self.readPool.spareResourceCapacity || self.readPool.available > 0)
+    self.writePool.available === 0
   ) {
-    return self
-      .getReadSession()
-      .then(session => self.createTransaction_(session));
+    if (
+      self.readPool.spareResourceCapacity ||
+      self.readPool.available > 0 ||
+      self.writePool.max === 0
+    ) {
+      return self
+        .getReadSession()
+        .then(session => self.createTransaction_(session));
+    } else {
+      return self.getNextAvailableSession_().then(session => {
+        if (session.type === READONLY) {
+          return self.createTransaction_(session);
+        }
+        return session;
+      });
+    }
   }
   return self.acquireQueue_.add(() => self.writePool.acquire());
 };
