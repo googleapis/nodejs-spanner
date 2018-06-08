@@ -1348,6 +1348,8 @@ describe('Spanner', function() {
         Spanner.int(PHONE_NUMBERS[1]),
       ];
 
+      var TRANSACTION;
+
       before(function(done) {
         table.insert(INSERT_ROW, function(err) {
           if (err) {
@@ -1355,13 +1357,33 @@ describe('Spanner', function() {
             return;
           }
 
-          // Allow Spanner time to insert the data before our tests query it.
-          setTimeout(done, 500);
+          var options = {
+            readOnly: true,
+            strong: true,
+          };
+
+          database.runTransaction(options, function(err, transaction) {
+            if (err) {
+              done(err);
+              return;
+            }
+            TRANSACTION = transaction;
+            done();
+          });
         });
       });
 
+      after(function() {
+        TRANSACTION.end();
+      });
+
       it('should query in callback mode', function(done) {
-        database.run('SELECT * FROM Singers', function(err, rows) {
+        var options = {
+          readOnly: true,
+          strong: true,
+        };
+
+        TRANSACTION.run('SELECT * FROM Singers', function(err, rows) {
           assert.ifError(err);
           assert.deepEqual(rows.shift().toJSON(), EXPECTED_ROW);
           done();
@@ -1369,7 +1391,7 @@ describe('Spanner', function() {
       });
 
       it('should query in promise mode', function(done) {
-        database
+        TRANSACTION
           .run('SELECT * FROM Singers')
           .then(function(data) {
             var rows = data[0];
@@ -1382,7 +1404,7 @@ describe('Spanner', function() {
       it('should query in stream mode', function(done) {
         var row;
 
-        database
+        TRANSACTION
           .runStream('SELECT * FROM Singers')
           .on('error', done)
           .once('data', function(row_) {
