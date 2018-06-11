@@ -257,10 +257,11 @@ Database.prototype.getSessionPoolStatus = function() {
 Database.prototype.close = function(callback) {
   var key = this.id.split('/').pop();
   this.parent.databases_.delete(key);
-  this.pool_.close().then(count => {
+  this.pool_.close().then(leaks => {
     let error = null;
-    if (count > 0) {
-      error = new Error(`${count} session leak(s) found.`);
+    if (leaks && leaks.length) {
+      error = new Error(`${leaks.length} session leak(s) found.`);
+      error.messages = leaks;
     }
     callback(error);
   }, callback);

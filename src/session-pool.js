@@ -21,6 +21,7 @@ const PQueue = require('p-queue');
 const streamEvents = require('stream-events');
 const through = require('through2');
 const Pool = require('generic-pool');
+const stackTrace = require('stack-trace');
 
 const DEFAULTS = {
   acquireTimeout: Infinity,
@@ -112,6 +113,7 @@ function SessionPool(database, options) {
   this.requestStream_ = database.requestStream;
   this.requestQueue_ = new PQueue({concurrency: this.options.concurrency});
   this.acquireQueue_ = new PQueue({concurrency: 1});
+  this.traces_ = new Map();
 
   if (this.options.writes > 1) {
     throw new TypeError(
@@ -238,6 +240,23 @@ SessionPool.prototype.open = function() {
 };
 
 /**
+ * Formats stack trace objects into Node-like stack trace.
+ *
+ * @private
+ *
+ * @param {object[]} trace The trace object.
+ * @return {string}
+ */
+SessionPool.formatTrace_ = function(trace) {
+  var formatted = trace.slice(2).map(function(t) {
+    return `    at ${t.getFunctionName() ||
+      t.getMethodName()} (${t.getFileName()}:${t.getLineNumber()}:${t.getColumnNumber()})`;
+  });
+
+  return `Session leak detected!\n${formatted.join('\n')}`;
+};
+
+/**
  * Closes and the pool.
  *
  * @returns {Promise}
@@ -253,7 +272,7 @@ SessionPool.prototype.close = function() {
   ]).then(() => {
     self.readPool.clear();
     self.writePool.clear();
-    return self.readPool.borrowed + self.writePool.borrowed;
+    return Array.from(self.traces_.values()).map(SessionPool.formatTrace_);
   });
 };
 
@@ -373,7 +392,12 @@ SessionPool.prototype.getReadSession = function(callee) {
     }
   }
 
-  return self.acquireQueue_.add(() => self.readPool.acquire());
+  return self.acquireQueue_.add(() =>
+    self.readPool.acquire().then(session => {
+      self.traces_.set(session.id, stackTrace.get());
+      return session;
+    })
+  );
 };
 
 /**
@@ -421,7 +445,12 @@ SessionPool.prototype.getWriteSession = function(callee) {
       });
     }
   }
-  return self.acquireQueue_.add(() => self.writePool.acquire());
+  return self.acquireQueue_.add(() =>
+    self.writePool.acquire().then(session => {
+      self.traces_.set(session.id, stackTrace.get());
+      return session;
+    })
+  );
 };
 
 /**
@@ -431,6 +460,8 @@ SessionPool.prototype.getWriteSession = function(callee) {
  */
 SessionPool.prototype.release = function(session) {
   const self = this;
+  self.traces_.delete(session.id);
+
   if (session.type !== READWRITE) {
     return self.readPool.release(session);
   }

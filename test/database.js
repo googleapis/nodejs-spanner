@@ -325,9 +325,25 @@ describe('Database', function() {
             return [];
           },
         };
-
         database.close(function(err) {
           assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should report session leaks', function(done) {
+        var fakeLeaks = ['abc', 'def'];
+
+        database.pool_ = {
+          close: function() {
+            return Promise.resolve(fakeLeaks);
+          },
+        };
+
+        database.close(function(err) {
+          assert(err instanceof Error);
+          assert.strictEqual(err.message, '2 session leak(s) found.');
+          assert.strictEqual(err.messages, fakeLeaks);
           done();
         });
       });

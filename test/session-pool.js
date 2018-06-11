@@ -1535,6 +1535,56 @@ describe('SessionPool', function() {
       );
     });
   });
+
+  describe('formatTrace_', function() {
+    var fakeFileName = 'path/to/file.js';
+    var fakeLineNumber = '99';
+    var fakeColumnNumber = '13';
+    var file = `${fakeFileName}:${fakeLineNumber}:${fakeColumnNumber}`;
+
+    var fakeFunction;
+    var fakeMethod;
+
+    var fakeTrace = [
+      {},
+      {},
+      {
+        getFunctionName: function() {
+          return fakeFunction;
+        },
+        getMethodName: function() {
+          return fakeMethod;
+        },
+        getFileName: function() {
+          return fakeFileName;
+        },
+        getLineNumber: function() {
+          return fakeLineNumber;
+        },
+        getColumnNumber: function() {
+          return fakeColumnNumber;
+        },
+      },
+    ];
+
+    it('should return a trace with the method name', function() {
+      fakeMethod = 'MyClass.myMethod';
+
+      var expected = `Session leak detected!\n    at ${fakeMethod} (${file})`;
+      var actual = SessionPool.formatTrace_(fakeTrace);
+
+      assert.strictEqual(expected, actual);
+    });
+
+    it('should return a trace with the function name', function() {
+      fakeFunction = 'myFunction';
+
+      var expected = `Session leak detected!\n    at ${fakeFunction} (${file})`;
+      var actual = SessionPool.formatTrace_(fakeTrace);
+
+      assert.strictEqual(expected, actual);
+    });
+  });
   function isAround(expected, actual) {
     return actual > expected - 10 && actual < expected + 50;
   }
