@@ -187,25 +187,14 @@ RowBuilder.prototype.flush = function() {
  * Transforms values into JSON format.
  */
 RowBuilder.prototype.toJSON = function(rows) {
-  var fields = this.fields;
+  return rows.map(values => {
+    var formattedRow = values.map((value, index) => {
+      let field = this.fields[index];
 
-  return rows.map(function(values) {
-    var formattedRow = [];
-    var serializedRow = {};
-
-    values.forEach(function(value, index) {
-      var field = fields[index];
-
-      var column = {
+      return {
         name: field.name,
         value: RowBuilder.formatValue(field, value),
       };
-
-      formattedRow.push(column);
-
-      if (column.name) {
-        serializedRow[column.name] = column.value;
-      }
     });
 
     Object.defineProperty(formattedRow, 'toJSON', {
