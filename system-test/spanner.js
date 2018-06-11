@@ -29,16 +29,13 @@ var uuid = require('uuid');
 var Spanner = require('../');
 
 var PREFIX = 'gcloud-tests-';
-var spanner = new Spanner({
-  projectId: process.env.GCLOUD_PROJECT,
-  servicePath: 'staging-wrenchworks.sandbox.googleapis.com',
-});
+var spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
 describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
 
   var INSTANCE_CONFIG = {
-    config: 'cloud-devel-staging-config',
+    config: 'regional-us-central1',
     nodes: 1,
     labels: {
       'gcloud-tests': 'true',
@@ -2202,7 +2199,7 @@ describe('Spanner', function() {
           });
         });
 
-        describe.only('structs', function() {
+        describe('structs', function() {
           it('should bind a simple struct', function(done) {
             var query = {
               sql: 'SELECT @structParam.userf, @p4',
