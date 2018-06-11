@@ -271,6 +271,27 @@ Spanner.int = function(value) {
 };
 
 /**
+ * Helper function to get a Cloud Spanner Struct object.
+ *
+ * @param {object} value The struct as a JSON object.
+ * @returns {object}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const struct = Spanner.struct({
+ *   user: 'bob',
+ *   age: 32
+ * });
+ */
+Spanner.struct = function(value) {
+  if (Array.isArray(value)) {
+    return codec.Struct.fromArray(value);
+  }
+
+  return codec.Struct.fromJSON(value);
+};
+
+/**
  * Config for the new instance.
  *
  * @typedef {object} CreateInstanceRequest
