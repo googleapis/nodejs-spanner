@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, Google, Inc.
+ * Copyright 2018, Google LLC
  * Licensed under the Apache License, Version 2.0(the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use 'strict';
 
 function writeDataForStructQueries(instanceId, databaseId, projectId) {
   // [START spanner_write_data_for_struct_queries]
@@ -27,7 +28,7 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId
+    projectId: projectId,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -45,22 +46,22 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
       {
         SingerId: '6',
         FirstName: 'Elena',
-        LastName: 'Campbell'
+        LastName: 'Campbell',
       },
       {
         SingerId: '7',
         FirstName: 'Gabriel',
-        LastName: 'Wright'
+        LastName: 'Wright',
       },
       {
         SingerId: '8',
         FirstName: 'Benjamin',
-        LastName: 'Martinez'
+        LastName: 'Martinez',
       },
       {
         SingerId: '9',
         FirstName: 'Hannah',
-        LastName: 'Harris'
+        LastName: 'Harris',
       }
     ])
     .then(() => {
@@ -80,7 +81,7 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
   // [START spanner_create_struct_with_data]
   const nameStruct = Spanner.struct({
     FirstName: 'Elena',
-    LastName: 'Campbell'
+    LastName: 'Campbell',
   });
   // [END spanner_create_struct_with_data]
 
@@ -97,7 +98,7 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId
+    projectId: projectId,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -108,7 +109,7 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
     sql: 'SELECT SingerId FROM Singers WHERE ' +
       'STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) = @name',
     params: {
-      name: nameStruct
+      name: nameStruct,
     }
   };
 
@@ -148,7 +149,7 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId
+    projectId: projectId,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -161,11 +162,11 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
     fields: [
       {
         name: 'FirstName',
-        type: 'string'
+        type: 'string',
       },
       {
         name: 'LastName',
-        type: 'string'
+        type: 'string',
       }
     ]
   };
@@ -174,21 +175,21 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
   // [START spanner_create_array_of_struct_with_data]
   const bandMembersType = {
     type: 'array',
-    child: nameType
+    child: nameType,
   };
 
   const bandMembers = [
     Spanner.struct({
       FirstName: 'Elena',
-      LastName: 'Campbell'
+      LastName: 'Campbell',
     }),
     Spanner.struct({
       FirstName: 'Gabriel',
-      LastName: 'Wright'
+      LastName: 'Wright',
     }),
     Spanner.struct({
       FirstName: 'Benjamin',
-      LastName: 'Martinez'
+      LastName: 'Martinez',
     })
   ];
   // [END spanner_create_array_of_struct_with_data]
@@ -199,10 +200,10 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
       'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName)' +
       'IN UNNEST(@names)',
     params: {
-      names: bandMembers
+      names: bandMembers,
     },
     types: {
-      names: bandMembersType
+      names: bandMembersType,
     }
   };
 
@@ -243,7 +244,7 @@ function queryStructField(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId
+    projectId: projectId,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -252,12 +253,12 @@ function queryStructField(instanceId, databaseId, projectId) {
 
   const nameStruct = Spanner.struct({
     FirstName: 'Elena',
-    LastName: 'Campbell'
+    LastName: 'Campbell',
   });
   const query = {
     sql: 'SELECT SingerId FROM Singers WHERE FirstName = @name.FirstName',
     params: {
-      name: nameStruct
+      name: nameStruct,
     }
   };
 
@@ -325,12 +326,12 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
     fields: [
       {
         name: 'SongName',
-        type: 'string'
+        type: 'string',
       },
       {
         name: 'ArtistNames',
         type: 'array',
-        child: nameType
+        child: nameType,
       }
     ]
   };
@@ -338,20 +339,21 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
   const songInfoStruct = Spanner.struct({
     SongName: 'Imagination',
     ArtistNames: [
-      Spanner.struct({ FirstName: 'Elena', LastName: 'Campbell' }),
-      Spanner.struct({ FirstName: 'Hannah', LastName: 'Harris' })
+      Spanner.struct({FirstName: 'Elena', LastName: 'Campbell'}),
+      Spanner.struct({FirstName: 'Hannah', LastName: 'Harris'}),
     ]
   });
 
   const query = {
-    sql: 'SELECT SingerId, @songInfo.SongName FROM Singers' +
+    sql:
+      'SELECT SingerId, @songInfo.SongName FROM Singers' +
       'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName)' +
       'IN UNNEST(@songInfo.ArtistNames)',
     params: {
-      songInfo: songInfoStruct
+      songInfo: songInfoStruct,
     },
     types: {
-      songInfo: songInfoType
+      songInfo: songInfoType,
     }
   };
 
@@ -363,9 +365,7 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}, SongName: ${json.SongName}`
-        );
+        console.log(`SingerId: ${json.SingerId}, SongName: ${json.SongName}`);
       });
     })
     .catch(err => {
@@ -421,7 +421,11 @@ require(`yargs`)
     `Queries Singers table using a nested STRUCT parameter field.`,
     {},
     opts =>
-      queryNestedStructField(opts.instanceName, opts.databaseName, opts.projectId)
+      queryNestedStructField(
+          opts.instanceName,
+          opts.databaseName,
+          opts.projectId
+      )
   )
   .wrap(120)
   .recommendCommands()
