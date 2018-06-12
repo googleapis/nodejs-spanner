@@ -448,7 +448,7 @@ test.serial(
 
 // query_new_table_with_timestamp
 test.serial(
-  `should query a example table with a non-null timestamp column and return matching rows`,
+  `should query an example table with a non-null timestamp column and return matching rows`,
   async t => {
     const results = await tools.runAsyncWithIO(
       `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
@@ -457,6 +457,62 @@ test.serial(
     const output = results.stdout + results.stderr;
     t.regex(output, /SingerId: 1, VenueId: 4, EventDate:/);
     t.regex(output, /Revenue: 15000, LastUpdateTime:/);
+  }
+);
+
+// query_with_struct_param
+test.serial(`should query an example table with a STRUCT param`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    `${timestampCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /SingerId: 6/);
+});
+
+// query_with_array_of_struct_param
+test.serial(
+  `should query an example table with an array of STRUCT param`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${timestampCmd} queryWithArrayofStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 6\nSingerId: 7/);
+  }
+);
+
+// query_with_struct_field_param
+test.serial(
+  `should query an example table with a STRUCT field param`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${timestampCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 6/);
+  }
+);
+
+// query_with_nested_struct_param
+test.serial(
+  `should query an example table with a nested STRUCT param`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${timestampCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
+    );
   }
 );
 
