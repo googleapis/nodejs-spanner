@@ -63,7 +63,7 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
         SingerId: '9',
         FirstName: 'Hannah',
         LastName: 'Harris',
-      }
+      },
     ])
     .then(() => {
       console.log('Inserted data.');
@@ -107,11 +107,12 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   const query = {
-    sql: 'SELECT SingerId FROM Singers WHERE ' +
+    sql:
+      'SELECT SingerId FROM Singers WHERE ' +
       'STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) = @name',
     params: {
       name: nameStruct,
-    }
+    },
   };
 
   // Queries rows from the Singers table
@@ -122,9 +123,7 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}`
-        );
+        console.log(`SingerId: ${json.SingerId}`);
       });
     })
     .catch(err => {
@@ -168,7 +167,7 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
       {
         name: 'LastName',
         type: 'string',
-      }
+      },
     ]
   };
   // [END spanner_create_user_defined_struct]
@@ -191,13 +190,14 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
     Spanner.struct({
       FirstName: 'Benjamin',
       LastName: 'Martinez',
-    })
+    }),
   ];
   // [END spanner_create_array_of_struct_with_data]
 
   // [START spanner_query_data_with_array_of_struct]
   const query = {
-    sql: 'SELECT SingerId FROM Singers' +
+    sql:
+      'SELECT SingerId FROM Singers' +
       'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName)' +
       'IN UNNEST(@names)',
     params: {
@@ -205,7 +205,7 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
     },
     types: {
       names: bandMembersType,
-    }
+    },
   };
 
   // Queries rows from the Singers table
@@ -216,9 +216,7 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}`
-        );
+        console.log(`SingerId: ${json.SingerId}`);
       });
     })
     .catch(err => {
@@ -271,9 +269,7 @@ function queryStructField(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}`
-        );
+        console.log(`SingerId: ${json.SingerId}`);
       });
     })
     .catch(err => {
@@ -300,7 +296,7 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId
+    projectId: projectId,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -312,13 +308,13 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
     fields: [
       {
         name: 'FirstName',
-        type: 'string'
+        type: 'string',
       },
       {
         name: 'LastName',
-        type: 'string'
-      }
-    ]
+        type: 'string',
+      },
+    ],
   };
 
   // Create Song info STRUCT with a nested ArtistNames array
@@ -333,8 +329,8 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
         name: 'ArtistNames',
         type: 'array',
         child: nameType,
-      }
-    ]
+      },
+    ],
   };
 
   const songInfoStruct = Spanner.struct({
@@ -342,7 +338,7 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
     ArtistNames: [
       Spanner.struct({FirstName: 'Elena', LastName: 'Campbell'}),
       Spanner.struct({FirstName: 'Hannah', LastName: 'Harris'}),
-    ]
+    ],
   });
 
   const query = {
@@ -355,7 +351,7 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
     },
     types: {
       songInfo: songInfoType,
-    }
+    },
   };
 
   // Queries rows from the Singers table
@@ -423,9 +419,9 @@ require(`yargs`)
     {},
     opts =>
       queryNestedStructField(
-          opts.instanceName,
-          opts.databaseName,
-          opts.projectId
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
       )
   )
   .wrap(120)
