@@ -461,8 +461,7 @@ test.serial(
 );
 
 // query_with_struct_param
-test.serial(`should query an example table with a STRUCT param`,
-  async t => {
+test.serial(`should query an example table with a STRUCT param`, async t => {
   const results = await tools.runAsyncWithIO(
     `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     `${timestampCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
