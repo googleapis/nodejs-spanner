@@ -36,12 +36,12 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  // Instantiate Spanner table objects
+  // Instantiates Spanner table objects
   const singersTable = database.table('Singers');
 
   // Inserts rows into the Singers table
-  // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so
-  // they must be converted to strings before being inserted as INT64s
+  // Note: Cloud Spanner interprets Javascript numbers as FLOAT64s.
+  // Use strings as shown in this example if you need INT64s.
   singersTable
     .insert([
       {
@@ -65,16 +65,9 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
         LastName: 'Harris',
       },
     ])
-    .then(() => {
-      console.log('Inserted data.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
-    });
+    .then(() => console.log('Inserted data.'))
+    .catch(err => console.error('ERROR:', err))
+    .then(() => database.close());
   // [END spanner_write_data_for_struct_queries]
 }
 
@@ -317,7 +310,7 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
     ],
   };
 
-  // Create Song info STRUCT with a nested ArtistNames array
+  // Creates Song info STRUCT with a nested ArtistNames array
   const songInfoType = {
     type: 'struct',
     fields: [
