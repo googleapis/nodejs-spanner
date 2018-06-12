@@ -22,6 +22,8 @@ const streamEvents = require('stream-events');
 const through = require('through2');
 const Pool = require('generic-pool');
 const stackTrace = require('stack-trace');
+const EventEmitter = require('events').EventEmitter;
+const util = require('util');
 
 const DEFAULTS = {
   acquireTimeout: Infinity,
@@ -203,7 +205,16 @@ function SessionPool(database, options) {
       testOnBorrow: true,
     }
   );
+
+  this.readPool.on('factoryCreateError', this.emit.bind(this, 'error'));
+  this.readPool.on('factoryDestroyError', this.emit.bind(this, 'error'));
+  this.writePool.on('factoryCreateError', this.emit.bind(this, 'error'));
+  this.writePool.on('factoryDestroyError', this.emit.bind(this, 'error'));
+
+  EventEmitter.call(this);
 }
+
+util.inherits(SessionPool, EventEmitter);
 
 /**
  * This method validates the session. The session is invalid if the session is idle for more than the maxIdleResourceTimeout

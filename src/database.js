@@ -55,6 +55,7 @@ function Database(instance, name, poolOptions) {
   this.formattedName_ = Database.formatName_(instance.formattedName_, name);
 
   this.pool_ = new SessionPool(this, poolOptions);
+  this.pool_.on('error', this.emit.bind(this, 'error'));
   this.pool_.open();
 
   var methods = {
