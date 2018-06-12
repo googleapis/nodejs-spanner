@@ -12,7 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-use 'strict';
+
+'use strict';
 
 function writeDataForStructQueries(instanceId, databaseId, projectId) {
   // [START spanner_write_data_for_struct_queries]
