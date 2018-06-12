@@ -461,17 +461,16 @@ test.serial(
 );
 
 // query_with_struct_param
-test.serial( `should query an example table with a STRUCT param`,
+test.serial(`should query an example table with a STRUCT param`,
   async t => {
-    const results = await tools.runAsyncWithIO(
+  const results = await tools.runAsyncWithIO(
     `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     `${timestampCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
   t.regex(output, /SingerId: 6/);
-}
-);
+});
 
 // query_with_array_of_struct_param
 test.serial(
@@ -512,8 +511,8 @@ test.serial(
     );
     const output = results.stdout + results.stderr;
     t.regex(
-        output,
-        /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
+      output,
+      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
     );
   }
 );

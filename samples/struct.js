@@ -168,7 +168,7 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
         name: 'LastName',
         type: 'string',
       },
-    ]
+    ],
   };
   // [END spanner_create_user_defined_struct]
 
@@ -258,7 +258,7 @@ function queryStructField(instanceId, databaseId, projectId) {
     sql: 'SELECT SingerId FROM Singers WHERE FirstName = @name.FirstName',
     params: {
       name: nameStruct,
-    }
+    },
   };
 
   // Queries rows from the Singers table
