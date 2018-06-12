@@ -28,6 +28,19 @@ describe('codec', function() {
   var codecCached;
   var codec;
 
+  var TYPES = [
+    'unspecified',
+    'bool',
+    'int64',
+    'float64',
+    'timestamp',
+    'date',
+    'string',
+    'bytes',
+    'array',
+    'struct',
+  ];
+
   before(function() {
     codec = proxyquire('../src/codec.js', {
       '@google-cloud/common-grpc': {
@@ -107,6 +120,92 @@ describe('codec', function() {
       assert.throws(function() {
         int.valueOf();
       }, new RegExp('Integer ' + value + ' is out of bounds.'));
+    });
+  });
+
+  describe('Struct', function() {
+    var generateToJSONFromRow_;
+
+    before(function() {
+      generateToJSONFromRow_ = codec.generateToJSONFromRow;
+    });
+
+    afterEach(function() {
+      codec.generateToJSONFromRow = generateToJSONFromRow_;
+    });
+
+    describe('initialization', function() {
+      it('should create an array', function() {
+        var struct = new codec.Struct();
+
+        assert(Array.isArray(struct));
+      });
+
+      it('should set the type', function() {
+        var struct = new codec.Struct();
+        var type = struct[codec.TYPE];
+
+        assert.strictEqual(codec.Struct.TYPE, 'struct');
+        assert.strictEqual(type, codec.Struct.TYPE);
+      });
+
+      it('should create a toJSON property', function() {
+        var fakeJSON = {};
+        var cachedStruct;
+
+        codec.generateToJSONFromRow = function(struct) {
+          cachedStruct = struct;
+          return fakeJSON;
+        };
+
+        var struct = new codec.Struct();
+
+        assert.strictEqual(struct, cachedStruct);
+        assert.strictEqual(struct.toJSON, fakeJSON);
+      });
+    });
+
+    describe('fromJSON', function() {
+      it('should capture the key value pairs', function() {
+        var json = {a: 'b', c: 'd'};
+        var struct = codec.Struct.fromJSON(json);
+
+        assert.deepEqual(struct, [
+          {name: 'a', value: 'b'},
+          {name: 'c', value: 'd'},
+        ]);
+      });
+    });
+
+    describe('fromArray', function() {
+      it('should convert array to struct array', function() {
+        var arr = [{name: 'a', value: 1}, {name: 'b', value: 2}];
+        var struct = codec.Struct.fromArray(arr);
+
+        assert(codec.Struct.isStruct(struct));
+        assert.deepEqual(struct, arr);
+      });
+    });
+
+    describe('isStruct', function() {
+      it('should return true for structs', function() {
+        var struct = new codec.Struct();
+        var isStruct = codec.Struct.isStruct(struct);
+
+        assert.strictEqual(isStruct, true);
+      });
+
+      it('should return false for arrays', function() {
+        var isStruct = codec.Struct.isStruct([]);
+
+        assert.strictEqual(isStruct, false);
+      });
+
+      it('should return false for falsey values', function() {
+        var isStruct = codec.Struct.isStruct(null);
+
+        assert.strictEqual(isStruct, false);
+      });
     });
   });
 
@@ -339,53 +438,6 @@ describe('codec', function() {
           value: int,
         },
       ]);
-
-      assert.deepEqual(decoded.toJSON(), {
-        fieldName: int,
-      });
-    });
-
-    describe('toJSON', function() {
-      var toJSONOverride = function() {};
-      var FORMATTED_ROW;
-
-      beforeEach(function() {
-        codec.generateToJSONFromRow = function() {
-          return toJSONOverride;
-        };
-
-        var value = {
-          fieldName: '1',
-        };
-
-        FORMATTED_ROW = codec.decode(value, {
-          type: {
-            code: 'STRUCT',
-            structType: {
-              fields: [
-                {
-                  name: 'fieldName',
-                  type: {
-                    code: 'INT64',
-                  },
-                },
-              ],
-            },
-          },
-        });
-      });
-
-      it('should assign a toJSON method', function() {
-        assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
-      });
-
-      it('should not include toJSON when iterated', function() {
-        for (var keyVal in FORMATTED_ROW) {
-          if (keyVal === 'toJSON') {
-            throw new Error('toJSON should not be iterated.');
-          }
-        }
-      });
     });
   });
 
@@ -415,6 +467,13 @@ describe('codec', function() {
       var encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString('base64'));
+    });
+
+    it('should encode structs', function() {
+      var value = codec.Struct.fromJSON({a: 'b', c: 'd'});
+      var encoded = codec.encode(value);
+
+      assert.deepEqual(encoded, ['b', 'd']);
     });
 
     it('should stringify Infinity', function() {
@@ -549,6 +608,21 @@ describe('codec', function() {
       assert.strictEqual(codec.getType(new codec.SpannerDate()), 'date');
     });
 
+    it('should determine if the value is a struct', function() {
+      var struct = codec.Struct.fromJSON({a: 'b'});
+      var type = codec.getType(struct);
+
+      assert.deepEqual(type, {
+        type: 'struct',
+        fields: [
+          {
+            name: 'a',
+            type: 'string',
+          },
+        ],
+      });
+    });
+
     it('should attempt to determine arrays and their values', function() {
       assert.deepEqual(codec.getType([Infinity]), {
         type: 'array',
@@ -568,26 +642,26 @@ describe('codec', function() {
 
   describe('TYPES', function() {
     it('should export types', function() {
-      assert.deepEqual(codec.TYPES, [
-        'unspecified',
-        'bool',
-        'int64',
-        'float64',
-        'timestamp',
-        'date',
-        'string',
-        'bytes',
-        'array',
-      ]);
+      assert.deepEqual(codec.TYPES, TYPES);
     });
   });
 
   describe('encodeQuery', function() {
+    var createTypeObject_;
+
     var QUERY = {
       sql: 'SELECT * FROM table',
       a: 'b',
       c: 'd',
     };
+
+    before(function() {
+      createTypeObject_ = codec.createTypeObject;
+    });
+
+    afterEach(function() {
+      codec.createTypeObject = createTypeObject_;
+    });
 
     it('should return the query', function() {
       var fakeQuery = {
@@ -706,79 +780,23 @@ describe('codec', function() {
       codec.encodeQuery(fakeQuery);
     });
 
-    it('should set type to unspecified for unknown types', function() {
+    it('should create type objects', function() {
       var fakeQuery = {
-        params: {
-          test: 'abc',
-        },
         types: {
-          test: 'unicorn',
+          test: 'string',
         },
       };
 
-      codec.getType = function() {
-        throw new Error('Should not be called');
+      var fakeTypeObject = {};
+
+      codec.createTypeObject = function(type) {
+        assert.strictEqual(type, 'string');
+        return fakeTypeObject;
       };
 
-      var encodedQuery = codec.encodeQuery(fakeQuery);
+      var query = codec.encodeQuery(fakeQuery);
 
-      assert.deepEqual(encodedQuery.paramTypes, {
-        test: {
-          code: 0,
-        },
-      });
-    });
-
-    it('should attempt to guess array types', function() {
-      var fakeQuery = {
-        params: {
-          test: ['abc'],
-        },
-      };
-
-      codec.getType = function() {
-        return {
-          type: 'array',
-          child: 'string',
-        };
-      };
-
-      var encodedQuery = codec.encodeQuery(fakeQuery);
-
-      assert.deepEqual(encodedQuery.paramTypes, {
-        test: {
-          code: 8,
-          arrayElementType: {
-            code: 6,
-          },
-        },
-      });
-    });
-
-    it('should set the child to unspecified if unsure', function() {
-      var fakeQuery = {
-        params: {
-          test: [null],
-        },
-      };
-
-      codec.getType = function() {
-        return {
-          type: 'array',
-          child: 'unicorn',
-        };
-      };
-
-      var encodedQuery = codec.encodeQuery(fakeQuery);
-
-      assert.deepEqual(encodedQuery.paramTypes, {
-        test: {
-          code: 8,
-          arrayElementType: {
-            code: 0,
-          },
-        },
-      });
+      assert.deepEqual(query.paramTypes, {test: fakeTypeObject});
     });
 
     it('should delete the type map from the request options', function() {
@@ -981,6 +999,108 @@ describe('codec', function() {
         var encoded = codec.encodeRead(query);
 
         assert.strictEqual(encoded.ranges, undefined);
+      });
+    });
+  });
+
+  describe('createTypeObject', function() {
+    it('should convert the type to its int value', function() {
+      TYPES.forEach(function(typeName, i) {
+        var type = codec.createTypeObject(typeName);
+
+        assert.deepEqual(type.code, i);
+      });
+    });
+
+    it('should default to unspecified for unknown types', function() {
+      var type = codec.createTypeObject('unicorn');
+
+      assert.deepEqual(type, {code: TYPES.indexOf('unspecified')});
+    });
+
+    it('should set the arrayElementType', function() {
+      var type = codec.createTypeObject({
+        type: 'array',
+        child: 'bool',
+      });
+
+      assert.deepEqual(type, {
+        code: TYPES.indexOf('array'),
+        arrayElementType: {
+          code: TYPES.indexOf('bool'),
+        },
+      });
+    });
+
+    it('should set the struct fields', function() {
+      var type = codec.createTypeObject({
+        type: 'struct',
+        fields: [
+          {name: 'boolKey', type: 'bool'},
+          {name: 'intKey', type: 'int64'},
+        ],
+      });
+
+      assert.deepEqual(type, {
+        code: TYPES.indexOf('struct'),
+        structType: {
+          fields: [
+            {
+              name: 'boolKey',
+              type: {
+                code: TYPES.indexOf('bool'),
+              },
+            },
+            {
+              name: 'intKey',
+              type: {
+                code: TYPES.indexOf('int64'),
+              },
+            },
+          ],
+        },
+      });
+    });
+
+    it('should handle nested structs', function() {
+      var type = codec.createTypeObject({
+        type: 'struct',
+        fields: [
+          {
+            name: 'nestedStruct',
+            type: {
+              type: 'struct',
+              fields: [
+                {
+                  type: 'bool',
+                  name: 'boolKey',
+                },
+              ],
+            },
+          },
+        ],
+      });
+
+      assert.deepEqual(type, {
+        code: TYPES.indexOf('struct'),
+        structType: {
+          fields: [
+            {
+              name: 'nestedStruct',
+              type: {
+                code: TYPES.indexOf('struct'),
+                structType: {
+                  fields: [
+                    {
+                      name: 'boolKey',
+                      type: {code: TYPES.indexOf('bool')},
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
       });
     });
   });
