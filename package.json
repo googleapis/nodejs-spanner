@@ -81,7 +81,6 @@
     "lodash.merge": "^4.6.1",
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^1.0.1",
-    "methmeth": "^1.1.0",
     "modelo": "^4.2.3",
     "p-queue": "^2.4.2",
     "protobufjs": "^6.8.6",

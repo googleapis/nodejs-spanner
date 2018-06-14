@@ -21,7 +21,6 @@ var async = require('async');
 var Buffer = require('safe-buffer').Buffer;
 var concat = require('concat-stream');
 var crypto = require('crypto');
-var exec = require('methmeth');
 var extend = require('extend');
 var is = require('is');
 var uuid = require('uuid');
@@ -977,7 +976,7 @@ describe('Spanner', function() {
               rows.push(row);
             })
             .on('end', function() {
-              rows = rows.map(exec('toJSON'));
+              rows = rows.map(x => x.toJSON());
 
               assert.deepEqual(rows, [
                 {
