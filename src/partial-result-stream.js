@@ -18,7 +18,6 @@
 
 var checkpointStream = require('checkpoint-stream');
 var eventsIntercept = require('events-intercept');
-var exec = require('methmeth');
 var extend = require('extend');
 var is = require('is');
 var mergeStream = require('merge-stream');
@@ -88,7 +87,7 @@ function partialResultStream(requestFn, options) {
       var formattedRows = builder.toJSON(builder.flush());
 
       if (options.json) {
-        formattedRows = formattedRows.map(exec('toJSON', options.jsonOptions));
+        formattedRows = formattedRows.map(x => x.toJSON(options.jsonOptions));
       }
 
       split(formattedRows, userStream).then(() => next());
