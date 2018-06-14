@@ -19,7 +19,6 @@
 var common = require('@google-cloud/common');
 var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
-var format = require('string-format-obj');
 var googleAuth = require('google-auto-auth');
 var is = require('is');
 var path = require('path');
@@ -399,10 +398,9 @@ Spanner.prototype.createInstance = function(name, config, callback) {
   }
 
   if (config.config && config.config.indexOf('/') === -1) {
-    reqOpts.instance.config = format('projects/{pId}/instanceConfigs/{cfg}', {
-      pId: this.projectId,
-      cfg: config.config,
-    });
+    reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${
+      config.config
+    }`;
   }
 
   this.request(
