@@ -1224,7 +1224,7 @@ describe('Spanner', function() {
             // We just want the two most recent ones.
             rows.splice(0, rows.length - 2);
 
-            rows = rows.map(exec('toJSON'));
+            rows = rows.map(x => x.toJSON());
 
             assert.strictEqual(rows[0].SingerId, id1);
             assert.strictEqual(rows[0].Name, name1);
@@ -3158,7 +3158,7 @@ describe('Spanner', function() {
             // We just want the two most recent ones.
             rows.splice(0, rows.length - 2);
 
-            rows = rows.map(exec('toJSON'));
+            rows = rows.map(x => x.toJSON());
 
             assert.deepEqual(rows, [
               {
@@ -3201,7 +3201,7 @@ describe('Spanner', function() {
               rows.push(row);
             })
             .on('end', function() {
-              rows = rows.map(exec('toJSON'));
+              rows = rows.map(x => x.toJSON());
 
               assert.deepEqual(rows, [
                 {
@@ -3236,7 +3236,7 @@ describe('Spanner', function() {
             function(err, rows) {
               assert.ifError(err);
 
-              rows = rows.map(exec('toJSON'));
+              rows = rows.map(x => x.toJSON());
 
               assert.deepEqual(rows, [
                 {
@@ -3398,7 +3398,7 @@ describe('Spanner', function() {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
 
-            rows = rows.map(exec('toJSON'));
+            rows = rows.map(x => x.toJSON());
 
             assert.strictEqual(rows[0].Key, 'k0');
             assert.strictEqual(rows[0].StringValue, 'v0');
