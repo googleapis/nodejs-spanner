@@ -89,7 +89,6 @@
     "split-array-stream": "^2.0.0",
     "stack-trace": "0.0.10",
     "stream-events": "^1.0.4",
-    "string-format-obj": "^1.1.1",
     "through2": "^2.0.3"
   },
   "devDependencies": {
