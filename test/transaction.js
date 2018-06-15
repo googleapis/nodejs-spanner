@@ -17,7 +17,6 @@
 'use strict';
 
 var assert = require('assert');
-var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var gax = require('google-gax');
 var path = require('path');
