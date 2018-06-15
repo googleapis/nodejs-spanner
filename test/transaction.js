@@ -217,7 +217,7 @@ describe('Transaction', function() {
   describe('getRetryDelay_', function() {
     it('should return the retry delay', function() {
       var fakeError = new Error('err');
-      var fakeRetryInfo = new Buffer('hi');
+      var fakeRetryInfo = Buffer.from('hi');
 
       fakeError.metadata = {
         get: function(key) {
