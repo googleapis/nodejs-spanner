@@ -76,7 +76,6 @@
     "google-gax": "^0.16.0",
     "google-proto-files": "^0.16.0",
     "is": "^3.2.1",
-    "lodash.flatten": "^4.4.0",
     "lodash.merge": "^4.6.1",
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^1.0.1",
