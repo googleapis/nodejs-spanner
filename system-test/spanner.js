@@ -18,7 +18,6 @@
 
 var assert = require('assert');
 var async = require('async');
-var Buffer = require('safe-buffer').Buffer;
 var concat = require('concat-stream');
 var crypto = require('crypto');
 var extend = require('extend');

@@ -81,7 +81,6 @@
     "modelo": "^4.2.3",
     "p-queue": "^2.4.2",
     "protobufjs": "^6.8.6",
-    "safe-buffer": "^5.1.2",
     "split-array-stream": "^2.0.0",
     "stack-trace": "0.0.10",
     "stream-events": "^1.0.4",
