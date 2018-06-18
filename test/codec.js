@@ -17,7 +17,6 @@
 'use strict';
 
 var assert = require('assert');
-var Buffer = require('safe-buffer').Buffer;
 var extend = require('extend');
 var proxyquire = require('proxyquire');
 var util = require('@google-cloud/common').util;

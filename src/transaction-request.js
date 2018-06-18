@@ -19,9 +19,7 @@
 var arrify = require('arrify');
 var common = require('@google-cloud/common');
 var extend = require('extend');
-var flatten = require('lodash.flatten');
 var is = require('is');
-var uniq = require('array-uniq');
 
 var codec = require('./codec.js');
 var PartialResultStream = require('./partial-result-stream.js');
@@ -778,7 +776,7 @@ TransactionRequest.prototype.upsert = function(table, keyVals, callback) {
 TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
   keyVals = arrify(keyVals);
 
-  var columns = uniq(flatten(keyVals.map(Object.keys))).sort();
+  var columns = [...new Set([].concat(...keyVals.map(Object.keys)))].sort();
 
   var values = keyVals.map(function(keyVal, index) {
     var keys = Object.keys(keyVal);
