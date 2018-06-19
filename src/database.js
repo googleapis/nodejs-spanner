@@ -1534,6 +1534,7 @@ common.util.promisifyAll(Database, {
     'table',
     'updateSchema',
     'session_',
+    'getSessionPoolStatus',
   ],
 });
 
