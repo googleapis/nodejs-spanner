@@ -39,6 +39,7 @@ var fakeUtil = extend({}, util, {
       'table',
       'updateSchema',
       'session_',
+      'getSessionPoolStatus',
     ]);
   },
 });
