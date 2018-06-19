@@ -30,19 +30,17 @@ var FakeRetryInfo = {
 };
 
 var fakeGax = {
-  grpc: {
-    GoogleProtoFilesRoot: class extends gax.grpc.GoogleProtoFilesRoot {
-      loadSync(filename) {
-        assert.strictEqual(
-          filename,
-          path.resolve(__dirname, '../protos/google/rpc/error_details.proto')
-        );
-        const result = super.loadSync(filename);
-        const n = 'nested';
-        result[n].google[n].rpc[n].RetryInfo = FakeRetryInfo;
-        return result;
-      }
-    },
+  GoogleProtoFilesRoot: class extends gax.GoogleProtoFilesRoot {
+    loadSync(filename) {
+      assert.strictEqual(
+        filename,
+        path.resolve(__dirname, '../protos/google/rpc/error_details.proto')
+      );
+      const result = super.loadSync(filename);
+      const n = 'nested';
+      result[n].google[n].rpc[n].RetryInfo = FakeRetryInfo;
+      return result;
+    }
   },
 };
 
