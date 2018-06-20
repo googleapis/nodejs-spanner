@@ -28,7 +28,7 @@ const util = require('util');
 const DEFAULTS = {
   acquireTimeout: Infinity,
   concurrency: 10,
-  maxWait: 50,
+  maxWait: -1,
   fail: false,
   idlesAfter: 50,
   max: 100,
@@ -104,6 +104,13 @@ function SessionPool(database, options) {
    */
   this.options = extend({}, DEFAULTS, options);
 
+  if (this.options.maxWait === -1) {
+    if (this.options.fail) {
+      this.options.maxWait = 0;
+    } else {
+      this.options.maxWait = 50;
+    }
+  }
   /**
    * @name SessionPool#isOpen
    * @readonly
@@ -343,25 +350,36 @@ SessionPool.prototype.requestStream = function(config) {
 SessionPool.prototype.getNextAvailableSession_ = function() {
   const self = this;
   let resolved = false;
-
   function getRead() {
-    return self.getReadSession('race').then(session => {
-      if (resolved) {
-        return self.release(session);
-      }
-      resolved = true;
-      return session;
-    });
+    return self
+      .getReadSession('race')
+      .then(session => {
+        if (resolved) {
+          return self.release(session);
+        }
+        resolved = true;
+        return session;
+      })
+      .catch(error => {
+        resolved = true;
+        return Promise.reject(error);
+      });
   }
 
   function getWrite() {
-    return self.getWriteSession('race').then(session => {
-      if (resolved) {
-        return self.release(session);
-      }
-      resolved = true;
-      return session;
-    });
+    return self
+      .getWriteSession('race')
+      .then(session => {
+        if (resolved) {
+          return self.release(session);
+        }
+        resolved = true;
+        return session;
+      })
+      .catch(error => {
+        resolved = true;
+        return Promise.reject(error);
+      });
   }
 
   return self.acquireQueue_.add(() => Promise.race([getRead(), getWrite()]));
@@ -384,7 +402,10 @@ SessionPool.prototype.getReadSession = function(callee) {
     Also, we do not want to get stuck in the acquire queue loop as we want the first session available
   */
   if (callee === 'race') {
-    return self.readPool.acquire();
+    return self.readPool.acquire().then(session => {
+      self.traces_.set(session.id, stackTrace.get());
+      return session;
+    });
   }
 
   /*
@@ -429,7 +450,10 @@ SessionPool.prototype.getWriteSession = function(callee) {
     Also, we do not want to get stuck in the acquire queue loop as we want the first session available
   */
   if (callee === 'race') {
-    return self.writePool.acquire();
+    return self.writePool.acquire().then(session => {
+      self.traces_.set(session.id, stackTrace.get());
+      return session;
+    });
   }
   /*
     if writepool is maxed and there are no available session
