@@ -19,7 +19,6 @@
 var codec = module.exports;
 
 var arrify = require('arrify');
-var Buffer = require('safe-buffer').Buffer;
 var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
 var is = require('is');

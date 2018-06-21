@@ -14,14 +14,14 @@
     "test": "repo-tools test run --cmd npm -- run cover"
   },
   "dependencies": {
-    "@google-cloud/spanner": "1.4.3",
-    "yargs": "10.0.3"
+    "@google-cloud/spanner": "1.5.0",
+    "yargs": "11.0.0"
   },
   "devDependencies": {
-    "@google-cloud/nodejs-repo-tools": "2.2.3",
-    "ava": "0.22.0",
-    "proxyquire": "1.8.0",
-    "request": "^2.83.0",
-    "sinon": "3.2.1"
+    "@google-cloud/nodejs-repo-tools": "2.3.0",
+    "ava": "0.25.0",
+    "proxyquire": "2.0.1",
+    "request": "^2.87.0",
+    "sinon": "6.0.0"
   }
 }
