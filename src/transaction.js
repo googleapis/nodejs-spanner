@@ -61,7 +61,7 @@ var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
  */
 var DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
-var protoFilesRoot = new gax.grpc.GoogleProtoFilesRoot();
+var protoFilesRoot = new gax.GoogleProtoFilesRoot;
 protoFilesRoot = protobuf.loadSync(
   path.join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
   protoFilesRoot
