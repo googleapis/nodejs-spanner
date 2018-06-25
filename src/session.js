@@ -23,6 +23,7 @@
 var common = require('@google-cloud/common');
 var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
+var is = require('is');
 var util = require('util');
 
 var Transaction = require('./transaction.js');
@@ -247,6 +248,11 @@ Session.formatName_ = function(databaseName, name) {
  * session.beginTransaction(function(err, transaction, apiResponse) {});
  */
 Session.prototype.beginTransaction = function(options, callback) {
+  if (is.fn(options)) {
+    callback = options;
+    options = {};
+  }
+
   var transaction = this.transaction(options);
 
   transaction.begin(function(err, resp) {

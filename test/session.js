@@ -184,6 +184,56 @@ describe('Session', function() {
     });
   });
 
+  describe('beginTransaction', function() {
+    var TRANSACTION;
+    var RESPONSE;
+
+    beforeEach(function() {
+      TRANSACTION = {begin: fakeUtil.noop};
+      RESPONSE = {};
+      session.transaction = () => TRANSACTION;
+    });
+
+    it('should pass the transaction options', function(done) {
+      var OPTIONS = {};
+
+      session.transaction = function(options) {
+        assert.strictEqual(options, OPTIONS);
+        done();
+      };
+
+      session.beginTransaction(OPTIONS, assert.ifError);
+    });
+
+    it('should begin a transaction', function(done) {
+      TRANSACTION.begin = function(callback) {
+        callback(null, RESPONSE);
+      };
+
+      session.beginTransaction(function(err, transaction, response) {
+        assert.ifError(err);
+        assert.strictEqual(transaction, TRANSACTION);
+        assert.strictEqual(response, RESPONSE);
+        done();
+      });
+    });
+
+    it('should return any api errors', function(done) {
+      var ERROR = new Error('err');
+
+      TRANSACTION.begin = function(callback) {
+        callback(ERROR, RESPONSE);
+      };
+
+      session.beginTransaction(function(err, transaction, response) {
+        assert.strictEqual(err, ERROR);
+        assert.strictEqual(transaction, null);
+        assert.strictEqual(response, RESPONSE);
+        done();
+      });
+    });
+  });
+
   describe('delete', function() {
     it('should correctly call and return the request', function() {
       var requestReturnValue = {};

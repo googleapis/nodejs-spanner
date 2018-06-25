@@ -24,7 +24,6 @@ var extend = require('extend');
 var PQueue = require('p-queue');
 var proxyquire = require('proxyquire');
 var stackTrace = require('stack-trace');
-var through = require('through2');
 var timeSpan = require('time-span');
 
 var pQueueOverride = null;
@@ -92,11 +91,6 @@ describe('SessionPool', function() {
 
     it('should set isOpen to false', function() {
       assert.strictEqual(sessionPool.isOpen, false);
-    });
-
-    it('should localize database request functions', function() {
-      assert.strictEqual(sessionPool.request_, DATABASE.request);
-      assert.strictEqual(sessionPool.requestStream_, DATABASE.requestStream);
     });
 
     it('should set pendingCreates to 0', function() {
@@ -215,23 +209,23 @@ describe('SessionPool', function() {
   describe('close', function() {
     it('should set isOpen to false', function() {
       sessionPool.isOpen = true;
-      sessionPool.close();
+      sessionPool.close(common.util.noop);
       assert.strictEqual(sessionPool.isOpen, false);
     });
 
     it('should emit a close event', function(done) {
       sessionPool.on('close', done);
-      sessionPool.close();
+      sessionPool.close(common.util.noop);
     });
 
     it('should emit an empty event', function(done) {
       sessionPool.on('empty', done);
-      sessionPool.close();
+      sessionPool.close(common.util.noop);
     });
 
     it('should call stopHouseKeeping_', function(done) {
       sessionPool.stopHouseKeeping_ = done;
-      sessionPool.close();
+      sessionPool.close(common.util.noop);
     });
 
     it('should destroy all sessions', function() {
@@ -250,7 +244,7 @@ describe('SessionPool', function() {
         assert.strictEqual(session, fakeAll[destroyCallCount++]);
       };
 
-      sessionPool.close();
+      sessionPool.close(common.util.noop);
 
       assert.strictEqual(destroyCallCount, fakeAll.length);
       assert.deepEqual(sessionPool.reads_, []);
@@ -258,7 +252,7 @@ describe('SessionPool', function() {
       assert.deepEqual(sessionPool.borrowed_, []);
     });
 
-    it('should settle once all sessions are destroyed', function() {
+    it('should settle once all sessions are destroyed', function(done) {
       var delay = 500;
 
       sessionPool.reads_ = [{}];
@@ -270,8 +264,24 @@ describe('SessionPool', function() {
 
       var end = timeSpan();
 
-      return sessionPool.close().then(function() {
+      sessionPool.close(function(err) {
+        assert.ifError(err);
         assert(isAround(delay, end()));
+        done();
+      });
+    });
+
+    it('should throw an error if a session leak is detected', function(done) {
+      var LEAKS = [{}, {}];
+
+      sessionPool.getLeaks = function() {
+        return LEAKS;
+      };
+
+      sessionPool.close(function(err) {
+        assert.strictEqual(err.message, '2 session leak(s) found.');
+        assert.strictEqual(err.messages, LEAKS);
+        done();
       });
     });
   });
@@ -367,8 +377,8 @@ describe('SessionPool', function() {
     });
   });
 
-  describe('getSession', function() {
-    it('should call through to acquireSession_', function() {
+  describe('getReadSession', function() {
+    it('should call through to acquireSession_', function(done) {
       var fakeSession = {};
 
       sessionPool.acquireSession_ = function(type) {
@@ -376,23 +386,29 @@ describe('SessionPool', function() {
         return Promise.resolve(fakeSession);
       };
 
-      return sessionPool.getSession().then(function(session) {
+      sessionPool.getReadSession(function(err, session) {
+        assert.ifError(err);
         assert.strictEqual(session, fakeSession);
+        done();
       });
     });
   });
 
   describe('getWriteSession', function() {
-    it('should call through to acquireSession_', function() {
-      var fakeSession = {};
+    it('should call through to acquireSession_', function(done) {
+      var fakeTxn = {};
+      var fakeSession = {txn: fakeTxn};
 
       sessionPool.acquireSession_ = function(type) {
         assert.strictEqual(type, 'readwrite');
         return Promise.resolve(fakeSession);
       };
 
-      return sessionPool.getWriteSession().then(function(session) {
+      sessionPool.getWriteSession(function(err, session, transaction) {
+        assert.ifError(err);
         assert.strictEqual(session, fakeSession);
+        assert.strictEqual(transaction, fakeTxn);
+        done();
       });
     });
   });
@@ -532,282 +548,6 @@ describe('SessionPool', function() {
         };
 
         sessionPool.release(fakeSession);
-      });
-    });
-  });
-
-  describe('request', function() {
-    var CONFIG;
-    var SESSION = {
-      formattedName_: 'formatted-name',
-    };
-
-    beforeEach(function() {
-      CONFIG = {
-        reqOpts: {},
-      };
-
-      sessionPool.getSession = function() {
-        return Promise.resolve(SESSION);
-      };
-
-      sessionPool.release = common.util.noop;
-    });
-
-    it('should get a session', function(done) {
-      sessionPool.getSession = function() {
-        setImmediate(done);
-        return Promise.resolve(SESSION);
-      };
-
-      sessionPool.request(CONFIG, assert.ifError);
-    });
-
-    it('should return error if it cannot get a session', function(done) {
-      var error = new Error('Error.');
-
-      sessionPool.getSession = function() {
-        return Promise.reject(error);
-      };
-
-      sessionPool.request(CONFIG, function(err) {
-        assert.strictEqual(err, error);
-        done();
-      });
-    });
-
-    it('should call the method with the session', function(done) {
-      CONFIG.reqOpts = {
-        a: 'b',
-      };
-
-      sessionPool.request_ = function(config) {
-        assert.deepEqual(
-          config.reqOpts,
-          extend({}, CONFIG.reqOpts, {
-            session: SESSION.formattedName_,
-          })
-        );
-        done();
-      };
-
-      sessionPool.request(CONFIG, assert.ifError);
-    });
-
-    it('should release the session after calling the method', function(done) {
-      sessionPool.release = function(session) {
-        assert.strictEqual(session, SESSION);
-        done();
-      };
-
-      sessionPool.request_ = function(config, callback) {
-        callback();
-      };
-
-      sessionPool.request(CONFIG, assert.ifError);
-    });
-
-    it('should execute the callback with original arguments', function(done) {
-      var originalArgs = ['a', 'b', 'c'];
-
-      sessionPool.request_ = function(config, callback) {
-        callback.apply(null, originalArgs);
-      };
-
-      sessionPool.request(CONFIG, function() {
-        var args = [].slice.call(arguments);
-        assert.deepEqual(args, originalArgs);
-        done();
-      });
-    });
-  });
-
-  describe('requestStream', function() {
-    var CONFIG;
-    var REQUEST_STREAM;
-
-    var SESSION = {
-      formattedName_: 'formatted-name',
-    };
-
-    beforeEach(function() {
-      REQUEST_STREAM = through();
-
-      CONFIG = {
-        reqOpts: {},
-      };
-
-      sessionPool.requestStream_ = function() {
-        return REQUEST_STREAM;
-      };
-
-      sessionPool.getSession = function() {
-        return Promise.resolve(SESSION);
-      };
-
-      sessionPool.release = common.util.noop;
-    });
-
-    it('should get a session when stream opens', function(done) {
-      sessionPool.getSession = function() {
-        setImmediate(done);
-        return Promise.resolve(SESSION);
-      };
-
-      sessionPool.requestStream(CONFIG).emit('reading');
-    });
-
-    describe('could not get session', function() {
-      var ERROR = new Error('Error.');
-
-      beforeEach(function() {
-        sessionPool.getSession = function() {
-          return Promise.reject(ERROR);
-        };
-      });
-
-      it('should destroy the stream', function(done) {
-        sessionPool
-          .requestStream(CONFIG)
-          .on('error', function(err) {
-            assert.strictEqual(err, ERROR);
-            done();
-          })
-          .emit('reading');
-      });
-    });
-
-    describe('session retrieved successfully', function() {
-      beforeEach(function() {
-        sessionPool.getSession = function() {
-          return Promise.resolve(SESSION);
-        };
-      });
-
-      it('should assign session to request options', function(done) {
-        sessionPool.requestStream_ = function(config) {
-          assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
-          setImmediate(done);
-          return through.obj();
-        };
-
-        sessionPool.requestStream(CONFIG).emit('reading');
-      });
-
-      it('should make request and pipe to the stream', function(done) {
-        var responseData = Buffer.from('response-data');
-
-        sessionPool.requestStream(CONFIG).on('data', function(data) {
-          assert.deepEqual(data, responseData);
-          done();
-        });
-
-        REQUEST_STREAM.end(responseData);
-      });
-
-      it('should release session when request stream ends', function(done) {
-        sessionPool.release = function(session) {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
-
-        sessionPool.requestStream(CONFIG).emit('reading');
-
-        REQUEST_STREAM.end();
-      });
-
-      it('should release session when request stream errors', function(done) {
-        sessionPool.release = function(session) {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
-
-        sessionPool.requestStream(CONFIG).emit('reading');
-
-        setImmediate(function() {
-          REQUEST_STREAM.emit('error');
-        });
-      });
-
-      it('should error user stream when request stream errors', function(done) {
-        var error = new Error('Error.');
-
-        sessionPool
-          .requestStream(CONFIG)
-          .on('error', function(err) {
-            assert.strictEqual(err, error);
-            done();
-          })
-          .emit('reading');
-
-        setImmediate(function() {
-          REQUEST_STREAM.destroy(error);
-        });
-      });
-    });
-
-    describe('abort', function() {
-      var SESSION;
-
-      beforeEach(function() {
-        REQUEST_STREAM.cancel = common.util.noop;
-
-        SESSION = {
-          cancel: common.util.noop,
-        };
-
-        sessionPool.getSession = function() {
-          return Promise.resolve(SESSION);
-        };
-      });
-
-      it('should release the session', function(done) {
-        sessionPool.release = function(session) {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
-
-        var requestStream = sessionPool.requestStream(CONFIG);
-
-        requestStream.emit('reading');
-
-        setImmediate(function() {
-          requestStream.abort();
-        });
-      });
-
-      it('should not release the session more than once', function(done) {
-        var numTimesReleased = 0;
-        sessionPool.release = function(session) {
-          numTimesReleased++;
-          assert.strictEqual(session, SESSION);
-        };
-
-        var requestStream = sessionPool.requestStream(CONFIG);
-
-        requestStream.emit('reading');
-
-        setImmediate(function() {
-          requestStream.abort();
-          assert.strictEqual(numTimesReleased, 1);
-
-          requestStream.abort();
-          assert.strictEqual(numTimesReleased, 1);
-
-          done();
-        });
-      });
-
-      it('should cancel the request stream', function(done) {
-        REQUEST_STREAM.cancel = done;
-
-        var requestStream = sessionPool.requestStream(CONFIG);
-
-        requestStream.emit('reading');
-
-        setImmediate(function() {
-          requestStream.abort();
-        });
       });
     });
   });
@@ -1102,23 +842,6 @@ describe('SessionPool', function() {
       };
 
       sessionPool.createTransaction_(fakeSession, fakeOptions);
-    });
-
-    it('should stub Transaction#end', function(done) {
-      var released = false;
-      sessionPool.release = function(session) {
-        assert.strictEqual(session, fakeSession);
-        released = true;
-      };
-
-      fakeTxn.end = function(callback) {
-        assert.strictEqual(this, fakeTxn);
-        assert.strictEqual(released, true);
-        callback(); // the done fn
-      };
-
-      sessionPool.createTransaction_(fakeSession);
-      fakeTxn.end(done);
     });
 
     it('should cache the txn object', function() {
@@ -1802,7 +1525,7 @@ describe('SessionPool', function() {
     it('should return a session object', function() {
       var fakeSession = {};
 
-      DATABASE.session_ = function() {
+      DATABASE.session = function() {
         return fakeSession;
       };
 
