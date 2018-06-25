@@ -33,7 +33,7 @@ describe('Spanner', function() {
   var instance = spanner.instance(generateName('instance'));
 
   var INSTANCE_CONFIG = {
-    config: 'regional-us-central1',
+    config: 'regional-us-east1',
     nodes: 1,
     labels: {
       'gcloud-tests': 'true',
@@ -833,7 +833,7 @@ describe('Spanner', function() {
 
   describe('Sessions', function() {
     var database = instance.database(generateName('database'));
-    var session = database.session_();
+    var session = database.session();
 
     before(function(done) {
       async.series(
@@ -872,7 +872,7 @@ describe('Spanner', function() {
 
     it('should get a session by name', function(done) {
       var shortName = session.formattedName_.split('/').pop();
-      var sessionByShortName = database.session_(shortName);
+      var sessionByShortName = database.session(shortName);
 
       sessionByShortName.getMetadata(function(err, metadataByName) {
         assert.ifError(err);
