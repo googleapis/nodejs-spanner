@@ -123,7 +123,7 @@ class DatabaseAdminClient {
         'databases'
       ),
     };
-    var protoFilesRoot = new gax.GoogleProtoFilesRoot;
+    var protoFilesRoot = new gax.GoogleProtoFilesRoot();
     protoFilesRoot = protobuf.loadSync(
       path.join(
         __dirname,
