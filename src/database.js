@@ -23,6 +23,8 @@ var events = require('events');
 var extend = require('extend');
 var is = require('is');
 var modelo = require('modelo');
+var streamEvents = require('stream-events');
+var through = require('through2');
 
 var BatchTransaction = require('./batch-transaction.js');
 var codec = require('./codec.js');
@@ -33,12 +35,67 @@ var Table = require('./table.js');
 var TransactionRequest = require('./transaction-request.js');
 
 /**
+ * Interface for implementing custom session pooling logic, it should extend the
+ * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
+ * asynchronous errors via an error event.
+ *
+ * @interface SessionPoolCtor
+ * @extends external:{@link https://nodejs.org/api/events.html|EventEmitter}
+ */
+/**
+ * @constructs SessionPoolCtor
+ * @param {Database} database The database to create a pool for.
+ */
+/**
+ * Will be called by the Database object, should be used to start creating
+ * sessions/etc.
+ *
+ * @name SessionPoolCtor#open
+ */
+/**
+ * Will be called via {@link Database#close}. Indicates that the pool should
+ * perform any necessary teardown actions to its resources.
+ *
+ * @name SessionPoolCtor#close
+ * @param {BasicCallback} callback The callback function.
+ */
+/**
+ * @callback GetReadSessionCallback
+ * @param {?Error} error Request error, if any.
+ * @param {Session} session The read-only session.
+ */
+/**
+ * When called returns a read-only session.
+ *
+ * @name SessionPoolCtor#getReadSession
+ * @param {GetReadSessionCallback} callback The callback function.
+ */
+/**
+ * @callback GetWriteSessionCallback
+ * @param {?Error} error Request error, if any.
+ * @param {Session} session The read-write session.
+ * @param {Transaction} transaction The transaction object.
+ */
+/**
+ * When called returns a read-write session with prepared transaction.
+ *
+ * @name SessionPoolCtor#getWriteSession
+ * @param {GetWriteSessionCallback} callback The callback function.
+ */
+/**
+ * To be called when releasing a session back into the pool.
+ *
+ * @name SessionPoolCtor#release
+ * @param {Session} session The session to be released.
+ */
+/**
  * Create a Database object to interact with a Cloud Spanner database.
  *
  * @class
  *
  * @param {string} name Name of the database.
- * @param {SessionPoolOptions} options Session pool configuration options.
+ * @param {SessionPoolOptions|SessionPoolCtor} options Session pool
+ *     configuration options or custom pool interface.
  *
  * @example
  * const Spanner = require('@google-cloud/spanner');
@@ -54,7 +111,14 @@ function Database(instance, name, poolOptions) {
 
   this.formattedName_ = Database.formatName_(instance.formattedName_, name);
 
-  this.pool_ = new SessionPool(this, poolOptions);
+  var PoolCtor = SessionPool;
+
+  if (is.fn(poolOptions)) {
+    PoolCtor = poolOptions;
+    poolOptions = null;
+  }
+
+  this.pool_ = new PoolCtor(this, poolOptions);
   this.pool_.on('error', this.emit.bind(this, 'error'));
   this.pool_.open();
 
@@ -202,7 +266,7 @@ Database.prototype.batchTransaction = function(identifier) {
   var id = identifier.transaction;
 
   if (is.string(session)) {
-    session = this.session_(session);
+    session = this.session(session);
   }
 
   var transaction = new BatchTransaction(session);
@@ -250,16 +314,9 @@ Database.prototype.batchTransaction = function(identifier) {
  */
 Database.prototype.close = function(callback) {
   var key = this.id.split('/').pop();
-  var leakError = null;
-  var leaks = this.pool_.getLeaks();
-
-  if (leaks.length) {
-    leakError = new Error(`${leaks.length} session leak(s) found.`);
-    leakError.messages = leaks;
-  }
 
   this.parent.databases_.delete(key);
-  this.pool_.close().then(() => callback(leakError), callback);
+  this.pool_.close(callback);
 };
 
 /**
@@ -307,6 +364,97 @@ Database.prototype.createBatchTransaction = function(options, callback) {
       callback(null, transaction, resp);
     });
   });
+};
+
+/**
+ * @typedef {array} CreateSessionResponse
+ * @property {Session} 0 The newly created session.
+ * @property {object} 2 The full API response.
+ */
+/**
+ * @callback CreateSessionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Session} session The newly created session.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * Create a new session, which can be used to perform transactions that read
+ * and/or modify data.
+ *
+ * Sessions can only execute one transaction at a time. To execute multiple
+ * concurrent read-write/write-only transactions, create multiple sessions.
+ * Note that standalone reads and queries use a transaction internally, and
+ * count toward the one transaction limit.
+ *
+ * **It is unlikely you will need to interact with sessions directly. By
+ * default, sessions are created and utilized for maximum performance
+ * automatically.**
+ *
+ * Wrapper around {@link v1.SpannerClient#createSession}.
+ *
+ * @see {@link v1.SpannerClient#createSession}
+ * @see [CreateSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.CreateSession)
+ *
+ * @param {object} [options] Configuration object.
+ * @param {CreateSessionCallback} [callback] Callback function.
+ * @returns {Promise<CreateSessionResponse>}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * database.createSession(function(err, session, apiResponse) {
+ *   if (err) {
+ *     // Error handling omitted.
+ *   }
+ *
+ *   // `session` is a Session object.
+ * });
+ *
+ * //-
+ * // If the callback is omitted, we'll return a Promise.
+ * //-
+ * database.createSession().then(function(data) {
+ *   const session = data[0];
+ *   const apiResponse = data[1];
+ * });
+ */
+Database.prototype.createSession = function(options, callback) {
+  var self = this;
+
+  if (is.function(options)) {
+    callback = options;
+    options = {};
+  }
+
+  options = options || {};
+
+  var reqOpts = {
+    database: this.formattedName_,
+  };
+
+  this.request(
+    {
+      client: 'SpannerClient',
+      method: 'createSession',
+      reqOpts: reqOpts,
+      gaxOpts: options,
+    },
+    function(err, resp) {
+      if (err) {
+        callback(err, null, resp);
+        return;
+      }
+
+      var session = self.session(resp.name);
+      session.metadata = resp;
+
+      callback(null, session, resp);
+    }
+  );
 };
 
 /**
@@ -390,6 +538,28 @@ Database.prototype.createTable = function(schema, callback) {
 
     callback(null, table, operation, resp);
   });
+};
+
+/**
+ * Decorates transaction so that when end() is called it will return the session
+ * back into the pool.
+ *
+ * @private
+ *
+ * @param {Transaction} transaction The transaction to decorate.
+ * @param {Session} session The session to release.
+ * @returns {Transaction}
+ */
+Database.prototype.decorateTransaction_ = function(transaction, session) {
+  var self = this;
+  var end = transaction.end.bind(transaction);
+
+  transaction.end = function(callback) {
+    self.pool_.release(session);
+    return end(callback);
+  };
+
+  return transaction;
 };
 
 /**
@@ -744,7 +914,7 @@ Database.prototype.getSessions = function(options, callback) {
     function(err, sessions) {
       if (sessions) {
         arguments[1] = sessions.map(function(metadata) {
-          var session = self.session_(metadata.name);
+          var session = self.session(metadata.name);
           session.metadata = metadata;
           return session;
         });
@@ -792,7 +962,7 @@ Database.prototype.getSessions = function(options, callback) {
  * });
  */
 Database.prototype.getTransaction = function(options, callback) {
-  var pool = this.pool_;
+  var self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -800,21 +970,118 @@ Database.prototype.getTransaction = function(options, callback) {
   }
 
   if (!options || !options.readOnly) {
-    pool.getWriteSession().then(function(session) {
-      callback(null, session.txn);
-    }, callback);
+    this.pool_.getWriteSession(function(err, session, transaction) {
+      if (!err) {
+        transaction = self.decorateTransaction_(transaction, session);
+      }
+
+      callback(err, transaction);
+    });
     return;
   }
 
-  pool
-    .getSession()
-    .then(function(session) {
-      return pool.createTransaction_(session, options);
-    })
-    .then(function(transaction) {
+  this.pool_.getReadSession(function(err, session) {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+
+    session.beginTransaction(options, function(err, transaction) {
+      if (err) {
+        callback(err, null);
+        return;
+      }
+
+      transaction = self.decorateTransaction_(transaction, session);
       callback(null, transaction);
-    })
-    .catch(callback);
+    });
+  });
+};
+
+/**
+ * Make an API request, first assuring an active session is used.
+ *
+ * @private
+ *
+ * @param {object} config
+ * @param {function} callback
+ */
+Database.prototype.makePooledRequest_ = function(config, callback) {
+  var self = this;
+  var pool = this.pool_;
+
+  pool.getReadSession(function(err, session) {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+
+    config.reqOpts.session = session.formattedName_;
+
+    self.request(config, function() {
+      pool.release(session);
+      callback.apply(null, arguments);
+    });
+  });
+};
+
+/**
+/**
+ * Make an API request as a stream, first assuring an active session is used.
+ *
+ * @private
+ *
+ * @param {object} config
+ * @returns {Stream}
+ */
+Database.prototype.makePooledStreamingRequest_ = function(config) {
+  var self = this;
+  var pool = this.pool_;
+
+  var requestStream;
+  var session;
+
+  var waitForSessionStream = streamEvents(through.obj());
+  waitForSessionStream.abort = function() {
+    releaseSession();
+
+    if (requestStream) {
+      requestStream.cancel();
+    }
+  };
+
+  function destroyStream(err) {
+    waitForSessionStream.destroy(err);
+  }
+
+  function releaseSession() {
+    if (session) {
+      pool.release(session);
+      session = null;
+    }
+  }
+
+  waitForSessionStream.on('reading', function() {
+    pool.getReadSession(function(err, session_) {
+      if (err) {
+        destroyStream(err);
+        return;
+      }
+
+      session = session_;
+      config.reqOpts.session = session.formattedName_;
+
+      requestStream = self.requestStream(config);
+
+      requestStream
+        .on('error', releaseSession)
+        .on('error', destroyStream)
+        .on('end', releaseSession)
+        .pipe(waitForSessionStream);
+    });
+  });
+
+  return waitForSessionStream;
 };
 
 /**
@@ -1138,7 +1405,7 @@ Database.prototype.runStream = function(query, options) {
   delete reqOpts.jsonOptions;
 
   function makeRequest(resumeToken) {
-    return self.pool_.requestStream({
+    return self.makePooledStreamingRequest_({
       client: 'SpannerClient',
       method: 'executeStreamingSql',
       reqOpts: extend(reqOpts, {resumeToken}),
@@ -1281,6 +1548,23 @@ Database.prototype.runTransaction = function(options, runFn) {
 };
 
 /**
+ * Create a Session object.
+ *
+ * It is unlikely you will need to interact with sessions directly. By default,
+ * sessions are created and utilized for maximum performance automatically.
+ *
+ * @param {string} [name] The name of the session. If not provided, it is
+ *     assumed you are going to create it.
+ * @returns {Session} A Session object.
+ *
+ * @example
+ * var session = database.session('session-name');
+ */
+Database.prototype.session = function(name) {
+  return new Session(this, name);
+};
+
+/**
  * Get a reference to a Table object.
  *
  * @throws {Error} If a name is not provided.
@@ -1402,116 +1686,6 @@ Database.prototype.updateSchema = function(statements, callback) {
   );
 };
 
-/**
- * @typedef {array} CreateSessionResponse
- * @property {Session} 0 The newly created session.
- * @property {object} 2 The full API response.
- */
-/**
- * @callback CreateSessionCallback
- * @param {?Error} err Request error, if any.
- * @param {Session} session The newly created session.
- * @param {object} apiResponse The full API response.
- */
-/**
- * Create a new session, which can be used to perform transactions that read
- * and/or modify data.
- *
- * Sessions can only execute one transaction at a time. To execute multiple
- * concurrent read-write/write-only transactions, create multiple sessions.
- * Note that standalone reads and queries use a transaction internally, and
- * count toward the one transaction limit.
- *
- * **It is unlikely you will need to interact with sessions directly. By
- * default, sessions are created and utilized for maximum performance
- * automatically.**
- *
- * Wrapper around {@link v1.SpannerClient#createSession}.
- *
- * @see {@link v1.SpannerClient#createSession}
- * @see [CreateSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.CreateSession)
- *
- * @param {object} [options] Configuration object.
- * @param {CreateSessionCallback} [callback] Callback function.
- * @returns {Promise<CreateSessionResponse>}
- *
- * @example
- * const Spanner = require('@google-cloud/spanner');
- * const spanner = new Spanner();
- *
- * const instance = spanner.instance('my-instance');
- * const database = instance.database('my-database');
- *
- * database.createSession(function(err, session, apiResponse) {
- *   if (err) {
- *     // Error handling omitted.
- *   }
- *
- *   // `session` is a Session object.
- * });
- *
- * //-
- * // If the callback is omitted, we'll return a Promise.
- * //-
- * database.createSession().then(function(data) {
- *   const session = data[0];
- *   const apiResponse = data[1];
- * });
- */
-Database.prototype.createSession = function(options, callback) {
-  var self = this;
-
-  if (is.function(options)) {
-    callback = options;
-    options = {};
-  }
-
-  options = options || {};
-
-  var reqOpts = {
-    database: this.formattedName_,
-  };
-
-  this.request(
-    {
-      client: 'SpannerClient',
-      method: 'createSession',
-      reqOpts: reqOpts,
-      gaxOpts: options,
-    },
-    function(err, resp) {
-      if (err) {
-        callback(err, null, resp);
-        return;
-      }
-
-      var session = self.session_(resp.name);
-      session.metadata = resp;
-
-      callback(null, session, resp);
-    }
-  );
-};
-
-/**
- * Create a Session object.
- *
- * It is unlikely you will need to interact with sessions directly. By default,
- * sessions are created and utilized for maximum performance automatically.
- *
- * @private
- *
- * @param {string} [name] The name of the session. If not provided, it is
- *     assumed you are going to create it.
- * @returns {Session} A Session object.
- *
- * @example
- * var session = database.session_('session-name');
- */
-Database.prototype.session_ = function(name) {
-  return new Session(this, name);
-};
-
 /*! Developer Documentation
  *
  * All async methods (except for streams) will return a Promise in the event
@@ -1524,7 +1698,7 @@ common.util.promisifyAll(Database, {
     'runTransaction',
     'table',
     'updateSchema',
-    'session_',
+    'session',
   ],
 });
 

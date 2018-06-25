@@ -70,9 +70,8 @@ function Table(database, name) {
    */
   this.name = name;
 
-  var pool = database.pool_;
-  this.request = pool.request.bind(pool);
-  this.requestStream = pool.requestStream.bind(pool);
+  this.request = database.makePooledRequest_.bind(database);
+  this.requestStream = database.makePooledStreamingRequest_.bind(database);
 
   TransactionRequest.call(this);
 }

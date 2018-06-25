@@ -224,6 +224,42 @@ Session.formatName_ = function(databaseName, name) {
 };
 
 /**
+ * @typedef {array} BeginTransactionResponse
+ * @property {Transaction} 0 The new {@link Transaction}.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback BeginTransactionCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Transaction} transaction The transaction object.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * Begin a new transaction.
+ *
+ * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
+ *
+ * @param {object=} options Timestamp bound options.
+ * @param {BeginTransactionCallback} callback The callback function.
+ * @returns {Promise<BeginTransactionResponse>}
+ *
+ * @example
+ * session.beginTransaction(function(err, transaction, apiResponse) {});
+ */
+Session.prototype.beginTransaction = function(options, callback) {
+  var transaction = this.transaction(options);
+
+  transaction.begin(function(err, resp) {
+    if (err) {
+      callback(err, null, resp);
+      return;
+    }
+
+    callback(null, transaction, resp);
+  });
+};
+
+/**
  * Delete a session.
  *
  * Wrapper around {@link v1.SpannerClient#deleteSession}.

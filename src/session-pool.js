@@ -23,8 +23,6 @@ var extend = require('extend');
 var is = require('is');
 var PQueue = require('p-queue');
 var stackTrace = require('stack-trace');
-var streamEvents = require('stream-events');
-var through = require('through2');
 var util = require('util');
 
 var DEFAULTS = {
@@ -107,9 +105,6 @@ function SessionPool(database, options) {
    */
   this.isOpen = false;
 
-  this.request_ = database.request;
-  this.requestStream_ = database.requestStream;
-
   this.reads_ = [];
   this.writes_ = [];
   this.borrowed_ = [];
@@ -169,7 +164,7 @@ SessionPool.prototype.borrowed = function() {
  * @emits SessionPool#close
  * @returns {Promise}
  */
-SessionPool.prototype.close = function() {
+SessionPool.prototype.close = function(callback) {
   var self = this;
   var sessions = this.reads_.concat(this.writes_, this.borrowed_);
 
@@ -184,11 +179,23 @@ SessionPool.prototype.close = function() {
   this.emit('empty');
   this.emit('close');
 
-  return Promise.all(
+  Promise.all(
     sessions.map(function(session) {
       return self.destroySession_(session);
     })
-  );
+  )
+    .then(function() {
+      var leaks = self.getLeaks();
+
+      if (!leaks.length) {
+        return;
+      }
+
+      var error = new Error(`${leaks.length} session leak(s) found.`);
+      error.messages = leaks;
+      throw error;
+    })
+    .then(() => callback(), callback);
 };
 
 /**
@@ -231,8 +238,11 @@ SessionPool.prototype.getLeaks = function() {
  *
  * @returns {Promise<Session>}
  */
-SessionPool.prototype.getSession = function() {
-  return this.acquireSession_(READONLY);
+SessionPool.prototype.getReadSession = function(callback) {
+  return this.acquireSession_(READONLY).then(
+    session => callback(null, session),
+    callback
+  );
 };
 
 /**
@@ -240,8 +250,11 @@ SessionPool.prototype.getSession = function() {
  *
  * @returns {Promise<Session>}
  */
-SessionPool.prototype.getWriteSession = function() {
-  return this.acquireSession_(READWRITE);
+SessionPool.prototype.getWriteSession = function(callback) {
+  return this.acquireSession_(READWRITE).then(
+    session => callback(null, session, session.txn),
+    callback
+  );
 };
 
 /**
@@ -305,75 +318,6 @@ SessionPool.prototype.release = function(session) {
     .then(function() {
       self.release_(session);
     });
-};
-
-/**
- * Make an API request, first assuring an active session is used.
- *
- * @param {object} config
- * @param {function} callback
- */
-SessionPool.prototype.request = function(config, callback) {
-  var self = this;
-
-  this.getSession().then(function(session) {
-    config.reqOpts.session = session.formattedName_;
-
-    self.request_(config, function() {
-      self.release(session);
-      callback.apply(null, arguments);
-    });
-  }, callback);
-};
-
-/**
- * Make an API request as a stream, first assuring an active session is used.
- *
- * @param {object} config
- * @returns {Stream}
- */
-SessionPool.prototype.requestStream = function(config) {
-  var self = this;
-
-  var requestStream;
-  var session;
-
-  var waitForSessionStream = streamEvents(through.obj());
-  waitForSessionStream.abort = function() {
-    releaseSession();
-
-    if (requestStream) {
-      requestStream.cancel();
-    }
-  };
-
-  function destroyStream(err) {
-    waitForSessionStream.destroy(err);
-  }
-
-  function releaseSession() {
-    if (session) {
-      self.release(session);
-      session = null;
-    }
-  }
-
-  waitForSessionStream.on('reading', function() {
-    self.getSession().then(function(session_) {
-      session = session_;
-      config.reqOpts.session = session_.formattedName_;
-
-      requestStream = self.requestStream_(config);
-
-      requestStream
-        .on('error', releaseSession)
-        .on('error', destroyStream)
-        .on('end', releaseSession)
-        .pipe(waitForSessionStream);
-    }, destroyStream);
-  });
-
-  return waitForSessionStream;
 };
 
 /**
@@ -534,14 +478,7 @@ SessionPool.prototype.createSessionInBackground_ = function(type) {
  * @returns {Promise<Transaction>}
  */
 SessionPool.prototype.createTransaction_ = function(session, options) {
-  var self = this;
   var transaction = session.transaction(options);
-  var end = transaction.end.bind(transaction);
-
-  transaction.end = function(callback) {
-    self.release(session);
-    return end(callback);
-  };
 
   return transaction.begin().then(function() {
     session.txn = transaction;
@@ -852,7 +789,7 @@ SessionPool.prototype.release_ = function(session) {
  * @returns {Session}
  */
 SessionPool.prototype.session_ = function() {
-  var session = this.database.session_();
+  var session = this.database.session();
   session.lastUsed = Date.now();
   return session;
 };
