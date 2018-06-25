@@ -14,6 +14,10 @@
 
 'use strict';
 
+const DatabaseAdminClient = require('./database_admin_client');
+const InstanceAdminClient = require('./instance_admin_client');
 const SpannerClient = require('./spanner_client');
 
+module.exports.DatabaseAdminClient = DatabaseAdminClient;
+module.exports.InstanceAdminClient = InstanceAdminClient;
 module.exports.SpannerClient = SpannerClient;

@@ -14,7 +14,7 @@ v2beta2_library = gapic._generate_code(
     config_path='/google/spanner/artman_spanner.yaml')
 
 # Copy all files except for 'README.md' and 'package.json'
-s.copy(v2beta2_library / 'src/v1')
+s.copy(v2beta2_library / 'src/v1', excludes="src/v1/index.js")
 
 # '''
 # Node.js specific cleanup
