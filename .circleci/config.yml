@@ -3,64 +3,40 @@ workflows:
   version: 2
   tests:
     jobs: &workflow_jobs
-      - node4:
-          filters:
-            tags:
-              only: /.*/
       - node6:
-          filters:
+          filters: &all_commits
             tags:
               only: /.*/
       - node8:
-          filters:
-            tags:
-              only: /.*/
-      - node9:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - node10:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - lint:
           requires:
-            - node4
             - node6
             - node8
-            - node9
             - node10
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - docs:
           requires:
-            - node4
             - node6
             - node8
-            - node9
             - node10
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - system_tests:
           requires:
             - lint
             - docs
-          filters:
+          filters: &master_and_releases
             branches:
               only: master
-            tags:
+            tags: &releases
               only: '/^v[\d.]+$/'
       - sample_tests:
           requires:
             - lint
             - docs
-          filters:
-            branches:
-              only: master
-            tags:
-              only: '/^v[\d.]+$/'
+          filters: *master_and_releases
       - publish_npm:
           requires:
             - system_tests
@@ -68,8 +44,7 @@ workflows:
           filters:
             branches:
               ignore: /.*/
-            tags:
-              only: '/^v[\d.]+$/'
+            tags: *releases
   nightly:
     triggers:
       - schedule:
@@ -79,9 +54,9 @@ workflows:
               only: master
     jobs: *workflow_jobs
 jobs:
-  node4:
+  node6:
     docker:
-      - image: 'node:4'
+      - image: 'node:6'
         user: node
     steps: &unit_tests_steps
       - checkout
@@ -97,15 +72,10 @@ jobs:
               echo "Not a nightly build, skipping this step."
             fi
       - run: &npm_install_and_link
-          name: Install and link the module.
-          command: |
+          name: Install and link the module
+          command: |-
             mkdir -p /home/node/.npm-global
             npm install
-            repo_tools="node_modules/@google-cloud/nodejs-repo-tools/bin/tools"
-            if ! test -x "$repo_tools"; then
-              chmod +x "$repo_tools"
-            fi
-            npm link
           environment:
             NPM_CONFIG_PREFIX: /home/node/.npm-global
       - run:
@@ -115,19 +85,9 @@ jobs:
           name: Submit coverage data to codecov.
           command: node_modules/.bin/codecov
           when: always
-  node6:
-    docker:
-      - image: 'node:6'
-        user: node
-    steps: *unit_tests_steps
   node8:
     docker:
       - image: 'node:8'
-        user: node
-    steps: *unit_tests_steps
-  node9:
-    docker:
-      - image: 'node:9'
         user: node
     steps: *unit_tests_steps
   node10:
@@ -137,7 +97,7 @@ jobs:
     steps: *unit_tests_steps
   lint:
     docker:
-      - image: 'node:8'
+      - image: 'node:10'
         user: node
     steps:
       - checkout
@@ -147,9 +107,8 @@ jobs:
           name: Link the module being tested to the samples.
           command: |
             cd samples/
-            npm link @google-cloud/spanner
             npm install
-            cd ..
+            npm link ../
           environment:
             NPM_CONFIG_PREFIX: /home/node/.npm-global
       - run:
@@ -159,7 +118,7 @@ jobs:
             NPM_CONFIG_PREFIX: /home/node/.npm-global
   docs:
     docker:
-      - image: 'node:8'
+      - image: 'node:10'
         user: node
     steps:
       - checkout
@@ -170,7 +129,7 @@ jobs:
           command: npm run docs
   sample_tests:
     docker:
-      - image: 'node:8'
+      - image: 'node:10'
         user: node
     steps:
       - checkout
@@ -197,7 +156,7 @@ jobs:
     working_directory: /home/node/spanner-samples
   system_tests:
     docker:
-      - image: 'node:8'
+      - image: 'node:10'
         user: node
     steps:
       - checkout
@@ -221,7 +180,7 @@ jobs:
           when: always
   publish_npm:
     docker:
-      - image: 'node:8'
+      - image: 'node:10'
         user: node
     steps:
       - checkout

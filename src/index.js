@@ -19,7 +19,6 @@
 var common = require('@google-cloud/common');
 var commonGrpc = require('@google-cloud/common-grpc');
 var extend = require('extend');
-var format = require('string-format-obj');
 var googleAuth = require('google-auto-auth');
 var is = require('is');
 var path = require('path');
@@ -271,6 +270,27 @@ Spanner.int = function(value) {
 };
 
 /**
+ * Helper function to get a Cloud Spanner Struct object.
+ *
+ * @param {object} value The struct as a JSON object.
+ * @returns {object}
+ *
+ * @example
+ * const Spanner = require('@google-cloud/spanner');
+ * const struct = Spanner.struct({
+ *   user: 'bob',
+ *   age: 32
+ * });
+ */
+Spanner.struct = function(value) {
+  if (Array.isArray(value)) {
+    return codec.Struct.fromArray(value);
+  }
+
+  return codec.Struct.fromJSON(value);
+};
+
+/**
  * Config for the new instance.
  *
  * @typedef {object} CreateInstanceRequest
@@ -378,10 +398,9 @@ Spanner.prototype.createInstance = function(name, config, callback) {
   }
 
   if (config.config && config.config.indexOf('/') === -1) {
-    reqOpts.instance.config = format('projects/{pId}/instanceConfigs/{cfg}', {
-      pId: this.projectId,
-      cfg: config.config,
-    });
+    reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${
+      config.config
+    }`;
   }
 
   this.request(
