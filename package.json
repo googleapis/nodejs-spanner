@@ -64,7 +64,7 @@
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.17.0",
+    "@google-cloud/common": "^0.20.0",
     "@google-cloud/common-grpc": "^0.7.1",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.1",
