@@ -17,7 +17,7 @@
 var assert = require('assert');
 var extend = require('extend');
 var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var promisified = false;
 var fakeUtil = extend({}, util, {
@@ -51,7 +51,7 @@ describe('BatchTransaction', function() {
 
   before(function() {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         util: fakeUtil,
       },
       './codec.js': fakeCodec,

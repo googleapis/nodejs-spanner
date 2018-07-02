@@ -19,7 +19,7 @@
 var assert = require('assert');
 var extend = require('extend');
 var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var codec = require('../src/codec');
 

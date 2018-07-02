@@ -22,7 +22,7 @@ var extend = require('extend');
 var nodeutil = require('util');
 var proxyquire = require('proxyquire');
 var through = require('through2');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var promisified = false;
 var fakeUtil = extend({}, util, {
@@ -108,10 +108,8 @@ describe('Database', function() {
 
   before(function() {
     Database = proxyquire('../src/database.js', {
-      '@google-cloud/common': {
-        util: fakeUtil,
-      },
       '@google-cloud/common-grpc': {
+        util: fakeUtil,
         ServiceObject: FakeGrpcServiceObject,
       },
       modelo: fakeModelo,

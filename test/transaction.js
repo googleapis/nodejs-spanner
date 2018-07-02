@@ -23,7 +23,7 @@ var path = require('path');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream').split;
 var through = require('through2');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var FakeRetryInfo = {
   decode: util.noop,
@@ -100,10 +100,8 @@ describe('Transaction', function() {
   before(function() {
     Transaction = proxyquire('../src/transaction.js', {
       'google-gax': fakeGax,
-      '@google-cloud/common': {
-        util: fakeUtil,
-      },
       '@google-cloud/common-grpc': {
+        util: fakeUtil,
         Service: FakeGrpcService,
       },
       './codec.js': fakeCodec,

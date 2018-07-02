@@ -19,7 +19,7 @@
 var assert = require('assert');
 var extend = require('extend');
 var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var fakePaginator = {
   streamify: function(methodName) {
@@ -62,11 +62,9 @@ describe('Instance', function() {
 
   before(function() {
     Instance = proxyquire('../src/instance.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         paginator: fakePaginator,
         util: fakeUtil,
-      },
-      '@google-cloud/common-grpc': {
         ServiceObject: FakeGrpcServiceObject,
       },
       './database.js': FakeDatabase,

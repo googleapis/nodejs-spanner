@@ -3554,14 +3554,9 @@ describe('Spanner', function() {
             },
           ];
 
-          var expectedMessage = [
-            'Row at index 0 does not contain the correct number of columns.',
-            'Missing columns: ["NumberValue"]',
-          ].join('\n\n');
-
           assert.throws(function() {
             transaction.insert(table.name, rows);
-          }, expectedMessage);
+          }, /Error: Row at index 0 does not contain the correct number of columns\.\\n\\nMissing columns: \["NumberValue"\]/);
 
           transaction.end(done);
         });

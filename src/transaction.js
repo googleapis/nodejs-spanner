@@ -16,7 +16,7 @@
 
 'use strict';
 
-var common = require('@google-cloud/common');
+var common = require('@google-cloud/common-grpc');
 var extend = require('extend');
 var gax = require('google-gax');
 var is = require('is');
