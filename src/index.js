@@ -16,10 +16,9 @@
 
 'use strict';
 
-var common = require('@google-cloud/common');
-var commonGrpc = require('@google-cloud/common-grpc');
+var common = require('@google-cloud/common-grpc');
 var extend = require('extend');
-var googleAuth = require('google-auto-auth');
+var {GoogleAuth} = require('google-auth-library');
 var is = require('is');
 var path = require('path');
 var streamEvents = require('stream-events');
@@ -192,7 +191,7 @@ function Spanner(options) {
     options
   );
 
-  this.auth = googleAuth(this.options);
+  this.auth = new GoogleAuth(this.options);
 
   var config = {
     baseUrl: this.options.servicePath || gapic.v1.SpannerClient.servicePath,
@@ -207,10 +206,10 @@ function Spanner(options) {
     packageJson: require('../package.json'),
   };
 
-  commonGrpc.Service.call(this, config, this.options);
+  common.Service.call(this, config, this.options);
 }
 
-util.inherits(Spanner, commonGrpc.Service);
+util.inherits(Spanner, common.Service);
 
 /**
  * Placeholder used to auto populate a column with the commit timestamp.
@@ -758,7 +757,7 @@ Spanner.prototype.operation = function(name) {
     throw new Error('A name is required to access an Operation object.');
   }
 
-  return new commonGrpc.Operation(this, name);
+  return new common.Operation(this, name);
 };
 
 /**

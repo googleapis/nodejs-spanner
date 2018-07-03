@@ -17,7 +17,7 @@
 'use strict';
 
 var assert = require('assert');
-var common = require('@google-cloud/common');
+var common = require('@google-cloud/common-grpc');
 var delay = require('delay');
 var events = require('events');
 var extend = require('extend');

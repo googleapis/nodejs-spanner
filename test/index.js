@@ -21,7 +21,7 @@ var extend = require('extend');
 var path = require('path');
 var proxyquire = require('proxyquire');
 var through = require('through2');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var fakePaginator = {
   streamify: function(methodName) {
@@ -58,7 +58,7 @@ var fakeV1 = {
   SpannerClient: fakeGapicClient,
 };
 
-function fakeGoogleAutoAuth() {
+function fakeGoogleAuth() {
   return {
     calledWith_: arguments,
   };
@@ -90,15 +90,15 @@ describe('Spanner', function() {
 
   before(function() {
     Spanner = proxyquire('../src/index.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         paginator: fakePaginator,
         util: fakeUtil,
-      },
-      '@google-cloud/common-grpc': {
         Operation: FakeGrpcOperation,
         Service: FakeGrpcService,
       },
-      'google-auto-auth': fakeGoogleAutoAuth,
+      'google-auth-library': {
+        GoogleAuth: fakeGoogleAuth,
+      },
       './codec.js': fakeCodec,
       './instance.js': FakeInstance,
       './v1': fakeV1,
@@ -157,7 +157,7 @@ describe('Spanner', function() {
       assert.strictEqual(normalizeArgumentsCalled, true);
     });
 
-    it('should create an auth instance from google-auto-auth', function() {
+    it('should create an auth instance from google-auth-library', function() {
       var expectedOptions = extend({}, OPTIONS, {
         libName: 'gccl',
         libVersion: require('../package.json').version,
@@ -733,7 +733,7 @@ describe('Spanner', function() {
       };
     });
 
-    it('should get the project ID from google-auto-auth', function(done) {
+    it('should get the project ID from google-auth-library', function(done) {
       spanner.auth.getProjectId = function() {
         done();
       };
@@ -741,7 +741,7 @@ describe('Spanner', function() {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should return an error from google-auto-auth', function(done) {
+    it('should return an error from google-auth-library', function(done) {
       var error = new Error('Error.');
 
       spanner.auth.getProjectId = function(callback) {
