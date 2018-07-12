@@ -17,7 +17,7 @@
 'use strict';
 
 var arrify = require('arrify');
-var common = require('@google-cloud/common');
+var common = require('@google-cloud/common-grpc');
 var commonGrpc = require('@google-cloud/common-grpc');
 var events = require('events');
 var extend = require('extend');

@@ -21,7 +21,7 @@ var extend = require('extend');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream').split;
 var through = require('through2');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var promisified = false;
 var fakeUtil = extend({}, util, {
@@ -58,7 +58,7 @@ describe('Table', function() {
 
   before(function() {
     Table = proxyquire('../src/table.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         util: fakeUtil,
       },
       './transaction-request.js': FakeTransactionRequest,

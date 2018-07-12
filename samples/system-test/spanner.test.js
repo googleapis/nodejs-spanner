@@ -518,26 +518,24 @@ test.serial(
 
 function apiRequest(reqOpts) {
   return new Promise((resolve, reject) => {
-    spanner.auth.authorizeRequest(reqOpts, (err, reqOpts) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    spanner.auth
+      .authorizeRequest(reqOpts)
+      .then(reqOpts => {
+        request(reqOpts, (err, response) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-      request(reqOpts, (err, response) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        try {
-          resolve(JSON.parse(response.body));
-        } catch (e) {
-          reject(e);
-          return;
-        }
-      });
-    });
+          try {
+            resolve(JSON.parse(response.body));
+          } catch (e) {
+            reject(e);
+            return;
+          }
+        });
+      })
+      .catch(reject);
   });
 }
 
