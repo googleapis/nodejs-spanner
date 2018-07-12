@@ -64,6 +64,7 @@
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb"
   },
   "dependencies": {
+    "@google-cloud/common": "^0.20.3",
     "@google-cloud/common-grpc": "^0.7.1",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.1",
@@ -71,6 +72,7 @@
     "events-intercept": "^2.0.0",
     "extend": "^3.0.1",
     "generic-pool": "^3.4.2",
+    "google-auth-library": "^1.6.1",
     "google-auto-auth": "^0.10.1",
     "google-gax": "^0.17.0",
     "google-proto-files": "^0.16.1",
