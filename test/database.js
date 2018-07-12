@@ -39,6 +39,7 @@ var fakeUtil = extend({}, util, {
       'table',
       'updateSchema',
       'session_',
+      'getSessionPoolStatus',
     ]);
   },
 });
@@ -167,17 +168,6 @@ describe('Database', function() {
       assert.strictEqual(database.pool_.calledWith_[1], POOL_OPTIONS);
     });
 
-    it('should re-emit SessionPool errors', function(done) {
-      var error = new Error('err');
-
-      database.on('error', function(err) {
-        assert.strictEqual(err, error);
-        done();
-      });
-
-      database.pool_.emit('error', error);
-    });
-
     it('should open the pool', function(done) {
       FakeSessionPool.prototype.open = function() {
         FakeSessionPool.prototype.open = util.noop;
@@ -272,6 +262,17 @@ describe('Database', function() {
     });
   });
 
+  describe('getSessionPoolStatus', function() {
+    it('should return the status of session pool', () => {
+      let getStatsCalled = false;
+      database.pool_.getStats = () => {
+        getStatsCalled = true;
+        return {};
+      };
+      database.getSessionPoolStatus();
+      assert.strictEqual(getStatsCalled, true);
+    });
+  });
   describe('close', function() {
     var FAKE_ID = 'a/c/b/d';
 
@@ -323,7 +324,6 @@ describe('Database', function() {
             return [];
           },
         };
-
         database.close(function(err) {
           assert.strictEqual(err, error);
           done();
@@ -335,10 +335,7 @@ describe('Database', function() {
 
         database.pool_ = {
           close: function() {
-            return Promise.resolve();
-          },
-          getLeaks: function() {
-            return fakeLeaks;
+            return Promise.resolve(fakeLeaks);
           },
         };
 
@@ -1247,7 +1244,7 @@ describe('Database', function() {
       });
 
       it('should get a session from the pool', function(done) {
-        database.pool_.getSession = function() {
+        database.pool_.getReadSession = function() {
           setImmediate(done);
           return Promise.resolve();
         };
@@ -1258,7 +1255,7 @@ describe('Database', function() {
       it('should return an error if could not get session', function(done) {
         var error = new Error('err.');
 
-        database.pool_.getSession = function() {
+        database.pool_.getReadSession = function() {
           return Promise.reject(error);
         };
 
@@ -1275,7 +1272,7 @@ describe('Database', function() {
         };
 
         database.pool_ = {
-          getSession: function() {
+          getReadSession: function() {
             return Promise.resolve(SESSION);
           },
           createTransaction_: function(session, options) {
@@ -1297,12 +1294,13 @@ describe('Database', function() {
         var SESSION = {};
 
         database.pool_ = {
-          getSession: function() {
+          getReadSession: function() {
             return Promise.resolve(SESSION);
           },
           createTransaction_: function() {
             return Promise.reject(error);
           },
+          release: () => Promise.resolve(),
         };
 
         database.getTransaction(OPTIONS, function(err) {

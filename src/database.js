@@ -214,6 +214,13 @@ Database.prototype.batchTransaction = function(identifier) {
 };
 
 /**
+ * This method returns the current state of session pool
+ * This could be useful in monitoring the session pool and debugging.
+ */
+Database.prototype.getSessionPoolStatus = function() {
+  return this.pool_.getStats();
+};
+/**
  * @callback CloseDatabaseCallback
  * @param {?Error} err Request error, if any.
  */
@@ -250,16 +257,15 @@ Database.prototype.batchTransaction = function(identifier) {
  */
 Database.prototype.close = function(callback) {
   var key = this.id.split('/').pop();
-  var leakError = null;
-  var leaks = this.pool_.getLeaks();
-
-  if (leaks.length) {
-    leakError = new Error(`${leaks.length} session leak(s) found.`);
-    leakError.messages = leaks;
-  }
-
   this.parent.databases_.delete(key);
-  this.pool_.close().then(() => callback(leakError), callback);
+  this.pool_.close().then(leaks => {
+    let error = null;
+    if (leaks && leaks.length) {
+      error = new Error(`${leaks.length} session leak(s) found.`);
+      error.messages = leaks;
+    }
+    callback(error);
+  }, callback);
 };
 
 /**
@@ -807,9 +813,12 @@ Database.prototype.getTransaction = function(options, callback) {
   }
 
   pool
-    .getSession()
+    .getReadSession()
     .then(function(session) {
-      return pool.createTransaction_(session, options);
+      return pool.createTransaction_(session, options).catch(ex => {
+        pool.release(session);
+        throw ex;
+      });
     })
     .then(function(transaction) {
       callback(null, transaction);
@@ -1525,6 +1534,7 @@ common.util.promisifyAll(Database, {
     'table',
     'updateSchema',
     'session_',
+    'getSessionPoolStatus',
   ],
 });
 
