@@ -736,599 +736,592 @@ describe('SessionPool', function() {
         done();
       });
     });
+  });
 
-    describe('should convert session types', function() {
-      let sessionPool;
-      // Because we create a sessionPool here for every test tests which want to open
-      // their own pool must first close this one and wait on its returned promise.
-      // Otherwise the tests will have resource leaks.
-      beforeEach(function() {
-        sessionPool = new SessionPool(DATABASE, {
-          maxReads: 3,
-          maxWrites: 3,
-          minReads: 2,
-          minWrites: 2,
-          acquireTimeout: 50,
+  describe('should convert session types', function() {
+    let sessionPool;
+    // Because we create a sessionPool here for every test tests which want to open
+    // their own pool must first close this one and wait on its returned promise.
+    // Otherwise the tests will have resource leaks.
+    beforeEach(function() {
+      sessionPool = new SessionPool(DATABASE, {
+        maxReads: 3,
+        maxWrites: 3,
+        minReads: 2,
+        minWrites: 2,
+        acquireTimeout: 50,
+      });
+      sessionPool.createTransaction_ = a => Promise.resolve(a);
+      sessionPool.session_ = function() {
+        return new Object({
+          create: () => Promise.resolve(),
+          delete: () => Promise.resolve(),
         });
-        sessionPool.createTransaction_ = a => Promise.resolve(a);
-        sessionPool.session_ = function() {
-          return new Object({
-            create: () => Promise.resolve(),
-            delete: () => Promise.resolve(),
-          });
-        };
-        sessionPool.open();
-      });
-
-      afterEach(() => {
-        if (sessionPool.isOpen) {
-          return sessionPool.close();
-        }
-      });
-
-      function delay(ttl) {
-        return new Promise(resolve => setTimeout(resolve, ttl));
-      }
-
-      function releaseAllSessions(sessions, sessionpool) {
-        const promises = [];
-        sessions.forEach(session => {
-          if (!session.deleted) {
-            promises.push(sessionpool.release(session));
-          }
-        });
-        return Promise.all(promises);
-      }
-
-      it('convert a write session into a read session', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getReadSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-            delay(50).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = allSessions.concat(sessions);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 3);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 3);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 3);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 1);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 3);
-              assert.strictEqual(stats.writePool.min, 2);
-              sessions[4].deleted = true;
-              return sessionPool.release(sessions[4]);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 3);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 3);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 3);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 1);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 1);
-              assert.strictEqual(stats.writePool.borrowed, 1);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 3);
-              assert.strictEqual(stats.writePool.min, 2);
-              return sessionPool.getReadSession();
-            })
-            .then(session => {
-              allSessions = allSessions.concat([session]);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 3);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 3);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 3);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 1);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 3);
-              assert.strictEqual(stats.writePool.min, 2);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
-      });
-
-      it('convert a read session into a write session', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getWriteSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-            delay(50).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = allSessions.concat(sessions);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 1);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 3);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 3);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 3);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 3);
-              assert.strictEqual(stats.writePool.min, 2);
-              sessions[0].deleted = true;
-              return sessionPool.release(sessions[0]);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 1);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 1);
-              assert.strictEqual(stats.readPool.borrowed, 1);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 3);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 3);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 3);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 3);
-              assert.strictEqual(stats.writePool.min, 2);
-              return sessionPool.getWriteSession();
-            })
-            .then(session => {
-              allSessions = allSessions.concat([session]);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 1);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 3);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 3);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 3);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 3);
-              assert.strictEqual(stats.writePool.min, 2);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
-      });
-
-      it('convert a read session into a write session and vice versa (this is for more test coverage)', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getReadSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-            delay(50).then(() => sessionPool.getWriteSession()),
-            delay(60).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = sessions;
-              sessions[0].deleted = true;
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 3);
-              assert(stats.writePool.borrowed, 3);
-              return sessionPool.release(sessions[0]);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 2);
-              assert(stats.writePool.borrowed, 3);
-              return sessionPool.getWriteSession();
-            })
-            .then(session => {
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 3);
-              assert(stats.writePool.borrowed, 3);
-              return sessionPool.release(session);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 2);
-              assert(stats.writePool.borrowed, 3);
-              return sessionPool.getReadSession();
-            })
-            .then(session => {
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 3);
-              assert(stats.writePool.borrowed, 3);
-              let t = allSessions[5];
-              t.deleted = true;
-              allSessions.push(session);
-              return sessionPool.release(t);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 3);
-              assert(stats.writePool.borrowed, 2);
-              return sessionPool.getReadSession();
-            })
-            .then(session => {
-              let stats = sessionPool.getStats();
-              assert(stats.readPool.borrowed, 3);
-              assert(stats.writePool.borrowed, 3);
-              allSessions.push(session);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
-      });
+      };
+      sessionPool.open();
     });
 
-    describe('should get the first available session', function() {
-      let sessionPool;
-      // Because we create a sessionPool here for every test tests which want to open
-      // their own pool must first close this one and wait on its returned promise.
-      // Otherwise the tests will have resource leaks.
-      beforeEach(function() {
-        sessionPool = new SessionPool(DATABASE, {
-          maxReads: 2,
-          maxWrites: 2,
-          minReads: 2,
-          minWrites: 2,
-        });
-        sessionPool.createTransaction_ = a => Promise.resolve(a);
-        sessionPool.session_ = function() {
-          return new Object({
-            create: () => Promise.resolve(),
-            delete: () => Promise.resolve(),
-          });
-        };
-        sessionPool.open();
-      });
-
-      function delay(ttl) {
-        return new Promise(resolve => setTimeout(resolve, ttl));
+    afterEach(() => {
+      if (sessionPool.isOpen) {
+        return sessionPool.close();
       }
+    });
 
-      afterEach(() => {
-        if (sessionPool.isOpen) {
-          return sessionPool.close();
+    function delay(ttl) {
+      return new Promise(resolve => setTimeout(resolve, ttl));
+    }
+
+    function releaseAllSessions(sessions, sessionpool) {
+      const promises = [];
+      sessions.forEach(session => {
+        if (!session.deleted) {
+          promises.push(sessionpool.release(session));
         }
       });
+      return Promise.all(promises);
+    }
 
-      function releaseAllSessions(sessions, sessionpool) {
-        const promises = [];
-        sessions.forEach(session => {
-          if (!session.deleted) {
-            promises.push(sessionpool.release(session));
-          }
+    it('convert a write session into a read session', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getReadSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+          delay(50).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = allSessions.concat(sessions);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 3);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 3);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 3);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 1);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 3);
+            assert.strictEqual(stats.writePool.min, 2);
+            sessions[4].deleted = true;
+            return sessionPool.release(sessions[4]);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 3);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 3);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 3);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 1);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 1);
+            assert.strictEqual(stats.writePool.borrowed, 1);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 3);
+            assert.strictEqual(stats.writePool.min, 2);
+            return sessionPool.getReadSession();
+          })
+          .then(session => {
+            allSessions = allSessions.concat([session]);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 3);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 3);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 3);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 1);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 3);
+            assert.strictEqual(stats.writePool.min, 2);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
+    });
+
+    it('convert a read session into a write session', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+          delay(50).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = allSessions.concat(sessions);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 1);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 3);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 3);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 3);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 3);
+            assert.strictEqual(stats.writePool.min, 2);
+            sessions[0].deleted = true;
+            return sessionPool.release(sessions[0]);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 1);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 1);
+            assert.strictEqual(stats.readPool.borrowed, 1);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 3);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 3);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 3);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 3);
+            assert.strictEqual(stats.writePool.min, 2);
+            return sessionPool.getWriteSession();
+          })
+          .then(session => {
+            allSessions = allSessions.concat([session]);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 1);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 3);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 3);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 3);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 3);
+            assert.strictEqual(stats.writePool.min, 2);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
+    });
+
+    it('convert a read session into a write session and vice versa (this is for more test coverage)', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getReadSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+          delay(50).then(() => sessionPool.getWriteSession()),
+          delay(60).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = sessions;
+            sessions[0].deleted = true;
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 3);
+            assert(stats.writePool.borrowed, 3);
+            return sessionPool.release(sessions[0]);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 2);
+            assert(stats.writePool.borrowed, 3);
+            return sessionPool.getWriteSession();
+          })
+          .then(session => {
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 3);
+            assert(stats.writePool.borrowed, 3);
+            return sessionPool.release(session);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 2);
+            assert(stats.writePool.borrowed, 3);
+            return sessionPool.getReadSession();
+          })
+          .then(session => {
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 3);
+            assert(stats.writePool.borrowed, 3);
+            let t = allSessions[5];
+            t.deleted = true;
+            allSessions.push(session);
+            return sessionPool.release(t);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 3);
+            assert(stats.writePool.borrowed, 2);
+            return sessionPool.getReadSession();
+          })
+          .then(session => {
+            let stats = sessionPool.getStats();
+            assert(stats.readPool.borrowed, 3);
+            assert(stats.writePool.borrowed, 3);
+            allSessions.push(session);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
+    });
+  });
+
+  describe('should get the first available session', function() {
+    let sessionPool;
+    // Because we create a sessionPool here for every test tests which want to open
+    // their own pool must first close this one and wait on its returned promise.
+    // Otherwise the tests will have resource leaks.
+    beforeEach(function() {
+      sessionPool = new SessionPool(DATABASE, {
+        maxReads: 2,
+        maxWrites: 2,
+        minReads: 2,
+        minWrites: 2,
+      });
+      sessionPool.createTransaction_ = a => Promise.resolve(a);
+      sessionPool.session_ = function() {
+        return new Object({
+          create: () => Promise.resolve(),
+          delete: () => Promise.resolve(),
         });
-        return Promise.all(promises);
+      };
+      sessionPool.open();
+    });
+
+    function delay(ttl) {
+      return new Promise(resolve => setTimeout(resolve, ttl));
+    }
+
+    afterEach(() => {
+      if (sessionPool.isOpen) {
+        return sessionPool.close();
       }
+    });
 
-      it('get the first available session when all read and write sessions are in use and read session is requested', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getWriteSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = allSessions.concat(sessions);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              sessions[0].deleted = true;
-              setTimeout(() => sessionPool.release(sessions[0]), 20);
-              return sessionPool.getReadSession();
-            })
-            .then(session => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(session.type, 'readonly');
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 1);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              allSessions[2].deleted = true;
-              setTimeout(() => sessionPool.release(allSessions[2]), 20);
-              allSessions.push(session);
-              return sessionPool.getReadSession();
-            })
-            .then(session => {
-              allSessions.push(session);
-              assert.strictEqual(session.type, 'readwrite');
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 1);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
+    function releaseAllSessions(sessions, sessionpool) {
+      const promises = [];
+      sessions.forEach(session => {
+        if (!session.deleted) {
+          promises.push(sessionpool.release(session));
+        }
       });
+      return Promise.all(promises);
+    }
 
-      it('get the first available session when all read and write sessions are in use and write session is requested', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getWriteSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = allSessions.concat(sessions);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              sessions[0].deleted = true;
-              setTimeout(() => sessionPool.release(sessions[0]), 20);
-              return sessionPool.getWriteSession();
-            })
-            .then(session => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(session.type, 'readonly');
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 1);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              allSessions[2].deleted = true;
-              setTimeout(() => sessionPool.release(allSessions[2]), 20);
-              allSessions.push(session);
-              return sessionPool.getWriteSession();
-            })
-            .then(session => {
-              allSessions.push(session);
-              assert.strictEqual(session.type, 'readwrite');
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 1);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
-      });
+    it('get the first available session when all read and write sessions are in use and read session is requested', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = allSessions.concat(sessions);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            sessions[0].deleted = true;
+            setTimeout(() => sessionPool.release(sessions[0]), 20);
+            return sessionPool.getReadSession();
+          })
+          .then(session => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(session.type, 'readonly');
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 1);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            allSessions[2].deleted = true;
+            setTimeout(() => sessionPool.release(allSessions[2]), 20);
+            allSessions.push(session);
+            return sessionPool.getReadSession();
+          })
+          .then(session => {
+            allSessions.push(session);
+            assert.strictEqual(session.type, 'readwrite');
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 1);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
+    });
 
-      it('should throw an error while getting the first session when all read and write sessions are in use and read session is requested', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getWriteSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = allSessions.concat(sessions);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              sessions[3].deleted = true;
-              sessionPool.readPool.acquire = () => Promise.reject('Some Error');
-              return sessionPool.getReadSession();
-            })
-            .then(() => {
-              // should not come here
-              assert.strictEqual(1, 0);
-            })
-            .catch(error => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(error, 'Some Error');
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 1);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              return Promise.all([
-                delay(0),
-                sessionPool.release(allSessions[3]),
-              ]);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 1);
-              assert.strictEqual(stats.writePool.borrowed, 1);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
-      });
+    it('get the first available session when all read and write sessions are in use and write session is requested', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = allSessions.concat(sessions);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            sessions[0].deleted = true;
+            setTimeout(() => sessionPool.release(sessions[0]), 20);
+            return sessionPool.getWriteSession();
+          })
+          .then(session => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(session.type, 'readonly');
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 1);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            allSessions[2].deleted = true;
+            setTimeout(() => sessionPool.release(allSessions[2]), 20);
+            allSessions.push(session);
+            return sessionPool.getWriteSession();
+          })
+          .then(session => {
+            allSessions.push(session);
+            assert.strictEqual(session.type, 'readwrite');
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 1);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
+    });
 
-      it('should throw an error while getting the first session when all read and write sessions are in use and write session is requested', () => {
-        let allSessions = [];
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
-          Promise.all([
-            delay(10).then(() => sessionPool.getReadSession()),
-            delay(20).then(() => sessionPool.getReadSession()),
-            delay(30).then(() => sessionPool.getWriteSession()),
-            delay(40).then(() => sessionPool.getWriteSession()),
-          ])
-            .then(sessions => {
-              allSessions = allSessions.concat(sessions);
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              sessions[0].deleted = true;
-              sessionPool.writePool.acquire = () =>
-                Promise.reject('Some Error');
-              return sessionPool.getWriteSession();
-            })
-            .then(() => {
-              // should not come here
-              assert.strictEqual(1, 0);
-            })
-            .catch(error => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(error, 'Some Error');
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 0);
-              assert.strictEqual(stats.readPool.borrowed, 2);
-              assert.strictEqual(stats.readPool.pending, 1);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              return Promise.all([
-                delay(0),
-                sessionPool.release(allSessions[0]),
-              ]);
-            })
-            .then(() => {
-              let stats = sessionPool.getStats();
-              assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.readPool.size, 2);
-              assert.strictEqual(stats.readPool.available, 1);
-              assert.strictEqual(stats.readPool.borrowed, 1);
-              assert.strictEqual(stats.readPool.pending, 0);
-              assert.strictEqual(stats.readPool.max, 2);
-              assert.strictEqual(stats.readPool.min, 2);
-              assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
-              assert.strictEqual(stats.writePool.size, 2);
-              assert.strictEqual(stats.writePool.available, 0);
-              assert.strictEqual(stats.writePool.borrowed, 2);
-              assert.strictEqual(stats.writePool.pending, 0);
-              assert.strictEqual(stats.writePool.max, 2);
-              assert.strictEqual(stats.writePool.min, 2);
-              return releaseAllSessions(allSessions, sessionPool);
-            })
-        );
-      });
+    it('should throw an error while getting the first session when all read and write sessions are in use and read session is requested', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = allSessions.concat(sessions);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            sessions[3].deleted = true;
+            sessionPool.readPool.acquire = () => Promise.reject('Some Error');
+            return sessionPool.getReadSession();
+          })
+          .then(() => {
+            // should not come here
+            assert.strictEqual(1, 0);
+          })
+          .catch(error => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(error, 'Some Error');
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 1);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            return Promise.all([delay(0), sessionPool.release(allSessions[3])]);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 1);
+            assert.strictEqual(stats.writePool.borrowed, 1);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
+    });
+
+    it('should throw an error while getting the first session when all read and write sessions are in use and write session is requested', () => {
+      let allSessions = [];
+      return new Promise(resolve => setTimeout(resolve, 100)).then(() =>
+        Promise.all([
+          delay(10).then(() => sessionPool.getReadSession()),
+          delay(20).then(() => sessionPool.getReadSession()),
+          delay(30).then(() => sessionPool.getWriteSession()),
+          delay(40).then(() => sessionPool.getWriteSession()),
+        ])
+          .then(sessions => {
+            allSessions = allSessions.concat(sessions);
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            sessions[0].deleted = true;
+            sessionPool.writePool.acquire = () => Promise.reject('Some Error');
+            return sessionPool.getWriteSession();
+          })
+          .then(() => {
+            // should not come here
+            assert.strictEqual(1, 0);
+          })
+          .catch(error => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(error, 'Some Error');
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 0);
+            assert.strictEqual(stats.readPool.borrowed, 2);
+            assert.strictEqual(stats.readPool.pending, 1);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            return Promise.all([delay(0), sessionPool.release(allSessions[0])]);
+          })
+          .then(() => {
+            let stats = sessionPool.getStats();
+            assert.strictEqual(stats.readPool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.readPool.size, 2);
+            assert.strictEqual(stats.readPool.available, 1);
+            assert.strictEqual(stats.readPool.borrowed, 1);
+            assert.strictEqual(stats.readPool.pending, 0);
+            assert.strictEqual(stats.readPool.max, 2);
+            assert.strictEqual(stats.readPool.min, 2);
+            assert.strictEqual(stats.writePool.spareResourceCapacity, 0);
+            assert.strictEqual(stats.writePool.size, 2);
+            assert.strictEqual(stats.writePool.available, 0);
+            assert.strictEqual(stats.writePool.borrowed, 2);
+            assert.strictEqual(stats.writePool.pending, 0);
+            assert.strictEqual(stats.writePool.max, 2);
+            assert.strictEqual(stats.writePool.min, 2);
+            return releaseAllSessions(allSessions, sessionPool);
+          })
+      );
     });
   });
 
@@ -1804,8 +1797,7 @@ describe('SessionPool', function() {
         });
       };
       sessionPool.open();
-      // Clear timeout open() call sets
-      // sessionPool.pingSessions_();
+
       return new Promise(resolve => {
         setTimeout(() => {
           assert.strictEqual(readKeepAlive, 20);

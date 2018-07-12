@@ -690,10 +690,16 @@ SessionPool.prototype.pingSessions_ = function() {
     60000 * self.options.keepAlive
   );
   for (let i = 0; i < readPool.min; i++) {
-    self.getReadSession().then(self.sendKeepAlive_.bind(self));
+    self
+      .getReadSession()
+      .then(self.sendKeepAlive_.bind(self))
+      .catch(() => {});
   }
   for (let i = 0; i < writePool.min; i++) {
-    self.getWriteSession().then(self.sendKeepAlive_.bind(self));
+    self
+      .getWriteSession()
+      .then(self.sendKeepAlive_.bind(self))
+      .catch(() => {});
   }
 };
 
