@@ -83,7 +83,7 @@ describe('DatabaseAdminClient', () => {
 
       client.listDatabases(request, (err, response) => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
         done();
       });
@@ -164,7 +164,7 @@ describe('DatabaseAdminClient', () => {
         })
         .catch(err => {
           assert(err instanceof Error);
-          assert.equal(err.code, FAKE_STATUS_CODE);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
           done();
         });
     });
@@ -246,7 +246,7 @@ describe('DatabaseAdminClient', () => {
 
       client.getDatabase(request, (err, response) => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
         done();
       });
@@ -332,7 +332,7 @@ describe('DatabaseAdminClient', () => {
         })
         .catch(err => {
           assert(err instanceof Error);
-          assert.equal(err.code, FAKE_STATUS_CODE);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
           done();
         });
     });
@@ -404,7 +404,7 @@ describe('DatabaseAdminClient', () => {
 
       client.dropDatabase(request, err => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         done();
       });
     });
@@ -468,7 +468,7 @@ describe('DatabaseAdminClient', () => {
 
       client.getDatabaseDdl(request, (err, response) => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
         done();
       });
@@ -542,7 +542,7 @@ describe('DatabaseAdminClient', () => {
 
       client.setIamPolicy(request, (err, response) => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
         done();
       });
@@ -612,7 +612,7 @@ describe('DatabaseAdminClient', () => {
 
       client.getIamPolicy(request, (err, response) => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
         done();
       });
@@ -681,7 +681,7 @@ describe('DatabaseAdminClient', () => {
 
       client.testIamPermissions(request, (err, response) => {
         assert(err instanceof Error);
-        assert.equal(err.code, FAKE_STATUS_CODE);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
         done();
       });
