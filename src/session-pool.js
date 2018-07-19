@@ -498,8 +498,18 @@ SessionPool.prototype.release = function(session) {
   self.traces_.delete(session.id);
 
   if (session.type !== READWRITE) {
+    if (!self.readPool.isBorrowedResource(session)) {
+      // if the resource is not borrowed, no need to do anything
+      return Promise.resolve();
+    }
     return self.readPool.release(session);
   }
+
+  if (!self.writePool.isBorrowedResource(session)) {
+    // if the resource is not borrowed, no need to do anything
+    return Promise.resolve();
+  }
+
   return self
     .createTransaction_(session)
     .then(() => self.writePool.release(session))
