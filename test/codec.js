@@ -569,7 +569,7 @@ describe('codec', function() {
       };
       var encoded = codec.encode(obj);
       assert.deepStrictEqual(encoded._private, obj._private);
-      assert.deepStrictEqual(encoded.public, 10);
+      assert.deepStrictEqual(encoded.public, '10');
     });
   });
 
