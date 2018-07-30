@@ -37,7 +37,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, [
+    assert.deepStrictEqual(options.exclude, [
       'date',
       'float',
       'getInstanceConfigs',
@@ -164,7 +164,7 @@ describe('Spanner', function() {
         scopes: [],
       });
 
-      assert.deepEqual(spanner.auth.calledWith_[0], expectedOptions);
+      assert.deepStrictEqual(spanner.auth.calledWith_[0], expectedOptions);
     });
 
     it('should combine and uniquify all gapic client scopes', function() {
@@ -181,7 +181,7 @@ describe('Spanner', function() {
         scopes: expectedScopes,
       });
 
-      assert.deepEqual(spanner.auth.calledWith_[0], expectedOptions);
+      assert.deepStrictEqual(spanner.auth.calledWith_[0], expectedOptions);
     });
 
     it('should inherit from GrpcService', function() {
@@ -190,7 +190,7 @@ describe('Spanner', function() {
       var config = spanner.calledWith_[0];
       var options = spanner.calledWith_[1];
 
-      assert.deepEqual(config, {
+      assert.deepStrictEqual(config, {
         baseUrl: fakeV1.SpannerClient.servicePath,
         protosDir: path.resolve(__dirname, '../protos'),
         protoServices: {
@@ -203,7 +203,7 @@ describe('Spanner', function() {
         packageJson: require('../package.json'),
       });
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         options,
         extend({}, OPTIONS, {
           libName: 'gccl',
@@ -348,13 +348,13 @@ describe('Spanner', function() {
       };
 
       spanner.request = function(config) {
-        assert.deepEqual(CONFIG, ORIGINAL_CONFIG);
+        assert.deepStrictEqual(CONFIG, ORIGINAL_CONFIG);
 
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'createInstance');
 
         var reqOpts = config.reqOpts;
-        assert.deepEqual(reqOpts, {
+        assert.deepStrictEqual(reqOpts, {
           parent: 'projects/' + spanner.projectId,
           instanceId: NAME,
           instance: extend(
@@ -404,7 +404,7 @@ describe('Spanner', function() {
         var originalConfig = extend({}, config);
 
         spanner.request = function(config_) {
-          assert.deepEqual(config, originalConfig);
+          assert.deepStrictEqual(config, originalConfig);
 
           var reqOpts = config_.reqOpts;
           assert.strictEqual(
@@ -492,9 +492,9 @@ describe('Spanner', function() {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'listInstances');
 
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.notStrictEqual(config.reqOpts, QUERY);
-        assert.deepEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
 
         assert.strictEqual(config.gaxOpts, QUERY);
 
@@ -506,11 +506,11 @@ describe('Spanner', function() {
 
     it('should not require a query', function(done) {
       spanner.request = function(config) {
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           parent: 'projects/' + spanner.projectId,
         });
 
-        assert.deepEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, {});
 
         done();
       };
@@ -529,7 +529,7 @@ describe('Spanner', function() {
 
       it('should execute callback with original arguments', function(done) {
         spanner.getInstances(QUERY, function() {
-          assert.deepEqual([].slice.call(arguments), GAX_RESPONSE_ARGS);
+          assert.deepStrictEqual([].slice.call(arguments), GAX_RESPONSE_ARGS);
           done();
         });
       });
@@ -595,7 +595,7 @@ describe('Spanner', function() {
         assert.strictEqual(config.method, 'listInstanceConfigs');
 
         var reqOpts = config.reqOpts;
-        assert.deepEqual(reqOpts, expectedQuery);
+        assert.deepStrictEqual(reqOpts, expectedQuery);
         assert.notStrictEqual(reqOpts, query);
 
         var gaxOpts = config.gaxOpts;
@@ -613,7 +613,7 @@ describe('Spanner', function() {
     it('should not require a query', function(done) {
       spanner.request = function(config) {
         var reqOpts = config.reqOpts;
-        assert.deepEqual(reqOpts, {
+        assert.deepStrictEqual(reqOpts, {
           parent: 'projects/' + spanner.projectId,
         });
         done();
@@ -640,7 +640,7 @@ describe('Spanner', function() {
         assert.strictEqual(config.method, 'listInstanceConfigsStream');
 
         var reqOpts = config.reqOpts;
-        assert.deepEqual(reqOpts, expectedQuery);
+        assert.deepStrictEqual(reqOpts, expectedQuery);
         assert.notStrictEqual(reqOpts, query);
 
         var gaxOpts = config.gaxOpts;
