@@ -6,7 +6,7 @@
   "author": "Google Inc.",
   "repository": "googleapis/nodejs-spanner",
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=8"
   },
   "scripts": {
     "ava": "ava -T 5m --verbose test/*.test.js ./system-test/*.test.js",
