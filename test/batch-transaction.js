@@ -26,7 +26,7 @@ var fakeUtil = extend({}, util, {
       return;
     }
 
-    assert.deepEqual(options.exclude, ['identifier']);
+    assert.deepStrictEqual(options.exclude, ['identifier']);
     promisified = true;
   },
 });
@@ -73,7 +73,7 @@ describe('BatchTransaction', function() {
 
       assert(batchTransaction instanceof FakeTransaction);
       assert.strictEqual(batchTransaction.calledWith_[0], SESSION);
-      assert.deepEqual(batchTransaction.calledWith_[1], {readOnly: true});
+      assert.deepStrictEqual(batchTransaction.calledWith_[1], {readOnly: true});
     });
   });
 
@@ -96,7 +96,7 @@ describe('BatchTransaction', function() {
 
     it('should make the correct request', function(done) {
       fakeCodec.encodeQuery = function(query) {
-        assert.deepEqual(query, {sql: QUERY.sql});
+        assert.deepStrictEqual(query, {sql: QUERY.sql});
         return QUERY;
       };
 
@@ -122,7 +122,7 @@ describe('BatchTransaction', function() {
       };
 
       batchTransaction.createPartitions_ = function(config, callback) {
-        assert.deepEqual(config.reqOpts, {sql: QUERY.sql, a: 'b'});
+        assert.deepStrictEqual(config.reqOpts, {sql: QUERY.sql, a: 'b'});
         assert.strictEqual(config.gaxOpts, GAX_OPTS);
         callback(); // the done fn
       };
@@ -155,7 +155,7 @@ describe('BatchTransaction', function() {
       batchTransaction.request = function(config) {
         assert.strictEqual(config.reqOpts.a, 'b');
         assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
-        assert.deepEqual(config.reqOpts.transaction, {id: ID});
+        assert.deepStrictEqual(config.reqOpts.transaction, {id: ID});
         done();
       };
 
@@ -190,7 +190,7 @@ describe('BatchTransaction', function() {
 
         parts.forEach(function(partition, i) {
           var expectedPartition = extend({}, expectedQuery, PARTITIONS[i]);
-          assert.deepEqual(partition, expectedPartition);
+          assert.deepStrictEqual(partition, expectedPartition);
         });
 
         done();
@@ -248,7 +248,7 @@ describe('BatchTransaction', function() {
       };
 
       batchTransaction.createPartitions_ = function(config, callback) {
-        assert.deepEqual(config.reqOpts, {table: QUERY.table});
+        assert.deepStrictEqual(config.reqOpts, {table: QUERY.table});
         assert.strictEqual(config.gaxOpts, GAX_OPTS);
         callback(); // the done fn
       };
