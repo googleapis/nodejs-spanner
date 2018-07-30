@@ -183,8 +183,11 @@ describe('codec', function() {
         var arr = [{name: 'a', value: 1}, {name: 'b', value: 2}];
         var struct = codec.Struct.fromArray(arr);
 
+        var expectedStruct = new codec.Struct();
+        expectedStruct.push.apply(expectedStruct, arr);
+
         assert(codec.Struct.isStruct(struct));
-        assert.deepStrictEqual(struct, arr);
+        assert.deepStrictEqual(struct, expectedStruct);
       });
     });
 
@@ -432,13 +435,17 @@ describe('codec', function() {
           },
         },
       });
+      assert(codec.Struct.isStruct(decoded));
 
-      assert.deepStrictEqual(decoded, [
+      var expectedStruct = new codec.Struct();
+      expectedStruct.push.apply(expectedStruct, [
         {
           name: 'fieldName',
           value: int,
         },
       ]);
+
+      assert.deepStrictEqual(decoded, expectedStruct);
     });
   });
 
