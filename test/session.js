@@ -29,7 +29,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, ['delete', 'getMetadata', 'transaction']);
+    assert.deepStrictEqual(options.exclude, ['delete', 'getMetadata', 'transaction']);
   },
 });
 
@@ -103,7 +103,7 @@ describe('Session', function() {
 
       assert.strictEqual(calledWith.parent, DATABASE);
       assert.strictEqual(calledWith.id, NAME);
-      assert.deepEqual(calledWith.methods, {
+      assert.deepStrictEqual(calledWith.methods, {
         create: true,
         exists: true,
         get: true,
@@ -191,7 +191,7 @@ describe('Session', function() {
       session.request = function(config, callback_) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'deleteSession');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
         assert.strictEqual(callback_, callback);
@@ -212,7 +212,7 @@ describe('Session', function() {
       session.request = function(config, callback_) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'getSession');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
         assert.strictEqual(callback_, callback);
@@ -233,7 +233,7 @@ describe('Session', function() {
       session.request = function(config, callback_) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeSql');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           session: session.formattedName_,
           sql: 'SELECT 1',
         });
