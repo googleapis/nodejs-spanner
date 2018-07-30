@@ -169,10 +169,12 @@ describe('codec', function() {
         var json = {a: 'b', c: 'd'};
         var struct = codec.Struct.fromJSON(json);
 
-        assert.deepStrictEqual(struct, [
+        var expected = new codec.Struct();
+        expected.push.apply(expected, [
           {name: 'a', value: 'b'},
           {name: 'c', value: 'd'},
         ]);
+        assert.deepStrictEqual(struct, expected);
       });
     });
 
