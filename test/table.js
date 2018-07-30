@@ -31,7 +31,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, ['delete']);
+    assert.deepStrictEqual(options.exclude, ['delete']);
   },
 });
 
@@ -126,7 +126,7 @@ describe('Table', function() {
         createReadStream: function(name, query_) {
           assert.strictEqual(this, table);
           assert.strictEqual(name, table.name);
-          assert.deepEqual(query_, {
+          assert.deepStrictEqual(query_, {
             keys: query,
           });
           return parentMethodReturnValue;
@@ -267,7 +267,7 @@ describe('Table', function() {
 
       table.read(keyVals, function(err, rows_) {
         assert.ifError(err);
-        assert.deepEqual(rows_, rows);
+        assert.deepStrictEqual(rows_, rows);
         done();
       });
     });
