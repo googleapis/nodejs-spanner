@@ -17,7 +17,7 @@
 'use strict';
 
 var assert = require('assert');
-var common = require('@google-cloud/common');
+var common = require('@google-cloud/common-grpc');
 var delay = require('delay');
 var events = require('events');
 var extend = require('extend');
@@ -104,9 +104,9 @@ describe('SessionPool', function() {
     });
 
     it('should create arrays for available and borrowed sessions', function() {
-      assert.deepEqual(sessionPool.reads_, []);
-      assert.deepEqual(sessionPool.writes_, []);
-      assert.deepEqual(sessionPool.borrowed_, []);
+      assert.deepStrictEqual(sessionPool.reads_, []);
+      assert.deepStrictEqual(sessionPool.writes_, []);
+      assert.deepStrictEqual(sessionPool.borrowed_, []);
     });
 
     it('should create an acquire queue with 1 concurrency', function() {
@@ -115,7 +115,7 @@ describe('SessionPool', function() {
       };
 
       sessionPool = new SessionPool(DATABASE);
-      assert.deepEqual(sessionPool.acquireQueue_, {
+      assert.deepStrictEqual(sessionPool.acquireQueue_, {
         concurrency: 1,
       });
     });
@@ -130,7 +130,7 @@ describe('SessionPool', function() {
       };
 
       sessionPool = new SessionPool(DATABASE, poolOptions);
-      assert.deepEqual(sessionPool.requestQueue_, {
+      assert.deepStrictEqual(sessionPool.requestQueue_, {
         concurrency: poolOptions.concurrency,
       });
     });
@@ -253,9 +253,9 @@ describe('SessionPool', function() {
       sessionPool.close();
 
       assert.strictEqual(destroyCallCount, fakeAll.length);
-      assert.deepEqual(sessionPool.reads_, []);
-      assert.deepEqual(sessionPool.writes_, []);
-      assert.deepEqual(sessionPool.borrowed_, []);
+      assert.deepStrictEqual(sessionPool.reads_, []);
+      assert.deepStrictEqual(sessionPool.writes_, []);
+      assert.deepStrictEqual(sessionPool.borrowed_, []);
     });
 
     it('should settle once all sessions are destroyed', function() {
@@ -363,7 +363,7 @@ describe('SessionPool', function() {
 
       var traces = sessionPool.getLeaks();
 
-      assert.deepEqual(traces, ['cba', 'fed']);
+      assert.deepStrictEqual(traces, ['cba', 'fed']);
     });
   });
 
@@ -582,7 +582,7 @@ describe('SessionPool', function() {
       };
 
       sessionPool.request_ = function(config) {
-        assert.deepEqual(
+        assert.deepStrictEqual(
           config.reqOpts,
           extend({}, CONFIG.reqOpts, {
             session: SESSION.formattedName_,
@@ -616,7 +616,7 @@ describe('SessionPool', function() {
 
       sessionPool.request(CONFIG, function() {
         var args = [].slice.call(arguments);
-        assert.deepEqual(args, originalArgs);
+        assert.deepStrictEqual(args, originalArgs);
         done();
       });
     });
@@ -698,7 +698,7 @@ describe('SessionPool', function() {
         var responseData = Buffer.from('response-data');
 
         sessionPool.requestStream(CONFIG).on('data', function(data) {
-          assert.deepEqual(data, responseData);
+          assert.deepStrictEqual(data, responseData);
           done();
         });
 
@@ -902,7 +902,7 @@ describe('SessionPool', function() {
       sessionPool.borrowSession_(fakeSession);
 
       assert.strictEqual(spliced, true);
-      assert.deepEqual(sessionPool.borrowed_, [fakeSession]);
+      assert.deepStrictEqual(sessionPool.borrowed_, [fakeSession]);
     });
   });
 
@@ -1003,7 +1003,7 @@ describe('SessionPool', function() {
 
       return sessionPool.createSession_(fakeType).then(function() {
         assert.strictEqual(sessionPool.pendingCreates_, 0);
-        assert.deepEqual(fakeGroup, [fakeSession]);
+        assert.deepStrictEqual(fakeGroup, [fakeSession]);
       });
     });
 
@@ -1021,7 +1021,7 @@ describe('SessionPool', function() {
       };
 
       return sessionPool.createSession_(fakeType).then(function() {
-        assert.deepEqual(fakeGroup, [fakeSession]);
+        assert.deepStrictEqual(fakeGroup, [fakeSession]);
       });
     });
 
@@ -1307,7 +1307,7 @@ describe('SessionPool', function() {
       var expectedSessions = [fakeReads[1], fakeWrites[0]];
       var idleSessions = sessionPool.getIdleSessions_();
 
-      assert.deepEqual(idleSessions, expectedSessions);
+      assert.deepStrictEqual(idleSessions, expectedSessions);
     });
   });
 
@@ -1496,7 +1496,7 @@ describe('SessionPool', function() {
         };
 
         sessionPool.race_ = function(promises) {
-          assert.deepEqual(promises, [fakePromise]);
+          assert.deepStrictEqual(promises, [fakePromise]);
           return fakePromise;
         };
 
@@ -1789,8 +1789,8 @@ describe('SessionPool', function() {
       };
 
       sessionPool.on('available', function() {
-        assert.deepEqual(fakeGroup, [fakeSession]);
-        assert.deepEqual(sessionPool.borrowed_, []);
+        assert.deepStrictEqual(fakeGroup, [fakeSession]);
+        assert.deepStrictEqual(sessionPool.borrowed_, []);
         done();
       });
 
@@ -1824,7 +1824,7 @@ describe('SessionPool', function() {
       };
 
       sessionPool.spliceSession_(fakeSession);
-      assert.deepEqual(fakeGroup, []);
+      assert.deepStrictEqual(fakeGroup, []);
     });
 
     it('should not remove sessions unnecessarily', function() {

@@ -21,7 +21,7 @@ var extend = require('extend');
 var proxyquire = require('proxyquire');
 var split = require('split-array-stream').split;
 var through = require('through2');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var promisified = false;
 var fakeUtil = extend({}, util, {
@@ -31,7 +31,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, ['delete']);
+    assert.deepStrictEqual(options.exclude, ['delete']);
   },
 });
 
@@ -58,7 +58,7 @@ describe('Table', function() {
 
   before(function() {
     Table = proxyquire('../src/table.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         util: fakeUtil,
       },
       './transaction-request.js': FakeTransactionRequest,
@@ -126,7 +126,7 @@ describe('Table', function() {
         createReadStream: function(name, query_) {
           assert.strictEqual(this, table);
           assert.strictEqual(name, table.name);
-          assert.deepEqual(query_, {
+          assert.deepStrictEqual(query_, {
             keys: query,
           });
           return parentMethodReturnValue;
@@ -267,7 +267,7 @@ describe('Table', function() {
 
       table.read(keyVals, function(err, rows_) {
         assert.ifError(err);
-        assert.deepEqual(rows_, rows);
+        assert.deepStrictEqual(rows_, rows);
         done();
       });
     });

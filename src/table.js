@@ -16,7 +16,7 @@
 
 'use strict';
 
-var common = require('@google-cloud/common');
+var common = require('@google-cloud/common-grpc');
 var is = require('is');
 var util = require('util');
 

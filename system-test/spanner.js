@@ -167,7 +167,7 @@ describe('Spanner', function() {
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
-          assert.deepEqual(rows[0], [
+          assert.deepStrictEqual(rows[0], [
             {
               name: '',
               value: [
@@ -196,7 +196,7 @@ describe('Spanner', function() {
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
-          assert.deepEqual(rows[0], [
+          assert.deepStrictEqual(rows[0], [
             {
               name: 'id',
               value: {
@@ -246,7 +246,7 @@ describe('Spanner', function() {
       it('should write empty boolean array values', function(done) {
         insert({BoolArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BoolArray, []);
+          assert.deepStrictEqual(row.toJSON().BoolArray, []);
           done();
         });
       });
@@ -254,7 +254,7 @@ describe('Spanner', function() {
       it('should write null boolean array values', function(done) {
         insert({BoolArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BoolArray, [null]);
+          assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
           done();
         });
       });
@@ -262,7 +262,7 @@ describe('Spanner', function() {
       it('should write boolean array values', function(done) {
         insert({BoolArray: [true, false]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BoolArray, [true, false]);
+          assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
           done();
         });
       });
@@ -272,7 +272,7 @@ describe('Spanner', function() {
       it('should write int64 values', function(done) {
         insert({IntValue: Spanner.int(1234)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().IntValue, 1234);
+          assert.deepStrictEqual(row.toJSON().IntValue, 1234);
           done();
         });
       });
@@ -313,7 +313,7 @@ describe('Spanner', function() {
       it('should write empty in64 array values', function(done) {
         insert({IntArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().IntArray, []);
+          assert.deepStrictEqual(row.toJSON().IntArray, []);
           done();
         });
       });
@@ -321,7 +321,7 @@ describe('Spanner', function() {
       it('should write null int64 array values', function(done) {
         insert({IntArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().IntArray, [null]);
+          assert.deepStrictEqual(row.toJSON().IntArray, [null]);
           done();
         });
       });
@@ -333,7 +333,7 @@ describe('Spanner', function() {
           assert.ifError(err);
 
           var expected = values.map(Spanner.int);
-          assert.deepEqual(row.toJSON().IntArray, expected);
+          assert.deepStrictEqual(row.toJSON().IntArray, expected);
           done();
         });
       });
@@ -343,7 +343,7 @@ describe('Spanner', function() {
       it('should write float64 values', function(done) {
         insert({FloatValue: Spanner.float(8.2)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, 8.2);
+          assert.deepStrictEqual(row.toJSON().FloatValue, 8.2);
           done();
         });
       });
@@ -359,7 +359,7 @@ describe('Spanner', function() {
       it('should accept a Float object with an Int-like value', function(done) {
         insert({FloatValue: Spanner.float(8)}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, 8);
+          assert.deepStrictEqual(row.toJSON().FloatValue, 8);
           done();
         });
       });
@@ -367,7 +367,7 @@ describe('Spanner', function() {
       it('should handle Infinity', function(done) {
         insert({FloatValue: Infinity}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, Infinity);
+          assert.deepStrictEqual(row.toJSON().FloatValue, Infinity);
           done();
         });
       });
@@ -375,7 +375,7 @@ describe('Spanner', function() {
       it('should handle -Infinity', function(done) {
         insert({FloatValue: -Infinity}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatValue, -Infinity);
+          assert.deepStrictEqual(row.toJSON().FloatValue, -Infinity);
           done();
         });
       });
@@ -391,7 +391,7 @@ describe('Spanner', function() {
       it('should write empty float64 array values', function(done) {
         insert({FloatArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatArray, []);
+          assert.deepStrictEqual(row.toJSON().FloatArray, []);
           done();
         });
       });
@@ -399,7 +399,7 @@ describe('Spanner', function() {
       it('should write null float64 array values', function(done) {
         insert({FloatArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().FloatArray, [null]);
+          assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
           done();
         });
       });
@@ -411,7 +411,7 @@ describe('Spanner', function() {
           assert.ifError(err);
 
           var expected = values.map(Spanner.float);
-          assert.deepEqual(row.toJSON().FloatArray, expected);
+          assert.deepStrictEqual(row.toJSON().FloatArray, expected);
           done();
         });
       });
@@ -437,7 +437,7 @@ describe('Spanner', function() {
       it('should write empty string array values', function(done) {
         insert({StringArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().StringArray, []);
+          assert.deepStrictEqual(row.toJSON().StringArray, []);
           done();
         });
       });
@@ -445,7 +445,7 @@ describe('Spanner', function() {
       it('should write null string array values', function(done) {
         insert({StringArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().StringArray, [null]);
+          assert.deepStrictEqual(row.toJSON().StringArray, [null]);
           done();
         });
       });
@@ -453,7 +453,7 @@ describe('Spanner', function() {
       it('should write string array values', function(done) {
         insert({StringArray: ['abc', 'def']}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().StringArray, ['abc', 'def']);
+          assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
           done();
         });
       });
@@ -463,7 +463,7 @@ describe('Spanner', function() {
       it('should write bytes values', function(done) {
         insert({BytesValue: Buffer.from('abc')}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesValue, Buffer.from('abc'));
+          assert.deepStrictEqual(row.toJSON().BytesValue, Buffer.from('abc'));
           done();
         });
       });
@@ -479,7 +479,7 @@ describe('Spanner', function() {
       it('should write empty bytes array values', function(done) {
         insert({BytesArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesArray, []);
+          assert.deepStrictEqual(row.toJSON().BytesArray, []);
           done();
         });
       });
@@ -487,7 +487,7 @@ describe('Spanner', function() {
       it('should write null bytes array values', function(done) {
         insert({BytesArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesArray, [null]);
+          assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
           done();
         });
       });
@@ -497,7 +497,7 @@ describe('Spanner', function() {
 
         insert({BytesArray: values}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().BytesArray, values);
+          assert.deepStrictEqual(row.toJSON().BytesArray, values);
           done();
         });
       });
@@ -526,7 +526,7 @@ describe('Spanner', function() {
       it('should write empty timestamp array values', function(done) {
         insert({TimestampArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().TimestampArray, []);
+          assert.deepStrictEqual(row.toJSON().TimestampArray, []);
           done();
         });
       });
@@ -534,7 +534,7 @@ describe('Spanner', function() {
       it('should write null timestamp array values', function(done) {
         insert({TimestampArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().TimestampArray, [null]);
+          assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
           done();
         });
       });
@@ -544,7 +544,7 @@ describe('Spanner', function() {
 
         insert({TimestampArray: values}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().TimestampArray, values);
+          assert.deepStrictEqual(row.toJSON().TimestampArray, values);
           done();
         });
       });
@@ -556,7 +556,7 @@ describe('Spanner', function() {
 
         insert({DateValue: date}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(Spanner.date(row.toJSON().DateValue), date);
+          assert.deepStrictEqual(Spanner.date(row.toJSON().DateValue), date);
           done();
         });
       });
@@ -572,7 +572,7 @@ describe('Spanner', function() {
       it('should write empty date array values', function(done) {
         insert({DateArray: []}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().DateArray, []);
+          assert.deepStrictEqual(row.toJSON().DateArray, []);
           done();
         });
       });
@@ -580,7 +580,7 @@ describe('Spanner', function() {
       it('should write null date array values', function(done) {
         insert({DateArray: [null]}, function(err, row) {
           assert.ifError(err);
-          assert.deepEqual(row.toJSON().DateArray, [null]);
+          assert.deepStrictEqual(row.toJSON().DateArray, [null]);
           done();
         });
       });
@@ -592,7 +592,7 @@ describe('Spanner', function() {
           assert.ifError(err);
 
           var returnedValues = row.toJSON().DateArray.map(Spanner.date);
-          assert.deepEqual(returnedValues, values);
+          assert.deepStrictEqual(returnedValues, values);
 
           done();
         });
@@ -611,7 +611,7 @@ describe('Spanner', function() {
           );
           var timestampFromRead = row.toJSON().CommitTimestamp;
 
-          assert.deepEqual(timestampFromCommit, timestampFromRead);
+          assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
           done();
         });
       });
@@ -977,7 +977,7 @@ describe('Spanner', function() {
             .on('end', function() {
               rows = rows.map(x => x.toJSON());
 
-              assert.deepEqual(rows, [
+              assert.deepStrictEqual(rows, [
                 {
                   SingerId: id,
                   Name: name,
@@ -1015,7 +1015,7 @@ describe('Spanner', function() {
               rows.push(row);
             })
             .on('end', function() {
-              assert.deepEqual(rows, [
+              assert.deepStrictEqual(rows, [
                 {
                   SingerId: id,
                   Name: name,
@@ -1358,7 +1358,7 @@ describe('Spanner', function() {
 
         database.run('SELECT * FROM Singers', options, function(err, rows) {
           assert.ifError(err);
-          assert.deepEqual(rows.shift().toJSON(), EXPECTED_ROW);
+          assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
           done();
         });
       });
@@ -1373,7 +1373,7 @@ describe('Spanner', function() {
           .run('SELECT * FROM Singers', options)
           .then(function(data) {
             var rows = data[0];
-            assert.deepEqual(rows.shift().toJSON(), EXPECTED_ROW);
+            assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
             done();
           })
           .catch(done);
@@ -1394,7 +1394,7 @@ describe('Spanner', function() {
             this.end();
           })
           .on('end', function() {
-            assert.deepEqual(row.toJSON(), EXPECTED_ROW);
+            assert.deepStrictEqual(row.toJSON(), EXPECTED_ROW);
             done();
           });
       });
@@ -1423,10 +1423,10 @@ describe('Spanner', function() {
           assert.strictEqual(values.length, 2);
 
           assert.strictEqual(values[0][0].value, 'a');
-          assert.deepEqual(values[0][1].value, {value: 1});
+          assert.deepStrictEqual(values[0][1].value, {value: 1});
 
           assert.strictEqual(values[1][0].value, 'b');
-          assert.deepEqual(values[1][1].value, {value: 2});
+          assert.deepStrictEqual(values[1][1].value, {value: 2});
 
           done();
         });
@@ -1490,7 +1490,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1513,7 +1513,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1534,7 +1534,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -1591,7 +1591,7 @@ describe('Spanner', function() {
                 return is.number(val) ? {value: val} : val;
               });
 
-              assert.deepEqual(rows[0][0].value, expected);
+              assert.deepStrictEqual(rows[0][0].value, expected);
               done();
             });
           });
@@ -1614,7 +1614,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1635,7 +1635,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -1692,7 +1692,7 @@ describe('Spanner', function() {
                 return is.number(val) ? {value: val} : val;
               });
 
-              assert.deepEqual(rows[0][0].value, expected);
+              assert.deepStrictEqual(rows[0][0].value, expected);
               done();
             });
           });
@@ -1715,7 +1715,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1736,7 +1736,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -1803,7 +1803,7 @@ describe('Spanner', function() {
                 return is.number(val) ? {value: val + ''} : val;
               });
 
-              assert.deepEqual(rows[0][0].value, expected);
+              assert.deepStrictEqual(rows[0][0].value, expected);
               done();
             });
           });
@@ -1855,7 +1855,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1878,7 +1878,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1899,7 +1899,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -1918,7 +1918,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, buffer);
+              assert.deepStrictEqual(rows[0][0].value, buffer);
               done();
             });
           });
@@ -1936,7 +1936,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -1953,7 +1953,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1976,7 +1976,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -1997,7 +1997,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -2016,7 +2016,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, timestamp);
+              assert.deepStrictEqual(rows[0][0].value, timestamp);
               done();
             });
           });
@@ -2051,7 +2051,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -2074,7 +2074,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -2095,7 +2095,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -2116,7 +2116,7 @@ describe('Spanner', function() {
               assert.ifError(err);
 
               var returnedDate = Spanner.date(rows[0][0].value);
-              assert.deepEqual(returnedDate, date);
+              assert.deepStrictEqual(returnedDate, date);
 
               done();
             });
@@ -2161,7 +2161,7 @@ describe('Spanner', function() {
                 return is.nil(val) ? val : Spanner.date(val);
               });
 
-              assert.deepEqual(returnedValues, values);
+              assert.deepStrictEqual(returnedValues, values);
               done();
             });
           });
@@ -2184,7 +2184,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows[0][0].value, values);
               done();
             });
           });
@@ -2205,7 +2205,7 @@ describe('Spanner', function() {
 
             database.run(query, function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows[0][0].value, null);
               done();
             });
           });
@@ -2650,13 +2650,13 @@ describe('Spanner', function() {
 
               assert.strictEqual(row.Key, expectedRow.Key);
               assert.strictEqual(row.StringValue, expectedRow.StringValue);
-              assert.deepEqual(row.StringArray, expectedRow.StringArray);
+              assert.deepStrictEqual(row.StringArray, expectedRow.StringArray);
 
               row.BytesValue = base64ToBuffer(row.BytesValue);
               row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-              assert.deepEqual(row.BytesValue, expectedRow.BytesValue);
-              assert.deepEqual(row.BytesArray, expectedRow.BytesArray);
+              assert.deepStrictEqual(row.BytesValue, expectedRow.BytesValue);
+              assert.deepStrictEqual(row.BytesArray, expectedRow.BytesArray);
 
               done();
             }
@@ -2678,13 +2678,13 @@ describe('Spanner', function() {
 
             assert.strictEqual(row.Key, expectedRow.Key);
             assert.strictEqual(row.StringValue, expectedRow.StringValue);
-            assert.deepEqual(row.StringArray, expectedRow.StringArray);
+            assert.deepStrictEqual(row.StringArray, expectedRow.StringArray);
 
             row.BytesValue = base64ToBuffer(row.BytesValue);
             row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-            assert.deepEqual(row.BytesValue, expectedRow.BytesValue);
-            assert.deepEqual(row.BytesArray, expectedRow.BytesArray);
+            assert.deepStrictEqual(row.BytesValue, expectedRow.BytesValue);
+            assert.deepStrictEqual(row.BytesArray, expectedRow.BytesArray);
 
             done();
           });
@@ -2717,7 +2717,7 @@ describe('Spanner', function() {
               },
               function(err, rows) {
                 assert.ifError(err);
-                assert.deepEqual(rows[0].toJSON(), ROW);
+                assert.deepStrictEqual(rows[0].toJSON(), ROW);
                 done();
               }
             );
@@ -2736,7 +2736,7 @@ describe('Spanner', function() {
             },
             function(err, rows) {
               assert.ifError(err);
-              assert.deepEqual(rows[0].toJSON(), ROW);
+              assert.deepStrictEqual(rows[0].toJSON(), ROW);
               done();
             }
           );
@@ -3134,7 +3134,7 @@ describe('Spanner', function() {
 
           database.run('SELECT * FROM Singers', function(err, rows) {
             assert.ifError(err);
-            assert.deepEqual(rows.pop().toJSON(), {
+            assert.deepStrictEqual(rows.pop().toJSON(), {
               SingerId: id,
               Name: name,
             });
@@ -3173,7 +3173,7 @@ describe('Spanner', function() {
 
             rows = rows.map(x => x.toJSON());
 
-            assert.deepEqual(rows, [
+            assert.deepStrictEqual(rows, [
               {
                 SingerId: id1,
                 Name: name1,
@@ -3216,7 +3216,7 @@ describe('Spanner', function() {
             .on('end', function() {
               rows = rows.map(x => x.toJSON());
 
-              assert.deepEqual(rows, [
+              assert.deepStrictEqual(rows, [
                 {
                   SingerId: id,
                   Name: name,
@@ -3251,7 +3251,7 @@ describe('Spanner', function() {
 
               rows = rows.map(x => x.toJSON());
 
-              assert.deepEqual(rows, [
+              assert.deepStrictEqual(rows, [
                 {
                   SingerId: id,
                   Name: name,
@@ -3568,14 +3568,9 @@ describe('Spanner', function() {
             },
           ];
 
-          var expectedMessage = [
-            'Row at index 0 does not contain the correct number of columns.',
-            'Missing columns: ["NumberValue"]',
-          ].join('\n\n');
-
           assert.throws(function() {
             transaction.insert(table.name, rows);
-          }, expectedMessage);
+          }, /Error: Row at index 0 does not contain the correct number of columns\.\\n\\nMissing columns: \["NumberValue"\]/);
 
           transaction.end(done);
         });
@@ -3761,7 +3756,7 @@ describe('Spanner', function() {
 
                   var lastRow = rows.pop().toJSON();
 
-                  assert.deepEqual(lastRow, expectedRow);
+                  assert.deepStrictEqual(lastRow, expectedRow);
                   assert.strictEqual(attempts, 2);
 
                   done();
@@ -3829,7 +3824,7 @@ describe('Spanner', function() {
 
               var lastRow = rows.pop().toJSON();
 
-              assert.deepEqual(lastRow, expectedRow);
+              assert.deepStrictEqual(lastRow, expectedRow);
               assert.strictEqual(attempts, 2);
 
               done();

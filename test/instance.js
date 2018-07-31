@@ -19,7 +19,7 @@
 var assert = require('assert');
 var extend = require('extend');
 var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common').util;
+var util = require('@google-cloud/common-grpc').util;
 
 var fakePaginator = {
   streamify: function(methodName) {
@@ -35,7 +35,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, ['database']);
+    assert.deepStrictEqual(options.exclude, ['database']);
   },
 });
 
@@ -62,11 +62,9 @@ describe('Instance', function() {
 
   before(function() {
     Instance = proxyquire('../src/instance.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         paginator: fakePaginator,
         util: fakeUtil,
-      },
-      '@google-cloud/common-grpc': {
         ServiceObject: FakeGrpcServiceObject,
       },
       './database.js': FakeDatabase,
@@ -146,7 +144,7 @@ describe('Instance', function() {
 
       assert.strictEqual(calledWith.parent, spannerInstance);
       assert.strictEqual(calledWith.id, NAME);
-      assert.deepEqual(calledWith.methods, {
+      assert.deepStrictEqual(calledWith.methods, {
         create: true,
         exists: true,
       });
@@ -187,7 +185,7 @@ describe('Instance', function() {
       instance.request = function(config) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'createDatabase');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
           createStatement: 'CREATE DATABASE `' + NAME + '`',
         });
@@ -200,7 +198,7 @@ describe('Instance', function() {
 
     it('should accept options', function(done) {
       instance.request = function(config) {
-        assert.deepEqual(OPTIONS, ORIGINAL_OPTIONS);
+        assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         var expectedReqOpts = extend(
           {
@@ -210,7 +208,7 @@ describe('Instance', function() {
           OPTIONS
         );
 
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
 
         done();
       };
@@ -228,7 +226,7 @@ describe('Instance', function() {
           OPTIONS
         );
 
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
 
         done();
       };
@@ -267,7 +265,7 @@ describe('Instance', function() {
         });
 
         instance.request = function(config) {
-          assert.deepEqual(config.reqOpts.extraStatements, [SCHEMA]);
+          assert.deepStrictEqual(config.reqOpts.extraStatements, [SCHEMA]);
           assert.strictEqual(config.reqOpts.schema, undefined);
           done();
         };
@@ -403,7 +401,7 @@ describe('Instance', function() {
       instance.request = function(config, callback) {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'deleteInstance');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
         });
         callback(); // done()
@@ -612,10 +610,10 @@ describe('Instance', function() {
       instance.request = function(config) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'listDatabases');
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
 
         assert.notStrictEqual(config.reqOpts, QUERY);
-        assert.deepEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
 
         assert.strictEqual(config.gaxOpts, QUERY);
 
@@ -627,11 +625,11 @@ describe('Instance', function() {
 
     it('should not require a query', function(done) {
       instance.request = function(config) {
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
         });
 
-        assert.deepEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, {});
 
         done();
       };
@@ -650,7 +648,10 @@ describe('Instance', function() {
 
       it('should execute callback with original arguments', function(done) {
         instance.getDatabases(QUERY, function() {
-          assert.deepEqual([].slice.call(arguments), REQUEST_RESPONSE_ARGS);
+          assert.deepStrictEqual(
+            [].slice.call(arguments),
+            REQUEST_RESPONSE_ARGS
+          );
           done();
         });
       });
@@ -705,7 +706,7 @@ describe('Instance', function() {
       instance.request = function(config, callback_) {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'getInstance');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
         });
         assert.strictEqual(callback_, callback);
@@ -736,12 +737,12 @@ describe('Instance', function() {
           name: instance.formattedName_,
         });
 
-        assert.deepEqual(config.reqOpts.instance, expectedReqOpts);
-        assert.deepEqual(config.reqOpts.fieldMask, {
+        assert.deepStrictEqual(config.reqOpts.instance, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts.fieldMask, {
           paths: ['needs_to_be_snake_cased'],
         });
 
-        assert.deepEqual(METADATA, ORIGINAL_METADATA);
+        assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
 
         assert.strictEqual(callback_, callback);
 
