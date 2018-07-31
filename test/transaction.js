@@ -135,7 +135,7 @@ describe('Transaction', function() {
     });
 
     it('should initialize an empty queue', function() {
-      assert.deepEqual(transaction.queuedMutations_, []);
+      assert.deepStrictEqual(transaction.queuedMutations_, []);
     });
 
     it('should initialize a null run function', function() {
@@ -166,7 +166,7 @@ describe('Transaction', function() {
 
         assert.strictEqual(transaction.timeout_, timeout);
         // check to make sure the timeout isn't captured for requests
-        assert.deepEqual(transaction.calledWith_[0], {});
+        assert.deepStrictEqual(transaction.calledWith_[0], {});
       });
 
       it('should ignore non-number values', function() {
@@ -182,7 +182,7 @@ describe('Transaction', function() {
         var transaction = new Transaction(SESSION, options);
 
         assert.strictEqual(transaction.timeout_, options.timeout);
-        assert.deepEqual(options, optionsCopy);
+        assert.deepStrictEqual(options, optionsCopy);
       });
     });
   });
@@ -205,7 +205,7 @@ describe('Transaction', function() {
 
       var formattedError = Transaction.createDeadlineError_(originalError);
 
-      assert.deepEqual(expectedError, formattedError);
+      assert.deepStrictEqual(expectedError, formattedError);
       assert.notStrictEqual(originalError, formattedError);
     });
   });
@@ -267,7 +267,7 @@ describe('Transaction', function() {
       transaction.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'beginTransaction');
-        assert.deepEqual(config.reqOpts, EXPECTED_REQ_OPTS);
+        assert.deepStrictEqual(config.reqOpts, EXPECTED_REQ_OPTS);
         done();
       };
 
@@ -277,7 +277,7 @@ describe('Transaction', function() {
     it('should not require options', function(done) {
       transaction.readOnly = false;
       transaction.request = function(config) {
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           options: {
             readWrite: {},
           },
@@ -395,7 +395,7 @@ describe('Transaction', function() {
       transaction.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'commit');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           transactionId: transaction.id,
           mutations: QUEUED_MUTATIONS,
         });
@@ -410,7 +410,7 @@ describe('Transaction', function() {
       delete transaction.id;
 
       transaction.request = function(config) {
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           singleUseTransaction: {
             readWrite: {},
           },
@@ -513,7 +513,7 @@ describe('Transaction', function() {
     it('should push a mutation object into the queue array', function() {
       var mutation = {};
 
-      assert.deepEqual(transaction.queuedMutations_, []);
+      assert.deepStrictEqual(transaction.queuedMutations_, []);
 
       transaction.queue_(mutation);
 
@@ -535,7 +535,7 @@ describe('Transaction', function() {
           session: transaction.session.formattedName_,
         });
 
-        assert.deepEqual(config_.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config_.reqOpts, expectedReqOpts);
         done();
       };
 
@@ -683,7 +683,7 @@ describe('Transaction', function() {
           session: transaction.session.formattedName_,
         });
 
-        assert.deepEqual(config_.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config_.reqOpts, expectedReqOpts);
 
         return methodReturnValue;
       };
@@ -864,7 +864,7 @@ describe('Transaction', function() {
       transaction.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'rollback');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           transactionId: transaction.id,
         });
 
@@ -936,7 +936,7 @@ describe('Transaction', function() {
 
       transaction.run(query, function(err, rows_) {
         assert.ifError(err);
-        assert.deepEqual(rows_, rows);
+        assert.deepStrictEqual(rows_, rows);
         done();
       });
     });
@@ -980,7 +980,7 @@ describe('Transaction', function() {
       };
 
       return transaction.run(query).then(function(args) {
-        assert.deepEqual(args[0], rows);
+        assert.deepStrictEqual(args[0], rows);
       });
     });
   });
@@ -1022,7 +1022,7 @@ describe('Transaction', function() {
       transaction.requestStream = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeStreamingSql');
-        assert.deepEqual(config.reqOpts, EXPECTED_REQ_OPTS);
+        assert.deepStrictEqual(config.reqOpts, EXPECTED_REQ_OPTS);
         done();
       };
 
@@ -1038,7 +1038,7 @@ describe('Transaction', function() {
       };
 
       transaction.requestStream = function(options) {
-        assert.deepEqual(options.reqOpts, EXPECTED_REQ_OPTS);
+        assert.deepStrictEqual(options.reqOpts, EXPECTED_REQ_OPTS);
         done();
       };
 
@@ -1061,7 +1061,7 @@ describe('Transaction', function() {
 
         delete expectedReqOpts.transaction.id;
 
-        assert.deepEqual(options.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
 
         done();
       };
@@ -1086,7 +1086,7 @@ describe('Transaction', function() {
 
         delete expectedReqOpts.transaction.id;
 
-        assert.deepEqual(options.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
 
         done();
       };
@@ -1164,7 +1164,7 @@ describe('Transaction', function() {
         transaction.queuedMutations_ = [{}];
         transaction.retry_(fakeDelay);
 
-        assert.deepEqual(transaction.queuedMutations_, []);
+        assert.deepStrictEqual(transaction.queuedMutations_, []);
       });
 
       it('should execute run function after timeout', function(done) {

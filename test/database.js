@@ -32,7 +32,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, [
+    assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
       'getMetadata',
       'runTransaction',
@@ -206,7 +206,7 @@ describe('Database', function() {
 
       assert.strictEqual(calledWith.parent, instanceInstance);
       assert.strictEqual(calledWith.id, NAME);
-      assert.deepEqual(calledWith.methods, {
+      assert.deepStrictEqual(calledWith.methods, {
         create: true,
         exists: true,
       });
@@ -250,7 +250,7 @@ describe('Database', function() {
       var transaction = database.batchTransaction(identifier);
 
       assert(transaction instanceof FakeBatchTransaction);
-      assert.deepEqual(transaction.calledWith_[0], SESSION);
+      assert.deepStrictEqual(transaction.calledWith_[0], SESSION);
       assert.strictEqual(transaction.id, ID);
       assert.strictEqual(transaction.readTimestamp, READ_TIMESTAMP);
     });
@@ -268,7 +268,7 @@ describe('Database', function() {
       };
 
       var transaction = database.batchTransaction(identifier);
-      assert.deepEqual(transaction.calledWith_[0], SESSION);
+      assert.deepStrictEqual(transaction.calledWith_[0], SESSION);
     });
   });
 
@@ -388,14 +388,14 @@ describe('Database', function() {
       };
 
       database.batchTransaction = function(identifier) {
-        assert.deepEqual(identifier, {session: SESSION});
+        assert.deepStrictEqual(identifier, {session: SESSION});
         return fakeTransaction;
       };
 
       database.createBatchTransaction(opts, function(err, transaction, resp) {
         assert.strictEqual(err, null);
         assert.strictEqual(transaction, fakeTransaction);
-        assert.deepEqual(transaction.options, opts);
+        assert.deepStrictEqual(transaction.options, opts);
         assert.strictEqual(resp, RESPONSE);
         done();
       });
@@ -525,7 +525,7 @@ describe('Database', function() {
       database.request = function(config, callback) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'dropDatabase');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
         assert.strictEqual(callback, assert.ifError);
@@ -710,7 +710,7 @@ describe('Database', function() {
       database.request = function(config, callback) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'getDatabase');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           name: database.formattedName_,
         });
         assert.strictEqual(callback, assert.ifError);
@@ -727,7 +727,7 @@ describe('Database', function() {
       database.request = function(config) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'getDatabaseDdl');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
         done();
@@ -838,7 +838,7 @@ describe('Database', function() {
 
       database.run(QUERY, function(err, rows) {
         assert.ifError(err);
-        assert.deepEqual(rows, [ROW_1, ROW_2, ROW_3]);
+        assert.deepStrictEqual(rows, [ROW_1, ROW_2, ROW_3]);
         done();
       });
     });
@@ -879,7 +879,7 @@ describe('Database', function() {
       database.pool_.requestStream = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeStreamingSql');
-        assert.deepEqual(config.reqOpts, ENCODED_QUERY);
+        assert.deepStrictEqual(config.reqOpts, ENCODED_QUERY);
         done();
       };
 
@@ -894,7 +894,7 @@ describe('Database', function() {
         return ENCODED_QUERY;
       };
       database.pool_.requestStream = function(config) {
-        assert.deepEqual(config.reqOpts, ENCODED_QUERY);
+        assert.deepStrictEqual(config.reqOpts, ENCODED_QUERY);
         done();
       };
 
@@ -959,7 +959,7 @@ describe('Database', function() {
       };
 
       database.pool_.requestStream = function(config) {
-        assert.deepEqual(
+        assert.deepStrictEqual(
           config.reqOpts.transaction.singleUse.readOnly,
           FORMATTED_OPTIONS
         );
@@ -1009,7 +1009,7 @@ describe('Database', function() {
       };
 
       database.getTransaction = function(options, callback) {
-        assert.deepEqual(options, OPTIONS);
+        assert.deepStrictEqual(options, OPTIONS);
         callback(null, TRANSACTION);
       };
 
@@ -1071,7 +1071,7 @@ describe('Database', function() {
       database.request = function(config, callback) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'updateDatabaseDdl');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
           statements: STATEMENTS,
         });
@@ -1085,7 +1085,7 @@ describe('Database', function() {
 
     it('should arrify a string statement', function(done) {
       database.request = function(config) {
-        assert.deepEqual(config.reqOpts.statements, [STATEMENTS[0]]);
+        assert.deepStrictEqual(config.reqOpts.statements, [STATEMENTS[0]]);
         done();
       };
 
@@ -1103,7 +1103,7 @@ describe('Database', function() {
       });
 
       database.request = function(config) {
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         done();
       };
 
@@ -1118,7 +1118,7 @@ describe('Database', function() {
       database.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'createSession');
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
 
@@ -1132,11 +1132,11 @@ describe('Database', function() {
 
     it('should not require options', function(done) {
       database.request = function(config) {
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
 
-        assert.deepEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, {});
 
         done();
       };
@@ -1327,7 +1327,7 @@ describe('Database', function() {
       database.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'listSessions');
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.strictEqual(config.gaxOpts, gaxOpts);
         done();
       };
@@ -1337,7 +1337,7 @@ describe('Database', function() {
 
     it('should not require a query', function(done) {
       database.request = function(config) {
-        assert.deepEqual(config.reqOpts, {
+        assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
 
@@ -1356,7 +1356,7 @@ describe('Database', function() {
 
       database.getSessions(function() {
         var args = [].slice.call(arguments);
-        assert.deepEqual(args, ARGS);
+        assert.deepStrictEqual(args, ARGS);
         done();
       });
     });

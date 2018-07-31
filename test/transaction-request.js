@@ -37,7 +37,7 @@ var fakeUtil = extend({}, util, {
     }
 
     promisified = true;
-    assert.deepEqual(options, {
+    assert.deepStrictEqual(options, {
       exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
     });
     util.promisifyAll(Class, options);
@@ -100,7 +100,7 @@ describe('TransactionRequest', function() {
       };
 
       TransactionRequest.formatTimestampOptions_ = function(options) {
-        assert.deepEqual(options, UNFORMATTED_OPTIONS);
+        assert.deepStrictEqual(options, UNFORMATTED_OPTIONS);
         assert.notStrictEqual(options, UNFORMATTED_OPTIONS);
         return FORMATTED_OPTIONS;
       };
@@ -174,7 +174,7 @@ describe('TransactionRequest', function() {
       };
 
       var formatted = TransactionRequest.formatTimestampOptions_(options);
-      assert.deepEqual(formatted, expected);
+      assert.deepStrictEqual(formatted, expected);
     });
   });
 
@@ -189,7 +189,7 @@ describe('TransactionRequest', function() {
 
       var date = TransactionRequest.fromProtoTimestamp_(protoTimestamp);
 
-      assert.deepEqual(date, now);
+      assert.deepStrictEqual(date, now);
     });
   });
 
@@ -219,7 +219,7 @@ describe('TransactionRequest', function() {
       };
 
       transactionRequest.requestStream = function(options) {
-        assert.deepEqual(options.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
         done();
       };
 
@@ -245,7 +245,7 @@ describe('TransactionRequest', function() {
       );
 
       transactionRequest.requestStream = function(options) {
-        assert.deepEqual(options.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
         done();
       };
 
@@ -274,7 +274,7 @@ describe('TransactionRequest', function() {
         transactionRequest.requestStream = function(config) {
           assert.strictEqual(config.client, 'SpannerClient');
           assert.strictEqual(config.method, 'streamingRead');
-          assert.deepEqual(config.reqOpts, expectedQuery);
+          assert.deepStrictEqual(config.reqOpts, expectedQuery);
           assert.strictEqual(config.gaxOpts, undefined);
           done();
         };
@@ -412,7 +412,7 @@ describe('TransactionRequest', function() {
       transactionRequest.request = function(config, callback_) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'commit');
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -425,7 +425,7 @@ describe('TransactionRequest', function() {
       transactionRequest.transaction = true;
 
       transactionRequest.queue_ = function(mutation) {
-        assert.deepEqual(mutation, EXPECTED_MUTATION);
+        assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
 
@@ -448,7 +448,7 @@ describe('TransactionRequest', function() {
         // Pop out the second mutation. We're only expecting one.
         expectedSingleMutation.delete.keySet.keys.pop();
 
-        assert.deepEqual(mutation, expectedSingleMutation);
+        assert.deepStrictEqual(mutation, expectedSingleMutation);
 
         done();
       };
@@ -502,7 +502,7 @@ describe('TransactionRequest', function() {
 
       transactionRequest.read(table, keyVals, function(err, rows_) {
         assert.ifError(err);
-        assert.deepEqual(rows_, rows);
+        assert.deepStrictEqual(rows_, rows);
         done();
       });
     });
@@ -696,7 +696,7 @@ describe('TransactionRequest', function() {
       transactionRequest.request = function(config, callback_) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'commit');
-        assert.deepEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -741,7 +741,7 @@ describe('TransactionRequest', function() {
       transactionRequest.transaction = true;
 
       transactionRequest.queue_ = function(mutation) {
-        assert.deepEqual(mutation, EXPECTED_MUTATION);
+        assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
 
@@ -752,7 +752,7 @@ describe('TransactionRequest', function() {
       transactionRequest.transaction = true;
 
       transactionRequest.queue_ = function(mutation) {
-        assert.deepEqual(mutation, EXPECTED_MUTATION);
+        assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
 

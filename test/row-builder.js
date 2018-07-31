@@ -76,7 +76,7 @@ describe('RowBuilder', function() {
         builder.addRow(chunkJson);
         builder.build();
 
-        assert.deepEqual(builder.rows, test.result.value);
+        assert.deepStrictEqual(builder.rows, test.result.value);
       });
     });
   });
@@ -87,11 +87,11 @@ describe('RowBuilder', function() {
     });
 
     it('should correctly initialize a chunks array', function() {
-      assert.deepEqual(rowBuilder.chunks, []);
+      assert.deepStrictEqual(rowBuilder.chunks, []);
     });
 
     it('should correctly initialize a rows array', function() {
-      assert.deepEqual(rowBuilder.rows, [[]]);
+      assert.deepStrictEqual(rowBuilder.rows, [[]]);
     });
 
     it('should return the last row when accessing currentRow', function() {
@@ -245,7 +245,7 @@ describe('RowBuilder', function() {
       var tail = [3, 4];
 
       var merged = RowBuilder.merge(type, head, tail);
-      assert.deepEqual(merged, [[1, 2, 3, 4]]);
+      assert.deepStrictEqual(merged, [[1, 2, 3, 4]]);
     });
 
     it('should merge structs', function() {
@@ -268,7 +268,7 @@ describe('RowBuilder', function() {
       var tail = [3, 4];
 
       var merged = RowBuilder.merge(type, head, tail);
-      assert.deepEqual(merged, [[1, 2, 3, 4]]);
+      assert.deepStrictEqual(merged, [[1, 2, 3, 4]]);
     });
 
     it('should merge numbers', function() {
@@ -480,7 +480,7 @@ describe('RowBuilder', function() {
 
     it('should reset rows', function() {
       rowBuilder.flush();
-      assert.deepEqual(rowBuilder.rows, [[]]);
+      assert.deepStrictEqual(rowBuilder.rows, [[]]);
     });
 
     it('should retain a partial row', function() {
@@ -518,14 +518,14 @@ describe('RowBuilder', function() {
       var rows = rowBuilder.toJSON(ROWS);
       var row = rows[0];
 
-      assert.deepEqual(row, [
+      assert.deepStrictEqual(row, [
         {
           name: 'fieldName',
           value: formattedValue,
         },
       ]);
 
-      assert.deepEqual(row.toJSON(), {
+      assert.deepStrictEqual(row.toJSON(), {
         fieldName: formattedValue,
       });
     });
