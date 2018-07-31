@@ -169,10 +169,12 @@ describe('codec', function() {
         var json = {a: 'b', c: 'd'};
         var struct = codec.Struct.fromJSON(json);
 
-        assert.deepEqual(struct, [
+        var expected = new codec.Struct();
+        expected.push.apply(expected, [
           {name: 'a', value: 'b'},
           {name: 'c', value: 'd'},
         ]);
+        assert.deepStrictEqual(struct, expected);
       });
     });
 
@@ -181,8 +183,11 @@ describe('codec', function() {
         var arr = [{name: 'a', value: 1}, {name: 'b', value: 2}];
         var struct = codec.Struct.fromArray(arr);
 
+        var expectedStruct = new codec.Struct();
+        expectedStruct.push.apply(expectedStruct, arr);
+
         assert(codec.Struct.isStruct(struct));
-        assert.deepEqual(struct, arr);
+        assert.deepStrictEqual(struct, expectedStruct);
       });
     });
 
@@ -233,7 +238,7 @@ describe('codec', function() {
     });
 
     it('should return serialized rows', function() {
-      assert.deepEqual(toJSON(), {
+      assert.deepStrictEqual(toJSON(), {
         name: 'value',
       });
     });
@@ -246,7 +251,7 @@ describe('codec', function() {
       ];
 
       var toJSON = codec.generateToJSONFromRow(row);
-      assert.deepEqual(toJSON(), {});
+      assert.deepStrictEqual(toJSON(), {});
     });
 
     it('should not wrap numbers by default', function() {
@@ -276,7 +281,7 @@ describe('codec', function() {
       var value = toJSON({wrapNumbers: true}).Number;
 
       assert(value instanceof codec.Int);
-      assert.deepEqual(value, int);
+      assert.deepStrictEqual(value, int);
     });
 
     it('should throw an error if number is out of bounds', function() {
@@ -336,7 +341,7 @@ describe('codec', function() {
         },
       });
 
-      assert.deepEqual(decoded, Buffer.from(value, 'base64'));
+      assert.deepStrictEqual(decoded, Buffer.from(value, 'base64'));
     });
 
     it('should decode FLOAT64', function() {
@@ -374,7 +379,7 @@ describe('codec', function() {
         },
       });
 
-      assert.deepEqual(decoded, value);
+      assert.deepStrictEqual(decoded, value);
     });
 
     it('should decode DATE', function() {
@@ -386,7 +391,7 @@ describe('codec', function() {
         },
       });
 
-      assert.deepEqual(decoded, value);
+      assert.deepStrictEqual(decoded, value);
     });
 
     it('should decode ARRAY and inner members', function() {
@@ -430,13 +435,17 @@ describe('codec', function() {
           },
         },
       });
+      assert(codec.Struct.isStruct(decoded));
 
-      assert.deepEqual(decoded, [
+      var expectedStruct = new codec.Struct();
+      expectedStruct.push.apply(expectedStruct, [
         {
           name: 'fieldName',
           value: int,
         },
       ]);
+
+      assert.deepStrictEqual(decoded, expectedStruct);
     });
   });
 
@@ -472,7 +481,7 @@ describe('codec', function() {
       var value = codec.Struct.fromJSON({a: 'b', c: 'd'});
       var encoded = codec.encode(value);
 
-      assert.deepEqual(encoded, ['b', 'd']);
+      assert.deepStrictEqual(encoded, ['b', 'd']);
     });
 
     it('should stringify Infinity', function() {
@@ -512,7 +521,7 @@ describe('codec', function() {
 
       var encoded = codec.encode(value);
 
-      assert.deepEqual(encoded, [
+      assert.deepStrictEqual(encoded, [
         value.toString(), // (tests that it is stringified)
       ]);
     });
@@ -555,7 +564,7 @@ describe('codec', function() {
         i: new codec.Int(10),
       };
       var encoded = codec.encode(obj);
-      assert.deepEqual(encoded, {f: 10, i: '10'});
+      assert.deepStrictEqual(encoded, {f: 10, i: '10'});
     });
 
     it('should only encode public properties of objects', function() {
@@ -568,8 +577,8 @@ describe('codec', function() {
         public: new codec.Int(10),
       };
       var encoded = codec.encode(obj);
-      assert.deepEqual(encoded._private, obj._private);
-      assert.deepEqual(encoded.public, 10);
+      assert.deepStrictEqual(encoded._private, obj._private);
+      assert.deepStrictEqual(encoded.public, '10');
     });
   });
 
@@ -611,7 +620,7 @@ describe('codec', function() {
       var struct = codec.Struct.fromJSON({a: 'b'});
       var type = codec.getType(struct);
 
-      assert.deepEqual(type, {
+      assert.deepStrictEqual(type, {
         type: 'struct',
         fields: [
           {
@@ -623,7 +632,7 @@ describe('codec', function() {
     });
 
     it('should attempt to determine arrays and their values', function() {
-      assert.deepEqual(codec.getType([Infinity]), {
+      assert.deepStrictEqual(codec.getType([Infinity]), {
         type: 'array',
         child: 'float64',
       });
@@ -632,7 +641,7 @@ describe('codec', function() {
     it('should return unspecified for unknown values', function() {
       assert.strictEqual(codec.getType(null), 'unspecified');
 
-      assert.deepEqual(codec.getType([null]), {
+      assert.deepStrictEqual(codec.getType([null]), {
         type: 'array',
         child: 'unspecified',
       });
@@ -641,7 +650,7 @@ describe('codec', function() {
 
   describe('TYPES', function() {
     it('should export types', function() {
-      assert.deepEqual(codec.TYPES, TYPES);
+      assert.deepStrictEqual(codec.TYPES, TYPES);
     });
   });
 
@@ -734,7 +743,7 @@ describe('codec', function() {
 
       var encodedQuery = codec.encodeQuery(fakeQuery);
 
-      assert.deepEqual(encodedQuery.paramTypes, {
+      assert.deepStrictEqual(encodedQuery.paramTypes, {
         unspecified: {
           code: 0,
         },
@@ -795,7 +804,7 @@ describe('codec', function() {
 
       var query = codec.encodeQuery(fakeQuery);
 
-      assert.deepEqual(query.paramTypes, {test: fakeTypeObject});
+      assert.deepStrictEqual(query.paramTypes, {test: fakeTypeObject});
     });
 
     it('should delete the type map from the request options', function() {
@@ -1007,14 +1016,14 @@ describe('codec', function() {
       TYPES.forEach(function(typeName, i) {
         var type = codec.createTypeObject(typeName);
 
-        assert.deepEqual(type.code, i);
+        assert.deepStrictEqual(type.code, i);
       });
     });
 
     it('should default to unspecified for unknown types', function() {
       var type = codec.createTypeObject('unicorn');
 
-      assert.deepEqual(type, {code: TYPES.indexOf('unspecified')});
+      assert.deepStrictEqual(type, {code: TYPES.indexOf('unspecified')});
     });
 
     it('should set the arrayElementType', function() {
@@ -1023,7 +1032,7 @@ describe('codec', function() {
         child: 'bool',
       });
 
-      assert.deepEqual(type, {
+      assert.deepStrictEqual(type, {
         code: TYPES.indexOf('array'),
         arrayElementType: {
           code: TYPES.indexOf('bool'),
@@ -1040,7 +1049,7 @@ describe('codec', function() {
         ],
       });
 
-      assert.deepEqual(type, {
+      assert.deepStrictEqual(type, {
         code: TYPES.indexOf('struct'),
         structType: {
           fields: [
@@ -1080,7 +1089,7 @@ describe('codec', function() {
         ],
       });
 
-      assert.deepEqual(type, {
+      assert.deepStrictEqual(type, {
         code: TYPES.indexOf('struct'),
         structType: {
           fields: [
