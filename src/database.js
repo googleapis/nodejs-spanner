@@ -988,6 +988,7 @@ Database.prototype.getTransaction = function(options, callback) {
 
     session.beginTransaction(options, function(err, transaction) {
       if (err) {
+        self.pool_.release(session);
         callback(err, null);
         return;
       }
