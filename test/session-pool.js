@@ -33,7 +33,7 @@ function FakePQueue(options) {
 
 var fakeStackTrace = extend({}, stackTrace);
 
-describe('SessionPool', function() {
+describe.skip('SessionPool', function() {
   var SessionPool;
   var sessionPool;
 
