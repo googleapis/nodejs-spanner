@@ -184,7 +184,7 @@ class SessionPool extends EventEmitter {
     const {readonly, borrowed} = this._inventory;
     const available = readonly.length;
     const used = Array.from(borrowed).filter(
-      session => session[SESSION_TYPE] === READWRITE
+      session => session[SESSION_TYPE] === READONLY
     ).length;
 
     return available + used;
