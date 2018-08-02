@@ -130,7 +130,6 @@ class WritePercentError extends TypeError {
  * @extends {EventEmitter}
  */
 class SessionPool extends EventEmitter {
-
   /**
    * Formats stack trace objects into Node-like stack trace.
    *
@@ -339,6 +338,8 @@ class SessionPool extends EventEmitter {
       throw new ReleaseError(session);
     }
 
+    delete session.txn;
+
     if (session[SESSION_TYPE] === READONLY) {
       this._release(session);
       return;
@@ -375,7 +376,13 @@ class SessionPool extends EventEmitter {
         return session;
       });
 
-    return this._acquires.add(getSession);
+    return this._acquires.add(getSession).then(session => {
+      if (type === READONLY || session.txn) {
+        return session;
+      }
+
+      return this._convertSession(session);
+    });
   }
 
   /**
@@ -416,26 +423,38 @@ class SessionPool extends EventEmitter {
    * @returns {Promise<Session>}
    */
   _borrowNextAvailableSession(type) {
-    const hasReads = this._inventory[READONLY].length > 0;
+    const hasReads = !!this._inventory[READONLY].length;
 
     if (type === READONLY && hasReads) {
-      return Promise.resolve(this._borrowFrom(READONLY));
+      return this._borrowFrom(READONLY);
     }
 
-    const hasWrites = this._inventory[READWRITE].length > 0;
+    const hasWrites = !!this._inventory[READWRITE].length;
 
     if (hasWrites) {
-      return Promise.resolve(this._borrowFrom(READWRITE));
+      return this._borrowFrom(READWRITE);
     }
 
-    const session = this._borrowFrom(READONLY);
+    return this._borrowFrom(READONLY);
+  }
 
+  /**
+   * Converts a read only session to a read/write session.
+   *
+   * @private
+   *
+   * @param {Session} session Session to be converted.
+   * @returns {Promise<Session>}
+   */
+  _convertSession(session) {
     return this._prepareTransaction(session)
-      .then(() => session)
-      .catch(err => {
-        this._release(session);
-        throw err;
-      });
+      .then(
+        () => session,
+        err => {
+          this._release(session);
+          throw err;
+        }
+      );
   }
 
   /**
@@ -596,7 +615,7 @@ class SessionPool extends EventEmitter {
    */
   _getSession(type) {
     if (this.available) {
-      return this._borrowNextAvailableSession(type);
+      return Promise.resolve(this._borrowNextAvailableSession(type));
     }
 
     if (this.options.fail) {
@@ -699,11 +718,9 @@ class SessionPool extends EventEmitter {
    * @returns {Promise}
    */
   _prepareTransaction(session, options) {
-    return session
-      .beginTransaction(options)
-      .then(([transaction]) => {
-        session.txn = transaction;
-      });
+    return session.beginTransaction(options).then(([transaction]) => {
+      session.txn = transaction;
+    });
   }
 
   /**
