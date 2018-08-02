@@ -447,14 +447,13 @@ class SessionPool extends EventEmitter {
    * @returns {Promise<Session>}
    */
   _convertSession(session) {
-    return this._prepareTransaction(session)
-      .then(
-        () => session,
-        err => {
-          this._release(session);
-          throw err;
-        }
-      );
+    return this._prepareTransaction(session).then(
+      () => session,
+      err => {
+        this._release(session);
+        throw err;
+      }
+    );
   }
 
   /**
@@ -622,9 +621,16 @@ class SessionPool extends EventEmitter {
       return Promise.reject(new EmptyError());
     }
 
+    let removeListener;
+
+    const waitForNextAvailable = new Promise(resolve => {
+      this.once('available', resolve);
+      removeListener = this.removeListener.bind(this, 'available', resolve);
+    });
+
     const promises = [
       this._onClose.then(() => Promise.reject(new ClosedError())),
-      this._waitForNextAavailable(type),
+      waitForNextAvailable.then(() => this._borrowNextAvailableSession(type)),
     ];
 
     const timeout = this.options.acquireTimeout;
@@ -641,7 +647,10 @@ class SessionPool extends EventEmitter {
       );
     }
 
-    return Promise.race(promises);
+    return Promise.race(promises).catch(err => {
+      removeListener();
+      throw err;
+    });
   }
 
   /**
@@ -655,17 +664,6 @@ class SessionPool extends EventEmitter {
     const MAX_DURATION = 60000 * 60;
 
     return Date.now() - session.lastUsed < MAX_DURATION;
-  }
-
-  /**
-   * Creates a promise that will settle once a Session becomes available.
-   *
-   * @private
-   *
-   * @returns {Promise}
-   */
-  _onAvailable() {
-    return new Promise(resolve => this.once('available', resolve));
   }
 
   /**
@@ -766,20 +764,6 @@ class SessionPool extends EventEmitter {
   _stopHouseKeeping() {
     clearInterval(this._pingHandle);
     clearInterval(this._evictHandle);
-  }
-
-  /**
-   * Waits for the next available session and returns it.
-   *
-   * @private
-   *
-   * @param {string} type The desired session type.
-   * @return {Promise<Session>}
-   */
-  _waitForNextAavailable(type) {
-    return this._onAvailable().then(() =>
-      this._borrowNextAvailableSession(type)
-    );
   }
 }
 
