@@ -18,29 +18,29 @@ const assert = require('assert');
 
 const spannerModule = require('../src');
 
-var FAKE_STATUS_CODE = 1;
-var error = new Error();
+const FAKE_STATUS_CODE = 1;
+const error = new Error();
 error.code = FAKE_STATUS_CODE;
 
 describe('DatabaseAdminClient', () => {
   describe('listDatabases', () => {
     it('invokes listDatabases without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         parent: formattedParent,
       };
 
       // Mock response
-      var nextPageToken = '';
-      var databasesElement = {};
-      var databases = [databasesElement];
-      var expectedResponse = {
+      const nextPageToken = '';
+      const databasesElement = {};
+      const databases = [databasesElement];
+      const expectedResponse = {
         nextPageToken: nextPageToken,
         databases: databases,
       };
@@ -63,14 +63,14 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes listDatabases with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         parent: formattedParent,
       };
 
@@ -92,22 +92,22 @@ describe('DatabaseAdminClient', () => {
 
   describe('createDatabase', function() {
     it('invokes createDatabase without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var createStatement = 'createStatement552974828';
-      var request = {
+      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const createStatement = 'createStatement552974828';
+      const request = {
         parent: formattedParent,
         createStatement: createStatement,
       };
 
       // Mock response
-      var name = 'name3373707';
-      var expectedResponse = {
+      const name = 'name3373707';
+      const expectedResponse = {
         name: name,
       };
 
@@ -120,7 +120,7 @@ describe('DatabaseAdminClient', () => {
       client
         .createDatabase(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(responses => {
@@ -133,15 +133,15 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes createDatabase with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var createStatement = 'createStatement552974828';
-      var request = {
+      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const createStatement = 'createStatement552974828';
+      const request = {
         parent: formattedParent,
         createStatement: createStatement,
       };
@@ -156,7 +156,7 @@ describe('DatabaseAdminClient', () => {
       client
         .createDatabase(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(() => {
@@ -170,7 +170,7 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -187,24 +187,24 @@ describe('DatabaseAdminClient', () => {
 
   describe('getDatabase', () => {
     it('invokes getDatabase without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.databasePath(
+      const formattedName = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         name: formattedName,
       };
 
       // Mock response
-      var name2 = 'name2-1052831874';
-      var expectedResponse = {
+      const name2 = 'name2-1052831874';
+      const expectedResponse = {
         name: name2,
       };
 
@@ -222,18 +222,18 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes getDatabase with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.databasePath(
+      const formattedName = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         name: formattedName,
       };
 
@@ -255,25 +255,25 @@ describe('DatabaseAdminClient', () => {
 
   describe('updateDatabaseDdl', function() {
     it('invokes updateDatabaseDdl without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedDatabase = client.databasePath(
+      const formattedDatabase = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var statements = [];
-      var request = {
+      const statements = [];
+      const request = {
         database: formattedDatabase,
         statements: statements,
       };
 
       // Mock response
-      var expectedResponse = {};
+      const expectedResponse = {};
 
       // Mock Grpc layer
       client._innerApiCalls.updateDatabaseDdl = mockLongRunningGrpcMethod(
@@ -284,7 +284,7 @@ describe('DatabaseAdminClient', () => {
       client
         .updateDatabaseDdl(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(responses => {
@@ -297,19 +297,19 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes updateDatabaseDdl with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedDatabase = client.databasePath(
+      const formattedDatabase = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var statements = [];
-      var request = {
+      const statements = [];
+      const request = {
         database: formattedDatabase,
         statements: statements,
       };
@@ -324,7 +324,7 @@ describe('DatabaseAdminClient', () => {
       client
         .updateDatabaseDdl(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(() => {
@@ -338,7 +338,7 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -355,18 +355,18 @@ describe('DatabaseAdminClient', () => {
 
   describe('dropDatabase', () => {
     it('invokes dropDatabase without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedDatabase = client.databasePath(
+      const formattedDatabase = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         database: formattedDatabase,
       };
 
@@ -380,18 +380,18 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes dropDatabase with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedDatabase = client.databasePath(
+      const formattedDatabase = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         database: formattedDatabase,
       };
 
@@ -412,23 +412,23 @@ describe('DatabaseAdminClient', () => {
 
   describe('getDatabaseDdl', () => {
     it('invokes getDatabaseDdl without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedDatabase = client.databasePath(
+      const formattedDatabase = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         database: formattedDatabase,
       };
 
       // Mock response
-      var expectedResponse = {};
+      const expectedResponse = {};
 
       // Mock Grpc layer
       client._innerApiCalls.getDatabaseDdl = mockSimpleGrpcMethod(
@@ -444,18 +444,18 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes getDatabaseDdl with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedDatabase = client.databasePath(
+      const formattedDatabase = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         database: formattedDatabase,
       };
 
@@ -477,27 +477,27 @@ describe('DatabaseAdminClient', () => {
 
   describe('setIamPolicy', () => {
     it('invokes setIamPolicy without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.databasePath(
+      const formattedResource = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var policy = {};
-      var request = {
+      const policy = {};
+      const request = {
         resource: formattedResource,
         policy: policy,
       };
 
       // Mock response
-      var version = 351608024;
-      var etag = '21';
-      var expectedResponse = {
+      const version = 351608024;
+      const etag = '21';
+      const expectedResponse = {
         version: version,
         etag: etag,
       };
@@ -516,19 +516,19 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes setIamPolicy with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.databasePath(
+      const formattedResource = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var policy = {};
-      var request = {
+      const policy = {};
+      const request = {
         resource: formattedResource,
         policy: policy,
       };
@@ -551,25 +551,25 @@ describe('DatabaseAdminClient', () => {
 
   describe('getIamPolicy', () => {
     it('invokes getIamPolicy without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.databasePath(
+      const formattedResource = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         resource: formattedResource,
       };
 
       // Mock response
-      var version = 351608024;
-      var etag = '21';
-      var expectedResponse = {
+      const version = 351608024;
+      const etag = '21';
+      const expectedResponse = {
         version: version,
         etag: etag,
       };
@@ -588,18 +588,18 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes getIamPolicy with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.databasePath(
+      const formattedResource = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var request = {
+      const request = {
         resource: formattedResource,
       };
 
@@ -621,25 +621,25 @@ describe('DatabaseAdminClient', () => {
 
   describe('testIamPermissions', () => {
     it('invokes testIamPermissions without error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.databasePath(
+      const formattedResource = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var permissions = [];
-      var request = {
+      const permissions = [];
+      const request = {
         resource: formattedResource,
         permissions: permissions,
       };
 
       // Mock response
-      var expectedResponse = {};
+      const expectedResponse = {};
 
       // Mock Grpc layer
       client._innerApiCalls.testIamPermissions = mockSimpleGrpcMethod(
@@ -655,19 +655,19 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes testIamPermissions with error', done => {
-      var client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.databasePath(
+      const formattedResource = client.databasePath(
         '[PROJECT]',
         '[INSTANCE]',
         '[DATABASE]'
       );
-      var permissions = [];
-      var request = {
+      const permissions = [];
+      const request = {
         resource: formattedResource,
         permissions: permissions,
       };
@@ -705,7 +705,7 @@ function mockSimpleGrpcMethod(expectedRequest, response, error) {
 function mockLongRunningGrpcMethod(expectedRequest, response, error) {
   return request => {
     assert.deepStrictEqual(request, expectedRequest);
-    var mockOperation = {
+    const mockOperation = {
       promise: function() {
         return new Promise((resolve, reject) => {
           if (error) {
