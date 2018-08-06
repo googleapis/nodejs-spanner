@@ -346,4 +346,3 @@ common.util.promisifyAll(BatchTransaction, {
 });
 
 module.exports = BatchTransaction;
-
