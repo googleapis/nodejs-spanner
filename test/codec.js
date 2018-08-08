@@ -16,18 +16,18 @@
 
 'use strict';
 
-var assert = require('assert');
-var extend = require('extend');
-var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common-grpc').util;
+const assert = require('assert');
+const extend = require('extend');
+const proxyquire = require('proxyquire');
+const {util} = require('@google-cloud/common-grpc');
 
 function FakeGrpcService() {}
 
 describe('codec', function() {
-  var codecCached;
-  var codec;
+  let codecCached;
+  let codec;
 
-  var TYPES = [
+  const TYPES = [
     'unspecified',
     'bool',
     'int64',
@@ -57,7 +57,7 @@ describe('codec', function() {
 
   describe('SpannerDate', function() {
     it('should choke on multiple arguments', function() {
-      var expectedErrorMessage = [
+      const expectedErrorMessage = [
         'The spanner.date function accepts a Date object or a',
         "single argument parseable by Date's constructor.",
       ].join(' ');
@@ -68,28 +68,28 @@ describe('codec', function() {
     });
 
     it('should create an instance from a string', function() {
-      var spannerDate = new codec.SpannerDate('08-20-1969');
+      const spannerDate = new codec.SpannerDate('08-20-1969');
       assert.strictEqual(spannerDate.value, '1969-08-20');
     });
 
     it('should create an instance from a Date object', function() {
-      var date = new Date();
-      var spannerDate = new codec.SpannerDate(date);
+      const date = new Date();
+      const spannerDate = new codec.SpannerDate(date);
       assert.strictEqual(spannerDate.value, date.toJSON().replace(/T.+/, ''));
     });
   });
 
   describe('Float', function() {
     it('should store the value', function() {
-      var value = 8;
-      var float = new codec.Float(value);
+      const value = 8;
+      const float = new codec.Float(value);
 
       assert.strictEqual(float.value, value);
     });
 
     it('should return as a float', function() {
-      var value = '8.2';
-      var float = new codec.Float(value);
+      const value = '8.2';
+      const float = new codec.Float(value);
 
       assert.strictEqual(float.valueOf(), parseFloat(value));
       assert.strictEqual(float + 2, parseFloat(value) + 2);
@@ -98,23 +98,23 @@ describe('codec', function() {
 
   describe('Int', function() {
     it('should stringify the value', function() {
-      var value = 8;
-      var int = new codec.Int(value);
+      const value = 8;
+      const int = new codec.Int(value);
 
       assert.strictEqual(int.value, '8');
     });
 
     it('should return as a number', function() {
-      var value = 8;
-      var int = new codec.Int(value);
+      const value = 8;
+      const int = new codec.Int(value);
 
       assert.strictEqual(int.valueOf(), 8);
       assert.strictEqual(int + 2, 10);
     });
 
     it('should throw if number is out of bounds', function() {
-      var value = '9223372036854775807';
-      var int = new codec.Int(value);
+      const value = '9223372036854775807';
+      const int = new codec.Int(value);
 
       assert.throws(function() {
         int.valueOf();
@@ -123,7 +123,7 @@ describe('codec', function() {
   });
 
   describe('Struct', function() {
-    var generateToJSONFromRow_;
+    let generateToJSONFromRow_;
 
     before(function() {
       generateToJSONFromRow_ = codec.generateToJSONFromRow;
@@ -135,29 +135,29 @@ describe('codec', function() {
 
     describe('initialization', function() {
       it('should create an array', function() {
-        var struct = new codec.Struct();
+        const struct = new codec.Struct();
 
         assert(Array.isArray(struct));
       });
 
       it('should set the type', function() {
-        var struct = new codec.Struct();
-        var type = struct[codec.TYPE];
+        const struct = new codec.Struct();
+        const type = struct[codec.TYPE];
 
         assert.strictEqual(codec.Struct.TYPE, 'struct');
         assert.strictEqual(type, codec.Struct.TYPE);
       });
 
       it('should create a toJSON property', function() {
-        var fakeJSON = {};
-        var cachedStruct;
+        const fakeJSON = {};
+        let cachedStruct;
 
         codec.generateToJSONFromRow = function(struct) {
           cachedStruct = struct;
           return fakeJSON;
         };
 
-        var struct = new codec.Struct();
+        const struct = new codec.Struct();
 
         assert.strictEqual(struct, cachedStruct);
         assert.strictEqual(struct.toJSON, fakeJSON);
@@ -166,10 +166,10 @@ describe('codec', function() {
 
     describe('fromJSON', function() {
       it('should capture the key value pairs', function() {
-        var json = {a: 'b', c: 'd'};
-        var struct = codec.Struct.fromJSON(json);
+        const json = {a: 'b', c: 'd'};
+        const struct = codec.Struct.fromJSON(json);
 
-        var expected = new codec.Struct();
+        const expected = new codec.Struct();
         expected.push.apply(expected, [
           {name: 'a', value: 'b'},
           {name: 'c', value: 'd'},
@@ -180,10 +180,10 @@ describe('codec', function() {
 
     describe('fromArray', function() {
       it('should convert array to struct array', function() {
-        var arr = [{name: 'a', value: 1}, {name: 'b', value: 2}];
-        var struct = codec.Struct.fromArray(arr);
+        const arr = [{name: 'a', value: 1}, {name: 'b', value: 2}];
+        const struct = codec.Struct.fromArray(arr);
 
-        var expectedStruct = new codec.Struct();
+        const expectedStruct = new codec.Struct();
         expectedStruct.push.apply(expectedStruct, arr);
 
         assert(codec.Struct.isStruct(struct));
@@ -193,20 +193,20 @@ describe('codec', function() {
 
     describe('isStruct', function() {
       it('should return true for structs', function() {
-        var struct = new codec.Struct();
-        var isStruct = codec.Struct.isStruct(struct);
+        const struct = new codec.Struct();
+        const isStruct = codec.Struct.isStruct(struct);
 
         assert.strictEqual(isStruct, true);
       });
 
       it('should return false for arrays', function() {
-        var isStruct = codec.Struct.isStruct([]);
+        const isStruct = codec.Struct.isStruct([]);
 
         assert.strictEqual(isStruct, false);
       });
 
       it('should return false for falsey values', function() {
-        var isStruct = codec.Struct.isStruct(null);
+        const isStruct = codec.Struct.isStruct(null);
 
         assert.strictEqual(isStruct, false);
       });
@@ -214,14 +214,14 @@ describe('codec', function() {
   });
 
   describe('generateToJSONFromRow', function() {
-    var ROW = [
+    const ROW = [
       {
         name: 'name',
         value: 'value',
       },
     ];
 
-    var toJSON;
+    let toJSON;
 
     beforeEach(function() {
       toJSON = codec.generateToJSONFromRow(ROW);
@@ -244,57 +244,57 @@ describe('codec', function() {
     });
 
     it('should not return nameless values', function() {
-      var row = [
+      const row = [
         {
           value: 'value',
         },
       ];
 
-      var toJSON = codec.generateToJSONFromRow(row);
+      const toJSON = codec.generateToJSONFromRow(row);
       assert.deepStrictEqual(toJSON(), {});
     });
 
     it('should not wrap numbers by default', function() {
-      var row = [
+      const row = [
         {
           name: 'Number',
           value: new codec.Int(3),
         },
       ];
 
-      var toJSON = codec.generateToJSONFromRow(row);
+      const toJSON = codec.generateToJSONFromRow(row);
       assert.strictEqual(typeof toJSON().Number, 'number');
       assert.strictEqual(toJSON().Number, 3);
     });
 
     it('should wrap numbers with option', function() {
-      var int = new codec.Int(3);
+      const int = new codec.Int(3);
 
-      var row = [
+      const row = [
         {
           name: 'Number',
           value: int,
         },
       ];
 
-      var toJSON = codec.generateToJSONFromRow(row);
-      var value = toJSON({wrapNumbers: true}).Number;
+      const toJSON = codec.generateToJSONFromRow(row);
+      const value = toJSON({wrapNumbers: true}).Number;
 
       assert(value instanceof codec.Int);
       assert.deepStrictEqual(value, int);
     });
 
     it('should throw an error if number is out of bounds', function() {
-      var int = new codec.Int('9223372036854775807');
+      const int = new codec.Int('9223372036854775807');
 
-      var row = [
+      const row = [
         {
           name: 'Number',
           value: int,
         },
       ];
 
-      var toJSON = codec.generateToJSONFromRow(row);
+      const toJSON = codec.generateToJSONFromRow(row);
 
       assert.throws(function() {
         toJSON();
@@ -304,7 +304,7 @@ describe('codec', function() {
 
   describe('decode', function() {
     // Does not require any special decoding.
-    var BYPASS_FIELD = {
+    const BYPASS_FIELD = {
       type: {
         code: 'not-real-code',
       },
@@ -317,9 +317,9 @@ describe('codec', function() {
     });
 
     it('should return the same value if not a special type', function() {
-      var value = {};
+      const value = {};
 
-      var decoded = codec.decode(value, BYPASS_FIELD);
+      const decoded = codec.decode(value, BYPASS_FIELD);
       assert.strictEqual(decoded, value);
     });
 
@@ -328,14 +328,14 @@ describe('codec', function() {
         return null;
       };
 
-      var decoded = codec.decode(null, BYPASS_FIELD);
+      const decoded = codec.decode(null, BYPASS_FIELD);
       assert.strictEqual(decoded, null);
     });
 
     it('should decode BYTES', function() {
-      var value = Buffer.from('bytes value');
+      const value = Buffer.from('bytes value');
 
-      var decoded = codec.decode(value.toString('base64'), {
+      const decoded = codec.decode(value.toString('base64'), {
         type: {
           code: 'BYTES',
         },
@@ -345,9 +345,9 @@ describe('codec', function() {
     });
 
     it('should decode FLOAT64', function() {
-      var value = 'Infinity';
+      const value = 'Infinity';
 
-      var decoded = codec.decode(value, {
+      const decoded = codec.decode(value, {
         type: {
           code: 'FLOAT64',
         },
@@ -358,9 +358,9 @@ describe('codec', function() {
     });
 
     it('should decode INT64', function() {
-      var value = '64';
+      const value = '64';
 
-      var decoded = codec.decode(value, {
+      const decoded = codec.decode(value, {
         type: {
           code: 'INT64',
         },
@@ -371,9 +371,9 @@ describe('codec', function() {
     });
 
     it('should decode TIMESTAMP', function() {
-      var value = new Date();
+      const value = new Date();
 
-      var decoded = codec.decode(value.toJSON(), {
+      const decoded = codec.decode(value.toJSON(), {
         type: {
           code: 'TIMESTAMP',
         },
@@ -383,9 +383,9 @@ describe('codec', function() {
     });
 
     it('should decode DATE', function() {
-      var value = new Date();
+      const value = new Date();
 
-      var decoded = codec.decode(value.toJSON(), {
+      const decoded = codec.decode(value.toJSON(), {
         type: {
           code: 'DATE',
         },
@@ -395,9 +395,9 @@ describe('codec', function() {
     });
 
     it('should decode ARRAY and inner members', function() {
-      var value = ['1'];
+      const value = ['1'];
 
-      var decoded = codec.decode(value, {
+      const decoded = codec.decode(value, {
         type: {
           code: 'ARRAY',
           arrayElementType: {
@@ -410,17 +410,17 @@ describe('codec', function() {
     });
 
     it('should decode STRUCT and inner members', function() {
-      var value = {
+      const value = {
         fieldName: '1',
       };
 
-      var int = {int: true};
+      const int = {int: true};
       codec.Int = function(value_) {
         assert.strictEqual(value_, value.fieldName);
         return int;
       };
 
-      var decoded = codec.decode(value, {
+      const decoded = codec.decode(value, {
         type: {
           code: 'STRUCT',
           structType: {
@@ -437,7 +437,7 @@ describe('codec', function() {
       });
       assert(codec.Struct.isStruct(decoded));
 
-      var expectedStruct = new codec.Struct();
+      const expectedStruct = new codec.Struct();
       expectedStruct.push.apply(expectedStruct, [
         {
           name: 'fieldName',
@@ -457,69 +457,69 @@ describe('codec', function() {
     });
 
     it('should return the value from the common encoder', function() {
-      var value = {};
-      var defaultEncodedValue = {};
+      const value = {};
+      const defaultEncodedValue = {};
 
       FakeGrpcService.encodeValue_ = function(value_) {
         assert.strictEqual(value_, value);
         return defaultEncodedValue;
       };
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
       assert.strictEqual(encoded, defaultEncodedValue);
     });
 
     it('should encode BYTES', function() {
-      var value = Buffer.from('bytes value');
+      const value = Buffer.from('bytes value');
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString('base64'));
     });
 
     it('should encode structs', function() {
-      var value = codec.Struct.fromJSON({a: 'b', c: 'd'});
-      var encoded = codec.encode(value);
+      const value = codec.Struct.fromJSON({a: 'b', c: 'd'});
+      const encoded = codec.encode(value);
 
       assert.deepStrictEqual(encoded, ['b', 'd']);
     });
 
     it('should stringify Infinity', function() {
-      var value = Infinity;
+      const value = Infinity;
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString());
     });
 
     it('should stringify -Infinity', function() {
-      var value = -Infinity;
+      const value = -Infinity;
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString());
     });
 
     it('should stringify NaN', function() {
-      var value = NaN;
+      const value = NaN;
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString());
     });
 
     it('should stringify INT64', function() {
-      var value = 5;
+      const value = 5;
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString());
     });
 
     it('should encode ARRAY and inner members', function() {
-      var value = [5];
+      const value = [5];
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.deepStrictEqual(encoded, [
         value.toString(), // (tests that it is stringified)
@@ -527,48 +527,48 @@ describe('codec', function() {
     });
 
     it('should encode TIMESTAMP', function() {
-      var value = new Date();
+      const value = new Date();
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toJSON());
     });
 
     it('should encode DATE', function() {
-      var value = new codec.SpannerDate();
+      const value = new codec.SpannerDate();
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.value);
     });
 
     it('should encode INT64', function() {
-      var value = new codec.Int(10);
+      const value = new codec.Int(10);
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, '10');
     });
 
     it('should encode FLOAT64', function() {
-      var value = new codec.Float(10);
+      const value = new codec.Float(10);
 
-      var encoded = codec.encode(value);
+      const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, 10);
     });
 
     it('should encode each key in a dictionary-like object', function() {
-      var obj = {
+      const obj = {
         f: new codec.Float(10),
         i: new codec.Int(10),
       };
-      var encoded = codec.encode(obj);
+      const encoded = codec.encode(obj);
       assert.deepStrictEqual(encoded, {f: 10, i: '10'});
     });
 
     it('should only encode public properties of objects', function() {
-      var obj = {
+      const obj = {
         hasOwnProperty: function(key) {
           // jshint ignore:line
           return key === 'public';
@@ -576,7 +576,7 @@ describe('codec', function() {
         _private: new codec.Int(10),
         public: new codec.Int(10),
       };
-      var encoded = codec.encode(obj);
+      const encoded = codec.encode(obj);
       assert.deepStrictEqual(encoded._private, obj._private);
       assert.deepStrictEqual(encoded.public, '10');
     });
@@ -617,8 +617,8 @@ describe('codec', function() {
     });
 
     it('should determine if the value is a struct', function() {
-      var struct = codec.Struct.fromJSON({a: 'b'});
-      var type = codec.getType(struct);
+      const struct = codec.Struct.fromJSON({a: 'b'});
+      const type = codec.getType(struct);
 
       assert.deepStrictEqual(type, {
         type: 'struct',
@@ -655,9 +655,9 @@ describe('codec', function() {
   });
 
   describe('encodeQuery', function() {
-    var createTypeObject_;
+    let createTypeObject_;
 
-    var QUERY = {
+    const QUERY = {
       sql: 'SELECT * FROM table',
       a: 'b',
       c: 'd',
@@ -672,22 +672,22 @@ describe('codec', function() {
     });
 
     it('should return the query', function() {
-      var fakeQuery = {
+      const fakeQuery = {
         a: 'b',
         c: 'd',
       };
 
-      var encodedQuery = codec.encodeQuery(fakeQuery);
+      const encodedQuery = codec.encodeQuery(fakeQuery);
 
       assert.deepStrictEqual(fakeQuery, encodedQuery);
     });
 
     it('should clone the query', function() {
-      var fakeQuery = {
+      const fakeQuery = {
         a: 'b',
       };
 
-      var encodedQuery = codec.encodeQuery(fakeQuery);
+      const encodedQuery = codec.encodeQuery(fakeQuery);
       assert.notStrictEqual(fakeQuery, encodedQuery);
 
       delete encodedQuery.a;
@@ -695,26 +695,26 @@ describe('codec', function() {
     });
 
     it('should encode query parameters', function() {
-      var fakeQuery = {
+      const fakeQuery = {
         sql: QUERY,
         params: {
           test: 'value',
         },
       };
 
-      var encodedValue = {};
+      const encodedValue = {};
 
       codec.encode = function(field) {
         assert.strictEqual(field, fakeQuery.params.test);
         return encodedValue;
       };
 
-      var encodedQuery = codec.encodeQuery(fakeQuery);
+      const encodedQuery = codec.encodeQuery(fakeQuery);
       assert.strictEqual(encodedQuery.params.fields.test, encodedValue);
     });
 
     it('should attempt to guess the parameter types', function() {
-      var params = {
+      const params = {
         unspecified: null,
         bool: true,
         int64: 1234,
@@ -725,23 +725,23 @@ describe('codec', function() {
         bytes: Buffer.from('abc'),
       };
 
-      var types = Object.keys(params);
+      const types = Object.keys(params);
 
-      var fakeQuery = {
+      const fakeQuery = {
         sql: QUERY,
         params: params,
       };
 
-      var getTypeCallCount = 0;
+      let getTypeCallCount = 0;
 
       codec.getType = function(field) {
-        var type = types[getTypeCallCount++];
+        const type = types[getTypeCallCount++];
 
         assert.strictEqual(params[type], field);
         return type;
       };
 
-      var encodedQuery = codec.encodeQuery(fakeQuery);
+      const encodedQuery = codec.encodeQuery(fakeQuery);
 
       assert.deepStrictEqual(encodedQuery.paramTypes, {
         unspecified: {
@@ -772,7 +772,7 @@ describe('codec', function() {
     });
 
     it('should not overwrite existing type definitions', function() {
-      var fakeQuery = {
+      const fakeQuery = {
         params: {
           test: 123,
         },
@@ -789,26 +789,26 @@ describe('codec', function() {
     });
 
     it('should create type objects', function() {
-      var fakeQuery = {
+      const fakeQuery = {
         types: {
           test: 'string',
         },
       };
 
-      var fakeTypeObject = {};
+      const fakeTypeObject = {};
 
       codec.createTypeObject = function(type) {
         assert.strictEqual(type, 'string');
         return fakeTypeObject;
       };
 
-      var query = codec.encodeQuery(fakeQuery);
+      const query = codec.encodeQuery(fakeQuery);
 
       assert.deepStrictEqual(query.paramTypes, {test: fakeTypeObject});
     });
 
     it('should delete the type map from the request options', function() {
-      var fakeQuery = {
+      const fakeQuery = {
         params: {
           test: 'abc',
         },
@@ -817,7 +817,7 @@ describe('codec', function() {
         },
       };
 
-      var encodedQuery = codec.encodeQuery(fakeQuery);
+      const encodedQuery = codec.encodeQuery(fakeQuery);
       assert.strictEqual(encodedQuery.types, undefined);
     });
   });
@@ -825,12 +825,12 @@ describe('codec', function() {
   describe('encodeRead', function() {
     describe('query.keys', function() {
       it('should encode and map input to keySet', function() {
-        var query = {
+        const query = {
           keys: ['key', ['composite', 'key']],
         };
 
-        var encodedValue = {};
-        var numEncodeRequests = 0;
+        const encodedValue = {};
+        let numEncodeRequests = 0;
 
         codec.encode = function(key) {
           numEncodeRequests++;
@@ -853,7 +853,7 @@ describe('codec', function() {
           return encodedValue;
         };
 
-        var expectedKeys = [
+        const expectedKeys = [
           {
             values: [encodedValue],
           },
@@ -862,60 +862,60 @@ describe('codec', function() {
           },
         ];
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
         assert.deepStrictEqual(encoded.keySet.keys, expectedKeys);
       });
 
       it('should accept just a key', function() {
-        var query = 'key';
+        const query = 'key';
 
-        var encodedValue = {};
+        const encodedValue = {};
         codec.encode = function(key) {
           assert.strictEqual(key, query);
           return encodedValue;
         };
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
       });
 
       it('should accept just an array of keys', function() {
-        var query = ['key'];
+        const query = ['key'];
 
-        var encodedValue = {};
+        const encodedValue = {};
         codec.encode = function(key) {
           assert.strictEqual(key, query[0]);
           return encodedValue;
         };
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
       });
 
       it('should arrify query.keys', function() {
-        var query = {
+        const query = {
           keys: 'key',
         };
 
-        var encodedValue = {};
+        const encodedValue = {};
         codec.encode = function(key) {
           assert.strictEqual(key, query.keys);
           return encodedValue;
         };
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
       });
 
       it('should remove keys property from request object', function() {
-        var query = {
+        const query = {
           keys: ['key'],
         };
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(encoded.keys, undefined);
       });
@@ -923,7 +923,7 @@ describe('codec', function() {
 
     describe('query.ranges', function() {
       it('should encode/map the inputs', function() {
-        var query = {
+        const query = {
           ranges: [
             {
               startOpen: 'key',
@@ -932,17 +932,17 @@ describe('codec', function() {
           ],
         };
 
-        var encodedValue = {};
-        var numEncodeRequests = 0;
+        const encodedValue = {};
+        let numEncodeRequests = 0;
 
         codec.encode = function(key) {
-          var keys = ['key', 'composite', 'key'];
+          const keys = ['key', 'composite', 'key'];
 
           assert.strictEqual(key, keys[numEncodeRequests++]);
           return encodedValue;
         };
 
-        var expectedRanges = [
+        const expectedRanges = [
           {
             startOpen: {
               values: [encodedValue],
@@ -953,14 +953,14 @@ describe('codec', function() {
           },
         ];
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(numEncodeRequests, 3);
         assert.deepStrictEqual(encoded.keySet.ranges, expectedRanges);
       });
 
       it('should arrify query.ranges', function() {
-        var query = {
+        const query = {
           ranges: [
             {
               startOpen: 'start',
@@ -969,15 +969,15 @@ describe('codec', function() {
           ],
         };
 
-        var encodedValue = {};
-        var numEncodeRequests = 0;
+        const encodedValue = {};
+        let numEncodeRequests = 0;
 
         codec.encode = function(key) {
           assert.strictEqual(key, ['start', 'end'][numEncodeRequests++]);
           return encodedValue;
         };
 
-        var expectedRanges = [
+        const expectedRanges = [
           {
             startOpen: {
               values: [encodedValue],
@@ -988,14 +988,14 @@ describe('codec', function() {
           },
         ];
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(numEncodeRequests, 2);
         assert.deepStrictEqual(encoded.keySet.ranges, expectedRanges);
       });
 
       it('should remove the ranges property from the query', function() {
-        var query = {
+        const query = {
           ranges: [
             {
               startOpen: 'start',
@@ -1004,7 +1004,7 @@ describe('codec', function() {
           ],
         };
 
-        var encoded = codec.encodeRead(query);
+        const encoded = codec.encodeRead(query);
 
         assert.strictEqual(encoded.ranges, undefined);
       });
@@ -1014,20 +1014,20 @@ describe('codec', function() {
   describe('createTypeObject', function() {
     it('should convert the type to its int value', function() {
       TYPES.forEach(function(typeName, i) {
-        var type = codec.createTypeObject(typeName);
+        const type = codec.createTypeObject(typeName);
 
         assert.deepStrictEqual(type.code, i);
       });
     });
 
     it('should default to unspecified for unknown types', function() {
-      var type = codec.createTypeObject('unicorn');
+      const type = codec.createTypeObject('unicorn');
 
       assert.deepStrictEqual(type, {code: TYPES.indexOf('unspecified')});
     });
 
     it('should set the arrayElementType', function() {
-      var type = codec.createTypeObject({
+      const type = codec.createTypeObject({
         type: 'array',
         child: 'bool',
       });
@@ -1041,7 +1041,7 @@ describe('codec', function() {
     });
 
     it('should set the struct fields', function() {
-      var type = codec.createTypeObject({
+      const type = codec.createTypeObject({
         type: 'struct',
         fields: [
           {name: 'boolKey', type: 'bool'},
@@ -1071,7 +1071,7 @@ describe('codec', function() {
     });
 
     it('should handle nested structs', function() {
-      var type = codec.createTypeObject({
+      const type = codec.createTypeObject({
         type: 'struct',
         fields: [
           {

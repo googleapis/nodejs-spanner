@@ -16,11 +16,10 @@
 
 'use strict';
 
-var common = require('@google-cloud/common-grpc');
-var is = require('is');
-var util = require('util');
-
-var TransactionRequest = require('./transaction-request.js');
+const common = require('@google-cloud/common-grpc');
+const is = require('is');
+const util = require('util');
+const TransactionRequest = require('./transaction-request');
 
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
@@ -70,7 +69,7 @@ function Table(database, name) {
    */
   this.name = name;
 
-  var pool = database.pool_;
+  const pool = database.pool_;
   this.request = pool.request.bind(pool);
   this.requestStream = pool.requestStream.bind(pool);
 
@@ -529,7 +528,7 @@ Table.prototype.insert = function(keyVals, callback) {
  * Reading data using a storing index:
  */
 Table.prototype.read = function(keyVals, options, callback) {
-  var rows = [];
+  const rows = [];
 
   if (is.fn(options)) {
     callback = options;

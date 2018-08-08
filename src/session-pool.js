@@ -16,18 +16,18 @@
 
 'use strict';
 
-var EventEmitter = require('events').EventEmitter;
-var arrify = require('arrify');
-var delay = require('delay');
-var extend = require('extend');
-var is = require('is');
-var PQueue = require('p-queue');
-var stackTrace = require('stack-trace');
-var streamEvents = require('stream-events');
-var through = require('through2');
-var util = require('util');
+const EventEmitter = require('events').EventEmitter;
+const arrify = require('arrify');
+const delay = require('delay');
+const extend = require('extend');
+const is = require('is');
+const PQueue = require('p-queue');
+const stackTrace = require('stack-trace');
+const streamEvents = require('stream-events');
+const through = require('through2');
+const util = require('util');
 
-var DEFAULTS = {
+const DEFAULTS = {
   acquireTimeout: Infinity,
   concurrency: 10,
   fail: false,
@@ -39,8 +39,8 @@ var DEFAULTS = {
   writes: 0,
 };
 
-var READONLY = 'readonly';
-var READWRITE = 'readwrite';
+const READONLY = 'readonly';
+const READWRITE = 'readwrite';
 
 /**
  * Session pool configuration options.
@@ -137,7 +137,7 @@ util.inherits(SessionPool, EventEmitter);
  * @return {string}
  */
 SessionPool.formatTrace_ = function(trace) {
-  var formatted = trace.slice(2).map(function(t) {
+  const formatted = trace.slice(2).map(function(t) {
     return `    at ${t.getFunctionName() ||
       t.getMethodName()} (${t.getFileName()}:${t.getLineNumber()}:${t.getColumnNumber()})`;
   });
@@ -170,8 +170,8 @@ SessionPool.prototype.borrowed = function() {
  * @returns {Promise}
  */
 SessionPool.prototype.close = function() {
-  var self = this;
-  var sessions = this.reads_.concat(this.writes_, this.borrowed_);
+  const self = this;
+  const sessions = this.reads_.concat(this.writes_, this.borrowed_);
 
   this.isOpen = false;
 
@@ -197,18 +197,18 @@ SessionPool.prototype.close = function() {
  * @return {Promise}
  */
 SessionPool.prototype.fill = function() {
-  var requests = [];
-  var i;
+  const requests = [];
+  let i;
 
-  var minReadWrite = Math.floor(this.options.min * this.options.writes);
-  var neededReadWrite = Math.max(minReadWrite - this.writes_.length, 0);
+  const minReadWrite = Math.floor(this.options.min * this.options.writes);
+  const neededReadWrite = Math.max(minReadWrite - this.writes_.length, 0);
 
   for (i = 0; i < neededReadWrite; i++) {
     requests.push(this.createSessionInBackground_(READWRITE));
   }
 
-  var minReadOnly = Math.ceil(this.options.min - minReadWrite);
-  var neededReadOnly = Math.max(minReadOnly - this.reads_.length, 0);
+  const minReadOnly = Math.ceil(this.options.min - minReadWrite);
+  const neededReadOnly = Math.max(minReadOnly - this.reads_.length, 0);
 
   for (i = 0; i < neededReadOnly; i++) {
     requests.push(this.createSessionInBackground_(READONLY));
@@ -262,7 +262,7 @@ SessionPool.prototype.isFull = function() {
  * @return {Promise}
  */
 SessionPool.prototype.open = function() {
-  var self = this;
+  const self = this;
 
   this.isOpen = true;
   this.onClose_ = new Promise(function(resolve) {
@@ -285,7 +285,7 @@ SessionPool.prototype.open = function() {
  * @param {Session} session The session to release.
  */
 SessionPool.prototype.release = function(session) {
-  var self = this;
+  const self = this;
 
   if (this.borrowed_.indexOf(session) === -1) {
     throw new Error('Unable to release unknown session.');
@@ -314,7 +314,7 @@ SessionPool.prototype.release = function(session) {
  * @param {function} callback
  */
 SessionPool.prototype.request = function(config, callback) {
-  var self = this;
+  const self = this;
 
   this.getSession().then(function(session) {
     config.reqOpts.session = session.formattedName_;
@@ -333,12 +333,12 @@ SessionPool.prototype.request = function(config, callback) {
  * @returns {Stream}
  */
 SessionPool.prototype.requestStream = function(config) {
-  var self = this;
+  const self = this;
 
-  var requestStream;
-  var session;
+  let requestStream;
+  let session;
 
-  var waitForSessionStream = streamEvents(through.obj());
+  const waitForSessionStream = streamEvents(through.obj());
   waitForSessionStream.abort = function() {
     releaseSession();
 
@@ -394,13 +394,13 @@ SessionPool.prototype.size = function() {
  * @returns {Promise<Session>}
  */
 SessionPool.prototype.acquireSession_ = function(type) {
-  var self = this;
+  const self = this;
 
   if (!this.isOpen) {
     return Promise.reject(new Error('Database is closed.'));
   }
 
-  var trace = stackTrace.get();
+  const trace = stackTrace.get();
 
   return this.getSession_(type).then(function(session) {
     session.lastUsed = Date.now();
@@ -435,7 +435,7 @@ SessionPool.prototype.borrowSession_ = function(session) {
  * @return {Promise<Session>}
  */
 SessionPool.prototype.createReadSession_ = function() {
-  var session = this.session_();
+  const session = this.session_();
 
   return session.create().then(function() {
     session.type = READONLY;
@@ -451,8 +451,8 @@ SessionPool.prototype.createReadSession_ = function() {
  * @return {Promise<Session>}
  */
 SessionPool.prototype.createWriteSession_ = function() {
-  var self = this;
-  var session = this.session_();
+  const self = this;
+  const session = this.session_();
 
   return session
     .create()
@@ -477,7 +477,7 @@ SessionPool.prototype.createWriteSession_ = function() {
  * @returns {Promise<Session>}
  */
 SessionPool.prototype.createSession_ = function(type) {
-  var self = this;
+  const self = this;
 
   this.pendingCreates_ += 1;
 
@@ -512,7 +512,7 @@ SessionPool.prototype.createSession_ = function(type) {
  * @returns {Promise}
  */
 SessionPool.prototype.createSessionInBackground_ = function(type) {
-  var self = this;
+  const self = this;
 
   return this.createSession_(type).then(
     function() {
@@ -534,9 +534,9 @@ SessionPool.prototype.createSessionInBackground_ = function(type) {
  * @returns {Promise<Transaction>}
  */
 SessionPool.prototype.createTransaction_ = function(session, options) {
-  var self = this;
-  var transaction = session.transaction(options);
-  var end = transaction.end.bind(transaction);
+  const self = this;
+  const transaction = session.transaction(options);
+  const end = transaction.end.bind(transaction);
 
   transaction.end = function(callback) {
     self.release(session);
@@ -561,7 +561,7 @@ SessionPool.prototype.createTransaction_ = function(session, options) {
  * @returns {Promise}
  */
 SessionPool.prototype.destroySession_ = function(session) {
-  var self = this;
+  const self = this;
 
   this.spliceSession_(session);
 
@@ -590,15 +590,15 @@ SessionPool.prototype.destroySession_ = function(session) {
  * @returns {Promise}
  */
 SessionPool.prototype.evictIdleSessions_ = function() {
-  var self = this;
-  var evicted = [];
+  const self = this;
+  const evicted = [];
 
-  var maxIdle = this.options.maxIdle;
-  var min = this.options.min;
-  var size = this.size();
+  const maxIdle = this.options.maxIdle;
+  const min = this.options.min;
+  const size = this.size();
 
-  var idle = this.getIdleSessions_();
-  var count = idle.length;
+  const idle = this.getIdleSessions_();
+  let count = idle.length;
 
   while (count-- > maxIdle && size - evicted.length > min) {
     evicted.push(idle.pop());
@@ -619,8 +619,8 @@ SessionPool.prototype.evictIdleSessions_ = function() {
  * @returns {Session[]}
  */
 SessionPool.prototype.getIdleSessions_ = function() {
-  var idlesAfter = this.options.idlesAfter * 60000;
-  var sessions = this.reads_.concat(this.writes_);
+  const idlesAfter = this.options.idlesAfter * 60000;
+  const sessions = this.reads_.concat(this.writes_);
 
   return sessions.filter(function(session) {
     return Date.now() - session.lastUsed >= idlesAfter;
@@ -636,8 +636,8 @@ SessionPool.prototype.getIdleSessions_ = function() {
  * @returns {Promise<Session>}
  */
 SessionPool.prototype.getNextAvailableSession_ = function(type) {
-  var self = this;
-  var session = null;
+  const self = this;
+  let session = null;
 
   if (type === READONLY && this.reads_.length) {
     session = this.reads_[0];
@@ -674,10 +674,10 @@ SessionPool.prototype.getNextAvailableSession_ = function(type) {
  * @returns {Promise<Session>}
  */
 SessionPool.prototype.getSession_ = function(type) {
-  var self = this;
+  const self = this;
 
-  var available = this.available();
-  var acquires = this.acquireQueue_.size;
+  const available = this.available();
+  const acquires = this.acquireQueue_.size;
 
   if (available && !acquires) {
     return this.getNextAvailableSession_(type);
@@ -687,12 +687,12 @@ SessionPool.prototype.getSession_ = function(type) {
     return Promise.reject(new Error('No resources available.'));
   }
 
-  var promises = [this.waitForNextAvailable_(type)];
-  var shouldCreate =
+  const promises = [this.waitForNextAvailable_(type)];
+  const shouldCreate =
     !this.isFull() && available + this.pendingCreates_ < acquires + 1;
 
   if (shouldCreate) {
-    var createPromise = new Promise(function(resolve, reject) {
+    const createPromise = new Promise(function(resolve, reject) {
       self.createSession_(type).then(function() {
         self.emit('available');
       }, reject);
@@ -735,7 +735,7 @@ SessionPool.prototype.needsFill_ = function() {
  * @returns {Promise}
  */
 SessionPool.prototype.onAvailable_ = function() {
-  var self = this;
+  const self = this;
 
   return new Promise(function(resolve) {
     self.once('available', resolve);
@@ -751,8 +751,8 @@ SessionPool.prototype.onAvailable_ = function() {
  * @returns {Promise}
  */
 SessionPool.prototype.pingIdleSessions_ = function() {
-  var self = this;
-  var sessions = this.getIdleSessions_();
+  const self = this;
+  const sessions = this.getIdleSessions_();
 
   return Promise.all(
     sessions.map(function(session) {
@@ -773,7 +773,7 @@ SessionPool.prototype.pingIdleSessions_ = function() {
  * @returns {Promise}
  */
 SessionPool.prototype.pingSession_ = function(session) {
-  var self = this;
+  const self = this;
 
   this.borrowSession_(session);
 
@@ -793,7 +793,7 @@ SessionPool.prototype.pingSession_ = function(session) {
         });
     })
     .catch(function() {
-      var index = self.borrowed_.indexOf(session);
+      const index = self.borrowed_.indexOf(session);
       self.borrowed_.splice(index, 1);
     });
 };
@@ -808,7 +808,7 @@ SessionPool.prototype.pingSession_ = function(session) {
  * @returns {Promise}
  */
 SessionPool.prototype.race_ = function(promises) {
-  var timeout = this.options.acquireTimeout;
+  const timeout = this.options.acquireTimeout;
 
   promises = arrify(promises);
 
@@ -836,7 +836,7 @@ SessionPool.prototype.race_ = function(promises) {
  * @param {Session} session The session object.
  */
 SessionPool.prototype.release_ = function(session) {
-  var index = this.borrowed_.indexOf(session);
+  const index = this.borrowed_.indexOf(session);
 
   this.borrowed_.splice(index, 1);
   this.getSessionGroup_(session).unshift(session);
@@ -852,7 +852,7 @@ SessionPool.prototype.release_ = function(session) {
  * @returns {Session}
  */
 SessionPool.prototype.session_ = function() {
-  var session = this.database.session_();
+  const session = this.database.session_();
   session.lastUsed = Date.now();
   return session;
 };
@@ -865,8 +865,8 @@ SessionPool.prototype.session_ = function() {
  * @param {Session} session The session to splice.
  */
 SessionPool.prototype.spliceSession_ = function(session) {
-  var group = this.getSessionGroup_(session);
-  var index = group.indexOf(session);
+  const group = this.getSessionGroup_(session);
+  const index = group.indexOf(session);
 
   // if index is -1 then definitely there is a session leak. In an ideal situation, index should never be -1
   if (index > -1) {
@@ -880,9 +880,9 @@ SessionPool.prototype.spliceSession_ = function(session) {
  * @private
  */
 SessionPool.prototype.startHouseKeeping_ = function() {
-  var self = this;
-  var keepAliveInterval = this.options.keepAlive * 60000;
-  var evictInterval = this.options.idlesAfter * 60000;
+  const self = this;
+  const keepAliveInterval = this.options.keepAlive * 60000;
+  const evictInterval = this.options.idlesAfter * 60000;
 
   this.once('available', onavailable);
   this.once('close', onclose);
@@ -932,7 +932,7 @@ SessionPool.prototype.stopHouseKeeping_ = function() {
  * @return {Promise<Session>}
  */
 SessionPool.prototype.waitForNextAvailable_ = function(type) {
-  var self = this;
+  const self = this;
 
   return this.acquireQueue_.add(function() {
     if (self.available() > 0) {

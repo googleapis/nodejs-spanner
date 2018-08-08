@@ -16,9 +16,9 @@
 
 'use strict';
 
-var codec = require('./codec.js');
-var commonGrpc = require('@google-cloud/common-grpc');
-var is = require('is');
+const codec = require('./codec.js');
+const commonGrpc = require('@google-cloud/common-grpc');
+const is = require('is');
 
 /*!
  * Combine row chunks from multiple `PartialResultSet` API response objects.
@@ -42,7 +42,7 @@ function RowBuilder(fields) {
  * Extracts value from chunk.
  */
 RowBuilder.getValue = function(obj) {
-  var value = obj;
+  let value = obj;
 
   if (obj && obj.kind) {
     value = commonGrpc.Service.decodeValue_(obj);
@@ -84,22 +84,22 @@ RowBuilder.formatValue = function(field, value) {
  * Merge chunk values.
  */
 RowBuilder.merge = function(type, head, tail) {
-  var code = type.code;
+  const code = type.code;
 
   head = RowBuilder.getValue(head);
   tail = RowBuilder.getValue(tail);
 
-  var isMergeable = !is.nil(head) && !is.nil(tail) && code !== 'FLOAT64';
-  var merged = [];
-  var mergedItems;
+  const isMergeable = !is.nil(head) && !is.nil(tail) && code !== 'FLOAT64';
+  const merged = [];
+  let mergedItems;
 
   if (code === 'ARRAY') {
-    var arrayType = type.arrayElementType;
+    const arrayType = type.arrayElementType;
     mergedItems = RowBuilder.merge(arrayType, head.pop(), tail.shift());
 
     merged.push(head.concat(mergedItems).concat(tail));
   } else if (code === 'STRUCT') {
-    var structType = type.structType.fields[head.length - 1].type;
+    const structType = type.structType.fields[head.length - 1].type;
     mergedItems = RowBuilder.merge(structType, head.pop(), tail.shift());
 
     merged.push(head.concat(mergedItems).concat(tail));
@@ -136,13 +136,13 @@ RowBuilder.prototype.append = function(value) {
  * Process chunks.
  */
 RowBuilder.prototype.build = function() {
-  var self = this;
+  const self = this;
 
   this.chunks.forEach(function(chunk) {
     // If we have a chunk to merge, merge the values now.
     if (self.pendingChunk) {
-      var currentColumn = self.currentRow.length % self.fields.length;
-      var merged = RowBuilder.merge(
+      const currentColumn = self.currentRow.length % self.fields.length;
+      const merged = RowBuilder.merge(
         self.fields[currentColumn].type,
         self.pendingChunk,
         chunk.values.shift()
@@ -168,7 +168,7 @@ RowBuilder.prototype.build = function() {
  * Flush already complete rows.
  */
 RowBuilder.prototype.flush = function() {
-  var rowsToReturn = this.rows;
+  const rowsToReturn = this.rows;
 
   if (
     !is.empty(this.rows[0]) &&
@@ -188,7 +188,7 @@ RowBuilder.prototype.flush = function() {
  */
 RowBuilder.prototype.toJSON = function(rows) {
   return rows.map(values => {
-    var formattedRow = values.map((value, index) => {
+    const formattedRow = values.map((value, index) => {
       let field = this.fields[index];
 
       return {
