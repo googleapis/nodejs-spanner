@@ -58,12 +58,12 @@ describe('Session', function() {
   const NAME = 'session-name';
 
   before(function() {
-    Session = proxyquire('../src/session.js', {
+    Session = proxyquire('../src/session', {
       '@google-cloud/common-grpc': {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
-      './transaction.js': FakeTransaction,
+      './transaction': FakeTransaction,
     });
   });
 

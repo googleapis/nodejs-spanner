@@ -150,12 +150,6 @@ describe('Spanner', function() {
       assert.strictEqual(spanner.getInstancesStream, 'getInstances');
     });
 
-    it('should work without new', function() {
-      assert.doesNotThrow(function() {
-        Spanner(OPTIONS);
-      });
-    });
-
     it('should create an auth instance from google-auth-library', function() {
       const expectedOptions = extend({}, OPTIONS, {
         libName: 'gccl',
