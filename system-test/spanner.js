@@ -167,7 +167,12 @@ describe('Spanner', function() {
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
-          assert.deepStrictEqual(rows[0], [
+
+          const symbols = Object.getOwnPropertySymbols(rows[0][0].value[0]);
+          assert.strictEqual(symbols.length, 1);
+          assert.strictEqual(rows[0][0].value[0][symbols[0]], 'struct');
+
+          const expected = [
             {
               name: '',
               value: [
@@ -185,7 +190,17 @@ describe('Spanner', function() {
                 ],
               ],
             },
-          ]);
+          ];
+
+          assert.deepStrictEqual(
+            JSON.stringify(rows[0][0].value[0][0]),
+            JSON.stringify(expected[0].value[0][0])
+          );
+          assert.deepStrictEqual(
+            JSON.stringify(rows[0][0].value[0][1]),
+            JSON.stringify(expected[0].value[0][1])
+          );
+
           done();
         });
       });
@@ -196,7 +211,12 @@ describe('Spanner', function() {
 
         database.run(query, function(err, rows) {
           assert.ifError(err);
-          assert.deepStrictEqual(rows[0], [
+
+          const symbols = Object.getOwnPropertySymbols(rows[0][1].value[0]);
+          assert.strictEqual(symbols.length, 1);
+          assert.strictEqual(rows[0][1].value[0][symbols[0]], 'struct');
+
+          const expected = [
             {
               name: 'id',
               value: {
@@ -220,7 +240,21 @@ describe('Spanner', function() {
                 ],
               ],
             },
-          ]);
+          ];
+
+          assert.deepStrictEqual(
+            JSON.stringify(rows[0][0]),
+            JSON.stringify(expected[0])
+          );
+          assert.deepStrictEqual(
+            JSON.stringify(rows[0][1].value[0][0]),
+            JSON.stringify(expected[1].value[0][0])
+          );
+          assert.deepStrictEqual(
+            JSON.stringify(rows[0][1].value[0][1]),
+            JSON.stringify(expected[1].value[0][1])
+          );
+
           done();
         });
       });
@@ -1409,10 +1443,16 @@ describe('Spanner', function() {
           assert.strictEqual(values.length, 2);
 
           assert.strictEqual(values[0][0].value, 'a');
-          assert.deepStrictEqual(values[0][1].value, {value: 1});
+          assert.deepStrictEqual(
+            JSON.stringify(values[0][1].value),
+            JSON.stringify({value: '1'})
+          );
 
           assert.strictEqual(values[1][0].value, 'b');
-          assert.deepStrictEqual(values[1][1].value, {value: 2});
+          assert.deepStrictEqual(
+            JSON.stringify(values[1][1].value),
+            JSON.stringify({value: '2'})
+          );
 
           done();
         });
@@ -1574,10 +1614,13 @@ describe('Spanner', function() {
               assert.ifError(err);
 
               const expected = values.map(function(val) {
-                return is.number(val) ? {value: val} : val;
+                return is.number(val) ? {value: String(val)} : val;
               });
 
-              assert.deepStrictEqual(rows[0][0].value, expected);
+              assert.strictEqual(
+                JSON.stringify(rows[0][0].value),
+                JSON.stringify(expected)
+              );
               done();
             });
           });
@@ -1678,7 +1721,10 @@ describe('Spanner', function() {
                 return is.number(val) ? {value: val} : val;
               });
 
-              assert.deepStrictEqual(rows[0][0].value, expected);
+              assert.strictEqual(
+                JSON.stringify(rows[0][0].value),
+                JSON.stringify(expected)
+              );
               done();
             });
           });
@@ -1789,7 +1835,10 @@ describe('Spanner', function() {
                 return is.number(val) ? {value: val + ''} : val;
               });
 
-              assert.deepStrictEqual(rows[0][0].value, expected);
+              assert.strictEqual(
+                JSON.stringify(rows[0][0].value),
+                JSON.stringify(expected)
+              );
               done();
             });
           });
