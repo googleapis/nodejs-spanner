@@ -16,7 +16,10 @@
 
 'use strict';
 
-const common = require('@google-cloud/common-grpc');
+const {Service, Operation} = require('@google-cloud/common-grpc');
+const {paginator} = require('@google-cloud/paginator');
+const {replaceProjectIdToken} = require('@google-cloud/projectify');
+const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const {GoogleAuth} = require('google-auth-library');
 const is = require('is');
@@ -163,7 +166,7 @@ function Spanner(options) {
     return new Spanner(options);
   }
 
-  options = common.util.normalizeArguments(this, options);
+  options = options || {};
 
   this.clients_ = new Map();
   this.instances_ = new Map();
@@ -206,10 +209,10 @@ function Spanner(options) {
     packageJson: require('../package.json'),
   };
 
-  common.Service.call(this, config, this.options);
+  Service.call(this, config, this.options);
 }
 
-util.inherits(Spanner, common.Service);
+util.inherits(Spanner, Service);
 
 /**
  * Placeholder used to auto populate a column with the commit timestamp.
@@ -568,9 +571,7 @@ Spanner.prototype.getInstances = function(query, callback) {
  *     this.end();
  *   });
  */
-Spanner.prototype.getInstancesStream = common.paginator.streamify(
-  'getInstances'
-);
+Spanner.prototype.getInstancesStream = paginator.streamify('getInstances');
 
 /**
  * Query object for listing instance configs.
@@ -757,7 +758,7 @@ Spanner.prototype.operation = function(name) {
     throw new Error('A name is required to access an Operation object.');
   }
 
-  return new common.Operation(this, name);
+  return new Operation(this, name);
 };
 
 /**
@@ -784,7 +785,7 @@ Spanner.prototype.prepareGapicRequest_ = function(config, callback) {
     const gaxClient = self.clients_.get(clientName);
 
     let reqOpts = extend(true, {}, config.reqOpts);
-    reqOpts = common.util.replaceProjectIdToken(reqOpts, projectId);
+    reqOpts = replaceProjectIdToken(reqOpts, projectId);
 
     const requestFn = gaxClient[config.method].bind(
       gaxClient,
@@ -867,7 +868,7 @@ Spanner.prototype.requestStream = function(config) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Spanner, {
+promisifyAll(Spanner, {
   exclude: [
     'date',
     'float',

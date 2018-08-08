@@ -22,7 +22,7 @@ const concat = require('concat-stream');
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const through = require('through2');
-const util = require('@google-cloud/common-grpc').util;
+const {util} = require('@google-cloud/common-grpc');
 
 let checkpointStreamOverride;
 function fakeCheckpointStream() {}

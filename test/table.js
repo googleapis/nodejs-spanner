@@ -22,14 +22,14 @@ const proxyquire = require('proxyquire');
 const {split} = require('split-array-stream');
 const through = require('through2');
 const {util} = require('@google-cloud/common-grpc');
+const pfy = require('@google-cloud/promisify');
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Table') {
       return;
     }
-
     promisified = true;
     assert.deepStrictEqual(options.exclude, ['delete']);
   },
@@ -58,9 +58,7 @@ describe('Table', function() {
 
   before(function() {
     Table = proxyquire('../src/table.js', {
-      '@google-cloud/common-grpc': {
-        util: fakeUtil,
-      },
+      '@google-cloud/promisify': fakePfy,
       './transaction-request.js': FakeTransactionRequest,
     });
     TableCached = extend({}, Table);

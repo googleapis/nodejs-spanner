@@ -16,7 +16,7 @@
 
 'use strict';
 
-const EventEmitter = require('events').EventEmitter;
+const {EventEmitter} = require('events');
 const arrify = require('arrify');
 const delay = require('delay');
 const extend = require('extend');

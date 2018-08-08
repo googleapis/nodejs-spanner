@@ -17,7 +17,7 @@
 'use strict';
 
 const codec = require('./codec.js');
-const commonGrpc = require('@google-cloud/common-grpc');
+const {Service} = require('@google-cloud/common-grpc');
 const is = require('is');
 
 /*!
@@ -45,7 +45,7 @@ RowBuilder.getValue = function(obj) {
   let value = obj;
 
   if (obj && obj.kind) {
-    value = commonGrpc.Service.decodeValue_(obj);
+    value = Service.decodeValue_(obj);
   }
 
   if (value && value.values) {
