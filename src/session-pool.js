@@ -363,9 +363,18 @@ class SessionPool extends EventEmitter {
       return Promise.reject(new ClosedError());
     }
 
+    const startTime = Date.now();
+    const timeout = this.options.acquireTimeout;
     const trace = stackTrace.get();
-    const getSession = () =>
-      this._getSession(type).then(session => {
+
+    const getSession = () => {
+      const elapsed = Date.now() - startTime;
+
+      if (elapsed >= timeout) {
+        return Promise.reject(new TimeoutError());
+      }
+
+      return this._getSession(type, startTime).then(session => {
         if (!this._isValidSession(session)) {
           this.inventory.borrowed.delete(session);
           return getSession();
@@ -375,6 +384,7 @@ class SessionPool extends EventEmitter {
         this._traces.set(session.id, trace);
         return session;
       });
+    };
 
     return this._acquires.add(getSession).then(session => {
       if (type === READONLY || session.txn) {
@@ -610,9 +620,10 @@ class SessionPool extends EventEmitter {
    * @private
    *
    * @param {string} type The desired session type.
+   * @param {number} startTime Timestamp to use when determining timeouts.
    * @returns {Promise<Session>}
    */
-  _getSession(type) {
+  _getSession(type, startTime) {
     if (this.available) {
       return Promise.resolve(this._borrowNextAvailableSession(type));
     }
@@ -623,20 +634,23 @@ class SessionPool extends EventEmitter {
 
     let removeListener;
 
-    const waitForNextAvailable = new Promise(resolve => {
-      this.once('available', resolve);
-      removeListener = this.removeListener.bind(this, 'available', resolve);
-    });
-
     const promises = [
-      this._onClose.then(() => Promise.reject(new ClosedError())),
-      waitForNextAvailable.then(() => this._borrowNextAvailableSession(type)),
+      this._onClose.then(() => {
+        throw new ClosedError();
+      }),
+      new Promise(resolve => {
+        this.once('available', resolve);
+        removeListener = this.removeListener.bind(this, 'available', resolve);
+      }),
     ];
 
     const timeout = this.options.acquireTimeout;
 
     if (!is.infinite(timeout)) {
-      promises.push(delay.reject(timeout, new TimeoutError()));
+      let elapsed = Date.now() - startTime;
+      let remaining = timeout - elapsed;
+
+      promises.push(delay.reject(remaining, new TimeoutError()));
     }
 
     if (!this.isFull) {
@@ -647,10 +661,13 @@ class SessionPool extends EventEmitter {
       );
     }
 
-    return Promise.race(promises).catch(err => {
-      removeListener();
-      throw err;
-    });
+    return Promise.race(promises).then(
+      () => this._borrowNextAvailableSession(type),
+      err => {
+        removeListener();
+        throw err;
+      }
+    );
   }
 
   /**
