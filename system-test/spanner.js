@@ -32,7 +32,6 @@ const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 describe('Spanner', function() {
   const instance = spanner.instance(generateName('instance'));
 
-  var INSTANCE_CONFIG = {
   const INSTANCE_CONFIG = {
     config: 'regional-us-central1',
     nodes: 1,
