@@ -24,6 +24,7 @@ const proxyquire = require('proxyquire');
 const through = require('through2');
 const {util} = require('@google-cloud/common-grpc');
 const pfy = require('@google-cloud/promisify');
+const {EventEmitter} = require('events');
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -47,8 +48,11 @@ function FakeBatchTransaction() {
   this.calledWith_ = arguments;
 }
 
-function FakeGrpcServiceObject() {
-  this.calledWith_ = arguments;
+class FakeGrpcServiceObject extends EventEmitter {
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
 }
 
 function FakePartialResultStream() {
@@ -81,13 +85,6 @@ const fakeCodec = {
   SpannerDate: function() {},
 };
 
-const fakeModelo = {
-  inherits: function() {
-    this.calledWith_ = arguments;
-    return require('modelo').inherits.apply(this, arguments);
-  },
-};
-
 describe('Database', function() {
   let Database;
   let DatabaseCached;
@@ -113,7 +110,6 @@ describe('Database', function() {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
-      modelo: fakeModelo,
       './batch-transaction': FakeBatchTransaction,
       './codec': fakeCodec,
       './partial-result-stream': FakePartialResultStream,
@@ -213,12 +209,6 @@ describe('Database', function() {
       });
 
       calledWith.createMethod(null, options, done);
-    });
-
-    it('should inherit from EventEmitter', function() {
-      const args = fakeModelo.calledWith_;
-      assert.strictEqual(args[0], Database);
-      assert.strictEqual(args[2], events.EventEmitter);
     });
   });
 
