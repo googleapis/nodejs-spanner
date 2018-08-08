@@ -38,7 +38,7 @@ const DEFAULTS = {
 };
 
 /**
- *
+ * Error to be thrown when Pool is closed.
  */
 class ClosedError extends Error {
   constructor() {
@@ -47,7 +47,8 @@ class ClosedError extends Error {
 }
 
 /**
- *
+ * Error to be thrown when no resources are available and the `fail` option is
+ * set to `true`.
  */
 class EmptyError extends Error {
   constructor() {
@@ -56,7 +57,7 @@ class EmptyError extends Error {
 }
 
 /**
- *
+ * Error to be thrown when attempting to release unknown resources.
  */
 class ReleaseError extends Error {
   constructor(resource) {
@@ -66,7 +67,7 @@ class ReleaseError extends Error {
 }
 
 /**
- *
+ * Error to be thrown when session leaks are detected.
  */
 class SessionLeakError extends Error {
   constructor(leaks) {
@@ -76,7 +77,7 @@ class SessionLeakError extends Error {
 }
 
 /**
- *
+ * Error to be thrown when acquiring a session times out.
  */
 class TimeoutError extends Error {
   constructor() {
@@ -85,7 +86,7 @@ class TimeoutError extends Error {
 }
 
 /**
- *
+ * Error to be thrown when `write` option is not in the correct format.
  */
 class WritePercentError extends TypeError {
   constructor() {
