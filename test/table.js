@@ -16,33 +16,33 @@
 
 'use strict';
 
-var assert = require('assert');
-var extend = require('extend');
-var proxyquire = require('proxyquire');
-var split = require('split-array-stream').split;
-var through = require('through2');
-var util = require('@google-cloud/common').util;
+const assert = require('assert');
+const extend = require('extend');
+const proxyquire = require('proxyquire');
+const {split} = require('split-array-stream');
+const through = require('through2');
+const {util} = require('@google-cloud/common-grpc');
 
-var promisified = false;
-var fakeUtil = extend({}, util, {
+let promisified = false;
+const fakeUtil = extend({}, util, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Table') {
       return;
     }
 
     promisified = true;
-    assert.deepEqual(options.exclude, ['delete']);
+    assert.deepStrictEqual(options.exclude, ['delete']);
   },
 });
 
 function FakeTransactionRequest() {}
 
 describe('Table', function() {
-  var Table;
-  var TableCached;
-  var table;
+  let Table;
+  let TableCached;
+  let table;
 
-  var DATABASE = {
+  const DATABASE = {
     api: {},
     makePooledRequest_: function() {
       return util.noop;
@@ -52,11 +52,11 @@ describe('Table', function() {
     },
   };
 
-  var NAME = 'table-name';
+  const NAME = 'table-name';
 
   before(function() {
     Table = proxyquire('../src/table.js', {
-      '@google-cloud/common': {
+      '@google-cloud/common-grpc': {
         util: fakeUtil,
       },
       './transaction-request.js': FakeTransactionRequest,
@@ -101,7 +101,7 @@ describe('Table', function() {
 
   describe('create', function() {
     it('should create a table from the database', function(done) {
-      var schema = 'schema';
+      const schema = 'schema';
 
       table.database = {
         createTable: function(schema_, callback) {
@@ -116,27 +116,27 @@ describe('Table', function() {
 
   describe('createReadStream', function() {
     it('should call and return parent method', function() {
-      var query = 'SELECT * from Everything';
+      const query = 'SELECT * from Everything';
 
-      var parentMethodReturnValue = {};
+      const parentMethodReturnValue = {};
 
       FakeTransactionRequest.prototype = {
         createReadStream: function(name, query_) {
           assert.strictEqual(this, table);
           assert.strictEqual(name, table.name);
-          assert.deepEqual(query_, {
+          assert.deepStrictEqual(query_, {
             keys: query,
           });
           return parentMethodReturnValue;
         },
       };
 
-      var readStream = table.createReadStream(query);
+      const readStream = table.createReadStream(query);
       assert.strictEqual(readStream, parentMethodReturnValue);
     });
 
     it('should accept an array of keys', function(done) {
-      var QUERY = ['a', 'b'];
+      const QUERY = ['a', 'b'];
 
       FakeTransactionRequest.prototype = {
         createReadStream: function(name, query) {
@@ -149,11 +149,11 @@ describe('Table', function() {
     });
 
     it('should support timestamp options', function(done) {
-      var QUERY = 'SELECT * from Everything';
-      var OPTIONS = {};
-      var FORMATTED_OPTIONS = {};
+      const QUERY = 'SELECT * from Everything';
+      const OPTIONS = {};
+      const FORMATTED_OPTIONS = {};
 
-      var formatTimestampOptions =
+      const formatTimestampOptions =
         FakeTransactionRequest.formatTimestampOptions;
 
       FakeTransactionRequest.formatTimestampOptions_ = function(options) {
@@ -181,7 +181,7 @@ describe('Table', function() {
 
   describe('delete', function() {
     it('should update the schema on the database', function() {
-      var updateSchemaReturnValue = {};
+      const updateSchemaReturnValue = {};
 
       function callback() {}
 
@@ -193,18 +193,18 @@ describe('Table', function() {
         },
       };
 
-      var returnValue = table.delete(callback);
+      const returnValue = table.delete(callback);
       assert.strictEqual(returnValue, updateSchemaReturnValue);
     });
   });
 
   describe('deleteRows', function() {
     it('should call and return parent method', function() {
-      var keys = [];
+      const keys = [];
 
       function callback() {}
 
-      var parentMethodReturnValue = {};
+      const parentMethodReturnValue = {};
 
       FakeTransactionRequest.prototype = {
         deleteRows: function(name, keys_, callback_) {
@@ -216,16 +216,16 @@ describe('Table', function() {
         },
       };
 
-      var returnValue = table.deleteRows(keys, callback);
+      const returnValue = table.deleteRows(keys, callback);
       assert.strictEqual(returnValue, parentMethodReturnValue);
     });
   });
 
   describe('insert', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var keyVals = [];
+      const keyVals = [];
 
       function callback() {}
 
@@ -237,22 +237,22 @@ describe('Table', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = table.insert(keyVals, callback);
+      const returnValue = table.insert(keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('read', function() {
     it('should call and collect results from a stream', function(done) {
-      var keyVals = [];
+      const keyVals = [];
 
-      var rows = [{}, {}];
+      const rows = [{}, {}];
 
       table.createReadStream = function(keyVals_, options) {
         assert.strictEqual(keyVals_, keyVals);
         assert.strictEqual(options, null);
 
-        var stream = through.obj();
+        const stream = through.obj();
 
         setImmediate(function() {
           split(rows, stream).then(function() {
@@ -265,18 +265,18 @@ describe('Table', function() {
 
       table.read(keyVals, function(err, rows_) {
         assert.ifError(err);
-        assert.deepEqual(rows_, rows);
+        assert.deepStrictEqual(rows_, rows);
         done();
       });
     });
 
     it('should accept an options object', function(done) {
-      var OPTIONS = {};
+      const OPTIONS = {};
 
       table.createReadStream = function(keyVals, options) {
         assert.strictEqual(OPTIONS, options);
 
-        var stream = through.obj();
+        const stream = through.obj();
 
         setImmediate(function() {
           stream.end();
@@ -289,10 +289,10 @@ describe('Table', function() {
     });
 
     it('should execute callback with error', function(done) {
-      var error = new Error('Error.');
+      const error = new Error('Error.');
 
       table.createReadStream = function() {
-        var stream = through.obj();
+        const stream = through.obj();
 
         setImmediate(function() {
           stream.destroy(error);
@@ -310,9 +310,9 @@ describe('Table', function() {
 
   describe('replace', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var keyVals = [];
+      const keyVals = [];
 
       function callback() {}
 
@@ -324,16 +324,16 @@ describe('Table', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = table.replace(keyVals, callback);
+      const returnValue = table.replace(keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('update', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var keyVals = [];
+      const keyVals = [];
 
       function callback() {}
 
@@ -345,16 +345,16 @@ describe('Table', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = table.update(keyVals, callback);
+      const returnValue = table.update(keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('upsert', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var keyVals = [];
+      const keyVals = [];
 
       function callback() {}
 
@@ -366,7 +366,7 @@ describe('Table', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = table.upsert(keyVals, callback);
+      const returnValue = table.upsert(keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });

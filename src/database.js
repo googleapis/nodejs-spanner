@@ -16,23 +16,23 @@
 
 'use strict';
 
-var arrify = require('arrify');
-var common = require('@google-cloud/common');
-var commonGrpc = require('@google-cloud/common-grpc');
-var events = require('events');
-var extend = require('extend');
-var is = require('is');
-var modelo = require('modelo');
-var streamEvents = require('stream-events');
-var through = require('through2');
+const arrify = require('arrify');
+const common = require('@google-cloud/common-grpc');
+const commonGrpc = require('@google-cloud/common-grpc');
+const events = require('events');
+const extend = require('extend');
+const is = require('is');
+const modelo = require('modelo');
+const streamEvents = require('stream-events');
+const through = require('through2');
 
-var BatchTransaction = require('./batch-transaction.js');
-var codec = require('./codec.js');
-var PartialResultStream = require('./partial-result-stream.js');
-var Session = require('./session.js');
-var SessionPool = require('./session-pool.js');
-var Table = require('./table.js');
-var TransactionRequest = require('./transaction-request.js');
+const BatchTransaction = require('./batch-transaction');
+const codec = require('./codec');
+const PartialResultStream = require('./partial-result-stream');
+const Session = require('./session');
+const SessionPool = require('./session-pool');
+const Table = require('./table');
+const TransactionRequest = require('./transaction-request');
 
 /**
  * Interface for implementing custom session pooling logic, it should extend the
@@ -104,14 +104,14 @@ var TransactionRequest = require('./transaction-request.js');
  * const database = instance.database('my-database');
  */
 function Database(instance, name, poolOptions) {
-  var self = this;
+  const self = this;
 
   this.request = instance.request;
   this.requestStream = instance.requestStream;
 
   this.formattedName_ = Database.formatName_(instance.formattedName_, name);
 
-  var PoolCtor = SessionPool;
+  let PoolCtor = SessionPool;
 
   if (is.fn(poolOptions)) {
     PoolCtor = poolOptions;
@@ -122,7 +122,7 @@ function Database(instance, name, poolOptions) {
   this.pool_.on('error', this.emit.bind(this, 'error'));
   this.pool_.open();
 
-  var methods = {
+  const methods = {
     /**
      * Create a database.
      *
@@ -234,7 +234,7 @@ Database.formatName_ = function(instanceName, name) {
     return name;
   }
 
-  var databaseName = name.split('/').pop();
+  const databaseName = name.split('/').pop();
 
   return instanceName + '/databases/' + databaseName;
 };
@@ -262,14 +262,14 @@ Database.formatName_ = function(instanceName, name) {
  * });
  */
 Database.prototype.batchTransaction = function(identifier) {
-  var session = identifier.session;
-  var id = identifier.transaction;
+  let session = identifier.session;
+  const id = identifier.transaction;
 
   if (is.string(session)) {
     session = this.session(session);
   }
 
-  var transaction = new BatchTransaction(session);
+  const transaction = new BatchTransaction(session);
 
   transaction.id = id;
   transaction.readTimestamp = identifier.readTimestamp;
@@ -313,7 +313,7 @@ Database.prototype.batchTransaction = function(identifier) {
  * });
  */
 Database.prototype.close = function(callback) {
-  var key = this.id.split('/').pop();
+  const key = this.id.split('/').pop();
 
   this.parent.databases_.delete(key);
   this.pool_.close(callback);
@@ -338,7 +338,7 @@ Database.prototype.close = function(callback) {
  * @returns {Promise<CreateTransactionResponse>}
  */
 Database.prototype.createBatchTransaction = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -351,7 +351,7 @@ Database.prototype.createBatchTransaction = function(options, callback) {
       return;
     }
 
-    var transaction = self.batchTransaction({session});
+    const transaction = self.batchTransaction({session});
 
     transaction.options = extend({}, options);
 
@@ -423,7 +423,7 @@ Database.prototype.createBatchTransaction = function(options, callback) {
  * });
  */
 Database.prototype.createSession = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.function(options)) {
     callback = options;
@@ -432,7 +432,7 @@ Database.prototype.createSession = function(options, callback) {
 
   options = options || {};
 
-  var reqOpts = {
+  const reqOpts = {
     database: this.formattedName_,
   };
 
@@ -449,7 +449,7 @@ Database.prototype.createSession = function(options, callback) {
         return;
       }
 
-      var session = self.session(resp.name);
+      const session = self.session(resp.name);
       session.metadata = resp;
 
       callback(null, session, resp);
@@ -525,7 +525,7 @@ Database.prototype.createSession = function(options, callback) {
  *   });
  */
 Database.prototype.createTable = function(schema, callback) {
-  var self = this;
+  const self = this;
 
   this.updateSchema(schema, function(err, operation, resp) {
     if (err) {
@@ -533,8 +533,8 @@ Database.prototype.createTable = function(schema, callback) {
       return;
     }
 
-    var tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
-    var table = self.table(tableName);
+    const tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
+    const table = self.table(tableName);
 
     callback(null, table, operation, resp);
   });
@@ -551,8 +551,8 @@ Database.prototype.createTable = function(schema, callback) {
  * @returns {Transaction}
  */
 Database.prototype.decorateTransaction_ = function(transaction, session) {
-  var self = this;
-  var end = transaction.end.bind(transaction);
+  const self = this;
+  const end = transaction.end.bind(transaction);
 
   transaction.end = function(callback) {
     self.pool_.release(session);
@@ -591,12 +591,12 @@ Database.prototype.decorateTransaction_ = function(transaction, session) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.delete().then(function(data) {
- *   var apiResponse = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Database.prototype.delete = function(callback) {
-  var self = this;
-  var reqOpts = {
+  const self = this;
+  const reqOpts = {
     database: this.formattedName_,
   };
 
@@ -652,12 +652,12 @@ Database.prototype.delete = function(callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.get().then(function(data) {
- *   var database = data[0];
- *   var apiResponse = data[0];
+ *   const database = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Database.prototype.get = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -735,7 +735,7 @@ Database.prototype.get = function(options, callback) {
  * });
  */
 Database.prototype.getMetadata = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     name: this.formattedName_,
   };
 
@@ -790,7 +790,7 @@ Database.prototype.getMetadata = function(callback) {
  * });
  */
 Database.prototype.getSchema = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     database: this.formattedName_,
   };
 
@@ -893,15 +893,15 @@ Database.prototype.getSchema = function(callback) {
  * });
  */
 Database.prototype.getSessions = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
     options = {};
   }
 
-  var gaxOpts = options.gaxOptions;
-  var reqOpts = extend({}, options, {database: this.formattedName_});
+  const gaxOpts = options.gaxOptions;
+  const reqOpts = extend({}, options, {database: this.formattedName_});
   delete reqOpts.gaxOptions;
 
   this.request(
@@ -914,7 +914,7 @@ Database.prototype.getSessions = function(options, callback) {
     function(err, sessions) {
       if (sessions) {
         arguments[1] = sessions.map(function(metadata) {
-          var session = self.session(metadata.name);
+          const session = self.session(metadata.name);
           session.metadata = metadata;
           return session;
         });
@@ -962,7 +962,7 @@ Database.prototype.getSessions = function(options, callback) {
  * });
  */
 Database.prototype.getTransaction = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -1008,8 +1008,8 @@ Database.prototype.getTransaction = function(options, callback) {
  * @param {function} callback
  */
 Database.prototype.makePooledRequest_ = function(config, callback) {
-  var self = this;
-  var pool = this.pool_;
+  const self = this;
+  const pool = this.pool_;
 
   pool.getReadSession(function(err, session) {
     if (err) {
@@ -1036,13 +1036,14 @@ Database.prototype.makePooledRequest_ = function(config, callback) {
  * @returns {Stream}
  */
 Database.prototype.makePooledStreamingRequest_ = function(config) {
-  var self = this;
-  var pool = this.pool_;
+  const self = this;
+  const pool = this.pool_;
 
-  var requestStream;
-  var session;
+  let requestStream;
+  let session;
 
-  var waitForSessionStream = streamEvents(through.obj());
+  const waitForSessionStream = streamEvents(through.obj());
+
   waitForSessionStream.abort = function() {
     releaseSession();
 
@@ -1242,7 +1243,7 @@ Database.prototype.makePooledStreamingRequest_ = function(config) {
  * Querying data with an index:
  */
 Database.prototype.run = function(query, options, callback) {
-  var rows = [];
+  const rows = [];
 
   if (is.fn(options)) {
     callback = options;
@@ -1384,7 +1385,7 @@ Database.prototype.run = function(query, options, callback) {
  *   });
  */
 Database.prototype.runStream = function(query, options) {
-  var self = this;
+  const self = this;
 
   if (is.string(query)) {
     query = {
@@ -1392,7 +1393,7 @@ Database.prototype.runStream = function(query, options) {
     };
   }
 
-  var reqOpts = codec.encodeQuery(query);
+  const reqOpts = codec.encodeQuery(query);
 
   if (options) {
     reqOpts.transaction = {
@@ -1670,7 +1671,7 @@ Database.prototype.updateSchema = function(statements, callback) {
     };
   }
 
-  var reqOpts = extend(
+  const reqOpts = extend(
     {
       database: this.formattedName_,
     },

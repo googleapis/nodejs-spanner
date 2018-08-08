@@ -20,13 +20,11 @@
 
 'use strict';
 
-var common = require('@google-cloud/common');
-var commonGrpc = require('@google-cloud/common-grpc');
-var extend = require('extend');
-var is = require('is');
-var util = require('util');
-
-var Transaction = require('./transaction.js');
+const common = require('@google-cloud/common-grpc');
+const extend = require('extend');
+const is = require('is');
+const util = require('util');
+const Transaction = require('./transaction');
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -67,7 +65,7 @@ var Transaction = require('./transaction.js');
  * const session = database.session_('session-name');
  */
 function Session(database, name) {
-  var self = this;
+  const self = this;
 
   this.request = database.request;
 
@@ -75,7 +73,7 @@ function Session(database, name) {
     this.formattedName_ = Session.formatName_(database.formattedName_, name);
   }
 
-  var methods = {
+  const methods = {
     /**
      * Create a session.
      *
@@ -98,8 +96,8 @@ function Session(database, name) {
      * //-
      * session.create()
      *   .then(function(data) {
-     *     var session = data[0];
-     *     var apiResponse = data[1];
+     *     const session = data[0];
+     *     const apiResponse = data[1];
      *
      *     // Session created successfully.
      *   });
@@ -129,7 +127,7 @@ function Session(database, name) {
      * // If the callback is omitted, we'll return a Promise.
      * //-
      * session.exists().then(function(data) {
-     *   var exists = data[0];
+     *   const exists = data[0];
      * });
      */
     exists: true,
@@ -169,14 +167,14 @@ function Session(database, name) {
      * // If the callback is omitted, we'll return a Promise.
      * //-
      * session.get().then(function(data) {
-     *   var session = data[0];
-     *   var apiResponse = data[0];
+     *   const session = data[0];
+     *   const apiResponse = data[0];
      * });
      */
     get: true,
   };
 
-  commonGrpc.ServiceObject.call(this, {
+  common.ServiceObject.call(this, {
     parent: database,
     /**
      * @name Session#id
@@ -199,7 +197,7 @@ function Session(database, name) {
   });
 }
 
-util.inherits(Session, commonGrpc.ServiceObject);
+util.inherits(Session, common.ServiceObject);
 
 /**
  * Format the session name to include the parent database's name.
@@ -219,7 +217,7 @@ Session.formatName_ = function(databaseName, name) {
     return name;
   }
 
-  var sessionName = name.split('/').pop();
+  const sessionName = name.split('/').pop();
 
   return databaseName + '/sessions/' + sessionName;
 };
@@ -253,7 +251,7 @@ Session.prototype.beginTransaction = function(options, callback) {
     options = {};
   }
 
-  var transaction = this.transaction(options);
+  const transaction = this.transaction(options);
 
   transaction.begin(function(err, resp) {
     if (err) {
@@ -289,11 +287,11 @@ Session.prototype.beginTransaction = function(options, callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * session.delete().then(function(data) {
- *   var apiResponse = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Session.prototype.delete = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     name: this.formattedName_,
   };
 
@@ -336,12 +334,12 @@ Session.prototype.delete = function(callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * session.getMetadata().then(function(data) {
- *   var metadata = data[0];
- *   var apiResponse = data[1];
+ *   const metadata = data[0];
+ *   const apiResponse = data[1];
  * });
  */
 Session.prototype.getMetadata = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     name: this.formattedName_,
   };
 
@@ -369,7 +367,7 @@ Session.prototype.getMetadata = function(callback) {
  * });
  */
 Session.prototype.keepAlive = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     session: this.formattedName_,
     sql: 'SELECT 1',
   };
@@ -393,7 +391,7 @@ Session.prototype.keepAlive = function(callback) {
  * @return {Transaction} A Transaction object.
  *
  * @example
- * var transaction = database.transaction('transaction-id');
+ * const transaction = database.transaction('transaction-id');
  */
 Session.prototype.transaction = function(id) {
   return new Transaction(this, id);

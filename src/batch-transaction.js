@@ -16,13 +16,13 @@
 
 'use strict';
 
-var common = require('@google-cloud/common');
-var extend = require('extend');
-var is = require('is');
-var util = require('util');
+const common = require('@google-cloud/common-grpc');
+const extend = require('extend');
+const is = require('is');
+const util = require('util');
 
-var codec = require('./codec.js');
-var Transaction = require('./transaction.js');
+const codec = require('./codec');
+const Transaction = require('./transaction');
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
@@ -73,7 +73,7 @@ util.inherits(BatchTransaction, Transaction);
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.createBatchTransaction().then(function(data) {
- *   var transaction = data[0];
+ *   const transaction = data[0];
  *   return transaction.close();
  * });
  */
@@ -123,8 +123,8 @@ BatchTransaction.prototype.createQueryPartitions = function(query, callback) {
     };
   }
 
-  var reqOpts = codec.encodeQuery(query);
-  var gaxOpts = query.gaxOptions;
+  const reqOpts = codec.encodeQuery(query);
+  const gaxOpts = query.gaxOptions;
 
   if (gaxOpts) {
     delete reqOpts.gaxOptions;
@@ -151,9 +151,9 @@ BatchTransaction.prototype.createQueryPartitions = function(query, callback) {
  * @param {function} Callback function.
  */
 BatchTransaction.prototype.createPartitions_ = function(config, callback) {
-  var self = this;
+  const self = this;
 
-  var query = extend({}, config.reqOpts, {
+  const query = extend({}, config.reqOpts, {
     session: this.session.formattedName_,
     transaction: {id: this.id},
   });
@@ -167,7 +167,7 @@ BatchTransaction.prototype.createPartitions_ = function(config, callback) {
       return;
     }
 
-    var partitions = resp.partitions.map(function(partition) {
+    const partitions = resp.partitions.map(function(partition) {
       return extend({}, query, partition);
     });
 
@@ -209,8 +209,8 @@ BatchTransaction.prototype.createPartitions_ = function(config, callback) {
  * @returns {Promise<CreateReadPartitionsResponse>}
  */
 BatchTransaction.prototype.createReadPartitions = function(options, callback) {
-  var reqOpts = codec.encodeRead(options);
-  var gaxOpts = options.gaxOptions;
+  const reqOpts = codec.encodeRead(options);
+  const gaxOpts = options.gaxOptions;
 
   if (gaxOpts) {
     delete reqOpts.gaxOptions;

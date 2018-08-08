@@ -16,16 +16,16 @@
 
 'use strict';
 
-var assert = require('assert');
-var extend = require('extend');
-var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common').util;
+const assert = require('assert');
+const extend = require('extend');
+const proxyquire = require('proxyquire');
+const {util} = require('@google-cloud/common-grpc');
 
-var codec = require('../src/codec');
+const codec = require('../src/codec');
 
-var decodeOverride;
-var generateToJSONFromRowOverride;
-var fakeCodec = {
+let decodeOverride;
+let generateToJSONFromRowOverride;
+const fakeCodec = {
   decode: function() {
     return (decodeOverride || codec.decode).apply(null, arguments);
   },
@@ -40,11 +40,11 @@ var fakeCodec = {
 function FakeGrpcService() {}
 
 describe('RowBuilder', function() {
-  var RowBuilder;
-  var RowBuilderCached;
-  var rowBuilder;
+  let RowBuilder;
+  let RowBuilderCached;
+  let rowBuilder;
 
-  var FIELDS = [{}, {}];
+  const FIELDS = [{}, {}];
 
   before(function() {
     RowBuilder = proxyquire('../src/row-builder.js', {
@@ -66,17 +66,17 @@ describe('RowBuilder', function() {
   });
 
   describe('acceptance tests', function() {
-    var TESTS = require('./data/streaming-read-acceptance-test.json').tests;
+    const TESTS = require('./data/streaming-read-acceptance-test.json').tests;
 
     TESTS.forEach(function(test) {
       it('should pass acceptance test: ' + test.name, function() {
-        var fields = JSON.parse(test.chunks[0]).metadata.rowType.fields;
-        var chunkJson = JSON.parse('[' + test.chunks.join() + ']');
-        var builder = new RowBuilder(fields);
+        const fields = JSON.parse(test.chunks[0]).metadata.rowType.fields;
+        const chunkJson = JSON.parse('[' + test.chunks.join() + ']');
+        const builder = new RowBuilder(fields);
         builder.addRow(chunkJson);
         builder.build();
 
-        assert.deepEqual(builder.rows, test.result.value);
+        assert.deepStrictEqual(builder.rows, test.result.value);
       });
     });
   });
@@ -87,15 +87,15 @@ describe('RowBuilder', function() {
     });
 
     it('should correctly initialize a chunks array', function() {
-      assert.deepEqual(rowBuilder.chunks, []);
+      assert.deepStrictEqual(rowBuilder.chunks, []);
     });
 
     it('should correctly initialize a rows array', function() {
-      assert.deepEqual(rowBuilder.rows, [[]]);
+      assert.deepStrictEqual(rowBuilder.rows, [[]]);
     });
 
     it('should return the last row when accessing currentRow', function() {
-      var rows = [{}, {}];
+      const rows = [{}, {}];
 
       rowBuilder.rows.push(rows[0]);
       assert.strictEqual(rowBuilder.currentRow, rows[0]);
@@ -107,17 +107,17 @@ describe('RowBuilder', function() {
 
   describe('getValue', function() {
     it('should do nothing to plain values', function() {
-      var value = 'hi';
+      const value = 'hi';
 
       assert.strictEqual(RowBuilder.getValue(value), value);
     });
 
     it('should decode using GrpcService module', function() {
-      var value = {
+      const value = {
         kind: 'stringValue',
       };
 
-      var expectedValue = {};
+      const expectedValue = {};
 
       FakeGrpcService.decodeValue_ = function() {
         return expectedValue;
@@ -127,14 +127,14 @@ describe('RowBuilder', function() {
     });
 
     it('should return value from arrays', function() {
-      var value = {
+      const value = {
         kind: 'listValue',
         listValue: {
           values: [],
         },
       };
 
-      var expectedValue = {};
+      const expectedValue = {};
 
       FakeGrpcService.decodeValue_ = function() {
         return {
@@ -146,7 +146,7 @@ describe('RowBuilder', function() {
     });
 
     it('should accept null values', function() {
-      var value = null;
+      const value = null;
 
       assert.strictEqual(RowBuilder.getValue(value), value);
     });
@@ -154,13 +154,13 @@ describe('RowBuilder', function() {
 
   describe('formatValue', function() {
     it('should iterate an array', function() {
-      var field = {
+      const field = {
         code: 'ARRAY',
         arrayElementType: 'type',
       };
 
-      var value = [{}];
-      var decodedValue = {};
+      const value = [{}];
+      const decodedValue = {};
 
       decodeOverride = function(value_, field_) {
         assert.strictEqual(value_, value[0]);
@@ -168,29 +168,29 @@ describe('RowBuilder', function() {
         return decodedValue;
       };
 
-      var formattedValue = RowBuilder.formatValue(field, value);
+      const formattedValue = RowBuilder.formatValue(field, value);
       assert.deepStrictEqual(formattedValue, [decodedValue]);
     });
 
     it('should return null if value is NULL_VALUE', function() {
-      var field = {
+      const field = {
         code: 'ARRAY',
         arrayElementType: 'type',
       };
 
-      var value = 'NULL_VALUE';
+      const value = 'NULL_VALUE';
 
-      var formattedValue = RowBuilder.formatValue(field, value);
+      const formattedValue = RowBuilder.formatValue(field, value);
       assert.strictEqual(formattedValue, null);
     });
 
     it('should return decoded value if not an array or struct', function() {
-      var field = {
+      const field = {
         code: 'NOT_STRUCT_OR_ARRAY',
       };
 
-      var value = [{}];
-      var decodedValue = {};
+      const value = [{}];
+      const decodedValue = {};
 
       decodeOverride = function(value_, field_) {
         assert.strictEqual(value_, value);
@@ -198,12 +198,12 @@ describe('RowBuilder', function() {
         return decodedValue;
       };
 
-      var formattedValue = RowBuilder.formatValue(field, value);
+      const formattedValue = RowBuilder.formatValue(field, value);
       assert.strictEqual(formattedValue, decodedValue);
     });
 
     it('should iterate a struct', function() {
-      var field = {
+      const field = {
         code: 'STRUCT',
         structType: {
           fields: [
@@ -215,8 +215,8 @@ describe('RowBuilder', function() {
         },
       };
 
-      var value = [{}];
-      var decodedValue = {};
+      const value = [{}];
+      const decodedValue = {};
 
       decodeOverride = function(value_, field_) {
         assert.strictEqual(value_, value[0]);
@@ -224,7 +224,7 @@ describe('RowBuilder', function() {
         return decodedValue;
       };
 
-      var formattedValue = RowBuilder.formatValue(field, value);
+      const formattedValue = RowBuilder.formatValue(field, value);
       assert.deepStrictEqual(formattedValue, {
         fieldName: decodedValue,
       });
@@ -233,23 +233,23 @@ describe('RowBuilder', function() {
 
   describe('merge', function() {
     it('should merge arrays', function() {
-      var type = {
+      const type = {
         code: 'ARRAY',
         arrayElementType: {
           code: 'FLOAT64', // so we break out of the fn w/o more processing
         },
       };
 
-      var head = [1, 2];
+      const head = [1, 2];
 
-      var tail = [3, 4];
+      const tail = [3, 4];
 
-      var merged = RowBuilder.merge(type, head, tail);
-      assert.deepEqual(merged, [[1, 2, 3, 4]]);
+      const merged = RowBuilder.merge(type, head, tail);
+      assert.deepStrictEqual(merged, [[1, 2, 3, 4]]);
     });
 
     it('should merge structs', function() {
-      var type = {
+      const type = {
         code: 'STRUCT',
         structType: {
           fields: [
@@ -263,86 +263,86 @@ describe('RowBuilder', function() {
         },
       };
 
-      var head = [1, 2];
+      const head = [1, 2];
 
-      var tail = [3, 4];
+      const tail = [3, 4];
 
-      var merged = RowBuilder.merge(type, head, tail);
-      assert.deepEqual(merged, [[1, 2, 3, 4]]);
+      const merged = RowBuilder.merge(type, head, tail);
+      assert.deepStrictEqual(merged, [[1, 2, 3, 4]]);
     });
 
     it('should merge numbers', function() {
-      var type = {
+      const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
 
-      var head = 1;
-      var tail = 2;
+      const head = 1;
+      const tail = 2;
 
-      var merged = RowBuilder.merge(type, head, tail);
+      const merged = RowBuilder.merge(type, head, tail);
       assert.strictEqual(merged[0], 3);
     });
 
     it('should merge strings', function() {
-      var type = {
+      const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
 
-      var head = 'a';
-      var tail = 'b';
+      const head = 'a';
+      const tail = 'b';
 
-      var merged = RowBuilder.merge(type, head, tail);
+      const merged = RowBuilder.merge(type, head, tail);
       assert.strictEqual(merged[0], 'ab');
     });
 
     it('should not merge null head values', function() {
-      var type = {
+      const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
 
-      var head = null;
-      var tail = 2;
+      const head = null;
+      const tail = 2;
 
-      var merged = RowBuilder.merge(type, head, tail);
+      const merged = RowBuilder.merge(type, head, tail);
       assert.strictEqual(merged[0], head);
       assert.strictEqual(merged[1], tail);
     });
 
     it('should not merge null tail values', function() {
-      var type = {
+      const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
 
-      var head = 1;
-      var tail = null;
+      const head = 1;
+      const tail = null;
 
-      var merged = RowBuilder.merge(type, head, tail);
+      const merged = RowBuilder.merge(type, head, tail);
       assert.strictEqual(merged[0], head);
       assert.strictEqual(merged[1], tail);
     });
 
     it('should not merge floats', function() {
-      var type = {
+      const type = {
         code: 'FLOAT64', // any value but float64/array/struct
       };
 
-      var head = 1;
-      var tail = 2;
+      const head = 1;
+      const tail = 2;
 
-      var merged = RowBuilder.merge(type, head, tail);
+      const merged = RowBuilder.merge(type, head, tail);
       assert.strictEqual(merged[0], head);
       assert.strictEqual(merged[1], tail);
     });
 
     it('should filter out empty strings', function() {
-      var type = {
+      const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
 
-      var head = '';
-      var tail = 'string';
+      const head = '';
+      const tail = 'string';
 
-      var merged = RowBuilder.merge(type, head, tail);
+      const merged = RowBuilder.merge(type, head, tail);
       assert.strictEqual(merged[0], tail);
     });
   });
@@ -351,7 +351,7 @@ describe('RowBuilder', function() {
     it('should combine row with chunks', function() {
       rowBuilder.chunks = [];
 
-      var row = {};
+      const row = {};
       rowBuilder.addRow(row);
 
       assert.deepStrictEqual(rowBuilder.chunks, [row]);
@@ -359,10 +359,10 @@ describe('RowBuilder', function() {
   });
 
   describe('append', function() {
-    var ROWS = [[{}, {}], [{}, {}]];
+    const ROWS = [[{}, {}], [{}, {}]];
 
-    var ROW_1 = ROWS[0];
-    var ROW_2 = ROWS[1];
+    const ROW_1 = ROWS[0];
+    const ROW_2 = ROWS[1];
 
     beforeEach(function() {
       rowBuilder.fields = [{}, {}]; // matches the # of objects in a row
@@ -435,10 +435,10 @@ describe('RowBuilder', function() {
         },
       ];
 
-      var expectedHead = rowBuilder.chunks[0].values[0];
-      var expectedTail = rowBuilder.chunks[1].values[0];
+      const expectedHead = rowBuilder.chunks[0].values[0];
+      const expectedTail = rowBuilder.chunks[1].values[0];
 
-      var mergedValues = [
+      const mergedValues = [
         {
           merged: true,
         },
@@ -463,9 +463,9 @@ describe('RowBuilder', function() {
   });
 
   describe('flush', function() {
-    var ROWS = [[]];
+    const ROWS = [[]];
 
-    for (var i = 0; i < FIELDS.length; i++) {
+    for (let i = 0; i < FIELDS.length; i++) {
       ROWS[0].push({});
     }
 
@@ -474,17 +474,17 @@ describe('RowBuilder', function() {
     });
 
     it('should return rows', function() {
-      var expectedRows = rowBuilder.rows;
+      const expectedRows = rowBuilder.rows;
       assert.deepStrictEqual(rowBuilder.flush(), expectedRows);
     });
 
     it('should reset rows', function() {
       rowBuilder.flush();
-      assert.deepEqual(rowBuilder.rows, [[]]);
+      assert.deepStrictEqual(rowBuilder.rows, [[]]);
     });
 
     it('should retain a partial row', function() {
-      var partialRow = [{partial: true}];
+      const partialRow = [{partial: true}];
       rowBuilder.rows = rowBuilder.rows.concat(partialRow);
 
       assert.deepStrictEqual(rowBuilder.flush(), ROWS);
@@ -493,7 +493,7 @@ describe('RowBuilder', function() {
   });
 
   describe('toJSON', function() {
-    var ROWS = [[{}]];
+    const ROWS = [[{}]];
 
     beforeEach(function() {
       rowBuilder.fields = [
@@ -505,7 +505,7 @@ describe('RowBuilder', function() {
     });
 
     it('should format the values', function() {
-      var formattedValue = {
+      const formattedValue = {
         formatted: true,
       };
 
@@ -515,31 +515,31 @@ describe('RowBuilder', function() {
         return formattedValue;
       };
 
-      var rows = rowBuilder.toJSON(ROWS);
-      var row = rows[0];
+      const rows = rowBuilder.toJSON(ROWS);
+      const row = rows[0];
 
-      assert.deepEqual(row, [
+      assert.deepStrictEqual(row, [
         {
           name: 'fieldName',
           value: formattedValue,
         },
       ]);
 
-      assert.deepEqual(row.toJSON(), {
+      assert.deepStrictEqual(row.toJSON(), {
         fieldName: formattedValue,
       });
     });
 
     describe('toJSON', function() {
-      var toJSONOverride = function() {};
-      var FORMATTED_ROW;
+      const toJSONOverride = function() {};
+      let FORMATTED_ROW;
 
       beforeEach(function() {
         generateToJSONFromRowOverride = function() {
           return toJSONOverride;
         };
 
-        var formattedValue = {};
+        const formattedValue = {};
 
         RowBuilder.formatValue = function() {
           return formattedValue;
@@ -555,7 +555,7 @@ describe('RowBuilder', function() {
       });
 
       it('should not include toJSON when iterated', function() {
-        for (var keyVal in FORMATTED_ROW) {
+        for (const keyVal in FORMATTED_ROW) {
           if (keyVal === 'toJSON') {
             throw new Error('toJSON should not be iterated.');
           }

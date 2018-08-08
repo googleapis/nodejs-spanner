@@ -16,15 +16,15 @@
 
 'use strict';
 
-var assert = require('assert');
-var checkpointStream = require('checkpoint-stream');
-var concat = require('concat-stream');
-var extend = require('extend');
-var proxyquire = require('proxyquire');
-var through = require('through2');
-var util = require('@google-cloud/common').util;
+const assert = require('assert');
+const checkpointStream = require('checkpoint-stream');
+const concat = require('concat-stream');
+const extend = require('extend');
+const proxyquire = require('proxyquire');
+const through = require('through2');
+const util = require('@google-cloud/common-grpc').util;
 
-var checkpointStreamOverride;
+let checkpointStreamOverride;
 function fakeCheckpointStream() {}
 fakeCheckpointStream.obj = function() {
   return (checkpointStreamOverride || checkpointStream.obj).apply(
@@ -33,7 +33,7 @@ fakeCheckpointStream.obj = function() {
   );
 };
 
-var FakeRowBuilderOverrides = {};
+let FakeRowBuilderOverrides = {};
 function FakeRowBuilder() {
   this.calledWith_ = arguments;
 }
@@ -67,13 +67,13 @@ FakeRowBuilder.prototype.toJSON = function() {
 };
 
 describe('PartialResultStream', function() {
-  var partialResultStreamModule;
-  var partialResultStreamCached;
+  let partialResultStreamModule;
+  let partialResultStreamCached;
 
-  var fakeRequestStream;
-  var partialResultStream;
+  let fakeRequestStream;
+  let partialResultStream;
 
-  var RESULT_WITH_TOKEN = {
+  const RESULT_WITH_TOKEN = {
     metadata: {
       rowType: {
         fields: [],
@@ -82,7 +82,7 @@ describe('PartialResultStream', function() {
     resumeToken: '...',
     values: [{}],
   };
-  var RESULT_WITHOUT_TOKEN = {
+  const RESULT_WITHOUT_TOKEN = {
     metadata: {
       rowType: {
         fields: [],
@@ -90,7 +90,7 @@ describe('PartialResultStream', function() {
     },
     values: [{}],
   };
-  var RESULT_WITHOUT_VALUE = {
+  const RESULT_WITHOUT_VALUE = {
     metadata: {
       rowType: {
         fields: [],
@@ -138,7 +138,7 @@ describe('PartialResultStream', function() {
     });
 
     it('should only push rows when there is a token', function(done) {
-      var eventsEmitted = 0;
+      let eventsEmitted = 0;
 
       function assertDoesNotEmit() {
         done(); // will cause test to fail
@@ -178,7 +178,7 @@ describe('PartialResultStream', function() {
     });
 
     it('should not queue more than 10 results', function(done) {
-      for (var i = 0; i < 11; i += 1) {
+      for (let i = 0; i < 11; i += 1) {
         fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
       }
       fakeRequestStream.push(null);
@@ -193,8 +193,8 @@ describe('PartialResultStream', function() {
 
     describe('RowBuilder', function() {
       it('should create a RowBuiler instance', function(done) {
-        var fields = [];
-        var row = extend(true, {}, RESULT_WITH_TOKEN);
+        const fields = [];
+        const row = extend(true, {}, RESULT_WITH_TOKEN);
         row.metadata.rowType.fields = fields;
 
         FakeRowBuilderOverrides.addRow = function() {
@@ -209,8 +209,8 @@ describe('PartialResultStream', function() {
       });
 
       it('should run chunks through RowBuilder', function(done) {
-        var builtRow = {};
-        var wasBuildCalled = false;
+        const builtRow = {};
+        let wasBuildCalled = false;
 
         FakeRowBuilderOverrides.addRow = function(row) {
           assert.strictEqual(row, RESULT_WITH_TOKEN);
@@ -237,16 +237,16 @@ describe('PartialResultStream', function() {
       });
 
       it('should return the formatted row as JSON', function(done) {
-        var options = {
+        const options = {
           json: true,
           jsonOptions: {},
         };
 
-        var partialResultStream = partialResultStreamModule(function() {
+        const partialResultStream = partialResultStreamModule(function() {
           return fakeRequestStream;
         }, options);
 
-        var formattedRow = {
+        const formattedRow = {
           toJSON: function(options_) {
             assert.strictEqual(options_, options.jsonOptions);
             done();
@@ -271,16 +271,16 @@ describe('PartialResultStream', function() {
       // - Two rows
       // - Confirm all rows were received.
 
-      var fakeCheckpointStream = through.obj();
+      const fakeCheckpointStream = through.obj();
       fakeCheckpointStream.reset = util.noop;
       checkpointStreamOverride = function() {
         return fakeCheckpointStream;
       };
 
-      var firstFakeRequestStream = through.obj();
-      var secondFakeRequestStream = through.obj();
+      const firstFakeRequestStream = through.obj();
+      const secondFakeRequestStream = through.obj();
 
-      var numTimesRequestFnCalled = 0;
+      let numTimesRequestFnCalled = 0;
 
       function requestFn(resumeToken) {
         numTimesRequestFnCalled++;
@@ -329,9 +329,9 @@ describe('PartialResultStream', function() {
     });
 
     it('should emit rows and error when there is no token', function(done) {
-      var error = new Error('Error.');
+      const error = new Error('Error.');
 
-      var eventsEmitted = 0;
+      let eventsEmitted = 0;
 
       partialResultStream
         .on('data', function(row) {
@@ -356,7 +356,7 @@ describe('PartialResultStream', function() {
         done();
       };
 
-      var partialResultStream = partialResultStreamModule(function() {
+      const partialResultStream = partialResultStreamModule(function() {
         return fakeRequestStream;
       });
 
@@ -373,7 +373,7 @@ describe('PartialResultStream', function() {
 
       // Create a partial result stream and then abort it, without
       // ever sending a request.
-      var partialResultStream = partialResultStreamModule(function() {
+      const partialResultStream = partialResultStreamModule(function() {
         return fakeRequestStream;
       });
       partialResultStream.abort();
@@ -385,14 +385,14 @@ describe('PartialResultStream', function() {
         done(new Error('Wrong stream was aborted.'));
       };
 
-      var secondFakeRequestStream = through.obj();
+      const secondFakeRequestStream = through.obj();
       secondFakeRequestStream.abort = function() {
         done(); // this is the one we want to call
       };
 
-      var numTimesRequestFnCalled = 0;
+      let numTimesRequestFnCalled = 0;
 
-      var partialResultStream = partialResultStreamModule(function() {
+      const partialResultStream = partialResultStreamModule(function() {
         numTimesRequestFnCalled++;
 
         if (numTimesRequestFnCalled === 1) {

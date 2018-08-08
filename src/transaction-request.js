@@ -16,13 +16,13 @@
 
 'use strict';
 
-var arrify = require('arrify');
-var common = require('@google-cloud/common');
-var extend = require('extend');
-var is = require('is');
+const arrify = require('arrify');
+const common = require('@google-cloud/common-grpc');
+const extend = require('extend');
+const is = require('is');
 
-var codec = require('./codec.js');
-var PartialResultStream = require('./partial-result-stream.js');
+const codec = require('./codec');
+const PartialResultStream = require('./partial-result-stream');
 
 /**
  * Handle logic for Table/Transaction API operations.
@@ -56,7 +56,7 @@ function TransactionRequest(options) {
  * @return {object}
  */
 TransactionRequest.formatTimestampOptions_ = function(options) {
-  var formatted = extend({}, options);
+  const formatted = extend({}, options);
 
   if (options.minReadTimestamp) {
     formatted.minReadTimestamp = toProtoTimestamp(options.minReadTimestamp);
@@ -83,7 +83,7 @@ TransactionRequest.formatTimestampOptions_ = function(options) {
   return formatted;
 
   function toProtoTimestamp(date) {
-    var seconds = date.getTime() / 1000;
+    const seconds = date.getTime() / 1000;
 
     return {
       seconds: Math.floor(seconds),
@@ -101,7 +101,7 @@ TransactionRequest.formatTimestampOptions_ = function(options) {
  * @return {date}
  */
 TransactionRequest.fromProtoTimestamp_ = function(value) {
-  var milliseconds = parseInt(value.nanos, 10) / 1e6;
+  const milliseconds = parseInt(value.nanos, 10) / 1e6;
   return new Date(parseInt(value.seconds, 10) * 1000 + milliseconds);
 };
 
@@ -253,9 +253,9 @@ TransactionRequest.fromProtoTimestamp_ = function(value) {
  * });
  */
 TransactionRequest.prototype.createReadStream = function(table, query) {
-  var self = this;
+  const self = this;
 
-  var reqOpts = codec.encodeRead(query);
+  const reqOpts = codec.encodeRead(query);
 
   reqOpts.table = table;
 
@@ -268,7 +268,7 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
     };
   }
 
-  var gaxOptions = query.gaxOptions;
+  const gaxOptions = query.gaxOptions;
 
   if (gaxOptions) {
     delete reqOpts.gaxOptions;
@@ -339,7 +339,7 @@ TransactionRequest.prototype.createReadStream = function(table, query) {
  * ];
  */
 TransactionRequest.prototype.deleteRows = function(table, keys, callback) {
-  var mutation = {};
+  const mutation = {};
 
   mutation['delete'] = {
     table: table,
@@ -357,7 +357,7 @@ TransactionRequest.prototype.deleteRows = function(table, keys, callback) {
     return;
   }
 
-  var reqOpts = {
+  const reqOpts = {
     singleUseTransaction: {
       readWrite: {},
     },
@@ -605,7 +605,7 @@ TransactionRequest.prototype.insert = function(table, keyVals, callback) {
  * });
  */
 TransactionRequest.prototype.read = function(table, keyVals, callback) {
-  var rows = [];
+  const rows = [];
 
   this.createReadStream(table, keyVals)
     .on('error', callback)
@@ -776,12 +776,14 @@ TransactionRequest.prototype.upsert = function(table, keyVals, callback) {
 TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
   keyVals = arrify(keyVals);
 
-  var columns = [...new Set([].concat(...keyVals.map(Object.keys)))].sort();
+  const columns = [...new Set([].concat(...keyVals.map(Object.keys)))].sort();
 
-  var values = keyVals.map(function(keyVal, index) {
-    var keys = Object.keys(keyVal);
+  const values = keyVals.map(function(keyVal, index) {
+    const keys = Object.keys(keyVal);
 
-    var missingColumns = columns.filter(column => keys.indexOf(column) === -1);
+    const missingColumns = columns.filter(
+      column => keys.indexOf(column) === -1
+    );
 
     if (missingColumns.length > 0) {
       throw new Error(
@@ -794,13 +796,13 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
 
     return {
       values: columns.map(function(column) {
-        var value = keyVal[column];
+        const value = keyVal[column];
         return codec.encode(value);
       }),
     };
   });
 
-  var mutation = {
+  const mutation = {
     [method]: {table, columns, values},
   };
 
@@ -809,7 +811,7 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
     return;
   }
 
-  var reqOpts = {
+  const reqOpts = {
     singleUseTransaction: {
       readWrite: {},
     },
