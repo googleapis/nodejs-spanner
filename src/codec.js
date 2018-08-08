@@ -19,7 +19,7 @@
 const codec = module.exports;
 
 const arrify = require('arrify');
-const commonGrpc = require('@google-cloud/common-grpc');
+const {Service} = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const is = require('is');
 
@@ -303,7 +303,7 @@ function encode(value) {
     return value;
   }
 
-  return commonGrpc.Service.encodeValue_(preEncode(value));
+  return Service.encodeValue_(preEncode(value));
 }
 
 codec.encode = encode;

@@ -18,13 +18,14 @@
 
 const arrify = require('arrify');
 const common = require('@google-cloud/common-grpc');
-const commonGrpc = require('@google-cloud/common-grpc');
+const {paginator} = require('@google-cloud/paginator');
+const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const is = require('is');
 const snakeCase = require('lodash.snakecase');
 const util = require('util');
 
-const Database = require('./database.js');
+const Database = require('./database');
 
 /**
  * The {@link Instance} class represents a [Cloud Spanner instance](https://cloud.google.com/spanner/docs/instances).
@@ -130,7 +131,7 @@ function Instance(spanner, name) {
     exists: true,
   };
 
-  commonGrpc.ServiceObject.call(this, {
+  common.ServiceObject.call(this, {
     parent: spanner,
     /**
      * @name Instance#id
@@ -146,7 +147,7 @@ function Instance(spanner, name) {
   this.databases_ = new Map();
 }
 
-util.inherits(Instance, commonGrpc.ServiceObject);
+util.inherits(Instance, common.ServiceObject);
 
 /**
  * Format the instance name to include the project ID.
@@ -620,9 +621,7 @@ Instance.prototype.getDatabases = function(query, callback) {
  *     this.end();
  *   });
  */
-Instance.prototype.getDatabasesStream = common.paginator.streamify(
-  'getDatabases'
-);
+Instance.prototype.getDatabasesStream = paginator.streamify('getDatabases');
 
 /**
  * @typedef {array} GetInstanceMetadataResponse
@@ -748,7 +747,7 @@ Instance.prototype.setMetadata = function(metadata, callback) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Instance, {
+promisifyAll(Instance, {
   exclude: ['database'],
 });
 

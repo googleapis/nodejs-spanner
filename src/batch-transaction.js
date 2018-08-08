@@ -16,7 +16,7 @@
 
 'use strict';
 
-const common = require('@google-cloud/common-grpc');
+const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const is = require('is');
 const util = require('util');
@@ -341,7 +341,7 @@ BatchTransaction.prototype.identifier = function() {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(BatchTransaction, {
+promisifyAll(BatchTransaction, {
   exclude: ['identifier'],
 });
 

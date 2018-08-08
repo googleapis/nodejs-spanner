@@ -16,7 +16,7 @@
 
 'use strict';
 
-const common = require('@google-cloud/common-grpc');
+const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const gax = require('google-gax');
 const is = require('is');
@@ -808,7 +808,7 @@ Transaction.prototype.isRetryableErrorCode_ = function(errCode) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Transaction);
+promisifyAll(Transaction);
 
 /**
  * Reference to the {@link Transaction} class.

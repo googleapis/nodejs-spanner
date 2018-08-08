@@ -17,8 +17,8 @@
 'use strict';
 
 const arrify = require('arrify');
-const common = require('@google-cloud/common-grpc');
-const commonGrpc = require('@google-cloud/common-grpc');
+const {promisifyAll} = require('@google-cloud/promisify');
+const {ServiceObject} = require('@google-cloud/common-grpc');
 const events = require('events');
 const extend = require('extend');
 const is = require('is');
@@ -136,7 +136,7 @@ function Database(instance, name, poolOptions) {
     exists: true,
   };
 
-  commonGrpc.ServiceObject.call(this, {
+  ServiceObject.call(this, {
     parent: instance,
     id: name,
     methods: methods,
@@ -148,7 +148,7 @@ function Database(instance, name, poolOptions) {
   events.EventEmitter.call(this);
 }
 
-modelo.inherits(Database, commonGrpc.ServiceObject, events.EventEmitter);
+modelo.inherits(Database, ServiceObject, events.EventEmitter);
 
 /**
  * Format the database name to include the instance name.
@@ -1517,7 +1517,7 @@ Database.prototype.session_ = function(name) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Database, {
+promisifyAll(Database, {
   exclude: [
     'batchTransaction',
     'getMetadata',
