@@ -16,13 +16,13 @@
 
 'use strict';
 
-var assert = require('assert');
-var extend = require('extend');
-var proxyquire = require('proxyquire');
-var util = require('@google-cloud/common-grpc').util;
+const assert = require('assert');
+const extend = require('extend');
+const proxyquire = require('proxyquire');
+const {util} = require('@google-cloud/common-grpc');
 
-var promisified = false;
-var fakeUtil = extend({}, util, {
+let promisified = false;
+const fakeUtil = extend({}, util, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Session') {
       return;
@@ -46,15 +46,15 @@ function FakeTransaction() {
 }
 
 describe('Session', function() {
-  var Session;
-  var session;
+  let Session;
+  let session;
 
-  var DATABASE = {
+  const DATABASE = {
     request: util.noop,
     formattedName_: 'formatted-database-name',
   };
 
-  var NAME = 'session-name';
+  const NAME = 'session-name';
 
   before(function() {
     Session = proxyquire('../src/session.js', {
@@ -84,8 +84,8 @@ describe('Session', function() {
     });
 
     it('should format the name', function() {
-      var formatName_ = Session.formatName_;
-      var formattedName = 'formatted-name';
+      const formatName_ = Session.formatName_;
+      const formattedName = 'formatted-name';
 
       Session.formatName_ = function(databaseName, name) {
         Session.formatName_ = formatName_;
@@ -96,14 +96,14 @@ describe('Session', function() {
         return formattedName;
       };
 
-      var instance = new Session(DATABASE, NAME);
+      const instance = new Session(DATABASE, NAME);
       assert(instance.formattedName_, formattedName);
     });
 
     it('should inherit from ServiceObject', function() {
       assert(session instanceof FakeGrpcServiceObject);
 
-      var calledWith = session.calledWith_[0];
+      const calledWith = session.calledWith_[0];
 
       assert.strictEqual(calledWith.parent, DATABASE);
       assert.strictEqual(calledWith.id, NAME);
@@ -116,22 +116,22 @@ describe('Session', function() {
 
     describe('createMethod', function() {
       it('should create and return a Session', function(done) {
-        var options = {};
+        const options = {};
 
-        var apiResponse = {};
+        const apiResponse = {};
 
-        var createdSession = {
+        const createdSession = {
           uniqueProperty: true,
         };
 
-        var databaseInstance = extend({}, DATABASE, {
+        const databaseInstance = extend({}, DATABASE, {
           createSession: function(options_, callback) {
             assert.strictEqual(options_, options);
             callback(null, createdSession, apiResponse);
           },
         });
 
-        var session = new Session(databaseInstance, NAME);
+        const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
         session.calledWith_[0].createMethod(options, function(err, sess, resp) {
@@ -148,16 +148,16 @@ describe('Session', function() {
       });
 
       it('should return an error from creating a Session', function(done) {
-        var error = new Error('Error.');
-        var apiResponse = {};
+        const error = new Error('Error.');
+        const apiResponse = {};
 
-        var databaseInstance = extend({}, DATABASE, {
+        const databaseInstance = extend({}, DATABASE, {
           createSession: function(options_, callback) {
             callback(error, null, apiResponse);
           },
         });
 
-        var session = new Session(databaseInstance, NAME);
+        const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
         session.calledWith_[0].createMethod({}, function(err, sess, resp) {
@@ -171,7 +171,7 @@ describe('Session', function() {
   });
 
   describe('formatName_', function() {
-    var PATH = DATABASE.formattedName_ + '/sessions/' + NAME;
+    const PATH = DATABASE.formattedName_ + '/sessions/' + NAME;
 
     it('should return the name if already formatted', function() {
       assert.strictEqual(
@@ -181,14 +181,14 @@ describe('Session', function() {
     });
 
     it('should format the name', function() {
-      var formattedName = Session.formatName_(DATABASE.formattedName_, NAME);
+      const formattedName = Session.formatName_(DATABASE.formattedName_, NAME);
       assert.strictEqual(formattedName, PATH);
     });
   });
 
   describe('delete', function() {
     it('should correctly call and return the request', function() {
-      var requestReturnValue = {};
+      const requestReturnValue = {};
 
       function callback() {}
 
@@ -202,14 +202,14 @@ describe('Session', function() {
         return requestReturnValue;
       };
 
-      var returnValue = session.delete(callback);
+      const returnValue = session.delete(callback);
       assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('getMetadata', function() {
     it('should correctly call and return the request', function() {
-      var requestReturnValue = {};
+      const requestReturnValue = {};
 
       function callback() {}
 
@@ -223,14 +223,14 @@ describe('Session', function() {
         return requestReturnValue;
       };
 
-      var returnValue = session.getMetadata(callback);
+      const returnValue = session.getMetadata(callback);
       assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('keepAlive', function() {
     it('should correctly call and return the request', function() {
-      var requestReturnValue = {};
+      const requestReturnValue = {};
 
       function callback() {}
 
@@ -245,16 +245,16 @@ describe('Session', function() {
         return requestReturnValue;
       };
 
-      var returnValue = session.keepAlive(callback);
+      const returnValue = session.keepAlive(callback);
       assert.strictEqual(returnValue, requestReturnValue);
     });
   });
 
   describe('transaction', function() {
-    var ID = 'transaction-id';
+    const ID = 'transaction-id';
 
     it('should return a Transaction object', function() {
-      var transaction = session.transaction(ID);
+      const transaction = session.transaction(ID);
       assert(transaction instanceof FakeTransaction);
       assert.strictEqual(transaction.calledWith_[0], session);
       assert.strictEqual(transaction.calledWith_[1], ID);

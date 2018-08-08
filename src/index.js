@@ -16,23 +16,23 @@
 
 'use strict';
 
-var common = require('@google-cloud/common-grpc');
-var extend = require('extend');
-var {GoogleAuth} = require('google-auth-library');
-var is = require('is');
-var path = require('path');
-var streamEvents = require('stream-events');
-var through = require('through2');
-var util = require('util');
+const common = require('@google-cloud/common-grpc');
+const extend = require('extend');
+const {GoogleAuth} = require('google-auth-library');
+const is = require('is');
+const path = require('path');
+const streamEvents = require('stream-events');
+const through = require('through2');
+const util = require('util');
 
-var codec = require('./codec.js');
-var Database = require('./database.js');
-var Instance = require('./instance.js');
-var Session = require('./session.js');
-var SessionPool = require('./session-pool.js');
-var Table = require('./table.js');
-var Transaction = require('./transaction.js');
-var TransactionRequest = require('./transaction-request.js');
+const codec = require('./codec');
+const Database = require('./database');
+const Instance = require('./instance');
+const Session = require('./session');
+const SessionPool = require('./session-pool');
+const Table = require('./table');
+const Transaction = require('./transaction');
+const TransactionRequest = require('./transaction-request');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -193,7 +193,7 @@ function Spanner(options) {
 
   this.auth = new GoogleAuth(this.options);
 
-  var config = {
+  const config = {
     baseUrl: this.options.servicePath || gapic.v1.SpannerClient.servicePath,
     protosDir: path.resolve(__dirname, '../protos'),
     protoServices: {
@@ -355,8 +355,8 @@ Spanner.struct = function(value) {
  * //-
  * spanner.createInstance('new-instance-name', config)
  *   .then(function(data) {
- *     var instance = data[0];
- *     var operation = data[1];
+ *     const instance = data[0];
+ *     const operation = data[1];
  *     return operation.promise();
  *   })
  *   .then(function() {
@@ -374,12 +374,12 @@ Spanner.prototype.createInstance = function(name, config, callback) {
     );
   }
 
-  var self = this;
+  const self = this;
 
-  var formattedName = Instance.formatName_(this.projectId, name);
-  var shortName = formattedName.split('/').pop();
+  const formattedName = Instance.formatName_(this.projectId, name);
+  const shortName = formattedName.split('/').pop();
 
-  var reqOpts = {
+  const reqOpts = {
     parent: 'projects/' + this.projectId,
     instanceId: shortName,
     instance: extend(
@@ -414,7 +414,7 @@ Spanner.prototype.createInstance = function(name, config, callback) {
         return;
       }
 
-      var instance = self.instance(formattedName);
+      const instance = self.instance(formattedName);
 
       callback(null, instance, operation, resp);
     }
@@ -501,14 +501,14 @@ Spanner.prototype.createInstance = function(name, config, callback) {
  * });
  */
 Spanner.prototype.getInstances = function(query, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(query)) {
     callback = query;
     query = {};
   }
 
-  var reqOpts = extend({}, query, {
+  const reqOpts = extend({}, query, {
     parent: 'projects/' + this.projectId,
   });
 
@@ -522,7 +522,7 @@ Spanner.prototype.getInstances = function(query, callback) {
     function(err, instances) {
       if (instances) {
         arguments[1] = instances.map(function(instance) {
-          var instanceInstance = self.instance(instance.name);
+          const instanceInstance = self.instance(instance.name);
           instanceInstance.metadata = instance;
           return instanceInstance;
         });
@@ -651,7 +651,7 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
     query = {};
   }
 
-  var reqOpts = extend({}, query, {
+  const reqOpts = extend({}, query, {
     parent: 'projects/' + this.projectId,
   });
 
@@ -700,7 +700,7 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
  *   });
  */
 Spanner.prototype.getInstanceConfigsStream = function(query) {
-  var reqOpts = extend({}, query, {
+  const reqOpts = extend({}, query, {
     parent: 'projects/' + this.projectId,
   });
 
@@ -730,7 +730,7 @@ Spanner.prototype.instance = function(name) {
     throw new Error('A name is required to access an Instance object.');
   }
 
-  var key = name.split('/').pop();
+  const key = name.split('/').pop();
 
   if (!this.instances_.has(key)) {
     this.instances_.set(key, new Instance(this, name));
@@ -767,7 +767,7 @@ Spanner.prototype.operation = function(name) {
  * @private
  */
 Spanner.prototype.prepareGapicRequest_ = function(config, callback) {
-  var self = this;
+  const self = this;
 
   this.auth.getProjectId(function(err, projectId) {
     if (err) {
@@ -775,18 +775,18 @@ Spanner.prototype.prepareGapicRequest_ = function(config, callback) {
       return;
     }
 
-    var clientName = config.client;
+    const clientName = config.client;
 
     if (!self.clients_.has(clientName)) {
       self.clients_.set(clientName, new gapic.v1[clientName](self.options));
     }
 
-    var gaxClient = self.clients_.get(clientName);
+    const gaxClient = self.clients_.get(clientName);
 
-    var reqOpts = extend(true, {}, config.reqOpts);
+    let reqOpts = extend(true, {}, config.reqOpts);
     reqOpts = common.util.replaceProjectIdToken(reqOpts, projectId);
 
-    var requestFn = gaxClient[config.method].bind(
+    const requestFn = gaxClient[config.method].bind(
       gaxClient,
       reqOpts,
       config.gaxOpts
@@ -806,7 +806,7 @@ Spanner.prototype.prepareGapicRequest_ = function(config, callback) {
  * @param {function} [callback] Callback function.
  */
 Spanner.prototype.request = function(config, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(callback)) {
     self.prepareGapicRequest_(config, function(err, requestFn) {
@@ -840,9 +840,9 @@ Spanner.prototype.request = function(config, callback) {
  * @param {function} [callback] Callback function.
  */
 Spanner.prototype.requestStream = function(config) {
-  var self = this;
+  const self = this;
 
-  var stream = streamEvents(through.obj());
+  const stream = streamEvents(through.obj());
 
   stream.once('reading', function() {
     self.prepareGapicRequest_(config, function(err, requestFn) {

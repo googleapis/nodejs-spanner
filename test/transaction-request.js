@@ -16,12 +16,12 @@
 
 'use strict';
 
-var assert = require('assert');
-var extend = require('extend');
-var proxyquire = require('proxyquire');
-var split = require('split-array-stream').split;
-var through = require('through2');
-var util = require('@google-cloud/common-grpc').util;
+const assert = require('assert');
+const extend = require('extend');
+const proxyquire = require('proxyquire');
+const {split} = require('split-array-stream');
+const through = require('through2');
+const {util} = require('@google-cloud/common-grpc');
 
 function FakeGrpcService() {}
 
@@ -29,8 +29,8 @@ function FakePartialResultStream() {
   this.calledWith_ = arguments;
 }
 
-var promisified = false;
-var fakeUtil = extend({}, util, {
+let promisified = false;
+const fakeUtil = extend({}, util, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'TransactionRequest') {
       return;
@@ -44,13 +44,13 @@ var fakeUtil = extend({}, util, {
   },
 });
 
-var fakeCodec = {
+const fakeCodec = {
   encode: util.noop,
 };
 
 describe('TransactionRequest', function() {
-  var TransactionRequest;
-  var transactionRequest;
+  let TransactionRequest;
+  let transactionRequest;
 
   before(function() {
     TransactionRequest = proxyquire('../src/transaction-request.js', {
@@ -72,7 +72,7 @@ describe('TransactionRequest', function() {
   });
 
   describe('instantiation', function() {
-    var formatTimestamp;
+    let formatTimestamp;
 
     before(function() {
       formatTimestamp = TransactionRequest.formatTimestampOptions_;
@@ -91,11 +91,11 @@ describe('TransactionRequest', function() {
     });
 
     it('should localize the transaction options', function() {
-      var UNFORMATTED_OPTIONS = {
+      const UNFORMATTED_OPTIONS = {
         b: 'b',
       };
 
-      var FORMATTED_OPTIONS = {
+      const FORMATTED_OPTIONS = {
         a: 'a',
       };
 
@@ -105,20 +105,20 @@ describe('TransactionRequest', function() {
         return FORMATTED_OPTIONS;
       };
 
-      var transaction = new TransactionRequest(UNFORMATTED_OPTIONS);
+      const transaction = new TransactionRequest(UNFORMATTED_OPTIONS);
 
       assert.strictEqual(transaction.options, FORMATTED_OPTIONS);
       TransactionRequest.formatTimestampOptions_ = formatTimestamp;
     });
 
     it('should not localize an empty options object', function() {
-      var formatTimestamp = TransactionRequest.formatTimestampOptions_;
+      const formatTimestamp = TransactionRequest.formatTimestampOptions_;
 
       TransactionRequest.formatTimestampOptions_ = function() {
         throw new Error('Should not have been called.');
       };
 
-      var transaction = new TransactionRequest({});
+      const transaction = new TransactionRequest({});
 
       assert.strictEqual(transaction.options, undefined);
       TransactionRequest.formatTimestampOptions_ = formatTimestamp;
@@ -129,7 +129,7 @@ describe('TransactionRequest', function() {
         assert.strictEqual(options.readOnly, undefined);
       };
 
-      var transaction = new TransactionRequest({
+      const transaction = new TransactionRequest({
         readOnly: true,
       });
 
@@ -143,7 +143,7 @@ describe('TransactionRequest', function() {
 
   describe('formatTimestampOptions_', function() {
     it('should format all the options', function() {
-      var options = {
+      const options = {
         strong: true,
         minReadTimestamp: new Date('2016-12-04'),
         maxStaleness: 10,
@@ -152,7 +152,7 @@ describe('TransactionRequest', function() {
         returnReadTimestamp: true,
       };
 
-      var expected = {
+      const expected = {
         strong: true,
         minReadTimestamp: {
           seconds: 1480809600,
@@ -173,29 +173,29 @@ describe('TransactionRequest', function() {
         returnReadTimestamp: true,
       };
 
-      var formatted = TransactionRequest.formatTimestampOptions_(options);
+      const formatted = TransactionRequest.formatTimestampOptions_(options);
       assert.deepStrictEqual(formatted, expected);
     });
   });
 
   describe('fromProtoTimestamp_', function() {
     it('should format into a date object', function() {
-      var now = new Date();
+      const now = new Date();
 
-      var protoTimestamp = {
+      const protoTimestamp = {
         seconds: Math.floor(now.getTime() / 1000),
         nanos: now.getMilliseconds() * 1e6,
       };
 
-      var date = TransactionRequest.fromProtoTimestamp_(protoTimestamp);
+      const date = TransactionRequest.fromProtoTimestamp_(protoTimestamp);
 
       assert.deepStrictEqual(date, now);
     });
   });
 
   describe('createReadStream', function() {
-    var TABLE = 'table-name';
-    var QUERY = {e: 'f'};
+    const TABLE = 'table-name';
+    const QUERY = {e: 'f'};
 
     beforeEach(function() {
       fakeCodec.encodeRead = function() {
@@ -204,12 +204,12 @@ describe('TransactionRequest', function() {
     });
 
     it('should accept a query object', function(done) {
-      var query = {
+      const query = {
         a: 'b',
         c: 'd',
       };
 
-      var expectedReqOpts = extend({}, QUERY, {
+      const expectedReqOpts = extend({}, QUERY, {
         table: TABLE,
       });
 
@@ -223,18 +223,18 @@ describe('TransactionRequest', function() {
         done();
       };
 
-      var stream = transactionRequest.createReadStream(TABLE, query);
-      var makeRequestFn = stream.calledWith_[0];
+      const stream = transactionRequest.createReadStream(TABLE, query);
+      const makeRequestFn = stream.calledWith_[0];
       makeRequestFn();
     });
 
     it('should set the transaction id', function(done) {
-      var ID = 'abc';
+      const ID = 'abc';
 
       transactionRequest.transaction = true;
       transactionRequest.id = ID;
 
-      var expectedReqOpts = extend(
+      const expectedReqOpts = extend(
         {
           table: TABLE,
           transaction: {
@@ -249,24 +249,24 @@ describe('TransactionRequest', function() {
         done();
       };
 
-      var stream = transactionRequest.createReadStream(TABLE, {});
-      var makeRequestFn = stream.calledWith_[0];
+      const stream = transactionRequest.createReadStream(TABLE, {});
+      const makeRequestFn = stream.calledWith_[0];
 
       makeRequestFn();
     });
 
     describe('PartialResultStream', function() {
       it('should return PartialResultStream', function() {
-        var stream = transactionRequest.createReadStream(TABLE, QUERY);
+        const stream = transactionRequest.createReadStream(TABLE, QUERY);
         assert(stream instanceof FakePartialResultStream);
       });
 
       it('should make and return the correct request', function(done) {
-        var query = {
+        const query = {
           a: 'b',
         };
 
-        var expectedQuery = extend({}, QUERY, {
+        const expectedQuery = extend({}, QUERY, {
           table: TABLE,
           resumeToken: undefined,
         });
@@ -279,13 +279,13 @@ describe('TransactionRequest', function() {
           done();
         };
 
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
+        const stream = transactionRequest.createReadStream(TABLE, query);
+        const makeRequestFn = stream.calledWith_[0];
         makeRequestFn();
       });
 
       it('should respect gaxOptions', function(done) {
-        var query = {
+        const query = {
           gaxOptions: {},
         };
 
@@ -294,39 +294,39 @@ describe('TransactionRequest', function() {
           done();
         };
 
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
+        const stream = transactionRequest.createReadStream(TABLE, query);
+        const makeRequestFn = stream.calledWith_[0];
         makeRequestFn();
       });
 
       it('should assign a resumeToken to the request', function(done) {
-        var resumeToken = 'resume-token';
+        const resumeToken = 'resume-token';
 
         transactionRequest.requestStream = function(config) {
           assert.strictEqual(config.reqOpts.resumeToken, resumeToken);
           done();
         };
 
-        var stream = transactionRequest.createReadStream(TABLE, QUERY);
-        var makeRequestFn = stream.calledWith_[0];
+        const stream = transactionRequest.createReadStream(TABLE, QUERY);
+        const makeRequestFn = stream.calledWith_[0];
         makeRequestFn(resumeToken);
       });
 
       it('should accept json and jsonOptions', function() {
-        var query = {
+        const query = {
           json: {},
           jsonOptions: {},
         };
 
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var streamOptions = stream.calledWith_[1];
+        const stream = transactionRequest.createReadStream(TABLE, query);
+        const streamOptions = stream.calledWith_[1];
 
         assert.strictEqual(streamOptions.json, query.json);
         assert.strictEqual(streamOptions.jsonOptions, query.jsonOptions);
       });
 
       it('should delete json, jsonOptions from reqOpts', function(done) {
-        var query = {
+        const query = {
           json: {},
           jsonOptions: {},
         };
@@ -337,22 +337,22 @@ describe('TransactionRequest', function() {
           done();
         };
 
-        var stream = transactionRequest.createReadStream(TABLE, query);
-        var makeRequestFn = stream.calledWith_[0];
+        const stream = transactionRequest.createReadStream(TABLE, query);
+        const makeRequestFn = stream.calledWith_[0];
         makeRequestFn();
       });
     });
   });
 
   describe('deleteRows', function() {
-    var TABLE = 'table-name';
-    var KEYS = ['key', ['composite', 'key']];
+    const TABLE = 'table-name';
+    const KEYS = ['key', ['composite', 'key']];
 
-    var ENCODED_VALUE = {
+    const ENCODED_VALUE = {
       encoded: true,
     };
 
-    var EXPECTED_MUTATION = {
+    const EXPECTED_MUTATION = {
       delete: {
         table: TABLE,
         keySet: {
@@ -375,11 +375,11 @@ describe('TransactionRequest', function() {
     });
 
     it('should correctly make and return the request', function() {
-      var requestReturnValue = {};
+      const requestReturnValue = {};
 
       function callback() {}
 
-      var numEncodeRequests = 0;
+      let numEncodeRequests = 0;
 
       fakeCodec.encode = function(key) {
         numEncodeRequests++;
@@ -402,7 +402,7 @@ describe('TransactionRequest', function() {
         return ENCODED_VALUE;
       };
 
-      var expectedReqOpts = {
+      const expectedReqOpts = {
         singleUseTransaction: {
           readWrite: {},
         },
@@ -417,7 +417,7 @@ describe('TransactionRequest', function() {
         return requestReturnValue;
       };
 
-      var returnValue = transactionRequest.deleteRows(TABLE, KEYS, callback);
+      const returnValue = transactionRequest.deleteRows(TABLE, KEYS, callback);
       assert.strictEqual(returnValue, requestReturnValue);
     });
 
@@ -435,7 +435,7 @@ describe('TransactionRequest', function() {
     it('should accept just a key', function(done) {
       transactionRequest.transaction = true;
 
-      var encodedValue = {
+      const encodedValue = {
         encoded: true,
       };
       fakeCodec.encode = function() {
@@ -443,7 +443,7 @@ describe('TransactionRequest', function() {
       };
 
       transactionRequest.queue_ = function(mutation) {
-        var expectedSingleMutation = extend(true, {}, EXPECTED_MUTATION);
+        const expectedSingleMutation = extend(true, {}, EXPECTED_MUTATION);
 
         // Pop out the second mutation. We're only expecting one.
         expectedSingleMutation.delete.keySet.keys.pop();
@@ -459,10 +459,10 @@ describe('TransactionRequest', function() {
 
   describe('insert', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var table = 'table-name';
-      var keyVals = [];
+      const table = 'table-name';
+      const keyVals = [];
       function callback() {}
 
       transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
@@ -473,23 +473,23 @@ describe('TransactionRequest', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = transactionRequest.insert(table, keyVals, callback);
+      const returnValue = transactionRequest.insert(table, keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('read', function() {
     it('should call and collect results from a stream', function(done) {
-      var table = 'table-name';
-      var keyVals = [];
+      const table = 'table-name';
+      const keyVals = [];
 
-      var rows = [{}, {}];
+      const rows = [{}, {}];
 
       transactionRequest.createReadStream = function(table_, keyVals_) {
         assert.strictEqual(table_, table);
         assert.strictEqual(keyVals_, keyVals);
 
-        var stream = through.obj();
+        const stream = through.obj();
 
         setImmediate(function() {
           split(rows, stream).then(function() {
@@ -508,10 +508,10 @@ describe('TransactionRequest', function() {
     });
 
     it('should execute callback with error', function(done) {
-      var error = new Error('Error.');
+      const error = new Error('Error.');
 
       transactionRequest.createReadStream = function() {
-        var stream = through.obj();
+        const stream = through.obj();
 
         setImmediate(function() {
           stream.destroy(error);
@@ -529,10 +529,10 @@ describe('TransactionRequest', function() {
 
   describe('replace', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var table = 'table-name';
-      var keyVals = [];
+      const table = 'table-name';
+      const keyVals = [];
       function callback() {}
 
       transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
@@ -543,17 +543,17 @@ describe('TransactionRequest', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = transactionRequest.replace(table, keyVals, callback);
+      const returnValue = transactionRequest.replace(table, keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('update', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var table = 'table-name';
-      var keyVals = [];
+      const table = 'table-name';
+      const keyVals = [];
       function callback() {}
 
       transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
@@ -564,17 +564,17 @@ describe('TransactionRequest', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = transactionRequest.update(table, keyVals, callback);
+      const returnValue = transactionRequest.update(table, keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('upsert', function() {
     it('should call and return mutate_ method', function() {
-      var mutateReturnValue = {};
+      const mutateReturnValue = {};
 
-      var table = 'table-name';
-      var keyVals = [];
+      const table = 'table-name';
+      const keyVals = [];
       function callback() {}
 
       transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
@@ -585,15 +585,15 @@ describe('TransactionRequest', function() {
         return mutateReturnValue;
       };
 
-      var returnValue = transactionRequest.upsert(table, keyVals, callback);
+      const returnValue = transactionRequest.upsert(table, keyVals, callback);
       assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
   describe('mutate_', function() {
-    var METHOD = 'methodName';
-    var TABLE = 'table-name';
-    var KEYVALS = [
+    const METHOD = 'methodName';
+    const TABLE = 'table-name';
+    const KEYVALS = [
       {
         key: '1-key-value',
         anotherNullable: '1-anotherNullable-value',
@@ -609,7 +609,7 @@ describe('TransactionRequest', function() {
       },
     ];
 
-    var EXPECTED_MUTATION = {};
+    const EXPECTED_MUTATION = {};
     EXPECTED_MUTATION[METHOD] = {
       table: TABLE,
       columns: ['anotherNullable', 'key', 'nonNullable', 'nullable'],
@@ -640,11 +640,11 @@ describe('TransactionRequest', function() {
     });
 
     it('should correctly make and return the request', function() {
-      var requestReturnValue = {};
+      const requestReturnValue = {};
 
       function callback() {}
 
-      var numEncodeRequests = 0;
+      let numEncodeRequests = 0;
       fakeCodec.encode = function(value) {
         numEncodeRequests++;
 
@@ -686,7 +686,7 @@ describe('TransactionRequest', function() {
         return value;
       };
 
-      var expectedReqOpts = {
+      const expectedReqOpts = {
         singleUseTransaction: {
           readWrite: {},
         },
@@ -701,7 +701,7 @@ describe('TransactionRequest', function() {
         return requestReturnValue;
       };
 
-      var returnValue = transactionRequest.mutate_(
+      const returnValue = transactionRequest.mutate_(
         METHOD,
         TABLE,
         KEYVALS,
@@ -711,8 +711,8 @@ describe('TransactionRequest', function() {
     });
 
     it('should throw when rows have incorrect amount of columns', function() {
-      var invalidEntry = {key1: 'val'};
-      var caughtError;
+      const invalidEntry = {key1: 'val'};
+      let caughtError;
 
       try {
         transactionRequest.mutate_(
@@ -729,7 +729,7 @@ describe('TransactionRequest', function() {
         throw new Error('Expected error was not thrown.');
       }
 
-      var expectedErrorMessage = [
+      const expectedErrorMessage = [
         'Row at index 0 does not contain the correct number of columns.',
         'Missing columns: ["key2"]',
       ].join('\n\n');

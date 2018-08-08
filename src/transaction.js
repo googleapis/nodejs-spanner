@@ -16,58 +16,58 @@
 
 'use strict';
 
-var common = require('@google-cloud/common-grpc');
-var extend = require('extend');
-var gax = require('google-gax');
-var is = require('is');
-var path = require('path');
-var protobuf = require('protobufjs');
-var through = require('through2');
-var util = require('util');
+const common = require('@google-cloud/common-grpc');
+const extend = require('extend');
+const gax = require('google-gax');
+const is = require('is');
+const path = require('path');
+const protobuf = require('protobufjs');
+const through = require('through2');
+const util = require('util');
 
-var config = require('./v1/spanner_client_config.json').interfaces[
+const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'
 ];
 
-var codec = require('./codec.js');
-var PartialResultStream = require('./partial-result-stream.js');
-var TransactionRequest = require('./transaction-request.js');
+const codec = require('./codec');
+const PartialResultStream = require('./partial-result-stream');
+const TransactionRequest = require('./transaction-request');
 
 /**
  * The gRPC `UNKNOWN` error code.
  *
  * @private
  */
-var UNKNOWN = 2;
+const UNKNOWN = 2;
 
 /**
  * The gRPC `ABORTED` error code.
  *
  * @private
  */
-var ABORTED = 10;
+const ABORTED = 10;
 
 /**
  * Metadata retry info key.
  *
  * @private
  */
-var RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
+const RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
 
 /**
  * Default timeout for Transactions.
  *
  * @private
  */
-var DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
+const DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
-var protoFilesRoot = new gax.GoogleProtoFilesRoot();
+let protoFilesRoot = new gax.GoogleProtoFilesRoot();
 protoFilesRoot = protobuf.loadSync(
   path.join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
   protoFilesRoot
 );
 
-var RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
+const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
 
 /**
  * Read/write transaction options.
@@ -171,11 +171,11 @@ Transaction.createDeadlineError_ = function(err) {
  * @return {number}
  */
 Transaction.getRetryDelay_ = function(err) {
-  var retryInfo = err.metadata.get(RETRY_INFO_KEY)[0];
-  var retryDelay = RetryInfo.decode(retryInfo).retryDelay;
+  const retryInfo = err.metadata.get(RETRY_INFO_KEY)[0];
+  const retryDelay = RetryInfo.decode(retryInfo).retryDelay;
 
-  var seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
-  var milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
+  const seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
+  const milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
 
   return seconds + milliseconds;
 };
@@ -204,12 +204,12 @@ Transaction.getRetryDelay_ = function(err) {
  * //-
  * transaction.begin()
  *   .then(function(data) {
- *     var apiResponse = data[0];
+ *     const apiResponse = data[0];
  *   });
  */
 Transaction.prototype.begin = function(callback) {
-  var self = this;
-  var options;
+  const self = this;
+  let options;
 
   if (!this.readOnly) {
     options = {
@@ -226,7 +226,7 @@ Transaction.prototype.begin = function(callback) {
     };
   }
 
-  var reqOpts = {
+  const reqOpts = {
     options: options,
   };
 
@@ -297,13 +297,13 @@ Transaction.prototype.begin = function(callback) {
  * });
  */
 Transaction.prototype.commit = function(callback) {
-  var self = this;
+  const self = this;
 
   if (this.ended_) {
     throw new Error('Transaction has already been ended.');
   }
 
-  var reqOpts = {
+  const reqOpts = {
     mutations: this.queuedMutations_,
   };
 
@@ -400,7 +400,7 @@ Transaction.prototype.queue_ = function(mutation) {
  * @param {function} callback The callback function.
  */
 Transaction.prototype.request = function(config, callback) {
-  var self = this;
+  const self = this;
 
   config.reqOpts = extend(
     {
@@ -433,7 +433,7 @@ Transaction.prototype.request = function(config, callback) {
  * @returns {ReadableStream}
  */
 Transaction.prototype.requestStream = function(config) {
-  var self = this;
+  const self = this;
 
   config.reqOpts = extend(
     {
@@ -442,13 +442,13 @@ Transaction.prototype.requestStream = function(config) {
     config.reqOpts
   );
 
-  var requestStream = this.session.requestStream(config);
+  const requestStream = this.session.requestStream(config);
 
   if (!is.fn(self.runFn_)) {
     return requestStream;
   }
 
-  var userStream = through.obj();
+  const userStream = through.obj();
 
   requestStream.on('error', function(err) {
     if (!self.isRetryableErrorCode_(err.code)) {
@@ -476,7 +476,7 @@ Transaction.prototype.requestStream = function(config) {
  * @private
  */
 Transaction.prototype.retry_ = function(delay) {
-  var self = this;
+  const self = this;
 
   this.begin(function(err) {
     if (err) {
@@ -525,13 +525,13 @@ Transaction.prototype.retry_ = function(delay) {
  * });
  */
 Transaction.prototype.rollback = function(callback) {
-  var self = this;
+  const self = this;
 
   if (!this.id) {
     throw new Error('Transaction ID is unknown, nothing to rollback.');
   }
 
-  var reqOpts = {
+  const reqOpts = {
     transactionId: this.id,
   };
 
@@ -648,7 +648,7 @@ Transaction.prototype.rollback = function(callback) {
  * });
  */
 Transaction.prototype.run = function(query, callback) {
-  var rows = [];
+  const rows = [];
 
   this.runStream(query)
     .on('error', callback)
@@ -743,7 +743,7 @@ Transaction.prototype.run = function(query, callback) {
  * });
  */
 Transaction.prototype.runStream = function(query) {
-  var self = this;
+  const self = this;
 
   if (is.string(query)) {
     query = {
@@ -751,7 +751,7 @@ Transaction.prototype.runStream = function(query) {
     };
   }
 
-  var reqOpts = extend(
+  const reqOpts = extend(
     {
       transaction: {},
     },
