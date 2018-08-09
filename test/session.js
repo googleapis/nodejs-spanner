@@ -192,7 +192,7 @@ describe('Session', function() {
     var RESPONSE;
 
     beforeEach(function() {
-      TRANSACTION = {begin: fakeUtil.noop};
+      TRANSACTION = {begin: util.noop};
       RESPONSE = {};
       session.transaction = () => TRANSACTION;
     });

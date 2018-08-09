@@ -170,8 +170,8 @@ describe('Database', function() {
 
     it('should accept a custom Pool class', function() {
       function FakePool() {}
-      FakePool.prototype.on = fakeUtil.noop;
-      FakePool.prototype.open = fakeUtil.noop;
+      FakePool.prototype.on = util.noop;
+      FakePool.prototype.open = util.noop;
 
       const database = new Database(INSTANCE, NAME, FakePool);
       assert(database.pool_ instanceof FakePool);
@@ -1586,7 +1586,7 @@ describe('Database', function() {
           getReadSession: function(callback) {
             callback(null, SESSION);
           },
-          release: fakeUtil.noop,
+          release: util.noop,
         };
       });
 
