@@ -44,6 +44,6 @@ module.exports.InstanceAdminClient = InstanceAdminClient;
 # '''
 # Node.js specific cleanup
 # '''
-subprocess.run(['npm', 'ci'])
+subprocess.run(['npm', 'install'])
 subprocess.run(['npm', 'run', 'prettier'])
 subprocess.run(['npm', 'run', 'lint'])
