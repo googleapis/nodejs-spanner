@@ -3605,7 +3605,7 @@ describe('Spanner', function() {
 
           assert.throws(function() {
             transaction.insert(table.name, rows);
-          }, /Error: Row at index 0 does not contain the correct number of columns\.\\n\\nMissing columns: \["NumberValue"\]/);
+          }, /Row at index 0 does not contain the correct number of columns\.\s+Missing columns\: \[\"NumberValue\"\]/);
 
           transaction.end(done);
         });
