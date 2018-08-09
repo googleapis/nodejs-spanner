@@ -868,7 +868,7 @@ describe('Database', function() {
       };
 
       database.request = function(config) {
-        assert.deepEqual(
+        assert.deepStrictEqual(
           config.reqOpts,
           extend({}, CONFIG.reqOpts, {
             session: SESSION.formattedName_,
@@ -882,7 +882,7 @@ describe('Database', function() {
 
     it('should release the session after calling the method', function(done) {
       POOL.release = function(session) {
-        assert.strictEqual(session, SESSION);
+        assert.deepStrictEqual(session, SESSION);
         done();
       };
 
@@ -902,7 +902,7 @@ describe('Database', function() {
 
       database.makePooledRequest_(CONFIG, function() {
         const args = [].slice.call(arguments);
-        assert.deepEqual(args, originalArgs);
+        assert.deepStrictEqual(args, originalArgs);
         done();
       });
     });
@@ -987,7 +987,7 @@ describe('Database', function() {
         const responseData = Buffer.from('response-data');
 
         database.makePooledStreamingRequest_(CONFIG).on('data', function(data) {
-          assert.deepEqual(data, responseData);
+          assert.deepStrictEqual(data, responseData);
           done();
         });
 

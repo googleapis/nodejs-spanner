@@ -17,14 +17,12 @@
 'use strict';
 
 const assert = require('assert');
-const common = require('@google-cloud/common-grpc');
 const delay = require('delay');
 const events = require('events');
 const extend = require('extend');
 const PQueue = require('p-queue');
 const proxyquire = require('proxyquire');
 const stackTrace = require('stack-trace');
-const through = require('through2');
 const timeSpan = require('time-span');
 
 let pQueueOverride = null;
@@ -69,7 +67,7 @@ const fakeStackTrace = extend({}, stackTrace);
 
 function noop() {}
 
-describe.only('SessionPool', function() {
+describe('SessionPool', function() {
   let sessionPool;
   let SessionPool;
 
@@ -260,7 +258,7 @@ describe.only('SessionPool', function() {
     });
 
     it('should create an inventory object', function() {
-      assert.deepEqual(sessionPool._inventory, {
+      assert.deepStrictEqual(sessionPool._inventory, {
         readonly: [],
         readwrite: [],
         borrowed: new Set(),
@@ -294,7 +292,7 @@ describe.only('SessionPool', function() {
     });
 
     it('should create a map of traces', function() {
-      assert.deepEqual(sessionPool._traces, new Map());
+      assert.deepStrictEqual(sessionPool._traces, new Map());
     });
 
     it('should inherit from EventEmitter', function() {
