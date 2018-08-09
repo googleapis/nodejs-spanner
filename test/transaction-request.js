@@ -22,6 +22,7 @@ const proxyquire = require('proxyquire');
 const {split} = require('split-array-stream');
 const through = require('through2');
 const {util} = require('@google-cloud/common-grpc');
+const pfy = require('@google-cloud/promisify');
 
 function FakeGrpcService() {}
 
@@ -30,12 +31,11 @@ function FakePartialResultStream() {
 }
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'TransactionRequest') {
       return;
     }
-
     promisified = true;
     assert.deepStrictEqual(options, {
       exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
@@ -53,13 +53,13 @@ describe('TransactionRequest', function() {
   let transactionRequest;
 
   before(function() {
-    TransactionRequest = proxyquire('../src/transaction-request.js', {
+    TransactionRequest = proxyquire('../src/transaction-request', {
       '@google-cloud/common-grpc': {
-        util: fakeUtil,
         Service: FakeGrpcService,
       },
+      '@google-cloud/promisify': fakePfy,
       './codec.js': fakeCodec,
-      './partial-result-stream.js': FakePartialResultStream,
+      './partial-result-stream': FakePartialResultStream,
     });
   });
 

@@ -22,15 +22,15 @@ const extend = require('extend');
 const nodeutil = require('util');
 const proxyquire = require('proxyquire');
 const through = require('through2');
-const util = require('@google-cloud/common-grpc').util;
+const {util} = require('@google-cloud/common-grpc');
+const pfy = require('@google-cloud/promisify');
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Database') {
       return;
     }
-
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
@@ -110,17 +110,17 @@ describe('Database', function() {
   before(function() {
     Database = proxyquire('../src/database.js', {
       '@google-cloud/common-grpc': {
-        util: fakeUtil,
         ServiceObject: FakeGrpcServiceObject,
       },
+      '@google-cloud/promisify': fakePfy,
       modelo: fakeModelo,
-      './batch-transaction.js': FakeBatchTransaction,
-      './codec.js': fakeCodec,
-      './partial-result-stream.js': FakePartialResultStream,
-      './session-pool.js': FakeSessionPool,
-      './session.js': FakeSession,
-      './table.js': FakeTable,
-      './transaction-request.js': FakeTransactionRequest,
+      './batch-transaction': FakeBatchTransaction,
+      './codec': fakeCodec,
+      './partial-result-stream': FakePartialResultStream,
+      './session-pool': FakeSessionPool,
+      './session': FakeSession,
+      './table': FakeTable,
+      './transaction-request': FakeTransactionRequest,
     });
     DatabaseCached = extend({}, Database);
   });

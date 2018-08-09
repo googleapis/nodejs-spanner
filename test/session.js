@@ -20,9 +20,10 @@ const assert = require('assert');
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {util} = require('@google-cloud/common-grpc');
+const pfy = require('@google-cloud/promisify');
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Session') {
       return;
@@ -59,9 +60,9 @@ describe('Session', function() {
   before(function() {
     Session = proxyquire('../src/session.js', {
       '@google-cloud/common-grpc': {
-        util: fakeUtil,
         ServiceObject: FakeGrpcServiceObject,
       },
+      '@google-cloud/promisify': fakePfy,
       './transaction.js': FakeTransaction,
     });
   });

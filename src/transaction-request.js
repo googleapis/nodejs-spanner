@@ -17,7 +17,7 @@
 'use strict';
 
 const arrify = require('arrify');
-const common = require('@google-cloud/common-grpc');
+const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const is = require('is');
 
@@ -833,7 +833,7 @@ TransactionRequest.prototype.mutate_ = function(method, table, keyVals, cb) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(TransactionRequest, {
+promisifyAll(TransactionRequest, {
   exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
 });
 

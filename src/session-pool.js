@@ -16,7 +16,7 @@
 
 'use strict';
 
-const EventEmitter = require('events').EventEmitter;
+const {EventEmitter} = require('events');
 const delay = require('delay');
 const is = require('is');
 const PQeue = require('p-queue');

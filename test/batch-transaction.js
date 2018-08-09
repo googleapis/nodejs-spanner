@@ -18,14 +18,14 @@ const assert = require('assert');
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {util} = require('@google-cloud/common-grpc');
+const pfy = require('@google-cloud/promisify');
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'BatchTransaction') {
       return;
     }
-
     assert.deepStrictEqual(options.exclude, ['identifier']);
     promisified = true;
   },
@@ -51,9 +51,7 @@ describe('BatchTransaction', function() {
 
   before(function() {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
-      '@google-cloud/common-grpc': {
-        util: fakeUtil,
-      },
+      '@google-cloud/promisify': fakePfy,
       './codec.js': fakeCodec,
       './transaction.js': FakeTransaction,
     });

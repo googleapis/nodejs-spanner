@@ -3603,10 +3603,17 @@ describe('Spanner', function() {
             },
           ];
 
-          assert.throws(function() {
+          const expectedErrorMessage = [
+            `Row at index 0 does not contain the correct number of columns.`,
+            `Missing columns: ${JSON.stringify(['NumberValue'])}`,
+          ].join('\n\n');
+          let caughtErrorMessage;
+          try {
             transaction.insert(table.name, rows);
-          }, /Row at index 0 does not contain the correct number of columns\.\s+Missing columns\: \[\"NumberValue\"\]/);
-
+          } catch (e) {
+            caughtErrorMessage = e.message;
+          }
+          assert.strictEqual(caughtErrorMessage, expectedErrorMessage);
           transaction.end(done);
         });
       });

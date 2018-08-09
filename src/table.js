@@ -16,7 +16,7 @@
 
 'use strict';
 
-const common = require('@google-cloud/common-grpc');
+const {promisifyAll} = require('@google-cloud/promisify');
 const is = require('is');
 const util = require('util');
 const TransactionRequest = require('./transaction-request');
@@ -682,7 +682,7 @@ Table.prototype.upsert = function(keyVals, callback) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Table, {
+promisifyAll(Table, {
   exclude: ['delete'],
 });
 
