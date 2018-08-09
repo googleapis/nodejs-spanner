@@ -19,7 +19,7 @@
 const {EventEmitter} = require('events');
 const delay = require('delay');
 const is = require('is');
-const PQeue = require('p-queue');
+const PQueue = require('p-queue');
 const stackTrace = require('stack-trace');
 
 const READONLY = 'readonly';
@@ -235,11 +235,11 @@ class SessionPool extends EventEmitter {
       borrowed: new Set(),
     };
 
-    this._requests = new PQeue({
+    this._requests = new PQueue({
       concurrency: this.options.concurrency,
     });
 
-    this._acquires = new PQeue({
+    this._acquires = new PQueue({
       concurrency: 1,
     });
 
