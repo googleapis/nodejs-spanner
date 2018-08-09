@@ -17,17 +17,17 @@
 'use strict';
 
 const EventEmitter = require('events').EventEmitter;
+const delay = require('delay');
 const is = require('is');
 const PQeue = require('p-queue');
 const stackTrace = require('stack-trace');
 
 const READONLY = 'readonly';
 const READWRITE = 'readwrite';
-const SESSION_TYPE = Symbol();
 
 const DEFAULTS = {
   acquireTimeout: Infinity,
-  concurrency: 10,
+  concurrency: Infinity,
   fail: false,
   idlesAfter: 10,
   keepAlive: 30,
@@ -62,7 +62,7 @@ class EmptyError extends Error {
 class ReleaseError extends Error {
   constructor(resource) {
     super('Unable to release unknown resource.');
-    this.resource = session;
+    this.resource = resource;
   }
 }
 
@@ -185,7 +185,7 @@ class SessionPool extends EventEmitter {
     const {readonly, borrowed} = this._inventory;
     const available = readonly.length;
     const used = Array.from(borrowed).filter(
-      session => session[SESSION_TYPE] === READONLY
+      session => session.type === READONLY
     ).length;
 
     return available + used;
@@ -207,7 +207,7 @@ class SessionPool extends EventEmitter {
     const {readwrite, borrowed} = this._inventory;
     const available = readwrite.length;
     const used = Array.from(borrowed).filter(
-      session => session[SESSION_TYPE] === READWRITE
+      session => session.type === READWRITE
     ).length;
 
     return available + used;
@@ -270,16 +270,16 @@ class SessionPool extends EventEmitter {
 
     sessions.forEach(session => this._destroy(session));
 
-    this._requests
-      .onIdle()
-      .then(() => {
-        const leaks = this._getLeaks();
+    this._requests.onIdle().then(() => {
+      const leaks = this._getLeaks();
 
-        if (leaks.length) {
-          throw new SessionLeakError(leaks);
-        }
-      })
-      .then(() => callback(null), callback);
+      if (leaks.length) {
+        callback(new SessionLeakError(leaks));
+        return;
+      }
+
+      callback(null);
+    });
   }
 
   /**
@@ -340,14 +340,15 @@ class SessionPool extends EventEmitter {
     }
 
     delete session.txn;
+    session.lastUsed = Date.now();
 
-    if (session[SESSION_TYPE] === READONLY) {
+    if (session.type === READONLY) {
       this._release(session);
       return;
     }
 
     this._prepareTransaction(session)
-      .catch(() => (session[SESSION_TYPE] = READONLY))
+      .catch(() => (session.type = READONLY))
       .then(() => this._release(session));
   }
 
@@ -377,23 +378,24 @@ class SessionPool extends EventEmitter {
 
       return this._getSession(type, startTime).then(session => {
         if (!this._isValidSession(session)) {
-          this.inventory.borrowed.delete(session);
+          this._inventory.borrowed.delete(session);
           return getSession();
         }
 
-        session.lastUsed = Date.now();
         this._traces.set(session.id, trace);
         return session;
       });
     };
 
-    return this._acquires.add(getSession).then(session => {
+    const ensureCorrectType = session => {
       if (type === READONLY || session.txn) {
         return session;
       }
 
       return this._convertSession(session);
-    });
+    };
+
+    return this._acquires.add(getSession).then(ensureCorrectType);
   }
 
   /**
@@ -404,7 +406,7 @@ class SessionPool extends EventEmitter {
    * @param {Session} session The session object.
    */
   _borrow(session) {
-    const type = session[SESSION_TYPE];
+    const type = session.type;
     const index = this._inventory[type].indexOf(session);
 
     this._inventory.borrowed.add(session);
@@ -492,7 +494,7 @@ class SessionPool extends EventEmitter {
       })
       .then(
         () => {
-          session[SESSION_TYPE] = type;
+          session.type = type;
           session.lastUsed = Date.now();
 
           this._inventory[type].push(session);
@@ -553,10 +555,10 @@ class SessionPool extends EventEmitter {
 
     while (count-- > maxIdle && size - evicted++ > min) {
       let session = idle.pop();
-      let type = session[SESSION_TYPE];
+      let type = session.type;
       let index = this._inventory[type].indexOf(session);
 
-      this._inventory.splice(index, 1);
+      this._inventory[type].splice(index, 1);
       this._destroy(session);
     }
   }
@@ -748,7 +750,7 @@ class SessionPool extends EventEmitter {
    * @param {Session} session The session object.
    */
   _release(session) {
-    const type = session[SESSION_TYPE];
+    const type = session.type;
 
     this._inventory[type].unshift(session);
     this._inventory.borrowed.delete(session);

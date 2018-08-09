@@ -33,16 +33,47 @@ function FakePQueue(options) {
   return new (pQueueOverride || PQueue)(options);
 }
 
+class FakeTransaction {
+  constructor(options) {
+    this.options = options;
+  }
+  begin() {
+    return Promise.resolve([this]);
+  }
+}
+
+class FakeSession {
+  constructor() {
+    this.created = false;
+    this.deleted = false;
+    this.keptAlive = false;
+  }
+  beginTransaction(options) {
+    return new FakeTransaction(options).begin();
+  }
+  create() {
+    this.created = true;
+    return Promise.resolve();
+  }
+  delete() {
+    this.deleted = true;
+    return Promise.resolve();
+  }
+  keepAlive() {
+    this.keptAlive = true;
+    return Promise.resolve();
+  }
+}
+
 const fakeStackTrace = extend({}, stackTrace);
 
-describe.skip('SessionPool', function() {
-  let SessionPool;
-  let sessionPool;
+function noop() {}
 
-  const DATABASE = {
-    request: common.util.noop,
-    requestStream: common.util.noop,
-  };
+describe.only('SessionPool', function() {
+  let sessionPool;
+  let SessionPool;
+
+  const DATABASE = {};
 
   before(function() {
     SessionPool = proxyquire('../src/session-pool.js', {
@@ -52,96 +83,15 @@ describe.skip('SessionPool', function() {
   });
 
   beforeEach(function() {
+    DATABASE.session = () => new FakeSession();
     sessionPool = new SessionPool(DATABASE);
-    sessionPool.onClose_ = new Promise(function() {});
   });
 
   afterEach(function() {
     pQueueOverride = null;
-    fakeStackTrace.get = stackTrace.get;
   });
 
-  describe('instantiation', function() {
-    it('should localize the database instance', function() {
-      assert.strictEqual(sessionPool.database, DATABASE);
-    });
-
-    describe('options', function() {
-      it('should apply defaults', function() {
-        assert.strictEqual(sessionPool.options.acquireTimeout, Infinity);
-        assert.strictEqual(sessionPool.options.concurrency, 10);
-        assert.strictEqual(sessionPool.options.fail, false);
-        assert.strictEqual(sessionPool.options.idlesAfter, 10);
-        assert.strictEqual(sessionPool.options.keepAlive, 50);
-        assert.strictEqual(sessionPool.options.max, 100);
-        assert.strictEqual(sessionPool.options.maxIdle, 1);
-        assert.strictEqual(sessionPool.options.min, 0);
-        assert.strictEqual(sessionPool.options.writes, 0);
-      });
-
-      it('should not override user options', function() {
-        sessionPool = new SessionPool(DATABASE, {acquireTimeout: 0});
-        assert.strictEqual(sessionPool.options.acquireTimeout, 0);
-      });
-
-      it('should throw when writes is greater than 1', function() {
-        assert.throws(function() {
-          return new SessionPool(DATABASE, {writes: 50});
-        }, /Write percentage should be represented as a float between 0\.0 and 1\.0\./);
-      });
-    });
-
-    it('should set isOpen to false', function() {
-      assert.strictEqual(sessionPool.isOpen, false);
-    });
-
-    it('should set pendingCreates to 0', function() {
-      assert.strictEqual(sessionPool.pendingCreates_, 0);
-    });
-
-    it('should create arrays for available and borrowed sessions', function() {
-      assert.deepStrictEqual(sessionPool.reads_, []);
-      assert.deepStrictEqual(sessionPool.writes_, []);
-      assert.deepStrictEqual(sessionPool.borrowed_, []);
-    });
-
-    it('should create an acquire queue with 1 concurrency', function() {
-      pQueueOverride = function(options) {
-        return options;
-      };
-
-      sessionPool = new SessionPool(DATABASE);
-      assert.deepStrictEqual(sessionPool.acquireQueue_, {
-        concurrency: 1,
-      });
-    });
-
-    it('should create a request queue', function() {
-      const poolOptions = {
-        concurrency: 11,
-      };
-
-      pQueueOverride = function(options) {
-        return options;
-      };
-
-      sessionPool = new SessionPool(DATABASE, poolOptions);
-      assert.deepStrictEqual(sessionPool.requestQueue_, {
-        concurrency: poolOptions.concurrency,
-      });
-    });
-
-    it('should create handles for intervals', function() {
-      assert.strictEqual(sessionPool.evictHandle_, null);
-      assert.strictEqual(sessionPool.pingHandle_, null);
-    });
-
-    it('should inherit from EventEmitter', function() {
-      assert(sessionPool instanceof events.EventEmitter);
-    });
-  });
-
-  describe('formatTrace_', function() {
+  describe('formatTrace', function() {
     const fakeFileName = 'path/to/file.js';
     const fakeLineNumber = '99';
     const fakeColumnNumber = '13';
@@ -151,8 +101,6 @@ describe.skip('SessionPool', function() {
     let fakeMethod;
 
     const fakeTrace = [
-      {},
-      {},
       {
         getFunctionName: function() {
           return fakeFunction;
@@ -176,7 +124,7 @@ describe.skip('SessionPool', function() {
       fakeMethod = 'MyClass.myMethod';
 
       const expected = `Session leak detected!\n    at ${fakeMethod} (${file})`;
-      const actual = SessionPool.formatTrace_(fakeTrace);
+      const actual = SessionPool.formatTrace(fakeTrace);
 
       assert.strictEqual(expected, actual);
     });
@@ -185,7 +133,7 @@ describe.skip('SessionPool', function() {
       fakeFunction = 'myFunction';
 
       const expected = `Session leak detected!\n    at ${fakeFunction} (${file})`;
-      const actual = SessionPool.formatTrace_(fakeTrace);
+      const actual = SessionPool.formatTrace(fakeTrace);
 
       assert.strictEqual(expected, actual);
     });
@@ -193,197 +141,255 @@ describe.skip('SessionPool', function() {
 
   describe('available', function() {
     it('should return the number of available sessions', function() {
-      sessionPool.reads_ = [{}];
-      sessionPool.writes_ = [{}, {}];
+      sessionPool._inventory = {
+        readonly: [{}],
+        readwrite: [{}, {}],
+      };
 
-      assert.strictEqual(sessionPool.available(), 3);
+      assert.strictEqual(sessionPool.available, 3);
     });
   });
 
   describe('borrowed', function() {
     it('should return the number of borrowed sessions', function() {
-      sessionPool.borrowed_ = [{}, {}];
+      sessionPool._inventory.borrowed = new Set([{}, {}]);
 
-      assert.strictEqual(sessionPool.borrowed(), 2);
+      assert.strictEqual(sessionPool.borrowed, 2);
+    });
+  });
+
+  describe('isFull', function() {
+    it('should indicate if the pool is full', function() {
+      sessionPool.options.max = 1;
+
+      assert.strictEqual(sessionPool.isFull, false);
+      sessionPool._inventory.borrowed = new Set([{}]);
+      assert.strictEqual(sessionPool.isFull, true);
+    });
+  });
+
+  describe('reads', function() {
+    it('should get the total number of read sessions', function() {
+      sessionPool._inventory.readonly = [{}, {}, {}];
+      assert.strictEqual(sessionPool.reads, 3);
+    });
+
+    it('should factor in borrowed sessions', function() {
+      sessionPool.options.min = 4;
+
+      return sessionPool
+        .open()
+        .then(() => {
+          return sessionPool._acquire('readonly');
+        })
+        .then(() => {
+          assert.strictEqual(sessionPool.reads, 4);
+          assert.strictEqual(sessionPool.available, 3);
+          assert.strictEqual(sessionPool.borrowed, 1);
+        });
+    });
+  });
+
+  describe('size', function() {
+    it('should return the size of the pool', function() {
+      sessionPool._inventory = {
+        readonly: [{}],
+        readwrite: [{}, {}],
+        borrowed: new Set([{}]),
+      };
+
+      assert.strictEqual(sessionPool.size, 4);
+    });
+  });
+
+  describe('writes', function() {
+    it('should get the total number of read/write sessions', function() {
+      sessionPool._inventory.readwrite = [{}, {}, {}];
+      assert.strictEqual(sessionPool.writes, 3);
+    });
+
+    it('should factor in borrowed sessions', function() {
+      sessionPool.options.min = 4;
+      sessionPool.options.writes = 1;
+
+      return sessionPool
+        .open()
+        .then(() => {
+          return sessionPool._acquire('readwrite');
+        })
+        .then(() => {
+          assert.strictEqual(sessionPool.writes, 4);
+          assert.strictEqual(sessionPool.available, 3);
+          assert.strictEqual(sessionPool.borrowed, 1);
+        });
+    });
+  });
+
+  describe('instantiation', function() {
+    it('should localize the database instance', function() {
+      assert.strictEqual(sessionPool.database, DATABASE);
+    });
+
+    describe('options', function() {
+      it('should apply defaults', function() {
+        assert.strictEqual(sessionPool.options.acquireTimeout, Infinity);
+        assert.strictEqual(sessionPool.options.concurrency, Infinity);
+        assert.strictEqual(sessionPool.options.fail, false);
+        assert.strictEqual(sessionPool.options.idlesAfter, 10);
+        assert.strictEqual(sessionPool.options.keepAlive, 30);
+        assert.strictEqual(sessionPool.options.max, 100);
+        assert.strictEqual(sessionPool.options.maxIdle, 1);
+        assert.strictEqual(sessionPool.options.min, 0);
+        assert.strictEqual(sessionPool.options.writes, 0);
+      });
+
+      it('should not override user options', function() {
+        sessionPool = new SessionPool(DATABASE, {acquireTimeout: 0});
+        assert.strictEqual(sessionPool.options.acquireTimeout, 0);
+      });
+
+      it('should throw when writes is greater than 1', function() {
+        assert.throws(function() {
+          return new SessionPool(DATABASE, {writes: 50});
+        }, /Write percentage should be represented as a float between 0\.0 and 1\.0\./);
+      });
+    });
+
+    it('should set isOpen to false', function() {
+      assert.strictEqual(sessionPool.isOpen, false);
+    });
+
+    it('should create an inventory object', function() {
+      assert.deepEqual(sessionPool._inventory, {
+        readonly: [],
+        readwrite: [],
+        borrowed: new Set(),
+      });
+    });
+
+    it('should create a request queue', function() {
+      const poolOptions = {
+        concurrency: 11,
+      };
+
+      pQueueOverride = function(options) {
+        return options;
+      };
+
+      sessionPool = new SessionPool(DATABASE, poolOptions);
+      assert.deepStrictEqual(sessionPool._requests, {
+        concurrency: poolOptions.concurrency,
+      });
+    });
+
+    it('should create an acquire queue', function() {
+      pQueueOverride = function(options) {
+        return options;
+      };
+
+      sessionPool = new SessionPool(DATABASE);
+      assert.deepStrictEqual(sessionPool._acquires, {
+        concurrency: 1,
+      });
+    });
+
+    it('should create a map of traces', function() {
+      assert.deepEqual(sessionPool._traces, new Map());
+    });
+
+    it('should inherit from EventEmitter', function() {
+      assert(sessionPool instanceof events.EventEmitter);
     });
   });
 
   describe('close', function() {
+    beforeEach(function() {
+      sessionPool._inventory = {
+        readonly: [{}, {}],
+        readwrite: [{}],
+        borrowed: new Set([{}, {}]),
+      };
+
+      sessionPool._destroy = noop;
+    });
+
+    it('should clear the inventory', function() {
+      sessionPool.close(noop);
+      assert.strictEqual(sessionPool.size, 0);
+    });
+
+    it('should stop housekeeping', function(done) {
+      sessionPool._stopHouseKeeping = done;
+      sessionPool.close(noop);
+    });
+
     it('should set isOpen to false', function() {
       sessionPool.isOpen = true;
-      sessionPool.close(common.util.noop);
+      sessionPool.close(noop);
+
       assert.strictEqual(sessionPool.isOpen, false);
     });
 
-    it('should emit a close event', function(done) {
+    it('should emit the close event', function(done) {
       sessionPool.on('close', done);
-      sessionPool.close(common.util.noop);
+      sessionPool.close(noop);
     });
 
-    it('should emit an empty event', function(done) {
-      sessionPool.on('empty', done);
-      sessionPool.close(common.util.noop);
-    });
+    it('should destroy all the sessions', function() {
+      const sessions = [].concat(
+        sessionPool._inventory.readonly,
+        sessionPool._inventory.readwrite,
+        Array.from(sessionPool._inventory.borrowed)
+      );
 
-    it('should call stopHouseKeeping_', function(done) {
-      sessionPool.stopHouseKeeping_ = done;
-      sessionPool.close(common.util.noop);
-    });
+      let destroyed = 0;
 
-    it('should destroy all sessions', function() {
-      const fakeReads = [{}, {}];
-      const fakeWrites = [{}];
-      const fakeBorrowed = [{}, {}, {}];
-
-      const fakeAll = fakeReads.concat(fakeWrites, fakeBorrowed);
-
-      sessionPool.reads_ = fakeReads;
-      sessionPool.writes_ = fakeWrites;
-      sessionPool.borrowed_ = fakeBorrowed;
-
-      let destroyCallCount = 0;
-      sessionPool.destroySession_ = function(session) {
-        assert.strictEqual(session, fakeAll[destroyCallCount++]);
+      sessionPool._destroy = function(session) {
+        assert.strictEqual(session, sessions[destroyed++]);
       };
 
-      sessionPool.close(common.util.noop);
-
-      assert.strictEqual(destroyCallCount, fakeAll.length);
-      assert.deepStrictEqual(sessionPool.reads_, []);
-      assert.deepStrictEqual(sessionPool.writes_, []);
-      assert.deepStrictEqual(sessionPool.borrowed_, []);
+      sessionPool.close(noop);
+      assert.strictEqual(destroyed, sessions.length);
     });
 
-    it('should settle once all sessions are destroyed', function() {
-      const delay = 500;
+    it('should execute the callback on idle', function(done) {
+      let idleCalled = false;
 
-      sessionPool.reads_ = [{}];
-      sessionPool.destroySession_ = function() {
-        return new Promise(function(resolve) {
-          setTimeout(resolve, delay);
-        });
+      sessionPool._requests.onIdle = function() {
+        idleCalled = true;
+        return Promise.resolve();
       };
-
-      const end = timeSpan();
 
       sessionPool.close(function(err) {
         assert.ifError(err);
-        assert(isAround(delay, end()));
+        assert.strictEqual(idleCalled, true);
         done();
       });
     });
 
-    it('should throw an error if a session leak is detected', function(done) {
-      var LEAKS = [{}, {}];
+    it('should return a leak error', function(done) {
+      const fakeLeaks = [{}, {}];
 
-      sessionPool.getLeaks = function() {
-        return LEAKS;
+      sessionPool._getLeaks = function() {
+        return fakeLeaks;
       };
 
       sessionPool.close(function(err) {
-        assert.strictEqual(err.message, '2 session leak(s) found.');
-        assert.strictEqual(err.messages, LEAKS);
+        assert.strictEqual(
+          err.message,
+          `${fakeLeaks.length} session leak(s) detected.`
+        );
+        assert.strictEqual(err.messages, fakeLeaks);
         done();
       });
-    });
-  });
-
-  describe('fill', function() {
-    let created;
-
-    beforeEach(function() {
-      sessionPool.options.min = 8;
-
-      created = {
-        readonly: 0,
-        readwrite: 0,
-      };
-
-      sessionPool.createSessionInBackground_ = function(type) {
-        created[type] += 1;
-      };
-    });
-
-    it('should create the min number of required sessions', function() {
-      sessionPool.fill();
-
-      assert.strictEqual(created.readonly, 8);
-      assert.strictEqual(created.readwrite, 0);
-    });
-
-    it('should create the min number of write sessions', function() {
-      sessionPool.options.writes = 0.5;
-      sessionPool.fill();
-
-      assert.strictEqual(created.readonly, 4);
-      assert.strictEqual(created.readwrite, 4);
-    });
-
-    it('should respect the current size of the pool', function() {
-      sessionPool.options.writes = 0.5;
-      sessionPool.reads_ = [{}];
-      sessionPool.writes_ = [{}, {}];
-      sessionPool.fill();
-
-      assert.strictEqual(created.readonly, 3);
-      assert.strictEqual(created.readwrite, 2);
-    });
-
-    it('should settle once all the sessions are created', function() {
-      const end = timeSpan();
-
-      sessionPool.createSessionInBackground_ = function() {
-        return new Promise(function(resolve) {
-          setTimeout(resolve, 500);
-        });
-      };
-
-      return sessionPool.fill().then(function() {
-        assert(isAround(500, end()));
-      });
-    });
-  });
-
-  describe('getLeaks', function() {
-    let formatTrace_;
-
-    before(function() {
-      formatTrace_ = SessionPool.formatTrace_;
-    });
-
-    after(function() {
-      SessionPool.formatTrace_ = formatTrace_;
-    });
-
-    it('should return a list of leaks', function() {
-      const fakeTraces = ['abc', 'def'];
-
-      sessionPool.traces_ = new Map(
-        fakeTraces.map(function(t, i) {
-          return [i, t];
-        })
-      );
-
-      let formatCallCount = 0;
-      SessionPool.formatTrace_ = function(trace) {
-        assert.strictEqual(trace, fakeTraces[formatCallCount++]);
-        return trace
-          .split('')
-          .reverse()
-          .join('');
-      };
-
-      const traces = sessionPool.getLeaks();
-
-      assert.deepStrictEqual(traces, ['cba', 'fed']);
     });
   });
 
   describe('getReadSession', function() {
-    it('should call through to acquireSession_', function(done) {
-      const fakeSession = {};
+    it('should acquire a read session', function(done) {
+      const fakeSession = new FakeSession();
 
-      sessionPool.acquireSession_ = function(type) {
+      sessionPool._acquire = function(type) {
         assert.strictEqual(type, 'readonly');
         return Promise.resolve(fakeSession);
       };
@@ -394,65 +400,72 @@ describe.skip('SessionPool', function() {
         done();
       });
     });
-  });
 
-  describe('getWriteSession', function() {
-    it('should call through to acquireSession_', function(done) {
-      const fakeTxn = {};
-      const fakeSession = {txn: fakeTxn};
+    it('should pass any errors to the callback', function(done) {
+      const error = new Error('err');
 
-      sessionPool.acquireSession_ = function(type) {
-        assert.strictEqual(type, 'readwrite');
-        return Promise.resolve(fakeSession);
+      sessionPool._acquire = function() {
+        return Promise.reject(error);
       };
 
-      sessionPool.getWriteSession(function(err, session, transaction) {
-        assert.ifError(err);
-        assert.strictEqual(session, fakeSession);
-        assert.strictEqual(transaction, fakeTxn);
+      sessionPool.getReadSession(function(err) {
+        assert.strictEqual(err, error);
         done();
       });
     });
   });
 
-  describe('isFull', function() {
-    it('should return true if it is full', function() {
-      sessionPool.pendingCreates_ = 0;
+  describe('getWriteSession', function() {
+    it('should pass back the session and txn', function(done) {
+      const fakeSession = new FakeSession();
+      const fakeTxn = new FakeTransaction();
 
-      sessionPool.size = function() {
-        return sessionPool.options.max;
+      fakeSession.txn = fakeTxn;
+
+      sessionPool._acquire = function(type) {
+        assert.strictEqual(type, 'readwrite');
+        return Promise.resolve(fakeSession);
       };
 
-      assert.strictEqual(sessionPool.isFull(), true);
+      sessionPool.getWriteSession(function(err, session, txn) {
+        assert.ifError(err);
+        assert.strictEqual(session, fakeSession);
+        assert.strictEqual(txn, fakeTxn);
+        done();
+      });
     });
 
-    it('should return true if the size + pending creates == max', function() {
-      const pending = (sessionPool.pendingCreates_ = 21);
+    it('should pass any errors to the callback', function(done) {
+      const error = new Error('err');
 
-      sessionPool.size = function() {
-        return sessionPool.options.max - pending;
+      sessionPool._acquire = function() {
+        return Promise.reject(error);
       };
 
-      assert.strictEqual(sessionPool.isFull(), true);
-    });
-
-    it('should return false if not', function() {
-      sessionPool.pendingCreates_ = 0;
-
-      sessionPool.size = function() {
-        return 0;
-      };
-
-      assert.strictEqual(sessionPool.isFull(), false);
+      sessionPool.getWriteSession(function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
     });
   });
 
   describe('open', function() {
     beforeEach(function() {
-      sessionPool.options.min = 1;
-      sessionPool.createSessionInBackground_ = function() {
-        return Promise.resolve();
-      };
+      sessionPool._stopHouseKeeping = noop;
+      sessionPool._fill = noop;
+    });
+
+    it('should create an onclose promise', function() {
+      sessionPool.open();
+
+      assert(sessionPool._onClose instanceof Promise);
+      setImmediate(() => sessionPool.emit('close'));
+      return sessionPool._onClose;
+    });
+
+    it('should start housekeeping', function(done) {
+      sessionPool._startHouseKeeping = done;
+      sessionPool.open();
     });
 
     it('should set isOpen to true', function() {
@@ -460,77 +473,108 @@ describe.skip('SessionPool', function() {
       assert.strictEqual(sessionPool.isOpen, true);
     });
 
-    it('should create an onclose promise', function() {
+    it('should emit the open event', function(done) {
+      sessionPool.on('open', done);
       sessionPool.open();
+    });
 
-      setImmediate(function() {
-        sessionPool.emit('close');
+    it('should fill the pool', function() {
+      const fakeFillReturn = {};
+
+      sessionPool._fill = function() {
+        return Promise.resolve(fakeFillReturn);
+      };
+
+      return sessionPool.open().then(function(obj) {
+        assert.strictEqual(obj, fakeFillReturn);
       });
-
-      return sessionPool.onClose_;
-    });
-
-    it('should start house keeping', function(done) {
-      sessionPool.startHouseKeeping_ = done;
-      sessionPool.open();
-    });
-
-    it('should emit an open event', function(done) {
-      sessionPool.once('open', done);
-      sessionPool.open();
     });
   });
 
   describe('release', function() {
-    it('should throw an error for unknown sessions', function() {
-      assert.throws(function() {
-        sessionPool.release({});
-      }, /Unable to release unknown session\./);
-    });
-
-    it('should delete the stack trace associated with the session', function() {
-      const fakeId = 'abc';
-      const fakeSession = {id: fakeId};
-
-      sessionPool.borrowed_ = [fakeSession];
-      sessionPool.traces_.set(fakeId, [{}]);
-
-      sessionPool.release(fakeSession);
-
-      const hasTrace = sessionPool.traces_.has(fakeId);
-      assert.strictEqual(hasTrace, false);
-    });
-
-    it('should release readonly sessions', function(done) {
-      const fakeSession = {};
-
-      sessionPool.borrowed_ = [fakeSession];
-      sessionPool.release_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        done();
+    beforeEach(function() {
+      sessionPool._prepareTransaction = function() {
+        return Promise.resolve();
       };
-
-      sessionPool.release(fakeSession);
     });
 
-    describe('readwrite sessions', function() {
+    it('should throw an error when returning unknown resources', function() {
+      const badResource = {};
+
+      try {
+        sessionPool.release(badResource);
+        throw new Error('Should not have made it this far.');
+      } catch (e) {
+        assert.strictEqual(e.message, 'Unable to release unknown resource.');
+        assert.strictEqual(e.resource, badResource);
+      }
+    });
+
+    it('should delete any old transactions', function() {
+      const session = new FakeSession();
+
+      sessionPool._release = noop;
+      sessionPool._inventory.borrowed.add(session);
+      session.txn = {};
+
+      sessionPool.release(session);
+      assert.strictEqual(session.txn, undefined);
+    });
+
+    it('should update the lastUsed timestamp', function() {
+      const session = new FakeSession();
+
+      sessionPool._release = noop;
+      sessionPool._inventory.borrowed.add(session);
+      session.lastUsed = null;
+
+      sessionPool.release(session);
+      assert(isAround(session.lastUsed, Date.now()));
+    });
+
+    describe('readonly', function() {
+      it('should release readonly sessions', function(done) {
+        const fakeSession = new FakeSession();
+
+        sessionPool._prepareTransaction = shouldNotBeCalled;
+
+        sessionPool._release = function(session) {
+          assert.strictEqual(session, fakeSession);
+          done();
+        };
+
+        fakeSession.type = 'readonly';
+        sessionPool._inventory.borrowed.add(fakeSession);
+        sessionPool.release(fakeSession);
+      });
+    });
+
+    describe('readwrite', function() {
       let fakeSession;
 
       beforeEach(function() {
-        fakeSession = {
-          type: 'readwrite',
-        };
-
-        sessionPool.borrowed_ = [fakeSession];
+        fakeSession = new FakeSession();
+        fakeSession.type = 'readwrite';
+        sessionPool._inventory.borrowed.add(fakeSession);
       });
 
-      it('should create a new transaction', function(done) {
-        sessionPool.createTransaction_ = function(session) {
+      it('should prep a new transaction', function(done) {
+        sessionPool._prepareTransaction = function(session) {
           assert.strictEqual(session, fakeSession);
+          setImmediate(done);
           return Promise.resolve();
         };
 
-        sessionPool.release_ = function(session) {
+        sessionPool._release = noop;
+        sessionPool.release(fakeSession);
+      });
+
+      it('should release the read/write session', function(done) {
+        sessionPool._prepareTransaction = function() {
+          return Promise.resolve();
+        };
+
+        sessionPool._release = function(session) {
           assert.strictEqual(session, fakeSession);
           done();
         };
@@ -538,14 +582,14 @@ describe.skip('SessionPool', function() {
         sessionPool.release(fakeSession);
       });
 
-      it('should set to readonly if it fails to create a txn', function(done) {
-        sessionPool.createTransaction_ = function() {
+      it('should convert to a read session if txn fails', function(done) {
+        sessionPool._prepareTransaction = function() {
           return Promise.reject();
         };
 
-        sessionPool.release_ = function(session) {
+        sessionPool._release = function(session) {
           assert.strictEqual(session, fakeSession);
-          assert.strictEqual(fakeSession.type, 'readonly');
+          assert.strictEqual(session.type, 'readonly');
           done();
         };
 
@@ -554,251 +598,342 @@ describe.skip('SessionPool', function() {
     });
   });
 
-  describe('size', function() {
-    it('should return the total number of sessions', function() {
-      sessionPool.reads_ = [{}, {}];
-      sessionPool.borrowed_ = [{}, {}, {}];
-
-      assert.strictEqual(sessionPool.size(), 5);
-    });
-  });
-
-  describe('acquireSession_', function() {
+  describe('_acquire', function() {
     beforeEach(function() {
       sessionPool.isOpen = true;
-      sessionPool.available = function() {
-        return true;
-      };
-      sessionPool.getSession_ = function() {
-        return Promise.resolve({});
-      };
+      sessionPool._isValidSession = () => true;
     });
 
-    it('should reject if the pool is closed', function() {
+    it('should return a closed error if not open', function() {
       sessionPool.isOpen = false;
 
-      return sessionPool.acquireSession_().then(
-        function() {
-          throw new Error('Should not be called.');
-        },
-        function(err) {
-          assert.strictEqual(err.message, 'Database is closed.');
-        }
-      );
+      return sessionPool._acquire().then(shouldNotBeCalled, function(err) {
+        assert.strictEqual(err.message, 'Database is closed.');
+      });
     });
 
-    it('should get a session', function() {
-      const fakeType = 'readonly';
-      const fakeSession = {};
+    it('should return a timeout error if a timeout happens', function() {
+      sessionPool.options.acquireTimeout = 1;
 
-      sessionPool.getSession_ = function(type) {
+      sessionPool._acquires.add = function(fn) {
+        return delay(2).then(fn);
+      };
+
+      return sessionPool._acquire().then(shouldNotBeCalled, function(err) {
+        assert.strictEqual(
+          err.message,
+          'Timeout occurred while acquiring session.'
+        );
+      });
+    });
+
+    it('should return a session', function() {
+      const fakeSession = new FakeSession();
+      const fakeType = 'readonly';
+      const now = Date.now();
+
+      sessionPool._getSession = function(type, startTime) {
         assert.strictEqual(type, fakeType);
+        assert(isAround(startTime, now));
         return Promise.resolve(fakeSession);
       };
 
-      return sessionPool.acquireSession_(fakeType).then(function(session) {
+      return sessionPool._acquire(fakeType).then(function(session) {
         assert.strictEqual(session, fakeSession);
-        assert(isAround(session.lastUsed, Date.now()));
+      });
+    });
+
+    it('should drop expired sessions', function() {
+      const badSession = new FakeSession();
+      const goodSession = new FakeSession();
+      const fakeSessions = [badSession, goodSession];
+
+      sessionPool._isValidSession = function(session) {
+        return session === goodSession;
+      };
+
+      sessionPool._getSession = function() {
+        return Promise.resolve(fakeSessions.shift());
+      };
+
+      sessionPool._inventory.borrowed = new Set(fakeSessions);
+
+      return sessionPool._acquire('readonly').then(function(session) {
+        assert.strictEqual(session, goodSession);
+        assert.strictEqual(sessionPool.size, 1);
       });
     });
 
     it('should capture the stack trace', function() {
-      const fakeId = 'abc';
-      const fakeSession = {id: fakeId};
-      const fakeTrace = [{}];
+      const id = 'abc';
+      const fakeSession = new FakeSession();
+
+      fakeSession.id = id;
+
+      sessionPool._getSession = function() {
+        return Promise.resolve(fakeSession);
+      };
+
+      const fakeTrace = {};
 
       fakeStackTrace.get = function() {
         return fakeTrace;
       };
 
-      sessionPool.getSession_ = function() {
-        return Promise.resolve(fakeSession);
-      };
-
-      return sessionPool.acquireSession_().then(function() {
-        const trace = sessionPool.traces_.get(fakeId);
+      return sessionPool._acquire('readonly').then(function() {
+        const trace = sessionPool._traces.get(id);
         assert.strictEqual(trace, fakeTrace);
       });
     });
 
-    it('should emit an empty event if no sessions are left', function(done) {
-      sessionPool.available = function() {
-        return false;
+    it('should convert read sessions to write sessions', function() {
+      const fakeSession = new FakeSession();
+      const convertedSession = new FakeSession();
+
+      sessionPool._getSession = function() {
+        return Promise.resolve(fakeSession);
       };
 
-      sessionPool.on('empty', done);
-      sessionPool.acquireSession_('readonly');
-    });
-  });
-
-  describe('borrowSession_', function() {
-    it('should borrow the session', function() {
-      const fakeSession = {};
-      let spliced = false;
-
-      sessionPool.spliceSession_ = function(session) {
+      sessionPool._convertSession = function(session) {
         assert.strictEqual(session, fakeSession);
-        spliced = true;
+        return convertedSession;
       };
 
-      sessionPool.borrowSession_(fakeSession);
-
-      assert.strictEqual(spliced, true);
-      assert.deepStrictEqual(sessionPool.borrowed_, [fakeSession]);
-    });
-  });
-
-  describe('createReadSession_', function() {
-    it('should create a read only session', function() {
-      let created = false;
-
-      const fakeSession = {
-        create: function() {
-          created = true;
-          return Promise.resolve();
-        },
-      };
-
-      sessionPool.session_ = function() {
-        return fakeSession;
-      };
-
-      return sessionPool.createReadSession_().then(function(session) {
-        assert.strictEqual(session, fakeSession);
-        assert.strictEqual(session.type, 'readonly');
-        assert.strictEqual(created, true);
+      return sessionPool._acquire('readwrite').then(function(session) {
+        assert.strictEqual(session, convertedSession);
       });
     });
   });
 
-  describe('createWriteSession_', function() {
-    it('should create a write session', function() {
-      let created = true;
+  describe('_borrow', function() {
+    it('should mark the session as borrowed', function() {
+      const fakeSession = new FakeSession();
+      const inv = sessionPool._inventory;
 
-      const fakeSession = {
-        create: function() {
-          created = true;
-          return Promise.resolve();
-        },
+      fakeSession.type = 'readonly';
+      inv.readonly.push(fakeSession);
+
+      sessionPool._borrow(fakeSession);
+
+      assert.strictEqual(inv.readonly.indexOf(fakeSession), -1);
+      assert(inv.borrowed.has(fakeSession));
+    });
+  });
+
+  describe('_borrowFrom', function() {
+    it('should borrow the first available type', function() {
+      const fakeSession = new FakeSession();
+      let borrowed = false;
+
+      sessionPool._inventory.readonly.push(fakeSession, new FakeSession());
+
+      sessionPool._borrow = function(session) {
+        assert.strictEqual(session, fakeSession);
+        borrowed = true;
       };
 
-      sessionPool.session_ = function() {
+      const session = sessionPool._borrowFrom('readonly');
+
+      assert.strictEqual(session, fakeSession);
+      assert.strictEqual(borrowed, true);
+    });
+  });
+
+  describe('_borrowNextAvailableSession', function() {
+    it('should borrow from readonly when available', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._inventory.readonly.push(fakeSession);
+
+      sessionPool._borrowFrom = function(type) {
+        assert.strictEqual(type, 'readonly');
         return fakeSession;
       };
 
-      sessionPool.createTransaction_ = function(session) {
+      const session = sessionPool._borrowNextAvailableSession('readonly');
+
+      assert.strictEqual(session, fakeSession);
+    });
+
+    it('should borrow from readwrites when available', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._inventory.readwrite.push(fakeSession);
+
+      sessionPool._borrowFrom = function(type) {
+        assert.strictEqual(type, 'readwrite');
+        return fakeSession;
+      };
+
+      const session = sessionPool._borrowNextAvailableSession('readwrite');
+
+      assert.strictEqual(session, fakeSession);
+    });
+
+    it('should borrow from rw when readonly isnt available', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._inventory.readwrite.push(fakeSession);
+
+      sessionPool._borrowFrom = function(type) {
+        assert.strictEqual(type, 'readwrite');
+        return fakeSession;
+      };
+
+      const session = sessionPool._borrowNextAvailableSession('readonly');
+
+      assert.strictEqual(session, fakeSession);
+    });
+
+    it('should borrow from readonly when rw isnt available', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._inventory.readonly.push(fakeSession);
+
+      sessionPool._borrowFrom = function(type) {
+        assert.strictEqual(type, 'readonly');
+        return fakeSession;
+      };
+
+      const session = sessionPool._borrowNextAvailableSession('readwrite');
+
+      assert.strictEqual(session, fakeSession);
+    });
+  });
+
+  describe('_convertSession', function() {
+    it('should prepare a transaction', function() {
+      const fakeSession = new FakeSession();
+
+      let prepared = false;
+
+      sessionPool._prepareTransaction = function(session) {
         assert.strictEqual(session, fakeSession);
+        prepared = true;
         return Promise.resolve();
       };
 
-      return sessionPool.createWriteSession_().then(function(session) {
+      return sessionPool._convertSession(fakeSession).then(function(session) {
         assert.strictEqual(session, fakeSession);
-        assert.strictEqual(session.type, 'readwrite');
-        assert.strictEqual(created, true);
+        assert.strictEqual(prepared, true);
       });
     });
 
-    it('should make session readonly if unable to create txn', function() {
-      const fakeSession = {
-        create: function() {
-          return Promise.resolve();
-        },
-      };
-
-      sessionPool.session_ = function() {
-        return fakeSession;
-      };
-
-      sessionPool.createTransaction_ = function() {
-        return Promise.reject();
-      };
-
-      return sessionPool.createWriteSession_().then(function(session) {
-        assert.strictEqual(session, fakeSession);
-        assert.strictEqual(session.type, 'readonly');
-      });
-    });
-  });
-
-  describe('createSession_', function() {
-    let fakeSession;
-
-    beforeEach(function() {
-      fakeSession = {};
-      sessionPool.session = function() {
-        return fakeSession;
-      };
-    });
-
-    it('should create a session', function() {
-      const fakeType = 'readonly';
-      const fakeGroup = [];
-
-      sessionPool.createReadSession_ = function() {
-        return Promise.resolve(fakeSession);
-      };
-
-      sessionPool.getSessionGroup_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        return fakeGroup;
-      };
-
-      return sessionPool.createSession_(fakeType).then(function() {
-        assert.strictEqual(sessionPool.pendingCreates_, 0);
-        assert.deepStrictEqual(fakeGroup, [fakeSession]);
-      });
-    });
-
-    it('should create a readwrite session', function() {
-      const fakeType = 'readwrite';
-      const fakeGroup = [];
-
-      sessionPool.createWriteSession_ = function() {
-        return Promise.resolve(fakeSession);
-      };
-
-      sessionPool.getSessionGroup_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        return fakeGroup;
-      };
-
-      return sessionPool.createSession_(fakeType).then(function() {
-        assert.deepStrictEqual(fakeGroup, [fakeSession]);
-      });
-    });
-
-    it('should return an error', function() {
+    it('should release the session if it fails', function() {
+      const fakeSession = new FakeSession();
       const error = new Error('err');
 
-      sessionPool.createReadSession_ = function() {
-        assert.strictEqual(sessionPool.pendingCreates_, 1);
+      let released = false;
+
+      sessionPool._release = function(session) {
+        assert.strictEqual(session, fakeSession);
+        released = true;
+      };
+
+      sessionPool._prepareTransaction = function() {
         return Promise.reject(error);
       };
 
-      return sessionPool.createSession_().catch(function(err) {
-        assert.strictEqual(sessionPool.pendingCreates_, 0);
-        assert.strictEqual(err, error);
+      return sessionPool
+        ._convertSession(fakeSession)
+        .then(shouldNotBeCalled, function(err) {
+          assert.strictEqual(err, error);
+          assert.strictEqual(released, true);
+        });
+    });
+  });
+
+  describe('_createSession', function() {
+    it('should put the session into a borrowed state', function() {
+      sessionPool._requests.add = () => Promise.resolve();
+      sessionPool._createSession('readonly');
+
+      assert.strictEqual(sessionPool.borrowed, 1);
+    });
+
+    it('should create the session', function() {
+      return sessionPool._createSession('readonly').then(function() {
+        const session = sessionPool._inventory.readonly[0];
+        assert.strictEqual(session.created, true);
+      });
+    });
+
+    it('should discard the session if unable to create', function() {
+      const error = new Error('err');
+
+      class BadFakeSession extends FakeSession {
+        create() {
+          return Promise.reject(error);
+        }
+      }
+
+      DATABASE.session = function() {
+        return new BadFakeSession();
+      };
+
+      return sessionPool
+        ._createSession()
+        .then(shouldNotBeCalled, function(err) {
+          assert.strictEqual(err, error);
+          assert.strictEqual(sessionPool.borrowed, 0);
+          assert.strictEqual(sessionPool.available, 0);
+        });
+    });
+
+    it('should prepare a transaction for readwrite sessions', function() {
+      let prepared = false;
+
+      sessionPool._prepareTransaction = function(session) {
+        assert(session instanceof FakeSession);
+        prepared = true;
+        return Promise.resolve();
+      };
+
+      return sessionPool._createSession('readwrite').then(function() {
+        assert.strictEqual(sessionPool.writes, 1);
+        assert.strictEqual(prepared, true);
+      });
+    });
+
+    it('should convert rw to readonly if unable to prepare txn', function() {
+      sessionPool._prepareTransaction = function() {
+        return Promise.reject(new Error('err'));
+      };
+
+      return sessionPool._createSession('readwrite').then(function() {
+        assert.strictEqual(sessionPool.reads, 1);
+        assert.strictEqual(sessionPool.writes, 0);
+      });
+    });
+
+    it('should update the session state', function() {
+      return sessionPool._createSession('readonly').then(function() {
+        const session = sessionPool._inventory.readonly[0];
+
+        assert.strictEqual(session.type, 'readonly');
+        assert(isAround(session.lastUsed, Date.now()));
+
+        assert.strictEqual(sessionPool.borrowed, 0);
+        assert.strictEqual(sessionPool.available, 1);
       });
     });
   });
 
-  describe('createSessionInBackground_', function() {
-    it('should emit an available event', function(done) {
-      const fakeType = 'readonly';
-
-      sessionPool.createSession_ = function(type) {
-        assert.strictEqual(type, fakeType);
+  describe('_createSessionInBackground', function() {
+    it('should emit available on success', function(done) {
+      sessionPool._createSession = function(type) {
+        assert.strictEqual(type, 'readonly');
         return Promise.resolve();
       };
 
       sessionPool.on('available', done);
-      sessionPool.createSessionInBackground_(fakeType);
+      sessionPool._createSessionInBackground('readonly');
     });
 
-    it('should emit an error event', function(done) {
+    it('should emit error on error', function(done) {
       const error = new Error('err');
 
-      sessionPool.createSession_ = function() {
+      sessionPool._createSession = function() {
         return Promise.reject(error);
       };
 
@@ -807,137 +942,23 @@ describe.skip('SessionPool', function() {
         done();
       });
 
-      sessionPool.createSessionInBackground_();
+      sessionPool._createSessionInBackground();
     });
   });
 
-  describe('createTransaction_', function() {
-    let fakeSession;
-    let fakeTxn;
-
-    beforeEach(function() {
-      fakeTxn = {
-        end: function(callback) {
-          (common.util.noop || callback)();
-        },
-        begin: function() {
-          return Promise.resolve();
-        },
-      };
-
-      fakeSession = {
-        transaction: function() {
-          return fakeTxn;
-        },
-      };
-
-      sessionPool.release = common.util.noop;
-    });
-
-    it('should create a txn object', function(done) {
-      const fakeOptions = {};
-
-      fakeSession.transaction = function(options) {
-        assert.strictEqual(options, fakeOptions);
-        setImmediate(done);
-        return fakeTxn;
-      };
-
-      sessionPool.createTransaction_(fakeSession, fakeOptions);
-    });
-
-    it('should cache the txn object', function() {
-      return sessionPool.createTransaction_(fakeSession).then(function() {
-        assert.strictEqual(fakeSession.txn, fakeTxn);
-      });
-    });
-  });
-
-  describe('destroySession_', function() {
-    let fakeSession;
-
-    beforeEach(function() {
-      fakeSession = {
-        type: 'readonly',
-        delete: function() {
-          return Promise.resolve();
-        },
-      };
-
-      sessionPool.reads_ = [fakeSession];
-    });
-
-    it('should remove the session from the pool', function(done) {
-      sessionPool.spliceSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        done();
-      };
-
-      sessionPool.destroySession_(fakeSession);
-    });
-
-    it('should emit an empty event if empty', function(done) {
-      sessionPool.available = function() {
-        return false;
-      };
-
-      sessionPool.on('empty', done);
-      sessionPool.destroySession_(fakeSession);
-    });
-
-    describe('refilling', function() {
-      beforeEach(function() {
-        sessionPool.isOpen = true;
-        sessionPool.needsFill_ = function() {
-          return true;
-        };
-      });
-
-      it('should create a new session', function(done) {
-        sessionPool.fill = done;
-        sessionPool.destroySession_(fakeSession);
-      });
-
-      it('should not create a session if the pool is closed', function() {
-        sessionPool.fill = function() {
-          throw new Error('Should not be called.');
-        };
-
-        sessionPool.isOpen = false;
-        sessionPool.destroySession_(fakeSession);
-      });
-
-      it('should not create if the pool has min sessions', function() {
-        sessionPool.fill = function() {
-          throw new Error('Should not be called.');
-        };
-
-        sessionPool.needsFill_ = function() {
-          return false;
-        };
-
-        sessionPool.destroySession_(fakeSession);
-      });
-    });
-
+  describe('_destroy', function() {
     it('should delete the session', function() {
-      let deleted = false;
+      const fakeSession = new FakeSession();
 
-      fakeSession.delete = function() {
-        deleted = true;
-        return Promise.resolve();
-      };
-
-      return sessionPool.destroySession_(fakeSession).then(function() {
-        assert.strictEqual(deleted, true);
+      return sessionPool._destroy(fakeSession).then(function() {
+        assert.strictEqual(fakeSession.deleted, true);
       });
     });
 
     it('should emit any errors', function(done) {
       const error = new Error('err');
-
-      fakeSession.delete = function() {
-        return Promise.reject(error);
+      const fakeSession = {
+        delete: () => Promise.reject(error),
       };
 
       sessionPool.on('error', function(err) {
@@ -945,47 +966,47 @@ describe.skip('SessionPool', function() {
         done();
       });
 
-      sessionPool.destroySession_(fakeSession);
+      sessionPool._destroy(fakeSession);
     });
   });
 
-  describe('evictIdleSessions_', function() {
+  describe('_evictIdleSessions', function() {
     let fakeSessions;
 
     beforeEach(function() {
+      fakeSessions = [
+        {type: 'readonly'},
+        {type: 'readwrite'},
+        {type: 'readwrite'},
+      ];
+
       sessionPool.options.maxIdle = 0;
       sessionPool.options.min = 0;
+      sessionPool._inventory.readonly = fakeSessions.slice();
 
-      fakeSessions = [{}, {}, {}];
-
-      sessionPool.getIdleSessions_ = function() {
+      sessionPool._getIdleSessions = function() {
         return fakeSessions.slice();
-      };
-
-      sessionPool.size = function() {
-        return fakeSessions.length;
       };
     });
 
     it('should evict the sessions', function() {
       let destroyCallCount = 0;
 
-      sessionPool.destroySession_ = function(session) {
+      sessionPool._destroy = function(session) {
         const fakeSessionIndex = fakeSessions.length - ++destroyCallCount;
         const fakeSession = fakeSessions[fakeSessionIndex];
 
         assert.strictEqual(session, fakeSession);
       };
 
-      return sessionPool.evictIdleSessions_().then(function() {
-        assert.strictEqual(destroyCallCount, fakeSessions.length);
-      });
+      sessionPool._evictIdleSessions();
+      assert.strictEqual(destroyCallCount, fakeSessions.length);
     });
 
     it('should respect the maxIdle option', function() {
       let destroyCallCount = 0;
 
-      sessionPool.destroySession_ = function(session) {
+      sessionPool._destroy = function(session) {
         const fakeSessionIndex = fakeSessions.length - ++destroyCallCount;
         const fakeSession = fakeSessions[fakeSessionIndex];
 
@@ -994,15 +1015,14 @@ describe.skip('SessionPool', function() {
 
       sessionPool.options.maxIdle = fakeSessions.length - 1;
 
-      return sessionPool.evictIdleSessions_().then(function() {
-        assert.strictEqual(destroyCallCount, 1);
-      });
+      sessionPool._evictIdleSessions();
+      assert.strictEqual(destroyCallCount, 1);
     });
 
     it('should respect the min value', function() {
       let destroyCallCount = 0;
 
-      sessionPool.destroySession_ = function(session) {
+      sessionPool._destroy = function(session) {
         const fakeSessionIndex = fakeSessions.length - ++destroyCallCount;
         const fakeSession = fakeSessions[fakeSessionIndex];
 
@@ -1011,753 +1031,511 @@ describe.skip('SessionPool', function() {
 
       sessionPool.options.min = fakeSessions.length - 2;
 
-      return sessionPool.evictIdleSessions_().then(function() {
-        assert.strictEqual(destroyCallCount, 2);
+      sessionPool._evictIdleSessions();
+      assert.strictEqual(destroyCallCount, 2);
+    });
+  });
+
+  describe('_fill', function() {
+    let created;
+
+    beforeEach(function() {
+      sessionPool.options.min = 8;
+
+      created = {
+        readonly: 0,
+        readwrite: 0,
+      };
+
+      sessionPool._createSessionInBackground = function(type) {
+        created[type] += 1;
+      };
+    });
+
+    it('should create the min number of required sessions', function() {
+      sessionPool._fill();
+
+      assert.strictEqual(created.readonly, 8);
+      assert.strictEqual(created.readwrite, 0);
+    });
+
+    it('should create the min number of write sessions', function() {
+      sessionPool.options.writes = 0.5;
+      sessionPool._fill();
+
+      assert.strictEqual(created.readonly, 4);
+      assert.strictEqual(created.readwrite, 4);
+    });
+
+    it('should respect the current size of the pool', function() {
+      sessionPool.options.writes = 0.5;
+      sessionPool._inventory = {
+        readonly: [{}],
+        readwrite: [{}, {}],
+        borrowed: new Set(),
+      };
+
+      sessionPool._fill();
+
+      assert.strictEqual(created.readonly, 3);
+      assert.strictEqual(created.readwrite, 2);
+    });
+
+    it('should settle once all the sessions are created', function() {
+      const end = timeSpan();
+
+      sessionPool._createSessionInBackground = function() {
+        return new Promise(function(resolve) {
+          setTimeout(resolve, 500);
+        });
+      };
+
+      return sessionPool._fill().then(function() {
+        assert(isAround(500, end()));
       });
     });
   });
 
-  describe('getIdleSessions_', function() {
+  describe('_getIdleSessions', function() {
     it('should return a list of idle sessions', function() {
       const idlesAfter = (sessionPool.options.idlesAfter = 1); // 1 minute
       const idleTimestamp = Date.now() - idlesAfter * 60000;
 
-      const fakeReads = (sessionPool.reads_ = [
+      const fakeReads = (sessionPool._inventory.readonly = [
         {lastUsed: Date.now()},
         {lastUsed: idleTimestamp},
       ]);
 
-      const fakeWrites = (sessionPool.writes_ = [{lastUsed: idleTimestamp}]);
+      const fakeWrites = (sessionPool._inventory.readwrite = [
+        {lastUsed: idleTimestamp},
+      ]);
 
       const expectedSessions = [fakeReads[1], fakeWrites[0]];
-      const idleSessions = sessionPool.getIdleSessions_();
+      const idleSessions = sessionPool._getIdleSessions();
 
       assert.deepStrictEqual(idleSessions, expectedSessions);
     });
   });
 
-  describe('getNextAvailableSession_', function() {
-    it('should return a read session if the type is readonly', function() {
-      const fakeSession = {};
+  describe('_getLeaks', function() {
+    it('should return an array of leaks', function() {
+      sessionPool._traces.set('a', 'aaa');
+      sessionPool._traces.set('b', 'bbb');
 
-      sessionPool.reads_ = [fakeSession];
+      const values = Array.from(sessionPool._traces.values());
+      const formatted = ['ccc', 'ddd'];
 
-      let borrowCalled = false;
-      sessionPool.borrowSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        borrowCalled = true;
+      let formatCalls = 0;
+
+      SessionPool.formatTrace = function(log) {
+        assert.strictEqual(log, values[formatCalls]);
+        return formatted[formatCalls++];
       };
+
+      const leaks = sessionPool._getLeaks();
+
+      assert.deepStrictEqual(leaks, formatted);
+    });
+  });
+
+  describe('_getSession', function() {
+    beforeEach(function() {
+      sessionPool._onClose = new Promise(resolve => {
+        sessionPool.on('close', resolve);
+      });
+      sessionPool.options.max = 0;
+    });
+
+    it('should return a session if one is available', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._inventory.readonly = [fakeSession];
+
+      sessionPool._borrowNextAvailableSession = function(type) {
+        assert.strictEqual(type, 'readonly');
+        return fakeSession;
+      };
+
+      return sessionPool._getSession('readonly').then(function(session) {
+        assert.strictEqual(session, fakeSession);
+      });
+    });
+
+    it('should return an error if empty and fail = true', function() {
+      sessionPool.options.fail = true;
+
+      return sessionPool._getSession().then(shouldNotBeCalled, function(err) {
+        assert.strictEqual(err.message, 'No resources available.');
+      });
+    });
+
+    it('should throw a closed error if the pool closes', function() {
+      setTimeout(() => sessionPool.emit('close'), 100);
+
+      return sessionPool._getSession().then(shouldNotBeCalled, function(err) {
+        assert.strictEqual(err.message, 'Database is closed.');
+      });
+    });
+
+    it('should return a session when it becomes available', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._borrowNextAvailableSession = function(type) {
+        assert.strictEqual(type, 'readonly');
+        return fakeSession;
+      };
+
+      setTimeout(() => sessionPool.emit('available'), 100);
+
+      return sessionPool._getSession('readonly').then(function(session) {
+        assert.strictEqual(session, fakeSession);
+      });
+    });
+
+    it('should use the acquireTimeout if set', function() {
+      const end = timeSpan();
+      const timeout = (sessionPool.options.acquireTimeout = 100);
+
       return sessionPool
-        .getNextAvailableSession_('readonly')
-        .then(function(session) {
-          assert.strictEqual(session, fakeSession);
-          assert.strictEqual(borrowCalled, true);
+        ._getSession('readonly', Date.now())
+        .then(shouldNotBeCalled, function(err) {
+          assert(isAround(timeout, end()));
+          assert.strictEqual(
+            err.message,
+            'Timeout occurred while acquiring session.'
+          );
         });
     });
 
-    it('should return a write session if no reads are available', function() {
-      const fakeSession = {};
+    it('should create a session if the pool is not full', function() {
+      const fakeSession = new FakeSession();
 
-      sessionPool.writes_ = [fakeSession];
+      sessionPool.options.max = 1;
 
-      let borrowCalled = false;
-      sessionPool.borrowSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        borrowCalled = true;
+      let created = false;
+
+      sessionPool._createSession = function(type) {
+        assert.strictEqual(type, 'readonly');
+        created = true;
+        return Promise.resolve();
       };
 
-      return sessionPool
-        .getNextAvailableSession_('readonly')
-        .then(function(session) {
-          assert.strictEqual(session, fakeSession);
-          assert.strictEqual(borrowCalled, true);
-        });
+      sessionPool._borrowNextAvailableSession = function() {
+        return fakeSession;
+      };
+
+      return sessionPool._getSession('readonly').then(function(session) {
+        assert.strictEqual(created, true);
+        assert.strictEqual(session, fakeSession);
+      });
     });
 
-    it('should return a write session for read/write', function() {
-      const fakeSession = {};
+    it('should return any create errors', function() {
+      const error = new Error('err');
 
-      sessionPool.writes_ = [fakeSession];
+      sessionPool.options.max = 1;
 
-      let borrowCalled = false;
-      sessionPool.borrowSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        borrowCalled = true;
+      sessionPool._createSession = function() {
+        return Promise.reject(error);
       };
-      return sessionPool
-        .getNextAvailableSession_('readwrite')
-        .then(function(session) {
-          assert.strictEqual(session, fakeSession);
-          assert.strictEqual(borrowCalled, true);
-        });
+
+      return sessionPool._getSession().then(shouldNotBeCalled, function(err) {
+        assert.strictEqual(err, error);
+      });
     });
 
-    it('should transform a read to a readwrite if need be', function() {
-      const fakeSession = {};
+    it('should remove the available listener on error', function() {
+      sessionPool.options.acquireTimeout = 100;
 
-      sessionPool.reads_ = [fakeSession];
+      const promise = sessionPool._getSession('readonly');
 
-      let borrowCalled = false;
-      sessionPool.borrowSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        borrowCalled = true;
-      };
+      assert.strictEqual(sessionPool.listenerCount('available'), 1);
 
-      let transformed = false;
-      const fakePromise = Promise.resolve();
-      sessionPool.createTransaction_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        transformed = true;
-        return fakePromise;
-      };
+      return promise.then(shouldNotBeCalled, function() {
+        assert.strictEqual(sessionPool.listenerCount('available'), 0);
+      });
+    });
+  });
 
-      sessionPool.race_ = function(promise) {
-        assert.strictEqual(promise, fakePromise);
-        return fakePromise;
-      };
+  describe('_isValidSession', function() {
+    it('should return true if the session is good', function() {
+      const fakeSession = {lastUsed: Date.now()};
+      const isValid = sessionPool._isValidSession(fakeSession);
 
-      return sessionPool
-        .getNextAvailableSession_('readwrite')
-        .then(function(session) {
-          assert.strictEqual(transformed, true);
-          assert.strictEqual(session, fakeSession);
-          assert.strictEqual(borrowCalled, true);
-        });
+      assert.strictEqual(isValid, true);
     });
 
-    it('should release the session if an error occurs converting', function() {
-      const fakeSession = {};
+    it('should return true if the session has gone bad', function() {
+      const fakeSession = {lastUsed: Date.now - 61 * 60000};
+      const isValid = sessionPool._isValidSession(fakeSession);
 
-      sessionPool.reads_ = [fakeSession];
+      assert.strictEqual(isValid, false);
+    });
+  });
 
-      const fakeError = new Error('err');
-      sessionPool.createTransaction_ = function() {
-        return Promise.reject(fakeError);
+  describe('_ping', function() {
+    beforeEach(function() {
+      sessionPool._borrow = function(session) {
+        sessionPool._inventory.borrowed.add(session);
       };
+    });
+
+    it('should borrow the session', function() {
+      const fakeSession = new FakeSession();
+
+      sessionPool._borrow = function(session) {
+        assert.strictEqual(session, fakeSession);
+      };
+
+      sessionPool._ping(fakeSession);
+    });
+
+    it('should discard it if expired', function() {
+      const fakeSession = new FakeSession();
+
+      fakeSession.lastUsed = Date.now() - 61 * 60000;
+
+      return sessionPool._ping(fakeSession).then(function() {
+        const inPool = sessionPool._inventory.borrowed.has(fakeSession);
+
+        assert.strictEqual(inPool, false);
+        assert.strictEqual(fakeSession.keptAlive, false);
+      });
+    });
+
+    it('should keep alive the session then release it', function() {
+      const fakeSession = new FakeSession();
+
+      fakeSession.lastUsed = Date.now();
 
       let released = false;
-      sessionPool.release_ = function(session) {
+
+      sessionPool.release = function(session) {
         assert.strictEqual(session, fakeSession);
         released = true;
       };
 
-      let borrowCalled = false;
-      sessionPool.borrowSession_ = function(session) {
+      return sessionPool._ping(fakeSession).then(function() {
+        assert.strictEqual(fakeSession.keptAlive, true);
+        assert.strictEqual(released, true);
+      });
+    });
+
+    it('should destroy the session if the ping fails', function() {
+      const fakeSession = new FakeSession();
+
+      fakeSession.lastUsed = Date.now();
+      fakeSession.keepAlive = () => Promise.reject();
+      sessionPool.release = shouldNotBeCalled;
+
+      let destroyed = false;
+
+      sessionPool._destroy = function(session) {
         assert.strictEqual(session, fakeSession);
-        borrowCalled = true;
+        destroyed = true;
       };
 
-      sessionPool.race_ = function(promise) {
-        return promise;
-      };
+      return sessionPool._ping(fakeSession).then(function() {
+        const inPool = sessionPool._inventory.borrowed.has(fakeSession);
 
-      return sessionPool.getNextAvailableSession_('readwrite').then(
-        function() {
-          throw new Error('Should not be called.');
-        },
-        function(err) {
-          assert.strictEqual(err, fakeError);
-          assert.strictEqual(released, true);
-          assert.strictEqual(borrowCalled, true);
-        }
-      );
-    });
-  });
-
-  describe('getSession_', function() {
-    it('should return a session if one is available', function() {
-      const fakeType = 'readwrite';
-      const fakeSession = {};
-
-      sessionPool.acquireQueue_ = {size: 0};
-      sessionPool.available = function() {
-        return 1;
-      };
-
-      sessionPool.getNextAvailableSession_ = function(type) {
-        assert.strictEqual(type, fakeType);
-        return Promise.resolve(fakeSession);
-      };
-
-      return sessionPool.getSession_(fakeType).then(function(session) {
-        assert.strictEqual(session, fakeSession);
-      });
-    });
-
-    describe('when none are available', function() {
-      beforeEach(function() {
-        sessionPool.available = function() {
-          return 0;
-        };
-      });
-
-      it('should fail if set and none are available', function() {
-        sessionPool.options.fail = true;
-        sessionPool.acquireQueue_ = {size: 1};
-
-        return sessionPool.getSession_().then(
-          function() {
-            throw new Error('Should not be called.');
-          },
-          function(err) {
-            assert(err instanceof Error);
-            assert.strictEqual(err.message, 'No resources available.');
-          }
-        );
-      });
-
-      it('should wait for the next available session', function() {
-        const fakeType = 'readwrite';
-        const fakeSession = {};
-
-        const fakePromise = Promise.resolve(fakeSession);
-        sessionPool.waitForNextAvailable_ = function(type) {
-          assert.strictEqual(type, fakeType);
-          return fakePromise;
-        };
-
-        sessionPool.isFull = function() {
-          return true;
-        };
-
-        sessionPool.race_ = function(promises) {
-          assert.deepStrictEqual(promises, [fakePromise]);
-          return fakePromise;
-        };
-
-        return sessionPool.getSession_(fakeType).then(function(session) {
-          assert.strictEqual(session, fakeSession);
-        });
-      });
-
-      it('should create a session if there is room', function() {
-        const fakeType = 'readwrite';
-        const fakeSession = {};
-
-        sessionPool.isFull = function() {
-          return false;
-        };
-
-        sessionPool.createSession_ = function(type) {
-          assert.strictEqual(type, fakeType);
-          sessionPool.writes_ = [fakeSession];
-          return Promise.resolve();
-        };
-
-        return sessionPool.getSession_(fakeType).then(function(session) {
-          assert.strictEqual(session, fakeSession);
-        });
-      });
-
-      it('should not create unneeded sessions', function() {
-        const fakeSession = {};
-
-        sessionPool.acquireQueue_ = {size: 1};
-        sessionPool.pendingCreates_ = 2;
-
-        sessionPool.waitForNextAvailable_ = function() {
-          return Promise.resolve(fakeSession);
-        };
-
-        sessionPool.isFull = function() {
-          return false;
-        };
-
-        sessionPool.createSession_ = function() {
-          throw new Error('Should not be called.');
-        };
-
-        sessionPool.race_ = function(promises) {
-          assert.strictEqual(promises.length, 1);
-          return promises[0];
-        };
-
-        return sessionPool.getSession_().then(function(session) {
-          assert.strictEqual(session, fakeSession);
-        });
+        assert.strictEqual(inPool, false);
+        assert.strictEqual(destroyed, true);
       });
     });
   });
 
-  describe('getSessionGroup_', function() {
-    it('should get the read group for readonly sessions', function() {
-      const fakeSession = {type: 'readonly'};
-      const group = sessionPool.getSessionGroup_(fakeSession);
+  describe('_pingIdleSessions', function() {
+    it('should ping each idle session', function() {
+      const fakeSessions = [{}, {}, {}];
 
-      assert.strictEqual(group, sessionPool.reads_);
-    });
-
-    it('should get the writes group for readwrite sessions', function() {
-      const fakeSession = {type: 'readwrite'};
-      const group = sessionPool.getSessionGroup_(fakeSession);
-
-      assert.strictEqual(group, sessionPool.writes_);
-    });
-  });
-
-  describe('needsFill_', function() {
-    it('should return true if pool is under min value', function() {
-      sessionPool.options.min = 8;
-      sessionPool.pendingCreates_ = 0;
-      sessionPool.size = function() {
-        return 7;
-      };
-
-      assert.strictEqual(sessionPool.needsFill_(), true);
-    });
-
-    it('should return false if it is at or above min value', function() {
-      sessionPool.options.min = 8;
-      sessionPool.pendingCreates_ = 3;
-      sessionPool.size = function() {
-        return 5;
-      };
-
-      assert.strictEqual(sessionPool.needsFill_(), false);
-    });
-  });
-
-  describe('onAvailable_', function() {
-    it('should settle once the available event fires', function() {
-      const delay = 500;
-      const end = timeSpan();
-
-      sessionPool.available = function() {
-        return 0;
-      };
-
-      setTimeout(function() {
-        sessionPool.emit('available');
-      }, delay);
-
-      return sessionPool.onAvailable_().then(function() {
-        assert(isAround(delay, end()));
-      });
-    });
-  });
-
-  describe('pingIdleSessions_', function() {
-    const fakeSessions = [{}, {}];
-
-    beforeEach(function() {
-      sessionPool.getIdleSessions_ = function() {
+      sessionPool._getIdleSessions = function() {
         return fakeSessions;
       };
-    });
 
-    it('should ping all the idle sessions', function() {
       let pingCalls = 0;
 
-      sessionPool.pingSession_ = function(session) {
+      sessionPool._ping = function(session) {
         assert.strictEqual(session, fakeSessions[pingCalls++]);
         return Promise.resolve();
       };
 
-      return sessionPool.pingIdleSessions_().then(function() {
-        assert.strictEqual(pingCalls, fakeSessions.length);
+      sessionPool._fill = noop;
+
+      return sessionPool._pingIdleSessions().then(function() {
+        assert.strictEqual(pingCalls, 3);
       });
     });
 
-    it('should refill the pool if necessary', function(done) {
-      sessionPool.pingSession_ = function() {
-        return Promise.resolve();
+    it('should fill the pool after pinging', function() {
+      let filled = false;
+
+      sessionPool._fill = function() {
+        filled = true;
       };
 
-      sessionPool.needsFill_ = function() {
-        return true;
+      sessionPool._getIdleSessions = function() {
+        return [];
       };
 
-      sessionPool.fill = done;
-      sessionPool.pingIdleSessions_();
-    });
-  });
-
-  describe('pingSession_', function() {
-    beforeEach(function() {
-      sessionPool.borrowSession_ = function() {};
-    });
-
-    it('should keep alive sessions', function() {
-      let keptAlive = false;
-      const fakeSession = {
-        keepAlive: function() {
-          keptAlive = true;
-          return Promise.resolve();
-        },
-      };
-
-      let borrowed = false;
-      sessionPool.borrowSession_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        borrowed = true;
-      };
-
-      let released = false;
-      sessionPool.release = function(session) {
-        assert.strictEqual(session, fakeSession);
-        released = true;
-      };
-
-      return sessionPool.pingSession_(fakeSession).then(function() {
-        assert.strictEqual(borrowed, true);
-        assert.strictEqual(keptAlive, true);
-        assert.strictEqual(released, true);
-      });
-    });
-
-    it('should emit and ignore errors', function() {
-      const fakeError = new Error('err');
-
-      const fakeSession = {
-        keepAlive: function() {
-          return Promise.reject(fakeError);
-        },
-      };
-
-      let emitted = false;
-      sessionPool.on('error', function(err) {
-        assert.strictEqual(err, fakeError);
-        emitted = true;
-      });
-
-      let released = false;
-      sessionPool.release = function(session) {
-        assert.strictEqual(session, fakeSession);
-        released = true;
-      };
-
-      return sessionPool.pingSession_(fakeSession).then(function() {
-        assert.strictEqual(emitted, true);
-        assert.strictEqual(released, true);
-      });
-    });
-
-    it('should not release not found sessions', function() {
-      const fakeError = {code: 404};
-      const fakeSession = {
-        keepAlive: function() {
-          return Promise.reject(fakeError);
-        },
-      };
-
-      let emitted = false;
-      sessionPool.on('error', function(err) {
-        assert.strictEqual(err, fakeError);
-        emitted = true;
-      });
-
-      let released = false;
-      sessionPool.release = function() {
-        released = true;
-      };
-
-      sessionPool.borrowed_ = [fakeSession];
-
-      return sessionPool.pingSession_(fakeSession).then(function() {
-        assert.strictEqual(emitted, true);
-        assert.strictEqual(released, false);
+      return sessionPool._pingIdleSessions().then(function() {
+        assert.strictEqual(filled, true);
       });
     });
   });
 
-  describe('race_', function() {
-    beforeEach(function() {
-      sessionPool.onClose_ = new Promise(function(resolve) {
-        sessionPool.once('close', resolve);
-      });
-    });
+  describe('_prepareTransaction', function() {
+    it('should prepare a transaction', function() {
+      const fakeSession = new FakeSession();
+      const options = {};
 
-    it('should resolve in a perfect world', function() {
-      const fakeData = {};
-
-      return sessionPool.race_(Promise.resolve(fakeData)).then(function(data) {
-        assert.strictEqual(data, fakeData);
-      });
-    });
-
-    it('should fail if the pool closes', function() {
-      sessionPool.onClose_ = Promise.resolve();
-
-      return sessionPool.race_(delay(500)).then(
-        function() {
-          throw new Error('Should not be called.');
-        },
-        function(err) {
-          assert.strictEqual(err.message, 'Database is closed.');
-        }
-      );
-    });
-
-    it('should add a timeout if configured', function() {
-      sessionPool.options.acquireTimeout = 1;
-
-      return sessionPool.race_(delay(100)).then(
-        function() {
-          throw new Error('Should not be called.');
-        },
-        function(err) {
-          assert.strictEqual(err.message, 'Timed out acquiring session.');
-        }
-      );
+      return sessionPool
+        ._prepareTransaction(fakeSession, options)
+        .then(function() {
+          assert(fakeSession.txn instanceof FakeTransaction);
+          assert.strictEqual(fakeSession.txn.options, options);
+        });
     });
   });
 
-  describe('release_', function() {
-    it('should release the session', function(done) {
-      const fakeSession = {};
-      const fakeGroup = [];
+  describe('_release', function() {
+    it('should release the session', function() {
+      const inv = sessionPool._inventory;
+      const fakeSession = {type: 'readonly'};
 
-      sessionPool.borrowed_ = [fakeSession];
-      sessionPool.getSessionGroup_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        return fakeGroup;
-      };
+      inv.borrowed.add(fakeSession);
+      sessionPool._release(fakeSession);
 
-      sessionPool.on('available', function() {
-        assert.deepStrictEqual(fakeGroup, [fakeSession]);
-        assert.deepStrictEqual(sessionPool.borrowed_, []);
-        done();
-      });
+      assert.strictEqual(inv.borrowed.has(fakeSession), false);
+      assert.strictEqual(inv.readonly.indexOf(fakeSession), 0);
+    });
 
-      sessionPool.release_(fakeSession);
+    it('should delete any stack traces', function() {
+      const id = 'abc';
+      const fakeSession = {type: 'readonly', id};
+
+      sessionPool._traces.set(id, 'def');
+      sessionPool._release(fakeSession);
+
+      assert.strictEqual(sessionPool._traces.has(id), false);
+    });
+
+    it('should emit the available event', function(done) {
+      const fakeSession = {type: 'readonly'};
+
+      sessionPool.on('available', done);
+      sessionPool._release(fakeSession);
     });
   });
 
-  describe('session_', function() {
-    it('should return a session object', function() {
-      const fakeSession = {};
-
-      DATABASE.session = function() {
-        return fakeSession;
-      };
-
-      const session = sessionPool.session_();
-
-      assert.strictEqual(session, fakeSession);
-      assert(isAround(session.lastUsed, Date.now()));
-    });
-  });
-
-  describe('spliceSession_', function() {
-    it('should remove the session from the right group', function() {
-      const fakeSession = {};
-      const fakeGroup = [fakeSession];
-
-      sessionPool.getSessionGroup_ = function(session) {
-        assert.strictEqual(session, fakeSession);
-        return fakeGroup;
-      };
-
-      sessionPool.spliceSession_(fakeSession);
-      assert.deepStrictEqual(fakeGroup, []);
-    });
-
-    it('should not remove sessions unnecessarily', function() {
-      const fakeSession = {};
-      const fakeGroup = [{}];
-
-      sessionPool.getSessionGroup_ = function() {
-        return fakeGroup;
-      };
-
-      sessionPool.spliceSession_(fakeSession);
-      assert.strictEqual(fakeGroup.length, 1);
-    });
-  });
-
-  describe('startHouseKeeping_', function() {
+  describe('_startHouseKeeping', function() {
     let _setInterval;
-
-    function FakeTimer() {
-      this.called = false;
-    }
-
-    FakeTimer.prototype.unref = function() {
-      this.called = true;
-    };
 
     before(function() {
       _setInterval = global.setInterval;
     });
 
-    after(function() {
+    afterEach(function() {
       global.setInterval = _setInterval;
     });
 
-    beforeEach(function() {
-      global.setInterval = function() {
-        return new FakeTimer();
-      };
-    });
+    it('should set an interval to evict idle sessions', function(done) {
+      const callIndex = 0;
+      const expectedInterval = sessionPool.options.idlesAfter * 60000;
 
-    it('should start the intervals on available', function() {
-      sessionPool.startHouseKeeping_();
-      sessionPool.emit('available');
+      let intervalCalls = 0;
+      let unreffed = false;
 
-      assert(sessionPool.pingHandle_ instanceof FakeTimer);
-      assert(sessionPool.evictHandle_ instanceof FakeTimer);
-    });
-
-    it('should unref the intervals', function() {
-      global.setInterval = function() {
-        return new FakeTimer();
+      const fakeHandle = {
+        unref: function() {
+          unreffed = true;
+        },
       };
 
-      sessionPool.startHouseKeeping_();
-      sessionPool.emit('available');
-
-      assert.strictEqual(sessionPool.pingHandle_.called, true);
-      assert.strictEqual(sessionPool.evictHandle_.called, true);
-    });
-
-    it('should call pingIdleSessions_', function(done) {
-      let callCount = 0;
-
-      sessionPool.pingIdleSessions_ = done;
-
-      global.setInterval = function(cb, speed) {
-        if (++callCount === 1) {
-          assert.strictEqual(speed, sessionPool.options.keepAlive * 60000);
-          cb();
+      global.setInterval = function(fn, interval) {
+        if (intervalCalls++ !== callIndex) {
+          return {unref: noop};
         }
 
-        return new FakeTimer();
+        assert.strictEqual(interval, expectedInterval);
+        setImmediate(fn);
+        return fakeHandle;
       };
 
-      sessionPool.startHouseKeeping_();
-      sessionPool.emit('available');
-    });
-
-    it('should call evictIdleSession_', function(done) {
-      let callCount = 0;
-
-      sessionPool.evictIdleSessions_ = done;
-
-      global.setInterval = function(cb, speed) {
-        if (++callCount === 2) {
-          assert.strictEqual(speed, sessionPool.options.idlesAfter * 60000);
-          cb();
-        }
-
-        return new FakeTimer();
-      };
-
-      sessionPool.startHouseKeeping_();
-      sessionPool.emit('available');
-    });
-
-    it('should listen for the pool to become empty', function(done) {
-      sessionPool.stopHouseKeeping_ = function() {
-        assert.strictEqual(sessionPool.listenerCount('available'), 1);
+      sessionPool._evictIdleSessions = function() {
+        assert.strictEqual(sessionPool._evictHandle, fakeHandle);
+        assert.strictEqual(unreffed, true);
         done();
       };
 
-      sessionPool.startHouseKeeping_();
-      sessionPool.emit('available');
-
-      assert.strictEqual(sessionPool.listenerCount('available'), 0);
-
-      sessionPool.emit('empty');
+      sessionPool._startHouseKeeping();
     });
 
-    it('should remove all listeners on close', function() {
-      sessionPool.startHouseKeeping_();
-      assert.strictEqual(sessionPool.listenerCount('available'), 1);
+    it('should set an interval to ping sessions', function(done) {
+      const callIndex = 1;
+      const expectedInterval = sessionPool.options.keepAlive * 60000;
 
-      sessionPool.emit('close');
+      let intervalCalls = 0;
+      let unreffed = false;
 
-      assert.strictEqual(sessionPool.listenerCount('available'), 0);
-      assert.strictEqual(sessionPool.listenerCount('empty'), 0);
+      const fakeHandle = {
+        unref: function() {
+          unreffed = true;
+        },
+      };
+
+      global.setInterval = function(fn, interval) {
+        if (intervalCalls++ !== callIndex) {
+          return {unref: noop};
+        }
+
+        assert.strictEqual(interval, expectedInterval);
+        setImmediate(fn);
+        return fakeHandle;
+      };
+
+      sessionPool._pingIdleSessions = function() {
+        assert.strictEqual(sessionPool._pingHandle, fakeHandle);
+        assert.strictEqual(unreffed, true);
+        done();
+      };
+
+      sessionPool._startHouseKeeping();
     });
   });
 
-  describe('stopHouseKeeping_', function() {
+  describe('_stopHouseKeeping', function() {
     let _clearInterval;
 
     before(function() {
       _clearInterval = global.clearInterval;
     });
 
-    after(function() {
+    afterEach(function() {
       global.clearInterval = _clearInterval;
     });
 
     it('should clear the intervals', function() {
-      sessionPool.pingHandle_ = 1;
-      sessionPool.evictHandle_ = 2;
+      sessionPool._pingHandle = 'a';
+      sessionPool._evictHandle = 'b';
 
-      let calls = 0;
+      const fakeHandles = [sessionPool._pingHandle, sessionPool._evictHandle];
+
+      let clearCalls = 0;
+
       global.clearInterval = function(handle) {
-        assert.strictEqual(handle, ++calls);
+        assert.strictEqual(handle, fakeHandles[clearCalls++]);
       };
 
-      sessionPool.stopHouseKeeping_();
-      assert.strictEqual(calls, 2);
+      sessionPool._stopHouseKeeping();
+      assert.strictEqual(clearCalls, 2);
     });
   });
-
-  describe('waitForNextAvailable_', function() {
-    const TYPE = 'readwrite';
-
-    beforeEach(function() {
-      sessionPool.acquireQueue_ = {
-        add: function(fn) {
-          return fn();
-        },
-      };
-    });
-
-    it('should queue an acquire request', function() {
-      const fakeSession = {};
-
-      let queued = false;
-      sessionPool.acquireQueue_ = {
-        add: function(fn) {
-          queued = true;
-          return fn();
-        },
-      };
-
-      let available = false;
-      sessionPool.onAvailable_ = function() {
-        assert.strictEqual(queued, true);
-        available = true;
-        return Promise.resolve();
-      };
-
-      sessionPool.getNextAvailableSession_ = function(type) {
-        assert.strictEqual(available, true);
-        assert.strictEqual(type, TYPE);
-        return fakeSession;
-      };
-
-      return sessionPool.waitForNextAvailable_(TYPE).then(function(session) {
-        assert.strictEqual(session, fakeSession);
-      });
-    });
-
-    it('should resolve right away if there are available sessions', function() {
-      const fakeSession = {};
-
-      sessionPool.available = function() {
-        return 1;
-      };
-
-      sessionPool.onAvailable_ = function() {
-        throw new Error('Should not be called.');
-      };
-
-      sessionPool.getNextAvailableSession_ = function(type) {
-        assert.strictEqual(type, TYPE);
-        return fakeSession;
-      };
-
-      const session = sessionPool.waitForNextAvailable_(TYPE);
-      assert.strictEqual(session, fakeSession);
-    });
-  });
-
-  function isAround(expected, actual) {
-    return actual > expected - 10 && actual < expected + 50;
-  }
 });
+
+function isAround(actual, expected) {
+  return actual > expected - 50 && actual < expected + 50;
+}
+
+function shouldNotBeCalled() {
+  throw new Error('Should not be called.');
+}
