@@ -1385,7 +1385,7 @@ describe('Spanner', function() {
       });
 
       it('should query in callback mode', function(done) {
-        var options = {
+        const options = {
           readOnly: true,
           strong: true,
         };
@@ -1398,7 +1398,7 @@ describe('Spanner', function() {
       });
 
       it('should query in promise mode', function(done) {
-        var options = {
+        const options = {
           readOnly: true,
           strong: true,
         };
