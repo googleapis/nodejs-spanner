@@ -176,6 +176,7 @@ Instance.formatName_ = function(projectId, name) {
  *
  * @typedef {object} CreateDatabaseRequest
  * @property {SessionPoolOptions} [poolOptions]
+ * @property {SessionPoolCtor} [poolCtor]
  */
 /**
  * @typedef {array} CreateDatabaseResponse
@@ -272,6 +273,9 @@ Instance.prototype.createDatabase = function(name, options, callback) {
   const poolOptions = options.poolOptions;
   delete options.poolOptions;
 
+  const poolCtor = options.poolCtor;
+  delete options.poolCtor;
+
   const reqOpts = extend(
     {
       parent: this.formattedName_,
@@ -297,8 +301,7 @@ Instance.prototype.createDatabase = function(name, options, callback) {
         return;
       }
 
-      const database = self.database(name, poolOptions);
-
+      const database = self.database(name, poolOptions || poolCtor);
       callback(null, database, operation, resp);
     }
   );
@@ -310,7 +313,8 @@ Instance.prototype.createDatabase = function(name, options, callback) {
  * @throws {Error} If a name is not provided.
  *
  * @param {string} name The name of the instance.
- * @param {SessionPoolOptions} [poolOptions] Session pool configuration options.
+ * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
+ *     configuration options.
  * @return {Database} A Database object.
  *
  * @example

@@ -38,7 +38,7 @@ const fakePfy = extend({}, pfy, {
       'runTransaction',
       'table',
       'updateSchema',
-      'session_',
+      'session',
     ]);
   },
 });
@@ -168,6 +168,15 @@ describe('Database', function() {
       assert.strictEqual(database.pool_.calledWith_[1], POOL_OPTIONS);
     });
 
+    it('should accept a custom Pool class', function() {
+      function FakePool() {}
+      FakePool.prototype.on = util.noop;
+      FakePool.prototype.open = util.noop;
+
+      const database = new Database(INSTANCE, NAME, FakePool);
+      assert(database.pool_ instanceof FakePool);
+    });
+
     it('should re-emit SessionPool errors', function(done) {
       const error = new Error('err');
 
@@ -266,7 +275,7 @@ describe('Database', function() {
         readTimestamp: READ_TIMESTAMP,
       };
 
-      database.session_ = function(id) {
+      database.session = function(id) {
         assert.strictEqual(id, SESSION.id);
         return SESSION;
       };
@@ -287,11 +296,8 @@ describe('Database', function() {
       beforeEach(function() {
         database.parent = INSTANCE;
         database.pool_ = {
-          close: function() {
-            return Promise.resolve();
-          },
-          getLeaks: function() {
-            return [];
+          close: function(callback) {
+            callback(null);
           },
         };
       });
@@ -320,36 +326,13 @@ describe('Database', function() {
         const error = new Error('err.');
 
         database.pool_ = {
-          close: function() {
-            return Promise.reject(error);
-          },
-          getLeaks: function() {
-            return [];
+          close: function(callback) {
+            callback(error);
           },
         };
 
         database.close(function(err) {
           assert.strictEqual(err, error);
-          done();
-        });
-      });
-
-      it('should report session leaks', function(done) {
-        const fakeLeaks = ['abc', 'def'];
-
-        database.pool_ = {
-          close: function() {
-            return Promise.resolve();
-          },
-          getLeaks: function() {
-            return fakeLeaks;
-          },
-        };
-
-        database.close(function(err) {
-          assert(err instanceof Error);
-          assert.strictEqual(err.message, '2 session leak(s) found.');
-          assert.strictEqual(err.messages, fakeLeaks);
           done();
         });
       });
@@ -507,6 +490,47 @@ describe('Database', function() {
           done();
         });
       });
+    });
+  });
+
+  describe('decorateTransaction_', function() {
+    beforeEach(function() {
+      database.pool_ = {
+        release: util.noop,
+      };
+    });
+
+    it('should decorate the end() method', function(done) {
+      const transaction = {};
+      const end = function(callback) {
+        assert.strictEqual(this, transaction);
+        callback(); // done fn
+      };
+
+      transaction.end = end;
+
+      const decoratedTransaction = database.decorateTransaction_(transaction);
+
+      assert.strictEqual(decoratedTransaction, transaction);
+      assert.notStrictEqual(end, decoratedTransaction.end);
+
+      decoratedTransaction.end(done);
+    });
+
+    it('should release the session back into the pool', function(done) {
+      const SESSION = {};
+      const transaction = {end: util.noop};
+
+      database.pool_.release = function(session) {
+        assert.strictEqual(session, SESSION);
+        done();
+      };
+
+      const decoratedTransaction = database.decorateTransaction_(
+        transaction,
+        SESSION
+      );
+      decoratedTransaction.end();
     });
   });
 
@@ -794,6 +818,290 @@ describe('Database', function() {
     });
   });
 
+  describe('makePooledRequest_', function() {
+    let CONFIG;
+
+    const SESSION = {
+      formattedName_: 'formatted-name',
+    };
+
+    const POOL = {};
+
+    beforeEach(function() {
+      CONFIG = {
+        reqOpts: {},
+      };
+
+      database.pool_ = POOL;
+
+      POOL.getReadSession = function(callback) {
+        callback(null, SESSION);
+      };
+
+      POOL.release = util.noop;
+    });
+
+    it('should get a session', function(done) {
+      POOL.getReadSession = function() {
+        done();
+      };
+
+      database.makePooledRequest_(CONFIG, assert.ifError);
+    });
+
+    it('should return error if it cannot get a session', function(done) {
+      const error = new Error('Error.');
+
+      POOL.getReadSession = function(callback) {
+        callback(error);
+      };
+
+      database.makePooledRequest_(CONFIG, function(err) {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should call the method with the session', function(done) {
+      CONFIG.reqOpts = {
+        a: 'b',
+      };
+
+      database.request = function(config) {
+        assert.deepStrictEqual(
+          config.reqOpts,
+          extend({}, CONFIG.reqOpts, {
+            session: SESSION.formattedName_,
+          })
+        );
+        done();
+      };
+
+      database.makePooledRequest_(CONFIG, assert.ifError);
+    });
+
+    it('should release the session after calling the method', function(done) {
+      POOL.release = function(session) {
+        assert.deepStrictEqual(session, SESSION);
+        done();
+      };
+
+      database.request = function(config, callback) {
+        callback();
+      };
+
+      database.makePooledRequest_(CONFIG, assert.ifError);
+    });
+
+    it('should execute the callback with original arguments', function(done) {
+      const originalArgs = ['a', 'b', 'c'];
+
+      database.request = function(config, callback) {
+        callback.apply(null, originalArgs);
+      };
+
+      database.makePooledRequest_(CONFIG, function() {
+        const args = [].slice.call(arguments);
+        assert.deepStrictEqual(args, originalArgs);
+        done();
+      });
+    });
+  });
+
+  describe('makePooledStreamingRequest_', function() {
+    let CONFIG;
+    let REQUEST_STREAM;
+
+    const SESSION = {
+      formattedName_: 'formatted-name',
+    };
+
+    const POOL = {};
+
+    beforeEach(function() {
+      REQUEST_STREAM = through();
+
+      CONFIG = {
+        reqOpts: {},
+      };
+
+      database.pool_ = POOL;
+
+      database.requestStream = function() {
+        return REQUEST_STREAM;
+      };
+
+      POOL.getReadSession = function(callback) {
+        callback(null, SESSION);
+      };
+
+      POOL.release = util.noop;
+    });
+
+    it('should get a session when stream opens', function(done) {
+      POOL.getReadSession = function() {
+        done();
+      };
+
+      database.makePooledStreamingRequest_(CONFIG).emit('reading');
+    });
+
+    describe('could not get session', function() {
+      const ERROR = new Error('Error.');
+
+      beforeEach(function() {
+        POOL.getReadSession = function(callback) {
+          callback(ERROR);
+        };
+      });
+
+      it('should destroy the stream', function(done) {
+        database
+          .makePooledStreamingRequest_(CONFIG)
+          .on('error', function(err) {
+            assert.strictEqual(err, ERROR);
+            done();
+          })
+          .emit('reading');
+      });
+    });
+
+    describe('session retrieved successfully', function() {
+      beforeEach(function() {
+        POOL.getReadSession = function(callback) {
+          callback(null, SESSION);
+        };
+      });
+
+      it('should assign session to request options', function(done) {
+        database.requestStream = function(config) {
+          assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
+          setImmediate(done);
+          return through.obj();
+        };
+
+        database.makePooledStreamingRequest_(CONFIG).emit('reading');
+      });
+
+      it('should make request and pipe to the stream', function(done) {
+        const responseData = Buffer.from('response-data');
+
+        database.makePooledStreamingRequest_(CONFIG).on('data', function(data) {
+          assert.deepStrictEqual(data, responseData);
+          done();
+        });
+
+        REQUEST_STREAM.end(responseData);
+      });
+
+      it('should release session when request stream ends', function(done) {
+        POOL.release = function(session) {
+          assert.strictEqual(session, SESSION);
+          done();
+        };
+
+        database.makePooledStreamingRequest_(CONFIG).emit('reading');
+
+        REQUEST_STREAM.end();
+      });
+
+      it('should release session when request stream errors', function(done) {
+        POOL.release = function(session) {
+          assert.strictEqual(session, SESSION);
+          done();
+        };
+
+        database.makePooledStreamingRequest_(CONFIG).emit('reading');
+
+        setImmediate(function() {
+          REQUEST_STREAM.emit('error');
+        });
+      });
+
+      it('should error user stream when request stream errors', function(done) {
+        const error = new Error('Error.');
+
+        database
+          .makePooledStreamingRequest_(CONFIG)
+          .on('error', function(err) {
+            assert.strictEqual(err, error);
+            done();
+          })
+          .emit('reading');
+
+        setImmediate(function() {
+          REQUEST_STREAM.destroy(error);
+        });
+      });
+    });
+
+    describe('abort', function() {
+      let SESSION;
+
+      beforeEach(function() {
+        REQUEST_STREAM.cancel = util.noop;
+
+        SESSION = {
+          cancel: util.noop,
+        };
+
+        POOL.getReadSession = function(callback) {
+          callback(null, SESSION);
+        };
+      });
+
+      it('should release the session', function(done) {
+        POOL.release = function(session) {
+          assert.strictEqual(session, SESSION);
+          done();
+        };
+
+        const requestStream = database.makePooledStreamingRequest_(CONFIG);
+
+        requestStream.emit('reading');
+
+        setImmediate(function() {
+          requestStream.abort();
+        });
+      });
+
+      it('should not release the session more than once', function(done) {
+        let numTimesReleased = 0;
+
+        POOL.release = function(session) {
+          numTimesReleased++;
+          assert.strictEqual(session, SESSION);
+        };
+
+        const requestStream = database.makePooledStreamingRequest_(CONFIG);
+
+        requestStream.emit('reading');
+
+        setImmediate(function() {
+          requestStream.abort();
+          assert.strictEqual(numTimesReleased, 1);
+
+          requestStream.abort();
+          assert.strictEqual(numTimesReleased, 1);
+
+          done();
+        });
+      });
+
+      it('should cancel the request stream', function(done) {
+        REQUEST_STREAM.cancel = done;
+
+        const requestStream = database.makePooledStreamingRequest_(CONFIG);
+
+        requestStream.emit('reading');
+
+        setImmediate(function() {
+          requestStream.abort();
+        });
+      });
+    });
+  });
+
   describe('run', function() {
     const QUERY = 'SELECT query FROM query';
 
@@ -880,7 +1188,7 @@ describe('Database', function() {
         return ENCODED_QUERY;
       };
 
-      database.pool_.requestStream = function(config) {
+      database.makePooledStreamingRequest_ = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeStreamingSql');
         assert.deepStrictEqual(config.reqOpts, ENCODED_QUERY);
@@ -897,7 +1205,8 @@ describe('Database', function() {
         assert.strictEqual(query.sql, QUERY.sql);
         return ENCODED_QUERY;
       };
-      database.pool_.requestStream = function(config) {
+
+      database.makePooledStreamingRequest_ = function(config) {
         assert.deepStrictEqual(config.reqOpts, ENCODED_QUERY);
         done();
       };
@@ -925,7 +1234,7 @@ describe('Database', function() {
     });
 
     it('should not pass json, jsonOptions to request', function(done) {
-      database.pool_.requestStream = function(config) {
+      database.makePooledStreamingRequest_ = function(config) {
         assert.strictEqual(config.reqOpts.json, undefined);
         assert.strictEqual(config.reqOpts.jsonOptions, undefined);
         done();
@@ -943,7 +1252,7 @@ describe('Database', function() {
     it('should assign a resumeToken to the request', function(done) {
       const resumeToken = 'resume-token';
 
-      database.pool_.requestStream = function(config) {
+      database.makePooledStreamingRequest_ = function(config) {
         assert.strictEqual(config.reqOpts.resumeToken, resumeToken);
         done();
       };
@@ -962,7 +1271,7 @@ describe('Database', function() {
         return FORMATTED_OPTIONS;
       };
 
-      database.pool_.requestStream = function(config) {
+      database.makePooledStreamingRequest_ = function(config) {
         assert.deepStrictEqual(
           config.reqOpts.transaction.singleUse.readOnly,
           FORMATTED_OPTIONS
@@ -1182,7 +1491,7 @@ describe('Database', function() {
       it('should execute callback with session & API response', function(done) {
         const sessionInstance = {};
 
-        database.session_ = function(name) {
+        database.session = function(name) {
           assert.strictEqual(name, API_RESPONSE.name);
           return sessionInstance;
         };
@@ -1202,20 +1511,50 @@ describe('Database', function() {
   });
 
   describe('getTransaction', function() {
+    let SESSION;
+    let TRANSACTION;
+
+    beforeEach(function() {
+      TRANSACTION = {};
+
+      SESSION = {
+        beginTransaction: function(options, callback) {
+          callback(null, TRANSACTION);
+        },
+      };
+
+      database.pool_ = {
+        getWriteSession: function(callback) {
+          callback(null, SESSION, TRANSACTION);
+        },
+      };
+
+      database.decorateTransaction_ = function(txn) {
+        return txn;
+      };
+    });
+
     describe('write mode', function() {
       it('should get a session from the pool', function(done) {
-        const transaction = {};
-        const session = {txn: transaction};
+        database.getTransaction(function(err, transaction) {
+          assert.ifError(err);
+          assert.strictEqual(transaction, TRANSACTION);
+          done();
+        });
+      });
 
-        database.pool_ = {
-          getWriteSession: function() {
-            return Promise.resolve(session);
-          },
+      it('should decorate the transaction', function(done) {
+        const DECORATED_TRANSACTION = {};
+
+        database.decorateTransaction_ = function(transaction, session) {
+          assert.strictEqual(transaction, TRANSACTION);
+          assert.strictEqual(session, SESSION);
+          return DECORATED_TRANSACTION;
         };
 
-        database.getTransaction(function(err, transaction_) {
+        database.getTransaction(function(err, transaction) {
           assert.ifError(err);
-          assert.strictEqual(transaction_, transaction);
+          assert.strictEqual(transaction, DECORATED_TRANSACTION);
           done();
         });
       });
@@ -1224,8 +1563,8 @@ describe('Database', function() {
         const error = new Error('Error.');
 
         database.pool_ = {
-          getWriteSession: function() {
-            return Promise.reject(error);
+          getWriteSession: function(callback) {
+            callback(error);
           },
         };
 
@@ -1244,16 +1583,16 @@ describe('Database', function() {
 
       beforeEach(function() {
         database.pool_ = {
-          createTransaction_: function() {
-            return Promise.resolve();
+          getReadSession: function(callback) {
+            callback(null, SESSION);
           },
+          release: util.noop,
         };
       });
 
       it('should get a session from the pool', function(done) {
-        database.pool_.getSession = function() {
-          setImmediate(done);
-          return Promise.resolve();
+        database.pool_.getReadSession = function() {
+          done();
         };
 
         database.getTransaction(OPTIONS, assert.ifError);
@@ -1262,8 +1601,8 @@ describe('Database', function() {
       it('should return an error if could not get session', function(done) {
         const error = new Error('err.');
 
-        database.pool_.getSession = function() {
-          return Promise.reject(error);
+        database.pool_.getReadSession = function(callback) {
+          callback(error);
         };
 
         database.getTransaction(OPTIONS, function(err) {
@@ -1273,40 +1612,35 @@ describe('Database', function() {
       });
 
       it('should should create a transaction', function(done) {
-        const SESSION = {};
-        const TRANSACTION = {
-          begin: function() {},
-        };
-
-        database.pool_ = {
-          getSession: function() {
-            return Promise.resolve(SESSION);
-          },
-          createTransaction_: function(session, options) {
-            assert.strictEqual(session, SESSION);
-            assert.strictEqual(options, OPTIONS);
-
-            setImmediate(done);
-
-            return Promise.resolve(TRANSACTION);
-          },
+        SESSION.beginTransaction = function(options) {
+          assert.strictEqual(options, OPTIONS);
+          done();
         };
 
         database.getTransaction(OPTIONS, assert.ifError);
       });
 
+      it('should decorate the transaction', function(done) {
+        const DECORATED_TRANSACTION = {};
+
+        database.decorateTransaction_ = function(transaction, session) {
+          assert.strictEqual(transaction, TRANSACTION);
+          assert.strictEqual(session, SESSION);
+          return DECORATED_TRANSACTION;
+        };
+
+        database.getTransaction(OPTIONS, function(err, transaction) {
+          assert.ifError(err);
+          assert.strictEqual(transaction, DECORATED_TRANSACTION);
+          done();
+        });
+      });
+
       it('should return an error if transaction cannot begin', function(done) {
         const error = new Error('err');
 
-        const SESSION = {};
-
-        database.pool_ = {
-          getSession: function() {
-            return Promise.resolve(SESSION);
-          },
-          createTransaction_: function() {
-            return Promise.reject(error);
-          },
+        SESSION.beginTransaction = function(options, callback) {
+          callback(error);
         };
 
         database.getTransaction(OPTIONS, function(err) {
@@ -1374,7 +1708,7 @@ describe('Database', function() {
         callback(null, SESSIONS, RESPONSE);
       };
 
-      database.session_ = function(name) {
+      database.session = function(name) {
         assert.strictEqual(name, SESSIONS[0].name);
         return SESSION_INSTANCE;
       };
@@ -1388,11 +1722,11 @@ describe('Database', function() {
     });
   });
 
-  describe('session_', function() {
+  describe('session', function() {
     const NAME = 'session-name';
 
     it('should return an instance of Session', function() {
-      const session = database.session_(NAME);
+      const session = database.session(NAME);
 
       assert(session instanceof FakeSession);
       assert.strictEqual(session.calledWith_[0], database);
