@@ -16,21 +16,21 @@
 
 'use strict';
 
-var arrify = require('arrify');
-var common = require('@google-cloud/common-grpc');
-var commonGrpc = require('@google-cloud/common-grpc');
-var events = require('events');
-var extend = require('extend');
-var is = require('is');
-var modelo = require('modelo');
+const arrify = require('arrify');
+const {promisifyAll} = require('@google-cloud/promisify');
+const {ServiceObject} = require('@google-cloud/common-grpc');
+const events = require('events');
+const extend = require('extend');
+const is = require('is');
+const modelo = require('modelo');
 
-var BatchTransaction = require('./batch-transaction.js');
-var codec = require('./codec.js');
-var PartialResultStream = require('./partial-result-stream.js');
-var Session = require('./session.js');
-var SessionPool = require('./session-pool.js');
-var Table = require('./table.js');
-var TransactionRequest = require('./transaction-request.js');
+const BatchTransaction = require('./batch-transaction');
+const codec = require('./codec');
+const PartialResultStream = require('./partial-result-stream');
+const Session = require('./session');
+const SessionPool = require('./session-pool');
+const Table = require('./table');
+const TransactionRequest = require('./transaction-request');
 
 /**
  * Create a Database object to interact with a Cloud Spanner database.
@@ -47,7 +47,7 @@ var TransactionRequest = require('./transaction-request.js');
  * const database = instance.database('my-database');
  */
 function Database(instance, name, poolOptions) {
-  var self = this;
+  const self = this;
 
   this.request = instance.request;
   this.requestStream = instance.requestStream;
@@ -58,7 +58,7 @@ function Database(instance, name, poolOptions) {
   this.pool_.on('error', this.emit.bind(this, 'error'));
   this.pool_.open();
 
-  var methods = {
+  const methods = {
     /**
      * Create a database.
      *
@@ -136,7 +136,7 @@ function Database(instance, name, poolOptions) {
     exists: true,
   };
 
-  commonGrpc.ServiceObject.call(this, {
+  ServiceObject.call(this, {
     parent: instance,
     id: name,
     methods: methods,
@@ -148,7 +148,7 @@ function Database(instance, name, poolOptions) {
   events.EventEmitter.call(this);
 }
 
-modelo.inherits(Database, commonGrpc.ServiceObject, events.EventEmitter);
+modelo.inherits(Database, ServiceObject, events.EventEmitter);
 
 /**
  * Format the database name to include the instance name.
@@ -170,7 +170,7 @@ Database.formatName_ = function(instanceName, name) {
     return name;
   }
 
-  var databaseName = name.split('/').pop();
+  const databaseName = name.split('/').pop();
 
   return instanceName + '/databases/' + databaseName;
 };
@@ -198,14 +198,14 @@ Database.formatName_ = function(instanceName, name) {
  * });
  */
 Database.prototype.batchTransaction = function(identifier) {
-  var session = identifier.session;
-  var id = identifier.transaction;
+  let session = identifier.session;
+  const id = identifier.transaction;
 
   if (is.string(session)) {
     session = this.session_(session);
   }
 
-  var transaction = new BatchTransaction(session);
+  const transaction = new BatchTransaction(session);
 
   transaction.id = id;
   transaction.readTimestamp = identifier.readTimestamp;
@@ -249,9 +249,9 @@ Database.prototype.batchTransaction = function(identifier) {
  * });
  */
 Database.prototype.close = function(callback) {
-  var key = this.id.split('/').pop();
-  var leakError = null;
-  var leaks = this.pool_.getLeaks();
+  const key = this.id.split('/').pop();
+  let leakError = null;
+  const leaks = this.pool_.getLeaks();
 
   if (leaks.length) {
     leakError = new Error(`${leaks.length} session leak(s) found.`);
@@ -281,7 +281,7 @@ Database.prototype.close = function(callback) {
  * @returns {Promise<CreateTransactionResponse>}
  */
 Database.prototype.createBatchTransaction = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -294,7 +294,7 @@ Database.prototype.createBatchTransaction = function(options, callback) {
       return;
     }
 
-    var transaction = self.batchTransaction({session});
+    const transaction = self.batchTransaction({session});
 
     transaction.options = extend({}, options);
 
@@ -377,7 +377,7 @@ Database.prototype.createBatchTransaction = function(options, callback) {
  *   });
  */
 Database.prototype.createTable = function(schema, callback) {
-  var self = this;
+  const self = this;
 
   this.updateSchema(schema, function(err, operation, resp) {
     if (err) {
@@ -385,8 +385,8 @@ Database.prototype.createTable = function(schema, callback) {
       return;
     }
 
-    var tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
-    var table = self.table(tableName);
+    const tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
+    const table = self.table(tableName);
 
     callback(null, table, operation, resp);
   });
@@ -421,12 +421,12 @@ Database.prototype.createTable = function(schema, callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.delete().then(function(data) {
- *   var apiResponse = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Database.prototype.delete = function(callback) {
-  var self = this;
-  var reqOpts = {
+  const self = this;
+  const reqOpts = {
     database: this.formattedName_,
   };
 
@@ -482,12 +482,12 @@ Database.prototype.delete = function(callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * database.get().then(function(data) {
- *   var database = data[0];
- *   var apiResponse = data[0];
+ *   const database = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Database.prototype.get = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -565,7 +565,7 @@ Database.prototype.get = function(options, callback) {
  * });
  */
 Database.prototype.getMetadata = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     name: this.formattedName_,
   };
 
@@ -620,7 +620,7 @@ Database.prototype.getMetadata = function(callback) {
  * });
  */
 Database.prototype.getSchema = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     database: this.formattedName_,
   };
 
@@ -723,15 +723,15 @@ Database.prototype.getSchema = function(callback) {
  * });
  */
 Database.prototype.getSessions = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
     options = {};
   }
 
-  var gaxOpts = options.gaxOptions;
-  var reqOpts = extend({}, options, {database: this.formattedName_});
+  const gaxOpts = options.gaxOptions;
+  const reqOpts = extend({}, options, {database: this.formattedName_});
   delete reqOpts.gaxOptions;
 
   this.request(
@@ -744,7 +744,7 @@ Database.prototype.getSessions = function(options, callback) {
     function(err, sessions) {
       if (sessions) {
         arguments[1] = sessions.map(function(metadata) {
-          var session = self.session_(metadata.name);
+          const session = self.session_(metadata.name);
           session.metadata = metadata;
           return session;
         });
@@ -792,7 +792,7 @@ Database.prototype.getSessions = function(options, callback) {
  * });
  */
 Database.prototype.getTransaction = function(options, callback) {
-  var pool = this.pool_;
+  const pool = this.pool_;
 
   if (is.fn(options)) {
     callback = options;
@@ -974,7 +974,7 @@ Database.prototype.getTransaction = function(options, callback) {
  * Querying data with an index:
  */
 Database.prototype.run = function(query, options, callback) {
-  var rows = [];
+  const rows = [];
 
   if (is.fn(options)) {
     callback = options;
@@ -1116,7 +1116,7 @@ Database.prototype.run = function(query, options, callback) {
  *   });
  */
 Database.prototype.runStream = function(query, options) {
-  var self = this;
+  const self = this;
 
   if (is.string(query)) {
     query = {
@@ -1124,7 +1124,7 @@ Database.prototype.runStream = function(query, options) {
     };
   }
 
-  var reqOpts = codec.encodeQuery(query);
+  const reqOpts = codec.encodeQuery(query);
 
   if (options) {
     reqOpts.transaction = {
@@ -1385,7 +1385,7 @@ Database.prototype.updateSchema = function(statements, callback) {
     };
   }
 
-  var reqOpts = extend(
+  const reqOpts = extend(
     {
       database: this.formattedName_,
     },
@@ -1459,7 +1459,7 @@ Database.prototype.updateSchema = function(statements, callback) {
  * });
  */
 Database.prototype.createSession = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.function(options)) {
     callback = options;
@@ -1468,7 +1468,7 @@ Database.prototype.createSession = function(options, callback) {
 
   options = options || {};
 
-  var reqOpts = {
+  const reqOpts = {
     database: this.formattedName_,
   };
 
@@ -1485,7 +1485,7 @@ Database.prototype.createSession = function(options, callback) {
         return;
       }
 
-      var session = self.session_(resp.name);
+      const session = self.session_(resp.name);
       session.metadata = resp;
 
       callback(null, session, resp);
@@ -1506,7 +1506,7 @@ Database.prototype.createSession = function(options, callback) {
  * @returns {Session} A Session object.
  *
  * @example
- * var session = database.session_('session-name');
+ * const session = database.session_('session-name');
  */
 Database.prototype.session_ = function(name) {
   return new Session(this, name);
@@ -1517,7 +1517,7 @@ Database.prototype.session_ = function(name) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Database, {
+promisifyAll(Database, {
   exclude: [
     'batchTransaction',
     'getMetadata',

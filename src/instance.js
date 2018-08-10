@@ -16,15 +16,16 @@
 
 'use strict';
 
-var arrify = require('arrify');
-var common = require('@google-cloud/common-grpc');
-var commonGrpc = require('@google-cloud/common-grpc');
-var extend = require('extend');
-var is = require('is');
-var snakeCase = require('lodash.snakecase');
-var util = require('util');
+const arrify = require('arrify');
+const common = require('@google-cloud/common-grpc');
+const {paginator} = require('@google-cloud/paginator');
+const {promisifyAll} = require('@google-cloud/promisify');
+const extend = require('extend');
+const is = require('is');
+const snakeCase = require('lodash.snakecase');
+const util = require('util');
 
-var Database = require('./database.js');
+const Database = require('./database');
 
 /**
  * The {@link Instance} class represents a [Cloud Spanner instance](https://cloud.google.com/spanner/docs/instances).
@@ -42,13 +43,13 @@ var Database = require('./database.js');
  * const instance = spanner.instance('my-instance');
  */
 function Instance(spanner, name) {
-  var self = this;
+  const self = this;
 
   this.formattedName_ = Instance.formatName_(spanner.projectId, name);
   this.request = spanner.request.bind(spanner);
   this.requestStream = spanner.requestStream.bind(spanner);
 
-  var methods = {
+  const methods = {
     /**
      * Create an instance.
      *
@@ -85,8 +86,8 @@ function Instance(spanner, name) {
      * //-
      * instance.create()
      *   .then(function(data) {
-     *     var operation = data[0];
-     *     var apiResponse = data[1];
+     *     const operation = data[0];
+     *     const apiResponse = data[1];
      *
      *     return operation.promise();
      *   })
@@ -124,13 +125,13 @@ function Instance(spanner, name) {
      * // If the callback is omitted, we'll return a Promise.
      * //-
      * instance.exists().then(function(data) {
-     *   var exists = data[0];
+     *   const exists = data[0];
      * });
      */
     exists: true,
   };
 
-  commonGrpc.ServiceObject.call(this, {
+  common.ServiceObject.call(this, {
     parent: spanner,
     /**
      * @name Instance#id
@@ -146,7 +147,7 @@ function Instance(spanner, name) {
   this.databases_ = new Map();
 }
 
-util.inherits(Instance, commonGrpc.ServiceObject);
+util.inherits(Instance, common.ServiceObject);
 
 /**
  * Format the instance name to include the project ID.
@@ -165,7 +166,7 @@ Instance.formatName_ = function(projectId, name) {
     return name;
   }
 
-  var instanceName = name.split('/').pop();
+  const instanceName = name.split('/').pop();
 
   return 'projects/' + projectId + '/instances/' + instanceName;
 };
@@ -242,8 +243,8 @@ Instance.formatName_ = function(projectId, name) {
  * //-
  * instance.createDatabase('new-database-name')
  *   .then(function(data) {
- *     var database = data[0];
- *     var operation = data[1];
+ *     const database = data[0];
+ *     const operation = data[1];
  *     return operation.promise();
  *   })
  *   .then(function() {
@@ -255,7 +256,7 @@ Instance.formatName_ = function(projectId, name) {
  * Full example:
  */
 Instance.prototype.createDatabase = function(name, options, callback) {
-  var self = this;
+  const self = this;
 
   if (!name) {
     throw new Error('A name is required to create a database.');
@@ -268,10 +269,10 @@ Instance.prototype.createDatabase = function(name, options, callback) {
 
   options = options || {};
 
-  var poolOptions = options.poolOptions;
+  const poolOptions = options.poolOptions;
   delete options.poolOptions;
 
-  var reqOpts = extend(
+  const reqOpts = extend(
     {
       parent: this.formattedName_,
       createStatement: 'CREATE DATABASE `' + name.split('/').pop() + '`',
@@ -296,7 +297,7 @@ Instance.prototype.createDatabase = function(name, options, callback) {
         return;
       }
 
-      var database = self.database(name, poolOptions);
+      const database = self.database(name, poolOptions);
 
       callback(null, database, operation, resp);
     }
@@ -324,7 +325,7 @@ Instance.prototype.database = function(name, poolOptions) {
     throw new Error('A name is required to access a Database object.');
   }
 
-  var key = name.split('/').pop();
+  const key = name.split('/').pop();
 
   if (!this.databases_.has(key)) {
     this.databases_.set(key, new Database(this, name, poolOptions));
@@ -371,13 +372,13 @@ Instance.prototype.database = function(name, poolOptions) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * instance.delete().then(function(data) {
- *   var apiResponse = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Instance.prototype.delete = function(callback) {
-  var self = this;
+  const self = this;
 
-  var reqOpts = {
+  const reqOpts = {
     name: this.formattedName_,
   };
 
@@ -446,12 +447,12 @@ Instance.prototype.delete = function(callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * instance.get().then(function(data) {
- *   var instance = data[0];
- *   var apiResponse = data[0];
+ *   const instance = data[0];
+ *   const apiResponse = data[0];
  * });
  */
 Instance.prototype.get = function(options, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(options)) {
     callback = options;
@@ -547,18 +548,18 @@ Instance.prototype.get = function(options, callback) {
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * instance.getDatabases().then(function(data) {
- *   var databases = data[0];
+ *   const databases = data[0];
  * });
  */
 Instance.prototype.getDatabases = function(query, callback) {
-  var self = this;
+  const self = this;
 
   if (is.fn(query)) {
     callback = query;
     query = {};
   }
 
-  var reqOpts = extend({}, query, {
+  const reqOpts = extend({}, query, {
     parent: this.formattedName_,
   });
 
@@ -572,7 +573,7 @@ Instance.prototype.getDatabases = function(query, callback) {
     function(err, databases) {
       if (databases) {
         arguments[1] = databases.map(function(database) {
-          var databaseInstance = self.database(database.name);
+          const databaseInstance = self.database(database.name);
           databaseInstance.metadata = database;
           return databaseInstance;
         });
@@ -620,9 +621,7 @@ Instance.prototype.getDatabases = function(query, callback) {
  *     this.end();
  *   });
  */
-Instance.prototype.getDatabasesStream = common.paginator.streamify(
-  'getDatabases'
-);
+Instance.prototype.getDatabasesStream = paginator.streamify('getDatabases');
 
 /**
  * @typedef {array} GetInstanceMetadataResponse
@@ -658,12 +657,12 @@ Instance.prototype.getDatabasesStream = common.paginator.streamify(
  * // If the callback is omitted, we'll return a Promise.
  * //-
  * instance.getMetadata().then(function(data) {
- *   var metadata = data[0];
- *   var apiResponse = data[1];
+ *   const metadata = data[0];
+ *   const apiResponse = data[1];
  * });
  */
 Instance.prototype.getMetadata = function(callback) {
-  var reqOpts = {
+  const reqOpts = {
     name: this.formattedName_,
   };
 
@@ -721,7 +720,7 @@ Instance.prototype.getMetadata = function(callback) {
  * });
  */
 Instance.prototype.setMetadata = function(metadata, callback) {
-  var reqOpts = {
+  const reqOpts = {
     instance: extend(
       {
         name: this.formattedName_,
@@ -748,7 +747,7 @@ Instance.prototype.setMetadata = function(metadata, callback) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Instance, {
+promisifyAll(Instance, {
   exclude: ['database'],
 });
 

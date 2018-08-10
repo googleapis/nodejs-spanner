@@ -16,16 +16,16 @@
 
 'use strict';
 
-var checkpointStream = require('checkpoint-stream');
-var eventsIntercept = require('events-intercept');
-var extend = require('extend');
-var is = require('is');
-var mergeStream = require('merge-stream');
-var split = require('split-array-stream').split;
-var streamEvents = require('stream-events');
-var through = require('through2');
+const checkpointStream = require('checkpoint-stream');
+const eventsIntercept = require('events-intercept');
+const extend = require('extend');
+const is = require('is');
+const mergeStream = require('merge-stream');
+const {split} = require('split-array-stream');
+const streamEvents = require('stream-events');
+const through = require('through2');
 
-var RowBuilder = require('./row-builder.js');
+const RowBuilder = require('./row-builder');
 
 /**
  * Rows returned from queries may be chunked, requiring them to be stitched
@@ -43,14 +43,14 @@ var RowBuilder = require('./row-builder.js');
  *     necessary to send to the API for additional requests.
  */
 function partialResultStream(requestFn, options) {
-  var lastResumeToken;
-  var activeRequestStream;
+  let lastResumeToken;
+  let activeRequestStream;
 
   options = extend({toJSON: false}, options);
 
   // mergeStream allows multiple streams to be connected into one. This is good
   // if we need to retry a request and pipe more data to the user's stream.
-  var requestsStream = mergeStream();
+  const requestsStream = mergeStream();
   eventsIntercept.patch(requestsStream);
 
   function makeRequest() {
@@ -58,16 +58,16 @@ function partialResultStream(requestFn, options) {
     requestsStream.add(activeRequestStream);
   }
 
-  var batchAndSplitOnTokenStream = checkpointStream.obj({
+  const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
     isCheckpointFn: function(row) {
       return is.defined(row.resumeToken);
     },
   });
 
-  var builder;
+  let builder;
 
-  var userStream = streamEvents(
+  const userStream = streamEvents(
     through.obj(function(row, _, next) {
       if (is.empty(row.values)) {
         next();
@@ -84,7 +84,7 @@ function partialResultStream(requestFn, options) {
       // Build the chunks to rows.
       builder.build();
 
-      var formattedRows = builder.toJSON(builder.flush());
+      let formattedRows = builder.toJSON(builder.flush());
 
       if (options.json) {
         formattedRows = formattedRows.map(x => x.toJSON(options.jsonOptions));
