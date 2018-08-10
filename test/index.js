@@ -21,21 +21,32 @@ const extend = require('extend');
 const path = require('path');
 const proxyquire = require('proxyquire');
 const through = require('through2');
-const util = require('@google-cloud/common-grpc').util;
+const {util} = require('@google-cloud/common-grpc');
+const {replaceProjectIdToken} = require('@google-cloud/projectify');
+const pfy = require('@google-cloud/promisify');
+
+let replaceProjectIdTokenOverride;
+function fakeReplaceProjectIdToken() {
+  return (replaceProjectIdTokenOverride || replaceProjectIdToken).apply(
+    null,
+    arguments
+  );
+}
 
 const fakePaginator = {
-  streamify: function(methodName) {
-    return methodName;
+  paginator: {
+    streamify: function(methodName) {
+      return methodName;
+    },
   },
 };
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Spanner') {
       return;
     }
-
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'date',
@@ -47,7 +58,6 @@ const fakeUtil = extend({}, util, {
     ]);
   },
 });
-const originalFakeUtil = extend(true, {}, fakeUtil);
 
 let fakeGapicClient = util.noop;
 fakeGapicClient.scopes = [];
@@ -91,10 +101,13 @@ describe('Spanner', function() {
   before(function() {
     Spanner = proxyquire('../src/index.js', {
       '@google-cloud/common-grpc': {
-        paginator: fakePaginator,
-        util: fakeUtil,
         Operation: FakeGrpcOperation,
         Service: FakeGrpcService,
+      },
+      '@google-cloud/paginator': fakePaginator,
+      '@google-cloud/promisify': fakePfy,
+      '@google-cloud/projectify': {
+        replaceProjectIdToken: fakeReplaceProjectIdToken,
       },
       'google-auth-library': {
         GoogleAuth: fakeGoogleAuth,
@@ -106,7 +119,6 @@ describe('Spanner', function() {
   });
 
   beforeEach(function() {
-    extend(fakeUtil, originalFakeUtil);
     fakeGapicClient = util.noop;
     fakeGapicClient.scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
@@ -116,6 +128,7 @@ describe('Spanner', function() {
     fakeCodec.Int = util.noop;
     spanner = new Spanner(OPTIONS);
     spanner.projectId = OPTIONS.projectId;
+    replaceProjectIdTokenOverride = null;
   });
 
   describe('instantiation', function() {
@@ -141,20 +154,6 @@ describe('Spanner', function() {
       assert.doesNotThrow(function() {
         Spanner(OPTIONS);
       });
-    });
-
-    it('should normalize the arguments', function() {
-      let normalizeArgumentsCalled = false;
-      const options = {};
-
-      fakeUtil.normalizeArguments = function(context, options_) {
-        normalizeArgumentsCalled = true;
-        assert.strictEqual(options_, options);
-        return options_;
-      };
-
-      new Spanner(options);
-      assert.strictEqual(normalizeArgumentsCalled, true);
     });
 
     it('should create an auth instance from google-auth-library', function() {
@@ -783,7 +782,7 @@ describe('Spanner', function() {
     it('should replace project ID tokens within the reqOpts', function(done) {
       const replacedReqOpts = {};
 
-      fakeUtil.replaceProjectIdToken = function(reqOpts, projectId) {
+      replaceProjectIdTokenOverride = function(reqOpts, projectId) {
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
 
@@ -803,7 +802,7 @@ describe('Spanner', function() {
     });
 
     it('should return the gax client method with correct args', function(done) {
-      fakeUtil.replaceProjectIdToken = function(reqOpts) {
+      replaceProjectIdTokenOverride = function(reqOpts) {
         return reqOpts;
       };
 

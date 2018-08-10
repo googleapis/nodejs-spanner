@@ -20,7 +20,8 @@
 
 'use strict';
 
-const common = require('@google-cloud/common-grpc');
+const {ServiceObject} = require('@google-cloud/common-grpc');
+const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const util = require('util');
 const Transaction = require('./transaction');
@@ -173,7 +174,7 @@ function Session(database, name) {
     get: true,
   };
 
-  common.ServiceObject.call(this, {
+  ServiceObject.call(this, {
     parent: database,
     /**
      * @name Session#id
@@ -196,7 +197,7 @@ function Session(database, name) {
   });
 }
 
-util.inherits(Session, common.ServiceObject);
+util.inherits(Session, ServiceObject);
 
 /**
  * Format the session name to include the parent database's name.
@@ -360,7 +361,7 @@ Session.prototype.transaction = function(id) {
  * All async methods (except for streams) will return a Promise in the event
  * that a callback is omitted.
  */
-common.util.promisifyAll(Session, {
+promisifyAll(Session, {
   exclude: ['delete', 'getMetadata', 'transaction'],
 });
 

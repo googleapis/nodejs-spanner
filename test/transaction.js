@@ -24,6 +24,7 @@ const proxyquire = require('proxyquire');
 const {split} = require('split-array-stream');
 const through = require('through2');
 const {util} = require('@google-cloud/common-grpc');
+const pfy = require('@google-cloud/promisify');
 
 const FakeRetryInfo = {
   decode: util.noop,
@@ -45,12 +46,11 @@ const fakeGax = {
 };
 
 let promisified = false;
-const fakeUtil = extend({}, util, {
+const fakePfy = extend({}, pfy, {
   promisifyAll: function(Class, options) {
     if (Class.name !== 'Transaction') {
       return;
     }
-
     promisified = true;
     assert.strictEqual(options, undefined);
     util.promisifyAll(Class, options);
@@ -98,15 +98,15 @@ describe('Transaction', function() {
   const ID = 'transaction-id';
 
   before(function() {
-    Transaction = proxyquire('../src/transaction.js', {
+    Transaction = proxyquire('../src/transaction', {
       'google-gax': fakeGax,
       '@google-cloud/common-grpc': {
-        util: fakeUtil,
         Service: FakeGrpcService,
       },
-      './codec.js': fakeCodec,
-      './partial-result-stream.js': FakePartialResultStream,
-      './transaction-request.js': FakeTransactionRequest,
+      '@google-cloud/promisify': fakePfy,
+      './codec': fakeCodec,
+      './partial-result-stream': FakePartialResultStream,
+      './transaction-request': FakeTransactionRequest,
       './v1/spanner_client_config.json': fakeConfig,
     });
 
