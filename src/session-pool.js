@@ -225,7 +225,9 @@ class SessionPool extends EventEmitter {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
 
-    if (this.options.writes > 1) {
+    let {writes} = this.options;
+
+    if (writes < 0 || writes > 1) {
       throw new WritePercentError();
     }
 

@@ -246,10 +246,20 @@ describe('SessionPool', function() {
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
       });
 
-      it('should throw when writes is greater than 1', function() {
-        assert.throws(function() {
-          return new SessionPool(DATABASE, {writes: 50});
-        }, /Write percentage should be represented as a float between 0\.0 and 1\.0\./);
+      describe('writes', function() {
+        const writeErrReg = /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
+
+        it('should throw when writes is less than 0', function() {
+          assert.throws(function() {
+            return new SessionPool(DATABASE, {writes: -1});
+          }, writeErrReg);
+        });
+
+        it('should throw when writes is greater than 1', function() {
+          assert.throws(function() {
+            return new SessionPool(DATABASE, {writes: 50});
+          }, writeErrReg);
+        });
       });
     });
 
