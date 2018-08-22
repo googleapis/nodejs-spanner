@@ -49,7 +49,9 @@ function FakeBatchTransaction() {
 
 function FakeGrpcServiceObject() {
   this.calledWith_ = arguments;
+  events.EventEmitter.call(this);
 }
+nodeutil.inherits(FakeGrpcServiceObject, events.EventEmitter);
 
 function FakePartialResultStream() {
   this.calledWith_ = arguments;
@@ -81,13 +83,6 @@ const fakeCodec = {
   SpannerDate: function() {},
 };
 
-const fakeModelo = {
-  inherits: function() {
-    this.calledWith_ = arguments;
-    return require('modelo').inherits.apply(this, arguments);
-  },
-};
-
 describe('Database', function() {
   let Database;
   let DatabaseCached;
@@ -113,7 +108,6 @@ describe('Database', function() {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
-      modelo: fakeModelo,
       './batch-transaction': FakeBatchTransaction,
       './codec': fakeCodec,
       './partial-result-stream': FakePartialResultStream,
@@ -222,12 +216,6 @@ describe('Database', function() {
       });
 
       calledWith.createMethod(null, options, done);
-    });
-
-    it('should inherit from EventEmitter', function() {
-      const args = fakeModelo.calledWith_;
-      assert.strictEqual(args[0], Database);
-      assert.strictEqual(args[2], events.EventEmitter);
     });
   });
 
