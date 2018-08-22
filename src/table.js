@@ -18,7 +18,6 @@
 
 const {promisifyAll} = require('@google-cloud/promisify');
 const is = require('is');
-const util = require('util');
 const TransactionRequest = require('./transaction-request');
 
 /**

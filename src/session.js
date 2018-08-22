@@ -24,7 +24,6 @@ const {ServiceObject} = require('@google-cloud/common-grpc');
 const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const is = require('is');
-const util = require('util');
 const Transaction = require('./transaction');
 
 /**
