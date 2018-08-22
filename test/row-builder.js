@@ -145,6 +145,22 @@ describe('RowBuilder', function() {
       assert.strictEqual(RowBuilder.getValue(value), expectedValue);
     });
 
+    it('should only return the values property from objects', function() {
+      const value = [];
+
+      Object.defineProperty(value, 'values', {
+        get: function() {
+          return function() {};
+        },
+      });
+
+      FakeGrpcService.decodeValue_ = function() {
+        return value;
+      };
+
+      assert.strictEqual(RowBuilder.getValue(value), value);
+    });
+
     it('should accept null values', function() {
       const value = null;
 
