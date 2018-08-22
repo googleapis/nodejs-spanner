@@ -122,7 +122,7 @@ class RowBuilder {
     if (obj && obj.kind) {
       value = Service.decodeValue_(obj);
     }
-    if (value && value.values) {
+    if (is.object(value) && value.values) {
       value = value.values;
     }
     return value;

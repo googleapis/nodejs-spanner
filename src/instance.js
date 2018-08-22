@@ -23,7 +23,6 @@ const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
 const is = require('is');
 const snakeCase = require('lodash.snakecase');
-const util = require('util');
 
 const Database = require('./database');
 
