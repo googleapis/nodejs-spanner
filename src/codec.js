@@ -23,48 +23,48 @@ const {Service} = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const is = require('is');
 
-function SpannerDate(value) {
-  if (arguments.length > 1) {
-    throw new TypeError(
-      [
-        'The spanner.date function accepts a Date object or a',
-        "single argument parseable by Date's constructor.",
-      ].join(' ')
-    );
+class SpannerDate {
+  constructor(value) {
+    if (arguments.length > 1) {
+      throw new TypeError(
+        [
+          'The spanner.date function accepts a Date object or a',
+          "single argument parseable by Date's constructor.",
+        ].join(' ')
+      );
+    }
+    if (is.undefined(value)) {
+      value = new Date();
+    }
+    this.value = new Date(value).toJSON().replace(/T.+/, '');
   }
-
-  if (is.undefined(value)) {
-    value = new Date();
-  }
-
-  this.value = new Date(value).toJSON().replace(/T.+/, '');
 }
 
 codec.SpannerDate = SpannerDate;
 
-function Float(value) {
-  this.value = value;
+class Float {
+  constructor(value) {
+    this.value = value;
+  }
+  valueOf() {
+    return parseFloat(this.value);
+  }
 }
-
-Float.prototype.valueOf = function() {
-  return parseFloat(this.value);
-};
 
 codec.Float = Float;
 
-function Int(value) {
-  this.value = value.toString();
-}
-
-Int.prototype.valueOf = function() {
-  const number = Number(this.value);
-
-  if (number > Number.MAX_SAFE_INTEGER) {
-    throw new Error('Integer ' + this.value + ' is out of bounds.');
+class Int {
+  constructor(value) {
+    this.value = value.toString();
   }
-
-  return number;
-};
+  valueOf() {
+    const number = Number(this.value);
+    if (number > Number.MAX_SAFE_INTEGER) {
+      throw new Error('Integer ' + this.value + ' is out of bounds.');
+    }
+    return number;
+  }
+}
 
 codec.Int = Int;
 

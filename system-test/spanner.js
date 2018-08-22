@@ -867,7 +867,7 @@ describe('Spanner', function() {
 
   describe('Sessions', function() {
     const database = instance.database(generateName('database'));
-    const session = database.session_();
+    const session = database.session();
 
     before(function(done) {
       async.series(
@@ -906,7 +906,7 @@ describe('Spanner', function() {
 
     it('should get a session by name', function(done) {
       const shortName = session.formattedName_.split('/').pop();
-      const sessionByShortName = database.session_(shortName);
+      const sessionByShortName = database.session(shortName);
 
       sessionByShortName.getMetadata(function(err, metadataByName) {
         assert.ifError(err);
