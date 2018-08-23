@@ -461,7 +461,6 @@ test.serial(
   }
 );
 
-
 // write_data_for_struct_queries
 test.serial(
   `should insert rows into an example table for use with struct query examples`,
