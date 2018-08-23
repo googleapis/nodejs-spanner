@@ -31,8 +31,8 @@ const PartialResultStream = require('./partial-result-stream');
 const Session = require('./session');
 const SessionPool = require('./session-pool');
 const Table = require('./table');
+const Transaction = require('./transaction');
 const TransactionRequest = require('./transaction-request');
-
 /**
  * Interface for implementing custom session pooling logic, it should extend the
  * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
@@ -1490,7 +1490,7 @@ class Database extends ServiceObject {
           return runFn(transaction);
         })
         .catch(e => {
-          if (e.code === ABORTED) throw e;
+          if (e.code === Transaction.ABORTED) throw e;
           throw new retry.AbortError(e.message);
         })
     );
