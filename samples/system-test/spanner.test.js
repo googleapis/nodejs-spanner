@@ -27,6 +27,7 @@ const schemaCmd = `node schema.js`;
 const indexingCmd = `node indexing.js`;
 const transactionCmd = `node transaction.js`;
 const timestampCmd = `node timestamp.js`;
+const structCmd = `node struct.js`;
 
 const cwd = path.join(__dirname, `..`);
 
@@ -463,8 +464,8 @@ test.serial(
 // query_with_struct_param
 test.serial(`should query an example table with a STRUCT param`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-    `${timestampCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
   const output = results.stdout + results.stderr;
@@ -476,8 +477,8 @@ test.serial(
   `should query an example table with an array of STRUCT param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      `${timestampCmd} queryWithArrayofStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} queryWithArrayofStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -490,8 +491,8 @@ test.serial(
   `should query an example table with a STRUCT field param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      `${timestampCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
@@ -504,8 +505,8 @@ test.serial(
   `should query an example table with a nested STRUCT param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${timestampCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      `${timestampCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;
