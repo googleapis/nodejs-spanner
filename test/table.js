@@ -44,13 +44,11 @@ describe('Table', function() {
 
   const DATABASE = {
     api: {},
-    pool_: {
-      request: function() {
-        return util.noop;
-      },
-      requestStream: function() {
-        return util.noop;
-      },
+    makePooledRequest_: function() {
+      return util.noop;
+    },
+    makePooledStreamingRequest_: function() {
+      return util.noop;
     },
   };
 
