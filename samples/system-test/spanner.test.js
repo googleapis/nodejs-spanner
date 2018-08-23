@@ -461,10 +461,23 @@ test.serial(
   }
 );
 
+
+// write_data_for_struct_queries
+test.serial(
+  `should insert rows into an example table for use with struct query examples`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Inserted data\./);
+  }
+);
+
 // query_with_struct_param
 test.serial(`should query an example table with a STRUCT param`, async t => {
   const results = await tools.runAsyncWithIO(
-    `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     cwd
   );
@@ -477,7 +490,6 @@ test.serial(
   `should query an example table with an array of STRUCT param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       `${structCmd} queryWithArrayofStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
@@ -491,7 +503,6 @@ test.serial(
   `should query an example table with a STRUCT field param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
@@ -505,7 +516,6 @@ test.serial(
   `should query an example table with a nested STRUCT param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
