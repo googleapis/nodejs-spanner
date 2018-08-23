@@ -21,6 +21,7 @@ const {promisifyAll} = require('@google-cloud/promisify');
 const {ServiceObject} = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const is = require('is');
+const retry = require('p-retry');
 const streamEvents = require('stream-events');
 const through = require('through2');
 
@@ -30,8 +31,8 @@ const PartialResultStream = require('./partial-result-stream');
 const Session = require('./session');
 const SessionPool = require('./session-pool');
 const Table = require('./table');
+const Transaction = require('./transaction');
 const TransactionRequest = require('./transaction-request');
-
 /**
  * Interface for implementing custom session pooling logic, it should extend the
  * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
@@ -771,7 +772,7 @@ class Database extends ServiceObject {
    * @param {object} apiResponse The full API response.
    */
   /**
-   * Geta a list of sessions.
+   * Gets a list of sessions.
    *
    * Wrapper around {@link v1.SpannerClient#listSessions}
    *
@@ -1336,6 +1337,9 @@ class Database extends ServiceObject {
    * [Transactions](https://cloud.google.com/spanner/docs/transactions) from the
    * official Cloud Spanner documentation.
    *
+   * If you would like to run a transaction and receive a promise or use
+   * async/await, use {@link Database#runTransactionAsync}.
+   *
    * @see [Transactions](https://cloud.google.com/spanner/docs/transactions)
    * @see [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
    *
@@ -1427,6 +1431,69 @@ class Database extends ServiceObject {
       }
       runFn(null, transaction);
     });
+  }
+  /**
+   * A function to execute in the context of a transaction.
+   * @param {Transaction} transaction The transaction object. The transaction has
+   *     already been created, and is ready to be queried and committed against.
+   */
+  /**
+   * A transaction in Cloud Spanner is a set of reads and writes that execute
+   * atomically at a single logical point in time across columns, rows, and tables
+   * in a database.
+   *
+   * Note that Cloud Spanner does not support nested transactions. If a new
+   * transaction is started inside of the run function, it will be an independent
+   * transaction.
+   *
+   * The async function you provide will become the "run function". It
+   * will be executed with a {@link Transaction}
+   * object. The Transaction object will let you run queries and queue mutations
+   * until you are ready to {@link Transaction#commit}.
+   *
+   * In the event that an aborted error occurs, we will re-run the `runFn` in its
+   * entirety. If you prefer to handle aborted errors for yourself please refer to
+   * {@link Database#getTransaction}.
+   *
+   * For a more complete listing of functionality available to a Transaction, see
+   * the {@link Transaction} API documentation. For a general overview of
+   * transactions within Cloud Spanner, see
+   * [Transactions](https://cloud.google.com/spanner/docs/transactions) from the
+   * official Cloud Spanner documentation.
+   *
+   * @see [Transactions](https://cloud.google.com/spanner/docs/transactions)
+   * @see [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
+   *
+   *
+   * @example
+   * const Spanner = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * await database.runTransactionAsync(async (transaction) => {
+   *   const [rows] = await transaction.run('SELECT * FROM MyTable');
+   *   const data = rows.map(row => row.thing);
+   *
+   *   await transaction.commit();
+   *   return data;
+   * }).then(data => {
+   *   // ...
+   * });
+   */
+  runTransactionAsync(runFn) {
+    return retry(
+      this.getTransaction()
+        .then(r => {
+          const transaction = r[0];
+          return runFn(transaction);
+        })
+        .catch(e => {
+          if (e.code === Transaction.ABORTED) throw e;
+          throw new retry.AbortError(e.message);
+        })
+    );
   }
   /**
    * Create a Session object.

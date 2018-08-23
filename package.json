@@ -81,6 +81,7 @@
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^1.0.1",
     "p-queue": "^2.4.2",
+    "p-retry": "^2.0.0",
     "protobufjs": "^6.8.6",
     "split-array-stream": "^2.0.0",
     "stack-trace": "0.0.10",
