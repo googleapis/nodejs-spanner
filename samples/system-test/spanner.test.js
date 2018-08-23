@@ -489,7 +489,7 @@ test.serial(
   `should query an example table with an array of STRUCT param`,
   async t => {
     const results = await tools.runAsyncWithIO(
-      `${structCmd} queryWithArrayofStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
     const output = results.stdout + results.stderr;

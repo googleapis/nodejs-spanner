@@ -73,6 +73,9 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
 
 function queryDataWithStruct(instanceId, databaseId, projectId) {
   // [START spanner_create_struct_with_data]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
   const nameStruct = Spanner.struct({
     FirstName: 'Elena',
     LastName: 'Campbell',
@@ -80,9 +83,6 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
   // [END spanner_create_struct_with_data]
 
   // [START spanner_query_data_with_struct]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -190,8 +190,8 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
   // [START spanner_query_data_with_array_of_struct]
   const query = {
     sql:
-      'SELECT SingerId FROM Singers' +
-      'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName)' +
+      'SELECT SingerId FROM Singers ' +
+      'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) ' +
       'IN UNNEST(@names)',
     params: {
       names: bandMembers,
@@ -336,8 +336,8 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
 
   const query = {
     sql:
-      'SELECT SingerId, @songInfo.SongName FROM Singers' +
-      'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName)' +
+      'SELECT SingerId, @songInfo.SongName FROM Singers ' +
+      'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) ' +
       'IN UNNEST(@songInfo.ArtistNames)',
     params: {
       songInfo: songInfoStruct,
