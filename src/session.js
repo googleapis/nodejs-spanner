@@ -39,7 +39,7 @@ const Transaction = require('./transaction');
  *     assumed you are going to create it.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');

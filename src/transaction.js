@@ -102,7 +102,7 @@ const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
@@ -223,7 +223,7 @@ class Transaction extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -287,7 +287,7 @@ class Transaction extends TransactionRequest {
    *     transaction has ended.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -428,7 +428,7 @@ class Transaction extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -494,7 +494,7 @@ class Transaction extends TransactionRequest {
    * @returns {Promise<RunResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -593,7 +593,7 @@ class Transaction extends TransactionRequest {
    * @returns {ReadableStream}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');

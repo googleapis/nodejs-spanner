@@ -18,7 +18,7 @@
 function writeDataForStructQueries(instanceId, databaseId, projectId) {
   // [START spanner_write_data_for_struct_queries]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment and update the following lines before running the sample.
@@ -81,7 +81,7 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
 
   // [START spanner_query_data_with_struct]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -131,7 +131,7 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
 
 function queryWithArrayofStruct(instanceId, databaseId, projectId) {
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -225,7 +225,7 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
 function queryStructField(instanceId, databaseId, projectId) {
   // [START spanner_field_access_on_struct_parameters]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -278,7 +278,7 @@ function queryStructField(instanceId, databaseId, projectId) {
 function queryNestedStructField(instanceId, databaseId, projectId) {
   // [START spanner_field_access_on_nested_struct_parameters]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

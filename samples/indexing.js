@@ -18,7 +18,7 @@
 function createIndex(instanceId, databaseId, projectId) {
   // [START spanner_create_index]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -68,7 +68,7 @@ function createStoringIndex(instanceId, databaseId, projectId) {
   // https://cloud.google.com/spanner/docs/secondary-indexes#storing_clause
 
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -121,7 +121,7 @@ function queryDataWithIndex(
 ) {
   // [START spanner_query_data_with_index]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -182,7 +182,7 @@ function queryDataWithIndex(
 function readDataWithIndex(instanceId, databaseId, projectId) {
   // [START spanner_read_data_with_index]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -239,7 +239,7 @@ function readDataWithStoringIndex(instanceId, databaseId, projectId) {
   // https://cloud.google.com/spanner/docs/secondary-indexes#storing_clause
 
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
