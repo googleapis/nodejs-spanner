@@ -17,7 +17,7 @@
 
 // [START spanner_quickstart]
 // Imports the Google Cloud client library
-const Spanner = require('@google-cloud/spanner');
+const {Spanner} = require('@google-cloud/spanner');
 
 // Your Google Cloud Platform project ID
 const projectId = 'YOUR_PROJECT_ID';

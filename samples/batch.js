@@ -18,7 +18,7 @@
 function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
   // [START spanner_batch_client]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -63,7 +63,7 @@ function executePartition(
 ) {
   // [START spanner_batch_execute_partitions]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

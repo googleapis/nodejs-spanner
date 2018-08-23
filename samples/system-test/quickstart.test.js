@@ -48,7 +48,9 @@ test.cb(`should query a table`, t => {
   };
 
   proxyquire(`../quickstart`, {
-    '@google-cloud/spanner': sinon.stub().returns(spannerMock),
+    '@google-cloud/spanner': {
+      Spanner: sinon.stub().returns(spannerMock),
+    },
   });
 
   t.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);

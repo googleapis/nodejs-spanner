@@ -17,7 +17,7 @@
 
 const path = require(`path`);
 const request = require(`request`);
-const Spanner = require(`@google-cloud/spanner`);
+const {Spanner} = require(`@google-cloud/spanner`);
 const test = require(`ava`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 

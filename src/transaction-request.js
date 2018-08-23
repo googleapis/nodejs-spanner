@@ -72,7 +72,7 @@ class TransactionRequest {
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -229,7 +229,7 @@ class TransactionRequest {
    *     composite key, provide an array within this array. See the example below.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -309,7 +309,7 @@ class TransactionRequest {
    *     into this table.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -418,7 +418,7 @@ class TransactionRequest {
    * @returns {Promise<TransactionRequestReadResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -549,7 +549,7 @@ class TransactionRequest {
    *     into this table.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -604,7 +604,7 @@ class TransactionRequest {
    *     into this table.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -645,7 +645,7 @@ class TransactionRequest {
    *     into this table.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');

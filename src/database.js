@@ -97,7 +97,7 @@ const TransactionRequest = require('./transaction-request');
  *     configuration options or custom pool interface.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
@@ -114,7 +114,7 @@ class Database extends ServiceObject {
        * @returns {Promise<CreateDatabaseResponse>}
        *
        * @example
-       * const Spanner = require('@google-cloud/spanner');
+       * const {Spanner} = require('@google-cloud/spanner');
        * const spanner = new Spanner();
        * const instance = spanner.instance('my-instance');
        * const database = instance.database('my-database');
@@ -163,7 +163,7 @@ class Database extends ServiceObject {
        * @returns {Promise<DatabaseExistsResponse>}
        *
        * @example
-       * const Spanner = require('@google-cloud/spanner');
+       * const {Spanner} = require('@google-cloud/spanner');
        * const spanner = new Spanner();
        *
        * const instance = spanner.instance('my-instance');
@@ -214,7 +214,7 @@ class Database extends ServiceObject {
    * @returns {BatchTransaction} A batch transaction object.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -248,7 +248,7 @@ class Database extends ServiceObject {
    * @returns {Promise}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -351,7 +351,7 @@ class Database extends ServiceObject {
    * @returns {Promise<CreateSessionResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -428,7 +428,7 @@ class Database extends ServiceObject {
    * @returns {Promise<CreateTableResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -510,7 +510,7 @@ class Database extends ServiceObject {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -573,7 +573,7 @@ class Database extends ServiceObject {
    * @returns {Promise<GetDatabaseResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -641,7 +641,7 @@ class Database extends ServiceObject {
    * @returns {Promise<GetDatabaseMetadataResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -700,7 +700,7 @@ class Database extends ServiceObject {
    * @returns {Promise<GetSchemaResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -784,7 +784,7 @@ class Database extends ServiceObject {
    * @returns {Promise<GetSessionsResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -865,7 +865,7 @@ class Database extends ServiceObject {
    * @returns {Promise<GetTransactionResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -1031,7 +1031,7 @@ class Database extends ServiceObject {
    * @returns {Promise<RunResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -1172,7 +1172,7 @@ class Database extends ServiceObject {
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -1348,7 +1348,7 @@ class Database extends ServiceObject {
    *     of a transaction.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -1466,7 +1466,7 @@ class Database extends ServiceObject {
    *
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -1520,7 +1520,7 @@ class Database extends ServiceObject {
    * @return {Table} A Table object.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -1556,7 +1556,7 @@ class Database extends ServiceObject {
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');

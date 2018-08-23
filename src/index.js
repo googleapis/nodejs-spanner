@@ -162,10 +162,6 @@ const gapic = Object.freeze({
  * @param {ClientConfig} [options] Configuration options.
  */
 function Spanner(options) {
-  if (!(this instanceof Spanner)) {
-    return new Spanner(options);
-  }
-
   options = options || {};
 
   this.clients_ = new Map();
@@ -232,7 +228,7 @@ Spanner.COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
  * @see {@link Spanner#date}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const date = Spanner.date('08-20-1969');
  */
 Spanner.date = function(value) {
@@ -248,7 +244,7 @@ Spanner.date = function(value) {
  * @see {@link Spanner#float}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const float = Spanner.float(10);
  */
 Spanner.float = function(value) {
@@ -264,7 +260,7 @@ Spanner.float = function(value) {
  * @see {@link Spanner#int}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const int = Spanner.int(10);
  */
 Spanner.int = function(value) {
@@ -278,7 +274,7 @@ Spanner.int = function(value) {
  * @returns {object}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const struct = Spanner.struct({
  *   user: 'bob',
  *   age: 32
@@ -331,7 +327,7 @@ Spanner.struct = function(value) {
  * @returns {Promise<CreateInstanceResponse>}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const config = {
@@ -474,7 +470,7 @@ Spanner.prototype.createInstance = function(name, config, callback) {
  * @returns {Promise<GetInstancesResponse>}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * spanner.getInstances(function(err, instances) {
@@ -550,7 +546,7 @@ Spanner.prototype.getInstances = function(query, callback) {
  *     instances.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * spanner.getInstancesStream()
@@ -617,7 +613,7 @@ Spanner.prototype.getInstancesStream = paginator.streamify('getInstances');
  * @returns {Promise<GetInstanceConfigsResponse>}
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * spanner.getInstanceConfigs(function(err, instanceConfigs) {
@@ -681,7 +677,7 @@ Spanner.prototype.getInstanceConfigs = function(query, callback) {
  * @returns {ReadableStream} A readable stream that emits instance configs.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * spanner.getInstanceConfigsStream()
@@ -722,7 +718,7 @@ Spanner.prototype.getInstanceConfigsStream = function(query) {
  * @returns {Instance} An Instance object.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  */
@@ -749,7 +745,7 @@ Spanner.prototype.instance = function(name) {
  * @returns {Operation} An Operation object.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const operation = spanner.operation('operation-name');
  */
@@ -893,7 +889,7 @@ promisifyAll(Spanner, {
  * npm install --save @google-cloud/spanner
  *
  * @example <caption>Import the client library</caption>
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  *
  * @example <caption>Create a client that uses <a href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application Default Credentials (ADC)</a>:</caption>
  * const client = new Spanner();
@@ -908,7 +904,7 @@ promisifyAll(Spanner, {
  * region_tag:spanner_quickstart
  * Full quickstart example:
  */
-module.exports = Spanner;
+module.exports.Spanner = Spanner;
 
 /**
  * {@link Instance} class.
