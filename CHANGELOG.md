@@ -7,6 +7,7 @@
 ## v2.0.0
 
 ### Implementation Changes
+- feat: use es style imports (#302)
 - fix: perform type check on grpc value (#300)
 - chore: use es classes in a few places (#297)
 - chore: do not use npm ci (#292)
