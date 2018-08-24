@@ -17,7 +17,7 @@
 'use strict';
 
 const {promisifyAll} = require('@google-cloud/promisify');
-const common = require('@google-cloud/common');
+const common = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const gax = require('google-gax');
 const is = require('is');
