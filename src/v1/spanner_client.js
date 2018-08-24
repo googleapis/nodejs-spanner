@@ -264,7 +264,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -312,7 +312,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -387,7 +387,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -485,7 +485,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -526,7 +526,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -628,7 +628,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -729,7 +729,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -828,7 +828,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -927,7 +927,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -980,7 +980,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -1058,7 +1058,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -1115,7 +1115,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -1210,7 +1210,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
@@ -1296,7 +1296,7 @@ class SpannerClient {
    *
    * @example
    *
-   * const {spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
