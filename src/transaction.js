@@ -41,7 +41,7 @@ const TransactionRequest = require('./transaction-request');
  */
 const UNKNOWN = 2;
 
-/** 
+/**
  * the gRPC `DEADLINE_EXCEEDED` error code.
  */
 const DEADLINE_EXCEEDED = 4;
@@ -726,9 +726,11 @@ class Transaction extends TransactionRequest {
    * @return {object}
    */
   static createDeadlineError_(err) {
-    let apiError =  new common.util.ApiError('Deadline for Transaction exceeded.')
-    apiError.code = DEADLINE_EXCEEDED
-    apiError.errors = [err]
+    let apiError = new common.util.ApiError(
+      'Deadline for Transaction exceeded.'
+    );
+    apiError.code = DEADLINE_EXCEEDED;
+    apiError.errors = [err];
 
     return apiError;
   }
