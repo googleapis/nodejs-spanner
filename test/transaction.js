@@ -198,8 +198,8 @@ describe('Transaction', function() {
 
       const formattedError = Transaction.createDeadlineError_(originalError);
 
-      assert.equal(formattedError.code, 4);
-      assert.equal(
+      assert.strictEqual(formattedError.code, 4);
+      assert.strictEqual(
         formattedError.message,
         'Deadline for Transaction exceeded.'
       );
