@@ -295,7 +295,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -383,7 +383,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -446,7 +446,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -547,7 +547,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -621,7 +621,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -718,7 +718,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -761,7 +761,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -820,7 +820,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -877,7 +877,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
@@ -935,7 +935,7 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.

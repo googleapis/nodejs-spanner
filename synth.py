@@ -41,6 +41,7 @@ s.replace(
 module.exports.InstanceAdminClient = InstanceAdminClient;
 \g<1>""")
 
+
 # '''
 # Node.js specific cleanup
 # '''
