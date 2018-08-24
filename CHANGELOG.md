@@ -6,6 +6,46 @@
 
 ## v2.0.0
 
+### Breaking Changes
+- Drop support for Node.js v4.x.x and v9.x.x (#226) 
+
+- Use es style imports (#302)
+  The import syntax for this library has changed to be [es module](https://nodejs.org/api/esm.html) compliant. 
+
+  #### Old code
+  ```js
+  const spanner = require('@google-cloud/spanner')();
+  // or 
+  const Spanner = require('@google-cloud/spanner');
+  const spanner = new Spanner();
+  ```
+
+  #### New code
+  ```js
+  const {Spanner} = require('@google-cloud/spanner');
+  const spanner = new Spanner();
+  ```
+
+### New Features
+- add runTransactionAsync method (#294)
+  ```
+  const {Spanner} = require('@google-cloud/spanner');
+  const spanner = new Spanner();
+
+  const instance = spanner.instance('my-instance');
+  const database = instance.database('my-database');
+
+  await database.runTransactionAsync(async (transaction) => {
+      const [rows] = await transaction.run('SELECT * FROM MyTable');
+      const data = rows.map(row => row.thing);
+      await transaction.commit();
+      return data;
+  }).then(data => {
+    // ...
+  });
+  ```
+- feature(database): make session pool hot swappable (#243)
+
 ### Implementation Changes
 - feat: use es style imports (#302)
 - fix: perform type check on grpc value (#300)
@@ -23,10 +63,6 @@
 - use node_library not not internal generate method (#247)
 - Configure Renovate (#239)
 - fix: drop support for node.js 4.x and 9.x (#226)
-
-### New Features
-- add runTransactionAsync method (#294)
-- feature(database): make session pool hot swappable (#243)
 
 ### Dependencies
 - fix(deps): update dependency google-gax to ^0.19.0 (#298)
