@@ -17,6 +17,7 @@
 'use strict';
 
 const {promisifyAll} = require('@google-cloud/promisify');
+const common = require('@google-cloud/common');
 const extend = require('extend');
 const gax = require('google-gax');
 const is = require('is');
@@ -39,6 +40,11 @@ const TransactionRequest = require('./transaction-request');
  * @private
  */
 const UNKNOWN = 2;
+
+/** 
+ * the gRPC `DEADLINE_EXCEEDED` error code.
+ */
+const DEADLINE_EXCEEDED = 4;
 
 /**
  * The gRPC `ABORTED` error code.
@@ -720,10 +726,11 @@ class Transaction extends TransactionRequest {
    * @return {object}
    */
   static createDeadlineError_(err) {
-    return extend({}, err, {
-      code: 4,
-      message: 'Deadline for Transaction exceeded.',
-    });
+    let apiError =  new common.util.ApiError('Deadline for Transaction exceeded.')
+    apiError.code = DEADLINE_EXCEEDED
+    apiError.errors.push(err)
+
+    return apiError;
   }
   /**
    * Extracts retry delay and formats into milliseconds.

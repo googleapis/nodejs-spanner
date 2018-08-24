@@ -64,6 +64,7 @@
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb"
   },
   "dependencies": {
+    "@google-cloud/common": "^0.23.0",
     "@google-cloud/common-grpc": "^0.7.1",
     "@google-cloud/paginator": "^0.1.0",
     "@google-cloud/projectify": "^0.3.0",
