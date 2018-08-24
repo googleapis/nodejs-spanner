@@ -41,6 +41,13 @@ s.replace(
 module.exports.InstanceAdminClient = InstanceAdminClient;
 \g<1>""")
 
+
+s.replace(
+    "src/v1/*.js",
+    "const spanner = require\('@google-cloud/spanner'\);",
+    "const {spanner} = require('@google-cloud/spanner');"
+)
+
 # '''
 # Node.js specific cleanup
 # '''
