@@ -205,7 +205,7 @@ describe('Transaction', function() {
 
       const formattedError = Transaction.createDeadlineError_(originalError);
 
-      assert.deepStrictEqual(expectedError, formattedError);
+      assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });
   });
