@@ -18,7 +18,7 @@
 function createDatabase(instanceId, databaseId, projectId) {
   // [START spanner_create_database]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -76,7 +76,7 @@ function createDatabase(instanceId, databaseId, projectId) {
 function addColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_column]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -126,7 +126,7 @@ function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   //    ALTER TABLE Albums ADD COLUMN MarketingBudget INT64
 
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

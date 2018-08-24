@@ -319,7 +319,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -408,7 +408,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -453,7 +453,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -538,7 +538,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -646,7 +646,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -691,7 +691,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -780,7 +780,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -933,7 +933,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -1041,7 +1041,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -1095,7 +1095,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -1152,7 +1152,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
@@ -1210,7 +1210,7 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    *
    * var client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.

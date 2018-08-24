@@ -31,7 +31,7 @@ const TransactionRequest = require('./transaction-request');
  * @param {string} name Name of the table.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
@@ -78,7 +78,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<CreateTableResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -136,7 +136,7 @@ class Table extends TransactionRequest {
    * @returns {ReadableStream}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -217,7 +217,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -265,7 +265,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -317,7 +317,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -423,7 +423,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<TableReadResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -541,7 +541,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -583,7 +583,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -629,7 +629,7 @@ class Table extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');

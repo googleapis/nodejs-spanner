@@ -115,7 +115,7 @@ describe('Spanner', function() {
       './codec.js': fakeCodec,
       './instance.js': FakeInstance,
       './v1': fakeV1,
-    });
+    }).Spanner;
   });
 
   beforeEach(function() {
@@ -148,12 +148,6 @@ describe('Spanner', function() {
 
     it('should streamify the correct methods', function() {
       assert.strictEqual(spanner.getInstancesStream, 'getInstances');
-    });
-
-    it('should work without new', function() {
-      assert.doesNotThrow(function() {
-        Spanner(OPTIONS);
-      });
     });
 
     it('should create an auth instance from google-auth-library', function() {

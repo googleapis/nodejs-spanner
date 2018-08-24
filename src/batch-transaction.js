@@ -52,7 +52,7 @@ class BatchTransaction extends Transaction {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -242,7 +242,7 @@ class BatchTransaction extends Transaction {
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -296,7 +296,7 @@ class BatchTransaction extends Transaction {
    * @returns {TransactionIdentifier}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');

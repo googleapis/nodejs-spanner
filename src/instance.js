@@ -37,7 +37,7 @@ const Database = require('./database');
  * @param {string} name Name of the instance.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  */
@@ -59,7 +59,7 @@ class Instance extends common.ServiceObject {
        * @returns {Promise<CreateInstanceResponse>}
        *
        * @example
-       * const Spanner = require('@google-cloud/spanner');
+       * const {Spanner} = require('@google-cloud/spanner');
        * const spanner = new Spanner();
        *
        * const instance = spanner.instance('my-instance');
@@ -108,7 +108,7 @@ class Instance extends common.ServiceObject {
        * @returns {Promise<InstanceExistsResponse>}
        *
        * @example
-       * const Spanner = require('@google-cloud/spanner');
+       * const {Spanner} = require('@google-cloud/spanner');
        * const spanner = new Spanner();
        *
        * const instance = spanner.instance('my-instance');
@@ -179,7 +179,7 @@ class Instance extends common.ServiceObject {
    * @returns {Promise<CreateDatabaseResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -278,7 +278,7 @@ class Instance extends common.ServiceObject {
    * @return {Database} A Database object.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -315,7 +315,7 @@ class Instance extends common.ServiceObject {
    * @returns {Promise<DeleteInstanceResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -389,7 +389,7 @@ class Instance extends common.ServiceObject {
    * @returns {Promise<GetInstanceResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -469,7 +469,7 @@ class Instance extends common.ServiceObject {
    * @returns {Promise<GetDatabasesResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -551,7 +551,7 @@ class Instance extends common.ServiceObject {
    * @returns {Promise<GetInstanceMetadataResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -593,7 +593,7 @@ class Instance extends common.ServiceObject {
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -678,7 +678,7 @@ class Instance extends common.ServiceObject {
  *     instances.
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
