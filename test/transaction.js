@@ -196,15 +196,13 @@ describe('Transaction', function() {
         b: 'b',
       };
 
-      const expectedError = {
-        code: 4,
-        message: 'Deadline for Transaction exceeded.',
-        a: 'a',
-        b: 'b',
-      };
-
       const formattedError = Transaction.createDeadlineError_(originalError);
 
+      assert.equal(formattedError.code, 4);
+      assert.equal(
+        formattedError.message,
+        'Deadline for Transaction exceeded.'
+      );
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });
