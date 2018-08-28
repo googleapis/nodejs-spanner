@@ -28,7 +28,7 @@
 
 ### New Features
 - add runTransactionAsync method (#294)
-  ```
+  ```js
   const {Spanner} = require('@google-cloud/spanner');
   const spanner = new Spanner();
 
