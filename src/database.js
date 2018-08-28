@@ -1483,7 +1483,7 @@ class Database extends ServiceObject {
    * });
    */
   runTransactionAsync(runFn) {
-    return retry(
+    return retry(() =>
       this.getTransaction()
         .then(r => {
           const transaction = r[0];
