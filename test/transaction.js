@@ -17,6 +17,7 @@
 'use strict';
 
 const assert = require('assert');
+const common = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const gax = require('google-gax');
 const path = require('path');
@@ -203,6 +204,7 @@ describe('Transaction', function() {
         formattedError.message,
         'Deadline for Transaction exceeded.'
       );
+      assert.strictEqual(typeof formattedError, typeof common.util.ApiError())
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });
