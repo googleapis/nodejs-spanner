@@ -726,11 +726,11 @@ class Transaction extends TransactionRequest {
    * @return {object}
    */
   static createDeadlineError_(err) {
-    let apiError = new common.util.ApiError(
-      'Deadline for Transaction exceeded.'
-    );
-    apiError.code = DEADLINE_EXCEEDED;
-    apiError.errors = [err];
+    let apiError = new common.util.ApiError({
+      message: 'Deadline for Transaction exceeded.',
+      code: DEADLINE_EXCEEDED,
+      errors: [err],
+    });
 
     return apiError;
   }
