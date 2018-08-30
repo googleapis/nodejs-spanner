@@ -202,7 +202,7 @@ describe('Transaction', function() {
       assert.strictEqual(formattedError.code, 4);
       assert.strictEqual(
         formattedError.message,
-        'Deadline for Transaction exceeded.'
+        "Deadline for Transaction exceeded. - Transaction aborted."
       );
       assert.strictEqual(typeof formattedError, typeof common.util.ApiError())
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
