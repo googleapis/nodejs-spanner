@@ -26,7 +26,6 @@ const is = require('is');
 const path = require('path');
 const streamEvents = require('stream-events');
 const through = require('through2');
-
 const codec = require('./codec');
 const Database = require('./database');
 const Instance = require('./instance');

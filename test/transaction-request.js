@@ -40,7 +40,7 @@ const fakePfy = extend({}, pfy, {
     assert.deepStrictEqual(options, {
       exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
     });
-    util.promisifyAll(Class, options);
+    pfy.promisifyAll(Class, options);
   },
 });
 
