@@ -24,7 +24,6 @@ const is = require('is');
 const path = require('path');
 const protobuf = require('protobufjs');
 const through = require('through2');
-const util = require('util');
 
 const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'
@@ -750,8 +749,6 @@ class Transaction extends TransactionRequest {
     return seconds + milliseconds;
   }
 }
-
-util.inherits(Transaction, TransactionRequest);
 
 /*! Developer Documentation
  *

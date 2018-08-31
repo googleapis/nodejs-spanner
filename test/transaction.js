@@ -54,7 +54,7 @@ const fakePfy = extend({}, pfy, {
     }
     promisified = true;
     assert.strictEqual(options, undefined);
-    util.promisifyAll(Class, options);
+    pfy.promisifyAll(Class, options);
   },
 });
 
