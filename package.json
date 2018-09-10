@@ -70,7 +70,7 @@
     "@google-cloud/promisify": "^0.3.0",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.1",
-    "delay": "^3.0.0",
+    "delay": "^4.0.0",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.1",
     "google-auth-library": "^2.0.0",
