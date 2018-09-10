@@ -655,7 +655,7 @@ class SessionPool extends EventEmitter {
       let elapsed = Date.now() - startTime;
       let remaining = timeout - elapsed;
 
-      promises.push(delay.reject(remaining, new TimeoutError()));
+      promises.push(delay.reject(remaining, {value: new TimeoutError()}));
     }
 
     if (!this.isFull) {
