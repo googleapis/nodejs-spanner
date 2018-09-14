@@ -34,7 +34,7 @@
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.Database definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var Database = {
+const Database = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
@@ -83,7 +83,7 @@ var Database = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.ListDatabasesRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var ListDatabasesRequest = {
+const ListDatabasesRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -104,7 +104,7 @@ var ListDatabasesRequest = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.ListDatabasesResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var ListDatabasesResponse = {
+const ListDatabasesResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -132,7 +132,7 @@ var ListDatabasesResponse = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.CreateDatabaseRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var CreateDatabaseRequest = {
+const CreateDatabaseRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -147,7 +147,7 @@ var CreateDatabaseRequest = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.CreateDatabaseMetadata definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var CreateDatabaseMetadata = {
+const CreateDatabaseMetadata = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -162,7 +162,7 @@ var CreateDatabaseMetadata = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.GetDatabaseRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var GetDatabaseRequest = {
+const GetDatabaseRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -215,7 +215,7 @@ var GetDatabaseRequest = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.UpdateDatabaseDdlRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var UpdateDatabaseDdlRequest = {
+const UpdateDatabaseDdlRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -241,7 +241,7 @@ var UpdateDatabaseDdlRequest = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var UpdateDatabaseDdlMetadata = {
+const UpdateDatabaseDdlMetadata = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -255,7 +255,7 @@ var UpdateDatabaseDdlMetadata = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.DropDatabaseRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var DropDatabaseRequest = {
+const DropDatabaseRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -269,7 +269,7 @@ var DropDatabaseRequest = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.GetDatabaseDdlRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var GetDatabaseDdlRequest = {
+const GetDatabaseDdlRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -284,6 +284,6 @@ var GetDatabaseDdlRequest = {
  * @memberof google.spanner.admin.database.v1
  * @see [google.spanner.admin.database.v1.GetDatabaseDdlResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/database/v1/spanner_database_admin.proto}
  */
-var GetDatabaseDdlResponse = {
+const GetDatabaseDdlResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };

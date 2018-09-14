@@ -76,13 +76,13 @@ class DatabaseAdminClient {
     // Create a `gaxGrpc` object, with any grpc-specific options
     // sent to the client.
     opts.scopes = this.constructor.scopes;
-    var gaxGrpc = new gax.GrpcClient(opts);
+    const gaxGrpc = new gax.GrpcClient(opts);
 
     // Save the auth object to the client, for use by other methods.
     this.auth = gaxGrpc.auth;
 
     // Determine the client header string.
-    var clientHeader = [
+    const clientHeader = [
       `gl-node/${process.version}`,
       `grpc/${gaxGrpc.grpcVersion}`,
       `gax/${gax.version}`,
@@ -93,7 +93,7 @@ class DatabaseAdminClient {
     }
 
     // Load the applicable protos.
-    var protos = merge(
+    const protos = merge(
       {},
       gaxGrpc.loadProto(
         path.join(__dirname, '..', '..', 'protos'),
@@ -123,7 +123,7 @@ class DatabaseAdminClient {
         'databases'
       ),
     };
-    var protoFilesRoot = new gax.GoogleProtoFilesRoot();
+    let protoFilesRoot = new gax.GoogleProtoFilesRoot();
     protoFilesRoot = protobuf.loadSync(
       path.join(
         __dirname,
@@ -143,16 +143,16 @@ class DatabaseAdminClient {
       grpc: gaxGrpc.grpc,
     }).operationsClient(opts);
 
-    var createDatabaseResponse = protoFilesRoot.lookup(
+    const createDatabaseResponse = protoFilesRoot.lookup(
       'google.spanner.admin.database.v1.Database'
     );
-    var createDatabaseMetadata = protoFilesRoot.lookup(
+    const createDatabaseMetadata = protoFilesRoot.lookup(
       'google.spanner.admin.database.v1.CreateDatabaseMetadata'
     );
-    var updateDatabaseDdlResponse = protoFilesRoot.lookup(
+    const updateDatabaseDdlResponse = protoFilesRoot.lookup(
       'google.protobuf.Empty'
     );
-    var updateDatabaseDdlMetadata = protoFilesRoot.lookup(
+    const updateDatabaseDdlMetadata = protoFilesRoot.lookup(
       'google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata'
     );
 
@@ -170,7 +170,7 @@ class DatabaseAdminClient {
     };
 
     // Put together the default options sent with requests.
-    var defaults = gaxGrpc.constructSettings(
+    const defaults = gaxGrpc.constructSettings(
       'google.spanner.admin.database.v1.DatabaseAdmin',
       gapicConfig,
       opts.clientConfig,
@@ -184,14 +184,14 @@ class DatabaseAdminClient {
 
     // Put together the "service stub" for
     // google.spanner.admin.database.v1.DatabaseAdmin.
-    var databaseAdminStub = gaxGrpc.createStub(
+    const databaseAdminStub = gaxGrpc.createStub(
       protos.google.spanner.admin.database.v1.DatabaseAdmin,
       opts
     );
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    var databaseAdminStubMethods = [
+    const databaseAdminStubMethods = [
       'listDatabases',
       'createDatabase',
       'getDatabase',
@@ -207,7 +207,7 @@ class DatabaseAdminClient {
         databaseAdminStub.then(
           stub =>
             function() {
-              var args = Array.prototype.slice.call(arguments, 0);
+              const args = Array.prototype.slice.call(arguments, 0);
               return stub[methodName].apply(stub, args);
             }
         ),
@@ -297,16 +297,16 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * // Iterate over all elements.
-   * var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
    *
    * client.listDatabases({parent: formattedParent})
    *   .then(responses => {
-   *     var resources = responses[0];
+   *     const resources = responses[0];
    *     for (let i = 0; i < resources.length; i += 1) {
    *       // doThingsWith(resources[i])
    *     }
@@ -316,17 +316,17 @@ class DatabaseAdminClient {
    *   });
    *
    * // Or obtain the paged response.
-   * var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
    *
    *
-   * var options = {autoPaginate: false};
-   * var callback = responses => {
+   * const options = {autoPaginate: false};
+   * const callback = responses => {
    *   // The actual resources in a response.
-   *   var resources = responses[0];
+   *   const resources = responses[0];
    *   // The next request if the response shows that there are more responses.
-   *   var nextRequest = responses[1];
+   *   const nextRequest = responses[1];
    *   // The actual response object, if necessary.
-   *   // var rawResponse = responses[2];
+   *   // const rawResponse = responses[2];
    *   for (let i = 0; i < resources.length; i += 1) {
    *     // doThingsWith(resources[i]);
    *   }
@@ -385,11 +385,11 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
    * client.listDatabasesStream({parent: formattedParent})
    *   .on('data', element => {
    *     // doThingsWith(element)
@@ -448,13 +448,13 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * var createStatement = '';
-   * var request = {
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const createStatement = '';
+   * const request = {
    *   parent: formattedParent,
    *   createStatement: createStatement,
    * };
@@ -462,29 +462,29 @@ class DatabaseAdminClient {
    * // Handle the operation using the promise pattern.
    * client.createDatabase(request)
    *   .then(responses => {
-   *     var operation = responses[0];
-   *     var initialApiResponse = responses[1];
+   *     const operation = responses[0];
+   *     const initialApiResponse = responses[1];
    *
    *     // Operation#promise starts polling for the completion of the LRO.
    *     return operation.promise();
    *   })
    *   .then(responses => {
    *     // The final result of the operation.
-   *     var result = responses[0];
+   *     const result = responses[0];
    *
    *     // The metadata value of the completed operation.
-   *     var metadata = responses[1];
+   *     const metadata = responses[1];
    *
    *     // The response of the api call returning the complete operation.
-   *     var finalApiResponse = responses[2];
+   *     const finalApiResponse = responses[2];
    *   })
    *   .catch(err => {
    *     console.error(err);
    *   });
    *
-   * var formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * var createStatement = '';
-   * var request = {
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const createStatement = '';
+   * const request = {
    *   parent: formattedParent,
    *   createStatement: createStatement,
    * };
@@ -492,8 +492,8 @@ class DatabaseAdminClient {
    * // Handle the operation using the event emitter pattern.
    * client.createDatabase(request)
    *   .then(responses => {
-   *     var operation = responses[0];
-   *     var initialApiResponse = responses[1];
+   *     const operation = responses[0];
+   *     const initialApiResponse = responses[1];
    *
    *     // Adding a listener for the "complete" event starts polling for the
    *     // completion of the operation.
@@ -549,14 +549,14 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedName = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedName = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    * client.getDatabase({name: formattedName})
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -623,13 +623,13 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * var statements = [];
-   * var request = {
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const statements = [];
+   * const request = {
    *   database: formattedDatabase,
    *   statements: statements,
    * };
@@ -637,29 +637,29 @@ class DatabaseAdminClient {
    * // Handle the operation using the promise pattern.
    * client.updateDatabaseDdl(request)
    *   .then(responses => {
-   *     var operation = responses[0];
-   *     var initialApiResponse = responses[1];
+   *     const operation = responses[0];
+   *     const initialApiResponse = responses[1];
    *
    *     // Operation#promise starts polling for the completion of the LRO.
    *     return operation.promise();
    *   })
    *   .then(responses => {
    *     // The final result of the operation.
-   *     var result = responses[0];
+   *     const result = responses[0];
    *
    *     // The metadata value of the completed operation.
-   *     var metadata = responses[1];
+   *     const metadata = responses[1];
    *
    *     // The response of the api call returning the complete operation.
-   *     var finalApiResponse = responses[2];
+   *     const finalApiResponse = responses[2];
    *   })
    *   .catch(err => {
    *     console.error(err);
    *   });
    *
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * var statements = [];
-   * var request = {
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const statements = [];
+   * const request = {
    *   database: formattedDatabase,
    *   statements: statements,
    * };
@@ -667,8 +667,8 @@ class DatabaseAdminClient {
    * // Handle the operation using the event emitter pattern.
    * client.updateDatabaseDdl(request)
    *   .then(responses => {
-   *     var operation = responses[0];
-   *     var initialApiResponse = responses[1];
+   *     const operation = responses[0];
+   *     const initialApiResponse = responses[1];
    *
    *     // Adding a listener for the "complete" event starts polling for the
    *     // completion of the operation.
@@ -720,11 +720,11 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    * client.dropDatabase({database: formattedDatabase}).catch(err => {
    *   console.error(err);
    * });
@@ -763,14 +763,14 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    * client.getDatabaseDdl({database: formattedDatabase})
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -822,19 +822,19 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * var policy = {};
-   * var request = {
+   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const policy = {};
+   * const request = {
    *   resource: formattedResource,
    *   policy: policy,
    * };
    * client.setIamPolicy(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -879,14 +879,14 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    * client.getIamPolicy({resource: formattedResource})
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -937,19 +937,19 @@ class DatabaseAdminClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * var permissions = [];
-   * var request = {
+   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const permissions = [];
+   * const request = {
    *   resource: formattedResource,
    *   permissions: permissions,
    * };
    * client.testIamPermissions(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
