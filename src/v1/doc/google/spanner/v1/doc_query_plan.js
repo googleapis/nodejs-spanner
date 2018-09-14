@@ -67,7 +67,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.PlanNode definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/query_plan.proto}
  */
-var PlanNode = {
+const PlanNode = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
@@ -168,6 +168,6 @@ var PlanNode = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.QueryPlan definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/query_plan.proto}
  */
-var QueryPlan = {
+const QueryPlan = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };

@@ -24,7 +24,7 @@ const extend = require('extend');
 const is = require('is');
 const uuid = require('uuid');
 
-const Spanner = require('../');
+const {Spanner} = require('../');
 
 const PREFIX = 'gcloud-tests-';
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});

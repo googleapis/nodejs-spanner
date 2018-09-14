@@ -17,13 +17,13 @@
 'use strict';
 
 const {promisifyAll} = require('@google-cloud/promisify');
+const common = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const gax = require('google-gax');
 const is = require('is');
 const path = require('path');
 const protobuf = require('protobufjs');
 const through = require('through2');
-const util = require('util');
 
 const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'
@@ -39,6 +39,11 @@ const TransactionRequest = require('./transaction-request');
  * @private
  */
 const UNKNOWN = 2;
+
+/**
+ * the gRPC `DEADLINE_EXCEEDED` error code.
+ */
+const DEADLINE_EXCEEDED = 4;
 
 /**
  * The gRPC `ABORTED` error code.
@@ -102,7 +107,7 @@ const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  *
  * @example
- * const Spanner = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
@@ -223,7 +228,7 @@ class Transaction extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -287,7 +292,7 @@ class Transaction extends TransactionRequest {
    *     transaction has ended.
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -428,7 +433,7 @@ class Transaction extends TransactionRequest {
    * @returns {Promise<BasicResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -494,7 +499,7 @@ class Transaction extends TransactionRequest {
    * @returns {Promise<RunResponse>}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -593,7 +598,7 @@ class Transaction extends TransactionRequest {
    * @returns {ReadableStream}
    *
    * @example
-   * const Spanner = require('@google-cloud/spanner');
+   * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -720,10 +725,13 @@ class Transaction extends TransactionRequest {
    * @return {object}
    */
   static createDeadlineError_(err) {
-    return extend({}, err, {
-      code: 4,
+    let apiError = new common.util.ApiError({
       message: 'Deadline for Transaction exceeded.',
+      code: DEADLINE_EXCEEDED,
+      errors: [err],
     });
+
+    return apiError;
   }
   /**
    * Extracts retry delay and formats into milliseconds.
@@ -741,8 +749,6 @@ class Transaction extends TransactionRequest {
     return seconds + milliseconds;
   }
 }
-
-util.inherits(Transaction, TransactionRequest);
 
 /*! Developer Documentation
  *

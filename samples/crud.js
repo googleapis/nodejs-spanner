@@ -18,7 +18,7 @@
 function updateData(instanceId, databaseId, projectId) {
   // [START spanner_update_data]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -62,7 +62,7 @@ function updateData(instanceId, databaseId, projectId) {
 function insertData(instanceId, databaseId, projectId) {
   // [START spanner_insert_data]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -121,7 +121,7 @@ function insertData(instanceId, databaseId, projectId) {
 function queryData(instanceId, databaseId, projectId) {
   // [START spanner_query_data]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -171,7 +171,7 @@ function queryData(instanceId, databaseId, projectId) {
 function readData(instanceId, databaseId, projectId) {
   // [START spanner_read_data]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -226,7 +226,7 @@ function readData(instanceId, databaseId, projectId) {
 function readStaleData(instanceId, databaseId, projectId) {
   // [START spanner_read_stale_data]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

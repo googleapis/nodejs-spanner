@@ -31,7 +31,7 @@
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.InstanceConfig definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var InstanceConfig = {
+const InstanceConfig = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -97,7 +97,7 @@ var InstanceConfig = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.Instance definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var Instance = {
+const Instance = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
@@ -149,7 +149,7 @@ var Instance = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.ListInstanceConfigsRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var ListInstanceConfigsRequest = {
+const ListInstanceConfigsRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -170,7 +170,7 @@ var ListInstanceConfigsRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.ListInstanceConfigsResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var ListInstanceConfigsResponse = {
+const ListInstanceConfigsResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -186,7 +186,7 @@ var ListInstanceConfigsResponse = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.GetInstanceConfigRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var GetInstanceConfigRequest = {
+const GetInstanceConfigRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -201,7 +201,7 @@ var GetInstanceConfigRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.GetInstanceRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var GetInstanceRequest = {
+const GetInstanceRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -227,7 +227,7 @@ var GetInstanceRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.CreateInstanceRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var CreateInstanceRequest = {
+const CreateInstanceRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -272,7 +272,7 @@ var CreateInstanceRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.ListInstancesRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var ListInstancesRequest = {
+const ListInstancesRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -293,7 +293,7 @@ var ListInstancesRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.ListInstancesResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var ListInstancesResponse = {
+const ListInstancesResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -318,7 +318,7 @@ var ListInstancesResponse = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.UpdateInstanceRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var UpdateInstanceRequest = {
+const UpdateInstanceRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -333,7 +333,7 @@ var UpdateInstanceRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.DeleteInstanceRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var DeleteInstanceRequest = {
+const DeleteInstanceRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -369,7 +369,7 @@ var DeleteInstanceRequest = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.CreateInstanceMetadata definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var CreateInstanceMetadata = {
+const CreateInstanceMetadata = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -404,6 +404,6 @@ var CreateInstanceMetadata = {
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.UpdateInstanceMetadata definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
  */
-var UpdateInstanceMetadata = {
+const UpdateInstanceMetadata = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };

@@ -18,7 +18,7 @@
 function createTableWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_create_table_with_timestamp_column]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -70,7 +70,7 @@ function createTableWithTimestamp(instanceId, databaseId, projectId) {
 function insertWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_insert_data_with_timestamp_column]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -134,7 +134,7 @@ function insertWithTimestamp(instanceId, databaseId, projectId) {
 function queryTableWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_query_new_table_with_timestamp_column]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -186,7 +186,7 @@ function queryTableWithTimestamp(instanceId, databaseId, projectId) {
 function addTimestampColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_timestamp_column]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -249,7 +249,7 @@ function updateWithTimestamp(instanceId, databaseId, projectId) {
   // [END_EXCLUDE]
 
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -316,7 +316,7 @@ function queryWithTimestamp(instanceId, databaseId, projectId) {
   // [END_EXCLUDE]
 
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

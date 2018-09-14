@@ -40,7 +40,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.Type definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/type.proto}
  */
-var Type = {
+const Type = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -61,7 +61,7 @@ var Type = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.StructType definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/type.proto}
  */
-var StructType = {
+const StructType = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
@@ -102,7 +102,7 @@ var StructType = {
  * @enum {number}
  * @memberof google.spanner.v1
  */
-var TypeCode = {
+const TypeCode = {
 
   /**
    * Not specified.

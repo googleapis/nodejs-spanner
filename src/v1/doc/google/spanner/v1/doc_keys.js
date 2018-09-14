@@ -132,7 +132,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.KeyRange definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/keys.proto}
  */
-var KeyRange = {
+const KeyRange = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -168,6 +168,6 @@ var KeyRange = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.KeySet definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/keys.proto}
  */
-var KeySet = {
+const KeySet = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };

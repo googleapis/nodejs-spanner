@@ -18,7 +18,7 @@
 function readOnlyTransaction(instanceId, databaseId, projectId) {
   // [START spanner_read_only_transaction]
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -101,7 +101,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   // addColumn and updateData samples first (in that order).
 
   // Imports the Google Cloud client library
-  const Spanner = require('@google-cloud/spanner');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
