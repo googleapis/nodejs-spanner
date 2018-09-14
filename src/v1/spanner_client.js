@@ -74,13 +74,13 @@ class SpannerClient {
     // Create a `gaxGrpc` object, with any grpc-specific options
     // sent to the client.
     opts.scopes = this.constructor.scopes;
-    var gaxGrpc = new gax.GrpcClient(opts);
+    const gaxGrpc = new gax.GrpcClient(opts);
 
     // Save the auth object to the client, for use by other methods.
     this.auth = gaxGrpc.auth;
 
     // Determine the client header string.
-    var clientHeader = [
+    const clientHeader = [
       `gl-node/${process.version}`,
       `grpc/${gaxGrpc.grpcVersion}`,
       `gax/${gax.version}`,
@@ -91,7 +91,7 @@ class SpannerClient {
     }
 
     // Load the applicable protos.
-    var protos = merge(
+    const protos = merge(
       {},
       gaxGrpc.loadProto(
         path.join(__dirname, '..', '..', 'protos'),
@@ -132,7 +132,7 @@ class SpannerClient {
     };
 
     // Put together the default options sent with requests.
-    var defaults = gaxGrpc.constructSettings(
+    const defaults = gaxGrpc.constructSettings(
       'google.spanner.v1.Spanner',
       gapicConfig,
       opts.clientConfig,
@@ -146,14 +146,14 @@ class SpannerClient {
 
     // Put together the "service stub" for
     // google.spanner.v1.Spanner.
-    var spannerStub = gaxGrpc.createStub(
+    const spannerStub = gaxGrpc.createStub(
       protos.google.spanner.v1.Spanner,
       opts
     );
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    var spannerStubMethods = [
+    const spannerStubMethods = [
       'createSession',
       'getSession',
       'listSessions',
@@ -173,7 +173,7 @@ class SpannerClient {
         spannerStub.then(
           stub =>
             function() {
-              var args = Array.prototype.slice.call(arguments, 0);
+              const args = Array.prototype.slice.call(arguments, 0);
               return stub[methodName].apply(stub, args);
             }
         ),
@@ -266,14 +266,14 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    * client.createSession({database: formattedDatabase})
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -314,14 +314,14 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedName = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const formattedName = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
    * client.getSession({name: formattedName})
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -389,16 +389,16 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
    * // Iterate over all elements.
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    *
    * client.listSessions({database: formattedDatabase})
    *   .then(responses => {
-   *     var resources = responses[0];
+   *     const resources = responses[0];
    *     for (let i = 0; i < resources.length; i += 1) {
    *       // doThingsWith(resources[i])
    *     }
@@ -408,17 +408,17 @@ class SpannerClient {
    *   });
    *
    * // Or obtain the paged response.
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    *
    *
-   * var options = {autoPaginate: false};
-   * var callback = responses => {
+   * const options = {autoPaginate: false};
+   * const callback = responses => {
    *   // The actual resources in a response.
-   *   var resources = responses[0];
+   *   const resources = responses[0];
    *   // The next request if the response shows that there are more responses.
-   *   var nextRequest = responses[1];
+   *   const nextRequest = responses[1];
    *   // The actual response object, if necessary.
-   *   // var rawResponse = responses[2];
+   *   // const rawResponse = responses[2];
    *   for (let i = 0; i < resources.length; i += 1) {
    *     // doThingsWith(resources[i]);
    *   }
@@ -487,11 +487,11 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
    * client.listSessionsStream({database: formattedDatabase})
    *   .on('data', element => {
    *     // doThingsWith(element)
@@ -528,11 +528,11 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedName = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const formattedName = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
    * client.deleteSession({name: formattedName}).catch(err => {
    *   console.error(err);
    * });
@@ -630,19 +630,19 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var sql = '';
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const sql = '';
+   * const request = {
    *   session: formattedSession,
    *   sql: sql,
    * };
    * client.executeSql(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -731,13 +731,13 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var sql = '';
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const sql = '';
+   * const request = {
    *   session: formattedSession,
    *   sql: sql,
    * };
@@ -830,15 +830,15 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var table = '';
-   * var columns = [];
-   * var keySet = {};
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const table = '';
+   * const columns = [];
+   * const keySet = {};
+   * const request = {
    *   session: formattedSession,
    *   table: table,
    *   columns: columns,
@@ -846,7 +846,7 @@ class SpannerClient {
    * };
    * client.read(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -929,15 +929,15 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var table = '';
-   * var columns = [];
-   * var keySet = {};
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const table = '';
+   * const columns = [];
+   * const keySet = {};
+   * const request = {
    *   session: formattedSession,
    *   table: table,
    *   columns: columns,
@@ -982,19 +982,19 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var options = {};
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const options = {};
+   * const request = {
    *   session: formattedSession,
    *   options: options,
    * };
    * client.beginTransaction(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -1060,19 +1060,19 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var mutations = [];
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const mutations = [];
+   * const request = {
    *   session: formattedSession,
    *   mutations: mutations,
    * };
    * client.commit(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -1117,13 +1117,13 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var transactionId = '';
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const transactionId = '';
+   * const request = {
    *   session: formattedSession,
    *   transactionId: transactionId,
    * };
@@ -1212,19 +1212,19 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var sql = '';
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const sql = '';
+   * const request = {
    *   session: formattedSession,
    *   sql: sql,
    * };
    * client.partitionQuery(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {
@@ -1298,21 +1298,21 @@ class SpannerClient {
    *
    * const spanner = require('@google-cloud/spanner');
    *
-   * var client = new spanner.v1.SpannerClient({
+   * const client = new spanner.v1.SpannerClient({
    *   // optional auth parameters.
    * });
    *
-   * var formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * var table = '';
-   * var keySet = {};
-   * var request = {
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const table = '';
+   * const keySet = {};
+   * const request = {
    *   session: formattedSession,
    *   table: table,
    *   keySet: keySet,
    * };
    * client.partitionRead(request)
    *   .then(responses => {
-   *     var response = responses[0];
+   *     const response = responses[0];
    *     // doThingsWith(response)
    *   })
    *   .catch(err => {

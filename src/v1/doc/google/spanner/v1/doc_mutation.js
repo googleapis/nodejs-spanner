@@ -57,7 +57,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.Mutation definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/mutation.proto}
  */
-var Mutation = {
+const Mutation = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**

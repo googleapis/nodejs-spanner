@@ -45,7 +45,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ResultSet definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/result_set.proto}
  */
-var ResultSet = {
+const ResultSet = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -161,7 +161,7 @@ var ResultSet = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.PartialResultSet definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/result_set.proto}
  */
-var PartialResultSet = {
+const PartialResultSet = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -190,7 +190,7 @@ var PartialResultSet = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ResultSetMetadata definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/result_set.proto}
  */
-var ResultSetMetadata = {
+const ResultSetMetadata = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -219,6 +219,6 @@ var ResultSetMetadata = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ResultSetStats definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/result_set.proto}
  */
-var ResultSetStats = {
+const ResultSetStats = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };

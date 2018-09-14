@@ -18,29 +18,29 @@ const assert = require('assert');
 
 const spannerModule = require('../src');
 
-var FAKE_STATUS_CODE = 1;
-var error = new Error();
+const FAKE_STATUS_CODE = 1;
+const error = new Error();
 error.code = FAKE_STATUS_CODE;
 
 describe('InstanceAdminClient', () => {
   describe('listInstanceConfigs', () => {
     it('invokes listInstanceConfigs without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.projectPath('[PROJECT]');
-      var request = {
+      const formattedParent = client.projectPath('[PROJECT]');
+      const request = {
         parent: formattedParent,
       };
 
       // Mock response
-      var nextPageToken = '';
-      var instanceConfigsElement = {};
-      var instanceConfigs = [instanceConfigsElement];
-      var expectedResponse = {
+      const nextPageToken = '';
+      const instanceConfigsElement = {};
+      const instanceConfigs = [instanceConfigsElement];
+      const expectedResponse = {
         nextPageToken: nextPageToken,
         instanceConfigs: instanceConfigs,
       };
@@ -63,14 +63,14 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes listInstanceConfigs with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.projectPath('[PROJECT]');
-      var request = {
+      const formattedParent = client.projectPath('[PROJECT]');
+      const request = {
         parent: formattedParent,
       };
 
@@ -92,24 +92,24 @@ describe('InstanceAdminClient', () => {
 
   describe('getInstanceConfig', () => {
     it('invokes getInstanceConfig without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.instanceConfigPath(
+      const formattedName = client.instanceConfigPath(
         '[PROJECT]',
         '[INSTANCE_CONFIG]'
       );
-      var request = {
+      const request = {
         name: formattedName,
       };
 
       // Mock response
-      var name2 = 'name2-1052831874';
-      var displayName = 'displayName1615086568';
-      var expectedResponse = {
+      const name2 = 'name2-1052831874';
+      const displayName = 'displayName1615086568';
+      const expectedResponse = {
         name: name2,
         displayName: displayName,
       };
@@ -128,17 +128,17 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes getInstanceConfig with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.instanceConfigPath(
+      const formattedName = client.instanceConfigPath(
         '[PROJECT]',
         '[INSTANCE_CONFIG]'
       );
-      var request = {
+      const request = {
         name: formattedName,
       };
 
@@ -160,22 +160,22 @@ describe('InstanceAdminClient', () => {
 
   describe('listInstances', () => {
     it('invokes listInstances without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.projectPath('[PROJECT]');
-      var request = {
+      const formattedParent = client.projectPath('[PROJECT]');
+      const request = {
         parent: formattedParent,
       };
 
       // Mock response
-      var nextPageToken = '';
-      var instancesElement = {};
-      var instances = [instancesElement];
-      var expectedResponse = {
+      const nextPageToken = '';
+      const instancesElement = {};
+      const instances = [instancesElement];
+      const expectedResponse = {
         nextPageToken: nextPageToken,
         instances: instances,
       };
@@ -198,14 +198,14 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes listInstances with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.projectPath('[PROJECT]');
-      var request = {
+      const formattedParent = client.projectPath('[PROJECT]');
+      const request = {
         parent: formattedParent,
       };
 
@@ -227,23 +227,23 @@ describe('InstanceAdminClient', () => {
 
   describe('getInstance', () => {
     it('invokes getInstance without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         name: formattedName,
       };
 
       // Mock response
-      var name2 = 'name2-1052831874';
-      var config = 'config-1354792126';
-      var displayName = 'displayName1615086568';
-      var nodeCount = 1539922066;
-      var expectedResponse = {
+      const name2 = 'name2-1052831874';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
         name: name2,
         config: config,
         displayName: displayName,
@@ -264,14 +264,14 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes getInstance with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         name: formattedName,
       };
 
@@ -293,27 +293,27 @@ describe('InstanceAdminClient', () => {
 
   describe('createInstance', function() {
     it('invokes createInstance without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.projectPath('[PROJECT]');
-      var instanceId = 'instanceId-2101995259';
-      var instance = {};
-      var request = {
+      const formattedParent = client.projectPath('[PROJECT]');
+      const instanceId = 'instanceId-2101995259';
+      const instance = {};
+      const request = {
         parent: formattedParent,
         instanceId: instanceId,
         instance: instance,
       };
 
       // Mock response
-      var name = 'name3373707';
-      var config = 'config-1354792126';
-      var displayName = 'displayName1615086568';
-      var nodeCount = 1539922066;
-      var expectedResponse = {
+      const name = 'name3373707';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
         name: name,
         config: config,
         displayName: displayName,
@@ -329,7 +329,7 @@ describe('InstanceAdminClient', () => {
       client
         .createInstance(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(responses => {
@@ -342,16 +342,16 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes createInstance with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedParent = client.projectPath('[PROJECT]');
-      var instanceId = 'instanceId-2101995259';
-      var instance = {};
-      var request = {
+      const formattedParent = client.projectPath('[PROJECT]');
+      const instanceId = 'instanceId-2101995259';
+      const instance = {};
+      const request = {
         parent: formattedParent,
         instanceId: instanceId,
         instance: instance,
@@ -367,7 +367,7 @@ describe('InstanceAdminClient', () => {
       client
         .createInstance(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(() => {
@@ -381,7 +381,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -398,25 +398,25 @@ describe('InstanceAdminClient', () => {
 
   describe('updateInstance', function() {
     it('invokes updateInstance without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var instance = {};
-      var fieldMask = {};
-      var request = {
+      const instance = {};
+      const fieldMask = {};
+      const request = {
         instance: instance,
         fieldMask: fieldMask,
       };
 
       // Mock response
-      var name = 'name3373707';
-      var config = 'config-1354792126';
-      var displayName = 'displayName1615086568';
-      var nodeCount = 1539922066;
-      var expectedResponse = {
+      const name = 'name3373707';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
         name: name,
         config: config,
         displayName: displayName,
@@ -432,7 +432,7 @@ describe('InstanceAdminClient', () => {
       client
         .updateInstance(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(responses => {
@@ -445,15 +445,15 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes updateInstance with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var instance = {};
-      var fieldMask = {};
-      var request = {
+      const instance = {};
+      const fieldMask = {};
+      const request = {
         instance: instance,
         fieldMask: fieldMask,
       };
@@ -468,7 +468,7 @@ describe('InstanceAdminClient', () => {
       client
         .updateInstance(request)
         .then(responses => {
-          var operation = responses[0];
+          const operation = responses[0];
           return operation.promise();
         })
         .then(() => {
@@ -482,7 +482,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -499,14 +499,14 @@ describe('InstanceAdminClient', () => {
 
   describe('deleteInstance', () => {
     it('invokes deleteInstance without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         name: formattedName,
       };
 
@@ -520,14 +520,14 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes deleteInstance with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         name: formattedName,
       };
 
@@ -548,23 +548,23 @@ describe('InstanceAdminClient', () => {
 
   describe('setIamPolicy', () => {
     it('invokes setIamPolicy without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var policy = {};
-      var request = {
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const policy = {};
+      const request = {
         resource: formattedResource,
         policy: policy,
       };
 
       // Mock response
-      var version = 351608024;
-      var etag = '21';
-      var expectedResponse = {
+      const version = 351608024;
+      const etag = '21';
+      const expectedResponse = {
         version: version,
         etag: etag,
       };
@@ -583,15 +583,15 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes setIamPolicy with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var policy = {};
-      var request = {
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const policy = {};
+      const request = {
         resource: formattedResource,
         policy: policy,
       };
@@ -614,21 +614,21 @@ describe('InstanceAdminClient', () => {
 
   describe('getIamPolicy', () => {
     it('invokes getIamPolicy without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         resource: formattedResource,
       };
 
       // Mock response
-      var version = 351608024;
-      var etag = '21';
-      var expectedResponse = {
+      const version = 351608024;
+      const etag = '21';
+      const expectedResponse = {
         version: version,
         etag: etag,
       };
@@ -647,14 +647,14 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes getIamPolicy with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var request = {
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
         resource: formattedResource,
       };
 
@@ -676,21 +676,21 @@ describe('InstanceAdminClient', () => {
 
   describe('testIamPermissions', () => {
     it('invokes testIamPermissions without error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var permissions = [];
-      var request = {
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const permissions = [];
+      const request = {
         resource: formattedResource,
         permissions: permissions,
       };
 
       // Mock response
-      var expectedResponse = {};
+      const expectedResponse = {};
 
       // Mock Grpc layer
       client._innerApiCalls.testIamPermissions = mockSimpleGrpcMethod(
@@ -706,15 +706,15 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes testIamPermissions with error', done => {
-      var client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      var formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      var permissions = [];
-      var request = {
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const permissions = [];
+      const request = {
         resource: formattedResource,
         permissions: permissions,
       };
@@ -752,7 +752,7 @@ function mockSimpleGrpcMethod(expectedRequest, response, error) {
 function mockLongRunningGrpcMethod(expectedRequest, response, error) {
   return request => {
     assert.deepStrictEqual(request, expectedRequest);
-    var mockOperation = {
+    const mockOperation = {
       promise: function() {
         return new Promise((resolve, reject) => {
           if (error) {

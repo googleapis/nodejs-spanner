@@ -255,7 +255,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.TransactionOptions definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/transaction.proto}
  */
-var TransactionOptions = {
+const TransactionOptions = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
@@ -378,7 +378,7 @@ var TransactionOptions = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.Transaction definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/transaction.proto}
  */
-var Transaction = {
+const Transaction = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -410,6 +410,6 @@ var Transaction = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.TransactionSelector definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/transaction.proto}
  */
-var TransactionSelector = {
+const TransactionSelector = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };

@@ -30,7 +30,7 @@
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.CreateSessionRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var CreateSessionRequest = {
+const CreateSessionRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -67,7 +67,7 @@ var CreateSessionRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.Session definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var Session = {
+const Session = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -81,7 +81,7 @@ var Session = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.GetSessionRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var GetSessionRequest = {
+const GetSessionRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -116,7 +116,7 @@ var GetSessionRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ListSessionsRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var ListSessionsRequest = {
+const ListSessionsRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -137,7 +137,7 @@ var ListSessionsRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ListSessionsResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var ListSessionsResponse = {
+const ListSessionsResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -151,7 +151,7 @@ var ListSessionsResponse = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.DeleteSessionRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var DeleteSessionRequest = {
+const DeleteSessionRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -224,7 +224,7 @@ var DeleteSessionRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ExecuteSqlRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var ExecuteSqlRequest = {
+const ExecuteSqlRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
@@ -281,7 +281,7 @@ var ExecuteSqlRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.PartitionOptions definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var PartitionOptions = {
+const PartitionOptions = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -342,7 +342,7 @@ var PartitionOptions = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.PartitionQueryRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var PartitionQueryRequest = {
+const PartitionQueryRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -390,7 +390,7 @@ var PartitionQueryRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.PartitionReadRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var PartitionReadRequest = {
+const PartitionReadRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -407,7 +407,7 @@ var PartitionReadRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.Partition definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var Partition = {
+const Partition = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -429,7 +429,7 @@ var Partition = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.PartitionResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var PartitionResponse = {
+const PartitionResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -497,7 +497,7 @@ var PartitionResponse = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ReadRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var ReadRequest = {
+const ReadRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -516,7 +516,7 @@ var ReadRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.BeginTransactionRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var BeginTransactionRequest = {
+const BeginTransactionRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -553,7 +553,7 @@ var BeginTransactionRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.CommitRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var CommitRequest = {
+const CommitRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -569,7 +569,7 @@ var CommitRequest = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.CommitResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var CommitResponse = {
+const CommitResponse = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
 
@@ -586,6 +586,6 @@ var CommitResponse = {
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.RollbackRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
-var RollbackRequest = {
+const RollbackRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 };
