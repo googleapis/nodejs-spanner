@@ -25,6 +25,10 @@ s.copy(spanner, excludes=["src/index.js", "README.md", "package.json"])
 s.copy(spanner_admin_database, excludes=["src/v1/index.js", "src/index.js", "README.md", "package.json"])
 s.copy(spanner_admin_instance, excludes=["src/v1/index.js", "src/index.js", "README.md", "package.json"])
 
+common_templates = gcp.CommonTemplates()
+templates = common_templates.node_library()
+s.copy(templates)
+
 # nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and
 # SpannerAdminInstance, export all 3 in src/v1/index.js
 s.replace(
