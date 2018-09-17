@@ -159,6 +159,7 @@ jobs:
           command: npm run system-test
           environment:
             GOOGLE_APPLICATION_CREDENTIALS: .circleci/key.json
+            GCLOUD_PROJECT: long-door-651
       - run:
           name: Remove unencrypted key.
           command: |
