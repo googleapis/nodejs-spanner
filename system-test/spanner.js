@@ -3907,7 +3907,7 @@ describe('Spanner', function() {
             assert.strictEqual(err.code, 4);
             assert.strictEqual(
               err.message,
-              'Deadline for Transaction exceeded.'
+              'Deadline for Transaction exceeded. - 10 ABORTED: Transaction was aborted. Idle for over 10 seconds.'
             );
 
             done();
