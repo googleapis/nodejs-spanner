@@ -3907,7 +3907,8 @@ describe('Spanner', function() {
             assert.strictEqual(err.code, 4);
             assert(
               err.message.startsWith(
-                'Deadline for Transaction exceeded. - 10 ABORTED')
+                'Deadline for Transaction exceeded. - 10 ABORTED'
+              )
             );
 
             done();
