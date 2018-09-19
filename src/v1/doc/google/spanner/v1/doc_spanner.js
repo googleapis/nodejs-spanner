@@ -166,13 +166,24 @@ const DeleteSessionRequest = {
  *   The transaction to use. If none is provided, the default is a
  *   temporary read-only transaction with strong concurrency.
  *
+ *   The transaction to use.
+ *
+ *   For queries, if none is provided, the default is a temporary read-only
+ *   transaction with strong concurrency.
+ *
+ *   Standard DML statements require a ReadWrite transaction. Single-use
+ *   transactions are not supported (to avoid replay).  The caller must
+ *   either supply an existing transaction ID or begin a new transaction.
+ *
+ *   Partitioned DML requires an existing PartitionedDml transaction ID.
+ *
  *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
  *
  * @property {string} sql
- *   Required. The SQL query string.
+ *   Required. The SQL string.
  *
  * @property {Object} params
- *   The SQL query string can contain parameter placeholders. A parameter
+ *   The SQL string can contain parameter placeholders. A parameter
  *   placeholder consists of `'@'` followed by the parameter
  *   name. Parameter names consist of any combination of letters,
  *   numbers, and underscores.
@@ -181,7 +192,7 @@ const DeleteSessionRequest = {
  *   parameter name can be used more than once, for example:
  *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
  *
- *   It is an error to execute an SQL query with unbound parameters.
+ *   It is an error to execute an SQL statement with unbound parameters.
  *
  *   Parameter values are specified using `params`, which is a JSON
  *   object whose keys are parameter names, and whose values are the
@@ -195,15 +206,15 @@ const DeleteSessionRequest = {
  *   of type `STRING` both appear in params as JSON strings.
  *
  *   In these cases, `param_types` can be used to specify the exact
- *   SQL type for some or all of the SQL query parameters. See the
+ *   SQL type for some or all of the SQL statement parameters. See the
  *   definition of Type for more information
  *   about SQL types.
  *
  * @property {string} resumeToken
- *   If this request is resuming a previously interrupted SQL query
+ *   If this request is resuming a previously interrupted SQL statement
  *   execution, `resume_token` should be copied from the last
  *   PartialResultSet yielded before the interruption. Doing this
- *   enables the new SQL query execution to resume where the last one left
+ *   enables the new SQL statement execution to resume where the last one left
  *   off. The rest of the request parameters must exactly match the
  *   request that yielded this token.
  *
@@ -220,6 +231,18 @@ const DeleteSessionRequest = {
  *   match for the values of fields common to this message and the
  *   PartitionQueryRequest message used to create this partition_token.
  *
+ * @property {number} seqno
+ *   A per-transaction sequence number used to identify this request. This
+ *   makes each request idempotent such that if the request is received multiple
+ *   times, at most one will succeed.
+ *
+ *   The sequence number must be monotonically increasing within the
+ *   transaction. If a request arrives for the first time with an out-of-order
+ *   sequence number, the transaction may be aborted. Replays of previously
+ *   handled requests will yield the same response as the first execution.
+ *
+ *   Required for DML statements. Ignored for queries.
+ *
  * @typedef ExecuteSqlRequest
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ExecuteSqlRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
@@ -228,7 +251,7 @@ const ExecuteSqlRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
-   * Mode in which the query must be processed.
+   * Mode in which the statement must be processed.
    *
    * @enum {number}
    * @memberof google.spanner.v1
@@ -236,20 +259,19 @@ const ExecuteSqlRequest = {
   QueryMode: {
 
     /**
-     * The default mode where only the query result, without any information
-     * about the query plan is returned.
+     * The default mode. Only the statement results are returned.
      */
     NORMAL: 0,
 
     /**
-     * This mode returns only the query plan, without any result rows or
+     * This mode returns only the query plan, without any results or
      * execution statistics information.
      */
     PLAN: 1,
 
     /**
      * This mode returns both the query plan and the execution statistics along
-     * with the result rows.
+     * with the results.
      */
     PROFILE: 2
   }
@@ -304,6 +326,10 @@ const PartitionOptions = {
  *   union operator conceptually divides one or more tables into multiple
  *   splits, remotely evaluates a subquery independently on each split, and
  *   then unions all results.
+ *
+ *   This must not contain DML commands, such as INSERT, UPDATE, or
+ *   DELETE. Use ExecuteStreamingSql with a
+ *   PartitionedDml transaction for large, partition-friendly DML operations.
  *
  * @property {Object} params
  *   The SQL query string can contain parameter placeholders. A parameter

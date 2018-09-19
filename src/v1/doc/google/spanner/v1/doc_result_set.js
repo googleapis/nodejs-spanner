@@ -35,8 +35,13 @@
  *   This object should have the same structure as [ListValue]{@link google.protobuf.ListValue}
  *
  * @property {Object} stats
- *   Query plan and execution statistics for the query that produced this
- *   result set. These can be requested by setting
+ *   Query plan and execution statistics for the SQL statement that
+ *   produced this result set. These can be requested by setting
+ *   ExecuteSqlRequest.query_mode.
+ *   DML statements always produce stats containing the number of rows
+ *   modified, unless executed using the
+ *   ExecuteSqlRequest.QueryMode.PLAN ExecuteSqlRequest.query_mode.
+ *   Other fields may or may not be populated, based on the
  *   ExecuteSqlRequest.query_mode.
  *
  *   This object should have the same structure as [ResultSetStats]{@link google.spanner.v1.ResultSetStats}
@@ -150,10 +155,12 @@ const ResultSet = {
  *   same session invalidates the token.
  *
  * @property {Object} stats
- *   Query plan and execution statistics for the query that produced this
+ *   Query plan and execution statistics for the statement that produced this
  *   streaming result set. These can be requested by setting
  *   ExecuteSqlRequest.query_mode and are sent
  *   only once with the last response in the stream.
+ *   This field will also be present in the last response for DML
+ *   statements.
  *
  *   This object should have the same structure as [ResultSetStats]{@link google.spanner.v1.ResultSetStats}
  *
@@ -214,6 +221,13 @@ const ResultSetMetadata = {
  *       }
  *
  *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
+ *
+ * @property {number} rowCountExact
+ *   Standard DML returns an exact count of rows that were modified.
+ *
+ * @property {number} rowCountLowerBound
+ *   Partitioned DML does not offer exactly-once semantics, so it
+ *   returns a lower bound of the rows modified.
  *
  * @typedef ResultSetStats
  * @memberof google.spanner.v1
