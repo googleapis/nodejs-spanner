@@ -752,7 +752,6 @@ describe('Transaction', function() {
       it('should retry the transaction for UNKNOWN', function(done) {
         const error = {code: 2};
         const fakeDelay = 123;
-        let stream;
         const getRetryDelay = Transaction.getRetryDelay_;
 
         Transaction.getRetryDelay_ = function(err) {
@@ -774,7 +773,7 @@ describe('Transaction', function() {
           done();
         };
 
-        stream = transaction.requestStream(config);
+        const stream = transaction.requestStream(config);
         stream.on('error', done); // should not be called
 
         fakeStream.emit('error', error);
@@ -783,8 +782,6 @@ describe('Transaction', function() {
       it('should retry the transaction for ABORTED', function(done) {
         const error = {code: 10};
         const fakeDelay = 123;
-        let stream;
-
         const getRetryDelay = Transaction.getRetryDelay_;
 
         Transaction.getRetryDelay_ = function(err) {
@@ -806,7 +803,7 @@ describe('Transaction', function() {
           done();
         };
 
-        stream = transaction.requestStream(config);
+        const stream = transaction.requestStream(config);
         stream.on('error', done); // should not be called
 
         fakeStream.emit('error', error);
@@ -814,8 +811,6 @@ describe('Transaction', function() {
 
       it('should send a deadline error to the runFn', function(done) {
         const error = {code: 10};
-        let stream;
-
         const deadlineError = {};
         const createDeadlineError = Transaction.createDeadlineError_;
 
@@ -839,9 +834,8 @@ describe('Transaction', function() {
           done();
         };
 
-        stream = transaction.requestStream(config);
+        const stream = transaction.requestStream(config);
         stream.on('error', done); // should not be called
-
         fakeStream.emit('error', error);
       });
     });

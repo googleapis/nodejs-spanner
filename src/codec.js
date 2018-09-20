@@ -237,11 +237,11 @@ function decode(value, field) {
         break;
       }
       case 'STRUCT': {
-        let struct = new Struct();
-        let fields = type.structType.fields;
+        const struct = new Struct();
+        const fields = type.structType.fields;
 
         fields.forEach((field, index) => {
-          let name = field.name;
+          const name = field.name;
           let value = decoded[name] || decoded[index];
 
           value = decodeValue_(value, field.type);
@@ -353,7 +353,7 @@ function getType(field) {
   }
 
   if (Struct.isStruct(field)) {
-    let fields = field.map(function(field) {
+    const fields = field.map(function(field) {
       return {
         name: field.name,
         type: getType(field.value),
@@ -423,14 +423,14 @@ function encodeQuery(query) {
   query = extend({}, query);
 
   if (query.params) {
-    let fields = {};
+    const fields = {};
 
     if (!query.types) {
       query.types = {};
     }
 
-    for (let prop in query.params) {
-      let field = query.params[prop];
+    for (const prop in query.params) {
+      const field = query.params[prop];
 
       if (!query.types[prop]) {
         query.types[prop] = codec.getType(field);
@@ -443,9 +443,9 @@ function encodeQuery(query) {
   }
 
   if (query.types) {
-    let formattedTypes = {};
+    const formattedTypes = {};
 
-    for (let field in query.types) {
+    for (const field in query.types) {
       formattedTypes[field] = codec.createTypeObject(query.types[field]);
     }
 
@@ -523,14 +523,14 @@ function createTypeObject(config) {
     config = {type: config};
   }
 
-  let type = config.type;
+  const type = config.type;
   let code = TYPES.indexOf(type);
 
   if (code === -1) {
     code = 0; // unspecified
   }
 
-  let typeObject = {code};
+  const typeObject = {code};
 
   if (type === 'array') {
     typeObject.arrayElementType = createTypeObject(config.child);
@@ -539,7 +539,7 @@ function createTypeObject(config) {
   if (type === 'struct') {
     typeObject.structType = {};
     typeObject.structType.fields = arrify(config.fields).map(field => {
-      let fieldConfig = is.object(field.type) ? field.type : field;
+      const fieldConfig = is.object(field.type) ? field.type : field;
 
       return {
         name: field.name,

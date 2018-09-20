@@ -192,7 +192,6 @@ describe('Database', function() {
     });
 
     it('should inherit from ServiceObject', function(done) {
-      let database;
       const options = {};
 
       const instanceInstance = extend({}, INSTANCE, {
@@ -203,7 +202,7 @@ describe('Database', function() {
         },
       });
 
-      database = new Database(instanceInstance, NAME);
+      const database = new Database(instanceInstance, NAME);
       assert(database instanceof FakeGrpcServiceObject);
 
       const calledWith = database.calledWith_[0];

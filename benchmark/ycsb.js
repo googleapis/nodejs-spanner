@@ -72,8 +72,6 @@ function parseWorkloadFile(filePath) {
 
 function printMetrics(workload) {
   const numBucket = workload.options.get('numBucket');
-  const operationCount = workload.options.get('operationcount');
-
   let totalOps = 0;
 
   workload.operations.forEach(operation => {
@@ -103,12 +101,12 @@ function printMetrics(workload) {
     );
 
     for (let i = 0; i < numBucket; i++) {
-      let hi = bounds.lt(lats, i + 1);
-      let lo = bounds.le(lats, i);
+      const hi = bounds.lt(lats, i + 1);
+      const lo = bounds.le(lats, i);
       console.log(`${opName}, ${i}, ${hi - lo}`);
     }
 
-    let lo = bounds.le(lats, numBucket);
+    const lo = bounds.le(lats, numBucket);
     console.log(`${opName}, ${numBucket}, ${ops - lo}`);
   });
 }

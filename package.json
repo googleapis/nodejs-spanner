@@ -61,7 +61,8 @@
     "system-test": "mocha system-test/*.js --timeout 600000",
     "test-no-cover": "mocha test/*.js",
     "test": "npm run cover",
-    "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb"
+    "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",
+    "fix": "eslint --fix '**/*.js' && npm run prettier"
   },
   "dependencies": {
     "@google-cloud/common-grpc": "^0.8.0",

@@ -41,14 +41,14 @@ class Workload {
     this.opCounts = {};
     this.totalOpCount = 0;
 
-    for (let operation of OPERATIONS) {
-      let weight = parseFloat(this.options.get(operation));
+    for (const operation of OPERATIONS) {
+      const weight = parseFloat(this.options.get(operation));
 
       if (weight <= 0) {
         continue;
       }
 
-      let shortOpName = operation.replace('proportion', '');
+      const shortOpName = operation.replace('proportion', '');
 
       this.operations.push(shortOpName);
       this.latencies[shortOpName] = [];
@@ -73,11 +73,11 @@ class Workload {
     const end = timeSpan();
 
     for (let i = 0; i < operationCount; i++) {
-      let randomWeight = Math.random() * this.totalWeight;
+      const randomWeight = Math.random() * this.totalWeight;
 
       for (let j = 0; j < this.weights.length; j++) {
-        let weight = this.weights[j];
-        let operation = this.operations[j];
+        const weight = this.weights[j];
+        const operation = this.operations[j];
 
         if (randomWeight <= weight) {
           this.queue.add(() => this.runOperation(operation));
@@ -91,7 +91,7 @@ class Workload {
 
   runOperation(operation) {
     if (typeof this[operation] !== 'function') {
-      throw new Error(`unsupported operation: ${type}`);
+      throw new Error(`unsupported operation: ${operation.type}`);
     }
 
     const end = timeSpan();

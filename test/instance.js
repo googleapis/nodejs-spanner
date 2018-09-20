@@ -128,9 +128,7 @@ describe('Instance', function() {
     });
 
     it('should inherit from ServiceObject', function(done) {
-      let instance;
       const options = {};
-
       const spannerInstance = extend({}, SPANNER, {
         createInstance: function(name, options_, callback) {
           assert.strictEqual(name, instance.formattedName_);
@@ -139,7 +137,7 @@ describe('Instance', function() {
         },
       });
 
-      instance = new Instance(spannerInstance, NAME);
+      const instance = new Instance(spannerInstance, NAME);
       assert(instance instanceof FakeGrpcServiceObject);
 
       const calledWith = instance.calledWith_[0];
