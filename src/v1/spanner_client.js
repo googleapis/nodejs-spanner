@@ -168,7 +168,7 @@ class SpannerClient {
       'partitionQuery',
       'partitionRead',
     ];
-    for (const methodName of spannerStubMethods) {
+    for (let methodName of spannerStubMethods) {
       this._innerApiCalls[methodName] = gax.createApiCall(
         spannerStub.then(
           stub =>

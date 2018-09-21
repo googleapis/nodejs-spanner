@@ -202,7 +202,7 @@ class DatabaseAdminClient {
       'getIamPolicy',
       'testIamPermissions',
     ];
-    for (const methodName of databaseAdminStubMethods) {
+    for (let methodName of databaseAdminStubMethods) {
       this._innerApiCalls[methodName] = gax.createApiCall(
         databaseAdminStub.then(
           stub =>
