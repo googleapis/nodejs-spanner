@@ -163,8 +163,8 @@ class Spanner extends Service {
       gapic.v1.InstanceAdminClient,
       gapic.v1.SpannerClient,
     ];
-    for (let clientClass of clientClasses) {
-      for (let scope of clientClass.scopes) {
+    for (const clientClass of clientClasses) {
+      for (const scope of clientClass.scopes) {
         if (scopes.indexOf(scope) === -1) {
           scopes.push(scope);
         }

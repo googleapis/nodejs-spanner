@@ -101,7 +101,7 @@ class RowBuilder {
   toJSON(rows) {
     return rows.map(values => {
       const formattedRow = values.map((value, index) => {
-        let field = this.fields[index];
+        const field = this.fields[index];
         return {
           name: field.name,
           value: RowBuilder.formatValue(field, value),

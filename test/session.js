@@ -198,7 +198,7 @@ describe('Session', function() {
     });
 
     it('should pass the transaction options', function(done) {
-      let OPTIONS = {};
+      const OPTIONS = {};
 
       session.transaction = function(options) {
         assert.strictEqual(options, OPTIONS);
@@ -222,7 +222,7 @@ describe('Session', function() {
     });
 
     it('should return any api errors', function(done) {
-      let ERROR = new Error('err');
+      const ERROR = new Error('err');
 
       TRANSACTION.begin = function(callback) {
         callback(ERROR, RESPONSE);
