@@ -225,7 +225,7 @@ class InstanceAdminClient {
       'getIamPolicy',
       'testIamPermissions',
     ];
-    for (const methodName of instanceAdminStubMethods) {
+    for (let methodName of instanceAdminStubMethods) {
       this._innerApiCalls[methodName] = gax.createApiCall(
         instanceAdminStub.then(
           stub =>
