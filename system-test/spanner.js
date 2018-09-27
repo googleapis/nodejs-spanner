@@ -1385,7 +1385,12 @@ describe('Spanner', function() {
       });
 
       it('should query in callback mode', function(done) {
-        database.run('SELECT * FROM Singers', function(err, rows) {
+        const options = {
+          readOnly: true,
+          strong: true,
+        };
+
+        database.run('SELECT * FROM Singers', options, function(err, rows) {
           assert.ifError(err);
           assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
           done();
@@ -1393,8 +1398,13 @@ describe('Spanner', function() {
       });
 
       it('should query in promise mode', function(done) {
+        const options = {
+          readOnly: true,
+          strong: true,
+        };
+
         database
-          .run('SELECT * FROM Singers')
+          .run('SELECT * FROM Singers', options)
           .then(function(data) {
             const rows = data[0];
             assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
@@ -1404,10 +1414,14 @@ describe('Spanner', function() {
       });
 
       it('should query in stream mode', function(done) {
+        const options = {
+          readOnly: true,
+          strong: true,
+        };
         let row;
 
         database
-          .runStream('SELECT * FROM Singers')
+          .runStream('SELECT * FROM Singers', options)
           .on('error', done)
           .once('data', function(row_) {
             row = row_;
