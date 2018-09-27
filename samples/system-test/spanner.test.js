@@ -332,12 +332,12 @@ test.serial(`should create query partitions`, async t => {
   const [transaction] = await database.createBatchTransaction();
   const identifier = JSON.stringify(transaction.identifier());
 
-  let results = await tools.runAsyncWithIO(
+  const results = await tools.runAsyncWithIO(
     `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
     cwd
   );
 
-  let output = results.stdout + results.stderr;
+  const output = results.stdout + results.stderr;
 
   t.regex(output, /Successfully created \d query partitions\./);
 
@@ -355,12 +355,12 @@ test.serial(`should execute a partition`, async t => {
   const [partitions] = await transaction.createQueryPartitions(query);
   const partition = JSON.stringify(partitions[0]);
 
-  let results = await tools.runAsyncWithIO(
+  const results = await tools.runAsyncWithIO(
     `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`,
     cwd
   );
 
-  let output = results.stdout + results.stderr;
+  const output = results.stdout + results.stderr;
 
   t.regex(output, /Successfully received \d from executed partition\./);
 

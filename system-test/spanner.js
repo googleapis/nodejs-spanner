@@ -3919,9 +3919,10 @@ describe('Spanner', function() {
         database.runTransaction(options, function(err, transaction) {
           if (attempts++ === 1) {
             assert.strictEqual(err.code, 4);
-            assert.strictEqual(
-              err.message,
-              'Deadline for Transaction exceeded.'
+            assert(
+              err.message.startsWith(
+                'Deadline for Transaction exceeded. - 10 ABORTED'
+              )
             );
 
             done();

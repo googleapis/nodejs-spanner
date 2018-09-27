@@ -225,7 +225,7 @@ class SessionPool extends EventEmitter {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
 
-    let {writes} = this.options;
+    const {writes} = this.options;
 
     if (writes < 0 || writes > 1) {
       throw new WritePercentError();
@@ -556,9 +556,9 @@ class SessionPool extends EventEmitter {
     let evicted = 0;
 
     while (count-- > maxIdle && size - evicted++ > min) {
-      let session = idle.pop();
-      let type = session.type;
-      let index = this._inventory[type].indexOf(session);
+      const session = idle.pop();
+      const type = session.type;
+      const index = this._inventory[type].indexOf(session);
 
       this._inventory[type].splice(index, 1);
       this._destroy(session);
@@ -652,8 +652,8 @@ class SessionPool extends EventEmitter {
     const timeout = this.options.acquireTimeout;
 
     if (!is.infinite(timeout)) {
-      let elapsed = Date.now() - startTime;
-      let remaining = timeout - elapsed;
+      const elapsed = Date.now() - startTime;
+      const remaining = timeout - elapsed;
 
       promises.push(delay.reject(remaining, {value: new TimeoutError()}));
     }

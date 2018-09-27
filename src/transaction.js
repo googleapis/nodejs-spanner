@@ -725,7 +725,7 @@ class Transaction extends TransactionRequest {
    * @return {object}
    */
   static createDeadlineError_(err) {
-    let apiError = new common.util.ApiError({
+    const apiError = new common.util.ApiError({
       message: 'Deadline for Transaction exceeded.',
       code: DEADLINE_EXCEEDED,
       errors: [err],

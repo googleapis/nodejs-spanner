@@ -168,7 +168,7 @@ class SpannerClient {
       'partitionQuery',
       'partitionRead',
     ];
-    for (let methodName of spannerStubMethods) {
+    for (const methodName of spannerStubMethods) {
       this._innerApiCalls[methodName] = gax.createApiCall(
         spannerStub.then(
           stub =>
@@ -548,12 +548,12 @@ class SpannerClient {
   }
 
   /**
-   * Executes an SQL query, returning all rows in a single reply. This
+   * Executes an SQL statement, returning all results in a single reply. This
    * method cannot be used to return a result set larger than 10 MiB;
    * if the query yields more data than that, the query fails with
    * a `FAILED_PRECONDITION` error.
    *
-   * Queries inside read-write transactions might return `ABORTED`. If
+   * Operations inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
    * the beginning. See Transaction for more details.
    *
@@ -565,14 +565,25 @@ class SpannerClient {
    * @param {string} request.session
    *   Required. The session in which the SQL query should be performed.
    * @param {string} request.sql
-   *   Required. The SQL query string.
+   *   Required. The SQL string.
    * @param {Object} [request.transaction]
    *   The transaction to use. If none is provided, the default is a
    *   temporary read-only transaction with strong concurrency.
    *
+   *   The transaction to use.
+   *
+   *   For queries, if none is provided, the default is a temporary read-only
+   *   transaction with strong concurrency.
+   *
+   *   Standard DML statements require a ReadWrite transaction. Single-use
+   *   transactions are not supported (to avoid replay).  The caller must
+   *   either supply an existing transaction ID or begin a new transaction.
+   *
+   *   Partitioned DML requires an existing PartitionedDml transaction ID.
+   *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL query string can contain parameter placeholders. A parameter
+   *   The SQL string can contain parameter placeholders. A parameter
    *   placeholder consists of `'@'` followed by the parameter
    *   name. Parameter names consist of any combination of letters,
    *   numbers, and underscores.
@@ -581,7 +592,7 @@ class SpannerClient {
    *   parameter name can be used more than once, for example:
    *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL query with unbound parameters.
+   *   It is an error to execute an SQL statement with unbound parameters.
    *
    *   Parameter values are specified using `params`, which is a JSON
    *   object whose keys are parameter names, and whose values are the
@@ -594,14 +605,14 @@ class SpannerClient {
    *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
-   *   SQL type for some or all of the SQL query parameters. See the
+   *   SQL type for some or all of the SQL statement parameters. See the
    *   definition of Type for more information
    *   about SQL types.
    * @param {string} [request.resumeToken]
-   *   If this request is resuming a previously interrupted SQL query
+   *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
    *   PartialResultSet yielded before the interruption. Doing this
-   *   enables the new SQL query execution to resume where the last one left
+   *   enables the new SQL statement execution to resume where the last one left
    *   off. The rest of the request parameters must exactly match the
    *   request that yielded this token.
    * @param {number} [request.queryMode]
@@ -615,6 +626,17 @@ class SpannerClient {
    *   previously created using PartitionQuery().  There must be an exact
    *   match for the values of fields common to this message and the
    *   PartitionQueryRequest message used to create this partition_token.
+   * @param {number} [request.seqno]
+   *   A per-transaction sequence number used to identify this request. This
+   *   makes each request idempotent such that if the request is received multiple
+   *   times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
+   *
+   *   Required for DML statements. Ignored for queries.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
@@ -671,14 +693,25 @@ class SpannerClient {
    * @param {string} request.session
    *   Required. The session in which the SQL query should be performed.
    * @param {string} request.sql
-   *   Required. The SQL query string.
+   *   Required. The SQL string.
    * @param {Object} [request.transaction]
    *   The transaction to use. If none is provided, the default is a
    *   temporary read-only transaction with strong concurrency.
    *
+   *   The transaction to use.
+   *
+   *   For queries, if none is provided, the default is a temporary read-only
+   *   transaction with strong concurrency.
+   *
+   *   Standard DML statements require a ReadWrite transaction. Single-use
+   *   transactions are not supported (to avoid replay).  The caller must
+   *   either supply an existing transaction ID or begin a new transaction.
+   *
+   *   Partitioned DML requires an existing PartitionedDml transaction ID.
+   *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL query string can contain parameter placeholders. A parameter
+   *   The SQL string can contain parameter placeholders. A parameter
    *   placeholder consists of `'@'` followed by the parameter
    *   name. Parameter names consist of any combination of letters,
    *   numbers, and underscores.
@@ -687,7 +720,7 @@ class SpannerClient {
    *   parameter name can be used more than once, for example:
    *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL query with unbound parameters.
+   *   It is an error to execute an SQL statement with unbound parameters.
    *
    *   Parameter values are specified using `params`, which is a JSON
    *   object whose keys are parameter names, and whose values are the
@@ -700,14 +733,14 @@ class SpannerClient {
    *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
-   *   SQL type for some or all of the SQL query parameters. See the
+   *   SQL type for some or all of the SQL statement parameters. See the
    *   definition of Type for more information
    *   about SQL types.
    * @param {string} [request.resumeToken]
-   *   If this request is resuming a previously interrupted SQL query
+   *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
    *   PartialResultSet yielded before the interruption. Doing this
-   *   enables the new SQL query execution to resume where the last one left
+   *   enables the new SQL statement execution to resume where the last one left
    *   off. The rest of the request parameters must exactly match the
    *   request that yielded this token.
    * @param {number} [request.queryMode]
@@ -721,6 +754,17 @@ class SpannerClient {
    *   previously created using PartitionQuery().  There must be an exact
    *   match for the values of fields common to this message and the
    *   PartitionQueryRequest message used to create this partition_token.
+   * @param {number} [request.seqno]
+   *   A per-transaction sequence number used to identify this request. This
+   *   makes each request idempotent such that if the request is received multiple
+   *   times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
+   *
+   *   Required for DML statements. Ignored for queries.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
@@ -1148,8 +1192,11 @@ class SpannerClient {
    * of the query result to read.  The same session and read-only transaction
    * must be used by the PartitionQueryRequest used to create the
    * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+   *
    * Partition tokens become invalid when the session used to create them
-   * is deleted or begins a new transaction.
+   * is deleted, is idle for too long, begins a new transaction, or becomes too
+   * old.  When any of these happen, it is not possible to resume the query, and
+   * the whole operation must be restarted from the beginning.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1162,6 +1209,10 @@ class SpannerClient {
    *   union operator conceptually divides one or more tables into multiple
    *   splits, remotely evaluates a subquery independently on each split, and
    *   then unions all results.
+   *
+   *   This must not contain DML commands, such as INSERT, UPDATE, or
+   *   DELETE. Use ExecuteStreamingSql with a
+   *   PartitionedDml transaction for large, partition-friendly DML operations.
    * @param {Object} [request.transaction]
    *   Read only snapshot transactions are supported, read/write and single use
    *   transactions are not.
@@ -1247,9 +1298,14 @@ class SpannerClient {
    * by StreamingRead to specify a subset of the read
    * result to read.  The same session and read-only transaction must be used by
    * the PartitionReadRequest used to create the partition tokens and the
-   * ReadRequests that use the partition tokens.
+   * ReadRequests that use the partition tokens.  There are no ordering
+   * guarantees on rows returned among the returned partition tokens, or even
+   * within each individual StreamingRead call issued with a partition_token.
+   *
    * Partition tokens become invalid when the session used to create them
-   * is deleted or begins a new transaction.
+   * is deleted, is idle for too long, begins a new transaction, or becomes too
+   * old.  When any of these happen, it is not possible to resume the read, and
+   * the whole operation must be restarted from the beginning.
    *
    * @param {Object} request
    *   The request object that will be sent.

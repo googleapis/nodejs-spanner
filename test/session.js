@@ -188,8 +188,8 @@ describe('Session', function() {
   });
 
   describe('beginTransaction', function() {
-    var TRANSACTION;
-    var RESPONSE;
+    let TRANSACTION;
+    let RESPONSE;
 
     beforeEach(function() {
       TRANSACTION = {begin: util.noop};
@@ -198,7 +198,7 @@ describe('Session', function() {
     });
 
     it('should pass the transaction options', function(done) {
-      var OPTIONS = {};
+      const OPTIONS = {};
 
       session.transaction = function(options) {
         assert.strictEqual(options, OPTIONS);
@@ -222,7 +222,7 @@ describe('Session', function() {
     });
 
     it('should return any api errors', function(done) {
-      var ERROR = new Error('err');
+      const ERROR = new Error('err');
 
       TRANSACTION.begin = function(callback) {
         callback(ERROR, RESPONSE);
