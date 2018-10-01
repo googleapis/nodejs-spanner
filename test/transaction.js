@@ -135,6 +135,10 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.transaction, true);
     });
 
+    it('should track the number of attempts made', function() {
+      assert.strictEqual(transaction.attempts_, 0);
+    });
+
     it('should initialize an empty queue', function() {
       assert.deepStrictEqual(transaction.queuedMutations_, []);
     });
@@ -211,7 +215,7 @@ describe('Transaction', function() {
   });
 
   describe('getRetryDelay_', function() {
-    it('should return the retry delay', function() {
+    it('should return the retry delay when available', function() {
       const fakeError = new Error('err');
       const fakeRetryInfo = Buffer.from('hi');
 
@@ -244,6 +248,32 @@ describe('Transaction', function() {
       const delay = Transaction.getRetryDelay_(fakeError);
 
       assert.strictEqual(delay, expectedDelay);
+    });
+
+    it('should create backoff from counter when delay is absent', function() {
+      const fakeError = new Error('err');
+
+      fakeError.metadata = {
+        get: function() {
+          return [];
+        },
+      };
+
+      const random = Math.random();
+      const _random = Math.random;
+
+      global.Math.random = function() {
+        return random;
+      };
+
+      const attempts = 3;
+      const expectedDelay =
+        Math.pow(2, attempts) * 1000 + Math.floor(random * 1000);
+      const delay = Transaction.getRetryDelay_(fakeError, attempts);
+
+      assert.strictEqual(delay, expectedDelay);
+
+      global.Math.random = _random;
     });
   });
 
@@ -310,6 +340,14 @@ describe('Transaction', function() {
         transaction.request = function(config, callback) {
           callback(null, API_RESPONSE);
         };
+      });
+
+      it('should increment the attempts property', function(done) {
+        transaction.begin(function(err) {
+          assert.ifError(err);
+          assert.strictEqual(transaction.attempts_, 1);
+          done();
+        });
       });
 
       it('should set ended_ to false', function(done) {
@@ -496,6 +534,13 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.runFn_, null);
     });
 
+    it('should reset the attempts property', function() {
+      transaction.attempts_ = 100;
+      transaction.end();
+
+      assert.strictEqual(transaction.attempts_, 0);
+    });
+
     it('should delete the ID', function() {
       transaction.id = 'transaction-id';
 
@@ -602,8 +647,11 @@ describe('Transaction', function() {
       });
 
       it('should retry the txn if abort occurs', function(done) {
-        Transaction.getRetryDelay_ = function(err) {
+        const attempts_ = 123;
+
+        Transaction.getRetryDelay_ = function(err, attempts) {
           assert.strictEqual(err, abortedError);
+          assert.strictEqual(attempts, attempts_);
           return fakeDelay;
         };
 
@@ -620,6 +668,8 @@ describe('Transaction', function() {
         transaction.runFn_ = function() {
           done(new Error('Should not have been called.'));
         };
+
+        transaction.attempts_ = attempts_;
 
         transaction.request(config, function() {
           done(new Error('Should not have been called.'));
@@ -752,10 +802,12 @@ describe('Transaction', function() {
       it('should retry the transaction for UNKNOWN', function(done) {
         const error = {code: 2};
         const fakeDelay = 123;
+        const attempts_ = 321;
         const getRetryDelay = Transaction.getRetryDelay_;
 
-        Transaction.getRetryDelay_ = function(err) {
+        Transaction.getRetryDelay_ = function(err, attempts) {
           assert.strictEqual(err, error);
+          assert.strictEqual(attempts, attempts_);
           Transaction.getRetryDelay_ = getRetryDelay;
           return fakeDelay;
         };
@@ -766,6 +818,7 @@ describe('Transaction', function() {
         };
 
         transaction.runFn_ = done; // should not be called
+        transaction.attempts_ = attempts_;
 
         transaction.retry_ = function(delay) {
           assert.strictEqual(delay, fakeDelay);
@@ -1227,15 +1280,6 @@ describe('Transaction', function() {
 
     it('should not retry if deadline is exceeded', function() {
       transaction.timeout_ = 1;
-      transaction.beginTime_ = Date.now() - 2;
-
-      const shouldRetry = transaction.shouldRetry_(abortedError);
-      assert.strictEqual(shouldRetry, false);
-    });
-
-    it('should not retry if retry info metadata is absent', function() {
-      transaction.runFn_ = function() {};
-      transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
 
       const shouldRetry = transaction.shouldRetry_(abortedError);
