@@ -3652,6 +3652,241 @@ describe('Spanner', () => {
       });
     });
 
+    describe('dml', () => {
+      before(done => {
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction.runUpdate(
+            {
+              sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+              params: {
+                key: 'k999',
+                str: 'abc',
+              },
+            },
+            err => {
+              assert.ifError(err);
+              transaction.commit(done);
+            }
+          );
+        });
+      });
+
+      it('should return rowCount from runUpdate', done => {
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction.runUpdate(
+            {
+              sql:
+                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              params: {
+                key: 'k999',
+                str: 'abcd',
+              },
+            },
+            (err, rowCount) => {
+              assert.ifError(err);
+              assert.strictEqual(rowCount, 1);
+              transaction.rollback(done);
+            }
+          );
+        });
+      });
+
+      it('should return rowCount from run', done => {
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction.run(
+            {
+              sql:
+                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              params: {
+                key: 'k999',
+                str: 'abcd',
+              },
+            },
+            (err, row, stats) => {
+              assert.ifError(err);
+
+              const rowCount = parseInt(stats[stats.rowCount], 10);
+              assert.strictEqual(rowCount, 1);
+
+              transaction.rollback(done);
+            }
+          );
+        });
+      });
+
+      it('should exec multiple dml statements on the same txn', done => {
+        const key = 'k1000';
+        const str = 'abcd';
+        const num = 11;
+
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction
+            .runUpdate({
+              sql:
+                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+              params: {key, str},
+            })
+            .then(data => {
+              const rowCount = data[0];
+              assert.strictEqual(rowCount, 1);
+
+              return transaction.runUpdate({
+                sql:
+                  'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+                params: {key, num},
+              });
+            })
+            .then(data => {
+              const rowCount = data[0];
+              assert.strictEqual(rowCount, 1);
+
+              return transaction.run({
+                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                params: {key},
+              });
+            })
+            .then(data => {
+              const rows = data[0].map(row => row.toJSON());
+
+              assert.strictEqual(rows.length, 1);
+              assert.deepStrictEqual(rows[0], {
+                Key: key,
+                StringValue: str,
+                NumberValue: num,
+              });
+
+              return transaction.rollback();
+            })
+            .then(() => done(), done);
+        });
+      });
+
+      it('should show dml changes in query results', done => {
+        const key = 'k999';
+        const str = 'abcd';
+
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction
+            .runUpdate({
+              sql:
+                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              params: {key, str},
+            })
+            .then(() => {
+              return transaction.run({
+                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                params: {key},
+              });
+            })
+            .then(data => {
+              const rows = data[0].map(row => row.toJSON());
+
+              assert.strictEqual(rows.length, 1);
+              assert.strictEqual(rows[0].StringValue, str);
+            })
+            .then(() => transaction.rollback(done), done);
+        });
+      });
+
+      it('should rollback a dml statement', done => {
+        const key = 'k999';
+        const str = 'abcd';
+
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction
+            .runUpdate({
+              sql:
+                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              params: {key, str},
+            })
+            .then(() => transaction.rollback())
+            .then(() => {
+              return database.run({
+                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                params: {key},
+              });
+            })
+            .then(data => {
+              const rows = data[0].map(row => row.toJSON());
+              assert.notStrictEqual(rows[0].StringValue, str);
+              done();
+            })
+            .catch(done);
+        });
+      });
+
+      it('should handle using both dml and insert methods', function(done) {
+        const str = 'dml+mutation';
+
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction
+            .runUpdate({
+              sql:
+                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+              params: {
+                key: 'k1001',
+                str,
+              },
+            })
+            .then(() => {
+              transaction.insert('TxnTable', {
+                Key: 'k1002',
+                StringValue: str,
+              });
+
+              return transaction.commit();
+            })
+            .then(() => {
+              return database.run({
+                sql: 'SELECT * FROM TxnTable WHERE StringValue = @str',
+                params: {str},
+              });
+            })
+            .then(data => {
+              const rows = data[0];
+
+              assert.strictEqual(rows.length, 2);
+              done();
+            })
+            .catch(done);
+        });
+      });
+    });
+
+    describe('pdml', () => {
+      it('should execute a simple pdml statement', done => {
+        database.runPartitionedUpdate(
+          {
+            sql:
+              'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+            params: {
+              key: 'k1',
+              str: 'abcde',
+            },
+          },
+          (err, rowCount) => {
+            assert.ifError(err);
+            assert.strictEqual(rowCount, 1);
+            done();
+          }
+        );
+      });
+    });
+
     describe('read/write', () => {
       it('should throw an error for mismatched columns', done => {
         database.runTransaction((err, transaction) => {
@@ -4059,14 +4294,14 @@ function execAfterOperationComplete(callback) {
   };
 }
 
-function deleteTestInstances(callback) {
+function deleteTestInstances(done) {
   spanner.getInstances(
     {
       filter: 'labels.gcloud-tests:true',
     },
     (err, instances) => {
       if (err) {
-        callback(err);
+        done(err);
         return;
       }
 
@@ -4078,7 +4313,7 @@ function deleteTestInstances(callback) {
             instance.delete(callback);
           }, 500); // Delay allows the instance and its databases to fully clear.
         },
-        callback
+        done
       );
     }
   );
