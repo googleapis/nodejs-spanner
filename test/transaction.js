@@ -139,6 +139,10 @@ describe('Transaction', () => {
       assert.strictEqual(transaction.attempts_, 0);
     });
 
+    it('should initialize the seqno property', () => {
+      assert.strictEqual(transaction.seqno, 1);
+    });
+
     it('should initialize an empty queue', () => {
       assert.deepStrictEqual(transaction.queuedMutations_, []);
     });
@@ -312,6 +316,22 @@ describe('Transaction', () => {
             readWrite: {},
           },
         });
+        done();
+      };
+
+      transaction.begin(assert.ifError);
+    });
+
+    it('should send the partitioned options', done => {
+      transaction.partitioned = true;
+
+      transaction.request = function(config) {
+        assert.deepStrictEqual(config.reqOpts, {
+          options: {
+            partitionedDml: {},
+          },
+        });
+
         done();
       };
 
@@ -966,6 +986,7 @@ describe('Transaction', () => {
       const query = {};
 
       const rows = [{}, {}];
+      const fakeStats = {};
 
       transaction.runStream = function(query_) {
         assert.strictEqual(query_, query);
@@ -973,6 +994,8 @@ describe('Transaction', () => {
         const stream = through.obj();
 
         setImmediate(() => {
+          stream.emit('stats', fakeStats);
+
           split(rows, stream).then(() => {
             stream.end();
           });
@@ -981,9 +1004,10 @@ describe('Transaction', () => {
         return stream;
       };
 
-      transaction.run(query, (err, rows_) => {
+      transaction.run(query, (err, rows_, stats) => {
         assert.ifError(err);
         assert.deepStrictEqual(rows_, rows);
+        assert.strictEqual(stats, fakeStats);
         done();
       });
     });
@@ -1162,7 +1186,65 @@ describe('Transaction', () => {
     });
   });
 
-  describe('retry_', () => {
+  describe('runUpdate', () => {
+    it('should run the query', done => {
+      const fakeQuery = {sql: 'SELECT 1'};
+      const expectedQuery = extend({seqno: transaction.seqno}, fakeQuery);
+
+      transaction.run = function(query) {
+        assert.deepStrictEqual(query, expectedQuery);
+        done();
+      };
+
+      transaction.runUpdate(fakeQuery, assert.ifError);
+    });
+
+    it('should accept a sql string', done => {
+      const fakeQuery = 'SELECT 1';
+      const expectedQuery = {
+        sql: fakeQuery,
+        seqno: transaction.seqno,
+      };
+
+      transaction.run = function(query) {
+        assert.deepStrictEqual(query, expectedQuery);
+        done();
+      };
+
+      transaction.runUpdate(fakeQuery, assert.ifError);
+    });
+
+    it('should return any request errors', done => {
+      const error = new Error('err');
+
+      transaction.run = function(query, callback) {
+        callback(error);
+      };
+
+      transaction.runUpdate({}, err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should return the rowCount if available', done => {
+      const stats = {
+        rowCount: 'rowCountExact',
+        rowCountExact: 5,
+      };
+
+      transaction.run = function(query, callback) {
+        callback(null, [], stats);
+      };
+
+      transaction.runUpdate({}, (err, rowCount) => {
+        assert.strictEqual(rowCount, stats.rowCountExact);
+        done();
+      });
+    });
+  });
+
+  describe('retry_', function() {
     it('should begin the transaction', done => {
       transaction.begin = function() {
         done();

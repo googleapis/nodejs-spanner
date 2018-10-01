@@ -99,6 +99,9 @@ describe('PartialResultStream', () => {
     resumeToken: '...',
     values: [],
   };
+  const RESULT_WITH_STATS = extend(RESULT_WITH_TOKEN, {
+    stats: {},
+  });
 
   before(() => {
     partialResultStreamModule = proxyquire('../src/partial-result-stream.js', {
@@ -202,6 +205,21 @@ describe('PartialResultStream', () => {
           done();
         })
       );
+    });
+
+    it('should emit the row stats', done => {
+      setImmediate(() => {
+        fakeRequestStream.push(RESULT_WITH_STATS);
+        fakeRequestStream.push(null);
+      });
+
+      partialResultStream
+        .on('error', done)
+        .on('data', () => {})
+        .on('stats', stats => {
+          assert.strictEqual(stats, RESULT_WITH_STATS.stats);
+          done();
+        });
     });
 
     describe('RowBuilder', () => {

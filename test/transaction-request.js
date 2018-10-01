@@ -90,6 +90,10 @@ describe('TransactionRequest', () => {
       assert.strictEqual(transactionRequest.readOnly, false);
     });
 
+    it('should default partitioned to false', () => {
+      assert.strictEqual(transactionRequest.partitioned, false);
+    });
+
     it('should localize the transaction options', () => {
       const UNFORMATTED_OPTIONS = {
         b: 'b',
@@ -134,6 +138,14 @@ describe('TransactionRequest', () => {
       });
 
       assert.strictEqual(transaction.readOnly, true);
+    });
+
+    it('should capture the partitioned option', () => {
+      const transaction = new TransactionRequest({
+        partitioned: true,
+      });
+
+      assert.strictEqual(transaction.partitioned, true);
     });
 
     it('should promisify all the things', () => {
