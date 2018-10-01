@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const stats = require('stats-lite');
 
-const Spanner = require('../src');
+const {Spanner} = require('../');
 const Workload = require('./workload');
 
 require('yargs')
@@ -80,7 +80,7 @@ function printMetrics(workload) {
 
   console.log(
     dedent`[OVERALL], RunTime(ms), ${workload.duration}
-    [OVERALL], Throughput(ops/sec), ${totalOps / workload.duration}`
+    [OVERALL], Throughput(ops/sec), ${totalOps / (workload.duration / 1000)}`
   );
 
   workload.operations.forEach(operation => {
