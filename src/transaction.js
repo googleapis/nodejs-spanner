@@ -134,6 +134,7 @@ class Transaction extends TransactionRequest {
      */
     this.transaction = true;
 
+    this.attempts_ = 0;
     this.queuedMutations_ = [];
     this.runFn_ = null;
     this.beginTime_ = null;
@@ -202,6 +203,7 @@ class Transaction extends TransactionRequest {
           callback(err);
           return;
         }
+        self.attempts_ += 1;
         self.ended_ = false;
         self.id = resp.id;
         self.metadata = resp;
@@ -324,6 +326,7 @@ class Transaction extends TransactionRequest {
     this.ended_ = true;
     this.queuedMutations_ = [];
     this.runFn_ = null;
+    this.attempts_ = 0;
     delete this.id;
     if (is.fn(callback)) {
       callback();
@@ -359,7 +362,7 @@ class Transaction extends TransactionRequest {
         return;
       }
       if (self.shouldRetry_(err)) {
-        self.retry_(Transaction.getRetryDelay_(err));
+        self.retry_(Transaction.getRetryDelay_(err, self.attempts_));
         return;
       }
       self.runFn_(Transaction.createDeadlineError_(err));
@@ -393,7 +396,7 @@ class Transaction extends TransactionRequest {
       }
       userStream.destroy();
       if (self.shouldRetry_(err)) {
-        self.retry_(Transaction.getRetryDelay_(err));
+        self.retry_(Transaction.getRetryDelay_(err, self.attempts_));
         return;
       }
       self.runFn_(Transaction.createDeadlineError_(err));
@@ -702,8 +705,7 @@ class Transaction extends TransactionRequest {
     return (
       this.isRetryableErrorCode_(err.code) &&
       is.fn(this.runFn_) &&
-      Date.now() - this.beginTime_ < this.timeout_ &&
-      err.metadata.get(RETRY_INFO_KEY).length > 0
+      Date.now() - this.beginTime_ < this.timeout_
     );
   }
   /**
@@ -741,12 +743,17 @@ class Transaction extends TransactionRequest {
    * @param {error} error A request error.
    * @return {number}
    */
-  static getRetryDelay_(err) {
-    const retryInfo = err.metadata.get(RETRY_INFO_KEY)[0];
-    const retryDelay = RetryInfo.decode(retryInfo).retryDelay;
-    const seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
-    const milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
-    return seconds + milliseconds;
+  static getRetryDelay_(err, attempts) {
+    const retryInfo = err.metadata.get(RETRY_INFO_KEY);
+
+    if (retryInfo && retryInfo.length) {
+      const retryDelay = RetryInfo.decode(retryInfo[0]).retryDelay;
+      const seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
+      const milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
+      return seconds + milliseconds;
+    }
+
+    return Math.pow(2, attempts) * 1000 + Math.floor(Math.random() * 1000);
   }
 }
 
