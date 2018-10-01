@@ -113,10 +113,9 @@ class Workload {
     const field = `field${random(9)}`;
     const value = crypto.randomBytes(100).toString('hex');
 
-    return this.database.getTransaction().then(data => {
-      const txn = data[0];
-      txn.update(tableName, {id, [field]: value});
-      return txn.commit();
+    return this.database.runTransactionAsync(transaction => {
+      transaction.update(tableName, {id, [field]: value});
+      return transaction.commit();
     });
   }
 }
