@@ -185,6 +185,8 @@ class Session extends ServiceObject {
     });
 
     this.request = database.request;
+    this.requestStream = database.requestStream;
+
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }

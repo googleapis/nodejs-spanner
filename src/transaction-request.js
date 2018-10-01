@@ -37,10 +37,17 @@ const PartialResultStream = require('./partial-result-stream');
 class TransactionRequest {
   constructor(options) {
     this.readOnly = false;
+    this.partitioned = false;
+
     if (options && !is.empty(options)) {
       options = extend({}, options);
+
       this.readOnly = !!options.readOnly;
       delete options.readOnly;
+
+      this.partitioned = !!options.partitioned;
+      delete options.partitioned;
+
       this.options = TransactionRequest.formatTimestampOptions_(options);
     }
   }

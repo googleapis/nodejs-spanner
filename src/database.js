@@ -892,7 +892,10 @@ class Database extends ServiceObject {
       callback = options;
       options = null;
     }
-    if (!options || !options.readOnly) {
+
+    const isReadWrite = !options || (!options.readOnly && !options.partitioned);
+
+    if (isReadWrite) {
       this.pool_.getWriteSession((err, session, transaction) => {
         if (!err) {
           transaction = this.decorateTransaction_(transaction, session);
@@ -1010,6 +1013,7 @@ class Database extends ServiceObject {
    * @param {array[]} rows Rows are returned as an array of objects. Each object
    *     has a `name` and `value` property. To get a serialized object, call
    *     `toJSON()`.
+   * @param {object} stats Stats returned for the provided SQL statement.
    */
   /**
    * Execute a SQL statement on this database.
@@ -1159,6 +1163,41 @@ class Database extends ServiceObject {
       });
   }
   /**
+   * Partitioned DML transactions are used to execute DML statements with a
+   * different execution strategy that provides different, and often better,
+   * scalability properties for large, table-wide operations than DML in a
+   * ReadWrite transaction. Smaller scoped statements, such as an OLTP workload,
+   * should prefer using ReadWrite transactions.
+   *
+   * @see {@link Transaction#runUpdate}
+   *
+   * @param {string|object} query A DML statement or
+   *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+   *     object.
+   * @param {object} [query.params] A map of parameter name to values.
+   * @param {object} [query.types] A map of parameter types.
+   * @param {RunUpdateCallback} [callback] Callback function.
+   * @returns {Promise<RunUpdateResponse>}
+   */
+  runPartitionedUpdate(query, callback) {
+    this.getTransaction(
+      {
+        partitioned: true,
+      },
+      function(err, transaction) {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+
+        transaction.runUpdate(query, function(runErr, rowCount) {
+          transaction.end();
+          callback(runErr, rowCount);
+        });
+      }
+    );
+  }
+  /**
    * Create a readable object stream to receive resulting rows from a SQL
    * statement.
    *
@@ -1171,7 +1210,7 @@ class Database extends ServiceObject {
    * @fires PartialResultStream#response
    *
    * @param {string|object} query A SQL query or query object. See an
-   *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+   *     [ExecuteSqlFequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
    *     object.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.types] A map of parameter types.
