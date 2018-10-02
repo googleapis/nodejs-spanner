@@ -146,39 +146,6 @@ class Database extends ServiceObject {
        *   });
        */
       create: true,
-      /**
-       * @typedef {array} DatabaseExistsResponse
-       * @property {boolean} 0 Whether the {@link Database} exists.
-       */
-      /**
-       * @callback DatabaseExistsCallback
-       * @param {?Error} err Request error, if any.
-       * @param {boolean} exists Whether the {@link Database} exists.
-       */
-      /**
-       * Check if a database exists.
-       *
-       * @method Database#exists
-       * @param {DatabaseExistsCallback} [callback] Callback function.
-       * @returns {Promise<DatabaseExistsResponse>}
-       *
-       * @example
-       * const {Spanner} = require('@google-cloud/spanner');
-       * const spanner = new Spanner();
-       *
-       * const instance = spanner.instance('my-instance');
-       * const database = instance.database('my-database');
-       *
-       * database.exists(function(err, exists) {});
-       *
-       * //-
-       * // If the callback is omitted, we'll return a Promise.
-       * //-
-       * database.exists().then(function(data) {
-       *   const exists = data[0];
-       * });
-       */
-      exists: true,
     };
 
     const formattedName_ = Database.formatName_(instance.formattedName_, name);
@@ -545,6 +512,51 @@ class Database extends ServiceObject {
         },
         callback
       );
+    });
+  }
+  /**
+   * @typedef {array} DatabaseExistsResponse
+   * @property {boolean} 0 Whether the {@link Database} exists.
+   */
+  /**
+   * @callback DatabaseExistsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {boolean} exists Whether the {@link Database} exists.
+   */
+  /**
+   * Check if a database exists.
+   *
+   * @method Database#exists
+   * @param {DatabaseExistsCallback} [callback] Callback function.
+   * @returns {Promise<DatabaseExistsResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * database.exists(function(err, exists) {});
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * database.exists().then(function(data) {
+   *   const exists = data[0];
+   * });
+   */
+  exists(callback) {
+    const NOT_FOUND = 5;
+
+    this.getMetadata(function(err) {
+      if (err && err.code !== NOT_FOUND) {
+        callback(err, null);
+        return;
+      }
+
+      const exists = !err || err.code !== NOT_FOUND;
+      callback(null, exists);
     });
   }
   /**

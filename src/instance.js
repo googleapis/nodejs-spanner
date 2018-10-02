@@ -91,38 +91,6 @@ class Instance extends common.ServiceObject {
        *   });
        */
       create: true,
-      /**
-       * @typedef {array} InstanceExistsResponse
-       * @property {boolean} 0 Whether the {@link Instance} exists.
-       */
-      /**
-       * @callback InstanceExistsCallback
-       * @param {?Error} err Request error, if any.
-       * @param {boolean} exists Whether the {@link Instance} exists.
-       */
-      /**
-       * Check if an instance exists.
-       *
-       * @method Instance#exists
-       * @param {InstanceExistsCallback} [callback] Callback function.
-       * @returns {Promise<InstanceExistsResponse>}
-       *
-       * @example
-       * const {Spanner} = require('@google-cloud/spanner');
-       * const spanner = new Spanner();
-       *
-       * const instance = spanner.instance('my-instance');
-       *
-       * instance.exists(function(err, exists) {});
-       *
-       * //-
-       * // If the callback is omitted, we'll return a Promise.
-       * //-
-       * instance.exists().then(function(data) {
-       *   const exists = data[0];
-       * });
-       */
-      exists: true,
     };
     super({
       parent: spanner,
@@ -362,6 +330,50 @@ class Instance extends common.ServiceObject {
           }
         );
       });
+  }
+  /**
+   * @typedef {array} InstanceExistsResponse
+   * @property {boolean} 0 Whether the {@link Instance} exists.
+   */
+  /**
+   * @callback InstanceExistsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {boolean} exists Whether the {@link Instance} exists.
+   */
+  /**
+   * Check if an instance exists.
+   *
+   * @method Instance#exists
+   * @param {InstanceExistsCallback} [callback] Callback function.
+   * @returns {Promise<InstanceExistsResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   *
+   * instance.exists(function(err, exists) {});
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * instance.exists().then(function(data) {
+   *   const exists = data[0];
+   * });
+   */
+  exists(callback) {
+    const NOT_FOUND = 5;
+
+    this.getMetadata(function(err) {
+      if (err && err.code !== NOT_FOUND) {
+        callback(err, null);
+        return;
+      }
+
+      const exists = !err || err.code !== NOT_FOUND;
+      callback(null, exists);
+    });
   }
   /**
    * @typedef {array} GetInstanceResponse

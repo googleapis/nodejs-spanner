@@ -733,6 +733,22 @@ describe('Spanner', function() {
         })
       );
     });
+
+    it('should return true for instances that exist', function(done) {
+      instance.exists(function(err, exists) {
+        assert.ifError(err);
+        assert.strictEqual(exists, true);
+        done();
+      });
+    });
+
+    it('should return false for instances that do not exist', function(done) {
+      spanner.instance('bad-instance').exists(function(err, exists) {
+        assert.ifError(err);
+        assert.strictEqual(exists, false);
+        done();
+      });
+    });
   });
 
   describe('instanceConfigs', function() {
@@ -832,6 +848,22 @@ describe('Spanner', function() {
             done();
           })
         );
+    });
+
+    it('should return true for databases that exist', function(done) {
+      database.exists(function(err, exists) {
+        assert.ifError(err);
+        assert.strictEqual(exists, true);
+        done();
+      });
+    });
+
+    it('should return false for databases that do not exist', function(done) {
+      instance.database('bad-database').exists(function(err, exists) {
+        assert.ifError(err);
+        assert.strictEqual(exists, false);
+        done();
+      });
     });
 
     it('should create a table', function(done) {
