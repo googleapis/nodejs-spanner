@@ -650,6 +650,7 @@ class Instance extends common.ServiceObject {
    *
    * @param {string} projectId The project ID.
    * @param {string} name The instance name.
+   * @returns {string}
    *
    * @example
    * Instance.formatName_('grape-spaceship-123', 'my-instance');

@@ -360,6 +360,7 @@ class Session extends ServiceObject {
    *
    * @param {string} databaseName The parent database's name.
    * @param {string} name The instance name.
+   * @returns {string}
    *
    * @example
    * Session.formatName_('my-database', 'my-session');

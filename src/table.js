@@ -129,7 +129,6 @@ class Table extends TransactionRequest {
    * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
-   * @param {string} table The table to read from.
    * @param {ReadStreamRequestOptions} query Configuration object. See
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
    * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
@@ -515,13 +514,13 @@ class Table extends TransactionRequest {
    * region_tag:spanner_read_data_with_storing_index
    * Reading data using a storing index:
    */
-  read(keyVals, options, callback) {
+  read(query, options, callback) {
     const rows = [];
     if (is.fn(options)) {
       callback = options;
       options = null;
     }
-    this.createReadStream(keyVals, options)
+    this.createReadStream(query, options)
       .on('error', callback)
       .on('data', function(row) {
         rows.push(row);

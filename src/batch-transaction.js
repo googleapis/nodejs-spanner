@@ -140,7 +140,7 @@ class BatchTransaction extends Transaction {
    * @private
    *
    * @param {object} config The request config.
-   * @param {function} Callback function.
+   * @param {function} callback Callback function.
    */
   createPartitions_(config, callback) {
     const self = this;
