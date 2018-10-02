@@ -386,7 +386,6 @@ class Table extends TransactionRequest {
    */
   /**
    * @typedef {array} TableReadResponse
-   * @property {Table} 0 The new {@link Table}.
    * @property {array[]} 1 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
