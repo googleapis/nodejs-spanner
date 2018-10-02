@@ -152,7 +152,6 @@ class Transaction extends TransactionRequest {
    *
    * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
    *
-   * @param {object=} options Timestamp bound options.
    * @param {function} callback The callback function.
    * @param {?error} callback.err An error returned while making this request.
    * @param {object} callback.apiResponse The full API response.
@@ -336,6 +335,8 @@ class Transaction extends TransactionRequest {
    * Queue a mutation until {@link Transaction#commit} is called.
    *
    * @private
+   *
+   * @param {object} mutation Mutation to send when transaction is committed.
    */
   queue_(mutation) {
     this.queuedMutations_.push(mutation);
@@ -408,6 +409,8 @@ class Transaction extends TransactionRequest {
    * determined delay.
    *
    * @private
+   *
+   * @param {number} delay Delay to wait before retrying transaction.
    */
   retry_(delay) {
     const self = this;
@@ -740,7 +743,9 @@ class Transaction extends TransactionRequest {
    *
    * @private
    *
-   * @param {error} error A request error.
+   * @param {error} err A request error.
+   * @param {number} attempts Number of attempts made, used for generating
+   *     backoff when retry info is absent.
    * @return {number}
    */
   static getRetryDelay_(err, attempts) {

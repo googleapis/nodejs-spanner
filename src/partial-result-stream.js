@@ -38,9 +38,10 @@ const RowBuilder = require('./row-builder');
  * @private
  *
  * @class
- * @param {function} requestFn - The function that makes an API request. It will
+ * @param {function} requestFn The function that makes an API request. It will
  *     receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
+ * @param {object} options Request options
  */
 function partialResultStream(requestFn, options) {
   let lastResumeToken;

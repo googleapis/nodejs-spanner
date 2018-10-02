@@ -615,6 +615,9 @@ class Spanner extends Service {
    * {{projectId}} placeholders, if necessary.
    *
    * @private
+   *
+   * @param {object} config Request config
+   * @param {function} callback Callback function
    */
   prepareGapicRequest_(config, callback) {
     const self = this;
@@ -647,6 +650,7 @@ class Spanner extends Service {
    * @param {function} config.method The gax method to call.
    * @param {object} config.reqOpts Request options.
    * @param {function} [callback] Callback function.
+   * @returns {Promise}
    */
   request(config, callback) {
     const self = this;
@@ -680,6 +684,7 @@ class Spanner extends Service {
    * @param {function} config.method The gax method to call.
    * @param {object} config.reqOpts Request options.
    * @param {function} [callback] Callback function.
+   * @returns {Stream}
    */
   requestStream(config) {
     const self = this;

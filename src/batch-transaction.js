@@ -140,7 +140,7 @@ class BatchTransaction extends Transaction {
    * @private
    *
    * @param {object} config The request config.
-   * @param {function} Callback function.
+   * @param {function} callback Callback function.
    */
   createPartitions_(config, callback) {
     const self = this;
@@ -218,7 +218,7 @@ class BatchTransaction extends Transaction {
    * @param {ReadPartition|QueryParition} partition The partition object.
    * @param {object} [partition.gaxOptions] Request configuration options,
    *     outlined here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
-   * @param {TransactionRequestReadCallback|RunCallback} callback Callback
+   * @param {TransactionRequestReadCallback|RunCallback} [callback] Callback
    *     function.
    * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}
    *

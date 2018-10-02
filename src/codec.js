@@ -88,6 +88,8 @@ codec.TYPE = TYPE;
  * struct characteristics.
  *
  * @private
+ *
+ * @returns {array}
  */
 function Struct() {
   const struct = [];
@@ -161,6 +163,9 @@ module.exports.Struct = Struct;
 /**
  * Wherever a row object is returned, it is assigned a "toJSON" function. This
  * function will create that function in a consistent format.
+ *
+ * @param {array} row The row to generate JSON for.
+ * @returns {function}
  */
 function generateToJSONFromRow(row) {
   return function(options) {
@@ -205,6 +210,10 @@ codec.generateToJSONFromRow = generateToJSONFromRow;
  * Re-decode after the generic gRPC decoding step.
  *
  * @private
+ *
+ * @param {*} value Value to decode
+ * @param {object[]} field Struct fields
+ * @returns {*}
  */
 function decode(value, field) {
   function decodeValue_(decoded, type) {
@@ -265,6 +274,9 @@ codec.decode = decode;
  * Encode a value in the format the API expects.
  *
  * @private
+ *
+ * @param {*} value The value to be encoded
+ * @returns {*}
  */
 function encode(value) {
   function preEncode(value) {
@@ -314,7 +326,7 @@ codec.encode = encode;
  * @private
  *
  * @param {*} field - The field value.
- * @return {string}
+ * @returns {string}
  *
  * @example
  * Database.getType_(NaN);
