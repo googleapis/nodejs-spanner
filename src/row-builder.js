@@ -39,12 +39,16 @@ class RowBuilder {
   }
   /**
    * Add a PartialResultSet response object to the pending rows.
+   *
+   * @param {array} row Row values
    */
   addRow(row) {
     this.chunks = this.chunks.concat(row);
   }
   /**
    * Appends element to row.
+   *
+   * @param {*} value Row value
    */
   append(value) {
     if (this.currentRow.length === this.fields.length) {
@@ -81,6 +85,8 @@ class RowBuilder {
   }
   /**
    * Flush already complete rows.
+   *
+   * @returns {array}
    */
   flush() {
     const rowsToReturn = this.rows;
@@ -97,6 +103,9 @@ class RowBuilder {
   }
   /**
    * Transforms values into JSON format.
+   *
+   * @param {array[]} rows Rows to convert to JSON.
+   * @returns {object[]}
    */
   toJSON(rows) {
     return rows.map(values => {
@@ -116,6 +125,9 @@ class RowBuilder {
   }
   /**
    * Extracts value from chunk.
+   *
+   * @param {object} obj Row value object.
+   * @returns {*}
    */
   static getValue(obj) {
     let value = obj;
@@ -130,6 +142,10 @@ class RowBuilder {
   /**
    * Format a value into the expected structure, e.g. turn struct values into an
    * object.
+   *
+   * @param {object} field Field object
+   * @param {*} value Field value
+   * @returns {*}
    */
   static formatValue(field, value) {
     if (value === 'NULL_VALUE') {
@@ -150,6 +166,11 @@ class RowBuilder {
   }
   /**
    * Merge chunk values.
+   *
+   * @param {object} type Field type
+   * @param {object} head Field value
+   * @param {object} tail Field value
+   * @return {array}
    */
   static merge(type, head, tail) {
     const code = type.code;

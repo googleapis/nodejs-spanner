@@ -928,8 +928,8 @@ class Database extends ServiceObject {
    *
    * @private
    *
-   * @param {object} config
-   * @param {function} callback
+   * @param {object} config Request config
+   * @param {function} callback Callback function
    */
   makePooledRequest_(config, callback) {
     const self = this;
@@ -952,7 +952,7 @@ class Database extends ServiceObject {
    *
    * @private
    *
-   * @param {object} config
+   * @param {object} config Request config
    * @returns {Stream}
    */
   makePooledStreamingRequest_(config) {
@@ -1424,28 +1424,29 @@ class Database extends ServiceObject {
    * region_tag:spanner_read_write_transaction
    * Read-write transaction:
    */
-  runTransaction(options, runFn) {
+  runTransaction(options, callback) {
     if (is.fn(options)) {
-      runFn = options;
+      callback = options;
       options = null;
     }
     options = extend({}, options);
     this.getTransaction(options, function(err, transaction) {
       if (err) {
-        runFn(err);
+        callback(err);
         return;
       }
       transaction.beginTime_ = Date.now();
-      transaction.runFn_ = runFn;
+      transaction.runFn_ = callback;
       if (options && options.timeout) {
         transaction.timeout_ = options.timeout;
         delete options.timeout;
       }
-      runFn(null, transaction);
+      callback(null, transaction);
     });
   }
   /**
    * A function to execute in the context of a transaction.
+   * @callback RunTransactionAsyncCallback
    * @param {Transaction} transaction The transaction object. The transaction has
    *     already been created, and is ready to be queried and committed against.
    */
@@ -1476,6 +1477,9 @@ class Database extends ServiceObject {
    * @see [Transactions](https://cloud.google.com/spanner/docs/transactions)
    * @see [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
    *
+   * @param {RunTransactionAsyncCallback} callback A function to execute in the
+   *      context of a transaction.
+   * @returns {Promise}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -1494,12 +1498,12 @@ class Database extends ServiceObject {
    *   // ...
    * });
    */
-  runTransactionAsync(runFn) {
+  runTransactionAsync(callback) {
     return retry(() =>
       this.getTransaction()
         .then(r => {
           const transaction = r[0];
-          return runFn(transaction);
+          return callback(transaction);
         })
         .catch(e => {
           if (e.code === Transaction.ABORTED) throw e;
@@ -1647,6 +1651,7 @@ class Database extends ServiceObject {
    *
    * @param {string} instanceName The formatted instance name.
    * @param {string} name The table name.
+   * @returns {string}
    *
    * @example
    * Database.formatName_(

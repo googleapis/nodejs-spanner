@@ -227,6 +227,9 @@ class TransactionRequest {
    * @param {string} table The name of the table.
    * @param {array} keys The keys for the rows to delete. If using a
    *     composite key, provide an array within this array. See the example below.
+   * @param {function} [callback] Callback function, should only be supplied for
+   *     single use transactions.
+   * @returns {Promise}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -307,6 +310,9 @@ class TransactionRequest {
    * @param {string} table The name of the table.
    * @param {object|object[]} keyVals A map of names to values of data to insert
    *     into this table.
+   * @param {function} [callback] Callback function, should only be supplied for
+   *     single use transactions.
+   * @returns {Promise}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -528,9 +534,9 @@ class TransactionRequest {
    *   });
    * });
    */
-  read(table, keyVals, callback) {
+  read(table, query, callback) {
     const rows = [];
-    this.createReadStream(table, keyVals)
+    this.createReadStream(table, query)
       .on('error', callback)
       .on('data', function(row) {
         rows.push(row);
@@ -547,6 +553,9 @@ class TransactionRequest {
    * @param {string} table The table to read from.
    * @param {object|object[]} keyVals A map of names to values of data to insert
    *     into this table.
+   * @param {function} [callback] Callback function, should only be supplied for
+   *     single use transactions.
+   * @returns {Promise}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -602,6 +611,9 @@ class TransactionRequest {
    * @param {string} table The table to read from.
    * @param {object|object[]} keyVals A map of names to values of data to insert
    *     into this table.
+   * @param {function} [callback] Callback function, should only be supplied for
+   *     single use transactions.
+   * @returns {Promise}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -643,6 +655,9 @@ class TransactionRequest {
    * @param {string} table The table to read from.
    * @param {object|object[]} keyVals A map of names to values of data to insert
    *     into this table.
+   * @param {function} [callback] Callback function, should only be supplied for
+   *     single use transactions.
+   * @returns {Promise}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -689,6 +704,7 @@ class TransactionRequest {
    * @param {string} table Table to perform mutations in.
    * @param {object} keyVals Hash of key value pairs.
    * @param {function} cb The callback function.
+   * @returns {Promise}
    */
   mutate_(method, table, keyVals, cb) {
     keyVals = arrify(keyVals);
@@ -741,7 +757,7 @@ class TransactionRequest {
    * @private
    *
    * @param {object} options The user supplied options.
-   * @return {object}
+   * @returns {object}
    */
   static formatTimestampOptions_(options) {
     const formatted = extend({}, options);
@@ -778,7 +794,7 @@ class TransactionRequest {
    * @private
    *
    * @param {object} value The protobuf timestamp.
-   * @return {date}
+   * @returns {date}
    */
   static fromProtoTimestamp_(value) {
     const milliseconds = parseInt(value.nanos, 10) / 1e6;

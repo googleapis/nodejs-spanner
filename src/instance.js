@@ -600,7 +600,7 @@ class Instance extends common.ServiceObject {
    * @see {@link v1.InstanceAdminClient#updateInstance}
    * @see [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
    *
-   * @param {object<string, *>} metadata The metadata you wish to set.
+   * @param {object} metadata The metadata you wish to set.
    * @param {LongRunningOperationCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
@@ -662,6 +662,7 @@ class Instance extends common.ServiceObject {
    *
    * @param {string} projectId The project ID.
    * @param {string} name The instance name.
+   * @returns {string}
    *
    * @example
    * Instance.formatName_('grape-spaceship-123', 'my-instance');
