@@ -1390,11 +1390,18 @@ describe('Spanner', function() {
           strong: true,
         };
 
-        database.run('SELECT * FROM Singers', options, function(err, rows) {
-          assert.ifError(err);
-          assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
-          done();
-        });
+        database.run(
+          {
+            sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+            params: {id: ID},
+          },
+          options,
+          function(err, rows) {
+            assert.ifError(err);
+            assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
+            done();
+          }
+        );
       });
 
       it('should query in promise mode', function(done) {
@@ -1404,7 +1411,13 @@ describe('Spanner', function() {
         };
 
         database
-          .run('SELECT * FROM Singers', options)
+          .run(
+            {
+              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+              params: {id: ID},
+            },
+            options
+          )
           .then(function(data) {
             const rows = data[0];
             assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
@@ -1421,7 +1434,13 @@ describe('Spanner', function() {
         let row;
 
         database
-          .runStream('SELECT * FROM Singers', options)
+          .runStream(
+            {
+              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+              params: {id: ID},
+            },
+            options
+          )
           .on('error', done)
           .once('data', function(row_) {
             row = row_;
