@@ -66,6 +66,8 @@ class TransactionRequest {
    * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
+   * @fires PartialResultStream#response
+   *
    * @param {string} table The table to read from.
    * @param {ReadStreamRequestOptions} query Configuration object. See
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).

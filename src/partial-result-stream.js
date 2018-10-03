@@ -70,6 +70,12 @@ function partialResultStream(requestFn, options) {
 
   const userStream = streamEvents(
     through.obj(function(row, _, next) {
+      /**
+       * Emits the raw API response.
+       *
+       * @event PartialResultStream#response
+       * @type {google.spanner.v1.PartialResultSet}
+       */
       userStream.emit('response', row);
 
       if (is.empty(row.values)) {
