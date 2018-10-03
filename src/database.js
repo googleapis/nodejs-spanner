@@ -1175,6 +1175,8 @@ class Database extends ServiceObject {
    * @see [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
    * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
    *
+   * @fires PartialResultStream#response
+   *
    * @param {string|object} query A SQL query or query object. See an
    *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
    *     object.
