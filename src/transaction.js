@@ -216,6 +216,20 @@ class Transaction extends TransactionRequest {
     );
   }
   /**
+   * @typedef {object} CommitResponse
+   * @property {google.protobuf.Timestamp} commitTimestamp The transaction
+   *     commit timestamp.
+   */
+  /**
+   * @typedef {array} CommitPromiseResponse
+   * @property {CommitResponse} 0 The commit response.
+   */
+  /**
+   * @callback CommitCallback
+   * @param {?Error} error Request error, if any.
+   * @param {CommitResponse} apiResponse The full API response.
+   */
+  /**
    * Commit the transaction.
    *
    * Wrapper around {@link v1.SpannerClient#commit}.
@@ -225,8 +239,8 @@ class Transaction extends TransactionRequest {
    *
    * @throws {Error} If transaction has already been ended.
    *
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {CommitCallback} [callback] Callback function.
+   * @returns {Promise<CommitPromiseResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -247,9 +261,10 @@ class Transaction extends TransactionRequest {
    *   });
    *
    *   // Commit the transaction.
-   *   transaction.commit(function(err) {
+   *   transaction.commit(function(err, apiResponse) {
    *     if (!err) {
-   *       // Mutations were committed successfully.
+   *       // Get the commit timestamp on successful commits.
+   *       const {commitTimestamp} = apiResponse;
    *     }
    *   });
    * });
