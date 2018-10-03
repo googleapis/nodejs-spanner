@@ -70,6 +70,8 @@ function partialResultStream(requestFn, options) {
 
   const userStream = streamEvents(
     through.obj(function(row, _, next) {
+      userStream.emit('response', row);
+
       if (is.empty(row.values)) {
         next();
         return;

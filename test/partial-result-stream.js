@@ -165,6 +165,19 @@ describe('PartialResultStream', function() {
       fakeRequestStream.push(null);
     });
 
+    it('should emit the raw response', function(done) {
+      fakeRequestStream.push(RESULT_WITH_TOKEN);
+      fakeRequestStream.push(null);
+
+      partialResultStream
+        .on('error', done)
+        .on('response', function(response) {
+          assert.strictEqual(response, RESULT_WITH_TOKEN);
+          done();
+        })
+        .resume();
+    });
+
     it('should effectively skip rows without values', function(done) {
       fakeRequestStream.push(RESULT_WITHOUT_VALUE);
       fakeRequestStream.push(null);
