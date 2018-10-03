@@ -209,10 +209,7 @@ describe('Database', function() {
 
       assert.strictEqual(calledWith.parent, instanceInstance);
       assert.strictEqual(calledWith.id, NAME);
-      assert.deepStrictEqual(calledWith.methods, {
-        create: true,
-        exists: true,
-      });
+      assert.deepStrictEqual(calledWith.methods, {create: true});
 
       calledWith.createMethod(null, options, done);
     });
@@ -547,6 +544,48 @@ describe('Database', function() {
       };
 
       database.delete(assert.ifError);
+    });
+  });
+
+  describe('exists', function() {
+    it('should return any non-404 like errors', function(done) {
+      const error = {code: 3};
+
+      database.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      database.exists(function(err, exists) {
+        assert.strictEqual(err, error);
+        assert.strictEqual(exists, null);
+        done();
+      });
+    });
+
+    it('should return true if error is absent', function(done) {
+      database.getMetadata = function(callback) {
+        callback(null);
+      };
+
+      database.exists(function(err, exists) {
+        assert.ifError(err);
+        assert.strictEqual(exists, true);
+        done();
+      });
+    });
+
+    it('should return false if not found error if present', function(done) {
+      const error = {code: 5};
+
+      database.getMetadata = function(callback) {
+        callback(error);
+      };
+
+      database.exists(function(err, exists) {
+        assert.ifError(err);
+        assert.strictEqual(exists, false);
+        done();
+      });
     });
   });
 
