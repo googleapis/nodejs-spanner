@@ -280,6 +280,17 @@ class TransactionRequest {
    * ];
    */
   deleteRows(table, keys, callback) {
+    if (!this.transaction) {
+      this.database.runTransaction((err, transaction) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+        transaction.deleteRows(table, keys);
+        transaction.commit(callback);
+      });
+      return;
+    }
     const mutation = {};
     mutation['delete'] = {
       table: table,
@@ -291,24 +302,7 @@ class TransactionRequest {
         }),
       },
     };
-    if (this.transaction) {
-      this.queue_(mutation);
-      return;
-    }
-    const reqOpts = {
-      singleUseTransaction: {
-        readWrite: {},
-      },
-      mutations: [mutation],
-    };
-    return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'commit',
-        reqOpts: reqOpts,
-      },
-      callback
-    );
+    this.queue_(mutation);
   }
   /**
    * Insert rows of data into this table.
@@ -715,6 +709,17 @@ class TransactionRequest {
    * @returns {Promise}
    */
   mutate_(method, table, keyVals, cb) {
+    if (!this.transaction) {
+      this.database.runTransaction((err, transaction) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+        transaction.mutate_(method, table, keyVals);
+        transaction.commit(cb);
+      });
+      return;
+    }
     keyVals = arrify(keyVals);
     const columns = [...new Set([].concat(...keyVals.map(Object.keys)))].sort();
     const values = keyVals.map((keyVal, index) => {
@@ -740,24 +745,7 @@ class TransactionRequest {
     const mutation = {
       [method]: {table, columns, values},
     };
-    if (this.transaction) {
-      this.queue_(mutation);
-      return;
-    }
-    const reqOpts = {
-      singleUseTransaction: {
-        readWrite: {},
-      },
-      mutations: [mutation],
-    };
-    return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'commit',
-        reqOpts: reqOpts,
-      },
-      cb
-    );
+    this.queue_(mutation);
   }
   /**
    * Formats timestamp options into proto format.
