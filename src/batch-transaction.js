@@ -143,24 +143,23 @@ class BatchTransaction extends Transaction {
    * @param {function} callback Callback function.
    */
   createPartitions_(config, callback) {
-    const self = this;
     const query = extend({}, config.reqOpts, {
       session: this.session.formattedName_,
       transaction: {id: this.id},
     });
     config.reqOpts = extend({}, query);
     delete query.partitionOptions;
-    this.request(config, function(err, resp) {
+    this.request(config, (err, resp) => {
       if (err) {
         callback(err, null, resp);
         return;
       }
-      const partitions = resp.partitions.map(function(partition) {
+      const partitions = resp.partitions.map(partition => {
         return extend({}, query, partition);
       });
       if (resp.transaction) {
-        self.id = resp.transaction.id;
-        self.readTimestamp = resp.transaction.readTimestamp;
+        this.id = resp.transaction.id;
+        this.readTimestamp = resp.transaction.readTimestamp;
       }
       callback(null, partitions, resp);
     });

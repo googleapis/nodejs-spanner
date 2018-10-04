@@ -572,10 +572,10 @@ class Table extends TransactionRequest {
     }
     this.createReadStream(query, options)
       .on('error', callback)
-      .on('data', function(row) {
+      .on('data', row => {
         rows.push(row);
       })
-      .on('end', function() {
+      .on('end', () => {
         callback(null, rows);
       });
   }

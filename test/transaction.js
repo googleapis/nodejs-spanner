@@ -86,7 +86,7 @@ const fakeConfig = {
   },
 };
 
-describe('Transaction', function() {
+describe('Transaction', () => {
   let TransactionCached;
   let Transaction;
   let transaction;
@@ -98,7 +98,7 @@ describe('Transaction', function() {
 
   const ID = 'transaction-id';
 
-  before(function() {
+  before(() => {
     Transaction = proxyquire('../src/transaction', {
       'google-gax': fakeGax,
       '@google-cloud/common-grpc': {
@@ -114,7 +114,7 @@ describe('Transaction', function() {
     TransactionCached = extend({}, Transaction);
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     FakeGrpcService.objToStruct_ = util.noop;
     FakeRetryInfo.decode = util.noop;
 
@@ -122,36 +122,36 @@ describe('Transaction', function() {
     transaction = new Transaction(SESSION);
   });
 
-  describe('instantiation', function() {
-    it('should promisify all the things', function() {
+  describe('instantiation', () => {
+    it('should promisify all the things', () => {
       assert(promisified);
     });
 
-    it('should localize the session', function() {
+    it('should localize the session', () => {
       assert.strictEqual(transaction.session, SESSION);
     });
 
-    it('should set flag to identify as a Transaction object', function() {
+    it('should set flag to identify as a Transaction object', () => {
       assert.strictEqual(transaction.transaction, true);
     });
 
-    it('should track the number of attempts made', function() {
+    it('should track the number of attempts made', () => {
       assert.strictEqual(transaction.attempts_, 0);
     });
 
-    it('should initialize an empty queue', function() {
+    it('should initialize an empty queue', () => {
       assert.deepStrictEqual(transaction.queuedMutations_, []);
     });
 
-    it('should initialize a null run function', function() {
+    it('should initialize a null run function', () => {
       assert.strictEqual(transaction.runFn_, null);
     });
 
-    it('should set ended_ to false', function() {
+    it('should set ended_ to false', () => {
       assert.strictEqual(transaction.ended_, false);
     });
 
-    it('should inherit from TransactionRequest', function() {
+    it('should inherit from TransactionRequest', () => {
       const OPTIONS = {};
 
       transaction = new Transaction(SESSION, OPTIONS);
@@ -160,12 +160,12 @@ describe('Transaction', function() {
       assert(transaction.calledWith_[0], OPTIONS);
     });
 
-    describe('timeout_', function() {
-      it('should default to the commit timeout', function() {
+    describe('timeout_', () => {
+      it('should default to the commit timeout', () => {
         assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
       });
 
-      it('should capture the user timeout', function() {
+      it('should capture the user timeout', () => {
         const timeout = 321;
         const transaction = new Transaction(SESSION, {timeout});
 
@@ -174,14 +174,14 @@ describe('Transaction', function() {
         assert.deepStrictEqual(transaction.calledWith_[0], {});
       });
 
-      it('should ignore non-number values', function() {
+      it('should ignore non-number values', () => {
         const timeout = 'abc';
         const transaction = new Transaction(SESSION, {timeout});
 
         assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
       });
 
-      it('should not alter user options', function() {
+      it('should not alter user options', () => {
         const options = {timeout: 1234};
         const optionsCopy = Object.assign({}, options);
         const transaction = new Transaction(SESSION, options);
@@ -192,8 +192,8 @@ describe('Transaction', function() {
     });
   });
 
-  describe('createDeadlineError_', function() {
-    it('should augment the error', function() {
+  describe('createDeadlineError_', () => {
+    it('should augment the error', () => {
       const originalError = {
         code: 10,
         message: 'Transaction aborted.',
@@ -214,8 +214,8 @@ describe('Transaction', function() {
     });
   });
 
-  describe('getRetryDelay_', function() {
-    it('should return the retry delay when available', function() {
+  describe('getRetryDelay_', () => {
+    it('should return the retry delay when available', () => {
       const fakeError = new Error('err');
       const fakeRetryInfo = Buffer.from('hi');
 
@@ -250,7 +250,7 @@ describe('Transaction', function() {
       assert.strictEqual(delay, expectedDelay);
     });
 
-    it('should create backoff from counter when delay is absent', function() {
+    it('should create backoff from counter when delay is absent', () => {
       const fakeError = new Error('err');
 
       fakeError.metadata = {
@@ -277,7 +277,7 @@ describe('Transaction', function() {
     });
   });
 
-  describe('begin', function() {
+  describe('begin', () => {
     const OPTIONS = {
       readOnly: true,
       boundOptions: true,
@@ -290,7 +290,7 @@ describe('Transaction', function() {
       },
     };
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       const transaction = new Transaction(SESSION, OPTIONS);
 
       transaction.readOnly = true;
@@ -304,7 +304,7 @@ describe('Transaction', function() {
       transaction.begin(assert.ifError);
     });
 
-    it('should not require options', function(done) {
+    it('should not require options', done => {
       transaction.readOnly = false;
       transaction.request = function(config) {
         assert.deepStrictEqual(config.reqOpts, {
@@ -318,71 +318,71 @@ describe('Transaction', function() {
       transaction.begin(assert.ifError);
     });
 
-    it('should execute callback with error', function(done) {
+    it('should execute callback with error', done => {
       const error = new Error('Error.');
 
       transaction.request = function(config, callback) {
         callback(error);
       };
 
-      transaction.begin(function(err) {
+      transaction.begin(err => {
         assert.strictEqual(err, error);
         done();
       });
     });
 
-    describe('success', function() {
+    describe('success', () => {
       const API_RESPONSE = {
         id: 'transaction-id',
       };
 
-      beforeEach(function() {
+      beforeEach(() => {
         transaction.request = function(config, callback) {
           callback(null, API_RESPONSE);
         };
       });
 
-      it('should increment the attempts property', function(done) {
-        transaction.begin(function(err) {
+      it('should increment the attempts property', done => {
+        transaction.begin(err => {
           assert.ifError(err);
           assert.strictEqual(transaction.attempts_, 1);
           done();
         });
       });
 
-      it('should set ended_ to false', function(done) {
-        transaction.begin(function(err) {
+      it('should set ended_ to false', done => {
+        transaction.begin(err => {
           assert.ifError(err);
           assert.strictEqual(transaction.ended_, false);
           done();
         });
       });
 
-      it('should update ID', function(done) {
-        transaction.begin(function(err) {
+      it('should update ID', done => {
+        transaction.begin(err => {
           assert.ifError(err);
           assert.strictEqual(transaction.id, API_RESPONSE.id);
           done();
         });
       });
 
-      it('should update metadata', function(done) {
-        transaction.begin(function(err) {
+      it('should update metadata', done => {
+        transaction.begin(err => {
           assert.ifError(err);
           assert.strictEqual(transaction.metadata, API_RESPONSE);
           done();
         });
       });
 
-      it('should execute callback with API response', function(done) {
-        transaction.begin(function(err, apiResponse) {
+      it('should execute callback with API response', done => {
+        transaction.begin((err, apiResponse) => {
           assert.ifError(err);
           assert.strictEqual(apiResponse, API_RESPONSE);
           done();
         });
       });
 
-      it('should set the timestamp if applicable', function(done) {
+      it('should set the timestamp if applicable', done => {
         const fakeProtoTimestamp = {};
         const fakeDate = new Date();
 
@@ -403,7 +403,7 @@ describe('Transaction', function() {
           return fakeDate;
         };
 
-        transaction.begin(function(err) {
+        transaction.begin(err => {
           assert.ifError(err);
           assert.strictEqual(transaction.readTimestamp, fakeDate);
           done();
@@ -412,22 +412,22 @@ describe('Transaction', function() {
     });
   });
 
-  describe('commit', function() {
+  describe('commit', () => {
     const QUEUED_MUTATIONS = [{}];
 
-    beforeEach(function() {
+    beforeEach(() => {
       transaction.queuedMutations_ = QUEUED_MUTATIONS;
     });
 
-    it('should throw an error if the transaction was ended', function() {
+    it('should throw an error if the transaction was ended', () => {
       transaction.ended_ = true;
 
-      assert.throws(function() {
+      assert.throws(() => {
         transaction.commit(assert.ifError);
       }, /Transaction has already been ended\./);
     });
 
-    it('should make the correct request with an ID', function(done) {
+    it('should make the correct request with an ID', done => {
       transaction.id = 'transaction-id';
 
       transaction.request = function(config) {
@@ -444,7 +444,7 @@ describe('Transaction', function() {
       transaction.commit(assert.ifError);
     });
 
-    it('should make the correct request without an ID', function(done) {
+    it('should make the correct request without an ID', done => {
       delete transaction.id;
 
       transaction.request = function(config) {
@@ -460,18 +460,18 @@ describe('Transaction', function() {
       transaction.commit(assert.ifError);
     });
 
-    describe('error', function() {
+    describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};
 
-      beforeEach(function() {
+      beforeEach(() => {
         transaction.request = function(config, callback) {
           callback(ERROR, API_RESPONSE);
         };
       });
 
-      it('should execute callback with error and API response', function(done) {
-        transaction.commit(function(err, apiResponse) {
+      it('should execute callback with error and API response', done => {
+        transaction.commit((err, apiResponse) => {
           assert.strictEqual(err, ERROR);
           assert.strictEqual(apiResponse, API_RESPONSE);
           done();
@@ -479,22 +479,22 @@ describe('Transaction', function() {
       });
     });
 
-    describe('success', function() {
+    describe('success', () => {
       const API_RESPONSE = {};
 
-      beforeEach(function() {
+      beforeEach(() => {
         transaction.request = function(config, callback) {
           callback(null, API_RESPONSE);
         };
       });
 
-      it('should destroy the transaction', function(done) {
+      it('should destroy the transaction', done => {
         transaction.end = done;
         transaction.commit(assert.ifError);
       });
 
-      it('should execute callback with the API response', function(done) {
-        transaction.commit(function(err, apiResponse) {
+      it('should execute callback with the API response', done => {
+        transaction.commit((err, apiResponse) => {
           assert.ifError(err);
           assert.strictEqual(apiResponse, API_RESPONSE);
           done();
@@ -503,22 +503,22 @@ describe('Transaction', function() {
     });
   });
 
-  describe('end', function() {
-    it('should throw an error if the transaction was ended', function() {
+  describe('end', () => {
+    it('should throw an error if the transaction was ended', () => {
       transaction.ended_ = true;
 
-      assert.throws(function() {
+      assert.throws(() => {
         transaction.end(assert.ifError);
       }, /Transaction has already been ended\./);
     });
 
-    it('should set ended_ to true', function() {
+    it('should set ended_ to true', () => {
       transaction.end();
 
       assert.strictEqual(transaction.ended_, true);
     });
 
-    it('should empty the queue', function() {
+    it('should empty the queue', () => {
       transaction.queuedMutations_ = [{}, {}];
 
       transaction.end();
@@ -526,7 +526,7 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.queuedMutations_.length, 0);
     });
 
-    it('should nullify the run function', function() {
+    it('should nullify the run function', () => {
       transaction.runFn_ = function() {};
 
       transaction.end();
@@ -534,14 +534,14 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.runFn_, null);
     });
 
-    it('should reset the attempts property', function() {
+    it('should reset the attempts property', () => {
       transaction.attempts_ = 100;
       transaction.end();
 
       assert.strictEqual(transaction.attempts_, 0);
     });
 
-    it('should delete the ID', function() {
+    it('should delete the ID', () => {
       transaction.id = 'transaction-id';
 
       transaction.end();
@@ -549,13 +549,13 @@ describe('Transaction', function() {
       assert.strictEqual(transaction.id, undefined);
     });
 
-    it('should optionally execute a callback', function(done) {
+    it('should optionally execute a callback', done => {
       transaction.end(done);
     });
   });
 
-  describe('queue_', function() {
-    it('should push a mutation object into the queue array', function() {
+  describe('queue_', () => {
+    it('should push a mutation object into the queue array', () => {
       const mutation = {};
 
       assert.deepStrictEqual(transaction.queuedMutations_, []);
@@ -566,8 +566,8 @@ describe('Transaction', function() {
     });
   });
 
-  describe('request', function() {
-    it('should make the correct request', function(done) {
+  describe('request', () => {
+    it('should make the correct request', done => {
       const config = {
         reqOpts: {
           a: 'b',
@@ -587,7 +587,7 @@ describe('Transaction', function() {
       transaction.request(config, assert.ifError);
     });
 
-    it('should pass the response back to the callback', function(done) {
+    it('should pass the response back to the callback', done => {
       const resp = {};
 
       const config = {
@@ -598,14 +598,14 @@ describe('Transaction', function() {
         callback(null, resp);
       };
 
-      transaction.request(config, function(err, apiResponse) {
+      transaction.request(config, (err, apiResponse) => {
         assert.ifError(err);
         assert.strictEqual(apiResponse, resp);
         done();
       });
     });
 
-    describe('aborted errors', function() {
+    describe('aborted errors', () => {
       const abortedError = {code: 10};
       const resp = {};
 
@@ -613,11 +613,11 @@ describe('Transaction', function() {
       const config = {};
       let getRetryDelay;
 
-      before(function() {
+      before(() => {
         getRetryDelay = Transaction.getRetryDelay_;
       });
 
-      beforeEach(function() {
+      beforeEach(() => {
         transaction.session.request = function(config, callback) {
           callback(abortedError, resp);
         };
@@ -627,11 +627,11 @@ describe('Transaction', function() {
         };
       });
 
-      after(function() {
+      after(() => {
         Transaction.getRetryDelay_ = getRetryDelay;
       });
 
-      it('should pass error code to isRetryableErrorCode', function(done) {
+      it('should pass error code to isRetryableErrorCode', done => {
         transaction.runFn_ = function() {};
 
         const config = {
@@ -643,10 +643,10 @@ describe('Transaction', function() {
           done();
         };
 
-        transaction.request(config, function() {});
+        transaction.request(config, () => {});
       });
 
-      it('should retry the txn if abort occurs', function(done) {
+      it('should retry the txn if abort occurs', done => {
         const attempts_ = 123;
 
         Transaction.getRetryDelay_ = function(err, attempts) {
@@ -671,12 +671,12 @@ describe('Transaction', function() {
 
         transaction.attempts_ = attempts_;
 
-        transaction.request(config, function() {
+        transaction.request(config, () => {
           done(new Error('Should not have been called.'));
         });
       });
 
-      it('should return a deadline error if not retrying', function(done) {
+      it('should return a deadline error if not retrying', done => {
         transaction.retry_ = function() {
           done(new Error('Should not have been called.'));
         };
@@ -701,15 +701,15 @@ describe('Transaction', function() {
           done();
         };
 
-        transaction.request(config, function() {
+        transaction.request(config, () => {
           done(new Error('Should not have been called.'));
         });
       });
 
-      it('should return the aborted error if no runFn', function(done) {
+      it('should return the aborted error if no runFn', done => {
         transaction.runFn_ = null;
 
-        transaction.request(config, function(err) {
+        transaction.request(config, err => {
           assert.strictEqual(err, abortedError);
           done();
         });
@@ -717,8 +717,8 @@ describe('Transaction', function() {
     });
   });
 
-  describe('requestStream', function() {
-    it('should make the correct request', function() {
+  describe('requestStream', () => {
+    it('should make the correct request', () => {
       const methodReturnValue = {};
 
       const config = {
@@ -742,14 +742,14 @@ describe('Transaction', function() {
       assert.strictEqual(returnValue, methodReturnValue);
     });
 
-    describe('runTransaction mode', function() {
+    describe('runTransaction mode', () => {
       let fakeStream;
 
       const config = {
         reqOpts: {},
       };
 
-      beforeEach(function() {
+      beforeEach(() => {
         fakeStream = through.obj();
         transaction.session.requestStream = function() {
           return fakeStream;
@@ -757,7 +757,7 @@ describe('Transaction', function() {
         transaction.runFn_ = function() {};
       });
 
-      it('should pipe the request stream to the user stream', function(done) {
+      it('should pipe the request stream to the user stream', done => {
         const fakeData = {
           a: 'a',
         };
@@ -765,7 +765,7 @@ describe('Transaction', function() {
         transaction
           .requestStream(config)
           .on('error', done)
-          .on('data', function(data) {
+          .on('data', data => {
             assert.strictEqual(data, fakeData);
             done();
           });
@@ -773,7 +773,7 @@ describe('Transaction', function() {
         fakeStream.push(fakeData);
       });
 
-      it('should emit non-abort errors to the user stream', function(done) {
+      it('should emit non-abort errors to the user stream', done => {
         const error = new Error('ohnoes');
         const userStream = transaction.requestStream(config);
 
@@ -785,7 +785,7 @@ describe('Transaction', function() {
         fakeStream.emit('error', error);
       });
 
-      it('isRetryableErrorCode should be called on error', function(done) {
+      it('isRetryableErrorCode should be called on error', done => {
         const error = {code: 'sentinel'};
         const userStream = transaction.requestStream(config);
 
@@ -799,7 +799,7 @@ describe('Transaction', function() {
         fakeStream.emit('error', error);
       });
 
-      it('should retry the transaction for UNKNOWN', function(done) {
+      it('should retry the transaction for UNKNOWN', done => {
         const error = {code: 2};
         const fakeDelay = 123;
         const attempts_ = 321;
@@ -832,7 +832,7 @@ describe('Transaction', function() {
         fakeStream.emit('error', error);
       });
 
-      it('should retry the transaction for ABORTED', function(done) {
+      it('should retry the transaction for ABORTED', done => {
         const error = {code: 10};
         const fakeDelay = 123;
         const getRetryDelay = Transaction.getRetryDelay_;
@@ -862,7 +862,7 @@ describe('Transaction', function() {
         fakeStream.emit('error', error);
       });
 
-      it('should send a deadline error to the runFn', function(done) {
+      it('should send a deadline error to the runFn', done => {
         const error = {code: 10};
         const deadlineError = {};
         const createDeadlineError = Transaction.createDeadlineError_;
@@ -894,20 +894,20 @@ describe('Transaction', function() {
     });
   });
 
-  describe('rollback', function() {
-    beforeEach(function() {
+  describe('rollback', () => {
+    beforeEach(() => {
       transaction.id = ID;
     });
 
-    it('should throw if a transaction ID is not set', function() {
+    it('should throw if a transaction ID is not set', () => {
       delete transaction.id;
 
-      assert.throws(function() {
+      assert.throws(() => {
         transaction.rollback(assert.ifError);
       }, /Transaction ID is unknown, nothing to rollback\./);
     });
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       transaction.request = function(config) {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'rollback');
@@ -921,7 +921,7 @@ describe('Transaction', function() {
       transaction.rollback(assert.ifError);
     });
 
-    it('should execute callback with error & API response', function(done) {
+    it('should execute callback with error & API response', done => {
       const error = new Error('Error.');
       const apiResponse = {};
 
@@ -933,14 +933,14 @@ describe('Transaction', function() {
         done(new Error('Should not be destroyed.'));
       };
 
-      transaction.rollback(function(err, apiResponse_) {
+      transaction.rollback((err, apiResponse_) => {
         assert.strictEqual(err, error);
         assert.strictEqual(apiResponse_, apiResponse);
         done();
       });
     });
 
-    it('should destroy the transaction if rollback worked', function(done) {
+    it('should destroy the transaction if rollback worked', done => {
       const apiResponse = {};
 
       transaction.request = function(config, callback) {
@@ -952,7 +952,7 @@ describe('Transaction', function() {
         destroyed = true;
       };
 
-      transaction.rollback(function(err, apiResponse_) {
+      transaction.rollback((err, apiResponse_) => {
         assert.strictEqual(err, null);
         assert.strictEqual(apiResponse_, apiResponse);
         assert.strictEqual(destroyed, true);
@@ -961,8 +961,8 @@ describe('Transaction', function() {
     });
   });
 
-  describe('run', function() {
-    it('should call and collect results from a stream', function(done) {
+  describe('run', () => {
+    it('should call and collect results from a stream', done => {
       const query = {};
 
       const rows = [{}, {}];
@@ -972,8 +972,8 @@ describe('Transaction', function() {
 
         const stream = through.obj();
 
-        setImmediate(function() {
-          split(rows, stream).then(function() {
+        setImmediate(() => {
+          split(rows, stream).then(() => {
             stream.end();
           });
         });
@@ -981,33 +981,33 @@ describe('Transaction', function() {
         return stream;
       };
 
-      transaction.run(query, function(err, rows_) {
+      transaction.run(query, (err, rows_) => {
         assert.ifError(err);
         assert.deepStrictEqual(rows_, rows);
         done();
       });
     });
 
-    it('should execute callback with error', function(done) {
+    it('should execute callback with error', done => {
       const error = new Error('Error.');
 
       transaction.runStream = function() {
         const stream = through.obj();
 
-        setImmediate(function() {
+        setImmediate(() => {
           stream.destroy(error);
         });
 
         return stream;
       };
 
-      transaction.run({}, function(err) {
+      transaction.run({}, err => {
         assert.strictEqual(err, error);
         done();
       });
     });
 
-    it('should return a promise when callback is not specified', function() {
+    it('should return a promise when callback is not specified', () => {
       const query = {};
 
       const rows = [{}, {}];
@@ -1017,8 +1017,8 @@ describe('Transaction', function() {
 
         const stream = through.obj();
 
-        setImmediate(function() {
-          split(rows, stream).then(function() {
+        setImmediate(() => {
+          split(rows, stream).then(() => {
             stream.end();
           });
         });
@@ -1026,13 +1026,13 @@ describe('Transaction', function() {
         return stream;
       };
 
-      return transaction.run(query).then(function(args) {
+      return transaction.run(query).then(args => {
         assert.deepStrictEqual(args[0], rows);
       });
     });
   });
 
-  describe('runStream', function() {
+  describe('runStream', () => {
     const QUERY = {
       sql: 'SELECT * FROM table',
       a: 'b',
@@ -1051,22 +1051,22 @@ describe('Transaction', function() {
       },
     });
 
-    beforeEach(function() {
+    beforeEach(() => {
       transaction = new Transaction(SESSION, OPTIONS);
       transaction.id = ID;
 
-      fakeCodec.encodeQuery = function() {
+      fakeCodec.encodeQuery = () => {
         return ENCODED_QUERY;
       };
     });
 
-    it('should make the correct request', function(done) {
-      fakeCodec.encodeQuery = function(query) {
+    it('should make the correct request', done => {
+      fakeCodec.encodeQuery = query => {
         assert.strictEqual(query, QUERY);
         return ENCODED_QUERY;
       };
 
-      transaction.requestStream = function(config) {
+      transaction.requestStream = config => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeStreamingSql');
         assert.deepStrictEqual(config.reqOpts, EXPECTED_REQ_OPTS);
@@ -1078,7 +1078,7 @@ describe('Transaction', function() {
       makeRequestFn();
     });
 
-    it('should accept a query string', function(done) {
+    it('should accept a query string', done => {
       fakeCodec.encodeQuery = function(query) {
         assert.strictEqual(query.sql, QUERY.sql);
         return ENCODED_QUERY;
@@ -1094,7 +1094,7 @@ describe('Transaction', function() {
       makeRequestFn();
     });
 
-    it('should not require a transaction ID', function(done) {
+    it('should not require a transaction ID', done => {
       delete transaction.id;
 
       transaction.requestStream = function(options) {
@@ -1118,7 +1118,7 @@ describe('Transaction', function() {
       makeRequestFn();
     });
 
-    it('should not require timestamp bounds', function(done) {
+    it('should not require timestamp bounds', done => {
       delete transaction.id;
       delete transaction.options;
 
@@ -1143,12 +1143,12 @@ describe('Transaction', function() {
       makeRequestFn();
     });
 
-    it('should return PartialResultStream', function() {
+    it('should return PartialResultStream', () => {
       const stream = transaction.runStream(QUERY, OPTIONS);
       assert(stream instanceof FakePartialResultStream);
     });
 
-    it('should assign a resumeToken to the request', function(done) {
+    it('should assign a resumeToken to the request', done => {
       const resumeToken = 'resume-token';
 
       transaction.requestStream = function(options) {
@@ -1162,8 +1162,8 @@ describe('Transaction', function() {
     });
   });
 
-  describe('retry_', function() {
-    it('should begin the transaction', function(done) {
+  describe('retry_', () => {
+    it('should begin the transaction', done => {
       transaction.begin = function() {
         done();
       };
@@ -1171,7 +1171,7 @@ describe('Transaction', function() {
       transaction.retry_();
     });
 
-    it('should return an error if transaction cannot begin', function(done) {
+    it('should return an error if transaction cannot begin', done => {
       const error = new Error('Error.');
 
       transaction.begin = function(callback) {
@@ -1186,15 +1186,15 @@ describe('Transaction', function() {
       transaction.retry_();
     });
 
-    describe('transaction began successfully', function() {
+    describe('transaction began successfully', () => {
       const fakeDelay = 1123123;
       let _setTimeout;
 
-      before(function() {
+      before(() => {
         _setTimeout = global.setTimeout;
       });
 
-      beforeEach(function() {
+      beforeEach(() => {
         global.setTimeout = function() {};
         transaction.runFn_ = function() {};
 
@@ -1203,18 +1203,18 @@ describe('Transaction', function() {
         };
       });
 
-      after(function() {
+      after(() => {
         global.setTimeout = _setTimeout;
       });
 
-      it('should empty queued mutations', function() {
+      it('should empty queued mutations', () => {
         transaction.queuedMutations_ = [{}];
         transaction.retry_(fakeDelay);
 
         assert.deepStrictEqual(transaction.queuedMutations_, []);
       });
 
-      it('should execute run function after timeout', function(done) {
+      it('should execute run function after timeout', done => {
         global.setTimeout = function(cb, timeout) {
           assert.strictEqual(timeout, fakeDelay);
           cb();
@@ -1231,11 +1231,11 @@ describe('Transaction', function() {
     });
   });
 
-  describe('shouldRetry_', function() {
+  describe('shouldRetry_', () => {
     let abortedError;
     let unknownError;
 
-    beforeEach(function() {
+    beforeEach(() => {
       abortedError = {
         code: 10,
         metadata: {
@@ -1254,7 +1254,7 @@ describe('Transaction', function() {
       };
     });
 
-    it('should pass error code to isRetryableErrorCode', function() {
+    it('should pass error code to isRetryableErrorCode', () => {
       const error = {code: 'sentinel'};
 
       const isRetryableErrorCode = Transaction.isRetryableErrorCode_;
@@ -1266,19 +1266,19 @@ describe('Transaction', function() {
       transaction.shouldRetry_(error);
     });
 
-    it('should not retry if non-aborted error', function() {
+    it('should not retry if non-aborted error', () => {
       const shouldRetry = transaction.shouldRetry_({code: 4});
       assert.strictEqual(shouldRetry, false);
     });
 
-    it('should not retry if runFn is missing', function() {
+    it('should not retry if runFn is missing', () => {
       transaction.runFn_ = null;
 
       const shouldRetry = transaction.shouldRetry_(abortedError);
       assert.strictEqual(shouldRetry, false);
     });
 
-    it('should not retry if deadline is exceeded', function() {
+    it('should not retry if deadline is exceeded', () => {
       transaction.timeout_ = 1;
       transaction.beginTime_ = Date.now() - 2;
 
@@ -1286,7 +1286,7 @@ describe('Transaction', function() {
       assert.strictEqual(shouldRetry, false);
     });
 
-    it('should retry if all conditions are met - Aborted', function() {
+    it('should retry if all conditions are met - Aborted', () => {
       transaction.runFn_ = function() {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
@@ -1299,7 +1299,7 @@ describe('Transaction', function() {
       assert.strictEqual(shouldRetry, true);
     });
 
-    it('should retry if all conditions are met - Unknown', function() {
+    it('should retry if all conditions are met - Unknown', () => {
       transaction.runFn_ = function() {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
@@ -1313,21 +1313,21 @@ describe('Transaction', function() {
     });
   });
 
-  describe('isRetryableErrorCode_', function() {
+  describe('isRetryableErrorCode_', () => {
     const abortedErrorCode = 10;
     const unknownErrorCode = 2;
 
-    it('should return true for ABORTED', function() {
+    it('should return true for ABORTED', () => {
       const isRetryable = transaction.isRetryableErrorCode_(abortedErrorCode);
       assert.strictEqual(isRetryable, true);
     });
 
-    it('should return true for UNKNOWN', function() {
+    it('should return true for UNKNOWN', () => {
       const isRetryable = transaction.isRetryableErrorCode_(unknownErrorCode);
       assert.strictEqual(isRetryable, true);
     });
 
-    it('should return false for other error codes', function() {
+    it('should return false for other error codes', () => {
       const isRetryable = transaction.isRetryableErrorCode_(4);
       assert.strictEqual(isRetryable, false);
     });

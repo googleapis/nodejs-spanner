@@ -138,7 +138,7 @@ Struct.fromArray = function(arr) {
 Struct.fromJSON = function(json) {
   const struct = new Struct();
 
-  Object.keys(json || {}).forEach(function(name) {
+  Object.keys(json || {}).forEach(name => {
     const value = json[name];
     struct.push({name, value});
   });
@@ -176,7 +176,7 @@ function generateToJSONFromRow(row) {
       options
     );
 
-    return row.reduce(function(serializedRow, keyVal) {
+    return row.reduce((serializedRow, keyVal) => {
       const name = keyVal.name;
       let value = keyVal.value;
 
@@ -240,7 +240,7 @@ function decode(value, field) {
         break;
       }
       case 'ARRAY': {
-        decoded = decoded.map(function(value) {
+        decoded = decoded.map(value => {
           return decodeValue_(value, type.arrayElementType);
         });
         break;
@@ -365,7 +365,7 @@ function getType(field) {
   }
 
   if (Struct.isStruct(field)) {
-    const fields = field.map(function(field) {
+    const fields = field.map(field => {
       return {
         name: field.name,
         type: getType(field.value),
@@ -492,7 +492,7 @@ function encodeRead(query) {
   }
 
   if (query.keys) {
-    encoded.keySet.keys = arrify(query.keys).map(function(key) {
+    encoded.keySet.keys = arrify(query.keys).map(key => {
       return {
         values: arrify(key).map(codec.encode),
       };
@@ -501,7 +501,7 @@ function encodeRead(query) {
   }
 
   if (query.ranges) {
-    encoded.keySet.ranges = arrify(query.ranges).map(function(rawRange) {
+    encoded.keySet.ranges = arrify(query.ranges).map(rawRange => {
       const range = extend({}, rawRange);
 
       for (const bound in range) {

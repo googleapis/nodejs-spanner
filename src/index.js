@@ -281,7 +281,6 @@ class Spanner extends Service {
         ['A configuration object is required to create an instance.'].join('')
       );
     }
-    const self = this;
     const formattedName = Instance.formatName_(this.projectId, name);
     const shortName = formattedName.split('/').pop();
     const reqOpts = {
@@ -310,12 +309,12 @@ class Spanner extends Service {
         method: 'createInstance',
         reqOpts: reqOpts,
       },
-      function(err, operation, resp) {
+      (err, operation, resp) => {
         if (err) {
           callback(err, null, null, resp);
           return;
         }
-        const instance = self.instance(formattedName);
+        const instance = this.instance(formattedName);
         callback(null, instance, operation, resp);
       }
     );
@@ -418,7 +417,7 @@ class Spanner extends Service {
       },
       function(err, instances) {
         if (instances) {
-          arguments[1] = instances.map(function(instance) {
+          arguments[1] = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
             instanceInstance.metadata = instance;
             return instanceInstance;
@@ -620,17 +619,16 @@ class Spanner extends Service {
    * @param {function} callback Callback function
    */
   prepareGapicRequest_(config, callback) {
-    const self = this;
-    this.auth.getProjectId(function(err, projectId) {
+    this.auth.getProjectId((err, projectId) => {
       if (err) {
         callback(err);
         return;
       }
       const clientName = config.client;
-      if (!self.clients_.has(clientName)) {
-        self.clients_.set(clientName, new gapic.v1[clientName](self.options));
+      if (!this.clients_.has(clientName)) {
+        this.clients_.set(clientName, new gapic.v1[clientName](this.options));
       }
-      const gaxClient = self.clients_.get(clientName);
+      const gaxClient = this.clients_.get(clientName);
       let reqOpts = extend(true, {}, config.reqOpts);
       reqOpts = replaceProjectIdToken(reqOpts, projectId);
       const requestFn = gaxClient[config.method].bind(
@@ -653,9 +651,8 @@ class Spanner extends Service {
    * @returns {Promise}
    */
   request(config, callback) {
-    const self = this;
     if (is.fn(callback)) {
-      self.prepareGapicRequest_(config, function(err, requestFn) {
+      this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {
           callback(err);
         } else {
@@ -663,8 +660,8 @@ class Spanner extends Service {
         }
       });
     } else {
-      return new this.Promise(function(resolve, reject) {
-        self.prepareGapicRequest_(config, function(err, requestFn) {
+      return new this.Promise((resolve, reject) => {
+        this.prepareGapicRequest_(config, (err, requestFn) => {
           if (err) {
             reject(err);
           } else {
@@ -687,16 +684,15 @@ class Spanner extends Service {
    * @returns {Stream}
    */
   requestStream(config) {
-    const self = this;
     const stream = streamEvents(through.obj());
-    stream.once('reading', function() {
-      self.prepareGapicRequest_(config, function(err, requestFn) {
+    stream.once('reading', () => {
+      this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {
           stream.destroy(err);
           return;
         }
         requestFn()
-          .on('error', function(err) {
+          .on('error', err => {
             stream.destroy(err);
           })
           .pipe(stream);

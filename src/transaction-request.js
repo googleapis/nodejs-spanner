@@ -194,7 +194,6 @@ class TransactionRequest {
    * });
    */
   createReadStream(table, query) {
-    const self = this;
     const reqOpts = codec.encodeRead(query);
     reqOpts.table = table;
     delete reqOpts.json;
@@ -208,14 +207,14 @@ class TransactionRequest {
     if (gaxOptions) {
       delete reqOpts.gaxOptions;
     }
-    function makeRequest(resumeToken) {
-      return self.requestStream({
+    const makeRequest = resumeToken => {
+      return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
         reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
         gaxOpts: gaxOptions,
       });
-    }
+    };
     return new PartialResultStream(makeRequest, {
       json: query.json,
       jsonOptions: query.jsonOptions,
@@ -278,7 +277,7 @@ class TransactionRequest {
     mutation['delete'] = {
       table: table,
       keySet: {
-        keys: arrify(keys).map(function(key) {
+        keys: arrify(keys).map(key => {
           return {
             values: arrify(key).map(codec.encode),
           };
@@ -540,10 +539,10 @@ class TransactionRequest {
     const rows = [];
     this.createReadStream(table, query)
       .on('error', callback)
-      .on('data', function(row) {
+      .on('data', row => {
         rows.push(row);
       })
-      .on('end', function() {
+      .on('end', () => {
         callback(null, rows);
       });
   }
@@ -711,7 +710,7 @@ class TransactionRequest {
   mutate_(method, table, keyVals, cb) {
     keyVals = arrify(keyVals);
     const columns = [...new Set([].concat(...keyVals.map(Object.keys)))].sort();
-    const values = keyVals.map(function(keyVal, index) {
+    const values = keyVals.map((keyVal, index) => {
       const keys = Object.keys(keyVal);
       const missingColumns = columns.filter(
         column => keys.indexOf(column) === -1
@@ -725,7 +724,7 @@ class TransactionRequest {
         );
       }
       return {
-        values: columns.map(function(column) {
+        values: columns.map(column => {
           const value = keyVal[column];
           return codec.encode(value);
         }),

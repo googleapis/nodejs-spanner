@@ -90,7 +90,7 @@ describe('DatabaseAdminClient', () => {
     });
   });
 
-  describe('createDatabase', function() {
+  describe('createDatabase', () => {
     it('invokes createDatabase without error', done => {
       const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
@@ -253,7 +253,7 @@ describe('DatabaseAdminClient', () => {
     });
   });
 
-  describe('updateDatabaseDdl', function() {
+  describe('updateDatabaseDdl', () => {
     it('invokes updateDatabaseDdl without error', done => {
       const client = new spannerModule.v1.DatabaseAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},

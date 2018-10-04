@@ -69,7 +69,7 @@ function partialResultStream(requestFn, options) {
   let builder;
 
   const userStream = streamEvents(
-    through.obj(function(row, _, next) {
+    through.obj((row, _, next) => {
       /**
        * Emits the raw API response.
        *
@@ -112,7 +112,7 @@ function partialResultStream(requestFn, options) {
   userStream.once('reading', makeRequest);
 
   return requestsStream
-    .intercept('error', function(err) {
+    .intercept('error', err => {
       if (lastResumeToken) {
         // We're going to retry from where we left off.
         // Empty queued rows on the checkpoint stream (will not emit them to
@@ -122,7 +122,7 @@ function partialResultStream(requestFn, options) {
         return;
       }
 
-      setImmediate(function() {
+      setImmediate(() => {
         // We won't retry the request, so this will flush any rows the
         // checkpoint stream has queued. After that, we will destroy the user's
         // stream with the same error.
@@ -130,13 +130,13 @@ function partialResultStream(requestFn, options) {
       });
     })
     .pipe(batchAndSplitOnTokenStream)
-    .on('error', function(err) {
+    .on('error', err => {
       // If we get this error, the checkpoint stream has flushed any rows it had
       // queued. We can now destroy the user's stream, as our retry attempts are
       // over.
       userStream.destroy(err);
     })
-    .on('checkpoint', function(row) {
+    .on('checkpoint', row => {
       lastResumeToken = row.resumeToken;
     })
     .pipe(userStream);

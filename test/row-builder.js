@@ -39,14 +39,14 @@ const fakeCodec = {
 
 function FakeGrpcService() {}
 
-describe('RowBuilder', function() {
+describe('RowBuilder', () => {
   let RowBuilder;
   let RowBuilderCached;
   let rowBuilder;
 
   const FIELDS = [{}, {}];
 
-  before(function() {
+  before(() => {
     RowBuilder = proxyquire('../src/row-builder.js', {
       '@google-cloud/common-grpc': {
         Service: FakeGrpcService,
@@ -57,7 +57,7 @@ describe('RowBuilder', function() {
     RowBuilderCached = extend({}, RowBuilder);
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     FakeGrpcService.decodeValue_ = util.noop;
     decodeOverride = null;
     generateToJSONFromRowOverride = null;
@@ -65,11 +65,11 @@ describe('RowBuilder', function() {
     rowBuilder = new RowBuilder(FIELDS);
   });
 
-  describe('acceptance tests', function() {
+  describe('acceptance tests', () => {
     const TESTS = require('./data/streaming-read-acceptance-test.json').tests;
 
-    TESTS.forEach(function(test) {
-      it('should pass acceptance test: ' + test.name, function() {
+    TESTS.forEach(test => {
+      it('should pass acceptance test: ' + test.name, () => {
         const fields = JSON.parse(test.chunks[0]).metadata.rowType.fields;
         const chunkJson = JSON.parse('[' + test.chunks.join() + ']');
         const builder = new RowBuilder(fields);
@@ -81,20 +81,20 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('instantiation', function() {
-    it('should localize fields', function() {
+  describe('instantiation', () => {
+    it('should localize fields', () => {
       assert.strictEqual(rowBuilder.fields, FIELDS);
     });
 
-    it('should correctly initialize a chunks array', function() {
+    it('should correctly initialize a chunks array', () => {
       assert.deepStrictEqual(rowBuilder.chunks, []);
     });
 
-    it('should correctly initialize a rows array', function() {
+    it('should correctly initialize a rows array', () => {
       assert.deepStrictEqual(rowBuilder.rows, [[]]);
     });
 
-    it('should return the last row when accessing currentRow', function() {
+    it('should return the last row when accessing currentRow', () => {
       const rows = [{}, {}];
 
       rowBuilder.rows.push(rows[0]);
@@ -105,14 +105,14 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('getValue', function() {
-    it('should do nothing to plain values', function() {
+  describe('getValue', () => {
+    it('should do nothing to plain values', () => {
       const value = 'hi';
 
       assert.strictEqual(RowBuilder.getValue(value), value);
     });
 
-    it('should decode using GrpcService module', function() {
+    it('should decode using GrpcService module', () => {
       const value = {
         kind: 'stringValue',
       };
@@ -126,7 +126,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(RowBuilder.getValue(value), expectedValue);
     });
 
-    it('should return value from arrays', function() {
+    it('should return value from arrays', () => {
       const value = {
         kind: 'listValue',
         listValue: {
@@ -145,7 +145,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(RowBuilder.getValue(value), expectedValue);
     });
 
-    it('should only return the values property from objects', function() {
+    it('should only return the values property from objects', () => {
       const value = [];
 
       Object.defineProperty(value, 'values', {
@@ -161,15 +161,15 @@ describe('RowBuilder', function() {
       assert.strictEqual(RowBuilder.getValue(value), value);
     });
 
-    it('should accept null values', function() {
+    it('should accept null values', () => {
       const value = null;
 
       assert.strictEqual(RowBuilder.getValue(value), value);
     });
   });
 
-  describe('formatValue', function() {
-    it('should iterate an array', function() {
+  describe('formatValue', () => {
+    it('should iterate an array', () => {
       const field = {
         code: 'ARRAY',
         arrayElementType: 'type',
@@ -188,7 +188,7 @@ describe('RowBuilder', function() {
       assert.deepStrictEqual(formattedValue, [decodedValue]);
     });
 
-    it('should return null if value is NULL_VALUE', function() {
+    it('should return null if value is NULL_VALUE', () => {
       const field = {
         code: 'ARRAY',
         arrayElementType: 'type',
@@ -200,7 +200,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(formattedValue, null);
     });
 
-    it('should return decoded value if not an array or struct', function() {
+    it('should return decoded value if not an array or struct', () => {
       const field = {
         code: 'NOT_STRUCT_OR_ARRAY',
       };
@@ -218,7 +218,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(formattedValue, decodedValue);
     });
 
-    it('should iterate a struct', function() {
+    it('should iterate a struct', () => {
       const field = {
         code: 'STRUCT',
         structType: {
@@ -247,8 +247,8 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('merge', function() {
-    it('should merge arrays', function() {
+  describe('merge', () => {
+    it('should merge arrays', () => {
       const type = {
         code: 'ARRAY',
         arrayElementType: {
@@ -264,7 +264,7 @@ describe('RowBuilder', function() {
       assert.deepStrictEqual(merged, [[1, 2, 3, 4]]);
     });
 
-    it('should merge structs', function() {
+    it('should merge structs', () => {
       const type = {
         code: 'STRUCT',
         structType: {
@@ -287,7 +287,7 @@ describe('RowBuilder', function() {
       assert.deepStrictEqual(merged, [[1, 2, 3, 4]]);
     });
 
-    it('should merge numbers', function() {
+    it('should merge numbers', () => {
       const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
@@ -299,7 +299,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(merged[0], 3);
     });
 
-    it('should merge strings', function() {
+    it('should merge strings', () => {
       const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
@@ -311,7 +311,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(merged[0], 'ab');
     });
 
-    it('should not merge null head values', function() {
+    it('should not merge null head values', () => {
       const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
@@ -324,7 +324,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(merged[1], tail);
     });
 
-    it('should not merge null tail values', function() {
+    it('should not merge null tail values', () => {
       const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
@@ -337,7 +337,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(merged[1], tail);
     });
 
-    it('should not merge floats', function() {
+    it('should not merge floats', () => {
       const type = {
         code: 'FLOAT64', // any value but float64/array/struct
       };
@@ -350,7 +350,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(merged[1], tail);
     });
 
-    it('should filter out empty strings', function() {
+    it('should filter out empty strings', () => {
       const type = {
         code: 'mergable-type', // any value but float64/array/struct
       };
@@ -363,8 +363,8 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('addRow', function() {
-    it('should combine row with chunks', function() {
+  describe('addRow', () => {
+    it('should combine row with chunks', () => {
       rowBuilder.chunks = [];
 
       const row = {};
@@ -374,13 +374,13 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('append', function() {
+  describe('append', () => {
     const ROWS = [[{}, {}], [{}, {}]];
 
     const ROW_1 = ROWS[0];
     const ROW_2 = ROWS[1];
 
-    beforeEach(function() {
+    beforeEach(() => {
       rowBuilder.fields = [{}, {}]; // matches the # of objects in a row
 
       rowBuilder.rows = [
@@ -388,7 +388,7 @@ describe('RowBuilder', function() {
       ];
     });
 
-    it('should create a new row if the last row is complete', function() {
+    it('should create a new row if the last row is complete', () => {
       rowBuilder.append(ROW_2[0]);
       rowBuilder.append(ROW_2[1]);
 
@@ -399,7 +399,7 @@ describe('RowBuilder', function() {
       assert.strictEqual(rowBuilder.rows[1][1], ROW_2[1]);
     });
 
-    it('should push a value into the current row if incomplete', function() {
+    it('should push a value into the current row if incomplete', () => {
       assert.strictEqual(rowBuilder.rows[0][0], ROW_1[0]);
       assert.strictEqual(rowBuilder.rows[0][1], ROW_1[1]);
 
@@ -411,8 +411,8 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('build', function() {
-    beforeEach(function() {
+  describe('build', () => {
+    beforeEach(() => {
       rowBuilder.chunks = [
         {
           values: [{}],
@@ -420,7 +420,7 @@ describe('RowBuilder', function() {
       ];
     });
 
-    it('should append values from a chunk', function(done) {
+    it('should append values from a chunk', done => {
       rowBuilder.append = function(value) {
         assert.strictEqual(this, rowBuilder);
         assert.strictEqual(value, rowBuilder.chunks[0].values[0]);
@@ -430,7 +430,7 @@ describe('RowBuilder', function() {
       rowBuilder.build();
     });
 
-    it('should merge chunked values', function() {
+    it('should merge chunked values', () => {
       rowBuilder.rows = [[{}, {}], [{}]];
 
       rowBuilder.fields = [
@@ -472,34 +472,34 @@ describe('RowBuilder', function() {
       assert.strictEqual(mergedValues[0], rowBuilder.rows[1][1]);
     });
 
-    it('should remove chunks', function() {
+    it('should remove chunks', () => {
       rowBuilder.build();
       assert.deepStrictEqual(rowBuilder.chunks, []);
     });
   });
 
-  describe('flush', function() {
+  describe('flush', () => {
     const ROWS = [[]];
 
     for (let i = 0; i < FIELDS.length; i++) {
       ROWS[0].push({});
     }
 
-    beforeEach(function() {
+    beforeEach(() => {
       rowBuilder.rows = ROWS;
     });
 
-    it('should return rows', function() {
+    it('should return rows', () => {
       const expectedRows = rowBuilder.rows;
       assert.deepStrictEqual(rowBuilder.flush(), expectedRows);
     });
 
-    it('should reset rows', function() {
+    it('should reset rows', () => {
       rowBuilder.flush();
       assert.deepStrictEqual(rowBuilder.rows, [[]]);
     });
 
-    it('should retain a partial row', function() {
+    it('should retain a partial row', () => {
       const partialRow = [{partial: true}];
       rowBuilder.rows = rowBuilder.rows.concat(partialRow);
 
@@ -508,10 +508,10 @@ describe('RowBuilder', function() {
     });
   });
 
-  describe('toJSON', function() {
+  describe('toJSON', () => {
     const ROWS = [[{}]];
 
-    beforeEach(function() {
+    beforeEach(() => {
       rowBuilder.fields = [
         {
           name: 'fieldName',
@@ -520,7 +520,7 @@ describe('RowBuilder', function() {
       ];
     });
 
-    it('should format the values', function() {
+    it('should format the values', () => {
       const formattedValue = {
         formatted: true,
       };
@@ -546,11 +546,11 @@ describe('RowBuilder', function() {
       });
     });
 
-    describe('toJSON', function() {
+    describe('toJSON', () => {
       const toJSONOverride = function() {};
       let FORMATTED_ROW;
 
-      beforeEach(function() {
+      beforeEach(() => {
         generateToJSONFromRowOverride = function() {
           return toJSONOverride;
         };
@@ -566,11 +566,11 @@ describe('RowBuilder', function() {
         FORMATTED_ROW = rowBuilder.toJSON(ROWS)[0];
       });
 
-      it('should assign a toJSON method', function() {
+      it('should assign a toJSON method', () => {
         assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
       });
 
-      it('should not include toJSON when iterated', function() {
+      it('should not include toJSON when iterated', () => {
         for (const keyVal in FORMATTED_ROW) {
           if (keyVal === 'toJSON') {
             throw new Error('toJSON should not be iterated.');

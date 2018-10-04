@@ -263,19 +263,18 @@ class Database extends ServiceObject {
    * @returns {Promise<CreateTransactionResponse>}
    */
   createBatchTransaction(options, callback) {
-    const self = this;
     if (is.fn(options)) {
       callback = options;
       options = null;
     }
-    this.createSession(function(err, session, resp) {
+    this.createSession((err, session, resp) => {
       if (err) {
         callback(err, null, resp);
         return;
       }
-      const transaction = self.batchTransaction({session});
+      const transaction = this.batchTransaction({session});
       transaction.options = extend({}, options);
-      transaction.begin(function(err, resp) {
+      transaction.begin((err, resp) => {
         if (err) {
           callback(err, null, resp);
           return;
@@ -341,7 +340,6 @@ class Database extends ServiceObject {
    * });
    */
   createSession(options, callback) {
-    const self = this;
     if (is.function(options)) {
       callback = options;
       options = {};
@@ -357,12 +355,12 @@ class Database extends ServiceObject {
         reqOpts: reqOpts,
         gaxOpts: options,
       },
-      function(err, resp) {
+      (err, resp) => {
         if (err) {
           callback(err, null, resp);
           return;
         }
-        const session = self.session(resp.name);
+        const session = this.session(resp.name);
         session.metadata = resp;
         callback(null, session, resp);
       }
@@ -436,14 +434,13 @@ class Database extends ServiceObject {
    *   });
    */
   createTable(schema, callback) {
-    const self = this;
-    this.updateSchema(schema, function(err, operation, resp) {
+    this.updateSchema(schema, (err, operation, resp) => {
       if (err) {
         callback(err, null, null, resp);
         return;
       }
       const tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
-      const table = self.table(tableName);
+      const table = this.table(tableName);
       callback(null, table, operation, resp);
     });
   }
@@ -499,12 +496,11 @@ class Database extends ServiceObject {
    * });
    */
   delete(callback) {
-    const self = this;
     const reqOpts = {
       database: this.formattedName_,
     };
-    this.close(function() {
-      self.request(
+    this.close(() => {
+      this.request(
         {
           client: 'DatabaseAdminClient',
           method: 'dropDatabase',
@@ -549,7 +545,7 @@ class Database extends ServiceObject {
   exists(callback) {
     const NOT_FOUND = 5;
 
-    this.getMetadata(function(err) {
+    this.getMetadata(err => {
       if (err && err.code !== NOT_FOUND) {
         callback(err, null);
         return;
@@ -604,22 +600,21 @@ class Database extends ServiceObject {
    * });
    */
   get(options, callback) {
-    const self = this;
     if (is.fn(options)) {
       callback = options;
       options = {};
     }
-    this.getMetadata(function(err, metadata) {
+    this.getMetadata((err, metadata) => {
       if (err) {
         if (options.autoCreate && err.code === 5) {
-          self.create(options, function(err, database, operation) {
+          this.create(options, (err, database, operation) => {
             if (err) {
               callback(err);
               return;
             }
-            operation.on('error', callback).on('complete', function(metadata) {
-              self.metadata = metadata;
-              callback(null, self, metadata);
+            operation.on('error', callback).on('complete', metadata => {
+              this.metadata = metadata;
+              callback(null, this, metadata);
             });
           });
           return;
@@ -627,7 +622,7 @@ class Database extends ServiceObject {
         callback(err);
         return;
       }
-      callback(null, self, metadata);
+      callback(null, this, metadata);
     });
   }
   /**
@@ -846,7 +841,7 @@ class Database extends ServiceObject {
       },
       function(err, sessions) {
         if (sessions) {
-          arguments[1] = sessions.map(function(metadata) {
+          arguments[1] = sessions.map(metadata => {
             const session = self.session(metadata.name);
             session.metadata = metadata;
             return session;
@@ -893,32 +888,31 @@ class Database extends ServiceObject {
    * });
    */
   getTransaction(options, callback) {
-    const self = this;
     if (is.fn(options)) {
       callback = options;
       options = null;
     }
     if (!options || !options.readOnly) {
-      this.pool_.getWriteSession(function(err, session, transaction) {
+      this.pool_.getWriteSession((err, session, transaction) => {
         if (!err) {
-          transaction = self.decorateTransaction_(transaction, session);
+          transaction = this.decorateTransaction_(transaction, session);
         }
         callback(err, transaction);
       });
       return;
     }
-    this.pool_.getReadSession(function(err, session) {
+    this.pool_.getReadSession((err, session) => {
       if (err) {
         callback(err, null);
         return;
       }
-      session.beginTransaction(options, function(err, transaction) {
+      session.beginTransaction(options, (err, transaction) => {
         if (err) {
-          self.pool_.release(session);
+          this.pool_.release(session);
           callback(err, null);
           return;
         }
-        transaction = self.decorateTransaction_(transaction, session);
+        transaction = this.decorateTransaction_(transaction, session);
         callback(null, transaction);
       });
     });
@@ -932,15 +926,14 @@ class Database extends ServiceObject {
    * @param {function} callback Callback function
    */
   makePooledRequest_(config, callback) {
-    const self = this;
     const pool = this.pool_;
-    pool.getReadSession(function(err, session) {
+    pool.getReadSession((err, session) => {
       if (err) {
         callback(err, null);
         return;
       }
       config.reqOpts.session = session.formattedName_;
-      self.request(config, function() {
+      this.request(config, function() {
         pool.release(session);
         callback.apply(null, arguments);
       });
@@ -976,8 +969,8 @@ class Database extends ServiceObject {
         session = null;
       }
     }
-    waitForSessionStream.on('reading', function() {
-      pool.getReadSession(function(err, session_) {
+    waitForSessionStream.on('reading', () => {
+      pool.getReadSession((err, session_) => {
         if (err) {
           destroyStream(err);
           return;
@@ -1158,10 +1151,10 @@ class Database extends ServiceObject {
     }
     this.runStream(query, options)
       .on('error', callback)
-      .on('data', function(row) {
+      .on('data', row => {
         rows.push(row);
       })
-      .on('end', function() {
+      .on('end', () => {
         callback(null, rows);
       });
   }
@@ -1432,7 +1425,7 @@ class Database extends ServiceObject {
       options = null;
     }
     options = extend({}, options);
-    this.getTransaction(options, function(err, transaction) {
+    this.getTransaction(options, (err, transaction) => {
       if (err) {
         callback(err);
         return;
