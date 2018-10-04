@@ -206,12 +206,13 @@ class Table extends TransactionRequest {
     );
   }
   /**
-   * Delete the table.
+   * Delete the table. Not to be confused with {@link Table#deleteRows}.
    *
    * Wrapper around {@link Database#updateSchema}.
    *
    * @see {@link Database#updateSchema}
    *
+   * @throws {TypeError} If any arguments are passed in.
    * @param {LongRunningOperationCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
@@ -248,6 +249,12 @@ class Table extends TransactionRequest {
    *   });
    */
   delete(callback) {
+    if (callback && !is.fn(callback)) {
+      throw new TypeError(
+        'Unexpected argument, please see Table#deleteRows to delete rows.'
+      );
+    }
+
     return this.database.updateSchema(
       'DROP TABLE `' + this.name + '`',
       callback
@@ -304,6 +311,50 @@ class Table extends TransactionRequest {
       keys,
       callback
     );
+  }
+  /**
+   * Drop the table.
+   *
+   * @see {@link Table#delete}
+   * @see {@link Database#updateSchema}
+   *
+   * @param {LongRunningOperationCallback} [callback] Callback function.
+   * @returns {Promise<LongRunningOperationResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const table = database.table('Singers');
+   *
+   * table.drop(function(err, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Table dropped successfully.
+   *     });
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * table.drop()
+   *   .then(function(data) {
+   *     const operation = data[0];
+   *     return operation.promise();
+   *   })
+   *   .then(function() {
+   *     // Table dropped successfully.
+   *   });
+   */
+  drop(callback) {
+    return this.delete(callback);
   }
   /**
    * Insert rows of data into this table.
@@ -666,7 +717,7 @@ class Table extends TransactionRequest {
  * that a callback is omitted.
  */
 promisifyAll(Table, {
-  exclude: ['delete'],
+  exclude: ['delete', 'drop'],
 });
 
 /**
