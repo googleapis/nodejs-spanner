@@ -179,7 +179,7 @@ describe('Table', function() {
 
   describe('delete', function() {
     it('should throw an error if any arguments are provided', function() {
-      const expectedErr = /Unexpected argument\, please see Table\#deleteRows to delete rows\./;
+      const expectedErr = /Unexpected argument, please see Table#deleteRows to delete rows\./;
 
       assert.throws(() => table.delete([]), expectedErr);
     });
