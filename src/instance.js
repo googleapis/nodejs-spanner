@@ -195,7 +195,6 @@ class Instance extends common.ServiceObject {
    * Full example:
    */
   createDatabase(name, options, callback) {
-    const self = this;
     if (!name) {
       throw new Error('A name is required to create a database.');
     }
@@ -225,12 +224,12 @@ class Instance extends common.ServiceObject {
         method: 'createDatabase',
         reqOpts: reqOpts,
       },
-      function(err, operation, resp) {
+      (err, operation, resp) => {
         if (err) {
           callback(err, null, null, resp);
           return;
         }
-        const database = self.database(name, poolOptions || poolCtor);
+        const database = this.database(name, poolOptions || poolCtor);
         callback(null, database, operation, resp);
       }
     );
@@ -304,27 +303,26 @@ class Instance extends common.ServiceObject {
    * });
    */
   delete(callback) {
-    const self = this;
     const reqOpts = {
       name: this.formattedName_,
     };
     Promise.all(
-      Array.from(this.databases_.values()).map(function(database) {
+      Array.from(this.databases_.values()).map(database => {
         return database.close();
       })
     )
       .catch(common.util.noop)
-      .then(function() {
-        self.databases_.clear();
-        self.request(
+      .then(() => {
+        this.databases_.clear();
+        this.request(
           {
             client: 'InstanceAdminClient',
             method: 'deleteInstance',
             reqOpts: reqOpts,
           },
-          function(err, resp) {
+          (err, resp) => {
             if (!err) {
-              self.parent.instances_.delete(self.id);
+              this.parent.instances_.delete(this.id);
             }
             callback(err, resp);
           }
@@ -365,7 +363,7 @@ class Instance extends common.ServiceObject {
   exists(callback) {
     const NOT_FOUND = 5;
 
-    this.getMetadata(function(err) {
+    this.getMetadata(err => {
       if (err && err.code !== NOT_FOUND) {
         callback(err, null);
         return;
@@ -419,22 +417,21 @@ class Instance extends common.ServiceObject {
    * });
    */
   get(options, callback) {
-    const self = this;
     if (is.fn(options)) {
       callback = options;
       options = {};
     }
-    this.getMetadata(function(err, metadata) {
+    this.getMetadata((err, metadata) => {
       if (err) {
         if (err.code === 5 && options.autoCreate) {
-          self.create(options, function(err, database, operation) {
+          this.create(options, (err, database, operation) => {
             if (err) {
               callback(err);
               return;
             }
-            operation.on('error', callback).on('complete', function(metadata) {
-              self.metadata = metadata;
-              callback(null, self, metadata);
+            operation.on('error', callback).on('complete', metadata => {
+              this.metadata = metadata;
+              callback(null, this, metadata);
             });
           });
           return;
@@ -442,7 +439,7 @@ class Instance extends common.ServiceObject {
         callback(err);
         return;
       }
-      callback(null, self, metadata);
+      callback(null, this, metadata);
     });
   }
   /**
@@ -530,7 +527,7 @@ class Instance extends common.ServiceObject {
       },
       function(err, databases) {
         if (databases) {
-          arguments[1] = databases.map(function(database) {
+          arguments[1] = databases.map(database => {
             const databaseInstance = self.database(database.name);
             databaseInstance.metadata = database;
             return databaseInstance;

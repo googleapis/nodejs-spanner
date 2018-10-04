@@ -60,25 +60,24 @@ class RowBuilder {
    * Process chunks.
    */
   build() {
-    const self = this;
-    this.chunks.forEach(function(chunk) {
+    this.chunks.forEach(chunk => {
       // If we have a chunk to merge, merge the values now.
-      if (self.pendingChunk) {
-        const currentColumn = self.currentRow.length % self.fields.length;
+      if (this.pendingChunk) {
+        const currentColumn = this.currentRow.length % this.fields.length;
         const merged = RowBuilder.merge(
-          self.fields[currentColumn].type,
-          self.pendingChunk,
+          this.fields[currentColumn].type,
+          this.pendingChunk,
           chunk.values.shift()
         );
         chunk.values = merged.concat(chunk.values);
-        delete self.pendingChunk;
+        delete this.pendingChunk;
       }
       // If the chunk is chunked, store the last value for merging with the next
       // chunk to be processed.
       if (chunk.chunkedValue) {
-        self.pendingChunk = chunk.values.pop();
+        this.pendingChunk = chunk.values.pop();
       }
-      chunk.values.map(RowBuilder.getValue).forEach(self.append.bind(self));
+      chunk.values.map(RowBuilder.getValue).forEach(this.append.bind(this));
     });
     // As chunks are now in rows, remove them.
     this.chunks.length = 0;
@@ -152,14 +151,14 @@ class RowBuilder {
       return null;
     }
     if (field.code === 'ARRAY') {
-      return value.map(function(value) {
+      return value.map(value => {
         return RowBuilder.formatValue(field.arrayElementType, value);
       });
     }
     if (field.code !== 'STRUCT') {
       return codec.decode(value, field);
     }
-    return field.structType.fields.reduce(function(struct, field, index) {
+    return field.structType.fields.reduce((struct, field, index) => {
       struct[field.name] = RowBuilder.formatValue(field, value[index]);
       return struct;
     }, {});
@@ -193,7 +192,7 @@ class RowBuilder {
       merged.push(head, tail);
     }
     // Filter out empty strings.
-    return merged.filter(function(value) {
+    return merged.filter(value => {
       return !is.string(value) || value.length;
     });
   }

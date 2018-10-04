@@ -49,7 +49,7 @@ function FakeGrpcServiceObject() {
   this.calledWith_ = arguments;
 }
 
-describe('Instance', function() {
+describe('Instance', () => {
   let Instance;
   let instance;
 
@@ -62,7 +62,7 @@ describe('Instance', function() {
 
   const NAME = 'instance-name';
 
-  before(function() {
+  before(() => {
     Instance = proxyquire('../src/instance.js', {
       '@google-cloud/common-grpc': {
         ServiceObject: FakeGrpcServiceObject,
@@ -73,20 +73,20 @@ describe('Instance', function() {
     });
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     instance = new Instance(SPANNER, NAME);
   });
 
-  describe('instantiation', function() {
-    it('should localize an database map', function() {
+  describe('instantiation', () => {
+    it('should localize an database map', () => {
       assert(instance.databases_ instanceof Map);
     });
 
-    it('should promisify all the things', function() {
+    it('should promisify all the things', () => {
       assert(promisified);
     });
 
-    it('should format the name', function() {
+    it('should format the name', () => {
       const formatName_ = Instance.formatName_;
       const formattedName = 'formatted-name';
 
@@ -103,7 +103,7 @@ describe('Instance', function() {
       assert(instance.formattedName_, formattedName);
     });
 
-    it('should localize the request function', function(done) {
+    it('should localize the request function', done => {
       const spannerInstance = extend({}, SPANNER);
 
       spannerInstance.request = function() {
@@ -115,7 +115,7 @@ describe('Instance', function() {
       instance.request();
     });
 
-    it('should localize the requestStream function', function(done) {
+    it('should localize the requestStream function', done => {
       const spannerInstance = extend({}, SPANNER);
 
       spannerInstance.requestStream = function() {
@@ -127,7 +127,7 @@ describe('Instance', function() {
       instance.requestStream();
     });
 
-    it('should inherit from ServiceObject', function(done) {
+    it('should inherit from ServiceObject', done => {
       const options = {};
       const spannerInstance = extend({}, SPANNER, {
         createInstance: function(name, options_, callback) {
@@ -150,20 +150,20 @@ describe('Instance', function() {
     });
   });
 
-  describe('formatName_', function() {
+  describe('formatName_', () => {
     const PATH = 'projects/' + SPANNER.projectId + '/instances/' + NAME;
 
-    it('should return the name if already formatted', function() {
+    it('should return the name if already formatted', () => {
       assert.strictEqual(Instance.formatName_(SPANNER.projectId, PATH), PATH);
     });
 
-    it('should format the name', function() {
+    it('should format the name', () => {
       const formattedName = Instance.formatName_(SPANNER.projectId, NAME);
       assert.strictEqual(formattedName, PATH);
     });
   });
 
-  describe('createDatabase', function() {
+  describe('createDatabase', () => {
     const NAME = 'database-name';
     const PATH = 'projects/project-id/databases/' + NAME;
 
@@ -172,13 +172,13 @@ describe('Instance', function() {
     };
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should throw if a name is not provided', function() {
-      assert.throws(function() {
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
         instance.createDatabase();
       }, /A name is required to create a database\./);
     });
 
-    it('should make the correct default request', function(done) {
+    it('should make the correct default request', done => {
       instance.request = function(config) {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'createDatabase');
@@ -193,7 +193,7 @@ describe('Instance', function() {
       instance.createDatabase(NAME, assert.ifError);
     });
 
-    it('should accept options', function(done) {
+    it('should accept options', done => {
       instance.request = function(config) {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
@@ -213,7 +213,7 @@ describe('Instance', function() {
       instance.createDatabase(NAME, OPTIONS, assert.ifError);
     });
 
-    it('should only use the name in the createStatement', function(done) {
+    it('should only use the name in the createStatement', done => {
       instance.request = function(config) {
         const expectedReqOpts = extend(
           {
@@ -231,8 +231,8 @@ describe('Instance', function() {
       instance.createDatabase(PATH, OPTIONS, assert.ifError);
     });
 
-    describe('options.poolOptions', function() {
-      it('should allow specifying session pool options', function(done) {
+    describe('options.poolOptions', () => {
+      it('should allow specifying session pool options', done => {
         const poolOptions = {};
 
         const options = extend({}, OPTIONS, {
@@ -253,8 +253,8 @@ describe('Instance', function() {
       });
     });
 
-    describe('options.schema', function() {
-      it('should arrify and rename to extraStatements', function(done) {
+    describe('options.schema', () => {
+      it('should arrify and rename to extraStatements', done => {
         const SCHEMA = 'schema';
 
         const options = extend({}, OPTIONS, {
@@ -271,18 +271,18 @@ describe('Instance', function() {
       });
     });
 
-    describe('error', function() {
+    describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};
 
-      beforeEach(function() {
+      beforeEach(() => {
         instance.request = function(config, callback) {
           callback(ERROR, null, API_RESPONSE);
         };
       });
 
-      it('should execute callback with error & API response', function(done) {
-        instance.createDatabase(NAME, OPTIONS, function(err, db, op, resp) {
+      it('should execute callback with error & API response', done => {
+        instance.createDatabase(NAME, OPTIONS, (err, db, op, resp) => {
           assert.strictEqual(err, ERROR);
           assert.strictEqual(op, null);
           assert.strictEqual(resp, API_RESPONSE);
@@ -291,17 +291,17 @@ describe('Instance', function() {
       });
     });
 
-    describe('success', function() {
+    describe('success', () => {
       const OPERATION = {};
       const API_RESPONSE = {};
 
-      beforeEach(function() {
+      beforeEach(() => {
         instance.request = function(config, callback) {
           callback(null, OPERATION, API_RESPONSE);
         };
       });
 
-      it('should exec callback with a Database and Operation', function(done) {
+      it('should exec callback with a Database and Operation', done => {
         const fakeDatabaseInstance = {};
 
         instance.database = function(name) {
@@ -309,7 +309,7 @@ describe('Instance', function() {
           return fakeDatabaseInstance;
         };
 
-        instance.createDatabase(NAME, OPTIONS, function(err, db, op, resp) {
+        instance.createDatabase(NAME, OPTIONS, (err, db, op, resp) => {
           assert.ifError(err);
           assert.strictEqual(db, fakeDatabaseInstance);
           assert.strictEqual(op, OPERATION);
@@ -320,16 +320,16 @@ describe('Instance', function() {
     });
   });
 
-  describe('database', function() {
+  describe('database', () => {
     const NAME = 'database-name';
 
-    it('should throw if a name is not provided', function() {
-      assert.throws(function() {
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
         instance.database();
       }, /A name is required to access a Database object\./);
     });
 
-    it('should create and cache a Database', function() {
+    it('should create and cache a Database', () => {
       const cache = instance.databases_;
       const poolOptions = {};
 
@@ -344,7 +344,7 @@ describe('Instance', function() {
       assert.strictEqual(database, cache.get(NAME));
     });
 
-    it('should re-use cached objects', function() {
+    it('should re-use cached objects', () => {
       const cache = instance.databases_;
       const fakeDatabase = {};
 
@@ -356,12 +356,12 @@ describe('Instance', function() {
     });
   });
 
-  describe('delete', function() {
-    beforeEach(function() {
+  describe('delete', () => {
+    beforeEach(() => {
       instance.parent = SPANNER;
     });
 
-    it('should close all cached databases', function(done) {
+    it('should close all cached databases', done => {
       let closed = false;
 
       instance.databases_.set('key', {
@@ -380,7 +380,7 @@ describe('Instance', function() {
       instance.delete(assert.ifError);
     });
 
-    it('should ignore closing errors', function(done) {
+    it('should ignore closing errors', done => {
       instance.databases_.set('key', {
         close: function() {
           return Promise.reject(new Error('err'));
@@ -394,7 +394,7 @@ describe('Instance', function() {
       instance.delete(assert.ifError);
     });
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       instance.request = function(config, callback) {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'deleteInstance');
@@ -407,7 +407,7 @@ describe('Instance', function() {
       instance.delete(done);
     });
 
-    it('should remove the Instance from the cache', function(done) {
+    it('should remove the Instance from the cache', done => {
       const cache = instance.parent.instances_;
 
       instance.request = function(config, callback) {
@@ -417,7 +417,7 @@ describe('Instance', function() {
       cache.set(instance.id, instance);
       assert.strictEqual(cache.get(instance.id), instance);
 
-      instance.delete(function(err) {
+      instance.delete(err => {
         assert.ifError(err);
         assert.strictEqual(cache.has(instance.id), false);
         done();
@@ -425,41 +425,41 @@ describe('Instance', function() {
     });
   });
 
-  describe('exists', function() {
-    it('should return any non-404 like errors', function(done) {
+  describe('exists', () => {
+    it('should return any non-404 like errors', done => {
       const error = {code: 3};
 
       instance.getMetadata = function(callback) {
         callback(error);
       };
 
-      instance.exists(function(err, exists) {
+      instance.exists((err, exists) => {
         assert.strictEqual(err, error);
         assert.strictEqual(exists, null);
         done();
       });
     });
 
-    it('should return true if error is absent', function(done) {
+    it('should return true if error is absent', done => {
       instance.getMetadata = function(callback) {
         callback(null);
       };
 
-      instance.exists(function(err, exists) {
+      instance.exists((err, exists) => {
         assert.ifError(err);
         assert.strictEqual(exists, true);
         done();
       });
     });
 
-    it('should return false if not found error if present', function(done) {
+    it('should return false if not found error if present', done => {
       const error = {code: 5};
 
       instance.getMetadata = function(callback) {
         callback(error);
       };
 
-      instance.exists(function(err, exists) {
+      instance.exists((err, exists) => {
         assert.ifError(err);
         assert.strictEqual(exists, false);
         done();
@@ -467,8 +467,8 @@ describe('Instance', function() {
     });
   });
 
-  describe('get', function() {
-    it('should call getMetadata', function(done) {
+  describe('get', () => {
+    it('should call getMetadata', done => {
       const options = {};
 
       instance.getMetadata = function() {
@@ -478,7 +478,7 @@ describe('Instance', function() {
       instance.get(options, assert.ifError);
     });
 
-    it('should not require an options object', function(done) {
+    it('should not require an options object', done => {
       instance.getMetadata = function() {
         done();
       };
@@ -486,7 +486,7 @@ describe('Instance', function() {
       instance.get(assert.ifError);
     });
 
-    describe('autoCreate', function() {
+    describe('autoCreate', () => {
       const error = new Error('Error.');
       error.code = 5;
 
@@ -502,7 +502,7 @@ describe('Instance', function() {
         },
       };
 
-      beforeEach(function() {
+      beforeEach(() => {
         OPERATION.listeners = {};
 
         instance.getMetadata = function(callback) {
@@ -514,7 +514,7 @@ describe('Instance', function() {
         };
       });
 
-      it('should call create', function(done) {
+      it('should call create', done => {
         instance.create = function(options) {
           assert.strictEqual(options, OPTIONS);
           done();
@@ -523,40 +523,40 @@ describe('Instance', function() {
         instance.get(OPTIONS, assert.ifError);
       });
 
-      it('should return error if create failed', function(done) {
+      it('should return error if create failed', done => {
         const error = new Error('Error.');
 
         instance.create = function(options, callback) {
           callback(error);
         };
 
-        instance.get(OPTIONS, function(err) {
+        instance.get(OPTIONS, err => {
           assert.strictEqual(err, error);
           done();
         });
       });
 
-      it('should return operation error', function(done) {
+      it('should return operation error', done => {
         const error = new Error('Error.');
 
-        setImmediate(function() {
+        setImmediate(() => {
           OPERATION.listeners['error'](error);
         });
 
-        instance.get(OPTIONS, function(err) {
+        instance.get(OPTIONS, err => {
           assert.strictEqual(err, error);
           done();
         });
       });
 
-      it('should execute callback if opereation succeeded', function(done) {
+      it('should execute callback if opereation succeeded', done => {
         const metadata = {};
 
-        setImmediate(function() {
+        setImmediate(() => {
           OPERATION.listeners['complete'](metadata);
         });
 
-        instance.get(OPTIONS, function(err, instance_, apiResponse) {
+        instance.get(OPTIONS, (err, instance_, apiResponse) => {
           assert.ifError(err);
           assert.strictEqual(instance_, instance);
           assert.strictEqual(instance.metadata, metadata);
@@ -566,7 +566,7 @@ describe('Instance', function() {
       });
     });
 
-    it('should not auto create without error code 5', function(done) {
+    it('should not auto create without error code 5', done => {
       const error = new Error('Error.');
       error.code = 'NOT-5';
 
@@ -582,13 +582,13 @@ describe('Instance', function() {
         throw new Error('Should not create.');
       };
 
-      instance.get(options, function(err) {
+      instance.get(options, err => {
         assert.strictEqual(err, error);
         done();
       });
     });
 
-    it('should not auto create unless requested', function(done) {
+    it('should not auto create unless requested', done => {
       const error = new Error('Error.');
       error.code = 5;
 
@@ -600,33 +600,33 @@ describe('Instance', function() {
         throw new Error('Should not create.');
       };
 
-      instance.get(function(err) {
+      instance.get(err => {
         assert.strictEqual(err, error);
         done();
       });
     });
 
-    it('should return an error from getMetadata', function(done) {
+    it('should return an error from getMetadata', done => {
       const error = new Error('Error.');
 
       instance.getMetadata = function(callback) {
         callback(error);
       };
 
-      instance.get(function(err) {
+      instance.get(err => {
         assert.strictEqual(err, error);
         done();
       });
     });
 
-    it('should return self and API response', function(done) {
+    it('should return self and API response', done => {
       const apiResponse = {};
 
       instance.getMetadata = function(callback) {
         callback(null, apiResponse);
       };
 
-      instance.get(function(err, instance_, apiResponse_) {
+      instance.get((err, instance_, apiResponse_) => {
         assert.ifError(err);
         assert.strictEqual(instance_, instance);
         assert.strictEqual(apiResponse_, apiResponse);
@@ -635,13 +635,13 @@ describe('Instance', function() {
     });
   });
 
-  describe('getDatabases', function() {
+  describe('getDatabases', () => {
     const QUERY = {
       a: 'b',
     };
     const ORIGINAL_QUERY = extend({}, QUERY);
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       const expectedReqOpts = extend({}, QUERY, {
         parent: instance.formattedName_,
       });
@@ -662,7 +662,7 @@ describe('Instance', function() {
       instance.getDatabases(QUERY, assert.ifError);
     });
 
-    it('should not require a query', function(done) {
+    it('should not require a query', done => {
       instance.request = function(config) {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
@@ -676,16 +676,16 @@ describe('Instance', function() {
       instance.getDatabases(assert.ifError);
     });
 
-    describe('error', function() {
+    describe('error', () => {
       const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
 
-      beforeEach(function() {
+      beforeEach(() => {
         instance.request = function(config, callback) {
           callback.apply(null, REQUEST_RESPONSE_ARGS);
         };
       });
 
-      it('should execute callback with original arguments', function(done) {
+      it('should execute callback with original arguments', done => {
         instance.getDatabases(QUERY, function() {
           assert.deepStrictEqual(
             [].slice.call(arguments),
@@ -696,7 +696,7 @@ describe('Instance', function() {
       });
     });
 
-    describe('success', function() {
+    describe('success', () => {
       const DATABASES = [
         {
           name: 'database-name',
@@ -705,13 +705,13 @@ describe('Instance', function() {
 
       const REQUEST_RESPONSE_ARGS = [null, DATABASES, {}];
 
-      beforeEach(function() {
+      beforeEach(() => {
         instance.request = function(config, callback) {
           callback.apply(null, REQUEST_RESPONSE_ARGS);
         };
       });
 
-      it('should create and return Database objects', function(done) {
+      it('should create and return Database objects', done => {
         const fakeDatabaseInstance = {};
 
         instance.database = function(name) {
@@ -736,8 +736,8 @@ describe('Instance', function() {
     });
   });
 
-  describe('getMetadata', function() {
-    it('should correctly call and return request', function() {
+  describe('getMetadata', () => {
+    it('should correctly call and return request', () => {
       const requestReturnValue = {};
 
       function callback() {}
@@ -757,13 +757,13 @@ describe('Instance', function() {
     });
   });
 
-  describe('setMetadata', function() {
+  describe('setMetadata', () => {
     const METADATA = {
       needsToBeSnakeCased: true,
     };
     const ORIGINAL_METADATA = extend({}, METADATA);
 
-    it('should make and return the request', function() {
+    it('should make and return the request', () => {
       const requestReturnValue = {};
 
       function callback() {}
@@ -792,8 +792,8 @@ describe('Instance', function() {
       assert.strictEqual(returnValue, requestReturnValue);
     });
 
-    it('should not require a callback', function() {
-      assert.doesNotThrow(function() {
+    it('should not require a callback', () => {
+      assert.doesNotThrow(() => {
         instance.setMetadata(METADATA);
       });
     });

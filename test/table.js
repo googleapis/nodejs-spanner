@@ -37,7 +37,7 @@ const fakePfy = extend({}, pfy, {
 
 function FakeTransactionRequest() {}
 
-describe('Table', function() {
+describe('Table', () => {
   let Table;
   let TableCached;
   let table;
@@ -54,7 +54,7 @@ describe('Table', function() {
 
   const NAME = 'table-name';
 
-  before(function() {
+  before(() => {
     Table = proxyquire('../src/table.js', {
       '@google-cloud/promisify': fakePfy,
       './transaction-request.js': FakeTransactionRequest,
@@ -62,43 +62,43 @@ describe('Table', function() {
     TableCached = extend({}, Table);
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     extend(Table, TableCached);
     table = new Table(DATABASE, NAME);
   });
 
-  describe('instantiation', function() {
-    it('should promisify all the things', function() {
+  describe('instantiation', () => {
+    it('should promisify all the things', () => {
       assert(promisified);
     });
 
-    it('should localize API', function() {
+    it('should localize API', () => {
       assert.strictEqual(table.api, DATABASE.api);
     });
 
-    it('should localize database', function() {
+    it('should localize database', () => {
       assert.strictEqual(table.database, DATABASE);
     });
 
-    it('should localize name', function() {
+    it('should localize name', () => {
       assert.strictEqual(table.name, NAME);
     });
 
-    it('should localize request from pool', function() {
+    it('should localize request from pool', () => {
       assert.strictEqual(table.request(), util.noop);
     });
 
-    it('should localize requestStream from pool', function() {
+    it('should localize requestStream from pool', () => {
       assert.strictEqual(table.requestStream(), util.noop);
     });
 
-    it('should inherit from TransactionRequest', function() {
+    it('should inherit from TransactionRequest', () => {
       assert(table instanceof FakeTransactionRequest);
     });
   });
 
-  describe('create', function() {
-    it('should create a table from the database', function(done) {
+  describe('create', () => {
+    it('should create a table from the database', done => {
       const schema = 'schema';
 
       table.database = {
@@ -112,8 +112,8 @@ describe('Table', function() {
     });
   });
 
-  describe('createReadStream', function() {
-    it('should call and return parent method', function() {
+  describe('createReadStream', () => {
+    it('should call and return parent method', () => {
       const query = 'SELECT * from Everything';
 
       const parentMethodReturnValue = {};
@@ -133,7 +133,7 @@ describe('Table', function() {
       assert.strictEqual(readStream, parentMethodReturnValue);
     });
 
-    it('should accept an array of keys', function(done) {
+    it('should accept an array of keys', done => {
       const QUERY = ['a', 'b'];
 
       FakeTransactionRequest.prototype = {
@@ -146,7 +146,7 @@ describe('Table', function() {
       table.createReadStream(QUERY);
     });
 
-    it('should support timestamp options', function(done) {
+    it('should support timestamp options', done => {
       const QUERY = 'SELECT * from Everything';
       const OPTIONS = {};
       const FORMATTED_OPTIONS = {};
@@ -177,20 +177,20 @@ describe('Table', function() {
     });
   });
 
-  describe('delete', function() {
-    it('should throw an error if any arguments are provided', function() {
+  describe('delete', () => {
+    it('should throw an error if any arguments are provided', () => {
       const expectedErr = /Unexpected argument, please see Table#deleteRows to delete rows\./;
 
       assert.throws(() => table.delete([]), expectedErr);
     });
 
-    it('should update the schema on the database', function() {
+    it('should update the schema on the database', () => {
       const updateSchemaReturnValue = {};
 
       function callback() {}
 
       table.database = {
-        updateSchema: function(schema, callback_) {
+        updateSchema: (schema, callback_) => {
           assert.strictEqual(schema, 'DROP TABLE `' + table.name + '`');
           assert.strictEqual(callback_, callback);
           return updateSchemaReturnValue;
@@ -202,8 +202,8 @@ describe('Table', function() {
     });
   });
 
-  describe('deleteRows', function() {
-    it('should call and return parent method', function() {
+  describe('deleteRows', () => {
+    it('should call and return parent method', () => {
       const keys = [];
 
       function callback() {}
@@ -225,11 +225,11 @@ describe('Table', function() {
     });
   });
 
-  describe('drop', function() {
-    it('should call through to Table#delete', function(done) {
+  describe('drop', () => {
+    it('should call through to Table#delete', done => {
       const returnVal = Promise.resolve();
 
-      table.delete = function(callback) {
+      table.delete = callback => {
         setImmediate(callback); // the done fn
         return returnVal;
       };
@@ -240,15 +240,15 @@ describe('Table', function() {
     });
   });
 
-  describe('insert', function() {
-    it('should call and return mutate_ method', function() {
+  describe('insert', () => {
+    it('should call and return mutate_ method', () => {
       const mutateReturnValue = {};
 
       const keyVals = [];
 
       function callback() {}
 
-      table.mutate_ = function(method, name, keyVals_, callback_) {
+      table.mutate_ = (method, name, keyVals_, callback_) => {
         assert.strictEqual(method, 'insert');
         assert.strictEqual(name, table.name);
         assert.strictEqual(keyVals_, keyVals);
@@ -261,8 +261,8 @@ describe('Table', function() {
     });
   });
 
-  describe('read', function() {
-    it('should call and collect results from a stream', function(done) {
+  describe('read', () => {
+    it('should call and collect results from a stream', done => {
       const keyVals = [];
 
       const rows = [{}, {}];
@@ -273,8 +273,8 @@ describe('Table', function() {
 
         const stream = through.obj();
 
-        setImmediate(function() {
-          split(rows, stream).then(function() {
+        setImmediate(() => {
+          split(rows, stream).then(() => {
             stream.end();
           });
         });
@@ -282,14 +282,14 @@ describe('Table', function() {
         return stream;
       };
 
-      table.read(keyVals, function(err, rows_) {
+      table.read(keyVals, (err, rows_) => {
         assert.ifError(err);
         assert.deepStrictEqual(rows_, rows);
         done();
       });
     });
 
-    it('should accept an options object', function(done) {
+    it('should accept an options object', done => {
       const OPTIONS = {};
 
       table.createReadStream = function(keyVals, options) {
@@ -297,7 +297,7 @@ describe('Table', function() {
 
         const stream = through.obj();
 
-        setImmediate(function() {
+        setImmediate(() => {
           stream.end();
         });
 
@@ -307,28 +307,28 @@ describe('Table', function() {
       table.read([], OPTIONS, done);
     });
 
-    it('should execute callback with error', function(done) {
+    it('should execute callback with error', done => {
       const error = new Error('Error.');
 
       table.createReadStream = function() {
         const stream = through.obj();
 
-        setImmediate(function() {
+        setImmediate(() => {
           stream.destroy(error);
         });
 
         return stream;
       };
 
-      table.read([], function(err) {
+      table.read([], err => {
         assert.strictEqual(err, error);
         done();
       });
     });
   });
 
-  describe('replace', function() {
-    it('should call and return mutate_ method', function() {
+  describe('replace', () => {
+    it('should call and return mutate_ method', () => {
       const mutateReturnValue = {};
 
       const keyVals = [];
@@ -348,8 +348,8 @@ describe('Table', function() {
     });
   });
 
-  describe('update', function() {
-    it('should call and return mutate_ method', function() {
+  describe('update', () => {
+    it('should call and return mutate_ method', () => {
       const mutateReturnValue = {};
 
       const keyVals = [];
@@ -369,8 +369,8 @@ describe('Table', function() {
     });
   });
 
-  describe('upsert', function() {
-    it('should call and return mutate_ method', function() {
+  describe('upsert', () => {
+    it('should call and return mutate_ method', () => {
       const mutateReturnValue = {};
 
       const keyVals = [];

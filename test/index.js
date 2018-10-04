@@ -90,7 +90,7 @@ function FakeInstance() {
   this.calledWith_ = arguments;
 }
 
-describe('Spanner', function() {
+describe('Spanner', () => {
   let Spanner;
   let spanner;
 
@@ -98,7 +98,7 @@ describe('Spanner', function() {
     projectId: 'project-id',
   };
 
-  before(function() {
+  before(() => {
     Spanner = proxyquire('../src/index.js', {
       '@google-cloud/common-grpc': {
         Operation: FakeGrpcOperation,
@@ -118,7 +118,7 @@ describe('Spanner', function() {
     }).Spanner;
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     fakeGapicClient = util.noop;
     fakeGapicClient.scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
@@ -131,26 +131,26 @@ describe('Spanner', function() {
     replaceProjectIdTokenOverride = null;
   });
 
-  describe('instantiation', function() {
-    it('should localize a cached gapic client map', function() {
+  describe('instantiation', () => {
+    it('should localize a cached gapic client map', () => {
       assert(spanner.clients_ instanceof Map);
       assert.strictEqual(spanner.clients_.size, 0);
     });
 
-    it('should localize an instance map', function() {
+    it('should localize an instance map', () => {
       assert(spanner.instances_ instanceof Map);
       assert.strictEqual(spanner.instances_.size, 0);
     });
 
-    it('should promisify all the things', function() {
+    it('should promisify all the things', () => {
       assert(promisified);
     });
 
-    it('should streamify the correct methods', function() {
+    it('should streamify the correct methods', () => {
       assert.strictEqual(spanner.getInstancesStream, 'getInstances');
     });
 
-    it('should create an auth instance from google-auth-library', function() {
+    it('should create an auth instance from google-auth-library', () => {
       const expectedOptions = extend({}, OPTIONS, {
         libName: 'gccl',
         libVersion: require('../package.json').version,
@@ -160,7 +160,7 @@ describe('Spanner', function() {
       assert.deepStrictEqual(spanner.auth.calledWith_[0], expectedOptions);
     });
 
-    it('should combine and uniquify all gapic client scopes', function() {
+    it('should combine and uniquify all gapic client scopes', () => {
       const expectedScopes = ['a', 'b', 'c'];
       fakeV1.DatabaseAdminClient.scopes = ['a', 'c'];
       fakeV1.InstanceAdminClient.scopes = ['a', 'b'];
@@ -177,7 +177,7 @@ describe('Spanner', function() {
       assert.deepStrictEqual(spanner.auth.calledWith_[0], expectedOptions);
     });
 
-    it('should inherit from GrpcService', function() {
+    it('should inherit from GrpcService', () => {
       assert(spanner instanceof FakeGrpcService);
 
       const config = spanner.calledWith_[0];
@@ -206,7 +206,7 @@ describe('Spanner', function() {
       );
     });
 
-    it('should optionally accept a servicePath', function() {
+    it('should optionally accept a servicePath', () => {
       const SERVICE_PATH = 'abc.def.ghi';
       const spanner = new Spanner({servicePath: SERVICE_PATH});
 
@@ -216,8 +216,8 @@ describe('Spanner', function() {
     });
   });
 
-  describe('date', function() {
-    it('should create a SpannerDate instance', function() {
+  describe('date', () => {
+    it('should create a SpannerDate instance', () => {
       const value = {};
       const customValue = {};
 
@@ -231,8 +231,8 @@ describe('Spanner', function() {
     });
   });
 
-  describe('float', function() {
-    it('should create a SpannerDate instance', function() {
+  describe('float', () => {
+    it('should create a SpannerDate instance', () => {
       const value = {};
       const customValue = {};
 
@@ -246,8 +246,8 @@ describe('Spanner', function() {
     });
   });
 
-  describe('int', function() {
-    it('should create an Int instance', function() {
+  describe('int', () => {
+    it('should create an Int instance', () => {
       const value = {};
       const customValue = {};
 
@@ -261,8 +261,8 @@ describe('Spanner', function() {
     });
   });
 
-  describe('struct', function() {
-    it('should create a struct from JSON', function() {
+  describe('struct', () => {
+    it('should create a struct from JSON', () => {
       const json = {};
       const fakeStruct = [];
 
@@ -278,7 +278,7 @@ describe('Spanner', function() {
       assert.strictEqual(struct, fakeStruct);
     });
 
-    it('should create a struct from an Array', function() {
+    it('should create a struct from an Array', () => {
       const arr = [];
       const fakeStruct = [];
 
@@ -295,7 +295,7 @@ describe('Spanner', function() {
     });
   });
 
-  describe('createInstance', function() {
+  describe('createInstance', () => {
     const NAME = 'instance-name';
     let PATH;
 
@@ -306,34 +306,34 @@ describe('Spanner', function() {
 
     let formatName_;
 
-    before(function() {
+    before(() => {
       formatName_ = FakeInstance.formatName_;
     });
 
-    after(function() {
+    after(() => {
       FakeInstance.formatName_ = formatName_;
     });
 
-    beforeEach(function() {
+    beforeEach(() => {
       FakeInstance.formatName_ = formatName_;
       PATH = 'projects/' + spanner.projectId + '/instances/' + NAME;
 
       spanner.request = util.noop;
     });
 
-    it('should throw if a name is not provided', function() {
-      assert.throws(function() {
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
         spanner.createInstance();
       }, /A name is required to create an instance\./);
     });
 
-    it('should throw if a config object is not provided', function() {
-      assert.throws(function() {
+    it('should throw if a config object is not provided', () => {
+      assert.throws(() => {
         spanner.createInstance(NAME);
       }, /A configuration object is required to create an instance\./);
     });
 
-    it('should set the correct defaults on the request', function(done) {
+    it('should set the correct defaults on the request', done => {
       FakeInstance.formatName_ = function(projectId, name) {
         assert.strictEqual(projectId, spanner.projectId);
         assert.strictEqual(name, NAME);
@@ -365,7 +365,7 @@ describe('Spanner', function() {
       spanner.createInstance(NAME, CONFIG, assert.ifError);
     });
 
-    it('should accept a path', function(done) {
+    it('should accept a path', done => {
       FakeInstance.formatName_ = function(projectId, name) {
         assert.strictEqual(name, PATH);
         setImmediate(done);
@@ -375,8 +375,8 @@ describe('Spanner', function() {
       spanner.createInstance(PATH, CONFIG, assert.ifError);
     });
 
-    describe('config.nodes', function() {
-      it('should rename to nodeCount', function(done) {
+    describe('config.nodes', () => {
+      it('should rename to nodeCount', done => {
         const config = extend({}, CONFIG, {nodes: 10});
 
         spanner.request = function(config_) {
@@ -390,8 +390,8 @@ describe('Spanner', function() {
       });
     });
 
-    describe('config.config', function() {
-      it('should format a name', function(done) {
+    describe('config.config', () => {
+      it('should format a name', done => {
         const name = 'config-name';
         const config = extend({}, CONFIG, {config: name});
         const originalConfig = extend({}, config);
@@ -412,18 +412,18 @@ describe('Spanner', function() {
       });
     });
 
-    describe('error', function() {
+    describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};
 
-      beforeEach(function() {
+      beforeEach(() => {
         spanner.request = function(config, callback) {
           callback(ERROR, null, API_RESPONSE);
         };
       });
 
-      it('should execute callback with error & API response', function(done) {
-        spanner.createInstance(NAME, CONFIG, function(err, instance, op, resp) {
+      it('should execute callback with error & API response', done => {
+        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
           assert.strictEqual(err, ERROR);
           assert.strictEqual(instance, null);
           assert.strictEqual(op, null);
@@ -433,17 +433,17 @@ describe('Spanner', function() {
       });
     });
 
-    describe('success', function() {
+    describe('success', () => {
       const OPERATION = {};
       const API_RESPONSE = {};
 
-      beforeEach(function() {
+      beforeEach(() => {
         spanner.request = function(config, callback) {
           callback(null, OPERATION, API_RESPONSE);
         };
       });
 
-      it('should create an Instance and return an Operation', function(done) {
+      it('should create an Instance and return an Operation', done => {
         const formattedName = 'formatted-name';
         FakeInstance.formatName_ = function() {
           return formattedName;
@@ -455,7 +455,7 @@ describe('Spanner', function() {
           return fakeInstanceInstance;
         };
 
-        spanner.createInstance(NAME, CONFIG, function(err, instance, op, resp) {
+        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
           assert.ifError(err);
           assert.strictEqual(instance, fakeInstanceInstance);
           assert.strictEqual(op, OPERATION);
@@ -466,17 +466,17 @@ describe('Spanner', function() {
     });
   });
 
-  describe('getInstances', function() {
+  describe('getInstances', () => {
     const QUERY = {
       a: 'b',
     };
     const ORIGINAL_QUERY = extend({}, QUERY);
 
-    beforeEach(function() {
+    beforeEach(() => {
       spanner.request = util.noop;
     });
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       const expectedReqOpts = extend({}, QUERY, {
         parent: 'projects/' + spanner.projectId,
       });
@@ -497,7 +497,7 @@ describe('Spanner', function() {
       spanner.getInstances(QUERY, assert.ifError);
     });
 
-    it('should not require a query', function(done) {
+    it('should not require a query', done => {
       spanner.request = function(config) {
         assert.deepStrictEqual(config.reqOpts, {
           parent: 'projects/' + spanner.projectId,
@@ -511,16 +511,16 @@ describe('Spanner', function() {
       spanner.getInstances(assert.ifError);
     });
 
-    describe('error', function() {
+    describe('error', () => {
       const GAX_RESPONSE_ARGS = [new Error('Error.'), null, {}];
 
-      beforeEach(function() {
+      beforeEach(() => {
         spanner.request = function(config, callback) {
           callback.apply(null, GAX_RESPONSE_ARGS);
         };
       });
 
-      it('should execute callback with original arguments', function(done) {
+      it('should execute callback with original arguments', done => {
         spanner.getInstances(QUERY, function() {
           assert.deepStrictEqual([].slice.call(arguments), GAX_RESPONSE_ARGS);
           done();
@@ -528,7 +528,7 @@ describe('Spanner', function() {
       });
     });
 
-    describe('success', function() {
+    describe('success', () => {
       const INSTANCES = [
         {
           name: 'instance-name',
@@ -537,13 +537,13 @@ describe('Spanner', function() {
 
       const GAX_RESPONSE_ARGS = [null, INSTANCES, {}];
 
-      beforeEach(function() {
+      beforeEach(() => {
         spanner.request = function(config, callback) {
           callback.apply(null, GAX_RESPONSE_ARGS);
         };
       });
 
-      it('should create and return Instance objects', function(done) {
+      it('should create and return Instance objects', done => {
         const fakeInstanceInstance = {};
 
         spanner.instance = function(name) {
@@ -568,12 +568,12 @@ describe('Spanner', function() {
     });
   });
 
-  describe('getInstanceConfigs', function() {
-    beforeEach(function() {
+  describe('getInstanceConfigs', () => {
+    beforeEach(() => {
       spanner.request = util.noop;
     });
 
-    it('should make and return the correct request', function() {
+    it('should make and return the correct request', () => {
       const query = {a: 'b'};
       const expectedQuery = extend({}, query, {
         parent: 'projects/' + spanner.projectId,
@@ -603,7 +603,7 @@ describe('Spanner', function() {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should not require a query', function(done) {
+    it('should not require a query', done => {
       spanner.request = function(config) {
         const reqOpts = config.reqOpts;
         assert.deepStrictEqual(reqOpts, {
@@ -616,12 +616,12 @@ describe('Spanner', function() {
     });
   });
 
-  describe('getInstanceConfigsStream', function() {
-    beforeEach(function() {
+  describe('getInstanceConfigsStream', () => {
+    beforeEach(() => {
       spanner.requestStream = util.noop;
     });
 
-    it('should make and return the correct gax API call', function() {
+    it('should make and return the correct gax API call', () => {
       const query = {a: 'b'};
       const expectedQuery = extend({}, query, {
         parent: 'projects/' + spanner.projectId,
@@ -647,16 +647,16 @@ describe('Spanner', function() {
     });
   });
 
-  describe('instance', function() {
+  describe('instance', () => {
     const NAME = 'instance-name';
 
-    it('should throw if a name is not provided', function() {
-      assert.throws(function() {
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
         spanner.instance();
       }, /A name is required to access an Instance object\./);
     });
 
-    it('should create and cache an Instance', function() {
+    it('should create and cache an Instance', () => {
       const cache = spanner.instances_;
 
       assert.strictEqual(cache.has(NAME), false);
@@ -669,7 +669,7 @@ describe('Spanner', function() {
       assert.strictEqual(instance, cache.get(NAME));
     });
 
-    it('should re-use cached objects', function() {
+    it('should re-use cached objects', () => {
       const cache = spanner.instances_;
       const fakeInstance = {};
 
@@ -681,16 +681,16 @@ describe('Spanner', function() {
     });
   });
 
-  describe('operation', function() {
+  describe('operation', () => {
     const NAME = 'op-name';
 
-    it('should throw if a name is not provided', function() {
-      assert.throws(function() {
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
         spanner.operation();
       }, /A name is required to access an Operation object\./);
     });
 
-    it('should return an Operation object', function() {
+    it('should return an Operation object', () => {
       const operation = spanner.operation(NAME);
       assert(operation instanceof FakeGrpcOperation);
       assert.strictEqual(operation.calledWith_[0], spanner);
@@ -698,7 +698,7 @@ describe('Spanner', function() {
     });
   });
 
-  describe('prepareGapicRequest_', function() {
+  describe('prepareGapicRequest_', () => {
     const PROJECT_ID = 'project-id';
     const CONFIG = {
       client: 'SpannerClient',
@@ -714,7 +714,7 @@ describe('Spanner', function() {
       [CONFIG.method]: util.noop,
     };
 
-    beforeEach(function() {
+    beforeEach(() => {
       FAKE_GAPIC_CLIENT[CONFIG.method] = util.noop;
 
       spanner.auth.getProjectId = function(callback) {
@@ -726,7 +726,7 @@ describe('Spanner', function() {
       };
     });
 
-    it('should get the project ID from google-auth-library', function(done) {
+    it('should get the project ID from google-auth-library', done => {
       spanner.auth.getProjectId = function() {
         done();
       };
@@ -734,24 +734,24 @@ describe('Spanner', function() {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should return an error from google-auth-library', function(done) {
+    it('should return an error from google-auth-library', done => {
       const error = new Error('Error.');
 
       spanner.auth.getProjectId = function(callback) {
         callback(error);
       };
 
-      spanner.prepareGapicRequest_(CONFIG, function(err) {
+      spanner.prepareGapicRequest_(CONFIG, err => {
         assert.strictEqual(err, error);
         done();
       });
     });
 
-    it('should create and cache a gapic client', function(done) {
+    it('should create and cache a gapic client', done => {
       fakeV1[CONFIG.client] = function(options) {
         assert.strictEqual(options, spanner.options);
 
-        setImmediate(function() {
+        setImmediate(() => {
           const cachedClient = spanner.clients_.get(CONFIG.client);
           assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
           done();
@@ -763,7 +763,7 @@ describe('Spanner', function() {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should re-use a cached gapic client', function() {
+    it('should re-use a cached gapic client', () => {
       fakeV1[CONFIG.client] = function() {
         throw new Error('Should not have re-created client!');
       };
@@ -773,7 +773,7 @@ describe('Spanner', function() {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should replace project ID tokens within the reqOpts', function(done) {
+    it('should replace project ID tokens within the reqOpts', done => {
       const replacedReqOpts = {};
 
       replaceProjectIdTokenOverride = function(reqOpts, projectId) {
@@ -790,12 +790,12 @@ describe('Spanner', function() {
         done();
       };
 
-      spanner.prepareGapicRequest_(CONFIG, function(err, requestFn) {
+      spanner.prepareGapicRequest_(CONFIG, (err, requestFn) => {
         requestFn(); // (FAKE_GAPIC_CLIENT[CONFIG.method])
       });
     });
 
-    it('should return the gax client method with correct args', function(done) {
+    it('should return the gax client method with correct args', done => {
       replaceProjectIdTokenOverride = function(reqOpts) {
         return reqOpts;
       };
@@ -811,27 +811,27 @@ describe('Spanner', function() {
         arg(); // done()
       };
 
-      spanner.prepareGapicRequest_(CONFIG, function(err, requestFn) {
+      spanner.prepareGapicRequest_(CONFIG, (err, requestFn) => {
         requestFn(done); // (FAKE_GAPIC_CLIENT[CONFIG.method])
       });
     });
   });
 
-  describe('request', function() {
+  describe('request', () => {
     const CONFIG = {};
 
-    beforeEach(function() {
+    beforeEach(() => {
       spanner.prepareGapicRequest_ = util.noop;
       spanner.Promise = Promise;
     });
 
-    describe('callback mode', function() {
-      it('should not return a promise', function() {
+    describe('callback mode', () => {
+      it('should not return a promise', () => {
         const returnedValue = spanner.request(CONFIG, assert.ifError);
         assert.strictEqual(returnedValue, undefined);
       });
 
-      it('should prepare the gapic request', function(done) {
+      it('should prepare the gapic request', done => {
         spanner.prepareGapicRequest_ = function(config) {
           assert.strictEqual(config, CONFIG);
           done();
@@ -840,20 +840,20 @@ describe('Spanner', function() {
         spanner.request(CONFIG, assert.ifError);
       });
 
-      it('should execute callback with error', function(done) {
+      it('should execute callback with error', done => {
         const error = new Error('Error.');
 
         spanner.prepareGapicRequest_ = function(config, callback) {
           callback(error);
         };
 
-        spanner.request(CONFIG, function(err) {
+        spanner.request(CONFIG, err => {
           assert.strictEqual(err, error);
           done();
         });
       });
 
-      it('should pass callback to request function', function(done) {
+      it('should pass callback to request function', done => {
         function gapicRequestFn(callback) {
           callback(); // done()
         }
@@ -866,13 +866,13 @@ describe('Spanner', function() {
       });
     });
 
-    describe('promise mode', function() {
-      it('should return a promise', function() {
+    describe('promise mode', () => {
+      it('should return a promise', () => {
         const returnedValue = spanner.request(CONFIG);
         assert(returnedValue instanceof Promise);
       });
 
-      it('should prepare the gapic request', function(done) {
+      it('should prepare the gapic request', done => {
         spanner.prepareGapicRequest_ = function(config) {
           assert.strictEqual(config, CONFIG);
           done();
@@ -881,20 +881,20 @@ describe('Spanner', function() {
         spanner.request(CONFIG);
       });
 
-      it('should reject the promise', function(done) {
+      it('should reject the promise', done => {
         const error = new Error('Error.');
 
         spanner.prepareGapicRequest_ = function(config, callback) {
           callback(error);
         };
 
-        spanner.request(CONFIG).catch(function(err) {
+        spanner.request(CONFIG).catch(err => {
           assert.strictEqual(err, error);
           done();
         });
       });
 
-      it('should resolve the promise with the request fn', function() {
+      it('should resolve the promise with the request fn', () => {
         const gapicRequestFnResult = {};
 
         function gapicRequestFn() {
@@ -905,21 +905,21 @@ describe('Spanner', function() {
           callback(null, gapicRequestFn);
         };
 
-        return spanner.request(CONFIG).then(function(result) {
+        return spanner.request(CONFIG).then(result => {
           assert.strictEqual(result, gapicRequestFnResult);
         });
       });
     });
   });
 
-  describe('requestStream', function() {
+  describe('requestStream', () => {
     const CONFIG = {};
 
-    beforeEach(function() {
+    beforeEach(() => {
       spanner.prepareGapicRequest_ = util.noop;
     });
 
-    it('should prepare the gapic request', function(done) {
+    it('should prepare the gapic request', done => {
       spanner.prepareGapicRequest_ = function(config) {
         assert.strictEqual(config, CONFIG);
         done();
@@ -928,7 +928,7 @@ describe('Spanner', function() {
       spanner.requestStream(CONFIG).emit('reading');
     });
 
-    it('should destroy the stream with an error', function(done) {
+    it('should destroy the stream with an error', done => {
       const error = new Error('Error.');
 
       spanner.prepareGapicRequest_ = function(config, callback) {
@@ -937,20 +937,20 @@ describe('Spanner', function() {
 
       spanner
         .requestStream(CONFIG)
-        .on('error', function(err) {
+        .on('error', err => {
           assert.strictEqual(err, error);
           done();
         })
         .emit('reading');
     });
 
-    it('should pipe the request stream to the user stream', function(done) {
+    it('should pipe the request stream to the user stream', done => {
       const requestStream = through.obj();
       const data = {};
 
       spanner.prepareGapicRequest_ = function(config, callback) {
-        callback(null, function() {
-          setImmediate(function() {
+        callback(null, () => {
+          setImmediate(() => {
             requestStream.end(data);
           });
 
@@ -960,20 +960,20 @@ describe('Spanner', function() {
 
       spanner
         .requestStream(CONFIG)
-        .on('data', function(data_) {
+        .on('data', data_ => {
           assert.strictEqual(data_, data);
           done();
         })
         .emit('reading');
     });
 
-    it('should pass errors from the request stream', function(done) {
+    it('should pass errors from the request stream', done => {
       const requestStream = through.obj();
       const error = new Error('Error.');
 
       spanner.prepareGapicRequest_ = function(config, callback) {
-        callback(null, function() {
-          setImmediate(function() {
+        callback(null, () => {
+          setImmediate(() => {
             requestStream.destroy(error);
           });
 
@@ -983,7 +983,7 @@ describe('Spanner', function() {
 
       spanner
         .requestStream(CONFIG)
-        .on('error', function(err) {
+        .on('error', err => {
           assert.strictEqual(err, error);
           done();
         })

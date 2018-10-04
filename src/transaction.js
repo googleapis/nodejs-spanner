@@ -172,7 +172,6 @@ class Transaction extends TransactionRequest {
    *   });
    */
   begin(callback) {
-    const self = this;
     let options;
     if (!this.readOnly) {
       options = {
@@ -197,17 +196,17 @@ class Transaction extends TransactionRequest {
         method: 'beginTransaction',
         reqOpts: reqOpts,
       },
-      function(err, resp) {
+      (err, resp) => {
         if (err) {
           callback(err);
           return;
         }
-        self.attempts_ += 1;
-        self.ended_ = false;
-        self.id = resp.id;
-        self.metadata = resp;
+        this.attempts_ += 1;
+        this.ended_ = false;
+        this.id = resp.id;
+        this.metadata = resp;
         if (resp.readTimestamp) {
-          self.readTimestamp = TransactionRequest.fromProtoTimestamp_(
+          this.readTimestamp = TransactionRequest.fromProtoTimestamp_(
             resp.readTimestamp
           );
         }
@@ -270,7 +269,6 @@ class Transaction extends TransactionRequest {
    * });
    */
   commit(callback) {
-    const self = this;
     if (this.ended_) {
       throw new Error('Transaction has already been ended.');
     }
@@ -290,9 +288,9 @@ class Transaction extends TransactionRequest {
         method: 'commit',
         reqOpts: reqOpts,
       },
-      function(err, resp) {
+      (err, resp) => {
         if (!err) {
-          self.end();
+          this.end();
         }
         callback(err, resp);
       }
@@ -365,23 +363,22 @@ class Transaction extends TransactionRequest {
    * @param {function} callback The callback function.
    */
   request(config, callback) {
-    const self = this;
     config.reqOpts = extend(
       {
         session: this.session.formattedName_,
       },
       config.reqOpts
     );
-    this.session.request(config, function(err, resp) {
-      if (!self.runFn_ || !err || !self.isRetryableErrorCode_(err.code)) {
+    this.session.request(config, (err, resp) => {
+      if (!this.runFn_ || !err || !this.isRetryableErrorCode_(err.code)) {
         callback(err, resp);
         return;
       }
-      if (self.shouldRetry_(err)) {
-        self.retry_(Transaction.getRetryDelay_(err, self.attempts_));
+      if (this.shouldRetry_(err)) {
+        this.retry_(Transaction.getRetryDelay_(err, this.attempts_));
         return;
       }
-      self.runFn_(Transaction.createDeadlineError_(err));
+      this.runFn_(Transaction.createDeadlineError_(err));
     });
   }
   /**
@@ -393,7 +390,6 @@ class Transaction extends TransactionRequest {
    * @returns {ReadableStream}
    */
   requestStream(config) {
-    const self = this;
     config.reqOpts = extend(
       {
         session: this.session.formattedName_,
@@ -401,21 +397,21 @@ class Transaction extends TransactionRequest {
       config.reqOpts
     );
     const requestStream = this.session.requestStream(config);
-    if (!is.fn(self.runFn_)) {
+    if (!is.fn(this.runFn_)) {
       return requestStream;
     }
     const userStream = through.obj();
-    requestStream.on('error', function(err) {
-      if (!self.isRetryableErrorCode_(err.code)) {
+    requestStream.on('error', err => {
+      if (!this.isRetryableErrorCode_(err.code)) {
         userStream.destroy(err);
         return;
       }
       userStream.destroy();
-      if (self.shouldRetry_(err)) {
-        self.retry_(Transaction.getRetryDelay_(err, self.attempts_));
+      if (this.shouldRetry_(err)) {
+        this.retry_(Transaction.getRetryDelay_(err, this.attempts_));
         return;
       }
-      self.runFn_(Transaction.createDeadlineError_(err));
+      this.runFn_(Transaction.createDeadlineError_(err));
     });
     return requestStream.pipe(userStream);
   }
@@ -429,13 +425,13 @@ class Transaction extends TransactionRequest {
    */
   retry_(delay) {
     const self = this;
-    this.begin(function(err) {
+    this.begin(err => {
       if (err) {
         self.runFn_(err);
         return;
       }
       self.queuedMutations_ = [];
-      setTimeout(function() {
+      setTimeout(() => {
         self.runFn_(null, self);
       }, delay);
     });
@@ -473,7 +469,6 @@ class Transaction extends TransactionRequest {
    * });
    */
   rollback(callback) {
-    const self = this;
     if (!this.id) {
       throw new Error('Transaction ID is unknown, nothing to rollback.');
     }
@@ -486,9 +481,9 @@ class Transaction extends TransactionRequest {
         method: 'rollback',
         reqOpts: reqOpts,
       },
-      function(err, resp) {
+      (err, resp) => {
         if (!err) {
-          self.end();
+          this.end();
         }
         callback(err, resp);
       }
@@ -594,10 +589,10 @@ class Transaction extends TransactionRequest {
     const rows = [];
     this.runStream(query)
       .on('error', callback)
-      .on('data', function(row) {
+      .on('data', row => {
         rows.push(row);
       })
-      .on('end', function() {
+      .on('end', () => {
         callback(null, rows);
       });
   }
@@ -686,7 +681,6 @@ class Transaction extends TransactionRequest {
    * });
    */
   runStream(query) {
-    const self = this;
     if (is.string(query)) {
       query = {
         sql: query,
@@ -705,13 +699,13 @@ class Transaction extends TransactionRequest {
         readOnly: this.options || {},
       };
     }
-    function makeRequest(resumeToken) {
-      return self.requestStream({
+    const makeRequest = resumeToken => {
+      return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
         reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
       });
-    }
+    };
     return new PartialResultStream(makeRequest);
   }
   /**

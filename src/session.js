@@ -218,7 +218,7 @@ class Session extends ServiceObject {
       options = {};
     }
     const transaction = this.transaction(options);
-    transaction.begin(function(err, resp) {
+    transaction.begin((err, resp) => {
       if (err) {
         callback(err, null, resp);
         return;

@@ -46,7 +46,7 @@ function FakeTransaction() {
   this.calledWith_ = arguments;
 }
 
-describe('Session', function() {
+describe('Session', () => {
   let Session;
   let session;
 
@@ -57,7 +57,7 @@ describe('Session', function() {
 
   const NAME = 'session-name';
 
-  before(function() {
+  before(() => {
     Session = proxyquire('../src/session.js', {
       '@google-cloud/common-grpc': {
         ServiceObject: FakeGrpcServiceObject,
@@ -67,24 +67,24 @@ describe('Session', function() {
     });
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     session = new Session(DATABASE, NAME);
   });
 
-  describe('instantiation', function() {
-    it('should promisify all the things', function() {
+  describe('instantiation', () => {
+    it('should promisify all the things', () => {
       assert(promisified);
     });
 
-    it('should localize the request function', function() {
+    it('should localize the request function', () => {
       assert.strictEqual(session.request, DATABASE.request);
     });
 
-    it('should localize the requestStream function', function() {
+    it('should localize the requestStream function', () => {
       assert.strictEqual(session.requestStream, DATABASE.requestStream);
     });
 
-    it('should format the name', function() {
+    it('should format the name', () => {
       const formatName_ = Session.formatName_;
       const formattedName = 'formatted-name';
 
@@ -101,7 +101,7 @@ describe('Session', function() {
       assert(instance.formattedName_, formattedName);
     });
 
-    it('should inherit from ServiceObject', function() {
+    it('should inherit from ServiceObject', () => {
       assert(session instanceof FakeGrpcServiceObject);
 
       const calledWith = session.calledWith_[0];
@@ -115,8 +115,8 @@ describe('Session', function() {
       });
     });
 
-    describe('createMethod', function() {
-      it('should create and return a Session', function(done) {
+    describe('createMethod', () => {
+      it('should create and return a Session', done => {
         const options = {};
 
         const apiResponse = {};
@@ -135,7 +135,7 @@ describe('Session', function() {
         const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
-        session.calledWith_[0].createMethod(options, function(err, sess, resp) {
+        session.calledWith_[0].createMethod(options, (err, sess, resp) => {
           assert.ifError(err);
 
           assert.strictEqual(sess, session);
@@ -148,7 +148,7 @@ describe('Session', function() {
         });
       });
 
-      it('should return an error from creating a Session', function(done) {
+      it('should return an error from creating a Session', done => {
         const error = new Error('Error.');
         const apiResponse = {};
 
@@ -161,7 +161,7 @@ describe('Session', function() {
         const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
-        session.calledWith_[0].createMethod({}, function(err, sess, resp) {
+        session.calledWith_[0].createMethod({}, (err, sess, resp) => {
           assert.strictEqual(err, error);
           assert.strictEqual(sess, null);
           assert.strictEqual(resp, apiResponse);
@@ -171,33 +171,33 @@ describe('Session', function() {
     });
   });
 
-  describe('formatName_', function() {
+  describe('formatName_', () => {
     const PATH = DATABASE.formattedName_ + '/sessions/' + NAME;
 
-    it('should return the name if already formatted', function() {
+    it('should return the name if already formatted', () => {
       assert.strictEqual(
         Session.formatName_(DATABASE.formattedName_, PATH),
         PATH
       );
     });
 
-    it('should format the name', function() {
+    it('should format the name', () => {
       const formattedName = Session.formatName_(DATABASE.formattedName_, NAME);
       assert.strictEqual(formattedName, PATH);
     });
   });
 
-  describe('beginTransaction', function() {
+  describe('beginTransaction', () => {
     let TRANSACTION;
     let RESPONSE;
 
-    beforeEach(function() {
+    beforeEach(() => {
       TRANSACTION = {begin: util.noop};
       RESPONSE = {};
       session.transaction = () => TRANSACTION;
     });
 
-    it('should pass the transaction options', function(done) {
+    it('should pass the transaction options', done => {
       const OPTIONS = {};
 
       session.transaction = function(options) {
@@ -208,12 +208,12 @@ describe('Session', function() {
       session.beginTransaction(OPTIONS, assert.ifError);
     });
 
-    it('should begin a transaction', function(done) {
+    it('should begin a transaction', done => {
       TRANSACTION.begin = function(callback) {
         callback(null, RESPONSE);
       };
 
-      session.beginTransaction(function(err, transaction, response) {
+      session.beginTransaction((err, transaction, response) => {
         assert.ifError(err);
         assert.strictEqual(transaction, TRANSACTION);
         assert.strictEqual(response, RESPONSE);
@@ -221,14 +221,14 @@ describe('Session', function() {
       });
     });
 
-    it('should return any api errors', function(done) {
+    it('should return any api errors', done => {
       const ERROR = new Error('err');
 
       TRANSACTION.begin = function(callback) {
         callback(ERROR, RESPONSE);
       };
 
-      session.beginTransaction(function(err, transaction, response) {
+      session.beginTransaction((err, transaction, response) => {
         assert.strictEqual(err, ERROR);
         assert.strictEqual(transaction, null);
         assert.strictEqual(response, RESPONSE);
@@ -237,8 +237,8 @@ describe('Session', function() {
     });
   });
 
-  describe('delete', function() {
-    it('should correctly call and return the request', function() {
+  describe('delete', () => {
+    it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
       function callback() {}
@@ -258,8 +258,8 @@ describe('Session', function() {
     });
   });
 
-  describe('getMetadata', function() {
-    it('should correctly call and return the request', function() {
+  describe('getMetadata', () => {
+    it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
       function callback() {}
@@ -279,8 +279,8 @@ describe('Session', function() {
     });
   });
 
-  describe('keepAlive', function() {
-    it('should correctly call and return the request', function() {
+  describe('keepAlive', () => {
+    it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
       function callback() {}
@@ -301,10 +301,10 @@ describe('Session', function() {
     });
   });
 
-  describe('transaction', function() {
+  describe('transaction', () => {
     const ID = 'transaction-id';
 
-    it('should return a Transaction object', function() {
+    it('should return a Transaction object', () => {
       const transaction = session.transaction(ID);
       assert(transaction instanceof FakeTransaction);
       assert.strictEqual(transaction.calledWith_[0], session);

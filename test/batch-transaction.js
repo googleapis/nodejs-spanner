@@ -43,13 +43,13 @@ function FakeTransaction(session) {
   this.session = session;
 }
 
-describe('BatchTransaction', function() {
+describe('BatchTransaction', () => {
   let BatchTransaction;
   let batchTransaction;
 
   const SESSION = {};
 
-  before(function() {
+  before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
       '@google-cloud/promisify': fakePfy,
       './codec.js': fakeCodec,
@@ -57,16 +57,16 @@ describe('BatchTransaction', function() {
     });
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     batchTransaction = new BatchTransaction(SESSION);
   });
 
-  describe('instantiation', function() {
-    it('should promisify all the things', function() {
+  describe('instantiation', () => {
+    it('should promisify all the things', () => {
       assert(promisified);
     });
 
-    it('should extend the Transaction class', function() {
+    it('should extend the Transaction class', () => {
       const batchTransaction = new BatchTransaction(SESSION);
 
       assert(batchTransaction instanceof FakeTransaction);
@@ -75,8 +75,8 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('close', function() {
-    it('should delete the session', function(done) {
+  describe('close', () => {
+    it('should delete the session', done => {
       SESSION.delete = function(callback) {
         callback(); // the done fn
       };
@@ -85,14 +85,14 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('createQueryPartitions', function() {
+  describe('createQueryPartitions', () => {
     const GAX_OPTS = {a: 'b'};
     const QUERY = {
       sql: 'SELECT * FROM Singers',
       gaxOptions: GAX_OPTS,
     };
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       fakeCodec.encodeQuery = function(query) {
         assert.deepStrictEqual(query, {sql: QUERY.sql});
         return QUERY;
@@ -108,7 +108,7 @@ describe('BatchTransaction', function() {
       batchTransaction.createQueryPartitions(QUERY.sql, done);
     });
 
-    it('should remove gax options from the query', function(done) {
+    it('should remove gax options from the query', done => {
       const fakeQuery = {
         sql: QUERY.sql,
         gaxOptions: GAX_OPTS,
@@ -129,7 +129,7 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('createPartitions_', function() {
+  describe('createPartitions_', () => {
     const SESSION = {formattedName_: 'abcdef'};
     const ID = 'ghijkl';
     const TIMESTAMP = {seconds: 0, nanos: 0};
@@ -140,7 +140,7 @@ describe('BatchTransaction', function() {
     const QUERY = {a: 'b'};
     const CONFIG = {reqOpts: QUERY};
 
-    beforeEach(function() {
+    beforeEach(() => {
       batchTransaction.session = SESSION;
       batchTransaction.id = ID;
 
@@ -149,7 +149,7 @@ describe('BatchTransaction', function() {
       };
     });
 
-    it('should insert the session and transaction ids', function(done) {
+    it('should insert the session and transaction ids', done => {
       batchTransaction.request = function(config) {
         assert.strictEqual(config.reqOpts.a, 'b');
         assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
@@ -160,7 +160,7 @@ describe('BatchTransaction', function() {
       batchTransaction.createPartitions_(CONFIG, assert.ifError);
     });
 
-    it('should return any request errors', function(done) {
+    it('should return any request errors', done => {
       const error = new Error('err');
       const response = {};
 
@@ -168,7 +168,7 @@ describe('BatchTransaction', function() {
         callback(error, response);
       };
 
-      batchTransaction.createPartitions_(CONFIG, function(err, parts, resp) {
+      batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
         assert.strictEqual(err, error);
         assert.strictEqual(parts, null);
         assert.strictEqual(resp, response);
@@ -176,17 +176,17 @@ describe('BatchTransaction', function() {
       });
     });
 
-    it('should return the prepared partition configs', function(done) {
+    it('should return the prepared partition configs', done => {
       const expectedQuery = {
         a: 'b',
         session: SESSION.formattedName_,
         transaction: {id: ID},
       };
 
-      batchTransaction.createPartitions_(CONFIG, function(err, parts) {
+      batchTransaction.createPartitions_(CONFIG, (err, parts) => {
         assert.ifError(err);
 
-        parts.forEach(function(partition, i) {
+        parts.forEach((partition, i) => {
           const expectedPartition = extend({}, expectedQuery, PARTITIONS[i]);
           assert.deepStrictEqual(partition, expectedPartition);
         });
@@ -195,7 +195,7 @@ describe('BatchTransaction', function() {
       });
     });
 
-    it('should update the transaction with returned metadata', function(done) {
+    it('should update the transaction with returned metadata', done => {
       const response = extend({}, RESPONSE, {
         transaction: {
           id: ID,
@@ -207,7 +207,7 @@ describe('BatchTransaction', function() {
         callback(null, response);
       };
 
-      batchTransaction.createPartitions_(CONFIG, function(err, parts, resp) {
+      batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
         assert.strictEqual(resp, response);
         assert.strictEqual(batchTransaction.id, ID);
         assert.strictEqual(batchTransaction.readTimestamp, TIMESTAMP);
@@ -216,11 +216,11 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('createReadPartitions', function() {
+  describe('createReadPartitions', () => {
     const GAX_OPTS = {};
     const QUERY = {table: 'abc', gaxOptions: GAX_OPTS};
 
-    it('should make the correct request', function(done) {
+    it('should make the correct request', done => {
       const query = {};
 
       fakeCodec.encodeRead = function(options) {
@@ -238,7 +238,7 @@ describe('BatchTransaction', function() {
       batchTransaction.createReadPartitions(query, done);
     });
 
-    it('should remove gax options from the query', function(done) {
+    it('should remove gax options from the query', done => {
       const query = {gaxOptions: GAX_OPTS};
 
       fakeCodec.encodeRead = function() {
@@ -255,8 +255,8 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('execute', function() {
-    it('should make read requests for read partitions', function(done) {
+  describe('execute', () => {
+    it('should make read requests for read partitions', done => {
       const partition = {table: 'abc'};
 
       batchTransaction.read = function(table, options, callback) {
@@ -268,7 +268,7 @@ describe('BatchTransaction', function() {
       batchTransaction.execute(partition, done);
     });
 
-    it('should make query requests for non-read partitions', function(done) {
+    it('should make query requests for non-read partitions', done => {
       const partition = {sql: 'SELECT * FROM Singers'};
 
       batchTransaction.run = function(query, callback) {
@@ -280,10 +280,10 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('executeStream', function() {
+  describe('executeStream', () => {
     const STREAM = {};
 
-    it('should make read streams for read partitions', function() {
+    it('should make read streams for read partitions', () => {
       const partition = {table: 'abc'};
 
       batchTransaction.createReadStream = function(table, options) {
@@ -297,7 +297,7 @@ describe('BatchTransaction', function() {
       assert.strictEqual(stream, STREAM);
     });
 
-    it('should make query streams for query partitions', function() {
+    it('should make query streams for query partitions', () => {
       const partition = {sql: 'SELECT * FROM Singers'};
 
       batchTransaction.runStream = function(query) {
@@ -311,18 +311,18 @@ describe('BatchTransaction', function() {
     });
   });
 
-  describe('identifier', function() {
+  describe('identifier', () => {
     const ID = Buffer.from('abc');
     const SESSION = {id: 'def'};
     const TIMESTAMP = {seconds: 0, nanos: 0};
 
-    beforeEach(function() {
+    beforeEach(() => {
       batchTransaction.id = ID;
       batchTransaction.session = SESSION;
       batchTransaction.readTimestamp = TIMESTAMP;
     });
 
-    it('should create a transaction identifier', function() {
+    it('should create a transaction identifier', () => {
       const expectedId = ID.toString('base64');
       const identifier = batchTransaction.identifier();
 
