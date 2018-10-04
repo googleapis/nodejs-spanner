@@ -31,7 +31,7 @@ const fakePfy = extend({}, pfy, {
       return;
     }
     promisified = true;
-    assert.deepStrictEqual(options.exclude, ['delete']);
+    assert.deepStrictEqual(options.exclude, ['delete', 'drop']);
   },
 });
 
@@ -178,6 +178,12 @@ describe('Table', function() {
   });
 
   describe('delete', function() {
+    it('should throw an error if any arguments are provided', function() {
+      const expectedErr = /Unexpected argument, please see Table#deleteRows to delete rows\./;
+
+      assert.throws(() => table.delete([]), expectedErr);
+    });
+
     it('should update the schema on the database', function() {
       const updateSchemaReturnValue = {};
 
@@ -216,6 +222,21 @@ describe('Table', function() {
 
       const returnValue = table.deleteRows(keys, callback);
       assert.strictEqual(returnValue, parentMethodReturnValue);
+    });
+  });
+
+  describe('drop', function() {
+    it('should call through to Table#delete', function(done) {
+      const returnVal = Promise.resolve();
+
+      table.delete = function(callback) {
+        setImmediate(callback); // the done fn
+        return returnVal;
+      };
+
+      const promise = table.drop(done);
+
+      assert.strictEqual(promise, returnVal);
     });
   });
 
