@@ -3885,6 +3885,43 @@ describe('Spanner', () => {
           }
         );
       });
+
+      it.skip('should execute a long running pdml statement', function() {
+        const count = 10000;
+
+        const tableData = Array(count)
+          .fill(0)
+          .map((_, i) => {
+            return {Key: `longpdml${i}`, StringValue: 'a'};
+          });
+
+        const str = Array(1000)
+          .fill('b')
+          .join('\n');
+
+        return database
+          .runTransactionAsync(transaction => {
+            transaction.insert('TxnTable', tableData);
+            return transaction.commit();
+          })
+          .then(() => {
+            return database.runPartitionedUpdate({
+              sql: `UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'`,
+              params: {str},
+            });
+          })
+          .then(([rowCount]) => {
+            assert.strictEqual(rowCount, count);
+
+            return database.run({
+              sql: `SELECT Key FROM TxnTable WHERE StringValue = @str`,
+              params: {str},
+            });
+          })
+          .then(([rows]) => {
+            assert.strictEqual(rows.length, count);
+          });
+      });
     });
 
     describe('read/write', () => {
