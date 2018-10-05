@@ -291,7 +291,7 @@ describe('InstanceAdminClient', () => {
     });
   });
 
-  describe('createInstance', () => {
+  describe('createInstance', function() {
     it('invokes createInstance without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
@@ -396,7 +396,7 @@ describe('InstanceAdminClient', () => {
     });
   });
 
-  describe('updateInstance', () => {
+  describe('updateInstance', function() {
     it('invokes updateInstance without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
