@@ -3886,7 +3886,7 @@ describe('Spanner', () => {
         );
       });
 
-      it.skip('should execute a long running pdml statement', function() {
+      it.skip('should execute a long running pdml statement', () => {
         const count = 10000;
 
         const tableData = Array(count)
