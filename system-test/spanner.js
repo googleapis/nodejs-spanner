@@ -4102,11 +4102,13 @@ describe('Spanner', () => {
       });
 
       it('should retry an aborted txn when reading fails', done => {
-        const query = `SELECT * FROM ${table.name}`;
+        const key = 'k888';
+        const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
+
         let attempts = 0;
 
         const expectedRow = {
-          Key: 'k888',
+          Key: key,
           NumberValue: null,
           StringValue: 'abc',
         };
@@ -4170,11 +4172,12 @@ describe('Spanner', () => {
       });
 
       it('should retry an aborted txn when commit fails', done => {
-        const query = `SELECT * FROM ${table.name}`;
+        const key = 'k9999';
+        const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
         let attempts = 0;
 
         const expectedRow = {
-          Key: 'k999',
+          Key: key,
           NumberValue: null,
           StringValue: 'abc',
         };
