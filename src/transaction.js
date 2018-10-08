@@ -133,6 +133,12 @@ class Transaction extends TransactionRequest {
      * @private
      */
     this.transaction = true;
+    /**
+     * @name Transaction#seqno
+     * @type {number}
+     * @default 1
+     */
+    this.seqno = 1;
 
     this.attempts_ = 0;
     this.queuedMutations_ = [];
@@ -173,7 +179,12 @@ class Transaction extends TransactionRequest {
    */
   begin(callback) {
     let options;
-    if (!this.readOnly) {
+
+    if (this.partitioned) {
+      options = {
+        partitionedDml: {},
+      };
+    } else if (!this.readOnly) {
       options = {
         readWrite: {},
       };
@@ -587,13 +598,18 @@ class Transaction extends TransactionRequest {
    */
   run(query, callback) {
     const rows = [];
+    let stats;
+
     this.runStream(query)
       .on('error', callback)
       .on('data', row => {
         rows.push(row);
       })
+      .on('stats', s => {
+        stats = s;
+      })
       .on('end', () => {
-        callback(null, rows);
+        callback(null, rows, stats);
       });
   }
   /**
@@ -707,6 +723,47 @@ class Transaction extends TransactionRequest {
       });
     };
     return new PartialResultStream(makeRequest);
+  }
+  /**
+   * @typedef {array} RunUpdateResponse
+   * @property {number} 0 Affected row count.
+   */
+  /**
+   * @callback RunUpdateCallback
+   * @param {?Error} err Request error, if any.
+   * @param {number} rowCount Affected row count.
+   */
+  /**
+   * Execute a DML statements and get the affected row count.
+   *
+   * @see {@link Transaction#run}
+   *
+   * @param {string|object} query A DML statement or
+   *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+   *     object.
+   * @param {object} [query.params] A map of parameter name to values.
+   * @param {object} [query.types] A map of parameter types.
+   * @param {RunUpdateCallback} [callback] Callback function.
+   * @returns {Promise<RunUpdateResponse>}
+   */
+  runUpdate(query, callback) {
+    if (is.string(query)) {
+      query = {
+        sql: query,
+      };
+    }
+
+    query = extend({seqno: this.seqno++}, query);
+
+    this.run(query, function(err, rows, stats) {
+      let rowCount;
+
+      if (stats && stats.rowCount) {
+        rowCount = parseInt(stats[stats.rowCount], 10);
+      }
+
+      callback(err, rowCount);
+    });
   }
   /**
    * Determines whether or not this Transaction should be retried in the event

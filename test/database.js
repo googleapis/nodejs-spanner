@@ -1675,6 +1675,21 @@ describe('Database', () => {
         });
       });
     });
+
+    describe('partitioned mode', function() {
+      const OPTIONS = {
+        partitioned: true,
+      };
+
+      it('should get a session from the pool', function(done) {
+        database.pool_.getReadSession = function() {
+          setImmediate(done);
+          return Promise.resolve();
+        };
+
+        database.getTransaction(OPTIONS, assert.ifError);
+      });
+    });
   });
 
   describe('getSessions', () => {
@@ -1743,6 +1758,80 @@ describe('Database', () => {
         assert.ifError(err);
         assert.strictEqual(sessions[0], SESSION_INSTANCE);
         assert.strictEqual(resp, RESPONSE);
+        done();
+      });
+    });
+  });
+
+  describe('runPartitionedUpdate', () => {
+    it('should get a session from the pool', done => {
+      database.getTransaction = function(options) {
+        assert.deepStrictEqual(options, {partitioned: true});
+        done();
+      };
+      database.runPartitionedUpdate({}, assert.ifError);
+    });
+
+    it('should return any getTransaction errors', done => {
+      const error = new Error('err');
+
+      database.getTransaction = function(options, callback) {
+        callback(error);
+      };
+      database.runPartitionedUpdate({}, err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should run the query', done => {
+      const fakeQuery = {};
+      const transaction = {
+        runUpdate: function(query) {
+          assert.strictEqual(query, fakeQuery);
+          done();
+        },
+      };
+
+      database.getTransaction = function(options, callback) {
+        callback(null, transaction);
+      };
+
+      database.runPartitionedUpdate(fakeQuery, assert.ifError);
+    });
+
+    it('should end the transaction', done => {
+      const transaction = {
+        runUpdate: function(query, callback) {
+          callback(null);
+        },
+        end: done,
+      };
+
+      database.getTransaction = function(options, callback) {
+        callback(null, transaction);
+      };
+
+      database.runPartitionedUpdate({}, assert.ifError);
+    });
+
+    it('should pass back the row count', done => {
+      const error = new Error('err');
+      const fakeRowCount = 5;
+      const transaction = {
+        runUpdate: (query, callback) => {
+          callback(error, fakeRowCount);
+        },
+        end: () => {},
+      };
+
+      database.getTransaction = function(options, callback) {
+        callback(null, transaction);
+      };
+
+      database.runPartitionedUpdate({}, (err, rowCount) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(rowCount, fakeRowCount);
         done();
       });
     });

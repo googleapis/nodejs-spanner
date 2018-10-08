@@ -78,6 +78,10 @@ function partialResultStream(requestFn, options) {
        */
       userStream.emit('response', row);
 
+      if (row.stats) {
+        userStream.emit('stats', row.stats);
+      }
+
       if (is.empty(row.values)) {
         next();
         return;
