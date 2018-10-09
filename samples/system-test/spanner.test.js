@@ -656,7 +656,7 @@ test.serial(
       cwd
     );
     const output = results.stdout + results.stderr;
-    t.regex(output, /Successfully deleted 5 records/);
+    t.regex(output, /Successfully deleted 4 records/);
   }
 );
 

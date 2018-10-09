@@ -237,7 +237,7 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
           VALUES (11, 'Timothy', 'Campbell')`,
       })
       // Queries rows from the Singers table
-      .run(`SELECT FirstName, LastName FROM Singers`)
+      .run({sql: `SELECT FirstName, LastName FROM Singers`})
       .then(results => {
         const rows = results[0];
         rows.forEach(row => {
@@ -259,12 +259,13 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
 
 function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
   // [START spanner_dml_structs]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
   const nameStruct = Spanner.struct({
     FirstName: 'Timothy',
     LastName: 'Campbell',
   });
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -457,8 +458,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction using DML
-          to transfer ${transferAmount} from Album 1 to Album 2.`
+          `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 1 to Album 2.`
         );
       })
       .catch(err => {
