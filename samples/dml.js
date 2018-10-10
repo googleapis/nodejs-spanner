@@ -237,7 +237,9 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
           VALUES (11, 'Timothy', 'Campbell')`,
       })
       // Queries rows from the Singers table
-      .then(() => transaction.run({sql: `SELECT FirstName, LastName FROM Singers`}))
+      .then(() =>
+        transaction.run({sql: `SELECT FirstName, LastName FROM Singers`})
+      )
       .then(results => {
         const rows = results[0];
         rows.forEach(row => {
