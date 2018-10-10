@@ -381,16 +381,79 @@ describe('TransactionRequest', () => {
     };
 
     beforeEach(() => {
+      transactionRequest.transaction = true;
+
       fakeCodec.encode = function() {
         return ENCODED_VALUE;
       };
     });
 
-    it('should correctly make and return the request', () => {
-      const requestReturnValue = {};
+    describe('non-transactional instance', () => {
+      beforeEach(() => {
+        transactionRequest.transaction = false;
+        transactionRequest.queue_ = util.noop;
+      });
 
-      function callback() {}
+      it('should run in a transaction if not already', done => {
+        transactionRequest.database = {
+          runTransaction: () => done(),
+        };
 
+        transactionRequest.deleteRows(TABLE, KEYS, assert.ifError);
+      });
+
+      it('should return an error if transaction cannot be started', done => {
+        const error = new Error('Error.');
+
+        transactionRequest.database = {
+          runTransaction: runFn => {
+            runFn(error);
+          },
+        };
+
+        transactionRequest.deleteRows(TABLE, KEYS, err => {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should call deleteRows in a transaction', done => {
+        const fakeTransaction = {
+          deleteRows: (table, keys) => {
+            assert.strictEqual(table, TABLE);
+            assert.strictEqual(keys, KEYS);
+            done();
+          },
+        };
+
+        transactionRequest.database = {
+          runTransaction: runFn => {
+            runFn(null, fakeTransaction);
+          },
+        };
+
+        transactionRequest.deleteRows(TABLE, KEYS, assert.ifError);
+      });
+
+      it('should call commit with the user callback', done => {
+        const fakeTransaction = {
+          deleteRows: util.noop,
+          commit: callback => {
+            callback(); // done()
+          },
+        };
+
+        transactionRequest.database = {
+          runTransaction: runFn => {
+            runFn(null, fakeTransaction);
+          },
+        };
+
+        transactionRequest.deleteRows(TABLE, KEYS, done);
+      });
+    });
+
+    it('should correctly make and return the request', done => {
       let numEncodeRequests = 0;
 
       fakeCodec.encode = function(key) {
@@ -414,23 +477,12 @@ describe('TransactionRequest', () => {
         return ENCODED_VALUE;
       };
 
-      const expectedReqOpts = {
-        singleUseTransaction: {
-          readWrite: {},
-        },
-        mutations: [EXPECTED_MUTATION],
+      transactionRequest.queue_ = function(mutation) {
+        assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
+        done();
       };
 
-      transactionRequest.request = function(config, callback_) {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'commit');
-        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        assert.strictEqual(callback_, callback);
-        return requestReturnValue;
-      };
-
-      const returnValue = transactionRequest.deleteRows(TABLE, KEYS, callback);
-      assert.strictEqual(returnValue, requestReturnValue);
+      transactionRequest.deleteRows(TABLE, KEYS, assert.ifError);
     });
 
     it('should push the request to the queue if a transaction', done => {
@@ -445,8 +497,6 @@ describe('TransactionRequest', () => {
     });
 
     it('should accept just a key', done => {
-      transactionRequest.transaction = true;
-
       const encodedValue = {
         encoded: true,
       };
@@ -646,17 +696,82 @@ describe('TransactionRequest', () => {
     };
 
     beforeEach(() => {
+      transactionRequest.transaction = true;
+
       fakeCodec.encode = function(value) {
         return value;
       };
     });
 
-    it('should correctly make and return the request', () => {
-      const requestReturnValue = {};
+    describe('non-transactional instance', () => {
+      beforeEach(() => {
+        transactionRequest.transaction = false;
+        transactionRequest.queue_ = util.noop;
+      });
 
-      function callback() {}
+      it('should run in a transaction if not already', done => {
+        transactionRequest.database = {
+          runTransaction: () => done(),
+        };
 
+        transactionRequest.mutate_(METHOD, TABLE, KEYVALS, assert.ifError);
+      });
+
+      it('should return an error if transaction cannot be started', done => {
+        const error = new Error('Error.');
+
+        transactionRequest.database = {
+          runTransaction: runFn => {
+            runFn(error);
+          },
+        };
+
+        transactionRequest.mutate_(METHOD, TABLE, KEYVALS, err => {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
+
+      it('should call mutate_ in a transaction', done => {
+        const fakeTransaction = {
+          mutate_: (method, table, keyVals) => {
+            assert.strictEqual(method, METHOD);
+            assert.strictEqual(table, TABLE);
+            assert.strictEqual(keyVals, KEYVALS);
+            done();
+          },
+        };
+
+        transactionRequest.database = {
+          runTransaction: runFn => {
+            runFn(null, fakeTransaction);
+          },
+        };
+
+        transactionRequest.mutate_(METHOD, TABLE, KEYVALS, assert.ifError);
+      });
+
+      it('should call commit with the user callback', done => {
+        const fakeTransaction = {
+          mutate_: util.noop,
+          commit: callback => {
+            callback(); // done()
+          },
+        };
+
+        transactionRequest.database = {
+          runTransaction: runFn => {
+            runFn(null, fakeTransaction);
+          },
+        };
+
+        transactionRequest.mutate_(METHOD, TABLE, KEYVALS, done);
+      });
+    });
+
+    it('should correctly make and return the request', done => {
       let numEncodeRequests = 0;
+
       fakeCodec.encode = function(value) {
         numEncodeRequests++;
 
@@ -698,28 +813,12 @@ describe('TransactionRequest', () => {
         return value;
       };
 
-      const expectedReqOpts = {
-        singleUseTransaction: {
-          readWrite: {},
-        },
-        mutations: [EXPECTED_MUTATION],
+      transactionRequest.queue_ = mutation => {
+        assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
+        done();
       };
 
-      transactionRequest.request = function(config, callback_) {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'commit');
-        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        assert.strictEqual(callback_, callback);
-        return requestReturnValue;
-      };
-
-      const returnValue = transactionRequest.mutate_(
-        METHOD,
-        TABLE,
-        KEYVALS,
-        callback
-      );
-      assert.strictEqual(returnValue, requestReturnValue);
+      transactionRequest.mutate_(METHOD, TABLE, KEYVALS, assert.ifError);
     });
 
     it('should throw when rows have incorrect amount of columns', () => {
