@@ -705,10 +705,10 @@ class TransactionRequest {
    * @param {string} method CRUD method (insert, update, etc.).
    * @param {string} table Table to perform mutations in.
    * @param {object} keyVals Hash of key value pairs.
-   * @param {function} cb The callback function.
+   * @param {function} callback The callback function.
    * @returns {Promise}
    */
-  mutate_(method, table, keyVals, cb) {
+  mutate_(method, table, keyVals, callback) {
     if (!this.transaction) {
       this.database.runTransaction((err, transaction) => {
         if (err) {
@@ -716,7 +716,7 @@ class TransactionRequest {
           return;
         }
         transaction.mutate_(method, table, keyVals);
-        transaction.commit(cb);
+        transaction.commit(callback);
       });
       return;
     }
