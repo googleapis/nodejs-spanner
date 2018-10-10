@@ -28,6 +28,7 @@ const indexingCmd = `node indexing.js`;
 const transactionCmd = `node transaction.js`;
 const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
+const dmlCmd = `node dml.js`;
 
 const cwd = path.join(__dirname, `..`);
 
@@ -523,6 +524,139 @@ test.serial(
       output,
       /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
     );
+  }
+);
+
+// dml_standard_insert
+test.serial(
+  `should insert rows into an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully inserted 1 record into the Singers table/);
+  }
+);
+
+// dml_standard_update
+test.serial(
+  `should update a row in an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 1 record/);
+  }
+);
+
+// dml_standard_delete
+test.serial(
+  `should delete a row from an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully deleted 1 record\./);
+  }
+);
+
+// dml_standard_update_with_timestamp
+test.serial(
+  `should update the timestamp of multiple records in an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 2 records/);
+  }
+);
+
+// dml_write_then_read
+test.serial(
+  `should insert a record in an example table using a DML statement and then query the record`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Timothy Campbell/);
+  }
+);
+
+// dml_structs
+test.serial(
+  `should update a record in an example table using a DML statement along with a struct value`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 1 record/);
+  }
+);
+
+// dml_getting_started_insert
+test.serial(
+  `should insert multiple records into an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /4 records inserted/);
+  }
+);
+
+// dml_getting_started_update
+test.serial(
+  `should transfer value from one record to another using DML statements within a transaction`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
+    );
+  }
+);
+
+//  dml_partitioned_update
+test.serial(
+  `should update multiple records using a partitioned DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 3 records/);
+  }
+);
+
+//  dml_partitioned_delete
+test.serial(
+  `should delete multiple records using a partitioned DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully deleted 5 records/);
   }
 );
 
