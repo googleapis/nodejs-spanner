@@ -34,6 +34,8 @@ const RUN_ID = uuid
 const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
+const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
+
 describe('Spanner', () => {
   const instance = spanner.instance(generateName('instance'));
 
@@ -42,6 +44,7 @@ describe('Spanner', () => {
     nodes: 1,
     labels: {
       [LABEL]: 'true',
+      created: CURRENT_TIME,
     },
   };
 
