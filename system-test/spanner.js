@@ -3192,7 +3192,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 10,
+            timeout: 1,
           },
         };
 
