@@ -27,7 +27,10 @@ const uuid = require('uuid');
 const {Spanner} = require('../');
 
 const PREFIX = 'gcloud-tests-';
-const RUN_ID = uuid.v1().split('-').shift(); // get a short uuid
+const RUN_ID = uuid
+  .v1()
+  .split('-')
+  .shift(); // get a short uuid
 const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
