@@ -344,14 +344,15 @@ class Database extends ServiceObject {
       callback = options;
       options = {};
     }
-    options = options || {};
+
+    const gaxOpts = extend({}, options);
     const reqOpts = {
       database: this.formattedName_,
     };
 
-    if (options.labels) {
-      reqOpts.session = {labels: options.labels};
-      delete options.labels;
+    if (gaxOpts.labels) {
+      reqOpts.session = {labels: gaxOpts.labels};
+      delete gaxOpts.labels;
     }
 
     this.request(
@@ -359,7 +360,7 @@ class Database extends ServiceObject {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts: reqOpts,
-        gaxOpts: options,
+        gaxOpts: gaxOpts,
       },
       (err, resp) => {
         if (err) {
