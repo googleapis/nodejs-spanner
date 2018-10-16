@@ -27,7 +27,14 @@ const uuid = require('uuid');
 const {Spanner} = require('../');
 
 const PREFIX = 'gcloud-tests-';
+const RUN_ID = uuid
+  .v1()
+  .split('-')
+  .shift(); // get a short uuid
+const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
+
+const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
 describe('Spanner', () => {
   const instance = spanner.instance(generateName('instance'));
@@ -36,7 +43,8 @@ describe('Spanner', () => {
     config: 'regional-us-central1',
     nodes: 1,
     labels: {
-      'gcloud-tests': 'true',
+      [LABEL]: 'true',
+      created: CURRENT_TIME,
     },
   };
 
@@ -3184,7 +3192,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 10,
+            timeout: 1,
           },
         };
 
@@ -4337,7 +4345,7 @@ function execAfterOperationComplete(callback) {
 function deleteTestInstances(done) {
   spanner.getInstances(
     {
-      filter: 'labels.gcloud-tests:true',
+      filter: `labels.${LABEL}:true`,
     },
     (err, instances) => {
       if (err) {
