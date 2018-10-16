@@ -1483,6 +1483,17 @@ describe('Database', () => {
       database.createSession(assert.ifError);
     });
 
+    it('should send labels correctly', done => {
+      const labels = {a: 'b'};
+
+      database.request = function(config) {
+        assert.deepStrictEqual(config.reqOpts.session, {labels});
+        done();
+      };
+
+      database.createSession({labels}, assert.ifError);
+    });
+
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};

@@ -31,6 +31,7 @@ const DEFAULTS = {
   fail: false,
   idlesAfter: 10,
   keepAlive: 30,
+  labels: {},
   max: 100,
   maxIdle: 1,
   min: 0,
@@ -109,14 +110,16 @@ class WritePercentError extends TypeError {
  *     there are no available sessions for a request.
  * @property {number} [idlesAfter=10] How long until a resource becomes idle, in
  *     minutes.
+ * @property {number} [keepAlive=50] How often to ping idle sessions, in
+ *     minutes. Must be less than 1 hour.
+ * @property {Object<string, string>} [labels] Labels to apply to any session
+ *     created by the pool.
  * @property {number} [max=100] Maximum number of resources to create at any
  *     given time.
  * @property {number} [maxIdle=1] Maximum number of idle resources to keep in
  *     the pool at any given time.
  * @property {number} [min=0] Minimum number of resources to keep in the pool at
  *     any given time.
- * @property {number} [keepAlive=50] How often to ping idle sessions, in
- *     minutes. Must be less than 1 hour.
  * @property {number} [writes=0.0] Percentage of sessions to be pre-allocated as
  *     write sessions represented as a float.
  */
@@ -481,12 +484,13 @@ class SessionPool extends EventEmitter {
    */
   _createSession(type) {
     const session = this.database.session();
+    const labels = this.options.labels;
 
     this._inventory.borrowed.add(session);
 
     return this._requests
       .add(() => {
-        return session.create().then(() => {
+        return session.create({labels}).then(() => {
           if (type === READWRITE) {
             return this._prepareTransaction(session).catch(
               () => (type = READONLY)

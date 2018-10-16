@@ -348,6 +348,12 @@ class Database extends ServiceObject {
     const reqOpts = {
       database: this.formattedName_,
     };
+
+    if (options.labels) {
+      reqOpts.session = {labels: options.labels};
+      delete options.labels;
+    }
+
     this.request(
       {
         client: 'SpannerClient',

@@ -172,12 +172,18 @@ class Session extends ServiceObject {
        */
       id: name,
       methods: methods,
-      createMethod: (options, callback) => {
-        database.createSession(options, (err, session, apiResponse) => {
+      createMethod: (_, options, callback) => {
+        if (is.fn(options)) {
+          callback = options;
+          options = {};
+        }
+
+        return database.createSession(options, (err, session, apiResponse) => {
           if (err) {
             callback(err, null, apiResponse);
             return;
           }
+
           extend(this, session);
           callback(null, this, apiResponse);
         });
