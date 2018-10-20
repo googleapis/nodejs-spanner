@@ -1461,7 +1461,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.strictEqual(config.gaxOpts, OPTIONS);
+        assert.deepStrictEqual(config.gaxOpts, OPTIONS);
 
         done();
       };
@@ -1481,6 +1481,20 @@ describe('Database', () => {
       };
 
       database.createSession(assert.ifError);
+    });
+
+    it('should send labels correctly', done => {
+      const labels = {a: 'b'};
+      const options = {a: 'b', labels};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = function(config) {
+        assert.deepStrictEqual(config.reqOpts.session, {labels});
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession({labels}, assert.ifError);
     });
 
     describe('error', () => {

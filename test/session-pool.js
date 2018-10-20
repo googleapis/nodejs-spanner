@@ -49,8 +49,9 @@ class FakeSession {
   beginTransaction(options) {
     return new FakeTransaction(options).begin();
   }
-  create() {
+  create(options) {
     this.created = true;
+    this.createOptions = options;
     return Promise.resolve();
   }
   delete() {
@@ -235,6 +236,7 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.fail, false);
         assert.strictEqual(sessionPool.options.idlesAfter, 10);
         assert.strictEqual(sessionPool.options.keepAlive, 30);
+        assert.deepStrictEqual(sessionPool.options.labels, {});
         assert.strictEqual(sessionPool.options.max, 100);
         assert.strictEqual(sessionPool.options.maxIdle, 1);
         assert.strictEqual(sessionPool.options.min, 0);
@@ -863,6 +865,17 @@ describe('SessionPool', () => {
       return sessionPool._createSession('readonly').then(() => {
         const session = sessionPool._inventory.readonly[0];
         assert.strictEqual(session.created, true);
+      });
+    });
+
+    it('should pass along the session labels', () => {
+      const labels = {a: 'b'};
+
+      sessionPool.options.labels = labels;
+
+      return sessionPool._createSession('readonly').then(() => {
+        const session = sessionPool._inventory.readonly[0];
+        assert.deepStrictEqual(session.createOptions, {labels});
       });
     });
 
