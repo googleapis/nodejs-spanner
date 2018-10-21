@@ -24,7 +24,7 @@ const extend = require('extend');
 const is = require('is');
 const uuid = require('uuid');
 
-const {Spanner} = require('../');
+const {Spanner} = require('../src');
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = uuid
