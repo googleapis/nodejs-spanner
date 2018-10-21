@@ -16,11 +16,8 @@
 
 set -xeo pipefail
 
-export NPM_CONFIG_PREFIX=/home/node/.npm-global
-
 cd $(dirname $0)/..
 
 npm install
 npm test
-
-bash $KOKORO_GFILE_DIR/codecov.sh
+node_modules/.bin/codecov

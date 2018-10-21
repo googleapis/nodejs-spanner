@@ -52,18 +52,22 @@
     "haih-g <haih@google.com>"
   ],
   "scripts": {
-    "cover": "nyc --reporter=lcov mocha test/*.js && nyc report",
     "docs": "jsdoc -c .jsdoc.js",
     "generate-scaffolding": "repo-tools generate all && repo-tools generate lib_samples_readme -l samples/ --config ../.cloud-repo-tools.json",
     "lint": "eslint src/ samples/ system-test/ test/ scripts/",
     "prettier": "prettier --write benchmark/*.js src/*.js src/*/*.js src/admin/database/*/*.js src/admin/instance/*/*.js samples/*.js samples/*/*.js samples/*/*/*.js test/*.js test/*/*.js system-test/*.js system-test/*/*.js",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
-    "system-test": "mocha system-test/*.js --timeout 600000",
+    "system-test": "mocha build/system-test --timeout 600000",
     "cleanup": "mocha scripts/cleanup.js --timeout 30000",
-    "test-no-cover": "mocha test/*.js",
-    "test": "npm run cover",
+    "test": "nyc mocha build/test",
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",
-    "fix": "eslint --fix '**/*.js'"
+    "fix": "eslint --fix '**/*.js'",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p . && cp src/v1/*.json build/src/v1 && cp -r protos build",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "dependencies": {
     "@google-cloud/common-grpc": "^0.9.0",
@@ -72,7 +76,6 @@
     "@google-cloud/promisify": "^0.3.0",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.1",
-    "delay": "^4.0.0",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.1",
     "google-auth-library": "^2.0.0",
@@ -113,6 +116,8 @@
     "stats-lite": "^2.1.1",
     "time-span": "^2.0.0",
     "uuid": "^3.3.2",
-    "yargs": "^12.0.1"
+    "yargs": "^12.0.1",
+    "gts": "^0.8.0",
+    "typescript": "~3.1.3"
   }
 }

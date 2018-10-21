@@ -17,7 +17,6 @@
 'use strict';
 
 const assert = require('assert');
-const delay = require('delay');
 const events = require('events');
 const extend = require('extend');
 const PQueue = require('p-queue');
@@ -626,7 +625,7 @@ describe('SessionPool', () => {
       sessionPool.options.acquireTimeout = 1;
 
       sessionPool._acquires.add = function(fn) {
-        return delay(2).then(fn);
+        return new Promise(resolve => setTimeout(resolve, 2)).then(fn);
       };
 
       return sessionPool._acquire().then(shouldNotBeCalled, err => {

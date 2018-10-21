@@ -17,7 +17,6 @@
 'use strict';
 
 const {EventEmitter} = require('events');
-const delay = require('delay');
 const is = require('is');
 const PQueue = require('p-queue');
 const stackTrace = require('stack-trace');
@@ -658,8 +657,9 @@ class SessionPool extends EventEmitter {
     if (!is.infinite(timeout)) {
       const elapsed = Date.now() - startTime;
       const remaining = timeout - elapsed;
-
-      promises.push(delay.reject(remaining, {value: new TimeoutError()}));
+      promises.push(new Promise((_, reject) => {
+        setTimeout(reject.bind(null, new TimeoutError()), remaining);
+      }));
     }
 
     if (!this.isFull) {
