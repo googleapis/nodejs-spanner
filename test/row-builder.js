@@ -66,7 +66,8 @@ describe('RowBuilder', () => {
   });
 
   describe('acceptance tests', () => {
-    const TESTS = require('../../test/data/streaming-read-acceptance-test.json').tests;
+    const TESTS = require('../../test/data/streaming-read-acceptance-test.json')
+      .tests;
 
     TESTS.forEach(test => {
       it('should pass acceptance test: ' + test.name, () => {
