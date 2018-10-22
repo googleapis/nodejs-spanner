@@ -15,7 +15,7 @@
 
 'use strict';
 
-function updateData(instanceId, databaseId, projectId) {
+async function updateData(instanceId, databaseId, projectId) {
   // [START spanner_update_data]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -41,25 +41,23 @@ function updateData(instanceId, databaseId, projectId) {
   // must be converted to strings before being inserted as INT64s
   const albumsTable = database.table('Albums');
 
-  albumsTable
-    .update([
+  try {
+    await albumsTable.update([
       {SingerId: '1', AlbumId: '1', MarketingBudget: '100000'},
       {SingerId: '2', AlbumId: '2', MarketingBudget: '500000'},
-    ])
-    .then(() => {
-      console.log('Updated data.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
-    });
+    ]);
+    console.log('Updated data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+    return;
+  }
   // [END spanner_update_data]
 }
 
-function insertData(instanceId, databaseId, projectId) {
+async function insertData(instanceId, databaseId, projectId) {
   // [START spanner_insert_data]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -87,38 +85,33 @@ function insertData(instanceId, databaseId, projectId) {
   // Inserts rows into the Singers table
   // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so
   // they must be converted to strings before being inserted as INT64s
-  singersTable
-    .insert([
+  try {
+    await singersTable.insert([
       {SingerId: '1', FirstName: 'Marc', LastName: 'Richards'},
       {SingerId: '2', FirstName: 'Catalina', LastName: 'Smith'},
       {SingerId: '3', FirstName: 'Alice', LastName: 'Trentor'},
       {SingerId: '4', FirstName: 'Lea', LastName: 'Martin'},
       {SingerId: '5', FirstName: 'David', LastName: 'Lomond'},
-    ])
-    .then(() => {
-      // Inserts rows into the Albums table
-      return albumsTable.insert([
-        {SingerId: '1', AlbumId: '1', AlbumTitle: 'Total Junk'},
-        {SingerId: '1', AlbumId: '2', AlbumTitle: 'Go, Go, Go'},
-        {SingerId: '2', AlbumId: '1', AlbumTitle: 'Green'},
-        {SingerId: '2', AlbumId: '2', AlbumTitle: 'Forever Hold your Peace'},
-        {SingerId: '2', AlbumId: '3', AlbumTitle: 'Terrified'},
-      ]);
-    })
-    .then(() => {
-      console.log('Inserted data.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
-    });
+    ]);
+
+    await albumsTable.insert([
+      {SingerId: '1', AlbumId: '1', AlbumTitle: 'Total Junk'},
+      {SingerId: '1', AlbumId: '2', AlbumTitle: 'Go, Go, Go'},
+      {SingerId: '2', AlbumId: '1', AlbumTitle: 'Green'},
+      {SingerId: '2', AlbumId: '2', AlbumTitle: 'Forever Hold your Peace'},
+      {SingerId: '2', AlbumId: '3', AlbumTitle: 'Terrified'},
+    ]);
+
+    console.log('Inserted data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    database.close();
+  }
   // [END spanner_insert_data]
 }
 
-function queryData(instanceId, databaseId, projectId) {
+async function queryData(instanceId, databaseId, projectId) {
   // [START spanner_query_data]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -144,31 +137,28 @@ function queryData(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Albums table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = await database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
-            json.AlbumTitle
-          }`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+          json.AlbumTitle
+        }`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_query_data]
 }
 
-function readData(instanceId, databaseId, projectId) {
+async function readData(instanceId, databaseId, projectId) {
   // [START spanner_read_data]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -199,31 +189,28 @@ function readData(instanceId, databaseId, projectId) {
     },
   };
 
-  albumsTable
-    .read(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = await albumsTable.read(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
-            json.AlbumTitle
-          }`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+          json.AlbumTitle
+        }`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_read_data]
 }
 
-function readStaleData(instanceId, databaseId, projectId) {
+async function readStaleData(instanceId, databaseId, projectId) {
   // [START spanner_read_stale_data]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -259,29 +246,26 @@ function readStaleData(instanceId, databaseId, projectId) {
     exactStaleness: 15,
   };
 
-  albumsTable
-    .read(query, options)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = await albumsTable.read(query, options);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        const id = json.SingerId;
-        const album = json.AlbumId;
-        const title = json.AlbumTitle;
-        const budget = json.MarketingBudget ? json.MarketingBudget : '';
-        console.log(
-          `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      const id = json.SingerId;
+      const album = json.AlbumId;
+      const title = json.AlbumTitle;
+      const budget = json.MarketingBudget ? json.MarketingBudget : '';
+      console.log(
+        `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_read_stale_data]
 }
 

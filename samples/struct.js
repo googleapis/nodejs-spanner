@@ -15,7 +15,7 @@
 
 'use strict';
 
-function writeDataForStructQueries(instanceId, databaseId, projectId) {
+async function writeDataForStructQueries(instanceId, databaseId, projectId) {
   // [START spanner_write_data_for_struct_queries]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -42,8 +42,8 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
   // Inserts rows into the Singers table
   // Note: Cloud Spanner interprets Javascript numbers as FLOAT64s.
   // Use strings as shown in this example if you need INT64s.
-  singersTable
-    .insert([
+  try {
+    const data = [
       {
         SingerId: '6',
         FirstName: 'Elena',
@@ -64,14 +64,20 @@ function writeDataForStructQueries(instanceId, databaseId, projectId) {
         FirstName: 'Hannah',
         LastName: 'Harris',
       },
-    ])
-    .then(() => console.log('Inserted data.'))
-    .catch(err => console.error('ERROR:', err))
-    .then(() => database.close());
+    ];
+
+    await singersTable.insert(data);
+    console.log('Inserted data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_write_data_for_struct_queries]
 }
 
-function queryDataWithStruct(instanceId, databaseId, projectId) {
+async function queryDataWithStruct(instanceId, databaseId, projectId) {
   // [START spanner_create_struct_with_data]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -109,27 +115,24 @@ function queryDataWithStruct(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Singers table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = await database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(`SingerId: ${json.SingerId}`);
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(`SingerId: ${json.SingerId}`);
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_query_data_with_struct]
 }
 
-function queryWithArrayofStruct(instanceId, databaseId, projectId) {
+async function queryWithArrayofStruct(instanceId, databaseId, projectId) {
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -202,27 +205,24 @@ function queryWithArrayofStruct(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Singers table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(`SingerId: ${json.SingerId}`);
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(`SingerId: ${json.SingerId}`);
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_query_data_with_array_of_struct]
 }
 
-function queryStructField(instanceId, databaseId, projectId) {
+async function queryStructField(instanceId, databaseId, projectId) {
   // [START spanner_field_access_on_struct_parameters]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -255,27 +255,24 @@ function queryStructField(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Singers table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(`SingerId: ${json.SingerId}`);
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(`SingerId: ${json.SingerId}`);
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_field_access_on_struct_parameters]
 }
 
-function queryNestedStructField(instanceId, databaseId, projectId) {
+async function queryNestedStructField(instanceId, databaseId, projectId) {
   // [START spanner_field_access_on_nested_struct_parameters]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -348,23 +345,20 @@ function queryNestedStructField(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Singers table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(`SingerId: ${json.SingerId}, SongName: ${json.SongName}`);
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(`SingerId: ${json.SingerId}, SongName: ${json.SongName}`);
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_field_access_on_nested_struct_parameters]
 }
 

@@ -15,7 +15,7 @@
 
 'use strict';
 
-function createIndex(instanceId, databaseId, projectId) {
+async function createIndex(instanceId, databaseId, projectId) {
   // [START spanner_create_index]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -39,28 +39,24 @@ function createIndex(instanceId, databaseId, projectId) {
   const request = ['CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle)'];
 
   // Creates a new index in the database
-  database
-    .updateSchema(request)
-    .then(results => {
-      const operation = results[0];
+  try {
+    const results = await database.updateSchema(request);
+    const operation = results[0];
 
-      console.log('Waiting for operation to complete...');
-      return operation.promise();
-    })
-    .then(() => {
-      console.log('Added the AlbumsByAlbumTitle index.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
-    });
+    console.log('Waiting for operation to complete...');
+    // await operation.promise();
+
+    console.log('Added the AlbumsByAlbumTitle index.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_create_index]
 }
 
-function createStoringIndex(instanceId, databaseId, projectId) {
+async function createStoringIndex(instanceId, databaseId, projectId) {
   // [START spanner_create_storing_index]
   // "Storing" indexes store copies of the columns they index
   // This speeds up queries, but takes more space compared to normal indexes
@@ -91,28 +87,25 @@ function createStoringIndex(instanceId, databaseId, projectId) {
   ];
 
   // Creates a new index in the database
-  database
-    .updateSchema(request)
-    .then(results => {
-      const operation = results[0];
+  try {
+    const results = await database.updateSchema(request);
 
-      console.log('Waiting for operation to complete...');
-      return operation.promise();
-    })
-    .then(() => {
-      console.log('Added the AlbumsByAlbumTitle2 index.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
-    });
+    const operation = results[0];
+
+    console.log('Waiting for operation to complete...');
+    // await operation.promise();
+
+    console.log('Added the AlbumsByAlbumTitle2 index.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_create_storing_index]
 }
 
-function queryDataWithIndex(
+async function queryDataWithIndex(
   instanceId,
   databaseId,
   startTitle,
@@ -152,34 +145,31 @@ function queryDataWithIndex(
   };
 
   // Queries rows from the Albums table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = await database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        const marketingBudget = json.MarketingBudget
-          ? json.MarketingBudget
-          : null; // This value is nullable
-        console.log(
-          `AlbumId: ${json.AlbumId}, AlbumTitle: ${
-            json.AlbumTitle
-          }, MarketingBudget: ${marketingBudget}`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      const marketingBudget = json.MarketingBudget
+        ? json.MarketingBudget
+        : null; // This value is nullable
+      console.log(
+        `AlbumId: ${json.AlbumId}, AlbumTitle: ${
+          json.AlbumTitle
+        }, MarketingBudget: ${marketingBudget}`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_query_data_with_index]
 }
 
-function readDataWithIndex(instanceId, databaseId, projectId) {
+async function readDataWithIndex(instanceId, databaseId, projectId) {
   // [START spanner_read_data_with_index]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -211,27 +201,24 @@ function readDataWithIndex(instanceId, databaseId, projectId) {
   };
 
   // Reads the Albums table using an index
-  albumsTable
-    .read(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = albumsTable.read(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(`AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`);
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(`AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`);
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_read_data_with_index]
 }
 
-function readDataWithStoringIndex(instanceId, databaseId, projectId) {
+async function readDataWithStoringIndex(instanceId, databaseId, projectId) {
   // [START spanner_read_data_with_storing_index]
   // "Storing" indexes store copies of the columns they index
   // This speeds up queries, but takes more space compared to normal indexes
@@ -268,28 +255,25 @@ function readDataWithStoringIndex(instanceId, databaseId, projectId) {
   };
 
   // Reads the Albums table using a storing index
-  albumsTable
-    .read(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = await albumsTable.read(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        let rowString = `AlbumId: ${json.AlbumId}`;
-        rowString += `, AlbumTitle: ${json.AlbumTitle}`;
-        if (json.MarketingBudget) {
-          rowString += `, MarketingBudget: ${json.MarketingBudget}`;
-        }
-        console.log(rowString);
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      let rowString = `AlbumId: ${json.AlbumId}`;
+      rowString += `, AlbumTitle: ${json.AlbumTitle}`;
+      if (json.MarketingBudget) {
+        rowString += `, MarketingBudget: ${json.MarketingBudget}`;
+      }
+      console.log(rowString);
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_read_data_with_storing_index]
 }
 

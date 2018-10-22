@@ -15,7 +15,7 @@
 
 'use strict';
 
-function createDatabase(instanceId, databaseId, projectId) {
+async function createDatabase(instanceId, databaseId, projectId) {
   // [START spanner_create_database]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -55,25 +55,23 @@ function createDatabase(instanceId, databaseId, projectId) {
   };
 
   // Creates a database
-  instance
-    .createDatabase(databaseId, request)
-    .then(results => {
-      const database = results[0];
-      const operation = results[1];
+  try {
+    const results = await instance.createDatabase(databaseId, request);
 
-      console.log(`Waiting for operation on ${database.id} to complete...`);
-      return operation.promise();
-    })
-    .then(() => {
-      console.log(`Created database ${databaseId} on instance ${instanceId}.`);
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    });
+    const database = results[0];
+    const operation = results[1];
+
+    console.log(`Waiting for operation on ${database.id} to complete...`);
+    await operation.promise();
+
+    console.log(`Created database ${databaseId} on instance ${instanceId}.`);
+  } catch (err) {
+    console.error('ERROR:', err);
+  }
   // [END spanner_create_database]
 }
 
-function addColumn(instanceId, databaseId, projectId) {
+async function addColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_column]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -97,28 +95,24 @@ function addColumn(instanceId, databaseId, projectId) {
   const request = ['ALTER TABLE Albums ADD COLUMN MarketingBudget INT64'];
 
   // Creates a new index in the database
-  database
-    .updateSchema(request)
-    .then(results => {
-      const operation = results[0];
+  try {
+    const results = database.updateSchema(request);
+    const operation = results[0];
 
-      console.log('Waiting for operation to complete...');
-      return operation.promise();
-    })
-    .then(() => {
-      console.log('Added the MarketingBudget column.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
-    });
+    console.log('Waiting for operation to complete...');
+    await operation.promise();
+
+    console.log('Added the MarketingBudget column.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_add_column]
 }
 
-function queryDataWithNewColumn(instanceId, databaseId, projectId) {
+async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   // [START spanner_query_data_with_new_column]
   // This sample uses the `MarketingBudget` column. You can add the column
   // by running the `add_column` sample or by running this DDL statement against
@@ -149,30 +143,27 @@ function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Albums table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const results = database.run(query);
+    const rows = results[0];
 
-      rows.forEach(row => {
-        const json = row.toJSON();
+    rows.forEach(async row => {
+      const json = row.toJSON();
 
-        console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${
-            json.AlbumId
-          }, MarketingBudget: ${
-            json.MarketingBudget ? json.MarketingBudget : null
-          }`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
+      console.log(
+        `SingerId: ${json.SingerId}, AlbumId: ${
+          json.AlbumId
+        }, MarketingBudget: ${
+          json.MarketingBudget ? json.MarketingBudget : null
+        }`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_query_data_with_new_column]
 }
 
