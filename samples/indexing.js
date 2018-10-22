@@ -40,11 +40,10 @@ async function createIndex(instanceId, databaseId, projectId) {
 
   // Creates a new index in the database
   try {
-    const results = await database.updateSchema(request);
-    const operation = results[0];
+    const [operation] = await database.updateSchema(request);
 
     console.log('Waiting for operation to complete...');
-    // await operation.promise();
+    await operation.promise();
 
     console.log('Added the AlbumsByAlbumTitle index.');
   } catch (err) {
@@ -88,12 +87,10 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
 
   // Creates a new index in the database
   try {
-    const results = await database.updateSchema(request);
-
-    const operation = results[0];
+    const [operation] = await database.updateSchema(request);
 
     console.log('Waiting for operation to complete...');
-    // await operation.promise();
+    await operation.promise();
 
     console.log('Added the AlbumsByAlbumTitle2 index.');
   } catch (err) {
@@ -146,8 +143,7 @@ async function queryDataWithIndex(
 
   // Queries rows from the Albums table
   try {
-    const results = await database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -202,8 +198,7 @@ async function readDataWithIndex(instanceId, databaseId, projectId) {
 
   // Reads the Albums table using an index
   try {
-    const results = albumsTable.read(query);
-    const rows = results[0];
+    const [rows] = await albumsTable.read(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -256,8 +251,7 @@ async function readDataWithStoringIndex(instanceId, databaseId, projectId) {
 
   // Reads the Albums table using a storing index
   try {
-    const results = await albumsTable.read(query);
-    const rows = results[0];
+    const [rows] = await albumsTable.read(query);
 
     rows.forEach(row => {
       const json = row.toJSON();

@@ -116,8 +116,7 @@ async function queryDataWithStruct(instanceId, databaseId, projectId) {
 
   // Queries rows from the Singers table
   try {
-    const results = await database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -206,8 +205,7 @@ async function queryWithArrayofStruct(instanceId, databaseId, projectId) {
 
   // Queries rows from the Singers table
   try {
-    const results = database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -256,8 +254,7 @@ async function queryStructField(instanceId, databaseId, projectId) {
 
   // Queries rows from the Singers table
   try {
-    const results = database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -346,8 +343,7 @@ async function queryNestedStructField(instanceId, databaseId, projectId) {
 
   // Queries rows from the Singers table
   try {
-    const results = database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();

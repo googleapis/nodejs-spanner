@@ -45,13 +45,8 @@ async function createQueryPartitions(
 
   const query = 'SELECT * FROM Singers';
 
-  try {
-    const data = await transaction.createQueryPartitions(query);
-    const partitions = data[0];
-    console.log(`Successfully created ${partitions.length} query partitions.`);
-  } catch (err) {
-    console.error('ERROR:', err);
-  }
+  const [partitions] = await transaction.createQueryPartitions(query);
+  console.log(`Successfully created ${partitions.length} query partitions.`);
   // [END spanner_batch_client]
 }
 
@@ -85,15 +80,8 @@ async function executePartition(
   const database = instance.database(databaseId);
   const transaction = database.batchTransaction(identifier);
 
-  try {
-    const data = transaction.execute(partition);
-    const rows = data[0];
-    console.log(
-      `Successfully received ${rows.length} from executed partition.`
-    );
-  } catch (err) {
-    console.error('ERROR:', err);
-  }
+  const [rows] = await transaction.execute(partition);
+  console.log(`Successfully received ${rows.length} from executed partition.`);
   // [END spanner_batch_execute_partitions]
 }
 

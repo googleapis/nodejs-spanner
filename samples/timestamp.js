@@ -50,17 +50,13 @@ async function createTableWithTimestamp(instanceId, databaseId, projectId) {
   ];
 
   // Creates a table in an existing database
-  try {
-    const results = await database.updateSchema(request);
-    const operation = results[0];
+  const [operation] = await database.updateSchema(request);
 
-    console.log(`Waiting for operation on ${databaseId} to complete...`);
-    // await operation.promise();
+  console.log(`Waiting for operation on ${databaseId} to complete...`);
 
-    console.log(`Created table Performances in database ${databaseId}.`);
-  } catch (err) {
-    console.error('ERROR:', err);
-  }
+  await operation.promise();
+
+  console.log(`Created table Performances in database ${databaseId}.`);
   // [END spanner_create_table_with_timestamp_column]
 }
 
@@ -156,8 +152,7 @@ async function queryTableWithTimestamp(instanceId, databaseId, projectId) {
 
   // Queries rows from the Performances table
   try {
-    const results = await database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -204,11 +199,11 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
 
   // Adds a new commit timestamp column to the Albums table
   try {
-    const results = await database.updateSchema(request);
-    const operation = results[0];
+    const [operation] = await database.updateSchema(request);
 
     console.log('Waiting for operation to complete...');
-    // await operation.promise();
+
+    await operation.promise();
 
     console.log(
       'Added LastUpdateTime as a commit timestamp column in Albums table.'
@@ -329,8 +324,7 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
 
   // Queries rows from the Albums table
   try {
-    const results = database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();

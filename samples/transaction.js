@@ -51,9 +51,8 @@ async function readOnlyTransaction(instanceId, databaseId, projectId) {
     };
 
     // Read #1, using SQL
-    const qOneResults = await transaction.run(queryOne);
+    const [qOneRows] = await transaction.run(queryOne);
 
-    const qOneRows = qOneResults[0];
     qOneRows.forEach(row => {
       const json = row.toJSON();
       console.log(
@@ -66,9 +65,8 @@ async function readOnlyTransaction(instanceId, databaseId, projectId) {
     // Read #2, using the `read` method. Even if changes occur
     // in-between the reads, the transaction ensures that both
     // return the same data.
-    const qTwoResults = await transaction.read('Albums', queryTwo);
+    const [qTwoRows] = await transaction.read('Albums', queryTwo);
 
-    const qTwoRows = qTwoResults[0];
     qTwoRows.forEach(row => {
       const json = row.toJSON();
       console.log(

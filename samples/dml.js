@@ -47,8 +47,8 @@ async function insertUsingDml(instanceId, databaseId, projectId) {
 
   try {
     const transaction = await database.runTransaction();
-
     const rowCount = await transaction.runUpdate(query);
+
     console.log(
       `Successfully inserted ${rowCount} record into the Singers table.`
     );
@@ -212,11 +212,9 @@ async function writeAndReadUsingDml(instanceId, databaseId, projectId) {
         VALUES (11, 'Timothy', 'Campbell')`,
     });
 
-    const results = await transaction.run({
+    const [rows] = await transaction.run({
       sql: `SELECT FirstName, LastName FROM Singers`,
     });
-
-    const rows = results[0];
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(`${json.FirstName} ${json.LastName}`);

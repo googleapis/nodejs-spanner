@@ -52,7 +52,6 @@ async function updateData(instanceId, databaseId, projectId) {
   } finally {
     // Close the database when finished.
     database.close();
-    return;
   }
   // [END spanner_update_data]
 }
@@ -138,8 +137,7 @@ async function queryData(instanceId, databaseId, projectId) {
 
   // Queries rows from the Albums table
   try {
-    const results = await database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -190,8 +188,7 @@ async function readData(instanceId, databaseId, projectId) {
   };
 
   try {
-    const results = await albumsTable.read(query);
-    const rows = results[0];
+    const [rows] = await albumsTable.read(query);
 
     rows.forEach(row => {
       const json = row.toJSON();
@@ -247,8 +244,7 @@ async function readStaleData(instanceId, databaseId, projectId) {
   };
 
   try {
-    const results = await albumsTable.read(query, options);
-    const rows = results[0];
+    const [rows] = await albumsTable.read(query, options);
 
     rows.forEach(row => {
       const json = row.toJSON();

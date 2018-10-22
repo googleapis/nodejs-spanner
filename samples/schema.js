@@ -55,19 +55,15 @@ async function createDatabase(instanceId, databaseId, projectId) {
   };
 
   // Creates a database
-  try {
-    const results = await instance.createDatabase(databaseId, request);
+  const [database, operation] = await instance.createDatabase(
+    databaseId,
+    request
+  );
 
-    const database = results[0];
-    const operation = results[1];
+  console.log(`Waiting for operation on ${database.id} to complete...`);
+  await operation.promise();
 
-    console.log(`Waiting for operation on ${database.id} to complete...`);
-    await operation.promise();
-
-    console.log(`Created database ${databaseId} on instance ${instanceId}.`);
-  } catch (err) {
-    console.error('ERROR:', err);
-  }
+  console.log(`Created database ${databaseId} on instance ${instanceId}.`);
   // [END spanner_create_database]
 }
 
@@ -96,8 +92,7 @@ async function addColumn(instanceId, databaseId, projectId) {
 
   // Creates a new index in the database
   try {
-    const results = database.updateSchema(request);
-    const operation = results[0];
+    const [operation] = await database.updateSchema(request);
 
     console.log('Waiting for operation to complete...');
     await operation.promise();
@@ -144,8 +139,7 @@ async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
 
   // Queries rows from the Albums table
   try {
-    const results = database.run(query);
-    const rows = results[0];
+    const [rows] = await database.run(query);
 
     rows.forEach(async row => {
       const json = row.toJSON();

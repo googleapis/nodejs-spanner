@@ -172,493 +172,493 @@ test.serial(`should add a column to a table`, async t => {
   t.regex(output, /Added the MarketingBudget column\./);
 });
 
-// // update_data
-// test.serial(`should update existing rows in an example table`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /Updated data\./);
-// });
+// update_data
+test.serial(`should update existing rows in an example table`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /Updated data\./);
+});
 
-// // read_stale_data
-// test.serial(`should read stale data from an example table`, t => {
-//   t.plan(2);
-//   // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
-//   // 15 seconds have elapsed since the update_data test.
-//   return new Promise(resolve => setTimeout(resolve, 16000)).then(async () => {
-//     const results = await tools.runAsyncWithIO(
-//       `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(
-//       output,
-//       /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
-//     );
-//     t.regex(
-//       output,
-//       /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
-//     );
-//   });
-// });
+// read_stale_data
+test.serial(`should read stale data from an example table`, t => {
+  t.plan(2);
+  // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
+  // 15 seconds have elapsed since the update_data test.
+  return new Promise(resolve => setTimeout(resolve, 16000)).then(async () => {
+    const results = await tools.runAsyncWithIO(
+      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
+    );
+    t.regex(
+      output,
+      /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
+    );
+  });
+});
 
-// // query_data_with_new_column
-// test.serial(
-//   `should query an example table with an additional column and return matching rows`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
-//     t.regex(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/);
-//   }
-// );
+// query_data_with_new_column
+test.serial(
+  `should query an example table with an additional column and return matching rows`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
+    t.regex(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/);
+  }
+);
 
-// // create_index
-// test.serial(`should create an index in an example table`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /Waiting for operation to complete\.\.\./);
-//   t.regex(output, /Added the AlbumsByAlbumTitle index\./);
-// });
+// create_index
+test.serial(`should create an index in an example table`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /Waiting for operation to complete\.\.\./);
+  t.regex(output, /Added the AlbumsByAlbumTitle index\./);
+});
 
-// // create_storing_index
-// test.serial(`should create a storing index in an example table`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /Waiting for operation to complete\.\.\./);
-//   t.regex(output, /Added the AlbumsByAlbumTitle2 index\./);
-// });
+// create_storing_index
+test.serial(`should create a storing index in an example table`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /Waiting for operation to complete\.\.\./);
+  t.regex(output, /Added the AlbumsByAlbumTitle2 index\./);
+});
 
-// // query_data_with_index
-// test.serial(
-//   `should query an example table with an index and return matching rows`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
-//     t.false(
-//       output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`)
-//     );
-//   }
-// );
+// query_data_with_index
+test.serial(
+  `should query an example table with an index and return matching rows`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
+    t.false(
+      output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`)
+    );
+  }
+);
 
-// test.serial(
-//   `should respect query boundaries when querying an example table with an index`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/);
-//     t.regex(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
-//   }
-// );
+test.serial(
+  `should respect query boundaries when querying an example table with an index`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/);
+    t.regex(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
+  }
+);
 
-// // read_data_with_index
-// test.serial(`should read an example table with an index`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk/);
-// });
+// read_data_with_index
+test.serial(`should read an example table with an index`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+});
 
-// // read_data_with_storing_index
-// test.serial(`should read an example table with a storing index`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk/);
-// });
+// read_data_with_storing_index
+test.serial(`should read an example table with a storing index`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+});
 
-// // read_only_transaction
-// test.serial(`should read an example table using transactions`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
-//   t.regex(output, /Successfully executed read-only transaction\./);
-// });
+// read_only_transaction
+test.serial(`should read an example table using transactions`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+  t.regex(output, /Successfully executed read-only transaction\./);
+});
 
-// // read_write_transaction
-// test.serial(
-//   `should read from and write to an example table using transactions`,
-//   async t => {
-//     let results = await tools.runAsyncWithIO(
-//       `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     let output = results.stdout + results.stderr;
-//     t.regex(output, /The first album's marketing budget: 100000/);
-//     t.regex(output, /The second album's marketing budget: 500000/);
-//     t.regex(
-//       output,
-//       /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
-//     );
+// read_write_transaction
+test.serial(
+  `should read from and write to an example table using transactions`,
+  async t => {
+    let results = await tools.runAsyncWithIO(
+      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    let output = results.stdout + results.stderr;
+    t.regex(output, /The first album's marketing budget: 100000/);
+    t.regex(output, /The second album's marketing budget: 500000/);
+    t.regex(
+      output,
+      /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
+    );
 
-//     results = await tools.runAsyncWithIO(
-//       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     output = results.stdout + results.stderr;
-//     t.regex(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
-//     t.regex(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
-//   }
-// );
+    results = await tools.runAsyncWithIO(
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
+    t.regex(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
+  }
+);
 
-// // create_query_partitions
-// test.serial(`should create query partitions`, async t => {
-//   const instance = spanner.instance(INSTANCE_ID);
-//   const database = instance.database(DATABASE_ID);
-//   const [transaction] = await database.createBatchTransaction();
-//   const identifier = JSON.stringify(transaction.identifier());
+// create_query_partitions
+test.serial(`should create query partitions`, async t => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+  const [transaction] = await database.createBatchTransaction();
+  const identifier = JSON.stringify(transaction.identifier());
 
-//   const results = await tools.runAsyncWithIO(
-//     `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
-//     cwd
-//   );
+  const results = await tools.runAsyncWithIO(
+    `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
+    cwd
+  );
 
-//   const output = results.stdout + results.stderr;
+  const output = results.stdout + results.stderr;
 
-//   t.regex(output, /Successfully created \d query partitions\./);
+  t.regex(output, /Successfully created \d query partitions\./);
 
-//   await transaction.close();
-// });
+  await transaction.close();
+});
 
-// // execute_partition
-// test.serial(`should execute a partition`, async t => {
-//   const instance = spanner.instance(INSTANCE_ID);
-//   const database = instance.database(DATABASE_ID);
-//   const [transaction] = await database.createBatchTransaction();
-//   const identifier = JSON.stringify(transaction.identifier());
+// execute_partition
+test.serial(`should execute a partition`, async t => {
+  const instance = spanner.instance(INSTANCE_ID);
+  const database = instance.database(DATABASE_ID);
+  const [transaction] = await database.createBatchTransaction();
+  const identifier = JSON.stringify(transaction.identifier());
 
-//   const query = `SELECT SingerId FROM Albums`;
-//   const [partitions] = await transaction.createQueryPartitions(query);
-//   const partition = JSON.stringify(partitions[0]);
+  const query = `SELECT SingerId FROM Albums`;
+  const [partitions] = await transaction.createQueryPartitions(query);
+  const partition = JSON.stringify(partitions[0]);
 
-//   const results = await tools.runAsyncWithIO(
-//     `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`,
-//     cwd
-//   );
+  const results = await tools.runAsyncWithIO(
+    `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`,
+    cwd
+  );
 
-//   const output = results.stdout + results.stderr;
+  const output = results.stdout + results.stderr;
 
-//   t.regex(output, /Successfully received \d from executed partition\./);
+  t.regex(output, /Successfully received \d from executed partition\./);
 
-//   await transaction.close();
-// });
+  await transaction.close();
+});
 
-// // add_timestamp_column
-// test.serial(`should add a timestamp column to a table`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /Waiting for operation to complete\.\.\./);
-//   t.regex(
-//     output,
-//     /Added LastUpdateTime as a commit timestamp column in Albums table\./
-//   );
-// });
+// add_timestamp_column
+test.serial(`should add a timestamp column to a table`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /Waiting for operation to complete\.\.\./);
+  t.regex(
+    output,
+    /Added LastUpdateTime as a commit timestamp column in Albums table\./
+  );
+});
 
-// // update_data_with_timestamp_column
-// test.serial(
-//   `should update existing rows in an example table with commit timestamp column`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Updated data\./);
-//   }
-// );
+// update_data_with_timestamp_column
+test.serial(
+  `should update existing rows in an example table with commit timestamp column`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Updated data\./);
+  }
+);
 
-// // query_data_with_timestamp_column
-// test.serial(
-//   `should query an example table with an additional timestamp column and return matching rows`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(
-//       output,
-//       /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
-//     );
-//     t.regex(
-//       output,
-//       /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
-//     );
-//   }
-// );
+// query_data_with_timestamp_column
+test.serial(
+  `should query an example table with an additional timestamp column and return matching rows`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
+    );
+    t.regex(
+      output,
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
+    );
+  }
+);
 
-// // create_table_with_timestamp_column
-// test.serial(
-//   `should create an example table with a timestamp column`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(
-//       output,
-//       new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
-//     );
-//     t.regex(
-//       output,
-//       new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
-//     );
-//   }
-// );
+// create_table_with_timestamp_column
+test.serial(
+  `should create an example table with a timestamp column`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    t.regex(
+      output,
+      new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
+    );
+  }
+);
 
-// // insert_data_with_timestamp
-// test.serial(
-//   `should insert rows into an example table with timestamp column`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Inserted data\./);
-//   }
-// );
+// insert_data_with_timestamp
+test.serial(
+  `should insert rows into an example table with timestamp column`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Inserted data\./);
+  }
+);
 
-// // query_new_table_with_timestamp
-// test.serial(
-//   `should query an example table with a non-null timestamp column and return matching rows`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /SingerId: 1, VenueId: 4, EventDate:/);
-//     t.regex(output, /Revenue: 15000, LastUpdateTime:/);
-//   }
-// );
+// query_new_table_with_timestamp
+test.serial(
+  `should query an example table with a non-null timestamp column and return matching rows`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 1, VenueId: 4, EventDate:/);
+    t.regex(output, /Revenue: 15000, LastUpdateTime:/);
+  }
+);
 
-// // write_data_for_struct_queries
-// test.serial(
-//   `should insert rows into an example table for use with struct query examples`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Inserted data\./);
-//   }
-// );
+// write_data_for_struct_queries
+test.serial(
+  `should insert rows into an example table for use with struct query examples`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Inserted data\./);
+  }
+);
 
-// // query_with_struct_param
-// test.serial(`should query an example table with a STRUCT param`, async t => {
-//   const results = await tools.runAsyncWithIO(
-//     `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//     cwd
-//   );
-//   const output = results.stdout + results.stderr;
-//   t.regex(output, /SingerId: 6/);
-// });
+// query_with_struct_param
+test.serial(`should query an example table with a STRUCT param`, async t => {
+  const results = await tools.runAsyncWithIO(
+    `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+    cwd
+  );
+  const output = results.stdout + results.stderr;
+  t.regex(output, /SingerId: 6/);
+});
 
-// // query_with_array_of_struct_param
-// test.serial(
-//   `should query an example table with an array of STRUCT param`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /SingerId: 6\nSingerId: 7/);
-//   }
-// );
+// query_with_array_of_struct_param
+test.serial(
+  `should query an example table with an array of STRUCT param`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 6\nSingerId: 7/);
+  }
+);
 
-// // query_with_struct_field_param
-// test.serial(
-//   `should query an example table with a STRUCT field param`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /SingerId: 6/);
-//   }
-// );
+// query_with_struct_field_param
+test.serial(
+  `should query an example table with a STRUCT field param`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /SingerId: 6/);
+  }
+);
 
-// // query_with_nested_struct_param
-// test.serial(
-//   `should query an example table with a nested STRUCT param`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(
-//       output,
-//       /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
-//     );
-//   }
-// );
+// query_with_nested_struct_param
+test.serial(
+  `should query an example table with a nested STRUCT param`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
+    );
+  }
+);
 
-// // dml_standard_insert
-// test.serial(
-//   `should insert rows into an example table using a DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully inserted 1 record into the Singers table/);
-//   }
-// );
+// dml_standard_insert
+test.serial(
+  `should insert rows into an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully inserted 1 record into the Singers table/);
+  }
+);
 
-// // dml_standard_update
-// test.serial(
-//   `should update a row in an example table using a DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully updated 1 record/);
-//   }
-// );
+// dml_standard_update
+test.serial(
+  `should update a row in an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 1 record/);
+  }
+);
 
-// // dml_standard_delete
-// test.serial(
-//   `should delete a row from an example table using a DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully deleted 1 record\./);
-//   }
-// );
+// dml_standard_delete
+test.serial(
+  `should delete a row from an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully deleted 1 record\./);
+  }
+);
 
-// // dml_standard_update_with_timestamp
-// test.serial(
-//   `should update the timestamp of multiple records in an example table using a DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully updated 2 records/);
-//   }
-// );
+// dml_standard_update_with_timestamp
+test.serial(
+  `should update the timestamp of multiple records in an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 2 records/);
+  }
+);
 
-// // dml_write_then_read
-// test.serial(
-//   `should insert a record in an example table using a DML statement and then query the record`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Timothy Campbell/);
-//   }
-// );
+// dml_write_then_read
+test.serial(
+  `should insert a record in an example table using a DML statement and then query the record`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Timothy Campbell/);
+  }
+);
 
-// // dml_structs
-// test.serial(
-//   `should update a record in an example table using a DML statement along with a struct value`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully updated 1 record/);
-//   }
-// );
+// dml_structs
+test.serial(
+  `should update a record in an example table using a DML statement along with a struct value`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 1 record/);
+  }
+);
 
-// // dml_getting_started_insert
-// test.serial(
-//   `should insert multiple records into an example table using a DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /4 records inserted/);
-//   }
-// );
+// dml_getting_started_insert
+test.serial(
+  `should insert multiple records into an example table using a DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /4 records inserted/);
+  }
+);
 
-// // dml_getting_started_update
-// test.serial(
-//   `should transfer value from one record to another using DML statements within a transaction`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(
-//       output,
-//       /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
-//     );
-//   }
-// );
+// dml_getting_started_update
+test.serial(
+  `should transfer value from one record to another using DML statements within a transaction`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(
+      output,
+      /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
+    );
+  }
+);
 
-// //  dml_partitioned_update
-// test.serial(
-//   `should update multiple records using a partitioned DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully updated 3 records/);
-//   }
-// );
+//  dml_partitioned_update
+test.serial(
+  `should update multiple records using a partitioned DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully updated 3 records/);
+  }
+);
 
-// //  dml_partitioned_delete
-// test.serial(
-//   `should delete multiple records using a partitioned DML statement`,
-//   async t => {
-//     const results = await tools.runAsyncWithIO(
-//       `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-//       cwd
-//     );
-//     const output = results.stdout + results.stderr;
-//     t.regex(output, /Successfully deleted 5 records/);
-//   }
-// );
+//  dml_partitioned_delete
+test.serial(
+  `should delete multiple records using a partitioned DML statement`,
+  async t => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    t.regex(output, /Successfully deleted 5 records/);
+  }
+);
 
 function apiRequest(reqOpts) {
   return new Promise((resolve, reject) => {
