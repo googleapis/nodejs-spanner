@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function readOnlyTransaction(instanceId, databaseId, projectId) {
+function readOnlyTransaction(instanceId, databaseId, projectId) {
   // [START spanner_read_only_transaction]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -38,52 +38,56 @@ async function readOnlyTransaction(instanceId, databaseId, projectId) {
 
   // Gets a transaction object that captures the database state
   // at a specific point in time
-  try {
-    const transaction = await database.runTransaction({readOnly: true});
-
+  database.runTransaction({readOnly: true}, async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
     const queryOne = 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums';
 
-    const queryTwo = {
-      columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
-      keySet: {
-        all: true,
-      },
-    };
+    try {
+      // Read #1, using SQL
+      const [qOneRows] = await transaction.run(queryOne);
 
-    // Read #1, using SQL
-    const [qOneRows] = await transaction.run(queryOne);
+      qOneRows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+            json.AlbumTitle
+          }`
+        );
+      });
 
-    qOneRows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
-          json.AlbumTitle
-        }`
-      );
-    });
+      const queryTwo = {
+        columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
+        keySet: {
+          all: true,
+        },
+      };
 
-    // Read #2, using the `read` method. Even if changes occur
-    // in-between the reads, the transaction ensures that both
-    // return the same data.
-    const [qTwoRows] = await transaction.read('Albums', queryTwo);
+      // Read #2, using the `read` method. Even if changes occur
+      // in-between the reads, the transaction ensures that both
+      // return the same data.
+      const [qTwoRows] = await transaction.read('Albums', queryTwo);
 
-    qTwoRows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
-          json.AlbumTitle
-        }`
-      );
-    });
+      qTwoRows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+            json.AlbumTitle
+          }`
+        );
+      });
 
-    console.log('Successfully executed read-only transaction.');
-    await transaction.end();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      console.log('Successfully executed read-only transaction.');
+      await transaction.end();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_read_only_transaction]
 }
 
@@ -115,7 +119,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   const transferAmount = 200000;
   const minimumAmountToTransfer = 300000;
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;

@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function insertUsingDml(instanceId, databaseId, projectId) {
+function insertUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_insert]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -36,34 +36,37 @@ async function insertUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const query = {
-    sql:
-      'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
-    params: {
-      firstName: 'Virginia',
-      lastName: 'Watson',
-    },
-  };
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCount = await transaction.runUpdate({
+        sql:
+          'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
+        params: {
+          firstName: 'Virginia',
+          lastName: 'Watson',
+        },
+      });
 
-  try {
-    const transaction = await database.runTransaction();
-    const rowCount = await transaction.runUpdate(query);
+      console.log(
+        `Successfully inserted ${rowCount} record into the Singers table.`
+      );
 
-    console.log(
-      `Successfully inserted ${rowCount} record into the Singers table.`
-    );
-
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_dml_standard_insert]
 }
 
-async function updateUsingDml(instanceId, databaseId, projectId) {
+function updateUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_update]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -84,26 +87,30 @@ async function updateUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  try {
-    const transaction = await database.runTransaction();
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCount = await transaction.runUpdate({
+        sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
+          WHERE SingerId = 1 and AlbumId = 1`,
+      });
 
-    const rowCount = await transaction.runUpdate({
-      sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
-        WHERE SingerId = 1 and AlbumId = 1`,
-    });
-
-    console.log(`Successfully updated ${rowCount} record.`);
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      console.log(`Successfully updated ${rowCount} record.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_dml_standard_update]
 }
 
-async function deleteUsingDml(instanceId, databaseId, projectId) {
+function deleteUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_delete]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -124,25 +131,29 @@ async function deleteUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  try {
-    const transaction = await database.runTransaction();
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCount = await transaction.runUpdate({
+        sql: `DELETE Singers WHERE FirstName = 'Alice'`,
+      });
 
-    const rowCount = await transaction.runUpdate({
-      sql: `DELETE Singers WHERE FirstName = 'Alice'`,
-    });
-
-    console.log(`Successfully deleted ${rowCount} record.`);
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      console.log(`Successfully deleted ${rowCount} record.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_dml_standard_delete]
 }
 
-async function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
+function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_update_with_timestamp]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -163,27 +174,31 @@ async function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  try {
-    const transaction = await database.runTransaction();
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCount = await transaction.runUpdate({
+        sql: `UPDATE Albums
+          SET LastUpdateTime = PENDING_COMMIT_TIMESTAMP()
+          WHERE SingerId = 1`,
+      });
 
-    const rowCount = await transaction.runUpdate({
-      sql: `UPDATE Albums
-        SET LastUpdateTime = PENDING_COMMIT_TIMESTAMP()
-        WHERE SingerId = 1`,
-    });
-
-    console.log(`Successfully updated ${rowCount} records.`);
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      console.log(`Successfully updated ${rowCount} records.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_dml_standard_update_with_timestamp]
 }
 
-async function writeAndReadUsingDml(instanceId, databaseId, projectId) {
+function writeAndReadUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_write_then_read]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -204,33 +219,37 @@ async function writeAndReadUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  try {
-    const transaction = await database.runTransaction();
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      await transaction.runUpdate({
+        sql: `INSERT Singers (SingerId, FirstName, LastName)
+          VALUES (11, 'Timothy', 'Campbell')`,
+      });
 
-    await transaction.runUpdate({
-      sql: `INSERT Singers (SingerId, FirstName, LastName)
-        VALUES (11, 'Timothy', 'Campbell')`,
-    });
+      const [rows] = await transaction.run({
+        sql: `SELECT FirstName, LastName FROM Singers`,
+      });
+      rows.forEach(row => {
+        const json = row.toJSON();
+        console.log(`${json.FirstName} ${json.LastName}`);
+      });
 
-    const [rows] = await transaction.run({
-      sql: `SELECT FirstName, LastName FROM Singers`,
-    });
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(`${json.FirstName} ${json.LastName}`);
-    });
-
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_dml_write_then_read]
 }
 
-async function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
+function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
   // [START spanner_dml_structs]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -256,27 +275,33 @@ async function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  try {
-    const transaction = await database.runTransaction();
-    const rowCount = await transaction.runUpdate({
-      sql: `UPDATE Singers SET LastName = 'Grant' WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) = @name`,
-      params: {
-        name: nameStruct,
-      },
-    });
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCount = await transaction.runUpdate({
+        sql: `UPDATE Singers SET LastName = 'Grant'
+        WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) = @name`,
+        params: {
+          name: nameStruct,
+        },
+      });
 
-    console.log(`Successfully updated ${rowCount} record.`);
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
+      console.log(`Successfully updated ${rowCount} record.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
   // [END spanner_dml_structs]
 }
 
-async function writeUsingDml(instanceId, databaseId, projectId) {
+function writeUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_getting_started_insert]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -297,25 +322,29 @@ async function writeUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  try {
-    const transaction = await database.runTransaction();
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCount = await transaction.runUpdate({
+        sql: `INSERT Singers (SingerId, FirstName, LastName) VALUES
+        (12, 'Melissa', 'Garcia'),
+        (13, 'Russell', 'Morales'),
+        (14, 'Jacqueline', 'Long'),
+        (15, 'Dylan', 'Shaw')`,
+      });
+      console.log(`${rowCount} records inserted.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
 
-    const rowCount = await transaction.runUpdate({
-      sql: `INSERT Singers (SingerId, FirstName, LastName) VALUES
-      (12, 'Melissa', 'Garcia'),
-      (13, 'Russell', 'Morales'),
-      (14, 'Jacqueline', 'Long'),
-      (15, 'Dylan', 'Shaw')`,
-    });
-
-    console.log(`${rowCount} records inserted.`);
-    await transaction.commit();
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
   // [END spanner_dml_getting_started_insert]
 }
 
