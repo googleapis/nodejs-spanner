@@ -173,7 +173,7 @@ class Spanner extends Service {
     options = extend(
       {
         libName: 'gccl',
-        libVersion: require('../package.json').version,
+        libVersion: require('../../package.json').version,
         scopes,
       },
       options || {}
@@ -189,7 +189,7 @@ class Spanner extends Service {
         },
       },
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-      packageJson: require('../package.json'),
+      packageJson: require('../../package.json'),
     };
     super(config, options);
     this.options = options;
