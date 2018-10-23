@@ -625,7 +625,7 @@ describe('SessionPool', () => {
       sessionPool.options.acquireTimeout = 1;
 
       sessionPool._acquires.add = function(fn) {
-        return new Promise(resolve => setTimeout(resolve, 2)).then(fn);
+        return new Promise(r => setTimeout(r, 2)).then(fn);
       };
 
       return sessionPool._acquire().then(shouldNotBeCalled, err => {

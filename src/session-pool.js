@@ -657,6 +657,7 @@ class SessionPool extends EventEmitter {
     if (!is.infinite(timeout)) {
       const elapsed = Date.now() - startTime;
       const remaining = timeout - elapsed;
+
       promises.push(
         new Promise((_, reject) => {
           setTimeout(reject.bind(null, new TimeoutError()), remaining);
