@@ -36,33 +36,32 @@ function insertUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      const rowCount = await transaction.runUpdate({
         sql:
           'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
         params: {
           firstName: 'Virginia',
           lastName: 'Watson',
         },
-      })
-      .then(rowCount => {
-        console.log(
-          `Successfully inserted ${rowCount} record into the Singers table.`
-        );
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+
+      console.log(
+        `Successfully inserted ${rowCount} record into the Singers table.`
+      );
+
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
   // [END spanner_dml_standard_insert]
 }
@@ -88,27 +87,25 @@ function updateUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      const rowCount = await transaction.runUpdate({
         sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
           WHERE SingerId = 1 and AlbumId = 1`,
-      })
-      .then(rowCount => {
-        console.log(`Successfully updated ${rowCount} record.`);
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+
+      console.log(`Successfully updated ${rowCount} record.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
   // [END spanner_dml_standard_update]
 }
@@ -134,26 +131,24 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      const rowCount = await transaction.runUpdate({
         sql: `DELETE Singers WHERE FirstName = 'Alice'`,
-      })
-      .then(rowCount => {
-        console.log(`Successfully deleted ${rowCount} record.`);
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+
+      console.log(`Successfully deleted ${rowCount} record.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
   // [END spanner_dml_standard_delete]
 }
@@ -179,28 +174,26 @@ function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      const rowCount = await transaction.runUpdate({
         sql: `UPDATE Albums
           SET LastUpdateTime = PENDING_COMMIT_TIMESTAMP()
           WHERE SingerId = 1`,
-      })
-      .then(rowCount => {
-        console.log(`Successfully updated ${rowCount} records.`);
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+
+      console.log(`Successfully updated ${rowCount} records.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
   // [END spanner_dml_standard_update_with_timestamp]
 }
@@ -226,35 +219,32 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      await transaction.runUpdate({
         sql: `INSERT Singers (SingerId, FirstName, LastName)
           VALUES (11, 'Timothy', 'Campbell')`,
-      })
-      // Queries rows from the Singers table
-      .then(() =>
-        transaction.run({sql: `SELECT FirstName, LastName FROM Singers`})
-      )
-      .then(results => {
-        const rows = results[0];
-        rows.forEach(row => {
-          const json = row.toJSON();
-          console.log(`${json.FirstName} ${json.LastName}`);
-        });
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+
+      const [rows] = await transaction.run({
+        sql: `SELECT FirstName, LastName FROM Singers`,
+      });
+      rows.forEach(row => {
+        const json = row.toJSON();
+        console.log(`${json.FirstName} ${json.LastName}`);
+      });
+
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
   // [END spanner_dml_write_then_read]
 }
@@ -285,30 +275,28 @@ function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      const rowCount = await transaction.runUpdate({
         sql: `UPDATE Singers SET LastName = 'Grant'
         WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) = @name`,
         params: {
           name: nameStruct,
         },
-      })
-      .then(rowCount => {
-        console.log(`Successfully updated ${rowCount} record.`);
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+
+      console.log(`Successfully updated ${rowCount} record.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
   // [END spanner_dml_structs]
 }
@@ -334,30 +322,27 @@ function writeUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database.runTransaction((err, transaction) => {
+  database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    transaction
-      .runUpdate({
+    try {
+      const rowCount = await transaction.runUpdate({
         sql: `INSERT Singers (SingerId, FirstName, LastName) VALUES
         (12, 'Melissa', 'Garcia'),
         (13, 'Russell', 'Morales'),
         (14, 'Jacqueline', 'Long'),
         (15, 'Dylan', 'Shaw')`,
-      })
-      .then(rowCount => {
-        console.log(`${rowCount} records inserted.`);
-        return transaction.commit();
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      })
-      .then(() => {
-        // Close the database when finished.
-        return database.close();
       });
+      console.log(`${rowCount} records inserted.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   });
 
   // [END spanner_dml_getting_started_insert]
@@ -468,13 +453,13 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
       })
       .then(() => {
         // Close the database when finished.
-        return database.close();
+        database.close();
       });
   });
   // [END spanner_dml_getting_started_update]
 }
 
-function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
+async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_partitioned_update]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -495,24 +480,21 @@ function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database
-    .runPartitionedUpdate({
+  try {
+    const rowCount = await database.runPartitionedUpdate({
       sql: `UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 1`,
-    })
-    .then(rowCount => {
-      console.log(`Successfully updated ${rowCount} records.`);
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
     });
+    console.log(`Successfully updated ${rowCount} records.`);
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_dml_partitioned_update]
 }
 
-function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
+async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_partitioned_delete]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -533,21 +515,17 @@ function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  database
-    .runPartitionedUpdate({
+  try {
+    const rowCount = await database.runPartitionedUpdate({
       sql: `DELETE Singers WHERE SingerId > 10`,
-    })
-    .then(rowCount => {
-      console.log(`Successfully deleted ${rowCount} records.`);
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
     });
-
+    console.log(`Successfully deleted ${rowCount} records.`);
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_dml_partitioned_delete]
 }
 
