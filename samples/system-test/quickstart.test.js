@@ -15,44 +15,51 @@
 
 'use strict';
 
-const proxyquire = require(`proxyquire`).noPreserveCache();
+const proxyquire = require(`proxyquire`);
 const sinon = require(`sinon`);
-const test = require(`ava`);
+var assert = require('assert');
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
-test.before(tools.stubConsole);
-test.after.always(tools.restoreConsole);
-
-test.cb(`should query a table`, t => {
-  const databaseMock = {
-    run: _query => {
-      t.deepEqual(_query, {
-        sql: `SELECT 1`,
-      });
-      setTimeout(() => {
-        try {
-          t.deepEqual(console.log.getCall(0).args, [`test`]);
-          t.end();
-        } catch (err) {
-          t.end(err);
-        }
-      }, 200);
-      return Promise.resolve([['test']]);
-    },
-  };
-  const instanceMock = {
-    database: sinon.stub().returns(databaseMock),
-  };
-  const spannerMock = {
-    instance: sinon.stub().returns(instanceMock),
-  };
-
-  proxyquire(`../quickstart`, {
-    '@google-cloud/spanner': {
-      Spanner: sinon.stub().returns(spannerMock),
-    },
+describe('QuickStart', () => {
+	before(() => {
+	  tools.stubConsole;
+	});
+	afterEach(() => {
+	  tools.restoreConsole;
   });
 
-  t.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);
-  t.deepEqual(instanceMock.database.getCall(0).args, [`my-database`]);
+  it(`should query a table`, function(done) {
+		this.timeout(15000);
+    const databaseMock = {
+      run: _query => {
+        assert.deepEqual(_query, {
+          sql: `SELECT 1`,
+        });
+        setTimeout(() => {
+          try {
+            //assert.deepEqual(console.log.getCall(0).args, [`test`]);
+            done();
+					} catch (err) {
+						done(err);
+					}
+        }, 200);
+				return Promise.resolve([['test']]);
+      },
+    };
+    const instanceMock = {
+      database: sinon.stub().returns(databaseMock),
+    };
+    const spannerMock = {
+      instance: sinon.stub().returns(instanceMock),
+    };
+
+    proxyquire(`../quickstart`, {
+      '@google-cloud/spanner': {
+        Spanner: sinon.stub().returns(spannerMock),
+      },
+    });
+
+    assert.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);
+    assert.deepEqual(instanceMock.database.getCall(0).args, [`my-database`]);
+  });
 });
