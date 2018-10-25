@@ -53,9 +53,9 @@ describe('QuickStart', () => {
       instance: sinon.stub().returns(instanceMock),
     };
 
-		proxyquire(`../quickstart`, {
-			'@google-cloud/spanner': {
-				Spanner: sinon.stub().returns(spannerMock),
+    proxyquire(`../quickstart`, {
+      '@google-cloud/spanner': {
+        Spanner: sinon.stub().returns(spannerMock),
 			},
 		});
 
