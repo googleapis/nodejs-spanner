@@ -18,7 +18,7 @@
 const path = require(`path`);
 const request = require(`request`);
 const {Spanner} = require(`@google-cloud/spanner`);
-var assert = require('assert');
+const assert = require('assert');
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
 const batchCmd = `node batch.js`;

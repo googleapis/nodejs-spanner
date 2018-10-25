@@ -17,7 +17,7 @@
 
 const proxyquire = require(`proxyquire`);
 const sinon = require(`sinon`);
-var assert = require('assert');
+const assert = require('assert');
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
 describe('QuickStart', () => {
