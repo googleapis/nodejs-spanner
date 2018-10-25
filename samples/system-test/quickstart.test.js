@@ -54,9 +54,9 @@ describe('QuickStart', () => {
     };
 
     proxyquire(`../quickstart`, {
-     '@google-cloud/spanner': {
-       Spanner: sinon.stub().returns(spannerMock),
-     },
+      '@google-cloud/spanner': {
+        Spanner: sinon.stub().returns(spannerMock),
+      },
     });
 
     assert.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);
