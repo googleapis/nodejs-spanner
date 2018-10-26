@@ -16,7 +16,7 @@
 
 'use strict';
 
-const {promisifyAll} = require('@google-cloud/promisify');
+import {promisifyAll} from '@google-cloud/promisify';
 const extend = require('extend');
 const is = require('is');
 

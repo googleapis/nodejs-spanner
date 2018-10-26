@@ -16,10 +16,10 @@
 
 'use strict';
 
-const {promisifyAll} = require('@google-cloud/promisify');
+import {promisifyAll} from '@google-cloud/promisify';
 const common = require('@google-cloud/common-grpc');
 const extend = require('extend');
-const gax = require('google-gax');
+import * as gax from 'google-gax';
 const is = require('is');
 const path = require('path');
 const protobuf = require('protobufjs');
@@ -283,7 +283,7 @@ class Transaction extends TransactionRequest {
     if (this.ended_) {
       throw new Error('Transaction has already been ended.');
     }
-    const reqOpts = {
+    const reqOpts: any = {
       mutations: this.queuedMutations_,
     };
     if (this.id) {
@@ -342,7 +342,7 @@ class Transaction extends TransactionRequest {
    *   });
    * });
    */
-  end(callback) {
+  end(callback?) {
     if (this.ended_) {
       throw new Error('Transaction has already been ended.');
     }
@@ -597,7 +597,7 @@ class Transaction extends TransactionRequest {
    * });
    */
   run(query, callback) {
-    const rows = [];
+    const rows: {}[] = [];
     let stats;
 
     this.runStream(query)
@@ -820,7 +820,7 @@ class Transaction extends TransactionRequest {
     const retryInfo = err.metadata.get(RETRY_INFO_KEY);
 
     if (retryInfo && retryInfo.length) {
-      const retryDelay = RetryInfo.decode(retryInfo[0]).retryDelay;
+      const retryDelay = (RetryInfo as any).decode(retryInfo[0]).retryDelay;
       const seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
       const milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
       return seconds + milliseconds;

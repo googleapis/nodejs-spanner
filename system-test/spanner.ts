@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const async = require('async');
 const concat = require('concat-stream');
 const crypto = require('crypto');
@@ -1037,7 +1037,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          let rows = [];
+          let rows: {}[] = [];
 
           table
             .createReadStream({
@@ -1049,7 +1049,7 @@ describe('Spanner', () => {
               rows.push(row);
             })
             .on('end', () => {
-              rows = rows.map(x => x.toJSON());
+              rows = rows.map(x => (x as any).toJSON());
 
               assert.deepStrictEqual(rows, [
                 {
@@ -1076,7 +1076,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          const rows = [];
+          const rows: {}[] = [];
 
           table
             .createReadStream({
@@ -1085,9 +1085,7 @@ describe('Spanner', () => {
               json: true,
             })
             .on('error', done)
-            .on('data', row => {
-              rows.push(row);
-            })
+            .on('data', row => rows.push(row))
             .on('end', () => {
               assert.deepStrictEqual(rows, [
                 {
@@ -1113,7 +1111,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          const rows = [];
+          const rows: any[] = [];
 
           table
             .createReadStream({
@@ -1149,7 +1147,7 @@ describe('Spanner', () => {
           table.deleteRows([id], err => {
             assert.ifError(err);
 
-            const rows = [];
+            const rows: any[] = [];
 
             table
               .createReadStream({
@@ -1192,7 +1190,7 @@ describe('Spanner', () => {
           table.deleteRows([id, id2], err => {
             assert.ifError(err);
 
-            const rows = [];
+            const rows: any[] = [];
 
             table
               .createReadStream({
@@ -1473,7 +1471,7 @@ describe('Spanner', () => {
         };
         let row;
 
-        database
+        const stream = database
           .runStream(
             {
               sql: 'SELECT * FROM Singers WHERE SingerId=@id',
@@ -1484,7 +1482,7 @@ describe('Spanner', () => {
           .on('error', done)
           .once('data', function(row_) {
             row = row_;
-            this.end();
+            stream.end();
           })
           .on('end', () => {
             assert.deepStrictEqual(row.toJSON(), EXPECTED_ROW);
@@ -2873,7 +2871,7 @@ describe('Spanner', () => {
           })
           .then(onPromiseOperationComplete)
           .then(() => {
-            const data = [];
+            const data: {}[] = [];
 
             for (let i = 0; i < 15; ++i) {
               data.push({
@@ -3310,7 +3308,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          let rows = [];
+          let rows: any[] = [];
 
           table
             .createReadStream({
@@ -3378,7 +3376,7 @@ describe('Spanner', () => {
     const database = instance.database(generateName('database'));
     const table = database.table('TxnTable');
 
-    const records = [];
+    const records: any[] = [];
 
     before(() => {
       return database
@@ -3394,7 +3392,7 @@ describe('Spanner', () => {
         })
         .then(onPromiseOperationComplete)
         .then(() => {
-          const data = [];
+          const data: any[] = [];
 
           for (let i = 0; i < 5; i++) {
             data.push({

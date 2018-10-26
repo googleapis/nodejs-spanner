@@ -17,7 +17,7 @@
 'use strict';
 
 const arrify = require('arrify');
-const {promisifyAll} = require('@google-cloud/promisify');
+import {promisifyAll} from '@google-cloud/promisify';
 const {ServiceObject} = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const is = require('is');
@@ -339,14 +339,14 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  createSession(options, callback) {
+  createSession(options, callback?) {
     if (is.function(options)) {
       callback = options;
       options = {};
     }
 
     const gaxOpts = extend({}, options);
-    const reqOpts = {
+    const reqOpts: any = {
       database: this.formattedName_,
     };
 
@@ -894,7 +894,10 @@ class Database extends ServiceObject {
    *   const transaction = data[0];
    * });
    */
-  getTransaction(options, callback) {
+  getTransaction(options?): Promise<any>;
+  getTransaction(options, callback): void;
+  getTransaction(callback): void;
+  getTransaction(options?, callback?): void|Promise<any> {
     if (is.fn(options)) {
       callback = options;
       options = null;
@@ -1155,7 +1158,7 @@ class Database extends ServiceObject {
    * Querying data with an index:
    */
   run(query, options, callback) {
-    const rows = [];
+    const rows: {}[] = [];
     if (is.fn(options)) {
       callback = options;
       options = null;
