@@ -45,10 +45,14 @@ s.replace(
 module.exports.InstanceAdminClient = InstanceAdminClient;
 \g<1>""")
 
+# Update path discovery due to build/ dir and TypeScript conversion.
+s.replace("src/v1/database_admin_client.js", "../../package.json", "../../../package.json")
+s.replace("src/v1/instance_admin_client.js", "../../package.json", "../../../package.json")
+s.replace("src/v1/spanner_client.js", "../../package.json", "../../../package.json")
 
 # '''
 # Node.js specific cleanup
 # '''
 subprocess.run(['npm', 'install'])
-subprocess.run(['npm', 'run', 'prettier'])
-subprocess.run(['npm', 'run', 'lint'])
+subprocess.run(['npm', 'run', 'fix'])
+

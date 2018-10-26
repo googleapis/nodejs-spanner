@@ -153,7 +153,7 @@ describe('Spanner', () => {
     it('should create an auth instance from google-auth-library', () => {
       const expectedOptions = extend({}, OPTIONS, {
         libName: 'gccl',
-        libVersion: require('../package.json').version,
+        libVersion: require('../../package.json').version,
         scopes: [],
       });
 
@@ -170,7 +170,7 @@ describe('Spanner', () => {
 
       const expectedOptions = extend({}, OPTIONS, {
         libName: 'gccl',
-        libVersion: require('../package.json').version,
+        libVersion: require('../../package.json').version,
         scopes: expectedScopes,
       });
 
@@ -193,14 +193,14 @@ describe('Spanner', () => {
           },
         },
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-        packageJson: require('../package.json'),
+        packageJson: require('../../package.json'),
       });
 
       assert.deepStrictEqual(
         options,
         extend({}, OPTIONS, {
           libName: 'gccl',
-          libVersion: require('../package.json').version,
+          libVersion: require('../../package.json').version,
           scopes: [],
         })
       );

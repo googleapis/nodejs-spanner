@@ -15,7 +15,12 @@
 
 'use strict';
 
-function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
+async function createQueryPartitions(
+  instanceId,
+  databaseId,
+  identifier,
+  projectId
+) {
   // [START spanner_batch_client]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -40,21 +45,12 @@ function createQueryPartitions(instanceId, databaseId, identifier, projectId) {
 
   const query = 'SELECT * FROM Singers';
 
-  transaction
-    .createQueryPartitions(query)
-    .then(data => {
-      const partitions = data[0];
-      console.log(
-        `Successfully created ${partitions.length} query partitions.`
-      );
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    });
+  const [partitions] = await transaction.createQueryPartitions(query);
+  console.log(`Successfully created ${partitions.length} query partitions.`);
   // [END spanner_batch_client]
 }
 
-function executePartition(
+async function executePartition(
   instanceId,
   databaseId,
   identifier,
@@ -84,17 +80,8 @@ function executePartition(
   const database = instance.database(databaseId);
   const transaction = database.batchTransaction(identifier);
 
-  transaction
-    .execute(partition)
-    .then(data => {
-      const rows = data[0];
-      console.log(
-        `Successfully received ${rows.length} from executed partition.`
-      );
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    });
+  const [rows] = await transaction.execute(partition);
+  console.log(`Successfully received ${rows.length} from executed partition.`);
   // [END spanner_batch_execute_partitions]
 }
 

@@ -15,7 +15,7 @@
 
 'use strict';
 
-function createTableWithTimestamp(instanceId, databaseId, projectId) {
+async function createTableWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_create_table_with_timestamp_column]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -50,24 +50,17 @@ function createTableWithTimestamp(instanceId, databaseId, projectId) {
   ];
 
   // Creates a table in an existing database
-  database
-    .updateSchema(request)
-    .then(results => {
-      const operation = results[0];
+  const [operation] = await database.updateSchema(request);
 
-      console.log(`Waiting for operation on ${databaseId} to complete...`);
-      return operation.promise();
-    })
-    .then(() => {
-      console.log(`Created table Performances in database ${databaseId}.`);
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    });
+  console.log(`Waiting for operation on ${databaseId} to complete...`);
+
+  await operation.promise();
+
+  console.log(`Created table Performances in database ${databaseId}.`);
   // [END spanner_create_table_with_timestamp_column]
 }
 
-function insertWithTimestamp(instanceId, databaseId, projectId) {
+async function insertWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_insert_data_with_timestamp_column]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -91,47 +84,46 @@ function insertWithTimestamp(instanceId, databaseId, projectId) {
   // Instantiate Spanner table objects
   const performancesTable = database.table('Performances');
 
+  const data = [
+    {
+      SingerId: '1',
+      VenueId: '4',
+      EventDate: '2017-10-05',
+      Revenue: '11000',
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+    {
+      SingerId: '1',
+      VenueId: '19',
+      EventDate: '2017-11-02',
+      Revenue: '15000',
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+    {
+      SingerId: '2',
+      VenueId: '42',
+      EventDate: '2017-12-23',
+      Revenue: '7000',
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+  ];
+
   // Inserts rows into the Singers table
   // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so
   // they must be converted to strings before being inserted as INT64s
-  performancesTable
-    .insert([
-      {
-        SingerId: '1',
-        VenueId: '4',
-        EventDate: '2017-10-05',
-        Revenue: '11000',
-        LastUpdateTime: 'spanner.commit_timestamp()',
-      },
-      {
-        SingerId: '1',
-        VenueId: '19',
-        EventDate: '2017-11-02',
-        Revenue: '15000',
-        LastUpdateTime: 'spanner.commit_timestamp()',
-      },
-      {
-        SingerId: '2',
-        VenueId: '42',
-        EventDate: '2017-12-23',
-        Revenue: '7000',
-        LastUpdateTime: 'spanner.commit_timestamp()',
-      },
-    ])
-    .then(() => {
-      console.log('Inserted data.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
-    });
+  try {
+    await performancesTable.insert(data);
+    console.log('Inserted data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished
+    database.close();
+  }
   // [END spanner_insert_data_with_timestamp_column]
 }
 
-function queryTableWithTimestamp(instanceId, databaseId, projectId) {
+async function queryTableWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_query_new_table_with_timestamp_column]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -159,31 +151,27 @@ function queryTableWithTimestamp(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Performances table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const [rows] = await database.run(query);
 
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}, VenueId: ${json.VenueId}, EventDate: ${
-            json.EventDate
-          }, Revenue: ${json.Revenue}, LastUpdateTime: ${json.LastUpdateTime}`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `SingerId: ${json.SingerId}, VenueId: ${json.VenueId}, EventDate: ${
+          json.EventDate
+        }, Revenue: ${json.Revenue}, LastUpdateTime: ${json.LastUpdateTime}`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished
+    database.close();
+  }
   // [END spanner_query_new_table_with_timestamp_column]
 }
 
-function addTimestampColumn(instanceId, databaseId, projectId) {
+async function addTimestampColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_timestamp_column]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -205,35 +193,31 @@ function addTimestampColumn(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   const request = [
-    `ALTER TABLE Albums ADD COLUMN
-        LastUpdateTime TIMESTAMP OPTIONS (allow_commit_timestamp=true)`,
+    `ALTER TABLE Albums ADD COLUMN LastUpdateTime TIMESTAMP OPTIONS
+    (allow_commit_timestamp=true)`,
   ];
 
   // Adds a new commit timestamp column to the Albums table
-  database
-    .updateSchema(request)
-    .then(results => {
-      const operation = results[0];
+  try {
+    const [operation] = await database.updateSchema(request);
 
-      console.log('Waiting for operation to complete...');
-      return operation.promise();
-    })
-    .then(() => {
-      console.log(
-        'Added LastUpdateTime as a commit timestamp column in Albums table.'
-      );
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished.
-      return database.close();
-    });
+    console.log('Waiting for operation to complete...');
+
+    await operation.promise();
+
+    console.log(
+      'Added LastUpdateTime as a commit timestamp column in Albums table.'
+    );
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_add_timestamp_column]
 }
 
-function updateWithTimestamp(instanceId, databaseId, projectId) {
+async function updateWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_update_data_with_timestamp_column]
   // [START_EXCLUDE]
   // This sample uses the `MarketingBudget` column. You can add the column
@@ -272,35 +256,34 @@ function updateWithTimestamp(instanceId, databaseId, projectId) {
   // must be converted to strings before being inserted as INT64s
   const albumsTable = database.table('Albums');
 
-  albumsTable
-    .update([
-      {
-        SingerId: '1',
-        AlbumId: '1',
-        MarketingBudget: '1000000',
-        LastUpdateTime: 'spanner.commit_timestamp()',
-      },
-      {
-        SingerId: '2',
-        AlbumId: '2',
-        MarketingBudget: '750000',
-        LastUpdateTime: 'spanner.commit_timestamp()',
-      },
-    ])
-    .then(() => {
-      console.log('Updated data.');
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
-    });
+  const data = [
+    {
+      SingerId: '1',
+      AlbumId: '1',
+      MarketingBudget: '1000000',
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+    {
+      SingerId: '2',
+      AlbumId: '2',
+      MarketingBudget: '750000',
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+  ];
+
+  try {
+    await albumsTable.update(data);
+    console.log('Updated data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished
+    database.close();
+  }
   // [END spanner_update_data_with_timestamp_column]
 }
 
-function queryWithTimestamp(instanceId, databaseId, projectId) {
+async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // [START spanner_query_data_with_timestamp_column]
   // [START_EXCLUDE]
   // This sample uses the `MarketingBudget` column. You can add the column
@@ -340,30 +323,26 @@ function queryWithTimestamp(instanceId, databaseId, projectId) {
   };
 
   // Queries rows from the Albums table
-  database
-    .run(query)
-    .then(results => {
-      const rows = results[0];
+  try {
+    const [rows] = await database.run(query);
 
-      rows.forEach(row => {
-        const json = row.toJSON();
+    rows.forEach(row => {
+      const json = row.toJSON();
 
-        console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${
-            json.AlbumId
-          }, MarketingBudget: ${
-            json.MarketingBudget ? json.MarketingBudget : null
-          }, LastUpdateTime: ${json.LastUpdateTime}`
-        );
-      });
-    })
-    .catch(err => {
-      console.error('ERROR:', err);
-    })
-    .then(() => {
-      // Close the database when finished
-      return database.close();
+      console.log(
+        `SingerId: ${json.SingerId}, AlbumId: ${
+          json.AlbumId
+        }, MarketingBudget: ${
+          json.MarketingBudget ? json.MarketingBudget : null
+        }, LastUpdateTime: ${json.LastUpdateTime}`
+      );
     });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished
+    database.close();
+  }
   // [END spanner_query_data_with_timestamp_column]
 }
 
