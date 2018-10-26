@@ -41,9 +41,8 @@ const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 
-describe('Spanner', function() {
-  this.timeout(15000);
-  before(()=>tools.checkCredentials);
+describe('Spanner', () => {
+  before(() => tools.checkCredentials);
 
   before(async () => {
     const instance = spanner.instance(INSTANCE_ID);
@@ -120,11 +119,11 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(
+    assert.deepStrictEqual(
       output,
       new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       output,
       new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
     );
@@ -137,21 +136,21 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /Inserted data\./);
+    assert.deepStrictEqual(output, /Inserted data\./);
   });
 
   // query_data
-  it(
-    `should query an example table and return matching rows`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
-    }
-  );
+  it(`should query an example table and return matching rows`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/
+    );
+  });
 
   // read_data
   it(`should read an example table`, async () => {
@@ -160,7 +159,10 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/
+    );
   });
 
   // add_column
@@ -170,8 +172,8 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepEqual(output, /Added the MarketingBudget column\./);
+    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
+    assert.deepStrictEqual(output, /Added the MarketingBudget column\./);
   });
 
   // update_data
@@ -181,7 +183,7 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /Updated data\./);
+    assert.deepStrictEqual(output, /Updated data\./);
   });
 
   // read_stale_data
@@ -195,11 +197,11 @@ describe('Spanner', function() {
         cwd
       );
       const output = results.stdout + results.stderr;
-      assert.deepEqual(
+      assert.deepStrictEqual(
         output,
         /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
       );
-      assert.deepEqual(
+      assert.deepStrictEqual(
         output,
         /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
       );
@@ -207,18 +209,21 @@ describe('Spanner', function() {
   });
 
   // query_data_with_new_column
-  it(
-    `should query an example table with an additional column and return matching rows`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
-      assert.deepEqual(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/);
-    }
-  );
+  it(`should query an example table with an additional column and return matching rows`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/
+    );
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/
+    );
+  });
 
   // create_index
   it(`should create an index in an example table`, async () => {
@@ -227,8 +232,8 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepEqual(output, /Added the AlbumsByAlbumTitle index\./);
+    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
+    assert.deepStrictEqual(output, /Added the AlbumsByAlbumTitle index\./);
   });
 
   // create_storing_index
@@ -238,36 +243,42 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepEqual(output, /Added the AlbumsByAlbumTitle2 index\./);
+    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
+    assert.deepStrictEqual(output, /Added the AlbumsByAlbumTitle2 index\./);
   });
 
   // query_data_with_index
-  it(
-    `should query an example table with an index and return matching rows`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
-      assert.deepEqual(output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`), false);
-    }
-  );
+  it(`should query an example table with an index and return matching rows`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
+    );
+    assert.deepStrictEqual(
+      output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`),
+      false
+    );
+  });
 
-  it(
-    `should respect query boundaries when querying an example table with an index`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/);
-      assert.deepEqual(output, /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
-    }
-  );
+  it(`should respect query boundaries when querying an example table with an index`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
+    );
+    assert.deepStrictEqual(
+      output,
+      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
+    );
+  });
 
   // read_data_with_index
   it(`should read an example table with an index`, async () => {
@@ -276,7 +287,7 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.deepStrictEqual(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
   // read_data_with_storing_index
@@ -286,7 +297,7 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.deepStrictEqual(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
   // read_only_transaction
@@ -296,35 +307,50 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
-    assert.deepEqual(output, /Successfully executed read-only transaction\./);
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/
+    );
+    assert.deepStrictEqual(
+      output,
+      /Successfully executed read-only transaction\./
+    );
   });
 
   // read_write_transaction
-  it(
-    `should read from and write to an example table using transactions`,
-    async () => {
-      let results = await tools.runAsyncWithIO(
-        `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      let output = results.stdout + results.stderr;
-      assert.deepEqual(output, /The first album's marketing budget: 100000/);
-      assert.deepEqual(output, /The second album's marketing budget: 500000/);
-      assert.deepEqual(
-        output,
-        /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
-      );
+  it(`should read from and write to an example table using transactions`, async () => {
+    let results = await tools.runAsyncWithIO(
+      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    let output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /The first album's marketing budget: 100000/
+    );
+    assert.deepStrictEqual(
+      output,
+      /The second album's marketing budget: 500000/
+    );
+    assert.deepStrictEqual(
+      output,
+      /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
+    );
 
-      results = await tools.runAsyncWithIO(
-        `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      output = results.stdout + results.stderr;
-      assert.deepEqual(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
-      assert.deepEqual(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
-    }
-  );
+    results = await tools.runAsyncWithIO(
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/
+    );
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/
+    );
+  });
 
   // create_query_partitions
   it(`should create query partitions`, async () => {
@@ -340,7 +366,10 @@ describe('Spanner', function() {
 
     const output = results.stdout + results.stderr;
 
-    assert.deepEqual(output, /Successfully created \d query partitions\./);
+    assert.deepStrictEqual(
+      output,
+      /Successfully created \d query partitions\./
+    );
 
     await transaction.close();
   });
@@ -363,7 +392,10 @@ describe('Spanner', function() {
 
     const output = results.stdout + results.stderr;
 
-    assert.deepEqual(output, /Successfully received \d from executed partition\./);
+    assert.deepStrictEqual(
+      output,
+      /Successfully received \d from executed partition\./
+    );
 
     await transaction.close();
   });
@@ -375,105 +407,87 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepEqual(
+    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
+    assert.deepStrictEqual(
       output,
       /Added LastUpdateTime as a commit timestamp column in Albums table\./
     );
   });
 
   // update_data_with_timestamp_column
-  it(
-    `should update existing rows in an example table with commit timestamp column`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Updated data\./);
-    }
-  );
+  it(`should update existing rows in an example table with commit timestamp column`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Updated data\./);
+  });
 
   // query_data_with_timestamp_column
-  it(
-    `should query an example table with an additional timestamp column and return matching rows`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(
-        output,
-        /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
-      );
-      assert.deepEqual(
-        output,
-        /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
-      );
-    }
-  );
+  it(`should query an example table with an additional timestamp column and return matching rows`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
+    );
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
+    );
+  });
 
   // create_table_with_timestamp_column
-  it(
-    `should create an example table with a timestamp column`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(
-        output,
-        new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
-      );
-      assert.deepEqual(
-        output,
-        new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
-      );
-    }
-  );
+  it(`should create an example table with a timestamp column`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.deepStrictEqual(
+      output,
+      new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
+    );
+  });
 
   // insert_data_with_timestamp
-  it(
-    `should insert rows into an example table with timestamp column`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Inserted data\./);
-    }
-  );
+  it(`should insert rows into an example table with timestamp column`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Inserted data\./);
+  });
 
   // query_new_table_with_timestamp
-  it(
-    `should query an example table with a non-null timestamp column and return matching rows`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /SingerId: 1, VenueId: 4, EventDate:/);
-      assert.deepEqual(output, /Revenue: 15000, LastUpdateTime:/);
-    }
-  );
+  it(`should query an example table with a non-null timestamp column and return matching rows`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /SingerId: 1, VenueId: 4, EventDate:/);
+    assert.deepStrictEqual(output, /Revenue: 15000, LastUpdateTime:/);
+  });
 
   // write_data_for_struct_queries
-  it(
-    `should insert rows into an example table for use with struct query examples`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Inserted data\./);
-    }
-  );
+  it(`should insert rows into an example table for use with struct query examples`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Inserted data\./);
+  });
 
   // query_with_struct_param
   it(`should query an example table with a STRUCT param`, async () => {
@@ -482,184 +496,147 @@ describe('Spanner', function() {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepEqual(output, /SingerId: 6/);
+    assert.deepStrictEqual(output, /SingerId: 6/);
   });
 
   // query_with_array_of_struct_param
-  it(
-    `should query an example table with an array of STRUCT param`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /SingerId: 6\nSingerId: 7/);
-    }
-  );
+  it(`should query an example table with an array of STRUCT param`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /SingerId: 6\nSingerId: 7/);
+  });
 
   // query_with_struct_field_param
-  it(
-    `should query an example table with a STRUCT field param`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /SingerId: 6/);
-    }
-  );
+  it(`should query an example table with a STRUCT field param`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /SingerId: 6/);
+  });
 
   // query_with_nested_struct_param
-  it(
-    `should query an example table with a nested STRUCT param`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(
-        output,
-        /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
-      );
-    }
-  );
+  it(`should query an example table with a nested STRUCT param`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
+    );
+  });
 
   // dml_standard_insert
-  it(
-    `should insert rows into an example table using a DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully inserted 1 record into the Singers table/);
-    }
-  );
+  it(`should insert rows into an example table using a DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /Successfully inserted 1 record into the Singers table/
+    );
+  });
 
   // dml_standard_update
-  it(
-    `should update a row in an example table using a DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully updated 1 record/);
-    }
-  );
+  it(`should update a row in an example table using a DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Successfully updated 1 record/);
+  });
 
   // dml_standard_delete
-  it(
-    `should delete a row from an example table using a DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully deleted 1 record\./);
-    }
-  );
+  it(`should delete a row from an example table using a DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Successfully deleted 1 record\./);
+  });
 
   // dml_standard_update_with_timestamp
-  it(
-    `should update the timestamp of multiple records in an example table using a DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully updated 2 records/);
-    }
-  );
+  it(`should update the timestamp of multiple records in an example table using a DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Successfully updated 2 records/);
+  });
 
   // dml_write_then_read
-  it(
-    `should insert a record in an example table using a DML statement and then query the record`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Timothy Campbell/);
-    }
-  );
+  it(`should insert a record in an example table using a DML statement and then query the record`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Timothy Campbell/);
+  });
 
   // dml_structs
-  it(
-    `should update a record in an example table using a DML statement along with a struct value`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully updated 1 record/);
-    }
-  );
+  it(`should update a record in an example table using a DML statement along with a struct value`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Successfully updated 1 record/);
+  });
 
   // dml_getting_started_insert
-  it(
-    `should insert multiple records into an example table using a DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /4 records inserted/);
-    }
-  );
+  it(`should insert multiple records into an example table using a DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /4 records inserted/);
+  });
 
   // dml_getting_started_update
-  it(
-    `should transfer value from one record to another using DML statements within a transaction`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(
-        output,
-        /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
-      );
-    }
-  );
+  it(`should transfer value from one record to another using DML statements within a transaction`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(
+      output,
+      /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
+    );
+  });
 
   //  dml_partitioned_update
-  it(
-    `should update multiple records using a partitioned DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully updated 3 records/);
-    }
-  );
+  it(`should update multiple records using a partitioned DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Successfully updated 3 records/);
+  });
 
   //  dml_partitioned_delete
-  it(
-    `should delete multiple records using a partitioned DML statement`,
-    async () => {
-      const results = await tools.runAsyncWithIO(
-        `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.deepEqual(output, /Successfully deleted 5 records/);
-    }
-  );
-
+  it(`should delete multiple records using a partitioned DML statement`, async () => {
+    const results = await tools.runAsyncWithIO(
+      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.deepStrictEqual(output, /Successfully deleted 5 records/);
+  });
 });
 
 function apiRequest(reqOpts) {

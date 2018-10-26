@@ -21,29 +21,25 @@ const assert = require('assert');
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
 describe('QuickStart', () => {
-	before(() => {
-	  tools.stubConsole;
-	});
-	afterEach(() => {
-	  tools.restoreConsole;
-  });
+  before(() => tools.stubConsole);
 
-  it(`should query a table`, function(done) {
-	this.timeout(15000);
+  afterEach(() => tools.restoreConsole);
+
+  it(`should query a table`, done => {
     const databaseMock = {
       run: _query => {
-        assert.deepEqual(_query, {
+        assert.deepStrictEqual(_query, {
           sql: `SELECT 1`,
         });
         setTimeout(() => {
           try {
-            //assert.deepEqual(console.log.getCall(0).args, [`test`]);
+            //assert.deepStrictEqual(console.log.getCall(0).args, [`test`]);
             done();
-					} catch (err) {
-						done(err);
-					}
+          } catch (err) {
+            done(err);
+          }
         }, 200);
-				return Promise.resolve([['test']]);
+        return Promise.resolve([['test']]);
       },
     };
     const instanceMock = {
@@ -54,12 +50,16 @@ describe('QuickStart', () => {
     };
 
     proxyquire(`../quickstart`, {
-        '@google-cloud/spanner': {
-            Spanner: sinon.stub().returns(spannerMock),
-        },
+      '@google-cloud/spanner': {
+        Spanner: sinon.stub().returns(spannerMock),
+      },
     });
 
-    assert.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);
-    assert.deepEqual(instanceMock.database.getCall(0).args, [`my-database`]);
+    assert.deepStrictEqual(spannerMock.instance.getCall(0).args, [
+      `my-instance`,
+    ]);
+    assert.deepStrictEqual(instanceMock.database.getCall(0).args, [
+      `my-database`,
+    ]);
   });
 });
