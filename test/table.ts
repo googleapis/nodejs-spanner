@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {split} = require('split-array-stream');
@@ -152,16 +152,16 @@ describe('Table', () => {
       const FORMATTED_OPTIONS = {};
 
       const formatTimestampOptions =
-        FakeTransactionRequest.formatTimestampOptions;
+        (FakeTransactionRequest as any).formatTimestampOptions;
 
-      FakeTransactionRequest.formatTimestampOptions_ = function(options) {
+      (FakeTransactionRequest as any).formatTimestampOptions_ = function(options) {
         assert.strictEqual(options, OPTIONS);
         return FORMATTED_OPTIONS;
       };
 
       FakeTransactionRequest.prototype = {
         createReadStream: function(name, query) {
-          FakeTransactionRequest.formatTimestampOptions_ = formatTimestampOptions;
+          (FakeTransactionRequest as any).formatTimestampOptions_ = formatTimestampOptions;
 
           assert.strictEqual(
             query.transaction.singleUse.readOnly,

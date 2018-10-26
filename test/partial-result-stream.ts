@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
 const extend = require('extend');
@@ -33,7 +33,7 @@ fakeCheckpointStream.obj = function() {
   );
 };
 
-let FakeRowBuilderOverrides = {};
+let FakeRowBuilderOverrides: any = {};
 function FakeRowBuilder() {
   this.calledWith_ = arguments;
 }

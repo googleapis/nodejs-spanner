@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {split} = require('split-array-stream');
@@ -44,7 +44,7 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-const fakeCodec = {
+const fakeCodec: any = {
   encode: util.noop,
 };
 
@@ -64,7 +64,7 @@ describe('TransactionRequest', () => {
   });
 
   beforeEach(() => {
-    FakeGrpcService.encodeValue_ = util.noop;
+    (FakeGrpcService as any).encodeValue_ = util.noop;
     fakeCodec.encode = util.noop;
     transactionRequest = new TransactionRequest();
     transactionRequest.request = util.noop;

@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {util} = require('@google-cloud/common-grpc');
@@ -58,7 +58,7 @@ describe('RowBuilder', () => {
   });
 
   beforeEach(() => {
-    FakeGrpcService.decodeValue_ = util.noop;
+    (FakeGrpcService as any).decodeValue_ = util.noop;
     decodeOverride = null;
     generateToJSONFromRowOverride = null;
     extend(RowBuilder, RowBuilderCached);
@@ -120,7 +120,7 @@ describe('RowBuilder', () => {
 
       const expectedValue = {};
 
-      FakeGrpcService.decodeValue_ = function() {
+      (FakeGrpcService as any).decodeValue_ = function() {
         return expectedValue;
       };
 
@@ -137,7 +137,7 @@ describe('RowBuilder', () => {
 
       const expectedValue = {};
 
-      FakeGrpcService.decodeValue_ = function() {
+      (FakeGrpcService as any).decodeValue_ = function() {
         return {
           values: expectedValue,
         };
@@ -155,7 +155,7 @@ describe('RowBuilder', () => {
         },
       });
 
-      FakeGrpcService.decodeValue_ = function() {
+      (FakeGrpcService as any).decodeValue_ = function() {
         return value;
       };
 
@@ -480,7 +480,7 @@ describe('RowBuilder', () => {
   });
 
   describe('flush', () => {
-    const ROWS = [[]];
+    const ROWS: {}[][] = [[]];
 
     for (let i = 0; i < FIELDS.length; i++) {
       ROWS[0].push({});

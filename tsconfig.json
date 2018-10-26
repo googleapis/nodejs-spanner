@@ -6,7 +6,8 @@
     "allowJs": true,
     "declaration": false,
     "skipLibCheck": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "noImplicitThis": false
   },
   "include": [
     "src/*.ts",

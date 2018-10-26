@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const extend = require('extend');
 const path = require('path');
 const proxyquire = require('proxyquire');
@@ -74,7 +74,7 @@ function fakeGoogleAuth() {
   };
 }
 
-const fakeCodec = {
+const fakeCodec: any = {
   SpannerDate: util.noop,
 };
 
@@ -307,15 +307,15 @@ describe('Spanner', () => {
     let formatName_;
 
     before(() => {
-      formatName_ = FakeInstance.formatName_;
+      formatName_ = (FakeInstance as any).formatName_;
     });
 
     after(() => {
-      FakeInstance.formatName_ = formatName_;
+      (FakeInstance as any).formatName_ = formatName_;
     });
 
     beforeEach(() => {
-      FakeInstance.formatName_ = formatName_;
+      (FakeInstance as any).formatName_ = formatName_;
       PATH = 'projects/' + spanner.projectId + '/instances/' + NAME;
 
       spanner.request = util.noop;
@@ -334,7 +334,7 @@ describe('Spanner', () => {
     });
 
     it('should set the correct defaults on the request', done => {
-      FakeInstance.formatName_ = function(projectId, name) {
+      (FakeInstance as any).formatName_ = function(projectId, name) {
         assert.strictEqual(projectId, spanner.projectId);
         assert.strictEqual(name, NAME);
         return PATH;
@@ -366,7 +366,7 @@ describe('Spanner', () => {
     });
 
     it('should accept a path', done => {
-      FakeInstance.formatName_ = function(projectId, name) {
+      (FakeInstance as any).formatName_ = function(projectId, name) {
         assert.strictEqual(name, PATH);
         setImmediate(done);
         return name;
@@ -445,7 +445,7 @@ describe('Spanner', () => {
 
       it('should create an Instance and return an Operation', done => {
         const formattedName = 'formatted-name';
-        FakeInstance.formatName_ = function() {
+        (FakeInstance as any).formatName_ = function() {
           return formattedName;
         };
 
@@ -558,8 +558,7 @@ describe('Spanner', () => {
 
           const instance = arguments[1].pop();
           assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1][0]);
-
+          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1]![0]);
           assert.strictEqual(arguments[2], GAX_RESPONSE_ARGS[2]);
 
           done();
