@@ -21,9 +21,10 @@ const codec = module.exports;
 const arrify = require('arrify');
 const {Service} = require('@google-cloud/common-grpc');
 const extend = require('extend');
-const is = require('is');
+import * as is from 'is';
 
 class SpannerDate {
+  value;
   constructor(value) {
     if (arguments.length > 1) {
       throw new TypeError(
@@ -43,6 +44,7 @@ class SpannerDate {
 codec.SpannerDate = SpannerDate;
 
 class Float {
+  value;
   constructor(value) {
     this.value = value;
   }
@@ -54,6 +56,7 @@ class Float {
 codec.Float = Float;
 
 class Int {
+  value;
   constructor(value) {
     this.value = value.toString();
   }
@@ -120,7 +123,7 @@ Struct.TYPE = 'struct';
  * @return {Struct}
  */
 Struct.fromArray = function(arr) {
-  const struct = new Struct();
+  const struct = new (Struct as any)();
 
   struct.push.apply(struct, arr);
 
@@ -136,7 +139,7 @@ Struct.fromArray = function(arr) {
  * @return {Struct}
  */
 Struct.fromJSON = function(json) {
-  const struct = new Struct();
+  const struct = new (Struct as any)();
 
   Object.keys(json || {}).forEach(name => {
     const value = json[name];
@@ -246,7 +249,7 @@ function decode(value, field) {
         break;
       }
       case 'STRUCT': {
-        const struct = new Struct();
+        const struct = new (Struct as any)();
         const fields = type.structType.fields;
 
         fields.forEach((field, index) => {
@@ -542,7 +545,7 @@ function createTypeObject(config) {
     code = 0; // unspecified
   }
 
-  const typeObject = {code};
+  const typeObject: any = {code};
 
   if (type === 'array') {
     typeObject.arrayElementType = createTypeObject(config.child);

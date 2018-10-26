@@ -21,9 +21,9 @@
 'use strict';
 
 const {ServiceObject} = require('@google-cloud/common-grpc');
-const {promisifyAll} = require('@google-cloud/promisify');
+import {promisifyAll} from '@google-cloud/promisify';
 const extend = require('extend');
-const is = require('is');
+import * as is from 'is';
 const Transaction = require('./transaction');
 
 /**

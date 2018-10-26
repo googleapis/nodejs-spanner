@@ -18,12 +18,12 @@
 
 const checkpointStream = require('checkpoint-stream');
 const eventsIntercept = require('events-intercept');
-const extend = require('extend');
-const is = require('is');
+import * as extend from 'extend';
+import * as is from 'is';
 const mergeStream = require('merge-stream');
 const {split} = require('split-array-stream');
 const streamEvents = require('stream-events');
-const through = require('through2');
+import * as through from 'through2';
 
 const RowBuilder = require('./row-builder');
 

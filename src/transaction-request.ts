@@ -19,7 +19,7 @@
 const arrify = require('arrify');
 const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
-const is = require('is');
+import * as is from 'is';
 
 const codec = require('./codec');
 const PartialResultStream = require('./partial-result-stream');
@@ -35,6 +35,13 @@ const PartialResultStream = require('./partial-result-stream');
  * @param {object} [options] Timestamp options.
  */
 class TransactionRequest {
+  readOnly;
+  partitioned;
+  options;
+  transaction;
+  id;
+  database;
+  queue_;
   constructor(options) {
     this.readOnly = false;
     this.partitioned = false;
@@ -537,7 +544,7 @@ class TransactionRequest {
    * });
    */
   read(table, query, callback) {
-    const rows = [];
+    const rows: {}[] = [];
     this.createReadStream(table, query)
       .on('error', callback)
       .on('data', row => {
@@ -604,7 +611,7 @@ class TransactionRequest {
    * @abstract
    * @private
    */
-  requestStream() {}
+  requestStream(options) {}
   /**
    * Update rows of data within a table.
    *

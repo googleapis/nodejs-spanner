@@ -18,8 +18,9 @@
 
 const arrify = require('arrify');
 const common = require('@google-cloud/common-grpc');
-const {paginator} = require('@google-cloud/paginator');
-const {promisifyAll} = require('@google-cloud/promisify');
+import { ServiceObjectConfig } from '@google-cloud/common';
+import {paginator} from '@google-cloud/paginator';
+import {promisifyAll} from '@google-cloud/promisify';
 const extend = require('extend');
 const is = require('is');
 const snakeCase = require('lodash.snakecase');
@@ -103,7 +104,7 @@ class Instance extends common.ServiceObject {
       createMethod: function(_, options, callback) {
         spanner.createInstance(formattedName_, options, callback);
       },
-    });
+    } as {} as ServiceObjectConfig);
     this.formattedName_ = formattedName_;
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);
@@ -251,7 +252,7 @@ class Instance extends common.ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    */
-  database(name, poolOptions) {
+  database(name, poolOptions?) {
     if (!name) {
       throw new Error('A name is required to access a Database object.');
     }
@@ -307,7 +308,7 @@ class Instance extends common.ServiceObject {
       name: this.formattedName_,
     };
     Promise.all(
-      Array.from(this.databases_.values()).map(database => {
+      Array.from(this.databases_.values()).map((database: any) => {
         return database.close();
       })
     )

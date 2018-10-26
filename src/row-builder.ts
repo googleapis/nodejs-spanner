@@ -18,7 +18,7 @@
 
 const codec = require('./codec');
 const {Service} = require('@google-cloud/common-grpc');
-const is = require('is');
+import * as is from 'is';
 
 /*!
  * Combine row chunks from multiple `PartialResultSet` API response objects.
@@ -27,6 +27,11 @@ const is = require('is');
  * @class
  */
 class RowBuilder {
+  fields;
+  chunks;
+  rows;
+  currentRow;
+  pendingChunk;
   constructor(fields) {
     this.fields = fields;
     this.chunks = [];
@@ -176,7 +181,7 @@ class RowBuilder {
     head = RowBuilder.getValue(head);
     tail = RowBuilder.getValue(tail);
     const isMergeable = !is.nil(head) && !is.nil(tail) && code !== 'FLOAT64';
-    const merged = [];
+    const merged: {}[] = [];
     let mergedItems;
     if (code === 'ARRAY') {
       const arrayType = type.arrayElementType;
@@ -193,7 +198,7 @@ class RowBuilder {
     }
     // Filter out empty strings.
     return merged.filter(value => {
-      return !is.string(value) || value.length;
+      return !is.string(value) || (value as string).length;
     });
   }
 }

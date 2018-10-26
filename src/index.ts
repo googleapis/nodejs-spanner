@@ -17,11 +17,11 @@
 'use strict';
 
 const {Service, Operation} = require('@google-cloud/common-grpc');
-const {paginator} = require('@google-cloud/paginator');
+import {paginator} from '@google-cloud/paginator';
 const {replaceProjectIdToken} = require('@google-cloud/projectify');
 const {promisifyAll} = require('@google-cloud/promisify');
 const extend = require('extend');
-const {GoogleAuth} = require('google-auth-library');
+import {GoogleAuth} from 'google-auth-library';
 const is = require('is');
 const path = require('path');
 const streamEvents = require('stream-events');
@@ -157,7 +157,7 @@ const gapic = Object.freeze({
  */
 class Spanner extends Service {
   constructor(options) {
-    const scopes = [];
+    const scopes: {}[] = [];
     const clientClasses = [
       gapic.v1.DatabaseAdminClient,
       gapic.v1.InstanceAdminClient,
@@ -399,7 +399,7 @@ class Spanner extends Service {
    *   const instances = data[0];
    * });
    */
-  getInstances(query, callback) {
+  getInstances(query, callback?) {
     const self = this;
     if (is.fn(query)) {
       callback = query;
@@ -713,7 +713,7 @@ class Spanner extends Service {
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
    */
-  static date(value) {
+  static date(value?) {
     return new codec.SpannerDate(value);
   }
 
@@ -861,7 +861,7 @@ promisifyAll(Spanner, {
  * region_tag:spanner_quickstart
  * Full quickstart example:
  */
-module.exports.Spanner = Spanner;
+export {Spanner};
 
 /**
  * {@link Instance} class.
