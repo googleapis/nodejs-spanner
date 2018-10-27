@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {util} = require('@google-cloud/common-grpc');
@@ -50,7 +50,7 @@ describe('Session', () => {
   let Session;
   let session;
 
-  const DATABASE = {
+  const DATABASE: any = {
     request: util.noop,
     formattedName_: 'formatted-database-name',
   };

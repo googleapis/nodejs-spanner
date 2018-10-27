@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const events = require('events');
 const extend = require('extend');
 const PQueue = require('p-queue');
@@ -24,14 +24,15 @@ const proxyquire = require('proxyquire');
 const stackTrace = require('stack-trace');
 const timeSpan = require('time-span');
 
-let pQueueOverride = null;
+let pQueueOverride: any = null;
 
 function FakePQueue(options) {
   return new (pQueueOverride || PQueue)(options);
 }
 
 class FakeTransaction {
-  constructor(options) {
+  options;
+  constructor(options?) {
     this.options = options;
   }
   begin() {
@@ -40,6 +41,14 @@ class FakeTransaction {
 }
 
 class FakeSession {
+  created;
+  deleted;
+  keptAlive;
+  createOptions;
+  txn?;
+  lastUsed?;
+  type?;
+  id?;
   constructor() {
     this.created = false;
     this.deleted = false;
@@ -71,7 +80,7 @@ describe('SessionPool', () => {
   let sessionPool;
   let SessionPool;
 
-  const DATABASE = {};
+  const DATABASE: any = {};
 
   before(() => {
     SessionPool = proxyquire('../src/session-pool.js', {
@@ -1284,7 +1293,7 @@ describe('SessionPool', () => {
     });
 
     it('should return true if the session has gone bad', () => {
-      const fakeSession = {lastUsed: Date.now - 61 * 60000};
+      const fakeSession = {lastUsed: Date.now() - 61 * 60000};
       const isValid = sessionPool._isValidSession(fakeSession);
 
       assert.strictEqual(isValid, false);
@@ -1467,7 +1476,7 @@ describe('SessionPool', () => {
         },
       };
 
-      global.setInterval = function(fn, interval) {
+      (global as any).setInterval = function(fn, interval) {
         if (intervalCalls++ !== callIndex) {
           return {unref: noop};
         }
@@ -1499,7 +1508,7 @@ describe('SessionPool', () => {
         },
       };
 
-      global.setInterval = function(fn, interval) {
+      (global as any).setInterval = function(fn, interval) {
         if (intervalCalls++ !== callIndex) {
           return {unref: noop};
         }

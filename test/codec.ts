@@ -16,12 +16,12 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const extend = require('extend');
 const proxyquire = require('proxyquire');
 const {util} = require('@google-cloud/common-grpc');
 
-function FakeGrpcService() {}
+const FakeGrpcService: any = class {};
 
 describe('codec', () => {
   let codecCached;
@@ -341,7 +341,7 @@ describe('codec', () => {
         },
       });
 
-      assert.deepStrictEqual(decoded, Buffer.from(value, 'base64'));
+      assert.deepStrictEqual(decoded, Buffer.from(value as any, 'base64'));
     });
 
     it('should decode FLOAT64', () => {

@@ -16,7 +16,7 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const common = require('@google-cloud/common-grpc');
 const extend = require('extend');
 const gax = require('google-gax');
@@ -58,7 +58,7 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-function FakeGrpcService() {}
+const FakeGrpcService = class {};
 
 function FakePartialResultStream() {
   this.calledWith_ = arguments;
@@ -69,7 +69,7 @@ function FakeTransactionRequest(options) {
   this.options = options;
 }
 
-const fakeCodec = {
+const fakeCodec: any = {
   encode: util.noop,
 };
 
@@ -115,7 +115,7 @@ describe('Transaction', () => {
   });
 
   beforeEach(() => {
-    FakeGrpcService.objToStruct_ = util.noop;
+    (FakeGrpcService as any).objToStruct_ = util.noop;
     FakeRetryInfo.decode = util.noop;
 
     extend(Transaction, TransactionCached);
@@ -156,7 +156,7 @@ describe('Transaction', () => {
     });
 
     it('should inherit from TransactionRequest', () => {
-      const OPTIONS = {};
+      const OPTIONS: any= {};
 
       transaction = new Transaction(SESSION, OPTIONS);
 
@@ -223,7 +223,7 @@ describe('Transaction', () => {
       const fakeError = new Error('err');
       const fakeRetryInfo = Buffer.from('hi');
 
-      fakeError.metadata = {
+      (fakeError as any).metadata = {
         get: function(key) {
           assert.strictEqual(key, 'google.rpc.retryinfo-bin');
           return [fakeRetryInfo];
@@ -257,7 +257,7 @@ describe('Transaction', () => {
     it('should create backoff from counter when delay is absent', () => {
       const fakeError = new Error('err');
 
-      fakeError.metadata = {
+      (fakeError as any).metadata = {
         get: function() {
           return [];
         },
@@ -418,7 +418,7 @@ describe('Transaction', () => {
           );
         };
 
-        FakeTransactionRequest.fromProtoTimestamp_ = function(value) {
+        (FakeTransactionRequest as any).fromProtoTimestamp_ = function(value) {
           assert.strictEqual(value, fakeProtoTimestamp);
           return fakeDate;
         };
@@ -1277,7 +1277,7 @@ describe('Transaction', () => {
       });
 
       beforeEach(() => {
-        global.setTimeout = function() {};
+        (global as any).setTimeout = function() {};
         transaction.runFn_ = function() {};
 
         transaction.begin = function(callback) {
@@ -1297,7 +1297,7 @@ describe('Transaction', () => {
       });
 
       it('should execute run function after timeout', done => {
-        global.setTimeout = function(cb, timeout) {
+        (global as any).setTimeout = function(cb, timeout) {
           assert.strictEqual(timeout, fakeDelay);
           cb();
         };
