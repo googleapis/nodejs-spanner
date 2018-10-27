@@ -17,12 +17,12 @@
 'use strict';
 
 import * as assert from 'assert';
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {split} = require('split-array-stream');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {split} from 'split-array-stream';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 function FakeGrpcService() {}
 

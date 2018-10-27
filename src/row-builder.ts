@@ -17,7 +17,7 @@
 'use strict';
 
 const codec = require('./codec');
-const {Service} = require('@google-cloud/common-grpc');
+import {Service} from '@google-cloud/common-grpc';
 import * as is from 'is';
 
 /*!
@@ -136,7 +136,7 @@ class RowBuilder {
   static getValue(obj) {
     let value = obj;
     if (obj && obj.kind) {
-      value = Service.decodeValue_(obj);
+      value = (Service as any).decodeValue_(obj);
     }
     if (is.object(value) && value.values) {
       value = value.values;
@@ -180,7 +180,7 @@ class RowBuilder {
     const code = type.code;
     head = RowBuilder.getValue(head);
     tail = RowBuilder.getValue(tail);
-    const isMergeable = !is.nil(head) && !is.nil(tail) && code !== 'FLOAT64';
+    const isMergeable = !is.null(head) && !is.null(tail) && code !== 'FLOAT64';
     const merged: {}[] = [];
     let mergedItems;
     if (code === 'ARRAY') {

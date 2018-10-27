@@ -17,12 +17,12 @@
 'use strict';
 
 import * as assert from 'assert';
-const events = require('events');
-const extend = require('extend');
-const PQueue = require('p-queue');
-const proxyquire = require('proxyquire');
-const stackTrace = require('stack-trace');
-const timeSpan = require('time-span');
+import * as events from 'events';
+import * as extend from 'extend';
+import * as PQueue from 'p-queue';
+import * as proxyquire from 'proxyquire';
+import * as stackTrace from 'stack-trace';
+import * as timeSpan from 'time-span';
 
 let pQueueOverride: any = null;
 
@@ -694,7 +694,7 @@ describe('SessionPool', () => {
 
       const fakeTrace = {};
 
-      fakeStackTrace.get = function() {
+      (fakeStackTrace as any).get = function() {
         return fakeTrace;
       };
 

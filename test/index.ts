@@ -17,13 +17,13 @@
 'use strict';
 
 import * as assert from 'assert';
-const extend = require('extend');
-const path = require('path');
-const proxyquire = require('proxyquire');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const {replaceProjectIdToken} = require('@google-cloud/projectify');
-const pfy = require('@google-cloud/promisify');
+import * as extend from 'extend';
+import * as path from 'path';
+import * as proxyquire from 'proxyquire';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import {replaceProjectIdToken} from '@google-cloud/projectify';
+import * as pfy from '@google-cloud/promisify';
 
 let replaceProjectIdTokenOverride;
 function fakeReplaceProjectIdToken() {
@@ -60,9 +60,9 @@ const fakePfy = extend({}, pfy, {
 });
 
 let fakeGapicClient = util.noop;
-fakeGapicClient.scopes = [];
+(fakeGapicClient as any).scopes = [];
 
-const fakeV1 = {
+const fakeV1: any = {
   DatabaseAdminClient: fakeGapicClient,
   InstanceAdminClient: fakeGapicClient,
   SpannerClient: fakeGapicClient,
@@ -120,7 +120,7 @@ describe('Spanner', () => {
 
   beforeEach(() => {
     fakeGapicClient = util.noop;
-    fakeGapicClient.scopes = [];
+    (fakeGapicClient as any).scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
     fakeV1.InstanceAdminClient = fakeGapicClient;
     fakeV1.SpannerClient = fakeGapicClient;
@@ -709,7 +709,7 @@ describe('Spanner', () => {
       gaxOpts: {},
     };
 
-    const FAKE_GAPIC_CLIENT = {
+    const FAKE_GAPIC_CLIENT: any = {
       [CONFIG.method]: util.noop,
     };
 

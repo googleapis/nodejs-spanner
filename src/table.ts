@@ -16,7 +16,7 @@
 
 'use strict';
 
-const {promisifyAll} = require('@google-cloud/promisify');
+import {promisifyAll} from '@google-cloud/promisify';
 import * as is from 'is';
 const TransactionRequest = require('./transaction-request');
 

@@ -18,10 +18,10 @@
 
 import * as assert from 'assert';
 import { ApiError } from '@google-cloud/common';
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 const fakePaginator = {
   paginator: {

@@ -19,10 +19,10 @@
 import * as assert from 'assert';
 const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
 
 let checkpointStreamOverride;
 function fakeCheckpointStream() {}
@@ -302,7 +302,7 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
 
-      const fakeCheckpointStream = through.obj();
+      const fakeCheckpointStream: any = through.obj();
       fakeCheckpointStream.reset = util.noop;
       checkpointStreamOverride = function() {
         return fakeCheckpointStream;
@@ -347,6 +347,7 @@ describe('PartialResultStream', () => {
 
           return secondFakeRequestStream;
         }
+        return null;
       }
 
       partialResultStreamModule(requestFn)
@@ -416,7 +417,7 @@ describe('PartialResultStream', () => {
         done(new Error('Wrong stream was aborted.'));
       };
 
-      const secondFakeRequestStream = through.obj();
+      const secondFakeRequestStream: any = through.obj();
       secondFakeRequestStream.abort = function() {
         done(); // this is the one we want to call
       };

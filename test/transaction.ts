@@ -17,17 +17,16 @@
 'use strict';
 
 import * as assert from 'assert';
-const common = require('@google-cloud/common-grpc');
-const extend = require('extend');
-const gax = require('google-gax');
-const path = require('path');
-const proxyquire = require('proxyquire');
-const {split} = require('split-array-stream');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as extend from 'extend';
+import * as gax from 'google-gax';
+import * as path from 'path';
+import * as proxyquire from 'proxyquire';
+import {split} from 'split-array-stream';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
-const FakeRetryInfo = {
+const FakeRetryInfo: any = {
   decode: util.noop,
 };
 
@@ -40,7 +39,7 @@ const fakeGax = {
       );
       const result = super.loadSync(filename);
       const n = 'nested';
-      result[n].google[n].rpc[n].RetryInfo = FakeRetryInfo;
+      result[n]!.google[n].rpc[n].RetryInfo = FakeRetryInfo;
       return result;
     }
   },
@@ -212,7 +211,7 @@ describe('Transaction', () => {
         formattedError.message,
         'Deadline for Transaction exceeded. - Transaction aborted.'
       );
-      assert.strictEqual(typeof formattedError, typeof common.util.ApiError());
+      assert.strictEqual(typeof formattedError, typeof (util as any).ApiError());
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });

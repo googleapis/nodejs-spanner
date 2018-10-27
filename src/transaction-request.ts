@@ -16,9 +16,9 @@
 
 'use strict';
 
-const arrify = require('arrify');
-const {promisifyAll} = require('@google-cloud/promisify');
-const extend = require('extend');
+import * as arrify from 'arrify';
+import {promisifyAll} from '@google-cloud/promisify';
+import * as extend from 'extend';
 import * as is from 'is';
 
 const codec = require('./codec');

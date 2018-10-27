@@ -22,7 +22,7 @@
 
 const {ServiceObject} = require('@google-cloud/common-grpc');
 import {promisifyAll} from '@google-cloud/promisify';
-const extend = require('extend');
+import * as extend from 'extend';
 import * as is from 'is';
 const Transaction = require('./transaction');
 
