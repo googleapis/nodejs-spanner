@@ -24,6 +24,7 @@ import * as through from 'through2';
 import {util} from '@google-cloud/common-grpc';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
+import * as sinon from 'sinon';
 
 let replaceProjectIdTokenOverride;
 function fakeReplaceProjectIdToken() {
@@ -78,28 +79,41 @@ const fakeCodec: any = {
   SpannerDate: util.noop,
 };
 
-function FakeGrpcOperation() {
-  this.calledWith_ = arguments;
+class FakeGrpcOperation {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeGrpcService() {
-  this.calledWith_ = arguments;
+class FakeGrpcService {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeInstance() {
-  this.calledWith_ = arguments;
+class FakeInstance {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+  static formatName_(name: string) {
+    return name;
+  };
 }
 
 describe('Spanner', () => {
   let Spanner;
   let spanner;
+  let sandbox: sinon.SinonSandbox;
 
   const OPTIONS = {
     projectId: 'project-id',
   };
 
   before(() => {
-    Spanner = proxyquire('../src/index.js', {
+    Spanner = proxyquire('../src', {
       '@google-cloud/common-grpc': {
         Operation: FakeGrpcOperation,
         Service: FakeGrpcService,
@@ -112,13 +126,14 @@ describe('Spanner', () => {
       'google-auth-library': {
         GoogleAuth: fakeGoogleAuth,
       },
-      './codec.js': fakeCodec,
-      './instance.js': FakeInstance,
+      './codec.js': { codec: fakeCodec },
+      './instance.js': { Instance: FakeInstance },
       './v1': fakeV1,
     }).Spanner;
   });
 
   beforeEach(() => {
+    sandbox = sinon.createSandbox();
     fakeGapicClient = util.noop;
     (fakeGapicClient as any).scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
@@ -130,6 +145,8 @@ describe('Spanner', () => {
     spanner.projectId = OPTIONS.projectId;
     replaceProjectIdTokenOverride = null;
   });
+
+  afterEach(() => sandbox.restore());
 
   describe('instantiation', () => {
     it('should localize a cached gapic client map', () => {
@@ -265,16 +282,13 @@ describe('Spanner', () => {
     it('should create a struct from JSON', () => {
       const json = {};
       const fakeStruct = [];
-
       fakeCodec.Struct = {
         fromJSON: function(value) {
           assert.strictEqual(value, json);
           return fakeStruct;
         },
       };
-
       const struct = Spanner.struct(json);
-
       assert.strictEqual(struct, fakeStruct);
     });
 
@@ -304,20 +318,8 @@ describe('Spanner', () => {
     };
     const ORIGINAL_CONFIG = extend({}, CONFIG);
 
-    let formatName_;
-
-    before(() => {
-      formatName_ = (FakeInstance as any).formatName_;
-    });
-
-    after(() => {
-      (FakeInstance as any).formatName_ = formatName_;
-    });
-
     beforeEach(() => {
-      (FakeInstance as any).formatName_ = formatName_;
       PATH = 'projects/' + spanner.projectId + '/instances/' + NAME;
-
       spanner.request = util.noop;
     });
 
@@ -334,15 +336,14 @@ describe('Spanner', () => {
     });
 
     it('should set the correct defaults on the request', done => {
-      (FakeInstance as any).formatName_ = function(projectId, name) {
+      sandbox.stub(FakeInstance, 'formatName_').callsFake((projectId, name) => {
         assert.strictEqual(projectId, spanner.projectId);
         assert.strictEqual(name, NAME);
         return PATH;
-      };
+      });
 
-      spanner.request = function(config) {
+      spanner.request = (config) => {
         assert.deepStrictEqual(CONFIG, ORIGINAL_CONFIG);
-
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'createInstance');
 
@@ -358,34 +359,29 @@ describe('Spanner', () => {
             CONFIG
           ),
         });
-
         done();
       };
-
       spanner.createInstance(NAME, CONFIG, assert.ifError);
     });
 
     it('should accept a path', done => {
-      (FakeInstance as any).formatName_ = function(projectId, name) {
+      sandbox.stub(FakeInstance, 'formatName_').callsFake((projectId, name) => {
         assert.strictEqual(name, PATH);
         setImmediate(done);
         return name;
-      };
-
+      });
       spanner.createInstance(PATH, CONFIG, assert.ifError);
     });
 
     describe('config.nodes', () => {
       it('should rename to nodeCount', done => {
         const config = extend({}, CONFIG, {nodes: 10});
-
-        spanner.request = function(config_) {
+        sandbox.stub(spanner, 'request').callsFake(config_ =>  {
           const reqOpts = config_.reqOpts;
           assert.strictEqual(reqOpts.instance.nodeCount, config.nodes);
           assert.strictEqual(reqOpts.instance.nodes, undefined);
           done();
-        };
-
+        });
         spanner.createInstance(NAME, config, assert.ifError);
       });
     });
@@ -395,19 +391,15 @@ describe('Spanner', () => {
         const name = 'config-name';
         const config = extend({}, CONFIG, {config: name});
         const originalConfig = extend({}, config);
-
         spanner.request = function(config_) {
           assert.deepStrictEqual(config, originalConfig);
-
           const reqOpts = config_.reqOpts;
           assert.strictEqual(
             reqOpts.instance.config,
             'projects/' + spanner.projectId + '/instanceConfigs/' + name
           );
-
           done();
         };
-
         spanner.createInstance(NAME, config, assert.ifError);
       });
     });
@@ -445,15 +437,12 @@ describe('Spanner', () => {
 
       it('should create an Instance and return an Operation', done => {
         const formattedName = 'formatted-name';
-        (FakeInstance as any).formatName_ = function() {
-          return formattedName;
-        };
-
+        sandbox.stub(FakeInstance, 'formatName_').returns(formattedName);
         const fakeInstanceInstance = {};
-        spanner.instance = function(name) {
+        sandbox.stub(spanner, 'instance').callsFake(name => {
           assert.strictEqual(name, formattedName);
           return fakeInstanceInstance;
-        };
+        });
 
         spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
           assert.ifError(err);
@@ -657,11 +646,9 @@ describe('Spanner', () => {
 
     it('should create and cache an Instance', () => {
       const cache = spanner.instances_;
-
       assert.strictEqual(cache.has(NAME), false);
 
       const instance = spanner.instance(NAME);
-
       assert(instance instanceof FakeInstance);
       assert.strictEqual(instance.calledWith_[0], spanner);
       assert.strictEqual(instance.calledWith_[1], NAME);
@@ -671,11 +658,9 @@ describe('Spanner', () => {
     it('should re-use cached objects', () => {
       const cache = spanner.instances_;
       const fakeInstance = {};
-
       cache.set(NAME, fakeInstance);
 
       const instance = spanner.instance(NAME);
-
       assert.strictEqual(instance, fakeInstance);
     });
   });

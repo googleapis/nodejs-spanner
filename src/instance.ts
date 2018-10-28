@@ -24,8 +24,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
 import snakeCase =require('lodash.snakecase');
-
-const Database = require('./database');
+import {Database} from './database';
 
 /**
  * The {@link Instance} class represents a [Cloud Spanner instance](https://cloud.google.com/spanner/docs/instances).
@@ -666,7 +665,7 @@ class Instance extends common.ServiceObject {
    * Instance.formatName_('grape-spaceship-123', 'my-instance');
    * // 'projects/grape-spaceship-123/instances/my-instance'
    */
-  static formatName_(projectId, name) {
+  static formatName_(projectId: string, name: string) {
     if (name.indexOf('/') > -1) {
       return name;
     }
@@ -728,4 +727,4 @@ promisifyAll(Instance, {
  * @name module:@google-cloud/spanner.Instance
  * @see Instance
  */
-module.exports = Instance;
+export {Instance};

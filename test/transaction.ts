@@ -59,8 +59,9 @@ const fakePfy = extend({}, pfy, {
 
 const FakeGrpcService = class {};
 
-function FakePartialResultStream() {
+function fakePartialResultStream() {
   this.calledWith_ = arguments;
+  return this;
 }
 
 function FakeTransactionRequest(options) {
@@ -104,11 +105,11 @@ describe('Transaction', () => {
         Service: FakeGrpcService,
       },
       '@google-cloud/promisify': fakePfy,
-      './codec': fakeCodec,
-      './partial-result-stream': FakePartialResultStream,
-      './transaction-request': FakeTransactionRequest,
+      './codec': {codec: fakeCodec},
+      './partial-result-stream': {partialResultStream: fakePartialResultStream},
+      './transaction-request': {TransactionRequest: FakeTransactionRequest},
       './v1/spanner_client_config.json': fakeConfig,
-    });
+    }).Transaction;
 
     TransactionCached = extend({}, Transaction);
   });
@@ -1168,7 +1169,7 @@ describe('Transaction', () => {
 
     it('should return PartialResultStream', () => {
       const stream = transaction.runStream(QUERY, OPTIONS);
-      assert(stream instanceof FakePartialResultStream);
+      assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
     });
 
     it('should assign a resumeToken to the request', done => {

@@ -20,8 +20,7 @@ import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import {util} from '@google-cloud/common-grpc';
-
-const codec = require('../src/codec');
+import {codec} from '../src/codec';
 
 let decodeOverride;
 let generateToJSONFromRowOverride;
@@ -51,9 +50,8 @@ describe('RowBuilder', () => {
       '@google-cloud/common-grpc': {
         Service: FakeGrpcService,
       },
-      './codec.js': fakeCodec,
-    });
-
+      './codec.js': {codec: fakeCodec},
+    }).RowBuilder;
     RowBuilderCached = extend({}, RowBuilder);
   });
 

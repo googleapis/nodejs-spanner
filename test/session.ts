@@ -63,8 +63,8 @@ describe('Session', () => {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
-      './transaction.js': FakeTransaction,
-    });
+      './transaction.js': {Transaction: FakeTransaction},
+    }).Session;
   });
 
   beforeEach(() => {

@@ -20,9 +20,8 @@ import * as arrify from 'arrify';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-
-const codec = require('./codec');
-const PartialResultStream = require('./partial-result-stream');
+import {codec} from './codec';
+import {partialResultStream} from './partial-result-stream';
 
 /**
  * Handle logic for Table/Transaction API operations.
@@ -34,15 +33,14 @@ const PartialResultStream = require('./partial-result-stream');
  *
  * @param {object} [options] Timestamp options.
  */
-class TransactionRequest {
+abstract class TransactionRequest {
   readOnly;
   partitioned;
   options;
   transaction;
   id;
   database;
-  queue_;
-  constructor(options) {
+  constructor(options?) {
     this.readOnly = false;
     this.partitioned = false;
 
@@ -58,6 +56,8 @@ class TransactionRequest {
       this.options = TransactionRequest.formatTimestampOptions_(options);
     }
   }
+
+
   /**
    * Read stream request config.
    *
@@ -229,11 +229,22 @@ class TransactionRequest {
         gaxOpts: gaxOptions,
       });
     };
-    return new PartialResultStream(makeRequest, {
+    return partialResultStream(makeRequest, {
       json: query.json,
       jsonOptions: query.jsonOptions,
     });
   }
+
+  /**
+   * This probably should be implemented as an abstract method,
+   * but it doesn't appear to be implemented in the Table class
+   * which extends it.
+   * @param mutation
+   */
+  queue_(mutation) {
+    throw new Error('Not implemented');
+  };
+
   /**
    * Delete rows from a table.
    *
@@ -604,7 +615,10 @@ class TransactionRequest {
    * @abstract
    * @private
    */
-  request() {}
+  request(config, callback) {
+    throw new Error('Not Implemented');
+  }
+
   /**
    * Abstract method, should be overridden in child class.
    *
@@ -819,4 +833,4 @@ promisifyAll(TransactionRequest, {
  * @name module:@google-cloud/spanner.TransactionRequest
  * @see TransactionRequest
  */
-module.exports = TransactionRequest;
+export {TransactionRequest};

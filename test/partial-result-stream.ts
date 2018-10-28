@@ -106,8 +106,8 @@ describe('PartialResultStream', () => {
   before(() => {
     partialResultStreamModule = proxyquire('../src/partial-result-stream.js', {
       'checkpoint-stream': fakeCheckpointStream,
-      './row-builder.js': FakeRowBuilder,
-    });
+      './row-builder.js': {RowBuilder: FakeRowBuilder},
+    }).partialResultStream;
     partialResultStreamCached = extend({}, partialResultStreamModule);
   });
 

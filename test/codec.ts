@@ -45,7 +45,7 @@ describe('codec', () => {
       '@google-cloud/common-grpc': {
         Service: FakeGrpcService,
       },
-    });
+    }).codec;
     codecCached = extend({}, codec);
   });
 
@@ -136,7 +136,6 @@ describe('codec', () => {
     describe('initialization', () => {
       it('should create an array', () => {
         const struct = new codec.Struct();
-
         assert(Array.isArray(struct));
       });
 

@@ -27,14 +27,14 @@ import * as path from 'path';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import { GrpcServiceConfig } from '@google-cloud/common-grpc/build/src/service';
-const codec = require('./codec');
-const Database = require('./database');
-const Instance = require('./instance');
-const Session = require('./session');
-const SessionPool = require('./session-pool');
-const Table = require('./table');
-const Transaction = require('./transaction');
-const TransactionRequest = require('./transaction-request');
+import {codec} from './codec';
+import {Database} from './database';
+import {Instance} from './instance';
+import {Session} from './session';
+import {SessionPool} from './session-pool';
+import {Table} from './table';
+import {Transaction} from './transaction';
+import {TransactionRequest} from './transaction-request';
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -632,11 +632,11 @@ this.getInstancesStream = paginator.streamify('getInstances');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    */
-  instance(name) {
+  instance(name: string) {
     if (!name) {
       throw new Error('A name is required to access an Instance object.');
     }
-    const key = name.split('/').pop();
+    const key = name.split('/').pop()!;
     if (!this.instances_.has(key)) {
       this.instances_.set(key, new Instance(this, name));
     }
