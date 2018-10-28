@@ -18,12 +18,12 @@
 
 import {promisifyAll} from '@google-cloud/promisify';
 const common = require('@google-cloud/common-grpc');
-const extend = require('extend');
+import * as extend from 'extend';
 import * as gax from 'google-gax';
-const is = require('is');
-const path = require('path');
-const protobuf = require('protobufjs');
-const through = require('through2');
+import * as is from 'is';
+import * as path from 'path';
+import * as protobuf from 'protobufjs';
+import * as through from 'through2';
 
 const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'
@@ -66,10 +66,10 @@ const RETRY_INFO_KEY = 'google.rpc.retryinfo-bin';
  */
 const DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
-let protoFilesRoot = new gax.GoogleProtoFilesRoot();
-protoFilesRoot = protobuf.loadSync(
+const root = new gax.GoogleProtoFilesRoot();
+const protoFilesRoot = protobuf.loadSync(
   path.join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
-  protoFilesRoot
+  root
 );
 
 const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');

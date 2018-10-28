@@ -17,12 +17,12 @@
 'use strict';
 
 import * as assert from 'assert';
-const async = require('async');
-const concat = require('concat-stream');
-const crypto = require('crypto');
-const extend = require('extend');
-const is = require('is');
-const uuid = require('uuid');
+import * as async from 'async';
+import concat = require('concat-stream');
+import * as crypto from 'crypto';
+import * as extend from 'extend';
+import * as is from 'is';
+import * as uuid from 'uuid';
 
 const {Spanner} = require('../src');
 
@@ -2264,7 +2264,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const returnedValues = rows[0][0].value.map(val => {
-                return is.nil(val) ? val : Spanner.date(val);
+                return is.null(val) ? val : Spanner.date(val);
               });
 
               assert.deepStrictEqual(returnedValues, values);
@@ -3124,15 +3124,13 @@ describe('Spanner', () => {
           }
 
           if (query.ranges) {
-            query.ranges = query.ranges.map(range_ => {
+            query.ranges = (query as any).ranges.map(range_ => {
               const range = extend({}, range_);
-
               Object.keys(range).forEach(bound => {
                 if (range[bound]) {
                   range[bound] = range[bound].replace('k', 'v');
                 }
               });
-
               return range;
             });
           }
@@ -4356,7 +4354,7 @@ function deleteTestInstances(done) {
         5,
         (instance, callback) => {
           setTimeout(() => {
-            instance.delete(callback);
+            (instance as any).delete(callback);
           }, 500); // Delay allows the instance and its databases to fully clear.
         },
         done

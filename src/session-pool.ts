@@ -18,8 +18,8 @@
 
 import {EventEmitter} from 'events';
 import * as is from 'is';
-const PQueue = require('p-queue');
-const stackTrace = require('stack-trace');
+import * as PQueue from 'p-queue';
+import * as stackTrace from 'stack-trace';
 
 const READONLY = 'readonly';
 const READWRITE = 'readwrite';

@@ -20,10 +20,10 @@ import * as assert from 'assert';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import { ApiError } from '@google-cloud/common';
-const proxyquire = require('proxyquire');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as proxyquire from 'proxyquire';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {

@@ -16,14 +16,14 @@
 
 'use strict';
 
-const arrify = require('arrify');
+import * as arrify from 'arrify';
 const common = require('@google-cloud/common-grpc');
 import { ServiceObjectConfig } from '@google-cloud/common';
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
-const extend = require('extend');
-const is = require('is');
-const snakeCase = require('lodash.snakecase');
+import * as extend from 'extend';
+import * as is from 'is';
+import snakeCase =require('lodash.snakecase');
 
 const Database = require('./database');
 

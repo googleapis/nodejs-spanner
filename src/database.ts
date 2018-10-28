@@ -16,14 +16,15 @@
 
 'use strict';
 
-const arrify = require('arrify');
+import * as arrify from 'arrify';
 import {promisifyAll} from '@google-cloud/promisify';
 const {ServiceObject} = require('@google-cloud/common-grpc');
-const extend = require('extend');
-const is = require('is');
-const retry = require('p-retry');
-const streamEvents = require('stream-events');
-const through = require('through2');
+import * as extend from 'extend';
+import * as is from 'is';
+import * as retry from 'p-retry';
+import * as streamEvents from 'stream-events';
+import * as through from 'through2';
+import { Abortable } from '@google-cloud/common';
 
 const BatchTransaction = require('./batch-transaction');
 const codec = require('./codec');
@@ -967,7 +968,7 @@ class Database extends ServiceObject {
     let requestStream;
     let session;
     const waitForSessionStream = streamEvents(through.obj());
-    waitForSessionStream.abort = function() {
+    (waitForSessionStream as any).abort = function() {
       releaseSession();
       if (requestStream) {
         requestStream.cancel();
