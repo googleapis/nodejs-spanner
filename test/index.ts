@@ -16,14 +16,14 @@
 
 'use strict';
 
-const assert = require('assert');
-const extend = require('extend');
-const path = require('path');
-const proxyquire = require('proxyquire');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const {replaceProjectIdToken} = require('@google-cloud/projectify');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as path from 'path';
+import * as proxyquire from 'proxyquire';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import {replaceProjectIdToken} from '@google-cloud/projectify';
+import * as pfy from '@google-cloud/promisify';
 
 let replaceProjectIdTokenOverride;
 function fakeReplaceProjectIdToken() {
@@ -60,9 +60,9 @@ const fakePfy = extend({}, pfy, {
 });
 
 let fakeGapicClient = util.noop;
-fakeGapicClient.scopes = [];
+(fakeGapicClient as any).scopes = [];
 
-const fakeV1 = {
+const fakeV1: any = {
   DatabaseAdminClient: fakeGapicClient,
   InstanceAdminClient: fakeGapicClient,
   SpannerClient: fakeGapicClient,
@@ -74,7 +74,7 @@ function fakeGoogleAuth() {
   };
 }
 
-const fakeCodec = {
+const fakeCodec: any = {
   SpannerDate: util.noop,
 };
 
@@ -120,7 +120,7 @@ describe('Spanner', () => {
 
   beforeEach(() => {
     fakeGapicClient = util.noop;
-    fakeGapicClient.scopes = [];
+    (fakeGapicClient as any).scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
     fakeV1.InstanceAdminClient = fakeGapicClient;
     fakeV1.SpannerClient = fakeGapicClient;
@@ -307,15 +307,15 @@ describe('Spanner', () => {
     let formatName_;
 
     before(() => {
-      formatName_ = FakeInstance.formatName_;
+      formatName_ = (FakeInstance as any).formatName_;
     });
 
     after(() => {
-      FakeInstance.formatName_ = formatName_;
+      (FakeInstance as any).formatName_ = formatName_;
     });
 
     beforeEach(() => {
-      FakeInstance.formatName_ = formatName_;
+      (FakeInstance as any).formatName_ = formatName_;
       PATH = 'projects/' + spanner.projectId + '/instances/' + NAME;
 
       spanner.request = util.noop;
@@ -334,7 +334,7 @@ describe('Spanner', () => {
     });
 
     it('should set the correct defaults on the request', done => {
-      FakeInstance.formatName_ = function(projectId, name) {
+      (FakeInstance as any).formatName_ = function(projectId, name) {
         assert.strictEqual(projectId, spanner.projectId);
         assert.strictEqual(name, NAME);
         return PATH;
@@ -366,7 +366,7 @@ describe('Spanner', () => {
     });
 
     it('should accept a path', done => {
-      FakeInstance.formatName_ = function(projectId, name) {
+      (FakeInstance as any).formatName_ = function(projectId, name) {
         assert.strictEqual(name, PATH);
         setImmediate(done);
         return name;
@@ -445,7 +445,7 @@ describe('Spanner', () => {
 
       it('should create an Instance and return an Operation', done => {
         const formattedName = 'formatted-name';
-        FakeInstance.formatName_ = function() {
+        (FakeInstance as any).formatName_ = function() {
           return formattedName;
         };
 
@@ -558,8 +558,7 @@ describe('Spanner', () => {
 
           const instance = arguments[1].pop();
           assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1][0]);
-
+          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1]![0]);
           assert.strictEqual(arguments[2], GAX_RESPONSE_ARGS[2]);
 
           done();
@@ -710,7 +709,7 @@ describe('Spanner', () => {
       gaxOpts: {},
     };
 
-    const FAKE_GAPIC_CLIENT = {
+    const FAKE_GAPIC_CLIENT: any = {
       [CONFIG.method]: util.noop,
     };
 

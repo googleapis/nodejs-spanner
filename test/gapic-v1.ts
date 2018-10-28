@@ -14,74 +14,75 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
+import { ApiError } from '@google-cloud/common';
 
 const spannerModule = require('../src');
 
 const FAKE_STATUS_CODE = 1;
 const error = new Error();
-error.code = FAKE_STATUS_CODE;
+(error as ApiError).code = FAKE_STATUS_CODE;
 
-describe('DatabaseAdminClient', () => {
-  describe('listDatabases', () => {
-    it('invokes listDatabases without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+describe('InstanceAdminClient', () => {
+  describe('listInstanceConfigs', () => {
+    it('invokes listInstanceConfigs without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const formattedParent = client.projectPath('[PROJECT]');
       const request = {
         parent: formattedParent,
       };
 
       // Mock response
       const nextPageToken = '';
-      const databasesElement = {};
-      const databases = [databasesElement];
+      const instanceConfigsElement = {};
+      const instanceConfigs = [instanceConfigsElement];
       const expectedResponse = {
         nextPageToken: nextPageToken,
-        databases: databases,
+        instanceConfigs: instanceConfigs,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.listDatabases = (
+      client._innerApiCalls.listInstanceConfigs = (
         actualRequest,
         options,
         callback
       ) => {
         assert.deepStrictEqual(actualRequest, request);
-        callback(null, expectedResponse.databases);
+        callback(null, expectedResponse.instanceConfigs);
       };
 
-      client.listDatabases(request, (err, response) => {
+      client.listInstanceConfigs(request, (err, response) => {
         assert.ifError(err);
-        assert.deepStrictEqual(response, expectedResponse.databases);
+        assert.deepStrictEqual(response, expectedResponse.instanceConfigs);
         done();
       });
     });
 
-    it('invokes listDatabases with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+    it('invokes listInstanceConfigs with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const formattedParent = client.projectPath('[PROJECT]');
       const request = {
         parent: formattedParent,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.listDatabases = mockSimpleGrpcMethod(
+      client._innerApiCalls.listInstanceConfigs = mockSimpleGrpcMethod(
         request,
         null,
         error
       );
 
-      client.listDatabases(request, (err, response) => {
+      client.listInstanceConfigs(request, (err, response) => {
         assert(err instanceof Error);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
@@ -90,113 +91,17 @@ describe('DatabaseAdminClient', () => {
     });
   });
 
-  describe('createDatabase', () => {
-    it('invokes createDatabase without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+  describe('getInstanceConfig', () => {
+    it('invokes getInstanceConfig without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-      const createStatement = 'createStatement552974828';
-      const request = {
-        parent: formattedParent,
-        createStatement: createStatement,
-      };
-
-      // Mock response
-      const name = 'name3373707';
-      const expectedResponse = {
-        name: name,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.createDatabase = mockLongRunningGrpcMethod(
-        request,
-        expectedResponse
-      );
-
-      client
-        .createDatabase(request)
-        .then(responses => {
-          const operation = responses[0];
-          return operation.promise();
-        })
-        .then(responses => {
-          assert.deepStrictEqual(responses[0], expectedResponse);
-          done();
-        })
-        .catch(err => {
-          done(err);
-        });
-    });
-
-    it('invokes createDatabase with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-      const createStatement = 'createStatement552974828';
-      const request = {
-        parent: formattedParent,
-        createStatement: createStatement,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.createDatabase = mockLongRunningGrpcMethod(
-        request,
-        null,
-        error
-      );
-
-      client
-        .createDatabase(request)
-        .then(responses => {
-          const operation = responses[0];
-          return operation.promise();
-        })
-        .then(() => {
-          assert.fail();
-        })
-        .catch(err => {
-          assert(err instanceof Error);
-          assert.strictEqual(err.code, FAKE_STATUS_CODE);
-          done();
-        });
-    });
-
-    it('has longrunning decoder functions', () => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      assert(
-        client._descriptors.longrunning.createDatabase
-          .responseDecoder instanceof Function
-      );
-      assert(
-        client._descriptors.longrunning.createDatabase
-          .metadataDecoder instanceof Function
-      );
-    });
-  });
-
-  describe('getDatabase', () => {
-    it('invokes getDatabase without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const formattedName = client.databasePath(
+      const formattedName = client.instanceConfigPath(
         '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
+        '[INSTANCE_CONFIG]'
       );
       const request = {
         name: formattedName,
@@ -204,47 +109,48 @@ describe('DatabaseAdminClient', () => {
 
       // Mock response
       const name2 = 'name2-1052831874';
+      const displayName = 'displayName1615086568';
       const expectedResponse = {
         name: name2,
+        displayName: displayName,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabase = mockSimpleGrpcMethod(
+      client._innerApiCalls.getInstanceConfig = mockSimpleGrpcMethod(
         request,
         expectedResponse
       );
 
-      client.getDatabase(request, (err, response) => {
+      client.getInstanceConfig(request, (err, response) => {
         assert.ifError(err);
         assert.deepStrictEqual(response, expectedResponse);
         done();
       });
     });
 
-    it('invokes getDatabase with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+    it('invokes getInstanceConfig with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedName = client.databasePath(
+      const formattedName = client.instanceConfigPath(
         '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
+        '[INSTANCE_CONFIG]'
       );
       const request = {
         name: formattedName,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabase = mockSimpleGrpcMethod(
+      client._innerApiCalls.getInstanceConfig = mockSimpleGrpcMethod(
         request,
         null,
         error
       );
 
-      client.getDatabase(request, (err, response) => {
+      client.getInstanceConfig(request, (err, response) => {
         assert(err instanceof Error);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
         assert(typeof response === 'undefined');
@@ -253,36 +159,176 @@ describe('DatabaseAdminClient', () => {
     });
   });
 
-  describe('updateDatabaseDdl', () => {
-    it('invokes updateDatabaseDdl without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+  describe('listInstances', () => {
+    it('invokes listInstances without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedDatabase = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
-      const statements = [];
+      const formattedParent = client.projectPath('[PROJECT]');
       const request = {
-        database: formattedDatabase,
-        statements: statements,
+        parent: formattedParent,
       };
 
       // Mock response
-      const expectedResponse = {};
+      const nextPageToken = '';
+      const instancesElement = {};
+      const instances = [instancesElement];
+      const expectedResponse = {
+        nextPageToken: nextPageToken,
+        instances: instances,
+      };
 
       // Mock Grpc layer
-      client._innerApiCalls.updateDatabaseDdl = mockLongRunningGrpcMethod(
+      client._innerApiCalls.listInstances = (
+        actualRequest,
+        options,
+        callback
+      ) => {
+        assert.deepStrictEqual(actualRequest, request);
+        callback(null, expectedResponse.instances);
+      };
+
+      client.listInstances(request, (err, response) => {
+        assert.ifError(err);
+        assert.deepStrictEqual(response, expectedResponse.instances);
+        done();
+      });
+    });
+
+    it('invokes listInstances with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedParent = client.projectPath('[PROJECT]');
+      const request = {
+        parent: formattedParent,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.listInstances = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
+
+      client.listInstances(request, (err, response) => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
+        assert(typeof response === 'undefined');
+        done();
+      });
+    });
+  });
+
+  describe('getInstance', () => {
+    it('invokes getInstance without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
+        name: formattedName,
+      };
+
+      // Mock response
+      const name2 = 'name2-1052831874';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
+        name: name2,
+        config: config,
+        displayName: displayName,
+        nodeCount: nodeCount,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.getInstance = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
+
+      client.getInstance(request, (err, response) => {
+        assert.ifError(err);
+        assert.deepStrictEqual(response, expectedResponse);
+        done();
+      });
+    });
+
+    it('invokes getInstance with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
+        name: formattedName,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.getInstance = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
+
+      client.getInstance(request, (err, response) => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
+        assert(typeof response === 'undefined');
+        done();
+      });
+    });
+  });
+
+  describe('createInstance', function() {
+    it('invokes createInstance without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedParent = client.projectPath('[PROJECT]');
+      const instanceId = 'instanceId-2101995259';
+      const instance = {};
+      const request = {
+        parent: formattedParent,
+        instanceId: instanceId,
+        instance: instance,
+      };
+
+      // Mock response
+      const name = 'name3373707';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
+        name: name,
+        config: config,
+        displayName: displayName,
+        nodeCount: nodeCount,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(
         request,
         expectedResponse
       );
 
       client
-        .updateDatabaseDdl(request)
+        .createInstance(request)
         .then(responses => {
           const operation = responses[0];
           return operation.promise();
@@ -296,33 +342,31 @@ describe('DatabaseAdminClient', () => {
         });
     });
 
-    it('invokes updateDatabaseDdl with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+    it('invokes createInstance with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedDatabase = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
-      const statements = [];
+      const formattedParent = client.projectPath('[PROJECT]');
+      const instanceId = 'instanceId-2101995259';
+      const instance = {};
       const request = {
-        database: formattedDatabase,
-        statements: statements,
+        parent: formattedParent,
+        instanceId: instanceId,
+        instance: instance,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.updateDatabaseDdl = mockLongRunningGrpcMethod(
+      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(
         request,
         null,
         error
       );
 
       client
-        .updateDatabaseDdl(request)
+        .createInstance(request)
         .then(responses => {
           const operation = responses[0];
           return operation.promise();
@@ -338,138 +382,166 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
       assert(
-        client._descriptors.longrunning.updateDatabaseDdl
+        client._descriptors.longrunning.createInstance
           .responseDecoder instanceof Function
       );
       assert(
-        client._descriptors.longrunning.updateDatabaseDdl
+        client._descriptors.longrunning.createInstance
           .metadataDecoder instanceof Function
       );
     });
   });
 
-  describe('dropDatabase', () => {
-    it('invokes dropDatabase without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+  describe('updateInstance', function() {
+    it('invokes updateInstance without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedDatabase = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const instance = {};
+      const fieldMask = {};
       const request = {
-        database: formattedDatabase,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.dropDatabase = mockSimpleGrpcMethod(request);
-
-      client.dropDatabase(request, err => {
-        assert.ifError(err);
-        done();
-      });
-    });
-
-    it('invokes dropDatabase with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const formattedDatabase = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
-      const request = {
-        database: formattedDatabase,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.dropDatabase = mockSimpleGrpcMethod(
-        request,
-        null,
-        error
-      );
-
-      client.dropDatabase(request, err => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        done();
-      });
-    });
-  });
-
-  describe('getDatabaseDdl', () => {
-    it('invokes getDatabaseDdl without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const formattedDatabase = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
-      const request = {
-        database: formattedDatabase,
+        instance: instance,
+        fieldMask: fieldMask,
       };
 
       // Mock response
-      const expectedResponse = {};
+      const name = 'name3373707';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
+        name: name,
+        config: config,
+        displayName: displayName,
+        nodeCount: nodeCount,
+      };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabaseDdl = mockSimpleGrpcMethod(
+      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(
         request,
         expectedResponse
       );
 
-      client.getDatabaseDdl(request, (err, response) => {
-        assert.ifError(err);
-        assert.deepStrictEqual(response, expectedResponse);
-        done();
-      });
+      client
+        .updateInstance(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(responses => {
+          assert.deepStrictEqual(responses[0], expectedResponse);
+          done();
+        })
+        .catch(err => {
+          done(err);
+        });
     });
 
-    it('invokes getDatabaseDdl with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+    it('invokes updateInstance with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedDatabase = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const instance = {};
+      const fieldMask = {};
       const request = {
-        database: formattedDatabase,
+        instance: instance,
+        fieldMask: fieldMask,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabaseDdl = mockSimpleGrpcMethod(
+      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(
         request,
         null,
         error
       );
 
-      client.getDatabaseDdl(request, (err, response) => {
+      client
+        .updateInstance(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(() => {
+          assert.fail();
+        })
+        .catch(err => {
+          assert(err instanceof Error);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
+          done();
+        });
+    });
+
+    it('has longrunning decoder functions', () => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      assert(
+        client._descriptors.longrunning.updateInstance
+          .responseDecoder instanceof Function
+      );
+      assert(
+        client._descriptors.longrunning.updateInstance
+          .metadataDecoder instanceof Function
+      );
+    });
+  });
+
+  describe('deleteInstance', () => {
+    it('invokes deleteInstance without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
+        name: formattedName,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.deleteInstance = mockSimpleGrpcMethod(request);
+
+      client.deleteInstance(request, err => {
+        assert.ifError(err);
+        done();
+      });
+    });
+
+    it('invokes deleteInstance with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedName = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const request = {
+        name: formattedName,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.deleteInstance = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
+
+      client.deleteInstance(request, err => {
         assert(err instanceof Error);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        assert(typeof response === 'undefined');
         done();
       });
     });
@@ -477,17 +549,13 @@ describe('DatabaseAdminClient', () => {
 
   describe('setIamPolicy', () => {
     it('invokes setIamPolicy without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedResource = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
       const policy = {};
       const request = {
         resource: formattedResource,
@@ -516,17 +584,13 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes setIamPolicy with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedResource = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
       const policy = {};
       const request = {
         resource: formattedResource,
@@ -551,17 +615,13 @@ describe('DatabaseAdminClient', () => {
 
   describe('getIamPolicy', () => {
     it('invokes getIamPolicy without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedResource = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
       const request = {
         resource: formattedResource,
       };
@@ -588,17 +648,13 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes getIamPolicy with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedResource = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
       const request = {
         resource: formattedResource,
       };
@@ -621,17 +677,13 @@ describe('DatabaseAdminClient', () => {
 
   describe('testIamPermissions', () => {
     it('invokes testIamPermissions without error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedResource = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
       const permissions = [];
       const request = {
         resource: formattedResource,
@@ -655,17 +707,13 @@ describe('DatabaseAdminClient', () => {
     });
 
     it('invokes testIamPermissions with error', done => {
-      const client = new spannerModule.v1.DatabaseAdminClient({
+      const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
 
       // Mock request
-      const formattedResource = client.databasePath(
-        '[PROJECT]',
-        '[INSTANCE]',
-        '[DATABASE]'
-      );
+      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
       const permissions = [];
       const request = {
         resource: formattedResource,
@@ -689,7 +737,7 @@ describe('DatabaseAdminClient', () => {
   });
 });
 
-function mockSimpleGrpcMethod(expectedRequest, response, error) {
+function mockSimpleGrpcMethod(expectedRequest, response?, error?) {
   return function(actualRequest, options, callback) {
     assert.deepStrictEqual(actualRequest, expectedRequest);
     if (error) {
@@ -702,7 +750,7 @@ function mockSimpleGrpcMethod(expectedRequest, response, error) {
   };
 }
 
-function mockLongRunningGrpcMethod(expectedRequest, response, error) {
+function mockLongRunningGrpcMethod(expectedRequest, response?, error?) {
   return request => {
     assert.deepStrictEqual(request, expectedRequest);
     const mockOperation = {

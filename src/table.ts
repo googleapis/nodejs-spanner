@@ -16,8 +16,8 @@
 
 'use strict';
 
-const {promisifyAll} = require('@google-cloud/promisify');
-const is = require('is');
+import {promisifyAll} from '@google-cloud/promisify';
+import * as is from 'is';
 const TransactionRequest = require('./transaction-request');
 
 /**
@@ -565,7 +565,7 @@ class Table extends TransactionRequest {
    * Reading data using a storing index:
    */
   read(query, options, callback) {
-    const rows = [];
+    const rows: {}[] = [];
     if (is.fn(options)) {
       callback = options;
       options = null;

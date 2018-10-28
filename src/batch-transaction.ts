@@ -16,9 +16,9 @@
 
 'use strict';
 
-const {promisifyAll} = require('@google-cloud/promisify');
-const extend = require('extend');
-const is = require('is');
+import {promisifyAll} from '@google-cloud/promisify';
+import * as extend from 'extend';
+import * as is from 'is';
 
 const codec = require('./codec');
 const Transaction = require('./transaction');

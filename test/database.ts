@@ -16,14 +16,14 @@
 
 'use strict';
 
-const assert = require('assert');
-const events = require('events');
-const extend = require('extend');
-const nodeutil = require('util');
-const proxyquire = require('proxyquire');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import {EventEmitter} from 'events';
+import * as extend from 'extend';
+import { ApiError } from '@google-cloud/common';
+import * as proxyquire from 'proxyquire';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -43,40 +43,59 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-function FakeBatchTransaction() {
-  this.calledWith_ = arguments;
+class FakeBatchTransaction {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeGrpcServiceObject() {
-  this.calledWith_ = arguments;
-  events.EventEmitter.call(this);
-}
-nodeutil.inherits(FakeGrpcServiceObject, events.EventEmitter);
-
-function FakePartialResultStream() {
-  this.calledWith_ = arguments;
+class FakeGrpcServiceObject extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeSession() {
-  this.calledWith_ = arguments;
+class FakePartialResultStream {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeSessionPool() {
-  this.calledWith_ = arguments;
-  events.EventEmitter.call(this);
-}
-nodeutil.inherits(FakeSessionPool, events.EventEmitter);
-FakeSessionPool.prototype.open = util.noop;
-
-function FakeTable() {
-  this.calledWith_ = arguments;
+class FakeSession {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeTransactionRequest() {
-  this.calledWith_ = arguments;
+class FakeSessionPool extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
+  open(){}
 }
 
-const fakeCodec = {
+class FakeTable {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+}
+
+class FakeTransactionRequest {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+}
+
+const fakeCodec: any = {
   encode: util.noop,
   Int: function() {},
   Float: function() {},
@@ -485,7 +504,7 @@ describe('Database', () => {
     });
 
     it('should decorate the end() method', done => {
-      const transaction = {};
+      const transaction: any = {};
       const end = function(callback) {
         assert.strictEqual(this, transaction);
         callback(); // done fn
@@ -610,7 +629,7 @@ describe('Database', () => {
 
     describe('autoCreate', () => {
       const error = new Error('Error.');
-      error.code = 5;
+      (error as ApiError).code = 5;
 
       const OPTIONS = {
         autoCreate: true,
@@ -690,7 +709,7 @@ describe('Database', () => {
 
     it('should not auto create without error code 5', done => {
       const error = new Error('Error.');
-      error.code = 'NOT-5';
+      (error as any).code = 'NOT-5';
 
       const options = {
         autoCreate: true,
@@ -711,7 +730,7 @@ describe('Database', () => {
     });
 
     it('should not auto create unless requested', done => {
-      const error = new Error('Error.');
+      const error = new ApiError('Error.');
       error.code = 5;
 
       database.getMetadata = function(callback) {
@@ -851,7 +870,7 @@ describe('Database', () => {
       formattedName_: 'formatted-name',
     };
 
-    const POOL = {};
+    const POOL: any = {};
 
     beforeEach(() => {
       CONFIG = {
@@ -942,7 +961,7 @@ describe('Database', () => {
       formattedName_: 'formatted-name',
     };
 
-    const POOL = {};
+    const POOL: any = {};
 
     beforeEach(() => {
       REQUEST_STREAM = through();
@@ -1248,7 +1267,7 @@ describe('Database', () => {
     });
 
     it('should pass json, jsonOptions to PartialResultStream', () => {
-      const query = extend({}, QUERY);
+      const query: any = extend({}, QUERY);
       query.json = {};
       query.jsonOptions = {};
 
@@ -1266,7 +1285,7 @@ describe('Database', () => {
         done();
       };
 
-      const query = extend({}, QUERY);
+      const query: any = extend({}, QUERY);
       query.json = {};
       query.jsonOptions = {};
 
@@ -1292,7 +1311,7 @@ describe('Database', () => {
       const OPTIONS = {a: 'a'};
       const FORMATTED_OPTIONS = {b: 'b'};
 
-      FakeTransactionRequest.formatTimestampOptions_ = function(options) {
+      (FakeTransactionRequest as any).formatTimestampOptions_ = function(options) {
         assert.strictEqual(options, OPTIONS);
         return FORMATTED_OPTIONS;
       };
@@ -1700,7 +1719,6 @@ describe('Database', () => {
           setImmediate(done);
           return Promise.resolve();
         };
-
         database.getTransaction(OPTIONS, assert.ifError);
       });
     });

@@ -16,14 +16,15 @@
 
 'use strict';
 
-const arrify = require('arrify');
-const {promisifyAll} = require('@google-cloud/promisify');
+import * as arrify from 'arrify';
+import {promisifyAll} from '@google-cloud/promisify';
 const {ServiceObject} = require('@google-cloud/common-grpc');
-const extend = require('extend');
-const is = require('is');
-const retry = require('p-retry');
-const streamEvents = require('stream-events');
-const through = require('through2');
+import * as extend from 'extend';
+import * as is from 'is';
+import * as retry from 'p-retry';
+import * as streamEvents from 'stream-events';
+import * as through from 'through2';
+import { Abortable } from '@google-cloud/common';
 
 const BatchTransaction = require('./batch-transaction');
 const codec = require('./codec');
@@ -339,14 +340,14 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  createSession(options, callback) {
+  createSession(options, callback?) {
     if (is.function(options)) {
       callback = options;
       options = {};
     }
 
     const gaxOpts = extend({}, options);
-    const reqOpts = {
+    const reqOpts: any = {
       database: this.formattedName_,
     };
 
@@ -894,7 +895,10 @@ class Database extends ServiceObject {
    *   const transaction = data[0];
    * });
    */
-  getTransaction(options, callback) {
+  getTransaction(options?): Promise<any>;
+  getTransaction(options, callback): void;
+  getTransaction(callback): void;
+  getTransaction(options?, callback?): void|Promise<any> {
     if (is.fn(options)) {
       callback = options;
       options = null;
@@ -964,7 +968,7 @@ class Database extends ServiceObject {
     let requestStream;
     let session;
     const waitForSessionStream = streamEvents(through.obj());
-    waitForSessionStream.abort = function() {
+    (waitForSessionStream as any).abort = function() {
       releaseSession();
       if (requestStream) {
         requestStream.cancel();
@@ -1155,7 +1159,7 @@ class Database extends ServiceObject {
    * Querying data with an index:
    */
   run(query, options, callback) {
-    const rows = [];
+    const rows: {}[] = [];
     if (is.fn(options)) {
       callback = options;
       options = null;

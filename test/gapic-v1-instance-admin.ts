@@ -14,13 +14,14 @@
 
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
+import { ApiError } from '@google-cloud/common';
 
 const spannerModule = require('../src');
 
 const FAKE_STATUS_CODE = 1;
 const error = new Error();
-error.code = FAKE_STATUS_CODE;
+(error  as ApiError).code = FAKE_STATUS_CODE;
 
 describe('InstanceAdminClient', () => {
   describe('listInstanceConfigs', () => {
@@ -736,7 +737,7 @@ describe('InstanceAdminClient', () => {
   });
 });
 
-function mockSimpleGrpcMethod(expectedRequest, response, error) {
+function mockSimpleGrpcMethod(expectedRequest, response?, error?) {
   return function(actualRequest, options, callback) {
     assert.deepStrictEqual(actualRequest, expectedRequest);
     if (error) {
@@ -749,7 +750,7 @@ function mockSimpleGrpcMethod(expectedRequest, response, error) {
   };
 }
 
-function mockLongRunningGrpcMethod(expectedRequest, response, error) {
+function mockLongRunningGrpcMethod(expectedRequest, response, error?) {
   return request => {
     assert.deepStrictEqual(request, expectedRequest);
     const mockOperation = {

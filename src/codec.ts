@@ -18,12 +18,13 @@
 
 const codec = module.exports;
 
-const arrify = require('arrify');
-const {Service} = require('@google-cloud/common-grpc');
-const extend = require('extend');
-const is = require('is');
+import * as arrify from 'arrify';
+import {Service} from '@google-cloud/common-grpc';
+import * as extend from 'extend';
+import * as is from 'is';
 
 class SpannerDate {
+  value;
   constructor(value) {
     if (arguments.length > 1) {
       throw new TypeError(
@@ -43,6 +44,7 @@ class SpannerDate {
 codec.SpannerDate = SpannerDate;
 
 class Float {
+  value;
   constructor(value) {
     this.value = value;
   }
@@ -54,6 +56,7 @@ class Float {
 codec.Float = Float;
 
 class Int {
+  value;
   constructor(value) {
     this.value = value.toString();
   }
@@ -120,7 +123,7 @@ Struct.TYPE = 'struct';
  * @return {Struct}
  */
 Struct.fromArray = function(arr) {
-  const struct = new Struct();
+  const struct = new (Struct as any)();
 
   struct.push.apply(struct, arr);
 
@@ -136,7 +139,7 @@ Struct.fromArray = function(arr) {
  * @return {Struct}
  */
 Struct.fromJSON = function(json) {
-  const struct = new Struct();
+  const struct = new (Struct as any)();
 
   Object.keys(json || {}).forEach(name => {
     const value = json[name];
@@ -246,7 +249,7 @@ function decode(value, field) {
         break;
       }
       case 'STRUCT': {
-        const struct = new Struct();
+        const struct = new (Struct as any)();
         const fields = type.structType.fields;
 
         fields.forEach((field, index) => {
@@ -281,7 +284,7 @@ codec.decode = decode;
 function encode(value) {
   function preEncode(value) {
     const numberShouldBeStringified =
-      (!(value instanceof Float) && is.int(value)) ||
+      (!(value instanceof Float) && is.integer(value)) ||
       value instanceof Int ||
       is.infinite(value) ||
       Number.isNaN(value);
@@ -315,7 +318,7 @@ function encode(value) {
     return value;
   }
 
-  return Service.encodeValue_(preEncode(value));
+  return (Service as any).encodeValue_(preEncode(value));
 }
 
 codec.encode = encode;
@@ -333,7 +336,7 @@ codec.encode = encode;
  * // 'float64'
  */
 function getType(field) {
-  if (is.bool(field)) {
+  if (is.boolean(field)) {
     return 'bool';
   }
 
@@ -384,7 +387,7 @@ function getType(field) {
     for (let i = 0; i < field.length; i++) {
       child = field[i];
 
-      if (!is.nil(child)) {
+      if (!is.null(child)) {
         break;
       }
     }
@@ -542,7 +545,7 @@ function createTypeObject(config) {
     code = 0; // unspecified
   }
 
-  const typeObject = {code};
+  const typeObject: any = {code};
 
   if (type === 'array') {
     typeObject.arrayElementType = createTypeObject(config.child);

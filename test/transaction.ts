@@ -16,18 +16,17 @@
 
 'use strict';
 
-const assert = require('assert');
-const common = require('@google-cloud/common-grpc');
-const extend = require('extend');
-const gax = require('google-gax');
-const path = require('path');
-const proxyquire = require('proxyquire');
-const {split} = require('split-array-stream');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as gax from 'google-gax';
+import * as path from 'path';
+import * as proxyquire from 'proxyquire';
+import {split} from 'split-array-stream';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
-const FakeRetryInfo = {
+const FakeRetryInfo: any = {
   decode: util.noop,
 };
 
@@ -40,7 +39,7 @@ const fakeGax = {
       );
       const result = super.loadSync(filename);
       const n = 'nested';
-      result[n].google[n].rpc[n].RetryInfo = FakeRetryInfo;
+      result[n]!.google[n].rpc[n].RetryInfo = FakeRetryInfo;
       return result;
     }
   },
@@ -58,7 +57,7 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-function FakeGrpcService() {}
+const FakeGrpcService = class {};
 
 function FakePartialResultStream() {
   this.calledWith_ = arguments;
@@ -69,7 +68,7 @@ function FakeTransactionRequest(options) {
   this.options = options;
 }
 
-const fakeCodec = {
+const fakeCodec: any = {
   encode: util.noop,
 };
 
@@ -115,7 +114,7 @@ describe('Transaction', () => {
   });
 
   beforeEach(() => {
-    FakeGrpcService.objToStruct_ = util.noop;
+    (FakeGrpcService as any).objToStruct_ = util.noop;
     FakeRetryInfo.decode = util.noop;
 
     extend(Transaction, TransactionCached);
@@ -156,7 +155,7 @@ describe('Transaction', () => {
     });
 
     it('should inherit from TransactionRequest', () => {
-      const OPTIONS = {};
+      const OPTIONS: any= {};
 
       transaction = new Transaction(SESSION, OPTIONS);
 
@@ -212,7 +211,7 @@ describe('Transaction', () => {
         formattedError.message,
         'Deadline for Transaction exceeded. - Transaction aborted.'
       );
-      assert.strictEqual(typeof formattedError, typeof common.util.ApiError());
+      assert.strictEqual(typeof formattedError, typeof (util as any).ApiError());
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });
@@ -223,7 +222,7 @@ describe('Transaction', () => {
       const fakeError = new Error('err');
       const fakeRetryInfo = Buffer.from('hi');
 
-      fakeError.metadata = {
+      (fakeError as any).metadata = {
         get: function(key) {
           assert.strictEqual(key, 'google.rpc.retryinfo-bin');
           return [fakeRetryInfo];
@@ -257,7 +256,7 @@ describe('Transaction', () => {
     it('should create backoff from counter when delay is absent', () => {
       const fakeError = new Error('err');
 
-      fakeError.metadata = {
+      (fakeError as any).metadata = {
         get: function() {
           return [];
         },
@@ -418,7 +417,7 @@ describe('Transaction', () => {
           );
         };
 
-        FakeTransactionRequest.fromProtoTimestamp_ = function(value) {
+        (FakeTransactionRequest as any).fromProtoTimestamp_ = function(value) {
           assert.strictEqual(value, fakeProtoTimestamp);
           return fakeDate;
         };
@@ -1277,7 +1276,7 @@ describe('Transaction', () => {
       });
 
       beforeEach(() => {
-        global.setTimeout = function() {};
+        (global as any).setTimeout = function() {};
         transaction.runFn_ = function() {};
 
         transaction.begin = function(callback) {
@@ -1297,7 +1296,7 @@ describe('Transaction', () => {
       });
 
       it('should execute run function after timeout', done => {
-        global.setTimeout = function(cb, timeout) {
+        (global as any).setTimeout = function(cb, timeout) {
           assert.strictEqual(timeout, fakeDelay);
           cb();
         };

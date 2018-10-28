@@ -16,11 +16,12 @@
 
 'use strict';
 
-const assert = require('assert');
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import { ApiError } from '@google-cloud/common';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 const fakePaginator = {
   paginator: {
@@ -487,7 +488,7 @@ describe('Instance', () => {
     });
 
     describe('autoCreate', () => {
-      const error = new Error('Error.');
+      const error = new ApiError('Error.');
       error.code = 5;
 
       const OPTIONS = {
@@ -568,7 +569,7 @@ describe('Instance', () => {
 
     it('should not auto create without error code 5', done => {
       const error = new Error('Error.');
-      error.code = 'NOT-5';
+      (error as any).code = 'NOT-5';
 
       const options = {
         autoCreate: true,
@@ -589,7 +590,7 @@ describe('Instance', () => {
     });
 
     it('should not auto create unless requested', done => {
-      const error = new Error('Error.');
+      const error = new ApiError('Error.');
       error.code = 5;
 
       instance.getMetadata = function(callback) {
@@ -703,7 +704,7 @@ describe('Instance', () => {
         },
       ];
 
-      const REQUEST_RESPONSE_ARGS = [null, DATABASES, {}];
+      const REQUEST_RESPONSE_ARGS: any = [null, DATABASES, {}];
 
       beforeEach(() => {
         instance.request = function(config, callback) {

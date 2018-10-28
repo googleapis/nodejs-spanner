@@ -16,16 +16,17 @@
 
 'use strict';
 
-const {Service, Operation} = require('@google-cloud/common-grpc');
-const {paginator} = require('@google-cloud/paginator');
-const {replaceProjectIdToken} = require('@google-cloud/projectify');
-const {promisifyAll} = require('@google-cloud/promisify');
-const extend = require('extend');
-const {GoogleAuth} = require('google-auth-library');
-const is = require('is');
-const path = require('path');
-const streamEvents = require('stream-events');
-const through = require('through2');
+import {Service, Operation} from '@google-cloud/common-grpc';
+import {paginator} from '@google-cloud/paginator';
+import {replaceProjectIdToken} from '@google-cloud/projectify';
+import {promisifyAll} from '@google-cloud/promisify';
+import * as extend from 'extend';
+import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import * as is from 'is';
+import * as path from 'path';
+import * as streamEvents from 'stream-events';
+import * as through from 'through2';
+import { GrpcServiceConfig } from '@google-cloud/common-grpc/build/src/service';
 const codec = require('./codec');
 const Database = require('./database');
 const Instance = require('./instance');
@@ -156,8 +157,23 @@ const gapic = Object.freeze({
  * @param {ClientConfig} [options] Configuration options.
  */
 class Spanner extends Service {
+  options: GoogleAuthOptions;
+  auth: GoogleAuth;
+  clients_: Map<string, {}>;
+  instances_: Map<string, {}>;
+  getInstancesStream: Function;
+
+/**
+ * Placeholder used to auto populate a column with the commit timestamp.
+ * This can only be used for timestamp columns that have set the option
+ * "(allow_commit_timestamp=true)" in the schema.
+ *
+ * @type {string}
+ */
+static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
+
   constructor(options) {
-    const scopes = [];
+    const scopes: {}[] = [];
     const clientClasses = [
       gapic.v1.DatabaseAdminClient,
       gapic.v1.InstanceAdminClient,
@@ -190,12 +206,50 @@ class Spanner extends Service {
       },
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       packageJson: require('../../package.json'),
-    };
+    } as {} as GrpcServiceConfig;
     super(config, options);
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+
+
+/**
+ * Get a list of {@link Instance} objects as a readable object stream.
+ *
+ * Wrapper around {@link v1.InstanceAdminClient#listInstances}.
+ *
+ * @see {@link v1.InstanceAdminClient#listInstances}
+ * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
+ *
+ * @method Spanner#getInstancesStream
+ * @param {GetInstancesRequest} [query] Query object for listing instances.
+ * @returns {ReadableStream} A readable stream that emits {@link Instance}
+ *     instances.
+ *
+ * @example
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * spanner.getInstancesStream()
+ *   .on('error', console.error)
+ *   .on('data', function(instance) {
+ *     // `instance` is an `Instance` object.
+ *   })
+ *   .on('end', function() {
+ *     // All instances retrieved.
+ *   });
+ *
+ * //-
+ * // If you anticipate many results, you can end a stream early to prevent
+ * // unnecessary processing and API requests.
+ * //-
+ * spanner.getInstancesStream()
+ *   .on('data', function(instance) {
+ *     this.end();
+ *   });
+ */
+this.getInstancesStream = paginator.streamify('getInstances');
   }
 
   /**
@@ -399,7 +453,7 @@ class Spanner extends Service {
    *   const instances = data[0];
    * });
    */
-  getInstances(query, callback) {
+  getInstances(query, callback?) {
     const self = this;
     if (is.fn(query)) {
       callback = query;
@@ -419,7 +473,7 @@ class Spanner extends Service {
         if (instances) {
           arguments[1] = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
-            instanceInstance.metadata = instance;
+            (instanceInstance as any).metadata = instance;
             return instanceInstance;
           });
         }
@@ -628,9 +682,9 @@ class Spanner extends Service {
       if (!this.clients_.has(clientName)) {
         this.clients_.set(clientName, new gapic.v1[clientName](this.options));
       }
-      const gaxClient = this.clients_.get(clientName);
+      const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
-      reqOpts = replaceProjectIdToken(reqOpts, projectId);
+      reqOpts = replaceProjectIdToken(reqOpts, projectId!);
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
@@ -650,7 +704,7 @@ class Spanner extends Service {
    * @param {function} [callback] Callback function.
    * @returns {Promise}
    */
-  request(config, callback) {
+  request(config, callback): void|Promise<any> {
     if (is.fn(callback)) {
       this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {
@@ -713,7 +767,7 @@ class Spanner extends Service {
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
    */
-  static date(value) {
+  static date(value?) {
     return new codec.SpannerDate(value);
   }
 
@@ -770,51 +824,6 @@ class Spanner extends Service {
   }
 }
 
-/**
- * Placeholder used to auto populate a column with the commit timestamp.
- * This can only be used for timestamp columns that have set the option
- * "(allow_commit_timestamp=true)" in the schema.
- *
- * @type {string}
- */
-Spanner.COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
-
-/**
- * Get a list of {@link Instance} objects as a readable object stream.
- *
- * Wrapper around {@link v1.InstanceAdminClient#listInstances}.
- *
- * @see {@link v1.InstanceAdminClient#listInstances}
- * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
- *
- * @method Spanner#getInstancesStream
- * @param {GetInstancesRequest} [query] Query object for listing instances.
- * @returns {ReadableStream} A readable stream that emits {@link Instance}
- *     instances.
- *
- * @example
- * const {Spanner} = require('@google-cloud/spanner');
- * const spanner = new Spanner();
- *
- * spanner.getInstancesStream()
- *   .on('error', console.error)
- *   .on('data', function(instance) {
- *     // `instance` is an `Instance` object.
- *   })
- *   .on('end', function() {
- *     // All instances retrieved.
- *   });
- *
- * //-
- * // If you anticipate many results, you can end a stream early to prevent
- * // unnecessary processing and API requests.
- * //-
- * spanner.getInstancesStream()
- *   .on('data', function(instance) {
- *     this.end();
- *   });
- */
-Spanner.prototype.getInstancesStream = paginator.streamify('getInstances');
 
 /*! Developer Documentation
  *
@@ -861,7 +870,7 @@ promisifyAll(Spanner, {
  * region_tag:spanner_quickstart
  * Full quickstart example:
  */
-module.exports.Spanner = Spanner;
+export {Spanner};
 
 /**
  * {@link Instance} class.
@@ -870,7 +879,7 @@ module.exports.Spanner = Spanner;
  * @see Instance
  * @type {Constructor}
  */
-Spanner.Instance = Instance;
+export {Instance};
 
 /**
  * {@link Database} class.
@@ -879,7 +888,7 @@ Spanner.Instance = Instance;
  * @see Database
  * @type {Constructor}
  */
-Spanner.Database = Database;
+export {Database};
 
 /**
  * {@link Session} class.
@@ -888,7 +897,7 @@ Spanner.Database = Database;
  * @see Session
  * @type {Constructor}
  */
-Spanner.Session = Session;
+export {Session};
 
 /**
  * {@link SessionPool} class.
@@ -897,7 +906,7 @@ Spanner.Session = Session;
  * @see SessionPool
  * @type {Constructor}
  */
-Spanner.SessionPool = SessionPool;
+export {SessionPool};
 
 /**
  * {@link Table} class.
@@ -906,7 +915,7 @@ Spanner.SessionPool = SessionPool;
  * @see Table
  * @type {Constructor}
  */
-Spanner.Table = Table;
+export {Table};
 
 /**
  * {@link Transaction} class.
@@ -915,7 +924,7 @@ Spanner.Table = Table;
  * @see Transaction
  * @type {Constructor}
  */
-Spanner.Transaction = Transaction;
+export {Transaction};
 
 /**
  * {@link TransactionRequest} class.
@@ -924,7 +933,7 @@ Spanner.Transaction = Transaction;
  * @see TransactionRequest
  * @type {Constructor}
  */
-Spanner.TransactionRequest = TransactionRequest;
+export {TransactionRequest};
 
 /**
  * @type {object}

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-const assert = require('assert');
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -31,23 +31,27 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-const fakeCodec = {
+const fakeCodec: any = {
   encode: util.noop,
   Int: function() {},
   Float: function() {},
   SpannerDate: function() {},
 };
 
-function FakeTransaction(session) {
-  this.calledWith_ = arguments;
-  this.session = session;
+class FakeTransaction {
+  calledWith_: IArguments;
+  session;
+  constructor(session) {
+    this.calledWith_ = arguments;
+    this.session = session;
+  }
 }
 
 describe('BatchTransaction', () => {
   let BatchTransaction;
   let batchTransaction;
 
-  const SESSION = {};
+  const SESSION: any = {};
 
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {

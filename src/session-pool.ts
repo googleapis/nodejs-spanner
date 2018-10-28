@@ -16,10 +16,10 @@
 
 'use strict';
 
-const {EventEmitter} = require('events');
-const is = require('is');
-const PQueue = require('p-queue');
-const stackTrace = require('stack-trace');
+import {EventEmitter} from 'events';
+import * as is from 'is';
+import * as PQueue from 'p-queue';
+import * as stackTrace from 'stack-trace';
 
 const READONLY = 'readonly';
 const READWRITE = 'readwrite';
@@ -60,6 +60,7 @@ class EmptyError extends Error {
  * Error to be thrown when attempting to release unknown resources.
  */
 class ReleaseError extends Error {
+  resource;
   constructor(resource) {
     super('Unable to release unknown resource.');
     this.resource = resource;
@@ -70,6 +71,7 @@ class ReleaseError extends Error {
  * Error to be thrown when session leaks are detected.
  */
 class SessionLeakError extends Error {
+  messages;
   constructor(leaks) {
     super(`${leaks.length} session leak(s) detected.`);
     this.messages = leaks;
@@ -133,6 +135,18 @@ class WritePercentError extends TypeError {
  * @extends {EventEmitter}
  */
 class SessionPool extends EventEmitter {
+
+  _inventory;
+  options;
+  isOpen;
+  database;
+  _requests;
+  _acquires;
+  _traces;
+  _onClose;
+  _evictHandle;
+  _pingHandle;
+
   /**
    * Formats stack trace objects into Node-like stack trace.
    *
@@ -187,7 +201,7 @@ class SessionPool extends EventEmitter {
     const {readonly, borrowed} = this._inventory;
     const available = readonly.length;
     const used = Array.from(borrowed).filter(
-      session => session.type === READONLY
+      session => (session as any).type === READONLY
     ).length;
 
     return available + used;
@@ -209,7 +223,7 @@ class SessionPool extends EventEmitter {
     const {readwrite, borrowed} = this._inventory;
     const available = readwrite.length;
     const used = Array.from(borrowed).filter(
-      session => session.type === READWRITE
+      session => (session as any).type === READWRITE
     ).length;
 
     return available + used;
@@ -560,7 +574,7 @@ class SessionPool extends EventEmitter {
 
     while (count-- > maxIdle && size - evicted++ > min) {
       const session = idle.pop();
-      const type = session.type;
+      const type = (session as any).type;
       const index = this._inventory[type].indexOf(session);
 
       this._inventory[type].splice(index, 1);
@@ -574,7 +588,7 @@ class SessionPool extends EventEmitter {
    * @return {Promise}
    */
   _fill() {
-    const requests = [];
+    const requests: {}[] = [];
 
     const minReadWrite = Math.floor(this.options.min * this.options.writes);
     const neededReadWrite = Math.max(minReadWrite - this.writes, 0);
@@ -608,7 +622,7 @@ class SessionPool extends EventEmitter {
     );
 
     return sessions.filter(session => {
-      return Date.now() - session.lastUsed >= idlesAfter;
+      return Date.now() - (session as any).lastUsed >= idlesAfter;
     });
   }
 
@@ -744,7 +758,7 @@ class SessionPool extends EventEmitter {
    * @param {object} options The transaction options.
    * @returns {Promise}
    */
-  _prepareTransaction(session, options) {
+  _prepareTransaction(session, options?) {
     return session.beginTransaction(options).then(([transaction]) => {
       session.txn = transaction;
     });

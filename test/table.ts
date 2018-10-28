@@ -16,13 +16,13 @@
 
 'use strict';
 
-const assert = require('assert');
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {split} = require('split-array-stream');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {split} from 'split-array-stream';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -152,16 +152,16 @@ describe('Table', () => {
       const FORMATTED_OPTIONS = {};
 
       const formatTimestampOptions =
-        FakeTransactionRequest.formatTimestampOptions;
+        (FakeTransactionRequest as any).formatTimestampOptions;
 
-      FakeTransactionRequest.formatTimestampOptions_ = function(options) {
+      (FakeTransactionRequest as any).formatTimestampOptions_ = function(options) {
         assert.strictEqual(options, OPTIONS);
         return FORMATTED_OPTIONS;
       };
 
       FakeTransactionRequest.prototype = {
         createReadStream: function(name, query) {
-          FakeTransactionRequest.formatTimestampOptions_ = formatTimestampOptions;
+          (FakeTransactionRequest as any).formatTimestampOptions_ = formatTimestampOptions;
 
           assert.strictEqual(
             query.transaction.singleUse.readOnly,

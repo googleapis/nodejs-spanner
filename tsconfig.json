@@ -5,7 +5,9 @@
     "outDir": "build",
     "allowJs": true,
     "declaration": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false
   },
   "include": [
     "src/*.ts",

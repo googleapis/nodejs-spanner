@@ -16,11 +16,11 @@
 
 'use strict';
 
-const assert = require('assert');
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -50,7 +50,7 @@ describe('Session', () => {
   let Session;
   let session;
 
-  const DATABASE = {
+  const DATABASE: any = {
     request: util.noop,
     formattedName_: 'formatted-database-name',
   };

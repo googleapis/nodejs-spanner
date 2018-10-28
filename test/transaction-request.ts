@@ -16,13 +16,13 @@
 
 'use strict';
 
-const assert = require('assert');
-const extend = require('extend');
-const proxyquire = require('proxyquire');
-const {split} = require('split-array-stream');
-const through = require('through2');
-const {util} = require('@google-cloud/common-grpc');
-const pfy = require('@google-cloud/promisify');
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import {split} from 'split-array-stream';
+import * as through from 'through2';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 
 function FakeGrpcService() {}
 
@@ -44,7 +44,7 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-const fakeCodec = {
+const fakeCodec: any = {
   encode: util.noop,
 };
 
@@ -64,7 +64,7 @@ describe('TransactionRequest', () => {
   });
 
   beforeEach(() => {
-    FakeGrpcService.encodeValue_ = util.noop;
+    (FakeGrpcService as any).encodeValue_ = util.noop;
     fakeCodec.encode = util.noop;
     transactionRequest = new TransactionRequest();
     transactionRequest.request = util.noop;

@@ -18,12 +18,12 @@
 
 const checkpointStream = require('checkpoint-stream');
 const eventsIntercept = require('events-intercept');
-const extend = require('extend');
-const is = require('is');
-const mergeStream = require('merge-stream');
-const {split} = require('split-array-stream');
-const streamEvents = require('stream-events');
-const through = require('through2');
+import * as extend from 'extend';
+import * as is from 'is';
+import mergeStream = require('merge-stream');
+import {split} from 'split-array-stream';
+import * as streamEvents from 'stream-events';
+import * as through from 'through2';
 
 const RowBuilder = require('./row-builder');
 
@@ -107,7 +107,7 @@ function partialResultStream(requestFn, options) {
     })
   );
 
-  userStream.abort = function() {
+  (userStream as any).abort = function() {
     if (activeRequestStream) {
       activeRequestStream.abort();
     }
@@ -115,7 +115,7 @@ function partialResultStream(requestFn, options) {
 
   userStream.once('reading', makeRequest);
 
-  return requestsStream
+  return (requestsStream as any)
     .intercept('error', err => {
       if (lastResumeToken) {
         // We're going to retry from where we left off.
