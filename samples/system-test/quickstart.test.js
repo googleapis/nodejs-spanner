@@ -28,7 +28,7 @@ describe('QuickStart', () => {
 
   beforeEach(() => {
     output = '';
-    process.stdout.write = function(str) {
+    process.stdout.write = str => {
       output = str;
     };
   });
