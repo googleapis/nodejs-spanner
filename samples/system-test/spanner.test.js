@@ -137,7 +137,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Inserted data\./);
+    const regex = new RegExp(/Inserted data\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_data
@@ -147,10 +148,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/
-    );
+    const regex = new RegExp(/SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // read_data
@@ -160,10 +159,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/
-    );
+    const regex = new RegExp(/SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // add_column
@@ -173,8 +170,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepStrictEqual(output, /Added the MarketingBudget column\./);
+    let regex = new RegExp(/Waiting for operation to complete\.\.\./);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/Added the MarketingBudget column\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // update_data
@@ -184,7 +183,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Updated data\./);
+    const regex = new RegExp(/Updated data\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // read_stale_data
@@ -198,14 +198,14 @@ describe('Spanner', () => {
         cwd
       );
       const output = results.stdout + results.stderr;
-      assert.deepStrictEqual(
-        output,
+      let regex = new RegExp(
         /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
       );
-      assert.deepStrictEqual(
-        output,
+      assert.strictEqual(regex.test(output), true);
+      regex = new RegExp(
         /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
       );
+      assert.strictEqual(regex.test(output), true);
     });
   });
 
@@ -216,14 +216,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/
-    );
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/
-    );
+    let regex = new RegExp(/SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/SingerId: 2, AlbumId: 2, MarketingBudget: 500000/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // create_index
@@ -233,8 +229,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepStrictEqual(output, /Added the AlbumsByAlbumTitle index\./);
+    let regex = new RegExp(/Waiting for operation to complete\.\.\./);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/Added the AlbumsByAlbumTitle index\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // create_storing_index
@@ -244,8 +242,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepStrictEqual(output, /Added the AlbumsByAlbumTitle2 index\./);
+    let regex = new RegExp(/Waiting for operation to complete\.\.\./);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/Added the AlbumsByAlbumTitle2 index\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_data_with_index
@@ -255,10 +255,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
+    const regex = new RegExp(
       /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
     );
+    assert.strictEqual(regex.test(output), true);
     assert.deepStrictEqual(
       output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`),
       false
@@ -271,14 +271,12 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
+    let regex = new RegExp(
       /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
     );
-    assert.deepStrictEqual(
-      output,
-      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
-    );
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // read_data_with_index
@@ -288,7 +286,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+    const regex = new RegExp(/AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // read_data_with_storing_index
@@ -298,7 +297,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+    const regex = new RegExp(/AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // read_only_transaction
@@ -308,14 +308,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/
-    );
-    assert.deepStrictEqual(
-      output,
-      /Successfully executed read-only transaction\./
-    );
+    let regex = new RegExp(/SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/Successfully executed read-only transaction\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // read_write_transaction
@@ -325,32 +321,24 @@ describe('Spanner', () => {
       cwd
     );
     let output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      /The first album's marketing budget: 100000/
-    );
-    assert.deepStrictEqual(
-      output,
-      /The second album's marketing budget: 500000/
-    );
-    assert.deepStrictEqual(
-      output,
+    let regex = new RegExp(/The first album's marketing budget: 100000/);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/The second album's marketing budget: 500000/);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(
       /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
     );
-
+    assert.strictEqual(regex.test(output), true);
     results = await tools.runAsyncWithIO(
       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       cwd
     );
+
     output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/
-    );
-    assert.deepStrictEqual(
-      output,
-      /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/
-    );
+    regex = new RegExp(/SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // create_query_partitions
@@ -367,10 +355,8 @@ describe('Spanner', () => {
 
     const output = results.stdout + results.stderr;
 
-    assert.deepStrictEqual(
-      output,
-      /Successfully created \d query partitions\./
-    );
+    const regex = new RegExp(/Successfully created \d query partitions\./);
+    assert.strictEqual(regex.test(output), true);
 
     await transaction.close();
   });
@@ -393,10 +379,10 @@ describe('Spanner', () => {
 
     const output = results.stdout + results.stderr;
 
-    assert.deepStrictEqual(
-      output,
+    const regex = new RegExp(
       /Successfully received \d from executed partition\./
     );
+    assert.strictEqual(regex.test(output), true);
 
     await transaction.close();
   });
@@ -408,11 +394,12 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Waiting for operation to complete\.\.\./);
-    assert.deepStrictEqual(
-      output,
+    let regex = new RegExp(/Waiting for operation to complete\.\.\./);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(
       /Added LastUpdateTime as a commit timestamp column in Albums table\./
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   // update_data_with_timestamp_column
@@ -422,7 +409,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Updated data\./);
+    const regex = new RegExp(/Updated data\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_data_with_timestamp_column
@@ -432,14 +420,14 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
+    let regex = new RegExp(
       /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
     );
-    assert.deepStrictEqual(
-      output,
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(
       /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   // create_table_with_timestamp_column
@@ -449,14 +437,14 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    let regex = new RegExp(
+      `Waiting for operation on ${DATABASE_ID} to complete...`
     );
-    assert.deepStrictEqual(
-      output,
-      new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(
+      `Created table Performances in database ${DATABASE_ID}.`
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   // insert_data_with_timestamp
@@ -466,7 +454,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Inserted data\./);
+    const regex = new RegExp(/Inserted data\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_new_table_with_timestamp
@@ -476,8 +465,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /SingerId: 1, VenueId: 4, EventDate:/);
-    assert.deepStrictEqual(output, /Revenue: 15000, LastUpdateTime:/);
+    let regex = new RegExp(/SingerId: 1, VenueId: 4, EventDate:/);
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(/Revenue: 15000, LastUpdateTime:/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // write_data_for_struct_queries
@@ -487,7 +478,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Inserted data\./);
+    const regex = new RegExp(/Inserted data\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_with_struct_param
@@ -497,7 +489,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /SingerId: 6/);
+    const regex = new RegExp(/SingerId: 6/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_with_array_of_struct_param
@@ -507,7 +500,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /SingerId: 6\nSingerId: 7/);
+    const regex = new RegExp(/SingerId: 6\nSingerId: 7/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_with_struct_field_param
@@ -517,7 +511,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /SingerId: 6/);
+    const regex = new RegExp(/SingerId: 6/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // query_with_nested_struct_param
@@ -527,10 +522,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
+    const regex = new RegExp(
       /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_standard_insert
@@ -540,10 +535,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
+    const regex = new RegExp(
       /Successfully inserted 1 record into the Singers table/
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_standard_update
@@ -553,7 +548,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Successfully updated 1 record/);
+    const regex = new RegExp(/Successfully updated 1 record/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_standard_delete
@@ -563,7 +559,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Successfully deleted 1 record\./);
+    const regex = new RegExp(/Successfully deleted 1 record\./);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_standard_update_with_timestamp
@@ -573,7 +570,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Successfully updated 2 records/);
+    const regex = new RegExp(/Successfully updated 2 records/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_write_then_read
@@ -583,7 +581,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Timothy Campbell/);
+    const regex = new RegExp(/Timothy Campbell/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_structs
@@ -593,7 +592,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Successfully updated 1 record/);
+    const regex = new RegExp(/Successfully updated 1 record/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_getting_started_insert
@@ -603,7 +603,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /4 records inserted/);
+    const regex = new RegExp(/4 records inserted/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   // dml_getting_started_update
@@ -613,10 +614,10 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
+    const regex = new RegExp(
       /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   //  dml_partitioned_update
@@ -626,7 +627,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Successfully updated 3 records/);
+    const regex = new RegExp(/Successfully updated 3 records/);
+    assert.strictEqual(regex.test(output), true);
   });
 
   //  dml_partitioned_delete
@@ -636,7 +638,8 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(output, /Successfully deleted 5 records/);
+    const regex = new RegExp(/Successfully deleted 5 records/);
+    assert.strictEqual(regex.test(output), true);
   });
 });
 
