@@ -42,12 +42,18 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-function FakeDatabase() {
-  this.calledWith_ = arguments;
+class FakeDatabase {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeGrpcServiceObject() {
-  this.calledWith_ = arguments;
+class FakeGrpcServiceObject {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
 describe('Instance', () => {

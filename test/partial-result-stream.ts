@@ -34,37 +34,39 @@ fakeCheckpointStream.obj = function() {
 };
 
 let FakeRowBuilderOverrides: any = {};
-function FakeRowBuilder() {
-  this.calledWith_ = arguments;
+class FakeRowBuilder {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+  addRow() {
+    if (!FakeRowBuilderOverrides.addRow) {
+      return this;
+    }
+    return FakeRowBuilderOverrides.addRow.apply(this, arguments);
+  }
+
+  build() {
+    if (!FakeRowBuilderOverrides.build) {
+      return this;
+    }
+    return FakeRowBuilderOverrides.build.apply(this, arguments);
+  }
+
+  flush() {
+    if (!FakeRowBuilderOverrides.flush) {
+      return this;
+    }
+    return FakeRowBuilderOverrides.flush.apply(this, arguments);
+  }
+
+  toJSON() {
+    if (!FakeRowBuilderOverrides.toJSON) {
+      return this;
+    }
+    return FakeRowBuilderOverrides.toJSON.apply(this, arguments);
+  }
 }
-
-FakeRowBuilder.prototype.addRow = function() {
-  if (!FakeRowBuilderOverrides.addRow) {
-    return this;
-  }
-  return FakeRowBuilderOverrides.addRow.apply(this, arguments);
-};
-
-FakeRowBuilder.prototype.build = function() {
-  if (!FakeRowBuilderOverrides.build) {
-    return this;
-  }
-  return FakeRowBuilderOverrides.build.apply(this, arguments);
-};
-
-FakeRowBuilder.prototype.flush = function() {
-  if (!FakeRowBuilderOverrides.flush) {
-    return this;
-  }
-  return FakeRowBuilderOverrides.flush.apply(this, arguments);
-};
-
-FakeRowBuilder.prototype.toJSON = function() {
-  if (!FakeRowBuilderOverrides.toJSON) {
-    return this;
-  }
-  return FakeRowBuilderOverrides.toJSON.apply(this, arguments);
-};
 
 describe('PartialResultStream', () => {
   let partialResultStreamModule;

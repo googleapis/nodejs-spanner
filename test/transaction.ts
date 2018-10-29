@@ -57,18 +57,25 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-const FakeGrpcService = class {};
+class FakeGrpcService {
 
-function fakePartialResultStream() {
+}
+
+function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
   this.calledWith_ = arguments;
   return this;
 }
 
-function FakeTransactionRequest(options) {
-  this.calledWith_ = arguments;
-  this.options = options;
+class FakeTransactionRequest {
+  calledWith_: IArguments;
+  options: {};
+  constructor(options: {}) {
+    this.calledWith_ = arguments;
+    this.options = options;
+  }
 }
 
+// tslint:disable-next-line no-any
 const fakeCodec: any = {
   encode: util.noop,
 };

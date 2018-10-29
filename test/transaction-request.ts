@@ -24,9 +24,9 @@ import * as through from 'through2';
 import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 
-function FakeGrpcService() {}
+class FakeGrpcService {}
 
-function fakePartialResultStream() {
+function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
   this.calledWith_ = arguments;
   return this;
 }
