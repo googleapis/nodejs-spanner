@@ -16,8 +16,6 @@
 
 'use strict';
 
-const codec = module.exports;
-
 import * as arrify from 'arrify';
 import {Service} from '@google-cloud/common-grpc';
 import * as extend from 'extend';
@@ -41,8 +39,6 @@ class SpannerDate {
   }
 }
 
-codec.SpannerDate = SpannerDate;
-
 class Float {
   value;
   constructor(value) {
@@ -52,8 +48,6 @@ class Float {
     return parseFloat(this.value);
   }
 }
-
-codec.Float = Float;
 
 class Int {
   value;
@@ -69,8 +63,6 @@ class Int {
   }
 }
 
-codec.Int = Int;
-
 /**
  * We use this symbol as a means to identify if an array is actually a struct.
  * We need to do this because changing Structs from an object to an array would
@@ -83,8 +75,6 @@ codec.Int = Int;
  * struct[TYPE] = 'struct';
  */
 const TYPE = Symbol();
-
-codec.TYPE = TYPE;
 
 /**
  * Struct wrapper. This returns an array, but will decorate the array to give it
@@ -161,8 +151,6 @@ Struct.isStruct = function(thing) {
   return !!(thing && thing[TYPE] === Struct.TYPE);
 };
 
-module.exports.Struct = Struct;
-
 /**
  * Wherever a row object is returned, it is assigned a "toJSON" function. This
  * function will create that function in a consistent format.
@@ -206,8 +194,6 @@ function generateToJSONFromRow(row) {
     }, {});
   };
 }
-
-codec.generateToJSONFromRow = generateToJSONFromRow;
 
 /**
  * Re-decode after the generic gRPC decoding step.
@@ -271,8 +257,6 @@ function decode(value, field) {
   return decodeValue_(value, field.type);
 }
 
-codec.decode = decode;
-
 /**
  * Encode a value in the format the API expects.
  *
@@ -320,8 +304,6 @@ function encode(value) {
 
   return (Service as any).encodeValue_(preEncode(value));
 }
-
-codec.encode = encode;
 
 /**
  * Get the corresponding Spanner data type.
@@ -401,8 +383,6 @@ function getType(field) {
   return 'unspecified';
 }
 
-codec.getType = getType;
-
 /**
  * A list of available Spanner types. The index of said type in Array aligns
  * with the type code that query params require.
@@ -421,8 +401,6 @@ const TYPES = [
   'array',
   'struct',
 ];
-
-codec.TYPES = TYPES;
 
 /**
  * Encodes a ExecuteSqlRequest object into the correct format.
@@ -459,19 +437,15 @@ function encodeQuery(query) {
 
   if (query.types) {
     const formattedTypes = {};
-
     for (const field in query.types) {
       formattedTypes[field] = codec.createTypeObject(query.types[field]);
     }
-
     delete query.types;
     query.paramTypes = formattedTypes;
   }
 
   return query;
 }
-
-codec.encodeQuery = encodeQuery;
 
 /**
  * Encodes a ReadRequest into the correct format.
@@ -521,8 +495,6 @@ function encodeRead(query) {
   return encoded;
 }
 
-codec.encodeRead = encodeRead;
-
 /**
  * Encodes paramTypes into correct structure.
  *
@@ -566,4 +538,18 @@ function createTypeObject(config) {
   return typeObject;
 }
 
-codec.createTypeObject = createTypeObject;
+export const codec = {
+  createTypeObject,
+  SpannerDate,
+  Float,
+  Int,
+  TYPE,
+  generateToJSONFromRow,
+  decode,
+  encode,
+  getType,
+  encodeQuery,
+  TYPES,
+  encodeRead,
+  Struct
+};

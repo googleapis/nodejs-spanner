@@ -70,8 +70,8 @@ describe('Instance', () => {
       },
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/paginator': fakePaginator,
-      './database.js': FakeDatabase,
-    });
+      './database.js': {Database: FakeDatabase},
+    }).Instance;
   });
 
   beforeEach(() => {

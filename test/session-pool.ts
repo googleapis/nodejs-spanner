@@ -86,7 +86,7 @@ describe('SessionPool', () => {
     SessionPool = proxyquire('../src/session-pool.js', {
       'p-queue': FakePQueue,
       'stack-trace': fakeStackTrace,
-    });
+    }).SessionPool;
   });
 
   beforeEach(() => {

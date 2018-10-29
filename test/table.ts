@@ -57,8 +57,8 @@ describe('Table', () => {
   before(() => {
     Table = proxyquire('../src/table.js', {
       '@google-cloud/promisify': fakePfy,
-      './transaction-request.js': FakeTransactionRequest,
-    });
+      './transaction-request.js': {TransactionRequest: FakeTransactionRequest},
+    }).Table;
     TableCached = extend({}, Table);
   });
 

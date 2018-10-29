@@ -18,7 +18,7 @@
 
 import {promisifyAll} from '@google-cloud/promisify';
 import * as is from 'is';
-const TransactionRequest = require('./transaction-request');
+import {TransactionRequest} from './transaction-request';
 
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
@@ -39,6 +39,8 @@ const TransactionRequest = require('./transaction-request');
  * const table = database.table('my-table');
  */
 class Table extends TransactionRequest {
+  api;
+  name: string;
   constructor(database, name) {
     super();
     /**
@@ -725,4 +727,4 @@ promisifyAll(Table, {
  * @name module:@google-cloud/spanner.Table
  * @see Table
  */
-module.exports = Table;
+export {Table};

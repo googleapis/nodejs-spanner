@@ -24,16 +24,14 @@ import * as is from 'is';
 import * as retry from 'p-retry';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import { Abortable } from '@google-cloud/common';
-
-const BatchTransaction = require('./batch-transaction');
-const codec = require('./codec');
-const PartialResultStream = require('./partial-result-stream');
-const Session = require('./session');
-const SessionPool = require('./session-pool');
-const Table = require('./table');
-const Transaction = require('./transaction');
-const TransactionRequest = require('./transaction-request');
+import {BatchTransaction} from './batch-transaction';
+import {codec} from './codec';
+import {partialResultStream} from './partial-result-stream';
+import {Session} from './session';
+import {SessionPool} from './session-pool';
+import {Table} from './table';
+import {Transaction} from './transaction';
+import {TransactionRequest} from './transaction-request';
 /**
  * Interface for implementing custom session pooling logic, it should extend the
  * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
@@ -154,7 +152,7 @@ class Database extends ServiceObject {
     super({
       parent: instance,
       id: name,
-      methods: methods,
+      methods,
       createMethod: (_, options, callback) => {
         return instance.createDatabase(formattedName_, options, callback);
       },
@@ -1358,7 +1356,7 @@ class Database extends ServiceObject {
         reqOpts: extend(reqOpts, {resumeToken}),
       });
     }
-    return new PartialResultStream(makeRequest, {
+    return partialResultStream(makeRequest, {
       json: query.json,
       jsonOptions: query.jsonOptions,
     });
@@ -1735,4 +1733,4 @@ promisifyAll(Database, {
  * @name module:@google-cloud/spanner.Database
  * @see Database
  */
-module.exports = Database;
+export {Database};

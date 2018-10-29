@@ -24,33 +24,14 @@ import * as is from 'is';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as through from 'through2';
+import {codec} from './codec';
+import {partialResultStream} from './partial-result-stream';
+import {TransactionRequest} from './transaction-request';
+import { Metadata } from '@google-cloud/common';
 
 const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'
 ];
-
-const codec = require('./codec');
-const PartialResultStream = require('./partial-result-stream');
-const TransactionRequest = require('./transaction-request');
-
-/**
- * The gRPC `UNKNOWN` error code.
- *
- * @private
- */
-const UNKNOWN = 2;
-
-/**
- * the gRPC `DEADLINE_EXCEEDED` error code.
- */
-const DEADLINE_EXCEEDED = 4;
-
-/**
- * The gRPC `ABORTED` error code.
- *
- * @private
- */
-const ABORTED = 10;
 
 /**
  * Metadata retry info key.
@@ -118,6 +99,36 @@ const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
  * });
  */
 class Transaction extends TransactionRequest {
+  session: Session;
+  seqno: number;
+  attempts_: number;
+  queuedMutations_: {}[];
+  runFn_: Function|null;
+  beginTime_: number|null;
+  timeout_: number;
+  ended_: boolean;
+  metadata: Metadata;
+  readTimestamp?: {}
+
+  /**
+   * The gRPC `UNKNOWN` error code.
+   *
+   * @private
+   */
+  static UNKNOWN = 2;
+
+  /**
+   * the gRPC `DEADLINE_EXCEEDED` error code.
+   */
+  static DEADLINE_EXCEEDED = 4;
+
+  /**
+   * The gRPC `ABORTED` error code.
+   *
+   * @private
+   */
+  static ABORTED = 10;
+
   constructor(session, options) {
     options = extend({}, options);
     super(options);
@@ -139,7 +150,6 @@ class Transaction extends TransactionRequest {
      * @default 1
      */
     this.seqno = 1;
-
     this.attempts_ = 0;
     this.queuedMutations_ = [];
     this.runFn_ = null;
@@ -422,7 +432,7 @@ class Transaction extends TransactionRequest {
         this.retry_(Transaction.getRetryDelay_(err, this.attempts_));
         return;
       }
-      this.runFn_(Transaction.createDeadlineError_(err));
+      this.runFn_!(Transaction.createDeadlineError_(err));
     });
     return requestStream.pipe(userStream);
   }
@@ -435,15 +445,14 @@ class Transaction extends TransactionRequest {
    * @param {number} delay Delay to wait before retrying transaction.
    */
   retry_(delay) {
-    const self = this;
     this.begin(err => {
       if (err) {
-        self.runFn_(err);
+        this.runFn_!(err);
         return;
       }
-      self.queuedMutations_ = [];
+      this.queuedMutations_ = [];
       setTimeout(() => {
-        self.runFn_(null, self);
+        this.runFn_!(null, this);
       }, delay);
     });
   }
@@ -722,7 +731,7 @@ class Transaction extends TransactionRequest {
         reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
       });
     };
-    return new PartialResultStream(makeRequest);
+    return partialResultStream(makeRequest);
   }
   /**
    * @typedef {array} RunUpdateResponse
@@ -776,7 +785,7 @@ class Transaction extends TransactionRequest {
     return (
       this.isRetryableErrorCode_(err.code) &&
       is.fn(this.runFn_) &&
-      Date.now() - this.beginTime_ < this.timeout_
+      Date.now() - this.beginTime_! < this.timeout_
     );
   }
   /**
@@ -786,7 +795,7 @@ class Transaction extends TransactionRequest {
    * @return {boolean}
    */
   isRetryableErrorCode_(errCode) {
-    return errCode === ABORTED || errCode === UNKNOWN;
+    return errCode === Transaction.ABORTED || errCode === Transaction.UNKNOWN;
   }
   /**
    * In the event that a Transaction is aborted and the deadline has been
@@ -800,7 +809,7 @@ class Transaction extends TransactionRequest {
   static createDeadlineError_(err) {
     const apiError = new common.util.ApiError({
       message: 'Deadline for Transaction exceeded.',
-      code: DEADLINE_EXCEEDED,
+      code: Transaction.DEADLINE_EXCEEDED,
       errors: [err],
     });
 
@@ -842,4 +851,4 @@ promisifyAll(Transaction);
  * @name module:@google-cloud/spanner.Transaction
  * @see Transaction
  */
-module.exports = Transaction;
+export {Transaction};

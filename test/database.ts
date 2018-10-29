@@ -58,11 +58,9 @@ class FakeGrpcServiceObject extends EventEmitter {
   }
 }
 
-class FakePartialResultStream {
-  calledWith_: IArguments;
-  constructor() {
-    this.calledWith_ = arguments;
-  }
+function fakePartialResultStream(...args) {
+  this.calledWith_ = args;
+  return this;
 }
 
 class FakeSession {
@@ -127,14 +125,14 @@ describe('Database', () => {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
-      './batch-transaction': FakeBatchTransaction,
-      './codec': fakeCodec,
-      './partial-result-stream': FakePartialResultStream,
-      './session-pool': FakeSessionPool,
-      './session': FakeSession,
-      './table': FakeTable,
-      './transaction-request': FakeTransactionRequest,
-    });
+      './batch-transaction': { BatchTransaction: FakeBatchTransaction },
+      './codec': {codec: fakeCodec},
+      './partial-result-stream': {partialResultStream: fakePartialResultStream},
+      './session-pool': {SessionPool: FakeSessionPool},
+      './session': {Session: FakeSession},
+      './table': {Table: FakeTable},
+      './transaction-request': {TransactionRequest: FakeTransactionRequest},
+    }).Database;
     DatabaseCached = extend({}, Database);
   });
 
@@ -1135,11 +1133,8 @@ describe('Database', () => {
 
       it('should cancel the request stream', done => {
         REQUEST_STREAM.cancel = done;
-
         const requestStream = database.makePooledStreamingRequest_(CONFIG);
-
         requestStream.emit('reading');
-
         setImmediate(() => {
           requestStream.abort();
         });
@@ -1263,7 +1258,7 @@ describe('Database', () => {
 
     it('should return PartialResultStream', () => {
       const stream = database.runStream(QUERY);
-      assert(stream instanceof FakePartialResultStream);
+      assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
     });
 
     it('should pass json, jsonOptions to PartialResultStream', () => {
@@ -1874,7 +1869,6 @@ describe('Database', () => {
 
     it('should return an instance of Session', () => {
       const session = database.session(NAME);
-
       assert(session instanceof FakeSession);
       assert.strictEqual(session.calledWith_[0], database);
       assert.strictEqual(session.calledWith_[1], NAME);

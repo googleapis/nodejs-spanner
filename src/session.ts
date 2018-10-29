@@ -24,7 +24,7 @@ const {ServiceObject} = require('@google-cloud/common-grpc');
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-const Transaction = require('./transaction');
+import {Transaction} from './transaction';
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -393,4 +393,4 @@ promisifyAll(Session, {
   exclude: ['delete', 'getMetadata', 'transaction'],
 });
 
-module.exports = Session;
+export {Session};

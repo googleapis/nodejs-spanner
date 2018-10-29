@@ -24,8 +24,7 @@ import mergeStream = require('merge-stream');
 import {split} from 'split-array-stream';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-
-const RowBuilder = require('./row-builder');
+import {RowBuilder} from './row-builder';
 
 /**
  * Rows returned from queries may be chunked, requiring them to be stitched
@@ -43,7 +42,7 @@ const RowBuilder = require('./row-builder');
  *     necessary to send to the API for additional requests.
  * @param {object} options Request options
  */
-function partialResultStream(requestFn, options) {
+function partialResultStream(requestFn: Function, options?) {
   let lastResumeToken;
   let activeRequestStream;
 
@@ -146,4 +145,4 @@ function partialResultStream(requestFn, options) {
     .pipe(userStream);
 }
 
-module.exports = partialResultStream;
+export {partialResultStream};

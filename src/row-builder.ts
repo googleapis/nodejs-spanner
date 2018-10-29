@@ -16,7 +16,7 @@
 
 'use strict';
 
-const codec = require('./codec');
+import {codec} from './codec';
 import {Service} from '@google-cloud/common-grpc';
 import * as is from 'is';
 
@@ -203,4 +203,4 @@ class RowBuilder {
   }
 }
 
-module.exports = RowBuilder;
+export {RowBuilder};

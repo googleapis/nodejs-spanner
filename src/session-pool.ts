@@ -810,4 +810,4 @@ class SessionPool extends EventEmitter {
   }
 }
 
-module.exports = SessionPool;
+export {SessionPool};

@@ -26,8 +26,9 @@ import * as pfy from '@google-cloud/promisify';
 
 function FakeGrpcService() {}
 
-function FakePartialResultStream() {
+function fakePartialResultStream() {
   this.calledWith_ = arguments;
+  return this;
 }
 
 let promisified = false;
@@ -58,9 +59,9 @@ describe('TransactionRequest', () => {
         Service: FakeGrpcService,
       },
       '@google-cloud/promisify': fakePfy,
-      './codec.js': fakeCodec,
-      './partial-result-stream': FakePartialResultStream,
-    });
+      './codec.js': { codec: fakeCodec },
+      './partial-result-stream': { partialResultStream: fakePartialResultStream },
+    }).TransactionRequest;
   });
 
   beforeEach(() => {
@@ -270,7 +271,7 @@ describe('TransactionRequest', () => {
     describe('PartialResultStream', () => {
       it('should return PartialResultStream', () => {
         const stream = transactionRequest.createReadStream(TABLE, QUERY);
-        assert(stream instanceof FakePartialResultStream);
+        assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
       });
 
       it('should make and return the correct request', done => {
@@ -487,12 +488,10 @@ describe('TransactionRequest', () => {
 
     it('should push the request to the queue if a transaction', done => {
       transactionRequest.transaction = true;
-
       transactionRequest.queue_ = function(mutation) {
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
-
       transactionRequest.deleteRows(TABLE, KEYS, assert.ifError);
     });
 
