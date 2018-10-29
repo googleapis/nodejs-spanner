@@ -42,9 +42,8 @@ const spanner = new Spanner({
 });
 
 describe('Spanner', () => {
-  before(() => tools.checkCredentials);
-
   before(async () => {
+    tools.checkCredentials();
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
 
@@ -68,10 +67,12 @@ describe('Spanner', () => {
       },
     });
 
-    await operation.promise();
-  });
+    try {
+      await operation.promise();
+    } catch (err) {
+      // Ignore error
+    }
 
-  before(async () => {
     const [instances] = await spanner.getInstances({
       filter: 'labels.gcloud-sample-tests:true',
     });
@@ -95,7 +96,7 @@ describe('Spanner', () => {
     });
   });
 
-  afterEach(async () => {
+  after(async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
 
@@ -119,14 +120,14 @@ describe('Spanner', () => {
       cwd
     );
     const output = results.stdout + results.stderr;
-    assert.deepStrictEqual(
-      output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    let regex = new RegExp(
+      `Waiting for operation on ${DATABASE_ID} to complete...`
     );
-    assert.deepStrictEqual(
-      output,
-      new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
+    assert.strictEqual(regex.test(output), true);
+    regex = new RegExp(
+      `Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`
     );
+    assert.strictEqual(regex.test(output), true);
   });
 
   // insert_data

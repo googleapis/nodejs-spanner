@@ -21,9 +21,22 @@ const assert = require('assert');
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
 describe('QuickStart', () => {
+  let output;
+  const write = process.stdout.write;
+
   before(() => tools.stubConsole);
 
-  afterEach(() => tools.restoreConsole);
+  beforeEach(() => {
+    output = '';
+    process.stdout.write = function(str) {
+      output = str;
+    };
+  });
+
+  afterEach(() => {
+    tools.restoreConsole;
+    process.stdout.write = write;
+  });
 
   it(`should query a table`, done => {
     const databaseMock = {
@@ -33,7 +46,8 @@ describe('QuickStart', () => {
         });
         setTimeout(() => {
           try {
-            //assert.deepStrictEqual(console.log.getCall(0).args, [`test`]);
+            const regex = new RegExp(`test`);
+            assert.strictEqual(regex.test(output), true);
             done();
           } catch (err) {
             done(err);
