@@ -72,6 +72,7 @@ describe('QuickStart', () => {
     assert.deepStrictEqual(spannerMock.instance.getCall(0).args, [
       `my-instance`,
     ]);
+
     assert.deepStrictEqual(instanceMock.database.getCall(0).args, [
       `my-database`,
     ]);
