@@ -38,12 +38,18 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-function FakeGrpcServiceObject() {
-  this.calledWith_ = arguments;
+class FakeGrpcServiceObject {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
-function FakeTransaction() {
-  this.calledWith_ = arguments;
+class FakeTransaction {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
 }
 
 describe('Session', () => {

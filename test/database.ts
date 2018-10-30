@@ -58,8 +58,8 @@ class FakeGrpcServiceObject extends EventEmitter {
   }
 }
 
-function fakePartialResultStream(...args) {
-  this.calledWith_ = args;
+function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
+  this.calledWith_ = arguments;
   return this;
 }
 
@@ -503,7 +503,7 @@ describe('Database', () => {
 
     it('should decorate the end() method', done => {
       const transaction: any = {};
-      const end = function(callback) {
+      const end = function(this: {}, callback) {
         assert.strictEqual(this, transaction);
         callback(); // done fn
       };

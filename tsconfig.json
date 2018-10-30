@@ -6,21 +6,12 @@
     "allowJs": true,
     "declaration": false,
     "skipLibCheck": true,
-    "noImplicitAny": false,
-    "noImplicitThis": false
+    "noImplicitAny": false
   },
   "include": [
     "src/*.ts",
-    "src/*/js",
-    "src/**/*.ts",
     "src/**/*.js",
     "test/*.ts",
-    "test/*.js",
-    "test/**/*.ts",
-    "test/**/*.js",
     "system-test/*.ts",
-    "system-test/*.js",
-    "system-test/**/*.ts",
-    "system-test/**/*.js"
   ]
 }
