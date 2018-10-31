@@ -52,8 +52,7 @@ describe('Spanner', () => {
     async.series(
       [
         deleteTestResources,
-
-        function(next) {
+        (next) => {
           instance.create(INSTANCE_CONFIG, execAfterOperationComplete(next));
         },
       ],
@@ -82,7 +81,7 @@ describe('Spanner', () => {
           {
             sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
             params: {
-              id: id,
+              id,
             },
           },
           (err, rows, readResp) => {
@@ -912,7 +911,7 @@ describe('Spanner', () => {
     before(done => {
       async.series(
         [
-          function(next) {
+          (next) => {
             database.create(
               {
                 schema: `
@@ -924,7 +923,7 @@ describe('Spanner', () => {
               execAfterOperationComplete(next)
             );
           },
-          function(next) {
+          (next) => {
             session.create(next);
           },
         ],
@@ -1037,7 +1036,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          let rows: {}[] = [];
+          let rows: Array<{}> = [];
 
           table
             .createReadStream({
@@ -1049,6 +1048,7 @@ describe('Spanner', () => {
               rows.push(row);
             })
             .on('end', () => {
+              // tslint:disable-next-line no-any
               rows = rows.map(x => (x as any).toJSON());
 
               assert.deepStrictEqual(rows, [
@@ -1076,7 +1076,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          const rows: {}[] = [];
+          const rows: Array<{}> = [];
 
           table
             .createReadStream({
@@ -1111,6 +1111,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
+          // tslint:disable-next-line no-any
           const rows: any[] = [];
 
           table
@@ -1146,7 +1147,7 @@ describe('Spanner', () => {
 
           table.deleteRows([id], err => {
             assert.ifError(err);
-
+            // tslint:disable-next-line no-any
             const rows: any[] = [];
 
             table
@@ -1190,6 +1191,7 @@ describe('Spanner', () => {
           table.deleteRows([id, id2], err => {
             assert.ifError(err);
 
+            // tslint:disable-next-line no-any
             const rows: any[] = [];
 
             table
@@ -1245,7 +1247,7 @@ describe('Spanner', () => {
         })
         .then(() => {
           return table.read({
-            keys: keys,
+            keys,
             columns: ['SingerId', 'Name'],
           });
         })
@@ -1258,7 +1260,7 @@ describe('Spanner', () => {
         })
         .then(() => {
           return table.read({
-            keys: keys,
+            keys,
             columns: ['SingerId', 'Name'],
           });
         })
@@ -1403,7 +1405,7 @@ describe('Spanner', () => {
         Int: INT,
         Info: INFO,
         Created: CREATED,
-        DOB: DOB,
+        DOB,
         Accents: ACCENTS,
         PhoneNumbers: PHONE_NUMBERS,
         HasGear: HAS_GEAR,
@@ -1480,7 +1482,7 @@ describe('Spanner', () => {
             options
           )
           .on('error', done)
-          .once('data', function(row_) {
+          .once('data', row_ => {
             row = row_;
             stream.end();
           })
@@ -2704,7 +2706,7 @@ describe('Spanner', () => {
         function string() {
           const offset = Math.floor(Math.random() * 500);
 
-          return Array(25000 + offset)
+          return new Array(25000 + offset)
             .fill('The quick brown fox jumps over the lazy dog.')
             .join('\n');
         }
@@ -2871,7 +2873,7 @@ describe('Spanner', () => {
           })
           .then(onPromiseOperationComplete)
           .then(() => {
-            const data: {}[] = [];
+            const data: Array<{}> = [];
 
             for (let i = 0; i < 15; ++i) {
               data.push({
@@ -2899,7 +2901,7 @@ describe('Spanner', () => {
             ],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 0);
           },
@@ -2910,7 +2912,7 @@ describe('Spanner', () => {
             keys: ['k1'],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 1);
 
@@ -2926,7 +2928,7 @@ describe('Spanner', () => {
             keys: ['k999'],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 0);
           },
@@ -2942,7 +2944,7 @@ describe('Spanner', () => {
             ],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
 
             assert.strictEqual(rows.length, 3);
@@ -2967,7 +2969,7 @@ describe('Spanner', () => {
             ],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 1);
 
@@ -2987,7 +2989,7 @@ describe('Spanner', () => {
             ],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
 
@@ -3010,7 +3012,7 @@ describe('Spanner', () => {
             ],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 3);
 
@@ -3034,7 +3036,7 @@ describe('Spanner', () => {
             ],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
 
@@ -3058,7 +3060,7 @@ describe('Spanner', () => {
             columns: ALL_COLUMNS,
             limit: 2,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
           },
@@ -3075,7 +3077,7 @@ describe('Spanner', () => {
             columns: ALL_COLUMNS,
             limit: 0,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 5);
           },
@@ -3086,7 +3088,7 @@ describe('Spanner', () => {
             keys: ['k3', 'k5', 'k7'],
             columns: ALL_COLUMNS,
           },
-          assertions: function(err, rows) {
+          assertions(err, rows) {
             assert.ifError(err);
             assert.strictEqual(rows.length, 3);
 
@@ -3124,6 +3126,7 @@ describe('Spanner', () => {
           }
 
           if (query.ranges) {
+            // tslint:disable-next-line no-any
             query.ranges = (query as any).ranges.map(range_ => {
               const range = extend({}, range_);
               Object.keys(range).forEach(bound => {
@@ -3207,7 +3210,7 @@ describe('Spanner', () => {
     before(done => {
       async.series(
         [
-          function(next) {
+          (next) => {
             database.create(
               {
                 schema: `
@@ -3306,6 +3309,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
+          // tslint:disable-next-line no-any
           let rows: any[] = [];
 
           table
@@ -3374,6 +3378,7 @@ describe('Spanner', () => {
     const database = instance.database(generateName('database'));
     const table = database.table('TxnTable');
 
+    // tslint:disable-next-line no-any
     const records: any[] = [];
 
     before(() => {
@@ -3390,6 +3395,7 @@ describe('Spanner', () => {
         })
         .then(onPromiseOperationComplete)
         .then(() => {
+          // tslint:disable-next-line no-any
           const data: any[] = [];
 
           for (let i = 0; i < 5; i++) {
@@ -3715,7 +3721,7 @@ describe('Spanner', () => {
             (err, row, stats) => {
               assert.ifError(err);
 
-              const rowCount = parseInt(stats[stats.rowCount], 10);
+              const rowCount = Math.floor(stats[stats.rowCount]);
               assert.strictEqual(rowCount, 1);
 
               transaction.rollback(done);
@@ -3831,7 +3837,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('should handle using both dml and insert methods', function(done) {
+      it('should handle using both dml and insert methods', (done) => {
         const str = 'dml+mutation';
 
         database.runTransaction((err, transaction) => {
@@ -3893,13 +3899,13 @@ describe('Spanner', () => {
       it.skip('should execute a long running pdml statement', () => {
         const count = 10000;
 
-        const tableData = Array(count)
+        const tableData = new Array(count)
           .fill(0)
           .map((_, i) => {
             return {Key: `longpdml${i}`, StringValue: 'a'};
           });
 
-        const str = Array(1000)
+        const str = new Array(1000)
           .fill('b')
           .join('\n');
 
@@ -4322,6 +4328,7 @@ function onPromiseOperationComplete(data) {
 }
 
 function execAfterOperationComplete(callback) {
+  // tslint:disable-next-line only-arrow-functions
   return function(err) {
     // arguments = [..., op, apiResponse]
     const operation = arguments[arguments.length - 2];
@@ -4354,6 +4361,7 @@ function deleteTestInstances(done) {
         5,
         (instance, callback) => {
           setTimeout(() => {
+            // tslint:disable-next-line no-any
             (instance as any).delete(callback);
           }, 500); // Delay allows the instance and its databases to fully clear.
         },
@@ -4374,6 +4382,6 @@ function wait(time) {
 }
 
 function fromProtoToDate(obj) {
-  const milliseconds = parseInt(obj.nanos, 10) / 1e6;
-  return new Date(parseInt(obj.seconds, 10) * 1000 + milliseconds);
+  const milliseconds = Math.floor(obj.nanos) / 1e6;
+  return new Date(Math.floor(obj.seconds) * 1000 + milliseconds);
 }

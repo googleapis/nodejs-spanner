@@ -22,7 +22,7 @@ import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'BatchTransaction') {
       return;
     }
@@ -34,9 +34,9 @@ const fakePfy = extend({}, pfy, {
 // tslint:disbale-next-line no-any
 const fakeCodec: any = {
   encode: util.noop,
-  Int: function() {},
-  Float: function() {},
-  SpannerDate: function() {},
+  Int() {},
+  Float() {},
+  SpannerDate() {},
 };
 
 class FakeTransaction {

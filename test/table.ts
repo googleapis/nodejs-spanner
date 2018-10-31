@@ -26,8 +26,8 @@ import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
-    if (Class.name !== 'Table') {
+  promisifyAll(klass, options) {
+    if (klass.name !== 'Table') {
       return;
     }
     promisified = true;
@@ -38,16 +38,18 @@ const fakePfy = extend({}, pfy, {
 function FakeTransactionRequest() {}
 
 describe('Table', () => {
-  let Table;
-  let TableCached;
+  // tslint:disable-next-line no-any variable-name
+  let Table: any;
+  // tslint:disable-next-line no-any variable-name
+  let TableCached: any;
   let table;
 
   const DATABASE = {
     api: {},
-    makePooledRequest_: function() {
+    makePooledRequest_() {
       return util.noop;
     },
-    makePooledStreamingRequest_: function() {
+    makePooledStreamingRequest_() {
       return util.noop;
     },
   };
@@ -102,7 +104,7 @@ describe('Table', () => {
       const schema = 'schema';
 
       table.database = {
-        createTable: function(schema_, callback) {
+        createTable(schema_, callback) {
           assert.strictEqual(schema_, schema);
           callback(); // done()
         },
@@ -119,7 +121,7 @@ describe('Table', () => {
       const parentMethodReturnValue = {};
 
       FakeTransactionRequest.prototype = {
-        createReadStream: function(name, query_) {
+        createReadStream(name, query_) {
           assert.strictEqual(this, table);
           assert.strictEqual(name, table.name);
           assert.deepStrictEqual(query_, {
@@ -137,7 +139,7 @@ describe('Table', () => {
       const QUERY = ['a', 'b'];
 
       FakeTransactionRequest.prototype = {
-        createReadStream: function(name, query) {
+        createReadStream(name, query) {
           assert.strictEqual(query.keys, QUERY);
           done();
         },
@@ -160,7 +162,7 @@ describe('Table', () => {
       };
 
       FakeTransactionRequest.prototype = {
-        createReadStream: function(name, query) {
+        createReadStream(name, query) {
           (FakeTransactionRequest as any).formatTimestampOptions_ = formatTimestampOptions;
 
           assert.strictEqual(
@@ -211,7 +213,7 @@ describe('Table', () => {
       const parentMethodReturnValue = {};
 
       FakeTransactionRequest.prototype = {
-        deleteRows: function(name, keys_, callback_) {
+        deleteRows(name, keys_, callback_) {
           assert.strictEqual(this, table);
           assert.strictEqual(name, table.name);
           assert.strictEqual(keys_, keys);

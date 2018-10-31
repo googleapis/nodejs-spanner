@@ -60,7 +60,7 @@ function partialResultStream(requestFn: Function, options?) {
 
   const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
-    isCheckpointFn: function(row) {
+    isCheckpointFn(row) {
       return is.defined(row.resumeToken);
     },
   });
@@ -105,8 +105,8 @@ function partialResultStream(requestFn: Function, options?) {
       split(formattedRows, userStream).then(() => next());
     })
   );
-
-  (userStream as any).abort = function() {
+  // tslint:disable-next-line no-any
+  (userStream as any).abort = () => {
     if (activeRequestStream) {
       activeRequestStream.abort();
     }
@@ -114,6 +114,7 @@ function partialResultStream(requestFn: Function, options?) {
 
   userStream.once('reading', makeRequest);
 
+  // tslint:disable-next-line no-any
   return (requestsStream as any)
     .intercept('error', err => {
       if (lastResumeToken) {

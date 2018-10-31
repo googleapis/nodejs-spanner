@@ -33,7 +33,7 @@ function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'TransactionRequest') {
       return;
     }

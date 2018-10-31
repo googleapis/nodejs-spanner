@@ -109,19 +109,19 @@ describe('SessionPool', () => {
 
     const fakeTrace = [
       {
-        getFunctionName: function() {
+        getFunctionName() {
           return fakeFunction;
         },
-        getMethodName: function() {
+        getMethodName() {
           return fakeMethod;
         },
-        getFileName: function() {
+        getFileName() {
           return fakeFileName;
         },
-        getLineNumber: function() {
+        getLineNumber() {
           return fakeLineNumber;
         },
-        getColumnNumber: function() {
+        getColumnNumber() {
           return fakeColumnNumber;
         },
       },
@@ -1471,7 +1471,7 @@ describe('SessionPool', () => {
       let unreffed = false;
 
       const fakeHandle = {
-        unref: function() {
+        unref() {
           unreffed = true;
         },
       };
@@ -1503,7 +1503,7 @@ describe('SessionPool', () => {
       let unreffed = false;
 
       const fakeHandle = {
-        unref: function() {
+        unref() {
           unreffed = true;
         },
       };

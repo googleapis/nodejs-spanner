@@ -37,7 +37,7 @@ class RowBuilder {
     this.chunks = [];
     this.rows = [[]];
     Object.defineProperty(this, 'currentRow', {
-      get: function() {
+      get() {
         return this.rows[this.rows.length - 1];
       },
     });
@@ -136,6 +136,7 @@ class RowBuilder {
   static getValue(obj) {
     let value = obj;
     if (obj && obj.kind) {
+      // tslint:disable-next-line no-any
       value = (Service as any).decodeValue_(obj);
     }
     if (is.object(value) && value.values) {
@@ -181,7 +182,7 @@ class RowBuilder {
     head = RowBuilder.getValue(head);
     tail = RowBuilder.getValue(tail);
     const isMergeable = !is.null(head) && !is.null(tail) && code !== 'FLOAT64';
-    const merged: {}[] = [];
+    const merged: Array<{}> = [];
     let mergedItems;
     if (code === 'ARRAY') {
       const arrayType = type.arrayElementType;

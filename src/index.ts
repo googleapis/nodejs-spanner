@@ -173,7 +173,7 @@ class Spanner extends Service {
 static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
 
   constructor(options) {
-    const scopes: {}[] = [];
+    const scopes: Array<{}> = [];
     const clientClasses = [
       gapic.v1.DatabaseAdminClient,
       gapic.v1.InstanceAdminClient,
@@ -361,7 +361,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
       {
         client: 'InstanceAdminClient',
         method: 'createInstance',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, operation, resp) => {
         if (err) {
@@ -466,13 +466,15 @@ this.getInstancesStream = paginator.streamify('getInstances');
       {
         client: 'InstanceAdminClient',
         method: 'listInstances',
-        reqOpts: reqOpts,
+        reqOpts,
         gaxOpts: query,
       },
+      // tslint:disable-next-line only-arrow-functions
       function(err, instances) {
         if (instances) {
           arguments[1] = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
+            // tslint:disable-next-line no-any
             (instanceInstance as any).metadata = instance;
             return instanceInstance;
           });
@@ -567,7 +569,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
       {
         client: 'InstanceAdminClient',
         method: 'listInstanceConfigs',
-        reqOpts: reqOpts,
+        reqOpts,
         gaxOpts: query,
       },
       callback
@@ -614,7 +616,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
     return this.requestStream({
       client: 'InstanceAdminClient',
       method: 'listInstanceConfigsStream',
-      reqOpts: reqOpts,
+      reqOpts,
       gaxOpts: query,
     });
   }
@@ -704,6 +706,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
    * @param {function} [callback] Callback function.
    * @returns {Promise}
    */
+  // tslint:disable-next-line no-any
   request(config, callback): void|Promise<any> {
     if (is.fn(callback)) {
       this.prepareGapicRequest_(config, (err, requestFn) => {

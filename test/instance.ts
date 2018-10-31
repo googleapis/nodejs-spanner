@@ -25,7 +25,7 @@ import * as pfy from '@google-cloud/promisify';
 
 const fakePaginator = {
   paginator: {
-    streamify: function(methodName) {
+    streamify(methodName) {
       return methodName;
     },
   },
@@ -33,7 +33,7 @@ const fakePaginator = {
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'Instance') {
       return;
     }
@@ -137,7 +137,7 @@ describe('Instance', () => {
     it('should inherit from ServiceObject', done => {
       const options = {};
       const spannerInstance = extend({}, SPANNER, {
-        createInstance: function(name, options_, callback) {
+        createInstance(name, options_, callback) {
           assert.strictEqual(name, instance.formattedName_);
           assert.strictEqual(options_, options);
           callback(); // done()
@@ -243,7 +243,7 @@ describe('Instance', () => {
         const poolOptions = {};
 
         const options = extend({}, OPTIONS, {
-          poolOptions: poolOptions,
+          poolOptions,
         });
 
         instance.request = function(config, callback) {
@@ -372,7 +372,7 @@ describe('Instance', () => {
       let closed = false;
 
       instance.databases_.set('key', {
-        close: function() {
+        close() {
           closed = true;
           return Promise.resolve();
         },
@@ -389,7 +389,7 @@ describe('Instance', () => {
 
     it('should ignore closing errors', done => {
       instance.databases_.set('key', {
-        close: function() {
+        close() {
           return Promise.reject(new Error('err'));
         },
       });
@@ -503,7 +503,7 @@ describe('Instance', () => {
 
       const OPERATION = {
         listeners: {},
-        on: function(eventName, callback) {
+        on(eventName, callback) {
           OPERATION.listeners[eventName] = callback;
           return OPERATION;
         },

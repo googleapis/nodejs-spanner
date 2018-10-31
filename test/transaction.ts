@@ -26,6 +26,7 @@ import * as through from 'through2';
 import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 
+// tslint:disable-next-line no-any variable-name
 const FakeRetryInfo: any = {
   decode: util.noop,
 };
@@ -47,18 +48,18 @@ const fakeGax = {
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
-    if (Class.name !== 'Transaction') {
+  promisifyAll(klass, options) {
+    if (klass.name !== 'Transaction') {
       return;
     }
     promisified = true;
     assert.strictEqual(options, undefined);
-    pfy.promisifyAll(Class, options);
+    pfy.promisifyAll(klass, options);
   },
 });
 
 class FakeGrpcService {
-
+  static objToStruct_(){}
 }
 
 function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
@@ -94,8 +95,10 @@ const fakeConfig = {
 };
 
 describe('Transaction', () => {
-  let TransactionCached;
-  let Transaction;
+  // tslint:disable-next-line no-any variable-name
+  let TransactionCached: any;
+  // tslint:disable-next-line no-any variable-name
+  let Transaction: any;
   let transaction;
 
   const SESSION = {
@@ -122,7 +125,7 @@ describe('Transaction', () => {
   });
 
   beforeEach(() => {
-    (FakeGrpcService as any).objToStruct_ = util.noop;
+    FakeGrpcService.objToStruct_ = util.noop;
     FakeRetryInfo.decode = util.noop;
 
     extend(Transaction, TransactionCached);
@@ -163,12 +166,9 @@ describe('Transaction', () => {
     });
 
     it('should inherit from TransactionRequest', () => {
-      const OPTIONS: any= {};
-
+      const OPTIONS = {};
       transaction = new Transaction(SESSION, OPTIONS);
-
       assert(transaction instanceof FakeTransactionRequest);
-      assert(transaction.calledWith_[0], OPTIONS);
     });
 
     describe('timeout_', () => {
@@ -219,7 +219,6 @@ describe('Transaction', () => {
         formattedError.message,
         'Deadline for Transaction exceeded. - Transaction aborted.'
       );
-      assert.strictEqual(typeof formattedError, typeof (util as any).ApiError());
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });
@@ -230,8 +229,9 @@ describe('Transaction', () => {
       const fakeError = new Error('err');
       const fakeRetryInfo = Buffer.from('hi');
 
+      // tslint:disable-next-line no-any
       (fakeError as any).metadata = {
-        get: function(key) {
+        get(key) {
           assert.strictEqual(key, 'google.rpc.retryinfo-bin');
           return [fakeRetryInfo];
         },
@@ -240,13 +240,13 @@ describe('Transaction', () => {
       const seconds = 25;
       const nanos = 100;
 
-      FakeRetryInfo.decode = function(retryInfo) {
+      FakeRetryInfo.decode = (retryInfo) => {
         assert.strictEqual(retryInfo, fakeRetryInfo);
 
         return {
           retryDelay: {
             seconds: {
-              toNumber: function() {
+              toNumber() {
                 return seconds;
               },
             },
@@ -263,9 +263,9 @@ describe('Transaction', () => {
 
     it('should create backoff from counter when delay is absent', () => {
       const fakeError = new Error('err');
-
+      // tslint:disable-next-line no-any
       (fakeError as any).metadata = {
-        get: function() {
+        get() {
           return [];
         },
       };
@@ -273,10 +273,7 @@ describe('Transaction', () => {
       const random = Math.random();
       const _random = Math.random;
 
-      global.Math.random = function() {
-        return random;
-      };
-
+      global.Math.random = () => random;
       const attempts = 3;
       const expectedDelay =
         Math.pow(2, attempts) * 1000 + Math.floor(random * 1000);
@@ -305,7 +302,7 @@ describe('Transaction', () => {
       const transaction = new Transaction(SESSION, OPTIONS);
 
       transaction.readOnly = true;
-      transaction.request = function(config) {
+      transaction.request = (config) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'beginTransaction');
         assert.deepStrictEqual(config.reqOpts, EXPECTED_REQ_OPTS);
@@ -317,7 +314,7 @@ describe('Transaction', () => {
 
     it('should not require options', done => {
       transaction.readOnly = false;
-      transaction.request = function(config) {
+      transaction.request = (config) => {
         assert.deepStrictEqual(config.reqOpts, {
           options: {
             readWrite: {},
@@ -332,7 +329,7 @@ describe('Transaction', () => {
     it('should send the partitioned options', done => {
       transaction.partitioned = true;
 
-      transaction.request = function(config) {
+      transaction.request = (config) => {
         assert.deepStrictEqual(config.reqOpts, {
           options: {
             partitionedDml: {},
@@ -348,7 +345,7 @@ describe('Transaction', () => {
     it('should execute callback with error', done => {
       const error = new Error('Error.');
 
-      transaction.request = function(config, callback) {
+      transaction.request = (config, callback) => {
         callback(error);
       };
 
@@ -364,7 +361,7 @@ describe('Transaction', () => {
       };
 
       beforeEach(() => {
-        transaction.request = function(config, callback) {
+        transaction.request = (config, callback) => {
           callback(null, API_RESPONSE);
         };
       });
@@ -413,7 +410,7 @@ describe('Transaction', () => {
         const fakeProtoTimestamp = {};
         const fakeDate = new Date();
 
-        transaction.request = function(config, callback) {
+        transaction.request = (config, callback) => {
           callback(
             null,
             extend(
@@ -425,7 +422,8 @@ describe('Transaction', () => {
           );
         };
 
-        (FakeTransactionRequest as any).fromProtoTimestamp_ = function(value) {
+        // tslint:disable-next-line no-any
+        (FakeTransactionRequest as any).fromProtoTimestamp_ = (value) => {
           assert.strictEqual(value, fakeProtoTimestamp);
           return fakeDate;
         };
@@ -457,7 +455,7 @@ describe('Transaction', () => {
     it('should make the correct request with an ID', done => {
       transaction.id = 'transaction-id';
 
-      transaction.request = function(config) {
+      transaction.request = (config) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'commit');
         assert.deepStrictEqual(config.reqOpts, {
@@ -474,7 +472,7 @@ describe('Transaction', () => {
     it('should make the correct request without an ID', done => {
       delete transaction.id;
 
-      transaction.request = function(config) {
+      transaction.request = (config) => {
         assert.deepStrictEqual(config.reqOpts, {
           singleUseTransaction: {
             readWrite: {},
@@ -492,7 +490,7 @@ describe('Transaction', () => {
       const API_RESPONSE = {};
 
       beforeEach(() => {
-        transaction.request = function(config, callback) {
+        transaction.request = (config, callback) => {
           callback(ERROR, API_RESPONSE);
         };
       });
@@ -510,7 +508,7 @@ describe('Transaction', () => {
       const API_RESPONSE = {};
 
       beforeEach(() => {
-        transaction.request = function(config, callback) {
+        transaction.request = (config, callback) => {
           callback(null, API_RESPONSE);
         };
       });
@@ -547,32 +545,25 @@ describe('Transaction', () => {
 
     it('should empty the queue', () => {
       transaction.queuedMutations_ = [{}, {}];
-
       transaction.end();
-
       assert.strictEqual(transaction.queuedMutations_.length, 0);
     });
 
     it('should nullify the run function', () => {
-      transaction.runFn_ = function() {};
-
+      transaction.runFn_ = () => {};
       transaction.end();
-
       assert.strictEqual(transaction.runFn_, null);
     });
 
     it('should reset the attempts property', () => {
       transaction.attempts_ = 100;
       transaction.end();
-
       assert.strictEqual(transaction.attempts_, 0);
     });
 
     it('should delete the ID', () => {
       transaction.id = 'transaction-id';
-
       transaction.end();
-
       assert.strictEqual(transaction.id, undefined);
     });
 
@@ -584,11 +575,8 @@ describe('Transaction', () => {
   describe('queue_', () => {
     it('should push a mutation object into the queue array', () => {
       const mutation = {};
-
       assert.deepStrictEqual(transaction.queuedMutations_, []);
-
       transaction.queue_(mutation);
-
       assert.strictEqual(transaction.queuedMutations_[0], mutation);
     });
   });
@@ -602,11 +590,10 @@ describe('Transaction', () => {
         },
       };
 
-      transaction.session.request = function(config_) {
+      transaction.session.request = (config_) => {
         const expectedReqOpts = extend({}, config.reqOpts, {
           session: transaction.session.formattedName_,
         });
-
         assert.deepStrictEqual(config_.reqOpts, expectedReqOpts);
         done();
       };
@@ -621,7 +608,7 @@ describe('Transaction', () => {
         reqOpts: {},
       };
 
-      transaction.session.request = function(config_, callback) {
+      transaction.session.request = (config_, callback) => {
         callback(null, resp);
       };
 
@@ -645,13 +632,10 @@ describe('Transaction', () => {
       });
 
       beforeEach(() => {
-        transaction.session.request = function(config, callback) {
+        transaction.session.request = (config, callback) => {
           callback(abortedError, resp);
         };
-
-        Transaction.getRetryDelay_ = function() {
-          return fakeDelay;
-        };
+        Transaction.getRetryDelay_ = () => fakeDelay;
       });
 
       after(() => {
@@ -659,13 +643,13 @@ describe('Transaction', () => {
       });
 
       it('should pass error code to isRetryableErrorCode', done => {
-        transaction.runFn_ = function() {};
+        transaction.runFn_ = () => {};
 
         const config = {
           reqOpts: {},
         };
 
-        transaction.isRetryableErrorCode_ = function(code) {
+        transaction.isRetryableErrorCode_ = (code: number) => {
           assert.strictEqual(code, abortedError.code);
           done();
         };
@@ -676,23 +660,23 @@ describe('Transaction', () => {
       it('should retry the txn if abort occurs', done => {
         const attempts_ = 123;
 
-        Transaction.getRetryDelay_ = function(err, attempts) {
+        Transaction.getRetryDelay_ = (err: Error, attempts: number) => {
           assert.strictEqual(err, abortedError);
           assert.strictEqual(attempts, attempts_);
           return fakeDelay;
         };
 
-        transaction.retry_ = function(delay) {
+        transaction.retry_ = (delay: number) => {
           assert.strictEqual(delay, fakeDelay);
           done();
         };
 
-        transaction.shouldRetry_ = function(err) {
+        transaction.shouldRetry_ = (err: Error) => {
           assert.strictEqual(err, abortedError);
           return true;
         };
 
-        transaction.runFn_ = function() {
+        transaction.runFn_ = () => {
           done(new Error('Should not have been called.'));
         };
 
@@ -704,11 +688,11 @@ describe('Transaction', () => {
       });
 
       it('should return a deadline error if not retrying', done => {
-        transaction.retry_ = function() {
+        transaction.retry_ = () => {
           done(new Error('Should not have been called.'));
         };
 
-        transaction.shouldRetry_ = function(err) {
+        transaction.shouldRetry_ = (err: Error) => {
           assert.strictEqual(err, abortedError);
           return false;
         };
@@ -716,12 +700,12 @@ describe('Transaction', () => {
         const createDeadlineError = Transaction.createDeadlineError_;
         const deadlineError = {};
 
-        Transaction.createDeadlineError_ = function(err) {
+        Transaction.createDeadlineError_ = (err: Error) => {
           assert.strictEqual(err, abortedError);
           return deadlineError;
         };
 
-        transaction.runFn_ = function(err) {
+        transaction.runFn_ = (err: Error) => {
           assert.strictEqual(err, deadlineError);
 
           Transaction.createDeadlineError_ = createDeadlineError;
@@ -755,7 +739,7 @@ describe('Transaction', () => {
         },
       };
 
-      transaction.session.requestStream = function(config_) {
+      transaction.session.requestStream = (config_) => {
         const expectedReqOpts = extend({}, config.reqOpts, {
           session: transaction.session.formattedName_,
         });
@@ -778,10 +762,10 @@ describe('Transaction', () => {
 
       beforeEach(() => {
         fakeStream = through.obj();
-        transaction.session.requestStream = function() {
+        transaction.session.requestStream = () => {
           return fakeStream;
         };
-        transaction.runFn_ = function() {};
+        transaction.runFn_ = () => {};
       });
 
       it('should pipe the request stream to the user stream', done => {
@@ -804,7 +788,7 @@ describe('Transaction', () => {
         const error = new Error('ohnoes');
         const userStream = transaction.requestStream(config);
 
-        userStream.destroy = function(err) {
+        userStream.destroy = (err: Error) => {
           assert.strictEqual(err, error);
           done();
         };
@@ -816,12 +800,12 @@ describe('Transaction', () => {
         const error = {code: 'sentinel'};
         const userStream = transaction.requestStream(config);
 
-        transaction.isRetryableErrorCode_ = function(code) {
+        transaction.isRetryableErrorCode_ = (code: number) => {
           assert.strictEqual(code, error.code);
           done();
         };
 
-        userStream.destroy = function() {};
+        userStream.destroy = () => {};
 
         fakeStream.emit('error', error);
       });
@@ -832,14 +816,14 @@ describe('Transaction', () => {
         const attempts_ = 321;
         const getRetryDelay = Transaction.getRetryDelay_;
 
-        Transaction.getRetryDelay_ = function(err, attempts) {
+        Transaction.getRetryDelay_ = (err: Error, attempts: number) => {
           assert.strictEqual(err, error);
           assert.strictEqual(attempts, attempts_);
           Transaction.getRetryDelay_ = getRetryDelay;
           return fakeDelay;
         };
 
-        transaction.shouldRetry_ = function(err) {
+        transaction.shouldRetry_ = (err: Error) => {
           assert.strictEqual(err, error);
           return true;
         };
@@ -847,7 +831,7 @@ describe('Transaction', () => {
         transaction.runFn_ = done; // should not be called
         transaction.attempts_ = attempts_;
 
-        transaction.retry_ = function(delay) {
+        transaction.retry_ = (delay: number) => {
           assert.strictEqual(delay, fakeDelay);
           assert(stream._destroyed);
           done();
@@ -864,20 +848,20 @@ describe('Transaction', () => {
         const fakeDelay = 123;
         const getRetryDelay = Transaction.getRetryDelay_;
 
-        Transaction.getRetryDelay_ = function(err) {
+        Transaction.getRetryDelay_ = (err: Error) => {
           assert.strictEqual(err, error);
           Transaction.getRetryDelay_ = getRetryDelay;
           return fakeDelay;
         };
 
-        transaction.shouldRetry_ = function(err) {
+        transaction.shouldRetry_ = (err: Error) => {
           assert.strictEqual(err, error);
           return true;
         };
 
         transaction.runFn_ = done; // should not be called
 
-        transaction.retry_ = function(delay) {
+        transaction.retry_ = (delay: number) => {
           assert.strictEqual(delay, fakeDelay);
           assert(stream._destroyed);
           done();
@@ -894,19 +878,19 @@ describe('Transaction', () => {
         const deadlineError = {};
         const createDeadlineError = Transaction.createDeadlineError_;
 
-        Transaction.createDeadlineError_ = function(err) {
+        Transaction.createDeadlineError_ = (err: Error) => {
           assert.strictEqual(err, error);
           return deadlineError;
         };
 
-        transaction.shouldRetry_ = function(err) {
+        transaction.shouldRetry_ = (err: Error) => {
           assert.strictEqual(err, error);
           return false;
         };
 
         transaction.retry_ = done; // should not be called
 
-        transaction.runFn_ = function(err) {
+        transaction.runFn_ = (err: Error) => {
           assert.strictEqual(err, deadlineError);
           assert(stream._destroyed);
 
@@ -935,7 +919,7 @@ describe('Transaction', () => {
     });
 
     it('should make the correct request', done => {
-      transaction.request = function(config) {
+      transaction.request = (config) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'rollback');
         assert.deepStrictEqual(config.reqOpts, {
@@ -952,11 +936,11 @@ describe('Transaction', () => {
       const error = new Error('Error.');
       const apiResponse = {};
 
-      transaction.request = function(config, callback) {
+      transaction.request = (config, callback) => {
         callback(error, apiResponse);
       };
 
-      transaction.end = function() {
+      transaction.end = () => {
         done(new Error('Should not be destroyed.'));
       };
 
@@ -970,12 +954,12 @@ describe('Transaction', () => {
     it('should destroy the transaction if rollback worked', done => {
       const apiResponse = {};
 
-      transaction.request = function(config, callback) {
+      transaction.request = (config, callback) => {
         callback(null, apiResponse);
       };
 
       let destroyed = false;
-      transaction.end = function() {
+      transaction.end = () => {
         destroyed = true;
       };
 
@@ -995,7 +979,7 @@ describe('Transaction', () => {
       const rows = [{}, {}];
       const fakeStats = {};
 
-      transaction.runStream = function(query_) {
+      transaction.runStream = (query_: {}) => {
         assert.strictEqual(query_, query);
 
         const stream = through.obj();
@@ -1022,7 +1006,7 @@ describe('Transaction', () => {
     it('should execute callback with error', done => {
       const error = new Error('Error.');
 
-      transaction.runStream = function() {
+      transaction.runStream = () => {
         const stream = through.obj();
 
         setImmediate(() => {
@@ -1043,17 +1027,14 @@ describe('Transaction', () => {
 
       const rows = [{}, {}];
 
-      transaction.runStream = function(query_) {
+      transaction.runStream = (query_: {}) => {
         assert.strictEqual(query_, query);
-
         const stream = through.obj();
-
         setImmediate(() => {
           split(rows, stream).then(() => {
             stream.end();
           });
         });
-
         return stream;
       };
 
@@ -1110,12 +1091,12 @@ describe('Transaction', () => {
     });
 
     it('should accept a query string', done => {
-      fakeCodec.encodeQuery = function(query) {
+      fakeCodec.encodeQuery = (query) => {
         assert.strictEqual(query.sql, QUERY.sql);
         return ENCODED_QUERY;
       };
 
-      transaction.requestStream = function(options) {
+      transaction.requestStream = (options) => {
         assert.deepStrictEqual(options.reqOpts, EXPECTED_REQ_OPTS);
         done();
       };
@@ -1128,7 +1109,7 @@ describe('Transaction', () => {
     it('should not require a transaction ID', done => {
       delete transaction.id;
 
-      transaction.requestStream = function(options) {
+      transaction.requestStream = (options) => {
         const expectedReqOpts = extend(true, {}, EXPECTED_REQ_OPTS, {
           transaction: {
             singleUse: {
@@ -1138,9 +1119,7 @@ describe('Transaction', () => {
         });
 
         delete expectedReqOpts.transaction.id;
-
         assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
-
         done();
       };
 
@@ -1153,7 +1132,7 @@ describe('Transaction', () => {
       delete transaction.id;
       delete transaction.options;
 
-      transaction.requestStream = function(options) {
+      transaction.requestStream = (options) => {
         const expectedReqOpts = extend(true, {}, EXPECTED_REQ_OPTS, {
           transaction: {
             singleUse: {
@@ -1161,11 +1140,8 @@ describe('Transaction', () => {
             },
           },
         });
-
         delete expectedReqOpts.transaction.id;
-
         assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
-
         done();
       };
 
@@ -1182,7 +1158,7 @@ describe('Transaction', () => {
     it('should assign a resumeToken to the request', done => {
       const resumeToken = 'resume-token';
 
-      transaction.requestStream = function(options) {
+      transaction.requestStream = (options) => {
         assert.strictEqual(options.reqOpts.resumeToken, resumeToken);
         done();
       };
@@ -1198,7 +1174,7 @@ describe('Transaction', () => {
       const fakeQuery = {sql: 'SELECT 1'};
       const expectedQuery = extend({seqno: transaction.seqno}, fakeQuery);
 
-      transaction.run = function(query) {
+      transaction.run = (query: {}) => {
         assert.deepStrictEqual(query, expectedQuery);
         done();
       };
@@ -1213,7 +1189,7 @@ describe('Transaction', () => {
         seqno: transaction.seqno,
       };
 
-      transaction.run = function(query) {
+      transaction.run = (query: {}) => {
         assert.deepStrictEqual(query, expectedQuery);
         done();
       };
@@ -1224,7 +1200,7 @@ describe('Transaction', () => {
     it('should return any request errors', done => {
       const error = new Error('err');
 
-      transaction.run = function(query, callback) {
+      transaction.run = (query, callback) => {
         callback(error);
       };
 
@@ -1240,7 +1216,7 @@ describe('Transaction', () => {
         rowCountExact: 5,
       };
 
-      transaction.run = function(query, callback) {
+      transaction.run = (query, callback) => {
         callback(null, [], stats);
       };
 
@@ -1251,9 +1227,9 @@ describe('Transaction', () => {
     });
   });
 
-  describe('retry_', function() {
+  describe('retry_', () => {
     it('should begin the transaction', done => {
-      transaction.begin = function() {
+      transaction.begin = () => {
         done();
       };
 
@@ -1263,11 +1239,11 @@ describe('Transaction', () => {
     it('should return an error if transaction cannot begin', done => {
       const error = new Error('Error.');
 
-      transaction.begin = function(callback) {
+      transaction.begin = (callback) => {
         callback(error);
       };
 
-      transaction.runFn_ = function(err) {
+      transaction.runFn_ = (err: Error) => {
         assert.strictEqual(err, error);
         done();
       };
@@ -1284,12 +1260,10 @@ describe('Transaction', () => {
       });
 
       beforeEach(() => {
-        (global as any).setTimeout = function() {};
-        transaction.runFn_ = function() {};
-
-        transaction.begin = function(callback) {
-          callback();
-        };
+        // tslint:disable-next-line no-any
+        (global as any).setTimeout = () => {};
+        transaction.runFn_ = () => {};
+        transaction.begin = (callback) => callback();
       });
 
       after(() => {
@@ -1304,12 +1278,13 @@ describe('Transaction', () => {
       });
 
       it('should execute run function after timeout', done => {
-        (global as any).setTimeout = function(cb, timeout) {
+        // tslint:disable-next-line no-any
+        (global as any).setTimeout = (cb, timeout) => {
           assert.strictEqual(timeout, fakeDelay);
           cb();
         };
 
-        transaction.runFn_ = function(err, txn) {
+        transaction.runFn_ = (err, txn) => {
           assert.strictEqual(err, null);
           assert.strictEqual(txn, transaction);
           done();
@@ -1328,7 +1303,7 @@ describe('Transaction', () => {
       abortedError = {
         code: 10,
         metadata: {
-          get: function() {
+          get() {
             return [];
           },
         },
@@ -1336,7 +1311,7 @@ describe('Transaction', () => {
       unknownError = {
         code: 2,
         metadata: {
-          get: function() {
+          get() {
             return [];
           },
         },
@@ -1347,7 +1322,7 @@ describe('Transaction', () => {
       const error = {code: 'sentinel'};
 
       const isRetryableErrorCode = Transaction.isRetryableErrorCode_;
-      Transaction.isRetryableErrorCode_ = function(code) {
+      Transaction.isRetryableErrorCode_ = (code: number) => {
         assert.strictEqual(code, error.code);
         return isRetryableErrorCode(code);
       };
@@ -1376,10 +1351,10 @@ describe('Transaction', () => {
     });
 
     it('should retry if all conditions are met - Aborted', () => {
-      transaction.runFn_ = function() {};
+      transaction.runFn_ = () => {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
-      abortedError.metadata.get = function(key) {
+      abortedError.metadata.get = (key) => {
         assert.strictEqual(key, 'google.rpc.retryinfo-bin');
         return [{}];
       };
@@ -1389,10 +1364,10 @@ describe('Transaction', () => {
     });
 
     it('should retry if all conditions are met - Unknown', () => {
-      transaction.runFn_ = function() {};
+      transaction.runFn_ = () => {};
       transaction.timeout_ = 1000;
       transaction.beginTime_ = Date.now() - 2;
-      unknownError.metadata.get = function(key) {
+      unknownError.metadata.get = (key) => {
         assert.strictEqual(key, 'google.rpc.retryinfo-bin');
         return [{}];
       };

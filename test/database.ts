@@ -27,7 +27,7 @@ import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'Database') {
       return;
     }
@@ -95,9 +95,9 @@ class FakeTransactionRequest {
 
 const fakeCodec: any = {
   encode: util.noop,
-  Int: function() {},
-  Float: function() {},
-  SpannerDate: function() {},
+  Int() {},
+  Float() {},
+  SpannerDate() {},
 };
 
 describe('Database', () => {
@@ -212,7 +212,7 @@ describe('Database', () => {
       const options = {};
 
       const instanceInstance = extend({}, INSTANCE, {
-        createDatabase: function(name, options_, callback) {
+        createDatabase(name, options_, callback) {
           assert.strictEqual(name, database.formattedName_);
           assert.strictEqual(options_, options);
           callback(); // done()
@@ -297,7 +297,7 @@ describe('Database', () => {
       beforeEach(() => {
         database.parent = INSTANCE;
         database.pool_ = {
-          close: function(callback) {
+          close(callback) {
             callback(null);
           },
         };
@@ -327,7 +327,7 @@ describe('Database', () => {
         const error = new Error('err.');
 
         database.pool_ = {
-          close: function(callback) {
+          close(callback) {
             callback(error);
           },
         };
@@ -370,7 +370,7 @@ describe('Database', () => {
       const opts = {a: 'b'};
 
       const fakeTransaction = {
-        begin: function(callback) {
+        begin(callback) {
           callback(null, RESPONSE);
         },
       };
@@ -393,7 +393,7 @@ describe('Database', () => {
       const error = new Error('err');
 
       const fakeTransaction = {
-        begin: function(callback) {
+        begin(callback) {
           callback(error, RESPONSE);
         },
       };
@@ -635,7 +635,7 @@ describe('Database', () => {
 
       const OPERATION = {
         listeners: {},
-        on: function(eventName, callback) {
+        on(eventName, callback) {
           OPERATION.listeners[eventName] = callback;
           return OPERATION;
         },
@@ -1572,13 +1572,13 @@ describe('Database', () => {
       TRANSACTION = {};
 
       SESSION = {
-        beginTransaction: function(options, callback) {
+        beginTransaction(options, callback) {
           callback(null, TRANSACTION);
         },
       };
 
       database.pool_ = {
-        getWriteSession: function(callback) {
+        getWriteSession(callback) {
           callback(null, SESSION, TRANSACTION);
         },
       };
@@ -1617,7 +1617,7 @@ describe('Database', () => {
         const error = new Error('Error.');
 
         database.pool_ = {
-          getWriteSession: function(callback) {
+          getWriteSession(callback) {
             callback(error);
           },
         };
@@ -1637,7 +1637,7 @@ describe('Database', () => {
 
       beforeEach(() => {
         database.pool_ = {
-          getReadSession: function(callback) {
+          getReadSession(callback) {
             callback(null, SESSION);
           },
           release: util.noop,
@@ -1814,7 +1814,7 @@ describe('Database', () => {
     it('should run the query', done => {
       const fakeQuery = {};
       const transaction = {
-        runUpdate: function(query) {
+        runUpdate(query) {
           assert.strictEqual(query, fakeQuery);
           done();
         },
@@ -1829,7 +1829,7 @@ describe('Database', () => {
 
     it('should end the transaction', done => {
       const transaction = {
-        runUpdate: function(query, callback) {
+        runUpdate(query, callback) {
           callback(null);
         },
         end: done,

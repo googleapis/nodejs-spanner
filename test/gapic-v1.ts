@@ -42,8 +42,8 @@ describe('InstanceAdminClient', () => {
       const instanceConfigsElement = {};
       const instanceConfigs = [instanceConfigsElement];
       const expectedResponse = {
-        nextPageToken: nextPageToken,
-        instanceConfigs: instanceConfigs,
+        nextPageToken,
+        instanceConfigs,
       };
 
       // Mock Grpc layer
@@ -112,7 +112,7 @@ describe('InstanceAdminClient', () => {
       const displayName = 'displayName1615086568';
       const expectedResponse = {
         name: name2,
-        displayName: displayName,
+        displayName,
       };
 
       // Mock Grpc layer
@@ -177,8 +177,8 @@ describe('InstanceAdminClient', () => {
       const instancesElement = {};
       const instances = [instancesElement];
       const expectedResponse = {
-        nextPageToken: nextPageToken,
-        instances: instances,
+        nextPageToken,
+        instances,
       };
 
       // Mock Grpc layer
@@ -246,9 +246,9 @@ describe('InstanceAdminClient', () => {
       const nodeCount = 1539922066;
       const expectedResponse = {
         name: name2,
-        config: config,
-        displayName: displayName,
-        nodeCount: nodeCount,
+        config,
+        displayName,
+        nodeCount,
       };
 
       // Mock Grpc layer
@@ -292,7 +292,7 @@ describe('InstanceAdminClient', () => {
     });
   });
 
-  describe('createInstance', function() {
+  describe('createInstance', () => {
     it('invokes createInstance without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
@@ -305,8 +305,8 @@ describe('InstanceAdminClient', () => {
       const instance = {};
       const request = {
         parent: formattedParent,
-        instanceId: instanceId,
-        instance: instance,
+        instanceId,
+        instance,
       };
 
       // Mock response
@@ -315,10 +315,10 @@ describe('InstanceAdminClient', () => {
       const displayName = 'displayName1615086568';
       const nodeCount = 1539922066;
       const expectedResponse = {
-        name: name,
-        config: config,
-        displayName: displayName,
-        nodeCount: nodeCount,
+        name,
+        config,
+        displayName,
+        nodeCount,
       };
 
       // Mock Grpc layer
@@ -354,8 +354,8 @@ describe('InstanceAdminClient', () => {
       const instance = {};
       const request = {
         parent: formattedParent,
-        instanceId: instanceId,
-        instance: instance,
+        instanceId,
+        instance,
       };
 
       // Mock Grpc layer
@@ -397,7 +397,7 @@ describe('InstanceAdminClient', () => {
     });
   });
 
-  describe('updateInstance', function() {
+  describe('updateInstance', () => {
     it('invokes updateInstance without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
@@ -408,8 +408,8 @@ describe('InstanceAdminClient', () => {
       const instance = {};
       const fieldMask = {};
       const request = {
-        instance: instance,
-        fieldMask: fieldMask,
+        instance,
+        fieldMask,
       };
 
       // Mock response
@@ -418,10 +418,10 @@ describe('InstanceAdminClient', () => {
       const displayName = 'displayName1615086568';
       const nodeCount = 1539922066;
       const expectedResponse = {
-        name: name,
-        config: config,
-        displayName: displayName,
-        nodeCount: nodeCount,
+        name,
+        config,
+        displayName,
+        nodeCount,
       };
 
       // Mock Grpc layer
@@ -455,8 +455,8 @@ describe('InstanceAdminClient', () => {
       const instance = {};
       const fieldMask = {};
       const request = {
-        instance: instance,
-        fieldMask: fieldMask,
+        instance,
+        fieldMask,
       };
 
       // Mock Grpc layer
@@ -559,15 +559,15 @@ describe('InstanceAdminClient', () => {
       const policy = {};
       const request = {
         resource: formattedResource,
-        policy: policy,
+        policy,
       };
 
       // Mock response
       const version = 351608024;
       const etag = '21';
       const expectedResponse = {
-        version: version,
-        etag: etag,
+        version,
+        etag,
       };
 
       // Mock Grpc layer
@@ -594,7 +594,7 @@ describe('InstanceAdminClient', () => {
       const policy = {};
       const request = {
         resource: formattedResource,
-        policy: policy,
+        policy,
       };
 
       // Mock Grpc layer
@@ -630,8 +630,8 @@ describe('InstanceAdminClient', () => {
       const version = 351608024;
       const etag = '21';
       const expectedResponse = {
-        version: version,
-        etag: etag,
+        version,
+        etag,
       };
 
       // Mock Grpc layer
@@ -687,7 +687,7 @@ describe('InstanceAdminClient', () => {
       const permissions = [];
       const request = {
         resource: formattedResource,
-        permissions: permissions,
+        permissions,
       };
 
       // Mock response
@@ -717,7 +717,7 @@ describe('InstanceAdminClient', () => {
       const permissions = [];
       const request = {
         resource: formattedResource,
-        permissions: permissions,
+        permissions,
       };
 
       // Mock Grpc layer
@@ -738,7 +738,7 @@ describe('InstanceAdminClient', () => {
 });
 
 function mockSimpleGrpcMethod(expectedRequest, response?, error?) {
-  return function(actualRequest, options, callback) {
+  return (actualRequest, options, callback) => {
     assert.deepStrictEqual(actualRequest, expectedRequest);
     if (error) {
       callback(error);
@@ -754,7 +754,7 @@ function mockLongRunningGrpcMethod(expectedRequest, response?, error?) {
   return request => {
     assert.deepStrictEqual(request, expectedRequest);
     const mockOperation = {
-      promise: function() {
+      promise() {
         return new Promise((resolve, reject) => {
           if (error) {
             reject(error);

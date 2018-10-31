@@ -280,7 +280,7 @@ describe('PartialResultStream', () => {
         }, options);
 
         const formattedRow = {
-          toJSON: function(options_) {
+          toJSON(options_) {
             assert.strictEqual(options_, options.jsonOptions);
             done();
           },
