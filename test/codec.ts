@@ -479,7 +479,6 @@ describe('codec', () => {
     it('should encode structs', () => {
       const value = codec.Struct.fromJSON({a: 'b', c: 'd'});
       const encoded = codec.encode(value);
-
       assert.deepStrictEqual(encoded, ['b', 'd']);
     });
 
@@ -568,7 +567,7 @@ describe('codec', () => {
 
     it('should only encode public properties of objects', () => {
       const obj = {
-        hasOwnProperty: function(key) {
+        hasOwnProperty(key) {
           // jshint ignore:line
           return key === 'public';
         },
@@ -728,7 +727,7 @@ describe('codec', () => {
 
       const fakeQuery = {
         sql: QUERY,
-        params: params,
+        params,
       };
 
       let getTypeCallCount = 0;

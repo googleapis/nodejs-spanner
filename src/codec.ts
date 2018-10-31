@@ -45,7 +45,7 @@ class Float {
     this.value = value;
   }
   valueOf() {
-    return parseFloat(this.value);
+    return Number(this.value);
   }
 }
 
@@ -55,11 +55,11 @@ class Int {
     this.value = value.toString();
   }
   valueOf() {
-    const number = Number(this.value);
-    if (number > Number.MAX_SAFE_INTEGER) {
+    const num = Number(this.value);
+    if (num > Number.MAX_SAFE_INTEGER) {
       throw new Error('Integer ' + this.value + ' is out of bounds.');
     }
-    return number;
+    return num;
   }
 }
 
@@ -112,11 +112,10 @@ Struct.TYPE = 'struct';
  * @param {object[]} arr Struct array.
  * @return {Struct}
  */
-Struct.fromArray = function(arr) {
+Struct.fromArray = (arr) => {
+  // tslint:disable-next-line no-any
   const struct = new (Struct as any)();
-
   struct.push.apply(struct, arr);
-
   return struct;
 };
 
@@ -128,7 +127,8 @@ Struct.fromArray = function(arr) {
  * @param {object} json Struct JSON.
  * @return {Struct}
  */
-Struct.fromJSON = function(json) {
+Struct.fromJSON = (json) => {
+  // tslint:disable-next-line no-any
   const struct = new (Struct as any)();
 
   Object.keys(json || {}).forEach(name => {
@@ -147,7 +147,7 @@ Struct.fromJSON = function(json) {
  * @param {*} thing The object to check.
  * @returns {boolean}
  */
-Struct.isStruct = function(thing) {
+Struct.isStruct = (thing) => {
   return !!(thing && thing[TYPE] === Struct.TYPE);
 };
 
@@ -159,7 +159,7 @@ Struct.isStruct = function(thing) {
  * @returns {function}
  */
 function generateToJSONFromRow(row) {
-  return function(options) {
+  return (options) => {
     options = extend(
       {
         wrapNumbers: false,
@@ -209,46 +209,39 @@ function decode(value, field) {
     if (is.null(decoded)) {
       return null;
     }
-
     switch (type.code) {
-      case 'BYTES': {
+      case 'BYTES':
         decoded = Buffer.from(decoded, 'base64');
         break;
-      }
-      case 'FLOAT64': {
+      case 'FLOAT64':
         decoded = new codec.Float(decoded);
         break;
-      }
-      case 'INT64': {
+      case 'INT64':
         decoded = new codec.Int(decoded);
         break;
-      }
       case 'TIMESTAMP': // falls through
-      case 'DATE': {
+      case 'DATE':
         decoded = new Date(decoded);
         break;
-      }
-      case 'ARRAY': {
+      case 'ARRAY':
         decoded = decoded.map(value => {
           return decodeValue_(value, type.arrayElementType);
         });
         break;
-      }
-      case 'STRUCT': {
+      case 'STRUCT':
+        // tslint:disable-next-line no-any
         const struct = new (Struct as any)();
         const fields = type.structType.fields;
-
         fields.forEach((field, index) => {
           const name = field.name;
           let value = decoded[name] || decoded[index];
-
           value = decodeValue_(value, field.type);
           struct.push({name, value});
         });
-
         decoded = struct;
         break;
-      }
+      default:
+        break;
     }
 
     return decoded;
@@ -301,7 +294,7 @@ function encode(value) {
 
     return value;
   }
-
+  // tslint:disable-next-line no-any
   return (Service as any).encodeValue_(preEncode(value));
 }
 
@@ -422,13 +415,12 @@ function encodeQuery(query) {
       query.types = {};
     }
 
+    // tslint:disable-next-line forin
     for (const prop in query.params) {
       const field = query.params[prop];
-
       if (!query.types[prop]) {
         query.types[prop] = codec.getType(field);
       }
-
       fields[prop] = codec.encode(field);
     }
 
@@ -437,6 +429,7 @@ function encodeQuery(query) {
 
   if (query.types) {
     const formattedTypes = {};
+    // tslint:disable-next-line forin
     for (const field in query.types) {
       formattedTypes[field] = codec.createTypeObject(query.types[field]);
     }
@@ -480,7 +473,7 @@ function encodeRead(query) {
   if (query.ranges) {
     encoded.keySet.ranges = arrify(query.ranges).map(rawRange => {
       const range = extend({}, rawRange);
-
+      // tslint:disable-next-line forin
       for (const bound in range) {
         range[bound] = {
           values: arrify(range[bound]).map(codec.encode),
@@ -517,6 +510,7 @@ function createTypeObject(config) {
     code = 0; // unspecified
   }
 
+  // tslint:disable-next-line no-any
   const typeObject: any = {code};
 
   if (type === 'array') {

@@ -24,8 +24,8 @@ import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
-    if (Class.name !== 'Session') {
+  promisifyAll(klass, options) {
+    if (klass.name !== 'Session') {
       return;
     }
 
@@ -53,9 +53,12 @@ class FakeTransaction {
 }
 
 describe('Session', () => {
-  let Session;
-  let session;
+  // tslint:disable-next-line no-any variable-name
+  let Session: any;
+  // tslint:disable-next-line no-any
+  let session: any;
 
+  // tslint:disable-next-line no-any
   const DATABASE: any = {
     request: util.noop,
     formattedName_: 'formatted-database-name',
@@ -94,12 +97,10 @@ describe('Session', () => {
       const formatName_ = Session.formatName_;
       const formattedName = 'formatted-name';
 
-      Session.formatName_ = function(databaseName, name) {
+      Session.formatName_ = (databaseName, name) => {
         Session.formatName_ = formatName_;
-
         assert.strictEqual(databaseName, DATABASE.formattedName_);
         assert.strictEqual(name, NAME);
-
         return formattedName;
       };
 
@@ -132,7 +133,7 @@ describe('Session', () => {
         };
 
         const databaseInstance = extend({}, DATABASE, {
-          createSession: function(options_, callback) {
+          createSession(options_, callback) {
             assert.strictEqual(options_, options);
             callback(null, createdSession, apiResponse);
           },
@@ -160,7 +161,7 @@ describe('Session', () => {
 
       it('should check for options', done => {
         const databaseInstance = extend({}, DATABASE, {
-          createSession: function(options, callback) {
+          createSession(options, callback) {
             assert.deepStrictEqual(options, {});
             callback(null, {}, apiResponse);
           },
@@ -182,7 +183,7 @@ describe('Session', () => {
         const apiResponse = {};
 
         const databaseInstance = extend({}, DATABASE, {
-          createSession: function(options_, callback) {
+          createSession(options_, callback) {
             callback(error, null, apiResponse);
           },
         });
@@ -229,7 +230,7 @@ describe('Session', () => {
     it('should pass the transaction options', done => {
       const OPTIONS = {};
 
-      session.transaction = function(options) {
+      session.transaction = (options) => {
         assert.strictEqual(options, OPTIONS);
         done();
       };
@@ -238,7 +239,7 @@ describe('Session', () => {
     });
 
     it('should begin a transaction', done => {
-      TRANSACTION.begin = function(callback) {
+      TRANSACTION.begin = (callback) => {
         callback(null, RESPONSE);
       };
 
@@ -253,7 +254,7 @@ describe('Session', () => {
     it('should return any api errors', done => {
       const ERROR = new Error('err');
 
-      TRANSACTION.begin = function(callback) {
+      TRANSACTION.begin = (callback) => {
         callback(ERROR, RESPONSE);
       };
 
@@ -272,7 +273,7 @@ describe('Session', () => {
 
       function callback() {}
 
-      session.request = function(config, callback_) {
+      session.request = (config, callback_) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'deleteSession');
         assert.deepStrictEqual(config.reqOpts, {
@@ -293,7 +294,7 @@ describe('Session', () => {
 
       function callback() {}
 
-      session.request = function(config, callback_) {
+      session.request = (config, callback_) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'getSession');
         assert.deepStrictEqual(config.reqOpts, {
@@ -314,7 +315,7 @@ describe('Session', () => {
 
       function callback() {}
 
-      session.request = function(config, callback_) {
+      session.request = (config, callback_) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'executeSql');
         assert.deepStrictEqual(config.reqOpts, {

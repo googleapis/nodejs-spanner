@@ -225,7 +225,7 @@ abstract class TransactionRequest {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
-        reqOpts: extend(reqOpts, {resumeToken: resumeToken}),
+        reqOpts: extend(reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
       });
     };
@@ -243,7 +243,7 @@ abstract class TransactionRequest {
    */
   queue_(mutation) {
     throw new Error('Not implemented');
-  };
+  }
 
   /**
    * Delete rows from a table.
@@ -311,7 +311,7 @@ abstract class TransactionRequest {
     }
     const mutation = {};
     mutation['delete'] = {
-      table: table,
+      table,
       keySet: {
         keys: arrify(keys).map(key => {
           return {
@@ -555,7 +555,7 @@ abstract class TransactionRequest {
    * });
    */
   read(table, query, callback) {
-    const rows: {}[] = [];
+    const rows: Array<{}> = [];
     this.createReadStream(table, query)
       .on('error', callback)
       .on('data', row => {
@@ -814,8 +814,8 @@ abstract class TransactionRequest {
    * @returns {date}
    */
   static fromProtoTimestamp_(value) {
-    const milliseconds = parseInt(value.nanos, 10) / 1e6;
-    return new Date(parseInt(value.seconds, 10) * 1000 + milliseconds);
+    const milliseconds = Math.floor(value.nanos) / 1e6;
+    return new Date(Math.floor(value.seconds) * 1000 + milliseconds);
   }
 }
 

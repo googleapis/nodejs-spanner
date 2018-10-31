@@ -36,7 +36,7 @@ function fakeReplaceProjectIdToken() {
 
 const fakePaginator = {
   paginator: {
-    streamify: function(methodName) {
+    streamify(methodName) {
       return methodName;
     },
   },
@@ -44,7 +44,7 @@ const fakePaginator = {
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'Spanner') {
       return;
     }
@@ -100,7 +100,7 @@ class FakeInstance {
   }
   static formatName_(name: string) {
     return name;
-  };
+  }
 }
 
 describe('Spanner', () => {
@@ -283,7 +283,7 @@ describe('Spanner', () => {
       const json = {};
       const fakeStruct = [];
       fakeCodec.Struct = {
-        fromJSON: function(value) {
+        fromJSON(value) {
           assert.strictEqual(value, json);
           return fakeStruct;
         },
@@ -297,7 +297,7 @@ describe('Spanner', () => {
       const fakeStruct = [];
 
       fakeCodec.Struct = {
-        fromArray: function(value) {
+        fromArray(value) {
           assert.strictEqual(value, arr);
           return fakeStruct;
         },

@@ -99,8 +99,8 @@ class Instance extends common.ServiceObject {
        * @type {string}
        */
       id: name,
-      methods: methods,
-      createMethod: function(_, options, callback) {
+      methods,
+      createMethod(_, options, callback) {
         spanner.createInstance(formattedName_, options, callback);
       },
     } as {} as ServiceObjectConfig);
@@ -176,7 +176,6 @@ class Instance extends common.ServiceObject {
    *     '  Name STRING(1024),' +
    *     ') PRIMARY KEY(SingerId)'
    * }, callback);
-
    * //-
    * // If the callback is omitted, we'll return a Promise.
    * //-
@@ -222,7 +221,7 @@ class Instance extends common.ServiceObject {
       {
         client: 'DatabaseAdminClient',
         method: 'createDatabase',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, operation, resp) => {
         if (err) {
@@ -307,6 +306,7 @@ class Instance extends common.ServiceObject {
       name: this.formattedName_,
     };
     Promise.all(
+      // tslint:disable-next-line no-any
       Array.from(this.databases_.values()).map((database: any) => {
         return database.close();
       })
@@ -318,7 +318,7 @@ class Instance extends common.ServiceObject {
           {
             client: 'InstanceAdminClient',
             method: 'deleteInstance',
-            reqOpts: reqOpts,
+            reqOpts,
           },
           (err, resp) => {
             if (!err) {
@@ -522,9 +522,10 @@ class Instance extends common.ServiceObject {
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabases',
-        reqOpts: reqOpts,
+        reqOpts,
         gaxOpts: query,
       },
+      // tslint:disable-next-line only-arrow-functions
       function(err, databases) {
         if (databases) {
           arguments[1] = databases.map(database => {
@@ -583,7 +584,7 @@ class Instance extends common.ServiceObject {
       {
         client: 'InstanceAdminClient',
         method: 'getInstance',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );
@@ -647,7 +648,7 @@ class Instance extends common.ServiceObject {
       {
         client: 'InstanceAdminClient',
         method: 'updateInstance',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );

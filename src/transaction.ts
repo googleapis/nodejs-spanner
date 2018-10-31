@@ -53,6 +53,7 @@ const protoFilesRoot = protobuf.loadSync(
   root
 );
 
+// tslint:disable-next-line variable-name
 const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
 
 /**
@@ -102,13 +103,13 @@ class Transaction extends TransactionRequest {
   session: Session;
   seqno: number;
   attempts_: number;
-  queuedMutations_: {}[];
+  queuedMutations_: Array<{}>;
   runFn_: Function|null;
   beginTime_: number|null;
   timeout_: number;
   ended_: boolean;
   metadata: Metadata;
-  readTimestamp?: {}
+  readTimestamp?: {};
 
   /**
    * The gRPC `UNKNOWN` error code.
@@ -209,13 +210,13 @@ class Transaction extends TransactionRequest {
       };
     }
     const reqOpts = {
-      options: options,
+      options,
     };
     this.request(
       {
         client: 'SpannerClient',
         method: 'beginTransaction',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, resp) => {
         if (err) {
@@ -293,6 +294,7 @@ class Transaction extends TransactionRequest {
     if (this.ended_) {
       throw new Error('Transaction has already been ended.');
     }
+    // tslint:disable-next-line no-any
     const reqOpts: any = {
       mutations: this.queuedMutations_,
     };
@@ -307,7 +309,7 @@ class Transaction extends TransactionRequest {
       {
         client: 'SpannerClient',
         method: 'commit',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, resp) => {
         if (!err) {
@@ -499,7 +501,7 @@ class Transaction extends TransactionRequest {
       {
         client: 'SpannerClient',
         method: 'rollback',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, resp) => {
         if (!err) {
@@ -606,7 +608,7 @@ class Transaction extends TransactionRequest {
    * });
    */
   run(query, callback) {
-    const rows: {}[] = [];
+    const rows: Array<{}> = [];
     let stats;
 
     this.runStream(query)
@@ -728,7 +730,7 @@ class Transaction extends TransactionRequest {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
-        reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
+        reqOpts: extend({}, reqOpts, {resumeToken}),
       });
     };
     return partialResultStream(makeRequest);
@@ -764,11 +766,11 @@ class Transaction extends TransactionRequest {
 
     query = extend({seqno: this.seqno++}, query);
 
-    this.run(query, function(err, rows, stats) {
+    this.run(query, (err, rows, stats) => {
       let rowCount;
 
       if (stats && stats.rowCount) {
-        rowCount = parseInt(stats[stats.rowCount], 10);
+        rowCount = Math.floor(stats[stats.rowCount]);
       }
 
       callback(err, rowCount);
@@ -829,9 +831,10 @@ class Transaction extends TransactionRequest {
     const retryInfo = err.metadata.get(RETRY_INFO_KEY);
 
     if (retryInfo && retryInfo.length) {
+      // tslint:disable-next-line no-any
       const retryDelay = (RetryInfo as any).decode(retryInfo[0]).retryDelay;
-      const seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
-      const milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
+      const seconds = Math.floor(retryDelay.seconds.toNumber()) * 1000;
+      const milliseconds = Math.floor(retryDelay.nanos) / 1e6;
       return seconds + milliseconds;
     }
 

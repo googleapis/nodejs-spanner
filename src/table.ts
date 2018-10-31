@@ -567,7 +567,7 @@ class Table extends TransactionRequest {
    * Reading data using a storing index:
    */
   read(query, options, callback) {
-    const rows: {}[] = [];
+    const rows: Array<{}> = [];
     if (is.fn(options)) {
       callback = options;
       options = null;
