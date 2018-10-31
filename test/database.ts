@@ -27,7 +27,7 @@ import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'Database') {
       return;
     }
@@ -58,11 +58,9 @@ class FakeGrpcServiceObject extends EventEmitter {
   }
 }
 
-class FakePartialResultStream {
-  calledWith_: IArguments;
-  constructor() {
-    this.calledWith_ = arguments;
-  }
+function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
+  this.calledWith_ = arguments;
+  return this;
 }
 
 class FakeSession {
@@ -97,9 +95,9 @@ class FakeTransactionRequest {
 
 const fakeCodec: any = {
   encode: util.noop,
-  Int: function() {},
-  Float: function() {},
-  SpannerDate: function() {},
+  Int() {},
+  Float() {},
+  SpannerDate() {},
 };
 
 describe('Database', () => {
@@ -127,14 +125,14 @@ describe('Database', () => {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
-      './batch-transaction': FakeBatchTransaction,
-      './codec': fakeCodec,
-      './partial-result-stream': FakePartialResultStream,
-      './session-pool': FakeSessionPool,
-      './session': FakeSession,
-      './table': FakeTable,
-      './transaction-request': FakeTransactionRequest,
-    });
+      './batch-transaction': { BatchTransaction: FakeBatchTransaction },
+      './codec': {codec: fakeCodec},
+      './partial-result-stream': {partialResultStream: fakePartialResultStream},
+      './session-pool': {SessionPool: FakeSessionPool},
+      './session': {Session: FakeSession},
+      './table': {Table: FakeTable},
+      './transaction-request': {TransactionRequest: FakeTransactionRequest},
+    }).Database;
     DatabaseCached = extend({}, Database);
   });
 
@@ -214,7 +212,7 @@ describe('Database', () => {
       const options = {};
 
       const instanceInstance = extend({}, INSTANCE, {
-        createDatabase: function(name, options_, callback) {
+        createDatabase(name, options_, callback) {
           assert.strictEqual(name, database.formattedName_);
           assert.strictEqual(options_, options);
           callback(); // done()
@@ -299,7 +297,7 @@ describe('Database', () => {
       beforeEach(() => {
         database.parent = INSTANCE;
         database.pool_ = {
-          close: function(callback) {
+          close(callback) {
             callback(null);
           },
         };
@@ -329,7 +327,7 @@ describe('Database', () => {
         const error = new Error('err.');
 
         database.pool_ = {
-          close: function(callback) {
+          close(callback) {
             callback(error);
           },
         };
@@ -372,7 +370,7 @@ describe('Database', () => {
       const opts = {a: 'b'};
 
       const fakeTransaction = {
-        begin: function(callback) {
+        begin(callback) {
           callback(null, RESPONSE);
         },
       };
@@ -395,7 +393,7 @@ describe('Database', () => {
       const error = new Error('err');
 
       const fakeTransaction = {
-        begin: function(callback) {
+        begin(callback) {
           callback(error, RESPONSE);
         },
       };
@@ -505,7 +503,7 @@ describe('Database', () => {
 
     it('should decorate the end() method', done => {
       const transaction: any = {};
-      const end = function(callback) {
+      const end = function(this: {}, callback) {
         assert.strictEqual(this, transaction);
         callback(); // done fn
       };
@@ -637,7 +635,7 @@ describe('Database', () => {
 
       const OPERATION = {
         listeners: {},
-        on: function(eventName, callback) {
+        on(eventName, callback) {
           OPERATION.listeners[eventName] = callback;
           return OPERATION;
         },
@@ -1135,11 +1133,8 @@ describe('Database', () => {
 
       it('should cancel the request stream', done => {
         REQUEST_STREAM.cancel = done;
-
         const requestStream = database.makePooledStreamingRequest_(CONFIG);
-
         requestStream.emit('reading');
-
         setImmediate(() => {
           requestStream.abort();
         });
@@ -1263,7 +1258,7 @@ describe('Database', () => {
 
     it('should return PartialResultStream', () => {
       const stream = database.runStream(QUERY);
-      assert(stream instanceof FakePartialResultStream);
+      assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
     });
 
     it('should pass json, jsonOptions to PartialResultStream', () => {
@@ -1577,13 +1572,13 @@ describe('Database', () => {
       TRANSACTION = {};
 
       SESSION = {
-        beginTransaction: function(options, callback) {
+        beginTransaction(options, callback) {
           callback(null, TRANSACTION);
         },
       };
 
       database.pool_ = {
-        getWriteSession: function(callback) {
+        getWriteSession(callback) {
           callback(null, SESSION, TRANSACTION);
         },
       };
@@ -1622,7 +1617,7 @@ describe('Database', () => {
         const error = new Error('Error.');
 
         database.pool_ = {
-          getWriteSession: function(callback) {
+          getWriteSession(callback) {
             callback(error);
           },
         };
@@ -1642,7 +1637,7 @@ describe('Database', () => {
 
       beforeEach(() => {
         database.pool_ = {
-          getReadSession: function(callback) {
+          getReadSession(callback) {
             callback(null, SESSION);
           },
           release: util.noop,
@@ -1819,7 +1814,7 @@ describe('Database', () => {
     it('should run the query', done => {
       const fakeQuery = {};
       const transaction = {
-        runUpdate: function(query) {
+        runUpdate(query) {
           assert.strictEqual(query, fakeQuery);
           done();
         },
@@ -1834,7 +1829,7 @@ describe('Database', () => {
 
     it('should end the transaction', done => {
       const transaction = {
-        runUpdate: function(query, callback) {
+        runUpdate(query, callback) {
           callback(null);
         },
         end: done,
@@ -1874,7 +1869,6 @@ describe('Database', () => {
 
     it('should return an instance of Session', () => {
       const session = database.session(NAME);
-
       assert(session instanceof FakeSession);
       assert.strictEqual(session.calledWith_[0], database);
       assert.strictEqual(session.calledWith_[1], NAME);

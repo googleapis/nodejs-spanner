@@ -22,7 +22,7 @@ import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll: function(Class, options) {
+  promisifyAll(Class, options) {
     if (Class.name !== 'BatchTransaction') {
       return;
     }
@@ -31,11 +31,12 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
+// tslint:disbale-next-line no-any
 const fakeCodec: any = {
   encode: util.noop,
-  Int: function() {},
-  Float: function() {},
-  SpannerDate: function() {},
+  Int() {},
+  Float() {},
+  SpannerDate() {},
 };
 
 class FakeTransaction {
@@ -56,9 +57,9 @@ describe('BatchTransaction', () => {
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
       '@google-cloud/promisify': fakePfy,
-      './codec.js': fakeCodec,
-      './transaction.js': FakeTransaction,
-    });
+      './codec.js': {codec: fakeCodec},
+      './transaction.js': { Transaction: FakeTransaction},
+    }).BatchTransaction;
   });
 
   beforeEach(() => {
@@ -72,7 +73,6 @@ describe('BatchTransaction', () => {
 
     it('should extend the Transaction class', () => {
       const batchTransaction = new BatchTransaction(SESSION);
-
       assert(batchTransaction instanceof FakeTransaction);
       assert.strictEqual(batchTransaction.calledWith_[0], SESSION);
       assert.deepStrictEqual(batchTransaction.calledWith_[1], {readOnly: true});

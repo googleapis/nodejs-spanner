@@ -24,16 +24,14 @@ import * as is from 'is';
 import * as retry from 'p-retry';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import { Abortable } from '@google-cloud/common';
-
-const BatchTransaction = require('./batch-transaction');
-const codec = require('./codec');
-const PartialResultStream = require('./partial-result-stream');
-const Session = require('./session');
-const SessionPool = require('./session-pool');
-const Table = require('./table');
-const Transaction = require('./transaction');
-const TransactionRequest = require('./transaction-request');
+import {BatchTransaction} from './batch-transaction';
+import {codec} from './codec';
+import {partialResultStream} from './partial-result-stream';
+import {Session} from './session';
+import {SessionPool} from './session-pool';
+import {Table} from './table';
+import {Transaction} from './transaction';
+import {TransactionRequest} from './transaction-request';
 /**
  * Interface for implementing custom session pooling logic, it should extend the
  * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
@@ -154,7 +152,7 @@ class Database extends ServiceObject {
     super({
       parent: instance,
       id: name,
-      methods: methods,
+      methods,
       createMethod: (_, options, callback) => {
         return instance.createDatabase(formattedName_, options, callback);
       },
@@ -163,6 +161,7 @@ class Database extends ServiceObject {
     this.formattedName_ = formattedName_;
     this.request = instance.request;
     this.requestStream = instance.requestStream;
+    // tslint:disable-next-line variable-name
     let PoolCtor = SessionPool;
     if (is.fn(poolOptions)) {
       PoolCtor = poolOptions;
@@ -347,6 +346,7 @@ class Database extends ServiceObject {
     }
 
     const gaxOpts = extend({}, options);
+    // tslint:disable-next-line no-any
     const reqOpts: any = {
       database: this.formattedName_,
     };
@@ -360,8 +360,8 @@ class Database extends ServiceObject {
       {
         client: 'SpannerClient',
         method: 'createSession',
-        reqOpts: reqOpts,
-        gaxOpts: gaxOpts,
+        reqOpts,
+        gaxOpts,
       },
       (err, resp) => {
         if (err) {
@@ -465,7 +465,7 @@ class Database extends ServiceObject {
   decorateTransaction_(transaction, session) {
     const self = this;
     const end = transaction.end.bind(transaction);
-    transaction.end = function(callback) {
+    transaction.end = (callback) => {
       self.pool_.release(session);
       return end(callback);
     };
@@ -512,7 +512,7 @@ class Database extends ServiceObject {
         {
           client: 'DatabaseAdminClient',
           method: 'dropDatabase',
-          reqOpts: reqOpts,
+          reqOpts,
         },
         callback
       );
@@ -686,7 +686,7 @@ class Database extends ServiceObject {
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabase',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );
@@ -739,8 +739,9 @@ class Database extends ServiceObject {
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',
-        reqOpts: reqOpts,
+        reqOpts,
       },
+      // tslint:disable-next-line only-arrow-functions
       function(err, statements) {
         if (statements) {
           arguments[1] = statements.statements;
@@ -847,6 +848,7 @@ class Database extends ServiceObject {
         reqOpts,
         gaxOpts,
       },
+      // tslint:disable-next-line only-arrow-functions
       function(err, sessions) {
         if (sessions) {
           arguments[1] = sessions.map(metadata => {
@@ -895,9 +897,11 @@ class Database extends ServiceObject {
    *   const transaction = data[0];
    * });
    */
+  // tslint:disable-next-line no-any
   getTransaction(options?): Promise<any>;
   getTransaction(options, callback): void;
   getTransaction(callback): void;
+  // tslint:disable-next-line no-any
   getTransaction(options?, callback?): void|Promise<any> {
     if (is.fn(options)) {
       callback = options;
@@ -947,13 +951,13 @@ class Database extends ServiceObject {
         return;
       }
       config.reqOpts.session = session.formattedName_;
+      // tslint:disable-next-line only-arrow-functions
       this.request(config, function() {
         pool.release(session);
         callback.apply(null, arguments);
       });
     });
   }
-  /**
   /**
    * Make an API request as a stream, first assuring an active session is used.
    *
@@ -968,7 +972,8 @@ class Database extends ServiceObject {
     let requestStream;
     let session;
     const waitForSessionStream = streamEvents(through.obj());
-    (waitForSessionStream as any).abort = function() {
+    // tslint:disable-next-line no-any
+    (waitForSessionStream as any).abort = () => {
       releaseSession();
       if (requestStream) {
         requestStream.cancel();
@@ -1159,7 +1164,7 @@ class Database extends ServiceObject {
    * Querying data with an index:
    */
   run(query, options, callback) {
-    const rows: {}[] = [];
+    const rows: Array<{}> = [];
     if (is.fn(options)) {
       callback = options;
       options = null;
@@ -1195,13 +1200,12 @@ class Database extends ServiceObject {
       {
         partitioned: true,
       },
-      function(err, transaction) {
+      (err, transaction) => {
         if (err) {
           callback(err, null);
           return;
         }
-
-        transaction.runUpdate(query, function(runErr, rowCount) {
+        transaction.runUpdate(query, (runErr, rowCount) => {
           transaction.end();
           callback(runErr, rowCount);
         });
@@ -1358,7 +1362,7 @@ class Database extends ServiceObject {
         reqOpts: extend(reqOpts, {resumeToken}),
       });
     }
-    return new PartialResultStream(makeRequest, {
+    return partialResultStream(makeRequest, {
       json: query.json,
       jsonOptions: query.jsonOptions,
     });
@@ -1684,7 +1688,7 @@ class Database extends ServiceObject {
       {
         client: 'DatabaseAdminClient',
         method: 'updateDatabaseDdl',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );
@@ -1735,4 +1739,4 @@ promisifyAll(Database, {
  * @name module:@google-cloud/spanner.Database
  * @see Database
  */
-module.exports = Database;
+export {Database};

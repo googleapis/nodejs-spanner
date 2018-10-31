@@ -27,14 +27,14 @@ import * as path from 'path';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import { GrpcServiceConfig } from '@google-cloud/common-grpc/build/src/service';
-const codec = require('./codec');
-const Database = require('./database');
-const Instance = require('./instance');
-const Session = require('./session');
-const SessionPool = require('./session-pool');
-const Table = require('./table');
-const Transaction = require('./transaction');
-const TransactionRequest = require('./transaction-request');
+import {codec} from './codec';
+import {Database} from './database';
+import {Instance} from './instance';
+import {Session} from './session';
+import {SessionPool} from './session-pool';
+import {Table} from './table';
+import {Transaction} from './transaction';
+import {TransactionRequest} from './transaction-request';
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -173,7 +173,7 @@ class Spanner extends Service {
 static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
 
   constructor(options) {
-    const scopes: {}[] = [];
+    const scopes: Array<{}> = [];
     const clientClasses = [
       gapic.v1.DatabaseAdminClient,
       gapic.v1.InstanceAdminClient,
@@ -361,7 +361,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
       {
         client: 'InstanceAdminClient',
         method: 'createInstance',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, operation, resp) => {
         if (err) {
@@ -466,13 +466,15 @@ this.getInstancesStream = paginator.streamify('getInstances');
       {
         client: 'InstanceAdminClient',
         method: 'listInstances',
-        reqOpts: reqOpts,
+        reqOpts,
         gaxOpts: query,
       },
+      // tslint:disable-next-line only-arrow-functions
       function(err, instances) {
         if (instances) {
           arguments[1] = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
+            // tslint:disable-next-line no-any
             (instanceInstance as any).metadata = instance;
             return instanceInstance;
           });
@@ -567,7 +569,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
       {
         client: 'InstanceAdminClient',
         method: 'listInstanceConfigs',
-        reqOpts: reqOpts,
+        reqOpts,
         gaxOpts: query,
       },
       callback
@@ -614,7 +616,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
     return this.requestStream({
       client: 'InstanceAdminClient',
       method: 'listInstanceConfigsStream',
-      reqOpts: reqOpts,
+      reqOpts,
       gaxOpts: query,
     });
   }
@@ -632,11 +634,11 @@ this.getInstancesStream = paginator.streamify('getInstances');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    */
-  instance(name) {
+  instance(name: string) {
     if (!name) {
       throw new Error('A name is required to access an Instance object.');
     }
-    const key = name.split('/').pop();
+    const key = name.split('/').pop()!;
     if (!this.instances_.has(key)) {
       this.instances_.set(key, new Instance(this, name));
     }
@@ -704,6 +706,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
    * @param {function} [callback] Callback function.
    * @returns {Promise}
    */
+  // tslint:disable-next-line no-any
   request(config, callback): void|Promise<any> {
     if (is.fn(callback)) {
       this.prepareGapicRequest_(config, (err, requestFn) => {

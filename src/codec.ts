@@ -16,8 +16,6 @@
 
 'use strict';
 
-const codec = module.exports;
-
 import * as arrify from 'arrify';
 import {Service} from '@google-cloud/common-grpc';
 import * as extend from 'extend';
@@ -41,19 +39,15 @@ class SpannerDate {
   }
 }
 
-codec.SpannerDate = SpannerDate;
-
 class Float {
   value;
   constructor(value) {
     this.value = value;
   }
   valueOf() {
-    return parseFloat(this.value);
+    return Number(this.value);
   }
 }
-
-codec.Float = Float;
 
 class Int {
   value;
@@ -61,15 +55,13 @@ class Int {
     this.value = value.toString();
   }
   valueOf() {
-    const number = Number(this.value);
-    if (number > Number.MAX_SAFE_INTEGER) {
+    const num = Number(this.value);
+    if (num > Number.MAX_SAFE_INTEGER) {
       throw new Error('Integer ' + this.value + ' is out of bounds.');
     }
-    return number;
+    return num;
   }
 }
-
-codec.Int = Int;
 
 /**
  * We use this symbol as a means to identify if an array is actually a struct.
@@ -83,8 +75,6 @@ codec.Int = Int;
  * struct[TYPE] = 'struct';
  */
 const TYPE = Symbol();
-
-codec.TYPE = TYPE;
 
 /**
  * Struct wrapper. This returns an array, but will decorate the array to give it
@@ -122,11 +112,10 @@ Struct.TYPE = 'struct';
  * @param {object[]} arr Struct array.
  * @return {Struct}
  */
-Struct.fromArray = function(arr) {
+Struct.fromArray = (arr) => {
+  // tslint:disable-next-line no-any
   const struct = new (Struct as any)();
-
   struct.push.apply(struct, arr);
-
   return struct;
 };
 
@@ -138,7 +127,8 @@ Struct.fromArray = function(arr) {
  * @param {object} json Struct JSON.
  * @return {Struct}
  */
-Struct.fromJSON = function(json) {
+Struct.fromJSON = (json) => {
+  // tslint:disable-next-line no-any
   const struct = new (Struct as any)();
 
   Object.keys(json || {}).forEach(name => {
@@ -157,11 +147,9 @@ Struct.fromJSON = function(json) {
  * @param {*} thing The object to check.
  * @returns {boolean}
  */
-Struct.isStruct = function(thing) {
+Struct.isStruct = (thing) => {
   return !!(thing && thing[TYPE] === Struct.TYPE);
 };
-
-module.exports.Struct = Struct;
 
 /**
  * Wherever a row object is returned, it is assigned a "toJSON" function. This
@@ -171,7 +159,7 @@ module.exports.Struct = Struct;
  * @returns {function}
  */
 function generateToJSONFromRow(row) {
-  return function(options) {
+  return (options) => {
     options = extend(
       {
         wrapNumbers: false,
@@ -207,8 +195,6 @@ function generateToJSONFromRow(row) {
   };
 }
 
-codec.generateToJSONFromRow = generateToJSONFromRow;
-
 /**
  * Re-decode after the generic gRPC decoding step.
  *
@@ -223,46 +209,39 @@ function decode(value, field) {
     if (is.null(decoded)) {
       return null;
     }
-
     switch (type.code) {
-      case 'BYTES': {
+      case 'BYTES':
         decoded = Buffer.from(decoded, 'base64');
         break;
-      }
-      case 'FLOAT64': {
+      case 'FLOAT64':
         decoded = new codec.Float(decoded);
         break;
-      }
-      case 'INT64': {
+      case 'INT64':
         decoded = new codec.Int(decoded);
         break;
-      }
       case 'TIMESTAMP': // falls through
-      case 'DATE': {
+      case 'DATE':
         decoded = new Date(decoded);
         break;
-      }
-      case 'ARRAY': {
+      case 'ARRAY':
         decoded = decoded.map(value => {
           return decodeValue_(value, type.arrayElementType);
         });
         break;
-      }
-      case 'STRUCT': {
+      case 'STRUCT':
+        // tslint:disable-next-line no-any
         const struct = new (Struct as any)();
         const fields = type.structType.fields;
-
         fields.forEach((field, index) => {
           const name = field.name;
           let value = decoded[name] || decoded[index];
-
           value = decodeValue_(value, field.type);
           struct.push({name, value});
         });
-
         decoded = struct;
         break;
-      }
+      default:
+        break;
     }
 
     return decoded;
@@ -270,8 +249,6 @@ function decode(value, field) {
 
   return decodeValue_(value, field.type);
 }
-
-codec.decode = decode;
 
 /**
  * Encode a value in the format the API expects.
@@ -317,11 +294,9 @@ function encode(value) {
 
     return value;
   }
-
+  // tslint:disable-next-line no-any
   return (Service as any).encodeValue_(preEncode(value));
 }
-
-codec.encode = encode;
 
 /**
  * Get the corresponding Spanner data type.
@@ -401,8 +376,6 @@ function getType(field) {
   return 'unspecified';
 }
 
-codec.getType = getType;
-
 /**
  * A list of available Spanner types. The index of said type in Array aligns
  * with the type code that query params require.
@@ -421,8 +394,6 @@ const TYPES = [
   'array',
   'struct',
 ];
-
-codec.TYPES = TYPES;
 
 /**
  * Encodes a ExecuteSqlRequest object into the correct format.
@@ -444,13 +415,12 @@ function encodeQuery(query) {
       query.types = {};
     }
 
+    // tslint:disable-next-line forin
     for (const prop in query.params) {
       const field = query.params[prop];
-
       if (!query.types[prop]) {
         query.types[prop] = codec.getType(field);
       }
-
       fields[prop] = codec.encode(field);
     }
 
@@ -459,19 +429,16 @@ function encodeQuery(query) {
 
   if (query.types) {
     const formattedTypes = {};
-
+    // tslint:disable-next-line forin
     for (const field in query.types) {
       formattedTypes[field] = codec.createTypeObject(query.types[field]);
     }
-
     delete query.types;
     query.paramTypes = formattedTypes;
   }
 
   return query;
 }
-
-codec.encodeQuery = encodeQuery;
 
 /**
  * Encodes a ReadRequest into the correct format.
@@ -506,7 +473,7 @@ function encodeRead(query) {
   if (query.ranges) {
     encoded.keySet.ranges = arrify(query.ranges).map(rawRange => {
       const range = extend({}, rawRange);
-
+      // tslint:disable-next-line forin
       for (const bound in range) {
         range[bound] = {
           values: arrify(range[bound]).map(codec.encode),
@@ -520,8 +487,6 @@ function encodeRead(query) {
 
   return encoded;
 }
-
-codec.encodeRead = encodeRead;
 
 /**
  * Encodes paramTypes into correct structure.
@@ -545,6 +510,7 @@ function createTypeObject(config) {
     code = 0; // unspecified
   }
 
+  // tslint:disable-next-line no-any
   const typeObject: any = {code};
 
   if (type === 'array') {
@@ -566,4 +532,18 @@ function createTypeObject(config) {
   return typeObject;
 }
 
-codec.createTypeObject = createTypeObject;
+export const codec = {
+  createTypeObject,
+  SpannerDate,
+  Float,
+  Int,
+  TYPE,
+  generateToJSONFromRow,
+  decode,
+  encode,
+  getType,
+  encodeQuery,
+  TYPES,
+  encodeRead,
+  Struct
+};

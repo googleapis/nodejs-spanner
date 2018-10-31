@@ -201,6 +201,7 @@ class SessionPool extends EventEmitter {
     const {readonly, borrowed} = this._inventory;
     const available = readonly.length;
     const used = Array.from(borrowed).filter(
+      // tslint:disable-next-line no-any
       session => (session as any).type === READONLY
     ).length;
 
@@ -223,6 +224,7 @@ class SessionPool extends EventEmitter {
     const {readwrite, borrowed} = this._inventory;
     const available = readwrite.length;
     const used = Array.from(borrowed).filter(
+      // tslint:disable-next-line no-any
       session => (session as any).type === READWRITE
     ).length;
 
@@ -574,6 +576,7 @@ class SessionPool extends EventEmitter {
 
     while (count-- > maxIdle && size - evicted++ > min) {
       const session = idle.pop();
+      // tslint:disable-next-line no-any
       const type = (session as any).type;
       const index = this._inventory[type].indexOf(session);
 
@@ -588,7 +591,7 @@ class SessionPool extends EventEmitter {
    * @return {Promise}
    */
   _fill() {
-    const requests: {}[] = [];
+    const requests: Array<{}> = [];
 
     const minReadWrite = Math.floor(this.options.min * this.options.writes);
     const neededReadWrite = Math.max(minReadWrite - this.writes, 0);
@@ -622,6 +625,7 @@ class SessionPool extends EventEmitter {
     );
 
     return sessions.filter(session => {
+      // tslint:disable-next-line no-any
       return Date.now() - (session as any).lastUsed >= idlesAfter;
     });
   }
@@ -810,4 +814,4 @@ class SessionPool extends EventEmitter {
   }
 }
 
-module.exports = SessionPool;
+export {SessionPool};

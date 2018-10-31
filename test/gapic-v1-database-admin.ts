@@ -42,8 +42,8 @@ describe('DatabaseAdminClient', () => {
       const databasesElement = {};
       const databases = [databasesElement];
       const expectedResponse = {
-        nextPageToken: nextPageToken,
-        databases: databases,
+        nextPageToken,
+        databases,
       };
 
       // Mock Grpc layer
@@ -103,13 +103,13 @@ describe('DatabaseAdminClient', () => {
       const createStatement = 'createStatement552974828';
       const request = {
         parent: formattedParent,
-        createStatement: createStatement,
+        createStatement,
       };
 
       // Mock response
       const name = 'name3373707';
       const expectedResponse = {
-        name: name,
+        name,
       };
 
       // Mock Grpc layer
@@ -144,7 +144,7 @@ describe('DatabaseAdminClient', () => {
       const createStatement = 'createStatement552974828';
       const request = {
         parent: formattedParent,
-        createStatement: createStatement,
+        createStatement,
       };
 
       // Mock Grpc layer
@@ -270,7 +270,7 @@ describe('DatabaseAdminClient', () => {
       const statements = [];
       const request = {
         database: formattedDatabase,
-        statements: statements,
+        statements,
       };
 
       // Mock response
@@ -312,7 +312,7 @@ describe('DatabaseAdminClient', () => {
       const statements = [];
       const request = {
         database: formattedDatabase,
-        statements: statements,
+        statements,
       };
 
       // Mock Grpc layer
@@ -492,15 +492,15 @@ describe('DatabaseAdminClient', () => {
       const policy = {};
       const request = {
         resource: formattedResource,
-        policy: policy,
+        policy,
       };
 
       // Mock response
       const version = 351608024;
       const etag = '21';
       const expectedResponse = {
-        version: version,
-        etag: etag,
+        version,
+        etag,
       };
 
       // Mock Grpc layer
@@ -531,7 +531,7 @@ describe('DatabaseAdminClient', () => {
       const policy = {};
       const request = {
         resource: formattedResource,
-        policy: policy,
+        policy,
       };
 
       // Mock Grpc layer
@@ -571,8 +571,8 @@ describe('DatabaseAdminClient', () => {
       const version = 351608024;
       const etag = '21';
       const expectedResponse = {
-        version: version,
-        etag: etag,
+        version,
+        etag,
       };
 
       // Mock Grpc layer
@@ -636,7 +636,7 @@ describe('DatabaseAdminClient', () => {
       const permissions = [];
       const request = {
         resource: formattedResource,
-        permissions: permissions,
+        permissions,
       };
 
       // Mock response
@@ -670,7 +670,7 @@ describe('DatabaseAdminClient', () => {
       const permissions = [];
       const request = {
         resource: formattedResource,
-        permissions: permissions,
+        permissions,
       };
 
       // Mock Grpc layer
@@ -691,7 +691,7 @@ describe('DatabaseAdminClient', () => {
 });
 
 function mockSimpleGrpcMethod(expectedRequest, response?, error?) {
-  return function(actualRequest, options, callback) {
+  return (actualRequest, options, callback) => {
     assert.deepStrictEqual(actualRequest, expectedRequest);
     if (error) {
       callback(error);
@@ -707,7 +707,7 @@ function mockLongRunningGrpcMethod(expectedRequest, response, error?) {
   return request => {
     assert.deepStrictEqual(request, expectedRequest);
     const mockOperation = {
-      promise: function() {
+      promise() {
         return new Promise((resolve, reject) => {
           if (error) {
             reject(error);

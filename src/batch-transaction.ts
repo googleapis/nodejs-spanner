@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-
-const codec = require('./codec');
-const Transaction = require('./transaction');
+import {codec} from './codec';
+import {Transaction} from './transaction';
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
@@ -33,6 +30,9 @@ const Transaction = require('./transaction');
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  */
 class BatchTransaction extends Transaction {
+  session: Session;
+  readTimestamp?: {};
+
   constructor(session) {
     super(session, {readOnly: true});
   }
@@ -323,4 +323,4 @@ promisifyAll(BatchTransaction, {
   exclude: ['identifier'],
 });
 
-module.exports = BatchTransaction;
+export {BatchTransaction};

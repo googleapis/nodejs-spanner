@@ -24,7 +24,7 @@ const {ServiceObject} = require('@google-cloud/common-grpc');
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-const Transaction = require('./transaction');
+import {Transaction} from './transaction';
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -171,7 +171,7 @@ class Session extends ServiceObject {
        * @type {string}
        */
       id: name,
-      methods: methods,
+      methods,
       createMethod: (_, options, callback) => {
         if (is.fn(options)) {
           callback = options;
@@ -269,7 +269,7 @@ class Session extends ServiceObject {
       {
         client: 'SpannerClient',
         method: 'deleteSession',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );
@@ -315,7 +315,7 @@ class Session extends ServiceObject {
       {
         client: 'SpannerClient',
         method: 'getSession',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );
@@ -342,7 +342,7 @@ class Session extends ServiceObject {
       {
         client: 'SpannerClient',
         method: 'executeSql',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       callback
     );
@@ -393,4 +393,4 @@ promisifyAll(Session, {
   exclude: ['delete', 'getMetadata', 'transaction'],
 });
 
-module.exports = Session;
+export {Session};

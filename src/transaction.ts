@@ -24,33 +24,14 @@ import * as is from 'is';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as through from 'through2';
+import {codec} from './codec';
+import {partialResultStream} from './partial-result-stream';
+import {TransactionRequest} from './transaction-request';
+import { Metadata } from '@google-cloud/common';
 
 const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'
 ];
-
-const codec = require('./codec');
-const PartialResultStream = require('./partial-result-stream');
-const TransactionRequest = require('./transaction-request');
-
-/**
- * The gRPC `UNKNOWN` error code.
- *
- * @private
- */
-const UNKNOWN = 2;
-
-/**
- * the gRPC `DEADLINE_EXCEEDED` error code.
- */
-const DEADLINE_EXCEEDED = 4;
-
-/**
- * The gRPC `ABORTED` error code.
- *
- * @private
- */
-const ABORTED = 10;
 
 /**
  * Metadata retry info key.
@@ -72,6 +53,7 @@ const protoFilesRoot = protobuf.loadSync(
   root
 );
 
+// tslint:disable-next-line variable-name
 const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
 
 /**
@@ -118,6 +100,36 @@ const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
  * });
  */
 class Transaction extends TransactionRequest {
+  session: Session;
+  seqno: number;
+  attempts_: number;
+  queuedMutations_: Array<{}>;
+  runFn_: Function|null;
+  beginTime_: number|null;
+  timeout_: number;
+  ended_: boolean;
+  metadata: Metadata;
+  readTimestamp?: {};
+
+  /**
+   * The gRPC `UNKNOWN` error code.
+   *
+   * @private
+   */
+  static UNKNOWN = 2;
+
+  /**
+   * the gRPC `DEADLINE_EXCEEDED` error code.
+   */
+  static DEADLINE_EXCEEDED = 4;
+
+  /**
+   * The gRPC `ABORTED` error code.
+   *
+   * @private
+   */
+  static ABORTED = 10;
+
   constructor(session, options) {
     options = extend({}, options);
     super(options);
@@ -139,7 +151,6 @@ class Transaction extends TransactionRequest {
      * @default 1
      */
     this.seqno = 1;
-
     this.attempts_ = 0;
     this.queuedMutations_ = [];
     this.runFn_ = null;
@@ -199,13 +210,13 @@ class Transaction extends TransactionRequest {
       };
     }
     const reqOpts = {
-      options: options,
+      options,
     };
     this.request(
       {
         client: 'SpannerClient',
         method: 'beginTransaction',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, resp) => {
         if (err) {
@@ -283,6 +294,7 @@ class Transaction extends TransactionRequest {
     if (this.ended_) {
       throw new Error('Transaction has already been ended.');
     }
+    // tslint:disable-next-line no-any
     const reqOpts: any = {
       mutations: this.queuedMutations_,
     };
@@ -297,7 +309,7 @@ class Transaction extends TransactionRequest {
       {
         client: 'SpannerClient',
         method: 'commit',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, resp) => {
         if (!err) {
@@ -422,7 +434,7 @@ class Transaction extends TransactionRequest {
         this.retry_(Transaction.getRetryDelay_(err, this.attempts_));
         return;
       }
-      this.runFn_(Transaction.createDeadlineError_(err));
+      this.runFn_!(Transaction.createDeadlineError_(err));
     });
     return requestStream.pipe(userStream);
   }
@@ -435,15 +447,14 @@ class Transaction extends TransactionRequest {
    * @param {number} delay Delay to wait before retrying transaction.
    */
   retry_(delay) {
-    const self = this;
     this.begin(err => {
       if (err) {
-        self.runFn_(err);
+        this.runFn_!(err);
         return;
       }
-      self.queuedMutations_ = [];
+      this.queuedMutations_ = [];
       setTimeout(() => {
-        self.runFn_(null, self);
+        this.runFn_!(null, this);
       }, delay);
     });
   }
@@ -490,7 +501,7 @@ class Transaction extends TransactionRequest {
       {
         client: 'SpannerClient',
         method: 'rollback',
-        reqOpts: reqOpts,
+        reqOpts,
       },
       (err, resp) => {
         if (!err) {
@@ -597,7 +608,7 @@ class Transaction extends TransactionRequest {
    * });
    */
   run(query, callback) {
-    const rows: {}[] = [];
+    const rows: Array<{}> = [];
     let stats;
 
     this.runStream(query)
@@ -719,10 +730,10 @@ class Transaction extends TransactionRequest {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
-        reqOpts: extend({}, reqOpts, {resumeToken: resumeToken}),
+        reqOpts: extend({}, reqOpts, {resumeToken}),
       });
     };
-    return new PartialResultStream(makeRequest);
+    return partialResultStream(makeRequest);
   }
   /**
    * @typedef {array} RunUpdateResponse
@@ -755,11 +766,11 @@ class Transaction extends TransactionRequest {
 
     query = extend({seqno: this.seqno++}, query);
 
-    this.run(query, function(err, rows, stats) {
+    this.run(query, (err, rows, stats) => {
       let rowCount;
 
       if (stats && stats.rowCount) {
-        rowCount = parseInt(stats[stats.rowCount], 10);
+        rowCount = Math.floor(stats[stats.rowCount]);
       }
 
       callback(err, rowCount);
@@ -776,7 +787,7 @@ class Transaction extends TransactionRequest {
     return (
       this.isRetryableErrorCode_(err.code) &&
       is.fn(this.runFn_) &&
-      Date.now() - this.beginTime_ < this.timeout_
+      Date.now() - this.beginTime_! < this.timeout_
     );
   }
   /**
@@ -786,7 +797,7 @@ class Transaction extends TransactionRequest {
    * @return {boolean}
    */
   isRetryableErrorCode_(errCode) {
-    return errCode === ABORTED || errCode === UNKNOWN;
+    return errCode === Transaction.ABORTED || errCode === Transaction.UNKNOWN;
   }
   /**
    * In the event that a Transaction is aborted and the deadline has been
@@ -800,7 +811,7 @@ class Transaction extends TransactionRequest {
   static createDeadlineError_(err) {
     const apiError = new common.util.ApiError({
       message: 'Deadline for Transaction exceeded.',
-      code: DEADLINE_EXCEEDED,
+      code: Transaction.DEADLINE_EXCEEDED,
       errors: [err],
     });
 
@@ -820,9 +831,10 @@ class Transaction extends TransactionRequest {
     const retryInfo = err.metadata.get(RETRY_INFO_KEY);
 
     if (retryInfo && retryInfo.length) {
+      // tslint:disable-next-line no-any
       const retryDelay = (RetryInfo as any).decode(retryInfo[0]).retryDelay;
-      const seconds = parseInt(retryDelay.seconds.toNumber(), 10) * 1000;
-      const milliseconds = parseInt(retryDelay.nanos, 10) / 1e6;
+      const seconds = Math.floor(retryDelay.seconds.toNumber()) * 1000;
+      const milliseconds = Math.floor(retryDelay.nanos) / 1e6;
       return seconds + milliseconds;
     }
 
@@ -842,4 +854,4 @@ promisifyAll(Transaction);
  * @name module:@google-cloud/spanner.Transaction
  * @see Transaction
  */
-module.exports = Transaction;
+export {Transaction};
