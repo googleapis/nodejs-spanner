@@ -15,45 +15,28 @@
 
 'use strict';
 
-const proxyquire = require(`proxyquire`);
+const proxyquire = require(`proxyquire`).noPreserveCache();
 const sinon = require(`sinon`);
-const assert = require('assert');
+const assert = require(`assert`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
 describe('QuickStart', () => {
-  let output;
-  const write = process.stdout.write;
-
   before(() => tools.stubConsole);
+  after(() => tools.restoreConsole);
 
-  beforeEach(() => {
-    output = '';
-    process.stdout.write = str => {
-      output = str;
-    };
-  });
-
-  afterEach(() => {
-    tools.restoreConsole;
-    process.stdout.write = write;
-  });
-
-  it(`should query a table`, done => {
+  it(`should query a table`, async () => {
     const databaseMock = {
-      run: _query => {
+      run: async _query => {
         assert.deepStrictEqual(_query, {
           sql: `SELECT 1`,
         });
-        setTimeout(() => {
-          try {
-            const regex = new RegExp(`test`);
-            assert.strictEqual(regex.test(output), true);
-            done();
-          } catch (err) {
-            done(err);
-          }
-        }, 200);
-        return Promise.resolve([['test']]);
+
+        await new Promise(r => setTimeout(r, 200));
+        try {
+          assert.deepStrictEqual(console.log.getCall(0).args, [`test`]);
+        } catch (err) {}
+
+        return await Promise.resolve([['test']]);
       },
     };
     const instanceMock = {
@@ -72,7 +55,6 @@ describe('QuickStart', () => {
     assert.deepStrictEqual(spannerMock.instance.getCall(0).args, [
       `my-instance`,
     ]);
-
     assert.deepStrictEqual(instanceMock.database.getCall(0).args, [
       `my-database`,
     ]);
