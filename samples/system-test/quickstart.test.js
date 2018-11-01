@@ -32,11 +32,8 @@ describe('QuickStart', () => {
         });
 
         await new Promise(r => setTimeout(r, 200));
-        try {
-          assert.deepStrictEqual(console.log.getCall(0).args, [`test`]);
-        } catch (err) {}
-
-        return await Promise.resolve([['test']]);
+        assert.deepStrictEqual(console.log.getCall(0).args, [`test`]);
+        return [['test']];
       },
     };
     const instanceMock = {

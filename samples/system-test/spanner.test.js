@@ -77,23 +77,27 @@ describe('Spanner', () => {
       filter: 'labels.gcloud-sample-tests:true',
     });
 
-    instances.forEach(async instance => {
-      const {operations} = await getOperations(instance.metadata.name);
+    await Promise.all(
+      instances.map(async instance => {
+        const {operations} = await getOperations(instance.metadata.name);
 
-      operations
-        .filter(operation => {
-          return operation.metadata['@type'].includes('CreateInstance');
-        })
-        .filter(operation => {
-          const yesterday = new Date();
-          yesterday.setHours(-24);
+        await Promise.all(
+          operations
+            .filter(operation => {
+              return operation.metadata['@type'].includes('CreateInstance');
+            })
+            .filter(operation => {
+              const yesterday = new Date();
+              yesterday.setHours(-24);
 
-          const instanceCreated = new Date(operation.metadata.startTime);
+              const instanceCreated = new Date(operation.metadata.startTime);
 
-          return instanceCreated < yesterday;
-        })
-        .forEach(async () => await instance.delete());
-    });
+              return instanceCreated < yesterday;
+            })
+            .map(instance.delete)
+        );
+      })
+    );
   });
 
   after(async () => {
@@ -202,28 +206,27 @@ describe('Spanner', () => {
   });
 
   // read_stale_data
-  it(`should read stale data from an example table`, () => {
+  it(`should read stale data from an example table`, async () => {
     // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
     // 15 seconds have elapsed since the update_data test.
-    return new Promise(resolve => setTimeout(resolve, 16000)).then(async () => {
-      const results = await tools.runAsyncWithIO(
-        `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-        cwd
-      );
-      const output = results.stdout + results.stderr;
-      assert.strictEqual(
-        new RegExp(
-          /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
-        ).test(output),
-        true
-      );
-      assert.strictEqual(
-        new RegExp(
-          /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
-        ).test(output),
-        true
-      );
-    });
+    await new Promise(r => setTimeout(r, 16000));
+    const results = await tools.runAsyncWithIO(
+      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    const output = results.stdout + results.stderr;
+    assert.strictEqual(
+      new RegExp(
+        /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
+      ).test(output),
+      true
+    );
+    assert.strictEqual(
+      new RegExp(
+        /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
+      ).test(output),
+      true
+    );
   });
 
   // query_data_with_new_column
