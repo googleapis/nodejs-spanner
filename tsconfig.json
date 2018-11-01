@@ -3,9 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "allowJs": true,
-    "declaration": false,
-    "skipLibCheck": true,
     "noImplicitAny": false
   },
   "include": [

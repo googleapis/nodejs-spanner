@@ -21,7 +21,7 @@ import {Service} from '@google-cloud/common-grpc';
 import * as extend from 'extend';
 import * as is from 'is';
 
-class SpannerDate {
+export class SpannerDate {
   value;
   constructor(value) {
     if (arguments.length > 1) {
@@ -39,7 +39,7 @@ class SpannerDate {
   }
 }
 
-class Float {
+export class Float {
   value;
   constructor(value) {
     this.value = value;
@@ -49,7 +49,7 @@ class Float {
   }
 }
 
-class Int {
+export class Int {
   value;
   constructor(value) {
     this.value = value.toString();
@@ -84,72 +84,66 @@ const TYPE = Symbol();
  *
  * @returns {array}
  */
-function Struct() {
-  const struct = [];
+export class Struct extends Array {
+  constructor() {
+    super();
+    this[TYPE] = Struct.TYPE;
+    Object.defineProperty(this, 'toJSON', {
+      enumerable: false,
+      value: codec.generateToJSONFromRow(this)
+    });
+  }
 
-  struct[TYPE] = Struct.TYPE;
+  /**
+   * Use this to assign/check the type when dealing with structs.
+   *
+   * @private
+   */
+  static TYPE = 'struct';
 
-  Object.defineProperty(struct, 'toJSON', {
-    enumerable: false,
-    value: codec.generateToJSONFromRow(struct),
-  });
+  /**
+   * Converts an array of objects to a struct array.
+   *
+   * @private
+   *
+   * @param {object[]} arr Struct array.
+   * @return {Struct}
+   */
+  static fromArray(arr) {
+    const struct = new Struct();
+    struct.push.apply(struct, arr);
+    return struct;
+  }
 
-  return struct;
+  /**
+   * Converts a JSON object to a struct array.
+   *
+   * @private
+   *
+   * @param {object} json Struct JSON.
+   * @return {Struct}
+   */
+  static fromJSON(json: {}) {
+    const struct = new Struct();
+    Object.keys(json || {}).forEach(name => {
+      const value = json[name];
+      struct.push({name, value});
+    });
+    return struct;
+  }
+
+  /**
+   * Checks to see if the provided object is a Struct.
+   *
+   * @private
+   *
+   * @param {*} thing The object to check.
+   * @returns {boolean}
+   */
+  static isStruct(thing: {}) {
+    return !!(thing && thing[TYPE] === Struct.TYPE);
+  }
 }
-
-/**
- * Use this to assign/check the type when dealing with structs.
- *
- * @private
- */
-Struct.TYPE = 'struct';
-
-/**
- * Converts an array of objects to a struct array.
- *
- * @private
- *
- * @param {object[]} arr Struct array.
- * @return {Struct}
- */
-Struct.fromArray = (arr) => {
-  // tslint:disable-next-line no-any
-  const struct = new (Struct as any)();
-  struct.push.apply(struct, arr);
-  return struct;
-};
-
-/**
- * Converts a JSON object to a struct array.
- *
- * @private
- *
- * @param {object} json Struct JSON.
- * @return {Struct}
- */
-Struct.fromJSON = (json) => {
-  // tslint:disable-next-line no-any
-  const struct = new (Struct as any)();
-
-  Object.keys(json || {}).forEach(name => {
-    const value = json[name];
-    struct.push({name, value});
-  });
-
-  return struct;
-};
-
-/**
- * Checks to see if the provided object is a Struct.
- *
- * @private
- *
- * @param {*} thing The object to check.
- * @returns {boolean}
- */
-Struct.isStruct = (thing) => {
-  return !!(thing && thing[TYPE] === Struct.TYPE);
-};
 
 /**
  * Wherever a row object is returned, it is assigned a "toJSON" function. This

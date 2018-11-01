@@ -574,7 +574,7 @@ describe('Database', () => {
 
       database.exists((err, exists) => {
         assert.strictEqual(err, error);
-        assert.strictEqual(exists, null);
+        assert.strictEqual(exists, undefined);
         done();
       });
     });
