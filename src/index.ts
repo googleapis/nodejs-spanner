@@ -662,7 +662,8 @@ this.getInstancesStream = paginator.streamify('getInstances');
     if (!name) {
       throw new Error('A name is required to access an Operation object.');
     }
-    return new Operation(this, name);
+    // tslint:disable-next-line no-any
+    return new Operation(this as any, name);
   }
 
   /**
@@ -707,7 +708,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
    * @returns {Promise}
    */
   // tslint:disable-next-line no-any
-  request(config, callback): void|Promise<any> {
+  request(config: any, callback?: any): any {
     if (is.fn(callback)) {
       this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {
@@ -740,7 +741,8 @@ this.getInstancesStream = paginator.streamify('getInstances');
    * @param {function} [callback] Callback function.
    * @returns {Stream}
    */
-  requestStream(config) {
+  // tslint:disable-next-line no-any
+  requestStream(config): any {
     const stream = streamEvents(through.obj());
     stream.once('reading', () => {
       this.prepareGapicRequest_(config, (err, requestFn) => {

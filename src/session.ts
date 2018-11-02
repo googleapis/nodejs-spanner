@@ -20,11 +20,14 @@
 
 'use strict';
 
-const {ServiceObject} = require('@google-cloud/common-grpc');
+import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
+import * as r from 'request';
 import {Transaction} from './transaction';
+import { Database } from './database';
+import { ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback } from '@google-cloud/common';
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -65,7 +68,7 @@ import {Transaction} from './transaction';
  * const session = database.session_('session-name');
  */
 class Session extends ServiceObject {
-  constructor(database, name) {
+  constructor(database: Database, name: string) {
     const methods = {
       /**
        * Create a session.
@@ -177,7 +180,6 @@ class Session extends ServiceObject {
           callback = options;
           options = {};
         }
-
         return database.createSession(options, (err, session, apiResponse) => {
           if (err) {
             callback(err, null, apiResponse);
@@ -188,7 +190,7 @@ class Session extends ServiceObject {
           callback(null, this, apiResponse);
         });
       },
-    });
+    } as {} as ServiceObjectConfig);
 
     this.request = database.request;
     this.requestStream = database.requestStream;
@@ -261,7 +263,9 @@ class Session extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback) {
+  delete(): Promise<[r.Response]>;
+  delete(callback: DeleteCallback): void;
+  delete(callback?: DeleteCallback): void|Promise<[r.Response]> {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -271,7 +275,7 @@ class Session extends ServiceObject {
         method: 'deleteSession',
         reqOpts,
       },
-      callback
+      callback!
     );
   }
   /**
@@ -307,7 +311,9 @@ class Session extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(callback) {
+  getMetadata(): Promise<[Metadata]>;
+  getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(callback?: GetMetadataCallback): void|Promise<[Metadata]> {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -317,7 +323,7 @@ class Session extends ServiceObject {
         method: 'getSession',
         reqOpts,
       },
-      callback
+      callback!
     );
   }
   /**

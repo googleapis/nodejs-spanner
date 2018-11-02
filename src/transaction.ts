@@ -28,6 +28,7 @@ import {codec} from './codec';
 import {partialResultStream} from './partial-result-stream';
 import {TransactionRequest} from './transaction-request';
 import { Metadata } from '@google-cloud/common';
+import { Session } from './session';
 
 const config = require('./v1/spanner_client_config.json').interfaces[
   'google.spanner.v1.Spanner'

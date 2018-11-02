@@ -55,7 +55,6 @@
     "docs": "jsdoc -c .jsdoc.js",
     "generate-scaffolding": "repo-tools generate all && repo-tools generate lib_samples_readme -l samples/ --config ../.cloud-repo-tools.json",
     "lint": "echo disabled for now",
-    "prettier": "prettier --write benchmark/*.js src/*.js src/*/*.js src/admin/database/*/*.js src/admin/instance/*/*.js samples/*.js samples/*/*.js samples/*/*/*.js test/*.js test/*/*.js system-test/*.js system-test/*/*.js",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "system-test": "mocha build/system-test --timeout 600000",
     "cleanup": "mocha scripts/cleanup.js --timeout 30000",
@@ -63,13 +62,13 @@
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",
     "fix": "eslint --fix '**/*.js'",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp src/v1/*.json build/src/v1 && cp -r protos build",
+    "compile": "tsc -p . && cp -r src/v1 build/src && cp -r protos build",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "presystem-test": "npm run compile"
   },
   "dependencies": {
-    "@google-cloud/common-grpc": "^0.9.0",
+    "@google-cloud/common-grpc": "^0.9.2",
     "@google-cloud/paginator": "^0.1.0",
     "@google-cloud/projectify": "^0.3.0",
     "@google-cloud/promisify": "^0.3.0",
