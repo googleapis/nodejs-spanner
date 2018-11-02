@@ -30,7 +30,6 @@ import {Transaction} from './transaction';
  * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
  */
 class BatchTransaction extends Transaction {
-  session: Session;
   readTimestamp?: {};
 
   constructor(session) {

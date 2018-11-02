@@ -18,7 +18,7 @@
 
 import * as arrify from 'arrify';
 import {promisifyAll} from '@google-cloud/promisify';
-const {ServiceObject} = require('@google-cloud/common-grpc');
+import {ServiceObject} from '@google-cloud/common-grpc';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as retry from 'p-retry';
@@ -32,6 +32,17 @@ import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {Transaction} from './transaction';
 import {TransactionRequest} from './transaction-request';
+import { ServiceObjectConfig, DeleteCallback, ExistsCallback, GetMetadataCallback, ApiError, Metadata } from '@google-cloud/common';
+import * as r from 'request';
+
+export interface GetDatabaseOptions {
+  autoCreate?: boolean;
+}
+export type DatabaseResponse = [Database, r.Response];
+export interface DatabaseCallback {
+  (err: Error|null, database?: Database, apiResponse?: r.Response): void;
+}
+
 /**
  * Interface for implementing custom session pooling logic, it should extend the
  * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
@@ -156,7 +167,7 @@ class Database extends ServiceObject {
       createMethod: (_, options, callback) => {
         return instance.createDatabase(formattedName_, options, callback);
       },
-    });
+    } as {} as ServiceObjectConfig);
 
     this.formattedName_ = formattedName_;
     this.request = instance.request;
@@ -240,8 +251,9 @@ class Database extends ServiceObject {
    * });
    */
   close(callback) {
-    const key = this.id.split('/').pop();
-    this.parent.databases_.delete(key);
+    const key = this.id!.split('/').pop();
+    // tslint:disable-next-line no-any
+    (this.parent as any).databases_.delete(key);
     this.pool_.close(callback);
   }
   /**
@@ -503,7 +515,9 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback) {
+  delete(): Promise<[r.Response]>;
+  delete(callback: DeleteCallback): void;
+  delete(callback?: DeleteCallback): void|Promise<[r.Response]> {
     const reqOpts = {
       database: this.formattedName_,
     };
@@ -514,7 +528,7 @@ class Database extends ServiceObject {
           method: 'dropDatabase',
           reqOpts,
         },
-        callback
+        callback!
       );
     });
   }
@@ -550,17 +564,18 @@ class Database extends ServiceObject {
    *   const exists = data[0];
    * });
    */
-  exists(callback) {
+  exists(): Promise<[boolean]>;
+  exists(callback: ExistsCallback): void;
+  exists(callback?: ExistsCallback): void|Promise<[boolean]> {
     const NOT_FOUND = 5;
 
     this.getMetadata(err => {
-      if (err && err.code !== NOT_FOUND) {
-        callback(err, null);
+      if (err && (err as ApiError).code !== NOT_FOUND) {
+        callback!(err);
         return;
       }
-
-      const exists = !err || err.code !== NOT_FOUND;
-      callback(null, exists);
+      const exists = !err || (err as ApiError).code !== NOT_FOUND;
+      callback!(null, exists);
     });
   }
   /**
@@ -607,30 +622,31 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  get(options, callback) {
-    if (is.fn(options)) {
-      callback = options;
-      options = {};
-    }
+  get(options?: GetDatabaseOptions): Promise<DatabaseResponse>;
+  get(options: GetDatabaseOptions, callback: DatabaseCallback): void;
+  get(callback: DatabaseCallback): void;
+  get(optionsOrCallback?: GetDatabaseOptions|DatabaseCallback, cb?: DatabaseCallback): void|Promise<DatabaseResponse> {
+    const options = typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
     this.getMetadata((err, metadata) => {
       if (err) {
-        if (options.autoCreate && err.code === 5) {
+        if (options.autoCreate && (err as ApiError).code === 5) {
           this.create(options, (err, database, operation) => {
             if (err) {
-              callback(err);
+              callback!(err);
               return;
             }
-            operation.on('error', callback).on('complete', metadata => {
+            operation!.on('error', callback!).on('complete', metadata => {
               this.metadata = metadata;
-              callback(null, this, metadata);
+              callback!(null, this, metadata);
             });
           });
           return;
         }
-        callback(err);
+        callback!(err);
         return;
       }
-      callback(null, this, metadata);
+      callback!(null, this, metadata);
     });
   }
   /**
@@ -678,7 +694,9 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(callback) {
+  getMetadata(): Promise<Metadata>;
+  getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(callback?: GetMetadataCallback): void|Promise<Metadata> {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -688,7 +706,7 @@ class Database extends ServiceObject {
         method: 'getDatabase',
         reqOpts,
       },
-      callback
+      callback!
     );
   }
   /**

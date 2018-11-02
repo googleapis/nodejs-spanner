@@ -450,9 +450,7 @@ describe('codec', () => {
 
   describe('encode', () => {
     beforeEach(() => {
-      FakeGrpcService.encodeValue_ = function(value) {
-        return value;
-      };
+      FakeGrpcService.encodeValue_ = value => value;
     });
 
     it('should return the value from the common encoder', () => {
@@ -479,14 +477,12 @@ describe('codec', () => {
     it('should encode structs', () => {
       const value = codec.Struct.fromJSON({a: 'b', c: 'd'});
       const encoded = codec.encode(value);
-      assert.deepStrictEqual(encoded, ['b', 'd']);
+      assert.deepStrictEqual([].concat(encoded.slice()), ['b', 'd']);
     });
 
     it('should stringify Infinity', () => {
       const value = Infinity;
-
       const encoded = codec.encode(value);
-
       assert.strictEqual(encoded, value.toString());
     });
 
@@ -617,16 +613,13 @@ describe('codec', () => {
     it('should determine if the value is a struct', () => {
       const struct = codec.Struct.fromJSON({a: 'b'});
       const type = codec.getType(struct);
-
-      assert.deepStrictEqual(type, {
-        type: 'struct',
-        fields: [
+      assert.strictEqual(type.type, 'struct');
+      assert.deepStrictEqual([].concat(type.fields.slice()), [
           {
             name: 'a',
             type: 'string',
           },
-        ],
-      });
+        ]);
     });
 
     it('should attempt to determine arrays and their values', () => {
