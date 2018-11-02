@@ -140,7 +140,7 @@ export class Struct extends Array {
    * @param {*} thing The object to check.
    * @returns {boolean}
    */
-  static isStruct(thing: {}) {
+  static isStruct(thing: {}) : thing is Struct {
     return !!(thing && thing[TYPE] === Struct.TYPE);
   }
 }
