@@ -21,6 +21,10 @@ const path = require('path');
 
 const VERSION = require('../../../package.json').version;
 
+const grpcGcp = require('grpc-gcp');
+const fs = require('fs');
+const GRPC_CONFIG_FILE = __dirname + '/spanner_grpc_config.json';
+
 /**
  * Cloud Spanner API
  *
@@ -143,6 +147,15 @@ class SpannerClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this._innerApiCalls = {};
+
+    const apiConfig = grpcGcp.createGcpApiConfig(
+      JSON.parse(fs.readFileSync(GRPC_CONFIG_FILE))
+    );
+
+    opts['grpcGcp.channelFactoryOverride'] = grpcGcp.gcpChannelFactoryOverride;
+    opts['grpcGcp.callInvocationTransformer'] =
+      grpcGcp.gcpCallInvocationTransformer;
+    opts['grpcGcp.gcpApiConfig'] = apiConfig;
 
     // Put together the "service stub" for
     // google.spanner.v1.Spanner.
