@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-'use strict';
-
-import * as arrify from 'arrify';
 import {Service} from '@google-cloud/common-grpc';
+import * as arrify from 'arrify';
 import * as extend from 'extend';
 import * as is from 'is';
 
@@ -25,12 +23,10 @@ export class SpannerDate {
   value;
   constructor(value) {
     if (arguments.length > 1) {
-      throw new TypeError(
-        [
-          'The spanner.date function accepts a Date object or a',
-          "single argument parseable by Date's constructor.",
-        ].join(' ')
-      );
+      throw new TypeError([
+        'The spanner.date function accepts a Date object or a',
+        'single argument parseable by Date\'s constructor.',
+      ].join(' '));
     }
     if (is.undefined(value)) {
       value = new Date();
@@ -88,10 +84,9 @@ export class Struct extends Array {
   constructor() {
     super();
     this[TYPE] = Struct.TYPE;
-    Object.defineProperty(this, 'toJSON', {
-      enumerable: false,
-      value: codec.generateToJSONFromRow(this)
-    });
+    Object.defineProperty(
+        this, 'toJSON',
+        {enumerable: false, value: codec.generateToJSONFromRow(this)});
   }
 
   /**
@@ -140,7 +135,7 @@ export class Struct extends Array {
    * @param {*} thing The object to check.
    * @returns {boolean}
    */
-  static isStruct(thing: {}) : thing is Struct {
+  static isStruct(thing: {}): thing is Struct {
     return !!(thing && thing[TYPE] === Struct.TYPE);
   }
 }
@@ -155,11 +150,10 @@ export class Struct extends Array {
 function generateToJSONFromRow(row) {
   return (options) => {
     options = extend(
-      {
-        wrapNumbers: false,
-      },
-      options
-    );
+        {
+          wrapNumbers: false,
+        },
+        options);
 
     return row.reduce((serializedRow, keyVal) => {
       const name = keyVal.name;
@@ -213,7 +207,7 @@ function decode(value, field) {
       case 'INT64':
         decoded = new codec.Int(decoded);
         break;
-      case 'TIMESTAMP': // falls through
+      case 'TIMESTAMP':  // falls through
       case 'DATE':
         decoded = new Date(decoded);
         break;
@@ -255,18 +249,14 @@ function decode(value, field) {
 function encode(value) {
   function preEncode(value) {
     const numberShouldBeStringified =
-      (!(value instanceof Float) && is.integer(value)) ||
-      value instanceof Int ||
-      is.infinite(value) ||
-      Number.isNaN(value);
+        (!(value instanceof Float) && is.integer(value)) ||
+        value instanceof Int || is.infinite(value) || Number.isNaN(value);
 
     if (is.date(value)) {
       value = value.toJSON();
     } else if (
-      value instanceof SpannerDate ||
-      value instanceof Float ||
-      value instanceof Int
-    ) {
+        value instanceof SpannerDate || value instanceof Float ||
+        value instanceof Int) {
       value = value.value;
     } else if (Buffer.isBuffer(value)) {
       value = value.toString('base64');
@@ -309,8 +299,8 @@ function getType(field) {
     return 'bool';
   }
 
-  const isSpecialNumber =
-    is.infinite(field) || (is.number(field) && isNaN(field));
+  const isSpecialNumber = is.infinite(field) ||
+      (is.number(field) && isNaN(field));
 
   if (is.decimal(field) || isSpecialNumber || field instanceof Float) {
     return 'float64';
@@ -501,7 +491,7 @@ function createTypeObject(config) {
   let code = TYPES.indexOf(type);
 
   if (code === -1) {
-    code = 0; // unspecified
+    code = 0;  // unspecified
   }
 
   // tslint:disable-next-line no-any

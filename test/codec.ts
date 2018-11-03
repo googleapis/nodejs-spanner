@@ -21,7 +21,10 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import {util} from '@google-cloud/common-grpc';
 
-const FakeGrpcService: any = class {};
+class FakeGrpcService {
+  static encodeValue_ = util.noop;
+  static decodeValue_ = util.noop;
+}
 
 describe('codec', () => {
   let codecCached;
@@ -42,10 +45,10 @@ describe('codec', () => {
 
   before(() => {
     codec = proxyquire('../src/codec.js', {
-      '@google-cloud/common-grpc': {
-        Service: FakeGrpcService,
-      },
-    }).codec;
+              '@google-cloud/common-grpc': {
+                Service: FakeGrpcService,
+              },
+            }).codec;
     codecCached = extend({}, codec);
   });
 
@@ -59,11 +62,11 @@ describe('codec', () => {
     it('should choke on multiple arguments', () => {
       const expectedErrorMessage = [
         'The spanner.date function accepts a Date object or a',
-        "single argument parseable by Date's constructor.",
+        'single argument parseable by Date\'s constructor.',
       ].join(' ');
 
       assert.throws(() => {
-        new codec.SpannerDate(2012, 3, 21);
+        const x = new codec.SpannerDate(2012, 3, 21);
       }, new RegExp(expectedErrorMessage));
     });
 
@@ -91,8 +94,8 @@ describe('codec', () => {
       const value = '8.2';
       const float = new codec.Float(value);
 
-      assert.strictEqual(float.valueOf(), parseFloat(value));
-      assert.strictEqual(float + 2, parseFloat(value) + 2);
+      assert.strictEqual(float.valueOf(), Number(value));
+      assert.strictEqual(float + 2, Number(value) + 2);
     });
   });
 
@@ -151,7 +154,7 @@ describe('codec', () => {
         const fakeJSON = {};
         let cachedStruct;
 
-        codec.generateToJSONFromRow = function(struct) {
+        codec.generateToJSONFromRow = (struct) => {
           cachedStruct = struct;
           return fakeJSON;
         };
@@ -310,7 +313,8 @@ describe('codec', () => {
     };
 
     beforeEach(() => {
-      FakeGrpcService.decodeValue_ = function(value) {
+      // tslint:disable-next-line no-any
+      (FakeGrpcService as any).decodeValue_ = (value) => {
         return value;
       };
     });
@@ -323,10 +327,7 @@ describe('codec', () => {
     });
 
     it('should return null values as null', () => {
-      FakeGrpcService.decodeValue_ = function() {
-        return null;
-      };
-
+      FakeGrpcService.decodeValue_ = () => null;
       const decoded = codec.decode(null, BYPASS_FIELD);
       assert.strictEqual(decoded, null);
     });
@@ -340,6 +341,7 @@ describe('codec', () => {
         },
       });
 
+      // tslint:disable-next-line: no-any
       assert.deepStrictEqual(decoded, Buffer.from(value as any, 'base64'));
     });
 
@@ -414,9 +416,11 @@ describe('codec', () => {
       };
 
       const int = {int: true};
-      codec.Int = function(value_) {
-        assert.strictEqual(value_, value.fieldName);
-        return int;
+      codec.Int = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value.fieldName);
+          return int;
+        }
       };
 
       const decoded = codec.decode(value, {
@@ -450,14 +454,16 @@ describe('codec', () => {
 
   describe('encode', () => {
     beforeEach(() => {
-      FakeGrpcService.encodeValue_ = value => value;
+      // tslint:disable-next-line no-any
+      (FakeGrpcService as any).encodeValue_ = value => value;
     });
 
     it('should return the value from the common encoder', () => {
       const value = {};
       const defaultEncodedValue = {};
 
-      FakeGrpcService.encodeValue_ = function(value_) {
+      // tslint:disable-next-line no-any
+      (FakeGrpcService as any).encodeValue_ = (value_) => {
         assert.strictEqual(value_, value);
         return defaultEncodedValue;
       };
@@ -516,7 +522,7 @@ describe('codec', () => {
       const encoded = codec.encode(value);
 
       assert.deepStrictEqual(encoded, [
-        value.toString(), // (tests that it is stringified)
+        value.toString(),  // (tests that it is stringified)
       ]);
     });
 
@@ -615,11 +621,11 @@ describe('codec', () => {
       const type = codec.getType(struct);
       assert.strictEqual(type.type, 'struct');
       assert.deepStrictEqual([].concat(type.fields.slice()), [
-          {
-            name: 'a',
-            type: 'string',
-          },
-        ]);
+        {
+          name: 'a',
+          type: 'string',
+        },
+      ]);
     });
 
     it('should attempt to determine arrays and their values', () => {
@@ -695,7 +701,7 @@ describe('codec', () => {
 
       const encodedValue = {};
 
-      codec.encode = function(field) {
+      codec.encode = (field) => {
         assert.strictEqual(field, fakeQuery.params.test);
         return encodedValue;
       };
@@ -725,7 +731,7 @@ describe('codec', () => {
 
       let getTypeCallCount = 0;
 
-      codec.getType = function(field) {
+      codec.getType = (field) => {
         const type = types[getTypeCallCount++];
 
         assert.strictEqual(params[type], field);
@@ -772,7 +778,7 @@ describe('codec', () => {
         },
       };
 
-      codec.getType = function() {
+      codec.getType = () => {
         throw new Error('Should not be called');
       };
 
@@ -788,7 +794,7 @@ describe('codec', () => {
 
       const fakeTypeObject = {};
 
-      codec.createTypeObject = function(type) {
+      codec.createTypeObject = (type) => {
         assert.strictEqual(type, 'string');
         return fakeTypeObject;
       };
@@ -823,22 +829,21 @@ describe('codec', () => {
         const encodedValue = {};
         let numEncodeRequests = 0;
 
-        codec.encode = function(key) {
+        codec.encode = (key) => {
           numEncodeRequests++;
 
           switch (numEncodeRequests) {
-            case 1: {
+            case 1:
               assert.strictEqual(key, query.keys[0]);
               break;
-            }
-            case 2: {
+            case 2:
               assert.strictEqual(key, query.keys[1][0]);
               break;
-            }
-            case 3: {
+            case 3:
               assert.strictEqual(key, query.keys[1][1]);
               break;
-            }
+            default:
+              break;
           }
 
           return encodedValue;
@@ -861,7 +866,7 @@ describe('codec', () => {
         const query = 'key';
 
         const encodedValue = {};
-        codec.encode = function(key) {
+        codec.encode = (key) => {
           assert.strictEqual(key, query);
           return encodedValue;
         };
@@ -875,7 +880,7 @@ describe('codec', () => {
         const query = ['key'];
 
         const encodedValue = {};
-        codec.encode = function(key) {
+        codec.encode = (key) => {
           assert.strictEqual(key, query[0]);
           return encodedValue;
         };
@@ -891,7 +896,7 @@ describe('codec', () => {
         };
 
         const encodedValue = {};
-        codec.encode = function(key) {
+        codec.encode = (key) => {
           assert.strictEqual(key, query.keys);
           return encodedValue;
         };
@@ -926,7 +931,7 @@ describe('codec', () => {
         const encodedValue = {};
         let numEncodeRequests = 0;
 
-        codec.encode = function(key) {
+        codec.encode = (key) => {
           const keys = ['key', 'composite', 'key'];
 
           assert.strictEqual(key, keys[numEncodeRequests++]);
@@ -963,7 +968,7 @@ describe('codec', () => {
         const encodedValue = {};
         let numEncodeRequests = 0;
 
-        codec.encode = function(key) {
+        codec.encode = (key) => {
           assert.strictEqual(key, ['start', 'end'][numEncodeRequests++]);
           return encodedValue;
         };

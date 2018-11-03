@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import * as events from 'events';
 import * as extend from 'extend';
 import * as PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 import * as stackTrace from 'stack-trace';
 import * as timeSpan from 'time-span';
 
-let pQueueOverride: any = null;
+import {Session} from '../src';
+import {Database} from '../src/database';
+import * as sp from '../src/session-pool';
+
+let pQueueOverride: typeof PQueue|null = null;
 
 function FakePQueue(options) {
   return new (pQueueOverride || PQueue)(options);
@@ -41,61 +44,57 @@ class FakeTransaction {
 }
 
 class FakeSession {
-  created;
-  deleted;
-  keptAlive;
+  created = false;
+  deleted = false;
+  keptAlive = false;
   createOptions;
   txn?;
   lastUsed?;
   type?;
   id?;
-  constructor() {
-    this.created = false;
-    this.deleted = false;
-    this.keptAlive = false;
-  }
   beginTransaction(options) {
     return new FakeTransaction(options).begin();
   }
-  create(options) {
+  async create(options) {
     this.created = true;
     this.createOptions = options;
-    return Promise.resolve();
   }
-  delete() {
+  async delete() {
     this.deleted = true;
-    return Promise.resolve();
   }
-  keepAlive() {
+  async keepAlive() {
     this.keptAlive = true;
-    return Promise.resolve();
   }
 }
 
-const fakeStackTrace = extend({}, stackTrace);
+// tslint:disable-next-line no-any
+const fakeStackTrace: any = extend({}, stackTrace);
 
 function noop() {}
 
 describe('SessionPool', () => {
-  let sessionPool;
-  let SessionPool;
+  let sessionPool: sp.SessionPool;
+  // tslint:disable-next-line variable-name
+  let SessionPool: typeof sp.SessionPool;
 
-  const DATABASE: any = {};
-
+  const DATABASE = {} as Database;
+  const sandbox = sinon.createSandbox();
   before(() => {
     SessionPool = proxyquire('../src/session-pool.js', {
-      'p-queue': FakePQueue,
-      'stack-trace': fakeStackTrace,
-    }).SessionPool;
+                    'p-queue': FakePQueue,
+                    'stack-trace': fakeStackTrace,
+                  }).SessionPool;
   });
 
   beforeEach(() => {
-    DATABASE.session = () => new FakeSession();
+    // tslint:disable-next-line no-any
+    DATABASE.session = () => (new FakeSession() as any);
     sessionPool = new SessionPool(DATABASE);
   });
 
   afterEach(() => {
     pQueueOverride = null;
+    sandbox.restore();
   });
 
   describe('formatTrace', () => {
@@ -139,7 +138,8 @@ describe('SessionPool', () => {
     it('should return a trace with the function name', () => {
       fakeFunction = 'myFunction';
 
-      const expected = `Session leak detected!\n    at ${fakeFunction} (${file})`;
+      const expected =
+          `Session leak detected!\n    at ${fakeFunction} (${file})`;
       const actual = SessionPool.formatTrace(fakeTrace);
 
       assert.strictEqual(expected, actual);
@@ -184,16 +184,15 @@ describe('SessionPool', () => {
     it('should factor in borrowed sessions', () => {
       sessionPool.options.min = 4;
 
-      return sessionPool
-        .open()
-        .then(() => {
-          return sessionPool._acquire('readonly');
-        })
-        .then(() => {
-          assert.strictEqual(sessionPool.reads, 4);
-          assert.strictEqual(sessionPool.available, 3);
-          assert.strictEqual(sessionPool.borrowed, 1);
-        });
+      return sessionPool.open()
+          .then(() => {
+            return sessionPool._acquire('readonly');
+          })
+          .then(() => {
+            assert.strictEqual(sessionPool.reads, 4);
+            assert.strictEqual(sessionPool.available, 3);
+            assert.strictEqual(sessionPool.borrowed, 1);
+          });
     });
   });
 
@@ -219,16 +218,15 @@ describe('SessionPool', () => {
       sessionPool.options.min = 4;
       sessionPool.options.writes = 1;
 
-      return sessionPool
-        .open()
-        .then(() => {
-          return sessionPool._acquire('readwrite');
-        })
-        .then(() => {
-          assert.strictEqual(sessionPool.writes, 4);
-          assert.strictEqual(sessionPool.available, 3);
-          assert.strictEqual(sessionPool.borrowed, 1);
-        });
+      return sessionPool.open()
+          .then(() => {
+            return sessionPool._acquire('readwrite');
+          })
+          .then(() => {
+            assert.strictEqual(sessionPool.writes, 4);
+            assert.strictEqual(sessionPool.available, 3);
+            assert.strictEqual(sessionPool.borrowed, 1);
+          });
     });
   });
 
@@ -257,7 +255,8 @@ describe('SessionPool', () => {
       });
 
       describe('writes', () => {
-        const writeErrReg = /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
+        const writeErrReg =
+            /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
 
         it('should throw when writes is less than 0', () => {
           assert.throws(() => {
@@ -290,9 +289,11 @@ describe('SessionPool', () => {
         concurrency: 11,
       };
 
-      pQueueOverride = function(options) {
-        return options;
-      };
+      pQueueOverride = (class {
+                         constructor(options) {
+                           return options;
+                         }
+                       }) as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE, poolOptions);
       assert.deepStrictEqual(sessionPool._requests, {
@@ -301,9 +302,11 @@ describe('SessionPool', () => {
     });
 
     it('should create an acquire queue', () => {
-      pQueueOverride = function(options) {
-        return options;
-      };
+      pQueueOverride = (class {
+                         constructor(options) {
+                           return options;
+                         }
+                       }) as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE);
       assert.deepStrictEqual(sessionPool._acquires, {
@@ -355,14 +358,12 @@ describe('SessionPool', () => {
 
     it('should destroy all the sessions', () => {
       const sessions = [].concat(
-        sessionPool._inventory.readonly,
-        sessionPool._inventory.readwrite,
-        Array.from(sessionPool._inventory.borrowed)
-      );
+          sessionPool._inventory.readonly, sessionPool._inventory.readwrite,
+          Array.from(sessionPool._inventory.borrowed));
 
       let destroyed = 0;
 
-      sessionPool._destroy = function(session) {
+      sessionPool._destroy = (session) => {
         assert.strictEqual(session, sessions[destroyed++]);
       };
 
@@ -373,7 +374,7 @@ describe('SessionPool', () => {
     it('should execute the callback on idle', done => {
       let idleCalled = false;
 
-      sessionPool._requests.onIdle = function() {
+      sessionPool._requests.onIdle = () => {
         idleCalled = true;
         return Promise.resolve();
       };
@@ -386,17 +387,15 @@ describe('SessionPool', () => {
     });
 
     it('should return a leak error', done => {
-      const fakeLeaks = [{}, {}];
+      const fakeLeaks = ['{}', '{}'];
 
-      sessionPool._getLeaks = function() {
+      sessionPool._getLeaks = () => {
         return fakeLeaks;
       };
 
       sessionPool.close(err => {
         assert.strictEqual(
-          err.message,
-          `${fakeLeaks.length} session leak(s) detected.`
-        );
+            err.message, `${fakeLeaks.length} session leak(s) detected.`);
         assert.strictEqual(err.messages, fakeLeaks);
         done();
       });
@@ -407,7 +406,7 @@ describe('SessionPool', () => {
     it('should acquire a read session', done => {
       const fakeSession = new FakeSession();
 
-      sessionPool._acquire = function(type) {
+      sessionPool._acquire = (type) => {
         assert.strictEqual(type, 'readonly');
         return Promise.resolve(fakeSession);
       };
@@ -422,7 +421,7 @@ describe('SessionPool', () => {
     it('should pass any errors to the callback', done => {
       const error = new Error('err');
 
-      sessionPool._acquire = function() {
+      sessionPool._acquire = () => {
         return Promise.reject(error);
       };
 
@@ -440,7 +439,7 @@ describe('SessionPool', () => {
 
       fakeSession.txn = fakeTxn;
 
-      sessionPool._acquire = function(type) {
+      sessionPool._acquire = (type) => {
         assert.strictEqual(type, 'readwrite');
         return Promise.resolve(fakeSession);
       };
@@ -456,7 +455,7 @@ describe('SessionPool', () => {
     it('should pass any errors to the callback', done => {
       const error = new Error('err');
 
-      sessionPool._acquire = function() {
+      sessionPool._acquire = () => {
         return Promise.reject(error);
       };
 
@@ -470,7 +469,7 @@ describe('SessionPool', () => {
   describe('open', () => {
     beforeEach(() => {
       sessionPool._stopHouseKeeping = noop;
-      sessionPool._fill = noop;
+      sessionPool._fill = () => Promise.resolve([]);
     });
 
     it('should create an onclose promise', () => {
@@ -497,9 +496,9 @@ describe('SessionPool', () => {
     });
 
     it('should fill the pool', () => {
-      const fakeFillReturn = {};
+      const fakeFillReturn = [];
 
-      sessionPool._fill = function() {
+      sessionPool._fill = () => {
         return Promise.resolve(fakeFillReturn);
       };
 
@@ -511,7 +510,7 @@ describe('SessionPool', () => {
 
   describe('release', () => {
     beforeEach(() => {
-      sessionPool._prepareTransaction = function() {
+      sessionPool._prepareTransaction = () => {
         return Promise.resolve();
       };
     });
@@ -556,7 +555,7 @@ describe('SessionPool', () => {
 
         sessionPool._prepareTransaction = shouldNotBeCalled;
 
-        sessionPool._release = function(session) {
+        sessionPool._release = (session) => {
           assert.strictEqual(session, fakeSession);
           done();
         };
@@ -577,7 +576,7 @@ describe('SessionPool', () => {
       });
 
       it('should prep a new transaction', done => {
-        sessionPool._prepareTransaction = function(session) {
+        sessionPool._prepareTransaction = (session) => {
           assert.strictEqual(session, fakeSession);
           setImmediate(done);
           return Promise.resolve();
@@ -588,11 +587,11 @@ describe('SessionPool', () => {
       });
 
       it('should release the read/write session', done => {
-        sessionPool._prepareTransaction = function() {
+        sessionPool._prepareTransaction = () => {
           return Promise.resolve();
         };
 
-        sessionPool._release = function(session) {
+        sessionPool._release = (session) => {
           assert.strictEqual(session, fakeSession);
           done();
         };
@@ -601,11 +600,11 @@ describe('SessionPool', () => {
       });
 
       it('should convert to a read session if txn fails', done => {
-        sessionPool._prepareTransaction = function() {
+        sessionPool._prepareTransaction = () => {
           return Promise.reject();
         };
 
-        sessionPool._release = function(session) {
+        sessionPool._release = (session) => {
           assert.strictEqual(session, fakeSession);
           assert.strictEqual(session.type, 'readonly');
           done();
@@ -633,15 +632,13 @@ describe('SessionPool', () => {
     it('should return a timeout error if a timeout happens', () => {
       sessionPool.options.acquireTimeout = 1;
 
-      sessionPool._acquires.add = function(fn) {
+      sessionPool._acquires.add = (fn) => {
         return new Promise(r => setTimeout(r, 2)).then(fn);
       };
 
       return sessionPool._acquire().then(shouldNotBeCalled, err => {
         assert.strictEqual(
-          err.message,
-          'Timeout occurred while acquiring session.'
-        );
+            err.message, 'Timeout occurred while acquiring session.');
       });
     });
 
@@ -650,7 +647,7 @@ describe('SessionPool', () => {
       const fakeType = 'readonly';
       const now = Date.now();
 
-      sessionPool._getSession = function(type, startTime) {
+      sessionPool._getSession = (type, startTime) => {
         assert.strictEqual(type, fakeType);
         assert(isAround(startTime, now));
         return Promise.resolve(fakeSession);
@@ -666,11 +663,11 @@ describe('SessionPool', () => {
       const goodSession = new FakeSession();
       const fakeSessions = [badSession, goodSession];
 
-      sessionPool._isValidSession = function(session) {
+      sessionPool._isValidSession = (session) => {
         return session === goodSession;
       };
 
-      sessionPool._getSession = function() {
+      sessionPool._getSession = () => {
         return Promise.resolve(fakeSessions.shift());
       };
 
@@ -688,13 +685,13 @@ describe('SessionPool', () => {
 
       fakeSession.id = id;
 
-      sessionPool._getSession = function() {
+      sessionPool._getSession = () => {
         return Promise.resolve(fakeSession);
       };
 
       const fakeTrace = {};
 
-      (fakeStackTrace as any).get = function() {
+      fakeStackTrace.get = () => {
         return fakeTrace;
       };
 
@@ -708,11 +705,11 @@ describe('SessionPool', () => {
       const fakeSession = new FakeSession();
       const convertedSession = new FakeSession();
 
-      sessionPool._getSession = function() {
+      sessionPool._getSession = () => {
         return Promise.resolve(fakeSession);
       };
 
-      sessionPool._convertSession = function(session) {
+      sessionPool._convertSession = (session) => {
         assert.strictEqual(session, fakeSession);
         return convertedSession;
       };
@@ -745,7 +742,7 @@ describe('SessionPool', () => {
 
       sessionPool._inventory.readonly.push(fakeSession, new FakeSession());
 
-      sessionPool._borrow = function(session) {
+      sessionPool._borrow = (session) => {
         assert.strictEqual(session, fakeSession);
         borrowed = true;
       };
@@ -763,7 +760,7 @@ describe('SessionPool', () => {
 
       sessionPool._inventory.readonly.push(fakeSession);
 
-      sessionPool._borrowFrom = function(type) {
+      sessionPool._borrowFrom = (type) => {
         assert.strictEqual(type, 'readonly');
         return fakeSession;
       };
@@ -778,7 +775,7 @@ describe('SessionPool', () => {
 
       sessionPool._inventory.readwrite.push(fakeSession);
 
-      sessionPool._borrowFrom = function(type) {
+      sessionPool._borrowFrom = (type) => {
         assert.strictEqual(type, 'readwrite');
         return fakeSession;
       };
@@ -793,7 +790,7 @@ describe('SessionPool', () => {
 
       sessionPool._inventory.readwrite.push(fakeSession);
 
-      sessionPool._borrowFrom = function(type) {
+      sessionPool._borrowFrom = (type) => {
         assert.strictEqual(type, 'readwrite');
         return fakeSession;
       };
@@ -808,7 +805,7 @@ describe('SessionPool', () => {
 
       sessionPool._inventory.readonly.push(fakeSession);
 
-      sessionPool._borrowFrom = function(type) {
+      sessionPool._borrowFrom = (type) => {
         assert.strictEqual(type, 'readonly');
         return fakeSession;
       };
@@ -825,7 +822,7 @@ describe('SessionPool', () => {
 
       let prepared = false;
 
-      sessionPool._prepareTransaction = function(session) {
+      sessionPool._prepareTransaction = (session) => {
         assert.strictEqual(session, fakeSession);
         prepared = true;
         return Promise.resolve();
@@ -843,21 +840,20 @@ describe('SessionPool', () => {
 
       let released = false;
 
-      sessionPool._release = function(session) {
+      sessionPool._release = (session) => {
         assert.strictEqual(session, fakeSession);
         released = true;
       };
 
-      sessionPool._prepareTransaction = function() {
+      sessionPool._prepareTransaction = () => {
         return Promise.reject(error);
       };
 
-      return sessionPool
-        ._convertSession(fakeSession)
-        .then(shouldNotBeCalled, err => {
-          assert.strictEqual(err, error);
-          assert.strictEqual(released, true);
-        });
+      return sessionPool._convertSession(fakeSession)
+          .then(shouldNotBeCalled, err => {
+            assert.strictEqual(err, error);
+            assert.strictEqual(released, true);
+          });
     });
   });
 
@@ -896,8 +892,9 @@ describe('SessionPool', () => {
         }
       }
 
-      DATABASE.session = function() {
-        return new BadFakeSession();
+      DATABASE.session = () => {
+        // tslint:disable-next-line no-any
+        return (new BadFakeSession() as any);
       };
 
       return sessionPool._createSession().then(shouldNotBeCalled, err => {
@@ -910,7 +907,7 @@ describe('SessionPool', () => {
     it('should prepare a transaction for readwrite sessions', () => {
       let prepared = false;
 
-      sessionPool._prepareTransaction = function(session) {
+      sessionPool._prepareTransaction = (session) => {
         assert(session instanceof FakeSession);
         prepared = true;
         return Promise.resolve();
@@ -923,7 +920,7 @@ describe('SessionPool', () => {
     });
 
     it('should convert rw to readonly if unable to prepare txn', () => {
-      sessionPool._prepareTransaction = function() {
+      sessionPool._prepareTransaction = () => {
         return Promise.reject(new Error('err'));
       };
 
@@ -948,7 +945,7 @@ describe('SessionPool', () => {
 
   describe('_createSessionInBackground', () => {
     it('should emit available on success', done => {
-      sessionPool._createSession = function(type) {
+      sessionPool._createSession = (type) => {
         assert.strictEqual(type, 'readonly');
         return Promise.resolve();
       };
@@ -960,7 +957,7 @@ describe('SessionPool', () => {
     it('should emit error on error', done => {
       const error = new Error('err');
 
-      sessionPool._createSession = function() {
+      sessionPool._createSession = () => {
         return Promise.reject(error);
       };
 
@@ -1011,7 +1008,7 @@ describe('SessionPool', () => {
       sessionPool.options.min = 0;
       sessionPool._inventory.readonly = fakeSessions.slice();
 
-      sessionPool._getIdleSessions = function() {
+      sessionPool._getIdleSessions = () => {
         return fakeSessions.slice();
       };
     });
@@ -1019,7 +1016,7 @@ describe('SessionPool', () => {
     it('should evict the sessions', () => {
       let destroyCallCount = 0;
 
-      sessionPool._destroy = function(session) {
+      sessionPool._destroy = (session) => {
         const fakeSessionIndex = fakeSessions.length - ++destroyCallCount;
         const fakeSession = fakeSessions[fakeSessionIndex];
 
@@ -1033,7 +1030,7 @@ describe('SessionPool', () => {
     it('should respect the maxIdle option', () => {
       let destroyCallCount = 0;
 
-      sessionPool._destroy = function(session) {
+      sessionPool._destroy = (session) => {
         const fakeSessionIndex = fakeSessions.length - ++destroyCallCount;
         const fakeSession = fakeSessions[fakeSessionIndex];
 
@@ -1049,7 +1046,7 @@ describe('SessionPool', () => {
     it('should respect the min value', () => {
       let destroyCallCount = 0;
 
-      sessionPool._destroy = function(session) {
+      sessionPool._destroy = (session) => {
         const fakeSessionIndex = fakeSessions.length - ++destroyCallCount;
         const fakeSession = fakeSessions[fakeSessionIndex];
 
@@ -1074,8 +1071,9 @@ describe('SessionPool', () => {
         readwrite: 0,
       };
 
-      sessionPool._createSessionInBackground = function(type) {
-        created[type] += 1;
+      sessionPool._createSessionInBackground = (type) => {
+        created[type!] += 1;
+        return Promise.resolve();
       };
     });
 
@@ -1111,7 +1109,7 @@ describe('SessionPool', () => {
     it('should settle once all the sessions are created', () => {
       const end = timeSpan();
 
-      sessionPool._createSessionInBackground = function() {
+      sessionPool._createSessionInBackground = () => {
         return new Promise(resolve => {
           setTimeout(resolve, 500);
         });
@@ -1125,7 +1123,7 @@ describe('SessionPool', () => {
 
   describe('_getIdleSessions', () => {
     it('should return a list of idle sessions', () => {
-      const idlesAfter = (sessionPool.options.idlesAfter = 1); // 1 minute
+      const idlesAfter = (sessionPool.options.idlesAfter = 1);  // 1 minute
       const idleTimestamp = Date.now() - idlesAfter * 60000;
 
       const fakeReads = (sessionPool._inventory.readonly = [
@@ -1154,7 +1152,7 @@ describe('SessionPool', () => {
 
       let formatCalls = 0;
 
-      SessionPool.formatTrace = function(log) {
+      SessionPool.formatTrace = (log) => {
         assert.strictEqual(log, values[formatCalls]);
         return formatted[formatCalls++];
       };
@@ -1178,7 +1176,7 @@ describe('SessionPool', () => {
 
       sessionPool._inventory.readonly = [fakeSession];
 
-      sessionPool._borrowNextAvailableSession = function(type) {
+      sessionPool._borrowNextAvailableSession = (type) => {
         assert.strictEqual(type, 'readonly');
         return fakeSession;
       };
@@ -1207,7 +1205,7 @@ describe('SessionPool', () => {
     it('should return a session when it becomes available', () => {
       const fakeSession = new FakeSession();
 
-      sessionPool._borrowNextAvailableSession = function(type) {
+      sessionPool._borrowNextAvailableSession = (type) => {
         assert.strictEqual(type, 'readonly');
         return fakeSession;
       };
@@ -1223,15 +1221,12 @@ describe('SessionPool', () => {
       const end = timeSpan();
       const timeout = (sessionPool.options.acquireTimeout = 100);
 
-      return sessionPool
-        ._getSession('readonly', Date.now())
-        .then(shouldNotBeCalled, err => {
-          assert(isAround(timeout, end()));
-          assert.strictEqual(
-            err.message,
-            'Timeout occurred while acquiring session.'
-          );
-        });
+      return sessionPool._getSession('readonly', Date.now())
+          .then(shouldNotBeCalled, err => {
+            assert(isAround(timeout, end()));
+            assert.strictEqual(
+                err.message, 'Timeout occurred while acquiring session.');
+          });
     });
 
     it('should create a session if the pool is not full', () => {
@@ -1241,13 +1236,13 @@ describe('SessionPool', () => {
 
       let created = false;
 
-      sessionPool._createSession = function(type) {
+      sessionPool._createSession = (type) => {
         assert.strictEqual(type, 'readonly');
         created = true;
         return Promise.resolve();
       };
 
-      sessionPool._borrowNextAvailableSession = function() {
+      sessionPool._borrowNextAvailableSession = () => {
         return fakeSession;
       };
 
@@ -1262,7 +1257,7 @@ describe('SessionPool', () => {
 
       sessionPool.options.max = 1;
 
-      sessionPool._createSession = function() {
+      sessionPool._createSession = () => {
         return Promise.reject(error);
       };
 
@@ -1302,7 +1297,7 @@ describe('SessionPool', () => {
 
   describe('_ping', () => {
     beforeEach(() => {
-      sessionPool._borrow = function(session) {
+      sessionPool._borrow = (session) => {
         sessionPool._inventory.borrowed.add(session);
       };
     });
@@ -1310,7 +1305,7 @@ describe('SessionPool', () => {
     it('should borrow the session', () => {
       const fakeSession = new FakeSession();
 
-      sessionPool._borrow = function(session) {
+      sessionPool._borrow = (session) => {
         assert.strictEqual(session, fakeSession);
       };
 
@@ -1337,7 +1332,7 @@ describe('SessionPool', () => {
 
       let released = false;
 
-      sessionPool.release = function(session) {
+      sessionPool.release = (session) => {
         assert.strictEqual(session, fakeSession);
         released = true;
       };
@@ -1357,7 +1352,7 @@ describe('SessionPool', () => {
 
       let destroyed = false;
 
-      sessionPool._destroy = function(session) {
+      sessionPool._destroy = (session) => {
         assert.strictEqual(session, fakeSession);
         destroyed = true;
       };
@@ -1373,20 +1368,21 @@ describe('SessionPool', () => {
 
   describe('_pingIdleSessions', () => {
     it('should ping each idle session', () => {
-      const fakeSessions = [{}, {}, {}];
+      const fakeSessions: Session[] =
+          [{} as Session, {} as Session, {} as Session];
 
-      sessionPool._getIdleSessions = function() {
+      sessionPool._getIdleSessions = () => {
         return fakeSessions;
       };
 
       let pingCalls = 0;
 
-      sessionPool._ping = function(session) {
+      sessionPool._ping = (session) => {
         assert.strictEqual(session, fakeSessions[pingCalls++]);
         return Promise.resolve();
       };
 
-      sessionPool._fill = noop;
+      sessionPool._fill = () => Promise.resolve([]);
 
       return sessionPool._pingIdleSessions().then(() => {
         assert.strictEqual(pingCalls, 3);
@@ -1396,11 +1392,12 @@ describe('SessionPool', () => {
     it('should fill the pool after pinging', () => {
       let filled = false;
 
-      sessionPool._fill = function() {
+      sessionPool._fill = () => {
         filled = true;
+        return Promise.resolve([]);
       };
 
-      sessionPool._getIdleSessions = function() {
+      sessionPool._getIdleSessions = () => {
         return [];
       };
 
@@ -1453,16 +1450,6 @@ describe('SessionPool', () => {
   });
 
   describe('_startHouseKeeping', () => {
-    let _setInterval;
-
-    before(() => {
-      _setInterval = global.setInterval;
-    });
-
-    afterEach(() => {
-      global.setInterval = _setInterval;
-    });
-
     it('should set an interval to evict idle sessions', done => {
       const callIndex = 0;
       const expectedInterval = sessionPool.options.idlesAfter * 60000;
@@ -1476,17 +1463,16 @@ describe('SessionPool', () => {
         },
       };
 
-      (global as any).setInterval = function(fn, interval) {
+      sandbox.stub(global, 'setInterval').callsFake((fn, interval) => {
         if (intervalCalls++ !== callIndex) {
           return {unref: noop};
         }
-
         assert.strictEqual(interval, expectedInterval);
         setImmediate(fn);
         return fakeHandle;
-      };
+      });
 
-      sessionPool._evictIdleSessions = function() {
+      sessionPool._evictIdleSessions = () => {
         assert.strictEqual(sessionPool._evictHandle, fakeHandle);
         assert.strictEqual(unreffed, true);
         done();
@@ -1508,20 +1494,20 @@ describe('SessionPool', () => {
         },
       };
 
-      (global as any).setInterval = function(fn, interval) {
+      sandbox.stub(global, 'setInterval').callsFake((fn, interval) => {
         if (intervalCalls++ !== callIndex) {
           return {unref: noop};
         }
-
         assert.strictEqual(interval, expectedInterval);
         setImmediate(fn);
         return fakeHandle;
-      };
+      });
 
-      sessionPool._pingIdleSessions = function() {
+      sessionPool._pingIdleSessions = () => {
         assert.strictEqual(sessionPool._pingHandle, fakeHandle);
         assert.strictEqual(unreffed, true);
         done();
+        return Promise.resolve([]);
       };
 
       sessionPool._startHouseKeeping();
@@ -1529,16 +1515,6 @@ describe('SessionPool', () => {
   });
 
   describe('_stopHouseKeeping', () => {
-    let _clearInterval;
-
-    before(() => {
-      _clearInterval = global.clearInterval;
-    });
-
-    afterEach(() => {
-      global.clearInterval = _clearInterval;
-    });
-
     it('should clear the intervals', () => {
       sessionPool._pingHandle = 'a';
       sessionPool._evictHandle = 'b';
@@ -1547,9 +1523,9 @@ describe('SessionPool', () => {
 
       let clearCalls = 0;
 
-      global.clearInterval = function(handle) {
+      sandbox.stub(global, 'clearInterval').callsFake(handle => {
         assert.strictEqual(handle, fakeHandles[clearCalls++]);
-      };
+      });
 
       sessionPool._stopHouseKeeping();
       assert.strictEqual(clearCalls, 2);

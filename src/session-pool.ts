@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import {EventEmitter} from 'events';
 import * as is from 'is';
 import * as PQueue from 'p-queue';
 import * as stackTrace from 'stack-trace';
+
+import {Session} from '.';
+import {Database} from './database';
 
 const READONLY = 'readonly';
 const READWRITE = 'readwrite';
@@ -93,8 +94,7 @@ class TimeoutError extends Error {
 class WritePercentError extends TypeError {
   constructor() {
     super(
-      'Write percentage should be represented as a float between 0.0 and 1.0.'
-    );
+        'Write percentage should be represented as a float between 0.0 and 1.0.');
   }
 }
 
@@ -134,12 +134,11 @@ class WritePercentError extends TypeError {
  * @class
  * @extends {EventEmitter}
  */
-class SessionPool extends EventEmitter {
-
+export class SessionPool extends EventEmitter {
   _inventory;
   options;
-  isOpen;
-  database;
+  isOpen: boolean;
+  database: Database;
   _requests;
   _acquires;
   _traces;
@@ -200,10 +199,11 @@ class SessionPool extends EventEmitter {
   get reads() {
     const {readonly, borrowed} = this._inventory;
     const available = readonly.length;
-    const used = Array.from(borrowed).filter(
-      // tslint:disable-next-line no-any
-      session => (session as any).type === READONLY
-    ).length;
+    const used = Array.from(borrowed)
+                     .filter(
+                         // tslint:disable-next-line no-any
+                         session => (session as any).type === READONLY)
+                     .length;
 
     return available + used;
   }
@@ -223,10 +223,11 @@ class SessionPool extends EventEmitter {
   get writes() {
     const {readwrite, borrowed} = this._inventory;
     const available = readwrite.length;
-    const used = Array.from(borrowed).filter(
-      // tslint:disable-next-line no-any
-      session => (session as any).type === READWRITE
-    ).length;
+    const used = Array.from(borrowed)
+                     .filter(
+                         // tslint:disable-next-line no-any
+                         session => (session as any).type === READWRITE)
+                     .length;
 
     return available + used;
   }
@@ -236,7 +237,7 @@ class SessionPool extends EventEmitter {
    * @param {Database} database The DB instance.
    * @param {SessionPoolOptions} [options] Configuration options.
    */
-  constructor(database, options) {
+  constructor(database: Database, options?) {
     super();
 
     this.isOpen = false;
@@ -274,10 +275,8 @@ class SessionPool extends EventEmitter {
    */
   close(callback) {
     const sessions = [].concat(
-      this._inventory[READONLY],
-      this._inventory[READWRITE],
-      Array.from(this._inventory.borrowed)
-    );
+        this._inventory[READONLY], this._inventory[READWRITE],
+        Array.from(this._inventory.borrowed));
 
     this._inventory[READONLY] = [];
     this._inventory[READWRITE] = [];
@@ -323,9 +322,7 @@ class SessionPool extends EventEmitter {
    */
   getWriteSession(callback) {
     this._acquire(READWRITE).then(
-      session => callback(null, session, session.txn),
-      callback
-    );
+        session => callback(null, session, session.txn), callback);
   }
 
   /**
@@ -368,8 +365,8 @@ class SessionPool extends EventEmitter {
     }
 
     this._prepareTransaction(session)
-      .catch(() => (session.type = READONLY))
-      .then(() => this._release(session));
+        .catch(() => (session.type = READONLY))
+        .then(() => this._release(session));
   }
 
   /**
@@ -380,7 +377,7 @@ class SessionPool extends EventEmitter {
    * @param {string} type The desired type to borrow.
    * @returns {Promise<Session>}
    */
-  _acquire(type) {
+  _acquire(type?: string) {
     if (!this.isOpen) {
       return Promise.reject(new ClosedError());
     }
@@ -396,7 +393,7 @@ class SessionPool extends EventEmitter {
         return Promise.reject(new TimeoutError());
       }
 
-      return this._getSession(type, startTime).then(session => {
+      return this._getSession(type!, startTime).then(session => {
         if (!this._isValidSession(session)) {
           this._inventory.borrowed.delete(session);
           return getSession();
@@ -480,13 +477,10 @@ class SessionPool extends EventEmitter {
    * @returns {Promise<Session>}
    */
   _convertSession(session) {
-    return this._prepareTransaction(session).then(
-      () => session,
-      err => {
-        this._release(session);
-        throw err;
-      }
-    );
+    return this._prepareTransaction(session).then(() => session, err => {
+      this._release(session);
+      throw err;
+    });
   }
 
   /**
@@ -497,35 +491,33 @@ class SessionPool extends EventEmitter {
    * @param {string} type The desired type to create.
    * @returns {Promise}
    */
-  _createSession(type) {
+  _createSession(type?: string): Promise<void> {
     const session = this.database.session();
     const labels = this.options.labels;
 
     this._inventory.borrowed.add(session);
 
     return this._requests
-      .add(() => {
-        return session.create({labels}).then(() => {
-          if (type === READWRITE) {
-            return this._prepareTransaction(session).catch(
-              () => (type = READONLY)
-            );
-          }
-        });
-      })
-      .then(
-        () => {
-          session.type = type;
-          session.lastUsed = Date.now();
+        .add(() => {
+          return session.create({labels}).then(() => {
+            if (type === READWRITE) {
+              return this._prepareTransaction(session).catch(
+                  () => (type = READONLY));
+            }
+          });
+        })
+        .then(
+            () => {
+              session.type = type;
+              session.lastUsed = Date.now();
 
-          this._inventory[type].push(session);
-          this._inventory.borrowed.delete(session);
-        },
-        err => {
-          this._inventory.borrowed.delete(session);
-          throw err;
-        }
-      );
+              this._inventory[type!].push(session);
+              this._inventory.borrowed.delete(session);
+            },
+            err => {
+              this._inventory.borrowed.delete(session);
+              throw err;
+            });
   }
 
   /**
@@ -538,16 +530,19 @@ class SessionPool extends EventEmitter {
    * @param {string} type The desired type to create.
    * @returns {Promise}
    */
-  _createSessionInBackground(type) {
+  _createSessionInBackground(type?: string): Promise<void> {
     return this._createSession(type).then(
-      () => this.emit('available'),
-      err => this.emit('error', err)
-    );
+        () => {
+          this.emit('available');
+        },
+        err => {
+          this.emit('error', err);
+        });
   }
 
   /**
-   * Attempts to delete a session, optionally creating a new one of the same type
-   * if the pool is still open and we're under the configured min value.
+   * Attempts to delete a session, optionally creating a new one of the same
+   * type if the pool is still open and we're under the configured min value.
    *
    * @private
    *
@@ -556,9 +551,8 @@ class SessionPool extends EventEmitter {
    * @returns {Promise}
    */
   _destroy(session) {
-    return this._requests
-      .add(() => session.delete())
-      .catch(err => this.emit('error', err));
+    return this._requests.add(() => session.delete())
+        .catch(err => this.emit('error', err));
   }
 
   /**
@@ -591,8 +585,7 @@ class SessionPool extends EventEmitter {
    * @return {Promise}
    */
   _fill() {
-    const requests: Array<{}> = [];
-
+    const requests: Array<Promise<void>> = [];
     const minReadWrite = Math.floor(this.options.min * this.options.writes);
     const neededReadWrite = Math.max(minReadWrite - this.writes, 0);
 
@@ -617,12 +610,10 @@ class SessionPool extends EventEmitter {
    *
    * @returns {Session[]}
    */
-  _getIdleSessions() {
+  _getIdleSessions(): Session[] {
     const idlesAfter = this.options.idlesAfter * 60000;
-    const sessions = [].concat(
-      this._inventory[READWRITE],
-      this._inventory[READONLY]
-    );
+    const sessions =
+        [].concat(this._inventory[READWRITE], this._inventory[READONLY]);
 
     return sessions.filter(session => {
       // tslint:disable-next-line no-any
@@ -635,7 +626,7 @@ class SessionPool extends EventEmitter {
    *
    * @return {string[]}
    */
-  _getLeaks() {
+  _getLeaks(): string[] {
     return Array.from(this._traces.values()).map(SessionPool.formatTrace);
   }
 
@@ -649,7 +640,7 @@ class SessionPool extends EventEmitter {
    * @param {number} startTime Timestamp to use when determining timeouts.
    * @returns {Promise<Session>}
    */
-  _getSession(type, startTime) {
+  _getSession(type?: string, startTime?: number) {
     if (this.available) {
       return Promise.resolve(this._borrowNextAvailableSession(type));
     }
@@ -673,31 +664,25 @@ class SessionPool extends EventEmitter {
     const timeout = this.options.acquireTimeout;
 
     if (!is.infinite(timeout)) {
-      const elapsed = Date.now() - startTime;
+      const elapsed = Date.now() - startTime!;
       const remaining = timeout - elapsed;
 
-      promises.push(
-        new Promise((_, reject) => {
-          setTimeout(reject.bind(null, new TimeoutError()), remaining);
-        })
-      );
+      promises.push(new Promise((_, reject) => {
+        setTimeout(reject.bind(null, new TimeoutError()), remaining);
+      }));
     }
 
     if (!this.isFull) {
-      promises.push(
-        new Promise((resolve, reject) => {
-          this._createSession(type).then(() => this.emit('available'), reject);
-        })
-      );
+      promises.push(new Promise((resolve, reject) => {
+        this._createSession(type).then(() => this.emit('available'), reject);
+      }));
     }
 
     return Promise.race(promises).then(
-      () => this._borrowNextAvailableSession(type),
-      err => {
-        removeListener();
-        throw err;
-      }
-    );
+        () => this._borrowNextAvailableSession(type), err => {
+          removeListener();
+          throw err;
+        });
   }
 
   /**
@@ -729,13 +714,10 @@ class SessionPool extends EventEmitter {
       return Promise.resolve();
     }
 
-    return session.keepAlive().then(
-      () => this.release(session),
-      () => {
-        this._inventory.borrowed.delete(session);
-        this._destroy(session);
-      }
-    );
+    return session.keepAlive().then(() => this.release(session), () => {
+      this._inventory.borrowed.delete(session);
+      this._destroy(session);
+    });
   }
 
   /**
@@ -748,9 +730,8 @@ class SessionPool extends EventEmitter {
   _pingIdleSessions() {
     const sessions = this._getIdleSessions();
 
-    return Promise.all(sessions.map(session => this._ping(session))).then(() =>
-      this._fill()
-    );
+    return Promise.all(sessions.map(session => this._ping(session)))
+        .then(() => this._fill());
   }
 
   /**
@@ -813,5 +794,3 @@ class SessionPool extends EventEmitter {
     clearInterval(this._evictHandle);
   }
 }
-
-export {SessionPool};

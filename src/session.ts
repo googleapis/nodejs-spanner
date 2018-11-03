@@ -26,8 +26,8 @@ import * as extend from 'extend';
 import * as is from 'is';
 import * as r from 'request';
 import {Transaction} from './transaction';
-import { Database } from './database';
-import { ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback } from '@google-cloud/common';
+import {Database} from './database';
+import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback} from '@google-cloud/common';
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -68,7 +68,7 @@ import { ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback } fr
  * const session = database.session_('session-name');
  */
 class Session extends ServiceObject {
-  constructor(database: Database, name: string) {
+  constructor(database: Database, name?: string) {
     const methods = {
       /**
        * Create a session.
@@ -140,10 +140,10 @@ class Session extends ServiceObject {
       /**
        * Get a session if it exists.
        *
-       * You may optionally use this to "get or create" an object by providing an
-       * object with `autoCreate` set to `true`. Any extra configuration that is
-       * normally required for the `create` method must be contained within this
-       * object as well.
+       * You may optionally use this to "get or create" an object by providing
+       * an object with `autoCreate` set to `true`. Any extra configuration that
+       * is normally required for the `create` method must be contained within
+       * this object as well.
        *
        * @method Session#get
        * @param {options} [options] Configuration object.
@@ -270,13 +270,12 @@ class Session extends ServiceObject {
       name: this.formattedName_,
     };
     return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'deleteSession',
-        reqOpts,
-      },
-      callback!
-    );
+        {
+          client: 'SpannerClient',
+          method: 'deleteSession',
+          reqOpts,
+        },
+        callback!);
   }
   /**
    * @typedef {array} GetSessionMetadataResponse
@@ -318,13 +317,12 @@ class Session extends ServiceObject {
       name: this.formattedName_,
     };
     return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'getSession',
-        reqOpts,
-      },
-      callback!
-    );
+        {
+          client: 'SpannerClient',
+          method: 'getSession',
+          reqOpts,
+        },
+        callback!);
   }
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
@@ -345,13 +343,12 @@ class Session extends ServiceObject {
       sql: 'SELECT 1',
     };
     return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'executeSql',
-        reqOpts,
-      },
-      callback
-    );
+        {
+          client: 'SpannerClient',
+          method: 'executeSql',
+          reqOpts,
+        },
+        callback);
   }
   /**
    * Create a Transaction object.

@@ -67,44 +67,42 @@ function partialResultStream(requestFn: Function, options?) {
 
   let builder;
 
-  const userStream = streamEvents(
-    through.obj((row, _, next) => {
-      /**
-       * Emits the raw API response.
-       *
-       * @event PartialResultStream#response
-       * @type {google.spanner.v1.PartialResultSet}
-       */
-      userStream.emit('response', row);
+  const userStream = streamEvents(through.obj((row, _, next) => {
+    /**
+     * Emits the raw API response.
+     *
+     * @event PartialResultStream#response
+     * @type {google.spanner.v1.PartialResultSet}
+     */
+    userStream.emit('response', row);
 
-      if (row.stats) {
-        userStream.emit('stats', row.stats);
-      }
+    if (row.stats) {
+      userStream.emit('stats', row.stats);
+    }
 
-      if (is.empty(row.values)) {
-        next();
-        return;
-      }
+    if (is.empty(row.values)) {
+      next();
+      return;
+    }
 
-      // Use RowBuilder to construct and return complete, formatted rows.
-      if (!builder) {
-        builder = new RowBuilder(row.metadata.rowType.fields);
-      }
+    // Use RowBuilder to construct and return complete, formatted rows.
+    if (!builder) {
+      builder = new RowBuilder(row.metadata.rowType.fields);
+    }
 
-      builder.addRow(row);
+    builder.addRow(row);
 
-      // Build the chunks to rows.
-      builder.build();
+    // Build the chunks to rows.
+    builder.build();
 
-      let formattedRows = builder.toJSON(builder.flush());
+    let formattedRows = builder.toJSON(builder.flush());
 
-      if (options.json) {
-        formattedRows = formattedRows.map(x => x.toJSON(options.jsonOptions));
-      }
+    if (options.json) {
+      formattedRows = formattedRows.map(x => x.toJSON(options.jsonOptions));
+    }
 
-      split(formattedRows, userStream).then(() => next());
-    })
-  );
+    split(formattedRows, userStream).then(() => next());
+  }));
   // tslint:disable-next-line no-any
   (userStream as any).abort = () => {
     if (activeRequestStream) {
@@ -116,34 +114,38 @@ function partialResultStream(requestFn: Function, options?) {
 
   // tslint:disable-next-line no-any
   return (requestsStream as any)
-    .intercept('error', err => {
-      if (lastResumeToken) {
-        // We're going to retry from where we left off.
-        // Empty queued rows on the checkpoint stream (will not emit them to
-        // user).
-        batchAndSplitOnTokenStream.reset();
-        makeRequest();
-        return;
-      }
+      .intercept(
+          'error',
+          err => {
+            if (lastResumeToken) {
+              // We're going to retry from where we left off.
+              // Empty queued rows on the checkpoint stream (will not emit them
+              // to user).
+              batchAndSplitOnTokenStream.reset();
+              makeRequest();
+              return;
+            }
 
-      setImmediate(() => {
-        // We won't retry the request, so this will flush any rows the
-        // checkpoint stream has queued. After that, we will destroy the user's
-        // stream with the same error.
-        batchAndSplitOnTokenStream.destroy(err);
-      });
-    })
-    .pipe(batchAndSplitOnTokenStream)
-    .on('error', err => {
-      // If we get this error, the checkpoint stream has flushed any rows it had
-      // queued. We can now destroy the user's stream, as our retry attempts are
-      // over.
-      userStream.destroy(err);
-    })
-    .on('checkpoint', row => {
-      lastResumeToken = row.resumeToken;
-    })
-    .pipe(userStream);
+            setImmediate(() => {
+              // We won't retry the request, so this will flush any rows the
+              // checkpoint stream has queued. After that, we will destroy the
+              // user's stream with the same error.
+              batchAndSplitOnTokenStream.destroy(err);
+            });
+          })
+      .pipe(batchAndSplitOnTokenStream)
+      .on('error',
+          err => {
+            // If we get this error, the checkpoint stream has flushed any rows
+            // it had queued. We can now destroy the user's stream, as our retry
+            // attempts are over.
+            userStream.destroy(err);
+          })
+      .on('checkpoint',
+          row => {
+            lastResumeToken = row.resumeToken;
+          })
+      .pipe(userStream);
 }
 
 export {partialResultStream};
