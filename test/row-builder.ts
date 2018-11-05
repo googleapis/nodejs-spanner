@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
-
+import {util} from '@google-cloud/common-grpc';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
-import {util} from '@google-cloud/common-grpc';
+
 import {codec} from '../src/codec';
+import * as rb from '../src/row-builder';
 
 let decodeOverride;
 let generateToJSONFromRowOverride;
@@ -29,34 +29,36 @@ const fakeCodec = {
     return (decodeOverride || codec.decode).apply(null, arguments);
   },
   generateToJSONFromRow() {
-    return (generateToJSONFromRowOverride || codec.generateToJSONFromRow).apply(
-      null,
-      arguments
-    );
+    return (generateToJSONFromRowOverride || codec.generateToJSONFromRow)
+        .apply(null, arguments);
   },
 };
 
-function FakeGrpcService() {}
+class FakeGrpcService {
+  static decodeValue_(value) {}
+}
 
 describe('RowBuilder', () => {
-  let RowBuilder;
-  let RowBuilderCached;
-  let rowBuilder;
+  // tslint:disable-next-line variable-name
+  let RowBuilder: typeof rb.RowBuilder;
+  // tslint:disable-next-line variable-name
+  let RowBuilderCached: typeof rb.RowBuilder;
+  let rowBuilder: rb.RowBuilder;
 
   const FIELDS = [{}, {}];
 
   before(() => {
     RowBuilder = proxyquire('../src/row-builder.js', {
-      '@google-cloud/common-grpc': {
-        Service: FakeGrpcService,
-      },
-      './codec.js': {codec: fakeCodec},
-    }).RowBuilder;
+                   '@google-cloud/common-grpc': {
+                     Service: FakeGrpcService,
+                   },
+                   './codec.js': {codec: fakeCodec},
+                 }).RowBuilder;
     RowBuilderCached = extend({}, RowBuilder);
   });
 
   beforeEach(() => {
-    (FakeGrpcService as any).decodeValue_ = util.noop;
+    FakeGrpcService.decodeValue_ = util.noop;
     decodeOverride = null;
     generateToJSONFromRowOverride = null;
     extend(RowBuilder, RowBuilderCached);
@@ -64,8 +66,8 @@ describe('RowBuilder', () => {
   });
 
   describe('acceptance tests', () => {
-    const TESTS = require('../../test/data/streaming-read-acceptance-test.json')
-      .tests;
+    const TESTS =
+        require('../../test/data/streaming-read-acceptance-test.json').tests;
 
     TESTS.forEach(test => {
       it('should pass acceptance test: ' + test.name, () => {
@@ -118,7 +120,7 @@ describe('RowBuilder', () => {
 
       const expectedValue = {};
 
-      (FakeGrpcService as any).decodeValue_ = function() {
+      FakeGrpcService.decodeValue_ = () => {
         return expectedValue;
       };
 
@@ -135,7 +137,7 @@ describe('RowBuilder', () => {
 
       const expectedValue = {};
 
-      (FakeGrpcService as any).decodeValue_ = function() {
+      FakeGrpcService.decodeValue_ = () => {
         return {
           values: expectedValue,
         };
@@ -149,11 +151,11 @@ describe('RowBuilder', () => {
 
       Object.defineProperty(value, 'values', {
         get() {
-          return function() {};
+          return () => {};
         },
       });
 
-      (FakeGrpcService as any).decodeValue_ = function() {
+      FakeGrpcService.decodeValue_ = () => {
         return value;
       };
 
@@ -177,7 +179,7 @@ describe('RowBuilder', () => {
       const value = [{}];
       const decodedValue = {};
 
-      decodeOverride = function(value_, field_) {
+      decodeOverride = (value_, field_) => {
         assert.strictEqual(value_, value[0]);
         assert.strictEqual(field_, field.arrayElementType);
         return decodedValue;
@@ -207,7 +209,7 @@ describe('RowBuilder', () => {
       const value = [{}];
       const decodedValue = {};
 
-      decodeOverride = function(value_, field_) {
+      decodeOverride = (value_, field_) => {
         assert.strictEqual(value_, value);
         assert.strictEqual(field_, field);
         return decodedValue;
@@ -224,7 +226,7 @@ describe('RowBuilder', () => {
           fields: [
             {
               name: 'fieldName',
-              type: 'NOT_STRUCT_OR_ARRAY', // so it returns original value
+              type: 'NOT_STRUCT_OR_ARRAY',  // so it returns original value
             },
           ],
         },
@@ -233,7 +235,7 @@ describe('RowBuilder', () => {
       const value = [{}];
       const decodedValue = {};
 
-      decodeOverride = function(value_, field_) {
+      decodeOverride = (value_, field_) => {
         assert.strictEqual(value_, value[0]);
         assert.strictEqual(field_, field.structType.fields[0]);
         return decodedValue;
@@ -251,7 +253,7 @@ describe('RowBuilder', () => {
       const type = {
         code: 'ARRAY',
         arrayElementType: {
-          code: 'FLOAT64', // so we break out of the fn w/o more processing
+          code: 'FLOAT64',  // so we break out of the fn w/o more processing
         },
       };
 
@@ -271,7 +273,8 @@ describe('RowBuilder', () => {
             {},
             {
               type: {
-                code: 'FLOAT64', // so we break out of the fn w/o more processing
+                code:
+                    'FLOAT64',  // so we break out of the fn w/o more processing
               },
             },
           ],
@@ -288,7 +291,7 @@ describe('RowBuilder', () => {
 
     it('should merge numbers', () => {
       const type = {
-        code: 'mergable-type', // any value but float64/array/struct
+        code: 'mergable-type',  // any value but float64/array/struct
       };
 
       const head = 1;
@@ -300,7 +303,7 @@ describe('RowBuilder', () => {
 
     it('should merge strings', () => {
       const type = {
-        code: 'mergable-type', // any value but float64/array/struct
+        code: 'mergable-type',  // any value but float64/array/struct
       };
 
       const head = 'a';
@@ -312,7 +315,7 @@ describe('RowBuilder', () => {
 
     it('should not merge null head values', () => {
       const type = {
-        code: 'mergable-type', // any value but float64/array/struct
+        code: 'mergable-type',  // any value but float64/array/struct
       };
 
       const head = null;
@@ -325,7 +328,7 @@ describe('RowBuilder', () => {
 
     it('should not merge null tail values', () => {
       const type = {
-        code: 'mergable-type', // any value but float64/array/struct
+        code: 'mergable-type',  // any value but float64/array/struct
       };
 
       const head = 1;
@@ -338,7 +341,7 @@ describe('RowBuilder', () => {
 
     it('should not merge floats', () => {
       const type = {
-        code: 'FLOAT64', // any value but float64/array/struct
+        code: 'FLOAT64',  // any value but float64/array/struct
       };
 
       const head = 1;
@@ -351,7 +354,7 @@ describe('RowBuilder', () => {
 
     it('should filter out empty strings', () => {
       const type = {
-        code: 'mergable-type', // any value but float64/array/struct
+        code: 'mergable-type',  // any value but float64/array/struct
       };
 
       const head = '';
@@ -380,10 +383,10 @@ describe('RowBuilder', () => {
     const ROW_2 = ROWS[1];
 
     beforeEach(() => {
-      rowBuilder.fields = [{}, {}]; // matches the # of objects in a row
+      rowBuilder.fields = [{}, {}];  // matches the # of objects in a row
 
       rowBuilder.rows = [
-        ROW_1, // row 1 is complete
+        ROW_1,  // row 1 is complete
       ];
     });
 
@@ -459,7 +462,7 @@ describe('RowBuilder', () => {
         },
       ];
 
-      RowBuilder.merge = function(type, head, tail) {
+      RowBuilder.merge = (type, head, tail) => {
         assert.strictEqual(type, rowBuilder.fields[1].type);
         assert.strictEqual(head, expectedHead);
         assert.strictEqual(tail, expectedTail);
@@ -524,7 +527,7 @@ describe('RowBuilder', () => {
         formatted: true,
       };
 
-      RowBuilder.formatValue = function(field, value) {
+      RowBuilder.formatValue = (field, value) => {
         assert.strictEqual(field, rowBuilder.fields[0]);
         assert.strictEqual(value, ROWS[0][0]);
         return formattedValue;
@@ -546,17 +549,17 @@ describe('RowBuilder', () => {
     });
 
     describe('toJSON', () => {
-      const toJSONOverride = function() {};
+      const toJSONOverride = () => {};
       let FORMATTED_ROW;
 
       beforeEach(() => {
-        generateToJSONFromRowOverride = function() {
+        generateToJSONFromRowOverride = () => {
           return toJSONOverride;
         };
 
         const formattedValue = {};
 
-        RowBuilder.formatValue = function() {
+        RowBuilder.formatValue = () => {
           return formattedValue;
         };
 

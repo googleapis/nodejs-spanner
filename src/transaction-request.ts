@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-'use strict';
-
-import * as arrify from 'arrify';
 import {promisifyAll} from '@google-cloud/promisify';
+import * as arrify from 'arrify';
 import * as extend from 'extend';
 import * as is from 'is';
+
 import {codec} from './codec';
 import {partialResultStream} from './partial-result-stream';
 
@@ -33,9 +32,9 @@ import {partialResultStream} from './partial-result-stream';
  *
  * @param {object} [options] Timestamp options.
  */
-abstract class TransactionRequest {
-  readOnly;
-  partitioned;
+class TransactionRequest {
+  readOnly: boolean;
+  partitioned: boolean;
   options;
   transaction;
   id;
@@ -164,7 +163,8 @@ abstract class TransactionRequest {
    * });
    *
    * //-
-   * // Alternatively, set `query.json` to `true`, and this step will be performed
+   * // Alternatively, set `query.json` to `true`, and this step will be
+   * performed
    * // automaticaly.
    * //-
    * database.runTransaction(function(err, transaction) {
@@ -252,7 +252,8 @@ abstract class TransactionRequest {
    *
    * @param {string} table The name of the table.
    * @param {array} keys The keys for the rows to delete. If using a
-   *     composite key, provide an array within this array. See the example below.
+   *     composite key, provide an array within this array. See the example
+   * below.
    * @param {function} [callback] Callback function, should only be supplied for
    *     single use transactions.
    * @returns {Promise}
@@ -416,9 +417,10 @@ abstract class TransactionRequest {
    * @property {array[]} 0 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
-   *     specifying `wrapNumbers: true` to protect large integer values outside of
-   *     the range of JavaScript Number. If set, FLOAT64 values will be returned
-   *     as {@link Spanner.Float} objects and INT64 values as @{link Spanner.Int}.
+   *     specifying `wrapNumbers: true` to protect large integer values outside
+   * of the range of JavaScript Number. If set, FLOAT64 values will be returned
+   *     as {@link Spanner.Float} objects and INT64 values as @{link
+   * Spanner.Int}.
    */
   /**
    * @callback TransactionRequestReadCallback
@@ -426,9 +428,10 @@ abstract class TransactionRequest {
    * @param {array[]} rows Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
-   *     specifying `wrapNumbers: true` to protect large integer values outside of
-   *     the range of JavaScript Number. If set, FLOAT64 values will be returned
-   *     as {@link Spanner.Float} objects and INT64 values as @{link Spanner.Int}.
+   *     specifying `wrapNumbers: true` to protect large integer values outside
+   * of the range of JavaScript Number. If set, FLOAT64 values will be returned
+   *     as {@link Spanner.Float} objects and INT64 values as @{link
+   * Spanner.Int}.
    */
   /**
    * Performs a read request against the specified Table.
@@ -527,7 +530,8 @@ abstract class TransactionRequest {
    * });
    *
    * //-
-   * // Alternatively, set `query.json` to `true`, and this step will be performed
+   * // Alternatively, set `query.json` to `true`, and this step will be
+   * performed
    * // automaticaly.
    * //-
    * database.runTransaction(function(err, transaction) {
@@ -557,13 +561,14 @@ abstract class TransactionRequest {
   read(table, query, callback) {
     const rows: Array<{}> = [];
     this.createReadStream(table, query)
-      .on('error', callback)
-      .on('data', row => {
-        rows.push(row);
-      })
-      .on('end', () => {
-        callback(null, rows);
-      });
+        .on('error', callback)
+        .on('data',
+            row => {
+              rows.push(row);
+            })
+        .on('end', () => {
+          callback(null, rows);
+        });
   }
   /**
    * Replace rows of data within a table.
@@ -745,16 +750,14 @@ abstract class TransactionRequest {
     const columns = [...new Set([].concat(...keyVals.map(Object.keys)))].sort();
     const values = keyVals.map((keyVal, index) => {
       const keys = Object.keys(keyVal);
-      const missingColumns = columns.filter(
-        column => keys.indexOf(column) === -1
-      );
+      const missingColumns =
+          columns.filter(column => keys.indexOf(column) === -1);
       if (missingColumns.length > 0) {
-        throw new Error(
-          [
-            `Row at index ${index} does not contain the correct number of columns.`,
-            `Missing columns: ${JSON.stringify(missingColumns)}`,
-          ].join('\n\n')
-        );
+        throw new Error([
+          `Row at index ${
+              index} does not contain the correct number of columns.`,
+          `Missing columns: ${JSON.stringify(missingColumns)}`,
+        ].join('\n\n'));
       }
       return {
         values: columns.map(column => {

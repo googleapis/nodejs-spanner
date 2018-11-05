@@ -70,10 +70,8 @@ class RowBuilder {
       if (this.pendingChunk) {
         const currentColumn = this.currentRow.length % this.fields.length;
         const merged = RowBuilder.merge(
-          this.fields[currentColumn].type,
-          this.pendingChunk,
-          chunk.values.shift()
-        );
+            this.fields[currentColumn].type, this.pendingChunk,
+            chunk.values.shift());
         chunk.values = merged.concat(chunk.values);
         delete this.pendingChunk;
       }
@@ -94,10 +92,8 @@ class RowBuilder {
    */
   flush() {
     const rowsToReturn = this.rows;
-    if (
-      !is.empty(this.rows[0]) &&
-      this.currentRow.length !== this.fields.length
-    ) {
+    if (!is.empty(this.rows[0]) &&
+        this.currentRow.length !== this.fields.length) {
       // Don't return the partial row. Hold onto it for the next iteration.
       this.rows = this.rows.splice(-1);
     } else {

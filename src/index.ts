@@ -26,7 +26,7 @@ import * as is from 'is';
 import * as path from 'path';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import { GrpcServiceConfig } from '@google-cloud/common-grpc/build/src/service';
+import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
 import {codec} from './codec';
 import {Database} from './database';
 import {Instance} from './instance';
@@ -107,8 +107,10 @@ const gapic = Object.freeze({
  * @property {string} [projectId] The project ID from the Google Developer's
  *     Console, e.g. 'grape-spaceship-123'. We will also check the environment
  *     variable `GCLOUD_PROJECT` for your project ID. If your app is running in
- *     an environment which supports {@link https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application Application Default Credentials},
- *     your project ID will be detected automatically.
+ *     an environment which supports {@link
+ * https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application
+ * Application Default Credentials}, your project ID will be detected
+ * automatically.
  * @property {string} [keyFilename] Full path to the a .json, .pem, or .p12 key
  *     downloaded from the Google Developers Console. If you provide a path to a
  *     JSON file, the `projectId` option above is not necessary. NOTE: .pem and
@@ -138,16 +140,18 @@ const gapic = Object.freeze({
  * @see [Cloud Spanner Documentation](https://cloud.google.com/spanner/docs)
  * @see [Cloud Spanner Concepts](https://cloud.google.com/spanner/docs/concepts)
  *
- * @example <caption>Install the client library with <a href="https://www.npmjs.com/">npm</a>:</caption>
- * npm install --save @google-cloud/spanner
+ * @example <caption>Install the client library with <a
+ * href="https://www.npmjs.com/">npm</a>:</caption> npm install --save
+ * @google-cloud/spanner
  *
- * @example <caption>Create a client that uses <a href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application Default Credentials (ADC)</a>:</caption>
- * const client = new Spanner();
+ * @example <caption>Create a client that uses <a
+ * href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application
+ * Default Credentials (ADC)</a>:</caption> const client = new Spanner();
  *
- * @example <caption>Create a client with <a href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit credentials</a>:</caption>
- * const client = new Spanner({
- *   projectId: 'your-project-id',
- *   keyFilename: '/path/to/keyfile.json'
+ * @example <caption>Create a client with <a
+ * href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit
+ * credentials</a>:</caption> const client = new Spanner({ projectId:
+ * 'your-project-id', keyFilename: '/path/to/keyfile.json'
  * });
  *
  * @example <caption>include:samples/quickstart.js</caption>
@@ -163,14 +167,14 @@ class Spanner extends Service {
   instances_: Map<string, {}>;
   getInstancesStream: Function;
 
-/**
- * Placeholder used to auto populate a column with the commit timestamp.
- * This can only be used for timestamp columns that have set the option
- * "(allow_commit_timestamp=true)" in the schema.
- *
- * @type {string}
- */
-static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
+  /**
+   * Placeholder used to auto populate a column with the commit timestamp.
+   * This can only be used for timestamp columns that have set the option
+   * "(allow_commit_timestamp=true)" in the schema.
+   *
+   * @type {string}
+   */
+  static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
 
   constructor(options) {
     const scopes: Array<{}> = [];
@@ -187,13 +191,12 @@ static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
       }
     }
     options = extend(
-      {
-        libName: 'gccl',
-        libVersion: require('../../package.json').version,
-        scopes,
-      },
-      options || {}
-    );
+        {
+          libName: 'gccl',
+          libVersion: require('../../package.json').version,
+          scopes,
+        },
+        options || {});
 
     const config = {
       baseUrl: options.servicePath || gapic.v1.SpannerClient.servicePath,
@@ -214,42 +217,42 @@ static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
     this.instances_ = new Map();
 
 
-/**
- * Get a list of {@link Instance} objects as a readable object stream.
- *
- * Wrapper around {@link v1.InstanceAdminClient#listInstances}.
- *
- * @see {@link v1.InstanceAdminClient#listInstances}
- * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
- *
- * @method Spanner#getInstancesStream
- * @param {GetInstancesRequest} [query] Query object for listing instances.
- * @returns {ReadableStream} A readable stream that emits {@link Instance}
- *     instances.
- *
- * @example
- * const {Spanner} = require('@google-cloud/spanner');
- * const spanner = new Spanner();
- *
- * spanner.getInstancesStream()
- *   .on('error', console.error)
- *   .on('data', function(instance) {
- *     // `instance` is an `Instance` object.
- *   })
- *   .on('end', function() {
- *     // All instances retrieved.
- *   });
- *
- * //-
- * // If you anticipate many results, you can end a stream early to prevent
- * // unnecessary processing and API requests.
- * //-
- * spanner.getInstancesStream()
- *   .on('data', function(instance) {
- *     this.end();
- *   });
- */
-this.getInstancesStream = paginator.streamify('getInstances');
+    /**
+     * Get a list of {@link Instance} objects as a readable object stream.
+     *
+     * Wrapper around {@link v1.InstanceAdminClient#listInstances}.
+     *
+     * @see {@link v1.InstanceAdminClient#listInstances}
+     * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
+     *
+     * @method Spanner#getInstancesStream
+     * @param {GetInstancesRequest} [query] Query object for listing instances.
+     * @returns {ReadableStream} A readable stream that emits {@link Instance}
+     *     instances.
+     *
+     * @example
+     * const {Spanner} = require('@google-cloud/spanner');
+     * const spanner = new Spanner();
+     *
+     * spanner.getInstancesStream()
+     *   .on('error', console.error)
+     *   .on('data', function(instance) {
+     *     // `instance` is an `Instance` object.
+     *   })
+     *   .on('end', function() {
+     *     // All instances retrieved.
+     *   });
+     *
+     * //-
+     * // If you anticipate many results, you can end a stream early to prevent
+     * // unnecessary processing and API requests.
+     * //-
+     * spanner.getInstancesStream()
+     *   .on('data', function(instance) {
+     *     this.end();
+     *   });
+     */
+    this.getInstancesStream = paginator.streamify('getInstances');
   }
 
   /**
@@ -326,14 +329,14 @@ this.getInstancesStream = paginator.streamify('getInstances');
    *     // Instance created successfully.
    *   });
    */
-  createInstance(name, config, callback) {
+  createInstance(name: string, config?, callback?) {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
     if (!config) {
-      throw new Error(
-        ['A configuration object is required to create an instance.'].join('')
-      );
+      throw new Error([
+        'A configuration object is required to create an instance.'
+      ].join(''));
     }
     const formattedName = Instance.formatName_(this.projectId, name);
     const shortName = formattedName.split('/').pop();
@@ -341,37 +344,34 @@ this.getInstancesStream = paginator.streamify('getInstances');
       parent: 'projects/' + this.projectId,
       instanceId: shortName,
       instance: extend(
-        {
-          name: formattedName,
-          displayName: shortName,
-        },
-        config
-      ),
+          {
+            name: formattedName,
+            displayName: shortName,
+          },
+          config),
     };
     if (is.defined(config.nodes)) {
       reqOpts.instance.nodeCount = config.nodes;
       delete reqOpts.instance.nodes;
     }
     if (config.config && config.config.indexOf('/') === -1) {
-      reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${
-        config.config
-      }`;
+      reqOpts.instance.config =
+          `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
     this.request(
-      {
-        client: 'InstanceAdminClient',
-        method: 'createInstance',
-        reqOpts,
-      },
-      (err, operation, resp) => {
-        if (err) {
-          callback(err, null, null, resp);
-          return;
-        }
-        const instance = this.instance(formattedName);
-        callback(null, instance, operation, resp);
-      }
-    );
+        {
+          client: 'InstanceAdminClient',
+          method: 'createInstance',
+          reqOpts,
+        },
+        (err, operation, resp) => {
+          if (err) {
+            callback(err, null, null, resp);
+            return;
+          }
+          const instance = this.instance(formattedName);
+          callback(null, instance, operation, resp);
+        });
   }
 
   /**
@@ -463,25 +463,24 @@ this.getInstancesStream = paginator.streamify('getInstances');
       parent: 'projects/' + this.projectId,
     });
     this.request(
-      {
-        client: 'InstanceAdminClient',
-        method: 'listInstances',
-        reqOpts,
-        gaxOpts: query,
-      },
-      // tslint:disable-next-line only-arrow-functions
-      function(err, instances) {
-        if (instances) {
-          arguments[1] = instances.map(instance => {
-            const instanceInstance = self.instance(instance.name);
-            // tslint:disable-next-line no-any
-            (instanceInstance as any).metadata = instance;
-            return instanceInstance;
-          });
-        }
-        callback.apply(null, arguments);
-      }
-    );
+        {
+          client: 'InstanceAdminClient',
+          method: 'listInstances',
+          reqOpts,
+          gaxOpts: query,
+        },
+        // tslint:disable-next-line only-arrow-functions
+        function(err, instances) {
+          if (instances) {
+            arguments[1] = instances.map(instance => {
+              const instanceInstance = self.instance(instance.name);
+              // tslint:disable-next-line no-any
+              (instanceInstance as any).metadata = instance;
+              return instanceInstance;
+            });
+          }
+          callback.apply(null, arguments);
+        });
   }
 
   /**
@@ -557,7 +556,7 @@ this.getInstancesStream = paginator.streamify('getInstances');
    *   const instanceConfigs = data[0];
    * });
    */
-  getInstanceConfigs(query, callback) {
+  getInstanceConfigs(query, callback?) {
     if (is.fn(query)) {
       callback = query;
       query = {};
@@ -566,14 +565,13 @@ this.getInstancesStream = paginator.streamify('getInstances');
       parent: 'projects/' + this.projectId,
     });
     return this.request(
-      {
-        client: 'InstanceAdminClient',
-        method: 'listInstanceConfigs',
-        reqOpts,
-        gaxOpts: query,
-      },
-      callback
-    );
+        {
+          client: 'InstanceAdminClient',
+          method: 'listInstanceConfigs',
+          reqOpts,
+          gaxOpts: query,
+        },
+        callback);
   }
 
   /**
@@ -688,17 +686,15 @@ this.getInstancesStream = paginator.streamify('getInstances');
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
       reqOpts = replaceProjectIdToken(reqOpts, projectId!);
-      const requestFn = gaxClient[config.method].bind(
-        gaxClient,
-        reqOpts,
-        config.gaxOpts
-      );
+      const requestFn =
+          gaxClient[config.method].bind(gaxClient, reqOpts, config.gaxOpts);
       callback(null, requestFn);
     });
   }
 
   /**
-   * Funnel all API requests through this method to be sure we have a project ID.
+   * Funnel all API requests through this method to be sure we have a project
+   * ID.
    *
    * @param {object} config Configuration object.
    * @param {object} config.gaxOpts GAX options.
@@ -751,10 +747,11 @@ this.getInstancesStream = paginator.streamify('getInstances');
           return;
         }
         requestFn()
-          .on('error', err => {
-            stream.destroy(err);
-          })
-          .pipe(stream);
+            .on('error',
+                err => {
+                  stream.destroy(err);
+                })
+            .pipe(stream);
       });
     });
     return stream;
@@ -856,19 +853,21 @@ promisifyAll(Spanner, {
  * @module {constructor} @google-cloud/spanner
  * @alias nodejs-spanner
  *
- * @example <caption>Install the client library with <a href="https://www.npmjs.com/">npm</a>:</caption>
- * npm install --save @google-cloud/spanner
+ * @example <caption>Install the client library with <a
+ * href="https://www.npmjs.com/">npm</a>:</caption> npm install --save
+ * @google-cloud/spanner
  *
  * @example <caption>Import the client library</caption>
  * const {Spanner} = require('@google-cloud/spanner');
  *
- * @example <caption>Create a client that uses <a href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application Default Credentials (ADC)</a>:</caption>
- * const client = new Spanner();
+ * @example <caption>Create a client that uses <a
+ * href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application
+ * Default Credentials (ADC)</a>:</caption> const client = new Spanner();
  *
- * @example <caption>Create a client with <a href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit credentials</a>:</caption>
- * const client = new Spanner({
- *   projectId: 'your-project-id',
- *   keyFilename: '/path/to/keyfile.json'
+ * @example <caption>Create a client with <a
+ * href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit
+ * credentials</a>:</caption> const client = new Spanner({ projectId:
+ * 'your-project-id', keyFilename: '/path/to/keyfile.json'
  * });
  *
  * @example <caption>include:samples/quickstart.js</caption>

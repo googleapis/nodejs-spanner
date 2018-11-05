@@ -38,14 +38,14 @@ class BatchTransaction extends Transaction {
   /**
    * Closes all open resources.
    *
-   * When the transaction is no longer needed, you should call this method to free
-   * up resources allocated by the Batch client.
+   * When the transaction is no longer needed, you should call this method to
+   * free up resources allocated by the Batch client.
    *
    * Calling this method would render the transaction unusable everywhere. In
    * particular if this transaction object was being used across multiple
    * machines, calling this method on any of the machine would make the
-   * transaction unusable on all the machines. This should only be called when the
-   * transaction is no longer needed anywhere
+   * transaction unusable on all the machines. This should only be called when
+   * the transaction is no longer needed anywhere
    *
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
@@ -123,18 +123,18 @@ class BatchTransaction extends Transaction {
       delete reqOpts.gaxOptions;
     }
     this.createPartitions_(
-      {
-        client: 'SpannerClient',
-        method: 'partitionQuery',
-        reqOpts,
-        gaxOpts,
-      },
-      callback
-    );
+        {
+          client: 'SpannerClient',
+          method: 'partitionQuery',
+          reqOpts,
+          gaxOpts,
+        },
+        callback);
   }
   /**
    * Generic create partition method. Handles common parameters used in both
-   * {@link BatchTransaction#createQueryPartitions} and {@link BatchTransaction#createReadPartitions}
+   * {@link BatchTransaction#createQueryPartitions} and {@link
+   * BatchTransaction#createReadPartitions}
    *
    * @private
    *
@@ -198,14 +198,13 @@ class BatchTransaction extends Transaction {
       delete reqOpts.gaxOptions;
     }
     this.createPartitions_(
-      {
-        client: 'SpannerClient',
-        method: 'partitionRead',
-        reqOpts,
-        gaxOpts,
-      },
-      callback
-    );
+        {
+          client: 'SpannerClient',
+          method: 'partitionRead',
+          reqOpts,
+          gaxOpts,
+        },
+        callback);
   }
   /**
    * Executes partition.
@@ -215,7 +214,8 @@ class BatchTransaction extends Transaction {
    *
    * @param {ReadPartition|QueryParition} partition The partition object.
    * @param {object} [partition.gaxOptions] Request configuration options,
-   *     outlined here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     outlined here:
+   * https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {TransactionRequestReadCallback|RunCallback} [callback] Callback
    *     function.
    * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}

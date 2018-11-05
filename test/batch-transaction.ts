@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
-import {util} from '@google-cloud/common-grpc';
-import * as pfy from '@google-cloud/promisify';
+
+import {Session} from '../src';
+import * as bt from '../src/batch-transaction';
+
+function getFake(obj: {}) {
+  return obj as {
+    calledWith_: IArguments;
+  };
+}
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll(Class, options) {
-    if (Class.name !== 'BatchTransaction') {
+  promisifyAll(klass, options) {
+    if (klass.name !== 'BatchTransaction') {
       return;
     }
     assert.deepStrictEqual(options.exclude, ['identifier']);
@@ -31,7 +40,7 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-// tslint:disbale-next-line no-any
+// tslint:disable-next-line no-any
 const fakeCodec: any = {
   encode: util.noop,
   Int() {},
@@ -49,17 +58,19 @@ class FakeTransaction {
 }
 
 describe('BatchTransaction', () => {
-  let BatchTransaction;
-  let batchTransaction;
+  // tslint:disable-next-line variable-name
+  let BatchTransaction: typeof bt.BatchTransaction;
+  let batchTransaction: bt.BatchTransaction;
 
+  // tslint:disable-next-line no-any
   const SESSION: any = {};
 
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
-      '@google-cloud/promisify': fakePfy,
-      './codec.js': {codec: fakeCodec},
-      './transaction.js': { Transaction: FakeTransaction},
-    }).BatchTransaction;
+                         '@google-cloud/promisify': fakePfy,
+                         './codec.js': {codec: fakeCodec},
+                         './transaction.js': {Transaction: FakeTransaction},
+                       }).BatchTransaction;
   });
 
   beforeEach(() => {
@@ -74,15 +85,16 @@ describe('BatchTransaction', () => {
     it('should extend the Transaction class', () => {
       const batchTransaction = new BatchTransaction(SESSION);
       assert(batchTransaction instanceof FakeTransaction);
-      assert.strictEqual(batchTransaction.calledWith_[0], SESSION);
-      assert.deepStrictEqual(batchTransaction.calledWith_[1], {readOnly: true});
+      assert.strictEqual(getFake(batchTransaction).calledWith_[0], SESSION);
+      assert.deepStrictEqual(
+          getFake(batchTransaction).calledWith_[1], {readOnly: true});
     });
   });
 
   describe('close', () => {
     it('should delete the session', done => {
-      SESSION.delete = function(callback) {
-        callback(); // the done fn
+      SESSION.delete = (callback) => {
+        callback();  // the done fn
       };
 
       batchTransaction.close(done);
@@ -97,16 +109,16 @@ describe('BatchTransaction', () => {
     };
 
     it('should make the correct request', done => {
-      fakeCodec.encodeQuery = function(query) {
+      fakeCodec.encodeQuery = (query) => {
         assert.deepStrictEqual(query, {sql: QUERY.sql});
         return QUERY;
       };
 
-      batchTransaction.createPartitions_ = function(config, callback) {
+      batchTransaction.createPartitions_ = (config, callback) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'partitionQuery');
         assert.strictEqual(config.reqOpts, QUERY);
-        callback(); // the done fn
+        callback();  // the done fn
       };
 
       batchTransaction.createQueryPartitions(QUERY.sql, done);
@@ -118,15 +130,15 @@ describe('BatchTransaction', () => {
         gaxOptions: GAX_OPTS,
       };
 
-      fakeCodec.encodeQuery = function(query) {
+      fakeCodec.encodeQuery = (query) => {
         assert.strictEqual(query, fakeQuery);
         return extend({a: 'b'}, QUERY);
       };
 
-      batchTransaction.createPartitions_ = function(config, callback) {
+      batchTransaction.createPartitions_ = (config, callback) => {
         assert.deepStrictEqual(config.reqOpts, {sql: QUERY.sql, a: 'b'});
         assert.strictEqual(config.gaxOpts, GAX_OPTS);
-        callback(); // the done fn
+        callback();  // the done fn
       };
 
       batchTransaction.createQueryPartitions(fakeQuery, done);
@@ -145,16 +157,16 @@ describe('BatchTransaction', () => {
     const CONFIG = {reqOpts: QUERY};
 
     beforeEach(() => {
-      batchTransaction.session = SESSION;
+      batchTransaction.session = SESSION as {} as Session;
       batchTransaction.id = ID;
 
-      batchTransaction.request = function(config, callback) {
+      batchTransaction.request = (config, callback) => {
         callback(null, RESPONSE);
       };
     });
 
     it('should insert the session and transaction ids', done => {
-      batchTransaction.request = function(config) {
+      batchTransaction.request = (config) => {
         assert.strictEqual(config.reqOpts.a, 'b');
         assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
         assert.deepStrictEqual(config.reqOpts.transaction, {id: ID});
@@ -168,7 +180,7 @@ describe('BatchTransaction', () => {
       const error = new Error('err');
       const response = {};
 
-      batchTransaction.request = function(config, callback) {
+      batchTransaction.request = (config, callback) => {
         callback(error, response);
       };
 
@@ -207,7 +219,7 @@ describe('BatchTransaction', () => {
         },
       });
 
-      batchTransaction.request = function(config, callback) {
+      batchTransaction.request = (config, callback) => {
         callback(null, response);
       };
 
@@ -227,16 +239,16 @@ describe('BatchTransaction', () => {
     it('should make the correct request', done => {
       const query = {};
 
-      fakeCodec.encodeRead = function(options) {
+      fakeCodec.encodeRead = (options) => {
         assert.strictEqual(options, query);
         return QUERY;
       };
 
-      batchTransaction.createPartitions_ = function(config, callback) {
+      batchTransaction.createPartitions_ = (config, callback) => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'partitionRead');
         assert.strictEqual(config.reqOpts, QUERY);
-        callback(); // the done fn
+        callback();  // the done fn
       };
 
       batchTransaction.createReadPartitions(query, done);
@@ -245,14 +257,14 @@ describe('BatchTransaction', () => {
     it('should remove gax options from the query', done => {
       const query = {gaxOptions: GAX_OPTS};
 
-      fakeCodec.encodeRead = function() {
+      fakeCodec.encodeRead = () => {
         return extend({}, QUERY);
       };
 
-      batchTransaction.createPartitions_ = function(config, callback) {
+      batchTransaction.createPartitions_ = (config, callback) => {
         assert.deepStrictEqual(config.reqOpts, {table: QUERY.table});
         assert.strictEqual(config.gaxOpts, GAX_OPTS);
-        callback(); // the done fn
+        callback();  // the done fn
       };
 
       batchTransaction.createReadPartitions(query, done);
@@ -263,10 +275,10 @@ describe('BatchTransaction', () => {
     it('should make read requests for read partitions', done => {
       const partition = {table: 'abc'};
 
-      batchTransaction.read = function(table, options, callback) {
+      batchTransaction.read = (table, options, callback) => {
         assert.strictEqual(table, partition.table);
         assert.strictEqual(options, partition);
-        callback(); // the done fn
+        callback();  // the done fn
       };
 
       batchTransaction.execute(partition, done);
@@ -275,9 +287,9 @@ describe('BatchTransaction', () => {
     it('should make query requests for non-read partitions', done => {
       const partition = {sql: 'SELECT * FROM Singers'};
 
-      batchTransaction.run = function(query, callback) {
+      batchTransaction.run = (query, callback) => {
         assert.strictEqual(query, partition);
-        callback(); // the done fn
+        callback();  // the done fn
       };
 
       batchTransaction.execute(partition, done);
@@ -290,7 +302,7 @@ describe('BatchTransaction', () => {
     it('should make read streams for read partitions', () => {
       const partition = {table: 'abc'};
 
-      batchTransaction.createReadStream = function(table, options) {
+      batchTransaction.createReadStream = (table, options) => {
         assert.strictEqual(table, partition.table);
         assert.strictEqual(options, partition);
         return STREAM;
@@ -304,7 +316,7 @@ describe('BatchTransaction', () => {
     it('should make query streams for query partitions', () => {
       const partition = {sql: 'SELECT * FROM Singers'};
 
-      batchTransaction.runStream = function(query) {
+      batchTransaction.runStream = (query) => {
         assert.strictEqual(query, partition);
         return STREAM;
       };
@@ -322,7 +334,7 @@ describe('BatchTransaction', () => {
 
     beforeEach(() => {
       batchTransaction.id = ID;
-      batchTransaction.session = SESSION;
+      batchTransaction.session = SESSION as Session;
       batchTransaction.readTimestamp = TIMESTAMP;
     });
 

@@ -202,10 +202,7 @@ class Table extends TransactionRequest {
       };
     }
     return TransactionRequest.prototype.createReadStream.call(
-      this,
-      this.name,
-      query
-    );
+        this, this.name, query);
   }
   /**
    * Delete the table. Not to be confused with {@link Table#deleteRows}.
@@ -253,14 +250,11 @@ class Table extends TransactionRequest {
   delete(callback) {
     if (callback && !is.fn(callback)) {
       throw new TypeError(
-        'Unexpected argument, please see Table#deleteRows to delete rows.'
-      );
+          'Unexpected argument, please see Table#deleteRows to delete rows.');
     }
 
     return this.database.updateSchema(
-      'DROP TABLE `' + this.name + '`',
-      callback
-    );
+        'DROP TABLE `' + this.name + '`', callback);
   }
   /**
    * Delete rows from this table.
@@ -268,7 +262,8 @@ class Table extends TransactionRequest {
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
    * @param {array} keys The keys for the rows to delete. If using a
-   *     composite key, provide an array within this array. See the example below.
+   *     composite key, provide an array within this array. See the example
+   * below.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -308,11 +303,7 @@ class Table extends TransactionRequest {
    */
   deleteRows(keys, callback) {
     return TransactionRequest.prototype.deleteRows.call(
-      this,
-      this.name,
-      keys,
-      callback
-    );
+        this, this.name, keys, callback);
   }
   /**
    * Drop the table.
@@ -442,9 +433,10 @@ class Table extends TransactionRequest {
    * @property {array[]} 1 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
-   *     specifying `wrapNumbers: true` to protect large integer values outside of
-   *     the range of JavaScript Number. If set, FLOAT64 values will be returned
-   *     as {@link Spanner.Float} objects and INT64 values as @{link Spanner.Int}.
+   *     specifying `wrapNumbers: true` to protect large integer values outside
+   * of the range of JavaScript Number. If set, FLOAT64 values will be returned
+   *     as {@link Spanner.Float} objects and INT64 values as @{link
+   * Spanner.Int}.
    */
   /**
    * @callback TableReadCallback
@@ -452,9 +444,10 @@ class Table extends TransactionRequest {
    * @param {array[]} rows Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
-   *     specifying `wrapNumbers: true` to protect large integer values outside of
-   *     the range of JavaScript Number. If set, FLOAT64 values will be returned
-   *     as {@link Spanner.Float} objects and INT64 values as @{link Spanner.Int}.
+   *     specifying `wrapNumbers: true` to protect large integer values outside
+   * of the range of JavaScript Number. If set, FLOAT64 values will be returned
+   *     as {@link Spanner.Float} objects and INT64 values as @{link
+   * Spanner.Int}.
    */
   /**
    * Receive rows from the database using key lookups and scans.
@@ -463,8 +456,8 @@ class Table extends TransactionRequest {
    *
    * This method wraps the streaming method,
    * {@link Table#createReadStream} for your convenience. All rows will
-   * be stored in memory before being released to your callback. If you intend on
-   * receiving a lot of results from your query, consider using the streaming
+   * be stored in memory before being released to your callback. If you intend
+   * on receiving a lot of results from your query, consider using the streaming
    * method, so you can free each result from memory after consuming it.
    *
    * @param {TableReadRequestOptions} query Configuration object, describing
@@ -526,7 +519,8 @@ class Table extends TransactionRequest {
    * // Rows are returned as an array of object arrays. Each object has a `name`
    * // and `value` property. To get a serialized object, call `toJSON()`.
    * //
-   * // Alternatively, set `query.json` to `true`, and this step will be performed
+   * // Alternatively, set `query.json` to `true`, and this step will be
+   * performed
    * // automaticaly.
    * //-
    * table.read(query, function(err, rows) {
@@ -573,13 +567,14 @@ class Table extends TransactionRequest {
       options = null;
     }
     this.createReadStream(query, options)
-      .on('error', callback)
-      .on('data', row => {
-        rows.push(row);
-      })
-      .on('end', () => {
-        callback(null, rows);
-      });
+        .on('error', callback)
+        .on('data',
+            row => {
+              rows.push(row);
+            })
+        .on('end', () => {
+          callback(null, rows);
+        });
   }
   /**
    * Replace rows of data within this table.

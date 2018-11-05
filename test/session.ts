@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-'use strict';
-
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
-import {util} from '@google-cloud/common-grpc';
-import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -68,12 +66,12 @@ describe('Session', () => {
 
   before(() => {
     Session = proxyquire('../src/session.js', {
-      '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject,
-      },
-      '@google-cloud/promisify': fakePfy,
-      './transaction.js': {Transaction: FakeTransaction},
-    }).Session;
+                '@google-cloud/common-grpc': {
+                  ServiceObject: FakeGrpcServiceObject,
+                },
+                '@google-cloud/promisify': fakePfy,
+                './transaction.js': {Transaction: FakeTransaction},
+              }).Session;
   });
 
   beforeEach(() => {
@@ -143,20 +141,17 @@ describe('Session', () => {
         assert(session instanceof FakeGrpcServiceObject);
 
         session.calledWith_[0].createMethod(
-          null,
-          options,
-          (err, sess, resp) => {
-            assert.ifError(err);
+            null, options, (err, sess, resp) => {
+              assert.ifError(err);
 
-            assert.strictEqual(sess, session);
+              assert.strictEqual(sess, session);
 
-            assert.strictEqual(session.uniqueProperty, true);
+              assert.strictEqual(session.uniqueProperty, true);
 
-            assert.strictEqual(resp, apiResponse);
+              assert.strictEqual(resp, apiResponse);
 
-            done();
-          }
-        );
+              done();
+            });
       });
 
       it('should check for options', done => {
@@ -206,9 +201,7 @@ describe('Session', () => {
 
     it('should return the name if already formatted', () => {
       assert.strictEqual(
-        Session.formatName_(DATABASE.formattedName_, PATH),
-        PATH
-      );
+          Session.formatName_(DATABASE.formattedName_, PATH), PATH);
     });
 
     it('should format the name', () => {

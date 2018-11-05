@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-'use strict';
-
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import {split} from 'split-array-stream';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
-import * as pfy from '@google-cloud/promisify';
 
-class FakeGrpcService {}
+import {codec} from '../src/codec';
+import * as tr from '../src/transaction-request';
+
+class FakeGrpcService {
+  static encodeValue_;
+}
 
 function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
   this.calledWith_ = arguments;
@@ -33,39 +36,42 @@ function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
-  promisifyAll(Class, options) {
-    if (Class.name !== 'TransactionRequest') {
+  promisifyAll(klass, options) {
+    if (klass.name !== 'TransactionRequest') {
       return;
     }
     promisified = true;
     assert.deepStrictEqual(options, {
       exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
     });
-    pfy.promisifyAll(Class, options);
+    pfy.promisifyAll(klass, options);
   },
 });
 
-const fakeCodec: any = {
-  encode: util.noop,
-};
+const fakeCodec: typeof codec = {
+  encode: util.noop
+  // tslint:disable-next-line no-any
+} as any;
 
 describe('TransactionRequest', () => {
-  let TransactionRequest;
-  let transactionRequest;
+  // tslint:disable-next-line variable-name
+  let TransactionRequest: typeof tr.TransactionRequest;
+  let transactionRequest: tr.TransactionRequest;
 
   before(() => {
     TransactionRequest = proxyquire('../src/transaction-request', {
-      '@google-cloud/common-grpc': {
-        Service: FakeGrpcService,
-      },
-      '@google-cloud/promisify': fakePfy,
-      './codec.js': { codec: fakeCodec },
-      './partial-result-stream': { partialResultStream: fakePartialResultStream },
-    }).TransactionRequest;
+                           '@google-cloud/common-grpc': {
+                             Service: FakeGrpcService,
+                           },
+                           '@google-cloud/promisify': fakePfy,
+                           './codec.js': {codec: fakeCodec},
+                           './partial-result-stream':
+                               {partialResultStream: fakePartialResultStream},
+                         }).TransactionRequest;
   });
 
   beforeEach(() => {
-    (FakeGrpcService as any).encodeValue_ = util.noop;
+    FakeGrpcService.encodeValue_ = util.noop;
     fakeCodec.encode = util.noop;
     transactionRequest = new TransactionRequest();
     transactionRequest.request = util.noop;
@@ -80,7 +86,7 @@ describe('TransactionRequest', () => {
     });
 
     beforeEach(() => {
-      TransactionRequest.formatTimestampOptions_ = function() {};
+      TransactionRequest.formatTimestampOptions_ = () => {};
     });
 
     after(() => {
@@ -104,7 +110,7 @@ describe('TransactionRequest', () => {
         a: 'a',
       };
 
-      TransactionRequest.formatTimestampOptions_ = function(options) {
+      TransactionRequest.formatTimestampOptions_ = (options) => {
         assert.deepStrictEqual(options, UNFORMATTED_OPTIONS);
         assert.notStrictEqual(options, UNFORMATTED_OPTIONS);
         return FORMATTED_OPTIONS;
@@ -119,7 +125,7 @@ describe('TransactionRequest', () => {
     it('should not localize an empty options object', () => {
       const formatTimestamp = TransactionRequest.formatTimestampOptions_;
 
-      TransactionRequest.formatTimestampOptions_ = function() {
+      TransactionRequest.formatTimestampOptions_ = () => {
         throw new Error('Should not have been called.');
       };
 
@@ -130,7 +136,7 @@ describe('TransactionRequest', () => {
     });
 
     it('should capture the readOnly option', () => {
-      TransactionRequest.formatTimestampOptions_ = function(options) {
+      TransactionRequest.formatTimestampOptions_ = (options) => {
         assert.strictEqual(options.readOnly, undefined);
       };
 
@@ -211,7 +217,7 @@ describe('TransactionRequest', () => {
     const QUERY = {e: 'f'};
 
     beforeEach(() => {
-      fakeCodec.encodeRead = function() {
+      fakeCodec.encodeRead = () => {
         return QUERY;
       };
     });
@@ -226,12 +232,12 @@ describe('TransactionRequest', () => {
         table: TABLE,
       });
 
-      fakeCodec.encodeRead = function(readRequest) {
+      fakeCodec.encodeRead = (readRequest) => {
         assert.strictEqual(readRequest, query);
         return QUERY;
       };
 
-      transactionRequest.requestStream = function(options) {
+      transactionRequest.requestStream = (options) => {
         assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
         done();
       };
@@ -248,16 +254,15 @@ describe('TransactionRequest', () => {
       transactionRequest.id = ID;
 
       const expectedReqOpts = extend(
-        {
-          table: TABLE,
-          transaction: {
-            id: ID,
+          {
+            table: TABLE,
+            transaction: {
+              id: ID,
+            },
           },
-        },
-        QUERY
-      );
+          QUERY);
 
-      transactionRequest.requestStream = function(options) {
+      transactionRequest.requestStream = (options) => {
         assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
         done();
       };
@@ -284,7 +289,7 @@ describe('TransactionRequest', () => {
           resumeToken: undefined,
         });
 
-        transactionRequest.requestStream = function(config) {
+        transactionRequest.requestStream = (config) => {
           assert.strictEqual(config.client, 'SpannerClient');
           assert.strictEqual(config.method, 'streamingRead');
           assert.deepStrictEqual(config.reqOpts, expectedQuery);
@@ -302,7 +307,7 @@ describe('TransactionRequest', () => {
           gaxOptions: {},
         };
 
-        transactionRequest.requestStream = function(config) {
+        transactionRequest.requestStream = (config) => {
           assert.strictEqual(config.gaxOpts, query.gaxOptions);
           done();
         };
@@ -315,7 +320,7 @@ describe('TransactionRequest', () => {
       it('should assign a resumeToken to the request', done => {
         const resumeToken = 'resume-token';
 
-        transactionRequest.requestStream = function(config) {
+        transactionRequest.requestStream = (config) => {
           assert.strictEqual(config.reqOpts.resumeToken, resumeToken);
           done();
         };
@@ -344,7 +349,7 @@ describe('TransactionRequest', () => {
           jsonOptions: {},
         };
 
-        transactionRequest.requestStream = function(config) {
+        transactionRequest.requestStream = (config) => {
           assert.strictEqual(config.reqOpts.json, undefined);
           assert.strictEqual(config.reqOpts.jsonOptions, undefined);
           done();
@@ -384,7 +389,7 @@ describe('TransactionRequest', () => {
     beforeEach(() => {
       transactionRequest.transaction = true;
 
-      fakeCodec.encode = function() {
+      fakeCodec.encode = () => {
         return ENCODED_VALUE;
       };
     });
@@ -440,7 +445,7 @@ describe('TransactionRequest', () => {
         const fakeTransaction = {
           deleteRows: util.noop,
           commit: callback => {
-            callback(); // done()
+            callback();  // done()
           },
         };
 
@@ -457,28 +462,27 @@ describe('TransactionRequest', () => {
     it('should correctly make and return the request', done => {
       let numEncodeRequests = 0;
 
-      fakeCodec.encode = function(key) {
+      fakeCodec.encode = (key) => {
         numEncodeRequests++;
 
         switch (numEncodeRequests) {
-          case 1: {
+          case 1:
             assert.strictEqual(key, KEYS[0]);
             break;
-          }
-          case 2: {
+          case 2:
             assert.strictEqual(key, KEYS[1][0]);
             break;
-          }
-          case 3: {
+          case 3:
             assert.strictEqual(key, KEYS[1][1]);
             break;
-          }
+          default:
+            break;
         }
 
         return ENCODED_VALUE;
       };
 
-      transactionRequest.queue_ = function(mutation) {
+      transactionRequest.queue_ = (mutation) => {
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
@@ -488,7 +492,7 @@ describe('TransactionRequest', () => {
 
     it('should push the request to the queue if a transaction', done => {
       transactionRequest.transaction = true;
-      transactionRequest.queue_ = function(mutation) {
+      transactionRequest.queue_ = (mutation) => {
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
@@ -499,11 +503,11 @@ describe('TransactionRequest', () => {
       const encodedValue = {
         encoded: true,
       };
-      fakeCodec.encode = function() {
+      fakeCodec.encode = () => {
         return encodedValue;
       };
 
-      transactionRequest.queue_ = function(mutation) {
+      transactionRequest.queue_ = (mutation) => {
         const expectedSingleMutation = extend(true, {}, EXPECTED_MUTATION);
 
         // Pop out the second mutation. We're only expecting one.
@@ -526,7 +530,7 @@ describe('TransactionRequest', () => {
       const keyVals = [];
       function callback() {}
 
-      transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
+      transactionRequest.mutate_ = (method, table_, keyVals_, cb) => {
         assert.strictEqual(method, 'insert');
         assert.strictEqual(table_, table);
         assert.strictEqual(keyVals_, keyVals);
@@ -546,7 +550,7 @@ describe('TransactionRequest', () => {
 
       const rows = [{}, {}];
 
-      transactionRequest.createReadStream = function(table_, keyVals_) {
+      transactionRequest.createReadStream = (table_, keyVals_) => {
         assert.strictEqual(table_, table);
         assert.strictEqual(keyVals_, keyVals);
 
@@ -571,7 +575,7 @@ describe('TransactionRequest', () => {
     it('should execute callback with error', done => {
       const error = new Error('Error.');
 
-      transactionRequest.createReadStream = function() {
+      transactionRequest.createReadStream = () => {
         const stream = through.obj();
 
         setImmediate(() => {
@@ -596,7 +600,7 @@ describe('TransactionRequest', () => {
       const keyVals = [];
       function callback() {}
 
-      transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
+      transactionRequest.mutate_ = (method, table_, keyVals_, cb) => {
         assert.strictEqual(method, 'replace');
         assert.strictEqual(table_, table);
         assert.strictEqual(keyVals_, keyVals);
@@ -617,7 +621,7 @@ describe('TransactionRequest', () => {
       const keyVals = [];
       function callback() {}
 
-      transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
+      transactionRequest.mutate_ = (method, table_, keyVals_, cb) => {
         assert.strictEqual(method, 'update');
         assert.strictEqual(table_, table);
         assert.strictEqual(keyVals_, keyVals);
@@ -638,7 +642,7 @@ describe('TransactionRequest', () => {
       const keyVals = [];
       function callback() {}
 
-      transactionRequest.mutate_ = function(method, table_, keyVals_, cb) {
+      transactionRequest.mutate_ = (method, table_, keyVals_, cb) => {
         assert.strictEqual(method, 'insertOrUpdate');
         assert.strictEqual(table_, table);
         assert.strictEqual(keyVals_, keyVals);
@@ -697,7 +701,7 @@ describe('TransactionRequest', () => {
     beforeEach(() => {
       transactionRequest.transaction = true;
 
-      fakeCodec.encode = function(value) {
+      fakeCodec.encode = (value) => {
         return value;
       };
     });
@@ -754,7 +758,7 @@ describe('TransactionRequest', () => {
         const fakeTransaction = {
           mutate_: util.noop,
           commit: callback => {
-            callback(); // done()
+            callback();  // done()
           },
         };
 
@@ -771,42 +775,36 @@ describe('TransactionRequest', () => {
     it('should correctly make and return the request', done => {
       let numEncodeRequests = 0;
 
-      fakeCodec.encode = function(value) {
+      fakeCodec.encode = (value) => {
         numEncodeRequests++;
 
         switch (numEncodeRequests) {
-          case 1: {
+          case 1:
             assert.strictEqual(value, KEYVALS[0].anotherNullable);
             break;
-          }
-          case 2: {
+          case 2:
             assert.strictEqual(value, KEYVALS[0].key);
             break;
-          }
-          case 3: {
+          case 3:
             assert.strictEqual(value, KEYVALS[0].nonNullable);
             break;
-          }
-          case 4: {
+          case 4:
             assert.strictEqual(value, KEYVALS[0].nullable);
             break;
-          }
-          case 5: {
+          case 5:
             assert.strictEqual(value, KEYVALS[1].anotherNullable);
             break;
-          }
-          case 6: {
+          case 6:
             assert.strictEqual(value, KEYVALS[1].key);
             break;
-          }
-          case 7: {
+          case 7:
             assert.strictEqual(value, KEYVALS[1].nonNullable);
             break;
-          }
-          case 8: {
+          case 8:
             assert.strictEqual(value, KEYVALS[1].nullable);
             break;
-          }
+          default:
+            break;
         }
 
         return value;
@@ -826,11 +824,8 @@ describe('TransactionRequest', () => {
 
       try {
         transactionRequest.mutate_(
-          METHOD,
-          TABLE,
-          [invalidEntry, {key1: 'val', key2: 'val'}],
-          assert.ifError
-        );
+            METHOD, TABLE, [invalidEntry, {key1: 'val', key2: 'val'}],
+            assert.ifError);
       } catch (e) {
         caughtError = e;
       }
@@ -850,7 +845,7 @@ describe('TransactionRequest', () => {
     it('should push the request to the queue if a transaction', done => {
       transactionRequest.transaction = true;
 
-      transactionRequest.queue_ = function(mutation) {
+      transactionRequest.queue_ = (mutation) => {
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
@@ -861,7 +856,7 @@ describe('TransactionRequest', () => {
     it('should accept just a key', done => {
       transactionRequest.transaction = true;
 
-      transactionRequest.queue_ = function(mutation) {
+      transactionRequest.queue_ = (mutation) => {
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };

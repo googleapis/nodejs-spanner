@@ -26,13 +26,11 @@ import {util} from '@google-cloud/common-grpc';
 
 let checkpointStreamOverride;
 function fakeCheckpointStream() {}
-fakeCheckpointStream.obj = function() {
-  return (checkpointStreamOverride || checkpointStream.obj).apply(
-    null,
-    arguments
-  );
+fakeCheckpointStream.obj = (...args) => {
+  return (checkpointStreamOverride || checkpointStream.obj).apply(null, args);
 };
 
+// tslint:disable-next-line variable-name no-any
 let FakeRowBuilderOverrides: any = {};
 class FakeRowBuilder {
   calledWith_: IArguments;
@@ -106,10 +104,11 @@ describe('PartialResultStream', () => {
   });
 
   before(() => {
-    partialResultStreamModule = proxyquire('../src/partial-result-stream.js', {
-      'checkpoint-stream': fakeCheckpointStream,
-      './row-builder.js': {RowBuilder: FakeRowBuilder},
-    }).partialResultStream;
+    partialResultStreamModule =
+        proxyquire('../src/partial-result-stream.js', {
+          'checkpoint-stream': fakeCheckpointStream,
+          './row-builder.js': {RowBuilder: FakeRowBuilder},
+        }).partialResultStream;
     partialResultStreamCached = extend({}, partialResultStreamModule);
   });
 
@@ -137,7 +136,7 @@ describe('PartialResultStream', () => {
         return this.row;
       };
 
-      FakeRowBuilderOverrides.toJSON = function(obj) {
+      FakeRowBuilderOverrides.toJSON = (obj) => {
         return [obj];
       };
     });
@@ -146,7 +145,7 @@ describe('PartialResultStream', () => {
       let eventsEmitted = 0;
 
       function assertDoesNotEmit() {
-        done(); // will cause test to fail
+        done();  // will cause test to fail
       }
 
       function assertDoesEmit(row) {
@@ -174,25 +173,23 @@ describe('PartialResultStream', () => {
       fakeRequestStream.push(RESULT_WITH_TOKEN);
       fakeRequestStream.push(null);
 
-      partialResultStream
-        .on('error', done)
-        .on('response', response => {
-          assert.strictEqual(response, RESULT_WITH_TOKEN);
-          done();
-        })
-        .resume();
+      partialResultStream.on('error', done)
+          .on('response',
+              response => {
+                assert.strictEqual(response, RESULT_WITH_TOKEN);
+                done();
+              })
+          .resume();
     });
 
     it('should effectively skip rows without values', done => {
       fakeRequestStream.push(RESULT_WITHOUT_VALUE);
       fakeRequestStream.push(null);
 
-      partialResultStream.on('error', done).pipe(
-        concat(rows => {
-          assert.strictEqual(rows.length, 0);
-          done();
-        })
-      );
+      partialResultStream.on('error', done).pipe(concat(rows => {
+        assert.strictEqual(rows.length, 0);
+        done();
+      }));
     });
 
     it('should not queue more than 10 results', done => {
@@ -201,12 +198,10 @@ describe('PartialResultStream', () => {
       }
       fakeRequestStream.push(null);
 
-      partialResultStream.on('error', done).pipe(
-        concat(rows => {
-          assert.strictEqual(rows.length, 11);
-          done();
-        })
-      );
+      partialResultStream.on('error', done).pipe(concat(rows => {
+        assert.strictEqual(rows.length, 11);
+        done();
+      }));
     });
 
     it('should emit the row stats', done => {
@@ -215,13 +210,12 @@ describe('PartialResultStream', () => {
         fakeRequestStream.push(null);
       });
 
-      partialResultStream
-        .on('error', done)
-        .on('data', () => {})
-        .on('stats', stats => {
-          assert.strictEqual(stats, RESULT_WITH_STATS.stats);
-          done();
-        });
+      partialResultStream.on('error', done)
+          .on('data', () => {})
+          .on('stats', stats => {
+            assert.strictEqual(stats, RESULT_WITH_STATS.stats);
+            done();
+          });
     });
 
     describe('RowBuilder', () => {
@@ -245,28 +239,26 @@ describe('PartialResultStream', () => {
         const builtRow = {};
         let wasBuildCalled = false;
 
-        FakeRowBuilderOverrides.addRow = function(row) {
+        FakeRowBuilderOverrides.addRow = (row) => {
           assert.strictEqual(row, RESULT_WITH_TOKEN);
         };
 
-        FakeRowBuilderOverrides.build = function() {
+        FakeRowBuilderOverrides.build = () => {
           wasBuildCalled = true;
         };
 
-        FakeRowBuilderOverrides.flush = function() {
+        FakeRowBuilderOverrides.flush = () => {
           return builtRow;
         };
 
         fakeRequestStream.push(RESULT_WITH_TOKEN);
         fakeRequestStream.push(null);
 
-        partialResultStream.on('error', done).pipe(
-          concat(rows => {
-            assert.strictEqual(wasBuildCalled, true);
-            assert.strictEqual(rows[0], builtRow);
-            done();
-          })
-        );
+        partialResultStream.on('error', done).pipe(concat(rows => {
+          assert.strictEqual(wasBuildCalled, true);
+          assert.strictEqual(rows[0], builtRow);
+          done();
+        }));
       });
 
       it('should return the formatted row as JSON', done => {
@@ -286,7 +278,7 @@ describe('PartialResultStream', () => {
           },
         };
 
-        FakeRowBuilderOverrides.flush = function() {
+        FakeRowBuilderOverrides.flush = () => {
           return formattedRow;
         };
 
@@ -303,10 +295,10 @@ describe('PartialResultStream', () => {
       // - Error event (should retry)
       // - Two rows
       // - Confirm all rows were received.
-
+      // tslint:disable-next-line no-any
       const fakeCheckpointStream: any = through.obj();
       fakeCheckpointStream.reset = util.noop;
-      checkpointStreamOverride = function() {
+      checkpointStreamOverride = () => {
         return fakeCheckpointStream;
       };
 
@@ -353,13 +345,11 @@ describe('PartialResultStream', () => {
       }
 
       partialResultStreamModule(requestFn)
-        .on('error', done)
-        .pipe(
-          concat(rows => {
+          .on('error', done)
+          .pipe(concat(rows => {
             assert.strictEqual(rows.length, 4);
             done();
-          })
-        );
+          }));
     });
 
     it('should emit rows and error when there is no token', done => {
@@ -368,15 +358,16 @@ describe('PartialResultStream', () => {
       let eventsEmitted = 0;
 
       partialResultStream
-        .on('data', row => {
-          eventsEmitted++;
-          assert.strictEqual(row, RESULT_WITHOUT_TOKEN);
-        })
-        .on('error', err => {
-          assert.strictEqual(eventsEmitted, 3);
-          assert.strictEqual(err, error);
-          done();
-        });
+          .on('data',
+              row => {
+                eventsEmitted++;
+                assert.strictEqual(row, RESULT_WITHOUT_TOKEN);
+              })
+          .on('error', err => {
+            assert.strictEqual(eventsEmitted, 3);
+            assert.strictEqual(err, error);
+            done();
+          });
 
       // No rows with tokens were emitted, so this should destroy the stream.
       fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
@@ -386,7 +377,7 @@ describe('PartialResultStream', () => {
     });
 
     it('should let user abort request', done => {
-      fakeRequestStream.abort = function() {
+      fakeRequestStream.abort = () => {
         done();
       };
 
@@ -401,7 +392,7 @@ describe('PartialResultStream', () => {
     it('should silently no-op abort if no active request', done => {
       // If no request is ever made, then there should be no active
       // stream to be aborted.
-      fakeRequestStream.abort = function() {
+      fakeRequestStream.abort = () => {
         done(new Error('No request ever made; nothing to abort.'));
       };
 
@@ -415,13 +406,14 @@ describe('PartialResultStream', () => {
     });
 
     it('should let user abort the most recent request', done => {
-      fakeRequestStream.abort = function() {
+      fakeRequestStream.abort = () => {
         done(new Error('Wrong stream was aborted.'));
       };
 
+      // tslint:disable-next-line no-any
       const secondFakeRequestStream: any = through.obj();
-      secondFakeRequestStream.abort = function() {
-        done(); // this is the one we want to call
+      secondFakeRequestStream.abort = () => {
+        done();  // this is the one we want to call
       };
 
       let numTimesRequestFnCalled = 0;

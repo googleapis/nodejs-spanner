@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-'use strict';
-
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as gax from 'google-gax';
@@ -23,8 +23,6 @@ import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import {split} from 'split-array-stream';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
-import * as pfy from '@google-cloud/promisify';
 
 // tslint:disable-next-line no-any variable-name
 const FakeRetryInfo: any = {
@@ -32,12 +30,11 @@ const FakeRetryInfo: any = {
 };
 
 const fakeGax = {
-  GoogleProtoFilesRoot: class extends gax.GoogleProtoFilesRoot {
+  GoogleProtoFilesRoot: class extends gax.GoogleProtoFilesRoot{
     loadSync(filename) {
       assert.strictEqual(
-        filename,
-        path.resolve(__dirname, '../protos/google/rpc/error_details.proto')
-      );
+          filename,
+          path.resolve(__dirname, '../protos/google/rpc/error_details.proto'));
       const result = super.loadSync(filename);
       const n = 'nested';
       result[n]!.google[n].rpc[n].RetryInfo = FakeRetryInfo;
@@ -59,7 +56,7 @@ const fakePfy = extend({}, pfy, {
 });
 
 class FakeGrpcService {
-  static objToStruct_(){}
+  static objToStruct_() {}
 }
 
 function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
@@ -109,17 +106,19 @@ describe('Transaction', () => {
   const ID = 'transaction-id';
 
   before(() => {
-    Transaction = proxyquire('../src/transaction', {
-      'google-gax': fakeGax,
-      '@google-cloud/common-grpc': {
-        Service: FakeGrpcService,
-      },
-      '@google-cloud/promisify': fakePfy,
-      './codec': {codec: fakeCodec},
-      './partial-result-stream': {partialResultStream: fakePartialResultStream},
-      './transaction-request': {TransactionRequest: FakeTransactionRequest},
-      './v1/spanner_client_config.json': fakeConfig,
-    }).Transaction;
+    Transaction =
+        proxyquire('../src/transaction', {
+          'google-gax': fakeGax,
+          '@google-cloud/common-grpc': {
+            Service: FakeGrpcService,
+          },
+          '@google-cloud/promisify': fakePfy,
+          './codec': {codec: fakeCodec},
+          './partial-result-stream':
+              {partialResultStream: fakePartialResultStream},
+          './transaction-request': {TransactionRequest: FakeTransactionRequest},
+          './v1/spanner_client_config.json': fakeConfig,
+        }).Transaction;
 
     TransactionCached = extend({}, Transaction);
   });
@@ -216,9 +215,8 @@ describe('Transaction', () => {
 
       assert.strictEqual(formattedError.code, 4);
       assert.strictEqual(
-        formattedError.message,
-        'Deadline for Transaction exceeded. - Transaction aborted.'
-      );
+          formattedError.message,
+          'Deadline for Transaction exceeded. - Transaction aborted.');
       assert.deepStrictEqual(originalError, formattedError.errors[0]);
       assert.notStrictEqual(originalError, formattedError);
     });
@@ -276,7 +274,7 @@ describe('Transaction', () => {
       global.Math.random = () => random;
       const attempts = 3;
       const expectedDelay =
-        Math.pow(2, attempts) * 1000 + Math.floor(random * 1000);
+          Math.pow(2, attempts) * 1000 + Math.floor(random * 1000);
       const delay = Transaction.getRetryDelay_(fakeError, attempts);
 
       assert.strictEqual(delay, expectedDelay);
@@ -412,14 +410,12 @@ describe('Transaction', () => {
 
         transaction.request = (config, callback) => {
           callback(
-            null,
-            extend(
-              {
-                readTimestamp: fakeProtoTimestamp,
-              },
-              API_RESPONSE
-            )
-          );
+              null,
+              extend(
+                  {
+                    readTimestamp: fakeProtoTimestamp,
+                  },
+                  API_RESPONSE));
         };
 
         // tslint:disable-next-line no-any
@@ -773,13 +769,10 @@ describe('Transaction', () => {
           a: 'a',
         };
 
-        transaction
-          .requestStream(config)
-          .on('error', done)
-          .on('data', data => {
-            assert.strictEqual(data, fakeData);
-            done();
-          });
+        transaction.requestStream(config).on('error', done).on('data', data => {
+          assert.strictEqual(data, fakeData);
+          done();
+        });
 
         fakeStream.push(fakeData);
       });
@@ -828,7 +821,7 @@ describe('Transaction', () => {
           return true;
         };
 
-        transaction.runFn_ = done; // should not be called
+        transaction.runFn_ = done;  // should not be called
         transaction.attempts_ = attempts_;
 
         transaction.retry_ = (delay: number) => {
@@ -838,7 +831,7 @@ describe('Transaction', () => {
         };
 
         const stream = transaction.requestStream(config);
-        stream.on('error', done); // should not be called
+        stream.on('error', done);  // should not be called
 
         fakeStream.emit('error', error);
       });
@@ -859,7 +852,7 @@ describe('Transaction', () => {
           return true;
         };
 
-        transaction.runFn_ = done; // should not be called
+        transaction.runFn_ = done;  // should not be called
 
         transaction.retry_ = (delay: number) => {
           assert.strictEqual(delay, fakeDelay);
@@ -868,7 +861,7 @@ describe('Transaction', () => {
         };
 
         const stream = transaction.requestStream(config);
-        stream.on('error', done); // should not be called
+        stream.on('error', done);  // should not be called
 
         fakeStream.emit('error', error);
       });
@@ -888,7 +881,7 @@ describe('Transaction', () => {
           return false;
         };
 
-        transaction.retry_ = done; // should not be called
+        transaction.retry_ = done;  // should not be called
 
         transaction.runFn_ = (err: Error) => {
           assert.strictEqual(err, deadlineError);
@@ -899,7 +892,7 @@ describe('Transaction', () => {
         };
 
         const stream = transaction.requestStream(config);
-        stream.on('error', done); // should not be called
+        stream.on('error', done);  // should not be called
         fakeStream.emit('error', error);
       });
     });
