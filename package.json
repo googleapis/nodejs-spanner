@@ -96,7 +96,7 @@
     "@types/async": "^2.0.50",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
-    "@types/is": "0.0.20",
+    "@types/is": "0.0.21",
     "@types/lodash.snakecase": "^4.1.4",
     "@types/merge-stream": "^1.1.2",
     "@types/mocha": "^5.2.5",
