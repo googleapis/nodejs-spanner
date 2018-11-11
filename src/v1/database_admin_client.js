@@ -125,10 +125,15 @@ class DatabaseAdminClient {
     };
     let protoFilesRoot = new gax.GoogleProtoFilesRoot();
     protoFilesRoot = protobuf.loadSync(
-      path.join(__dirname, '..', '..', 'protos', 'google/spanner/admin/database/v1/spanner_database_admin.proto'),
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'protos',
+        'google/spanner/admin/database/v1/spanner_database_admin.proto'
+      ),
       protoFilesRoot
     );
-
 
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
@@ -207,7 +212,8 @@ class DatabaseAdminClient {
             }
         ),
         defaults[methodName],
-        this._descriptors.page[methodName] || this._descriptors.longrunning[methodName]
+        this._descriptors.page[methodName] ||
+          this._descriptors.longrunning[methodName]
       );
     }
   }
@@ -399,7 +405,7 @@ class DatabaseAdminClient {
       request,
       options
     );
-  };
+  }
 
   /**
    * Creates a new Cloud Spanner database and starts to prepare it for serving.
@@ -1002,9 +1008,7 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate
-      .match(instanceName)
-      .project;
+    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
   }
 
   /**
@@ -1015,8 +1019,7 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate
-      .match(instanceName)
+    return this._pathTemplates.instancePathTemplate.match(instanceName)
       .instance;
   }
 
@@ -1028,9 +1031,7 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate
-      .match(databaseName)
-      .project;
+    return this._pathTemplates.databasePathTemplate.match(databaseName).project;
   }
 
   /**
@@ -1041,8 +1042,7 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate
-      .match(databaseName)
+    return this._pathTemplates.databasePathTemplate.match(databaseName)
       .instance;
   }
 
@@ -1054,11 +1054,9 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the database.
    */
   matchDatabaseFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate
-      .match(databaseName)
+    return this._pathTemplates.databasePathTemplate.match(databaseName)
       .database;
   }
 }
-
 
 module.exports = DatabaseAdminClient;

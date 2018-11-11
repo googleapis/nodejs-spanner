@@ -46,7 +46,11 @@ describe('InstanceAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.listInstanceConfigs = (actualRequest, options, callback) => {
+      client._innerApiCalls.listInstanceConfigs = (
+        actualRequest,
+        options,
+        callback
+      ) => {
         assert.deepStrictEqual(actualRequest, request);
         callback(null, expectedResponse.instanceConfigs);
       };
@@ -94,7 +98,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedName = client.instanceConfigPath('[PROJECT]', '[INSTANCE_CONFIG]');
+      const formattedName = client.instanceConfigPath(
+        '[PROJECT]',
+        '[INSTANCE_CONFIG]'
+      );
       const request = {
         name: formattedName,
       };
@@ -127,7 +134,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedName = client.instanceConfigPath('[PROJECT]', '[INSTANCE_CONFIG]');
+      const formattedName = client.instanceConfigPath(
+        '[PROJECT]',
+        '[INSTANCE_CONFIG]'
+      );
       const request = {
         name: formattedName,
       };
@@ -171,7 +181,11 @@ describe('InstanceAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.listInstances = (actualRequest, options, callback) => {
+      client._innerApiCalls.listInstances = (
+        actualRequest,
+        options,
+        callback
+      ) => {
         assert.deepStrictEqual(actualRequest, request);
         callback(null, expectedResponse.instances);
       };
@@ -307,17 +321,24 @@ describe('InstanceAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(
+        request,
+        expectedResponse
+      );
 
-      client.createInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(responses => {
-        assert.deepStrictEqual(responses[0], expectedResponse);
-        done();
-      }).catch(err => {
-        done(err);
-      });
+      client
+        .createInstance(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(responses => {
+          assert.deepStrictEqual(responses[0], expectedResponse);
+          done();
+        })
+        .catch(err => {
+          done(err);
+        });
     });
 
     it('invokes createInstance with error', done => {
@@ -337,18 +358,26 @@ describe('InstanceAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(request, null, error);
+      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(
+        request,
+        null,
+        error
+      );
 
-      client.createInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(() => {
-        assert.fail();
-      }).catch(err => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        done();
-      });
+      client
+        .createInstance(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(() => {
+          assert.fail();
+        })
+        .catch(err => {
+          assert(err instanceof Error);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
+          done();
+        });
     });
 
     it('has longrunning decoder functions', () => {
@@ -356,8 +385,14 @@ describe('InstanceAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      assert(client._descriptors.longrunning.createInstance.responseDecoder instanceof Function);
-      assert(client._descriptors.longrunning.createInstance.metadataDecoder instanceof Function);
+      assert(
+        client._descriptors.longrunning.createInstance
+          .responseDecoder instanceof Function
+      );
+      assert(
+        client._descriptors.longrunning.createInstance
+          .metadataDecoder instanceof Function
+      );
     });
   });
 
@@ -389,17 +424,24 @@ describe('InstanceAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(
+        request,
+        expectedResponse
+      );
 
-      client.updateInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(responses => {
-        assert.deepStrictEqual(responses[0], expectedResponse);
-        done();
-      }).catch(err => {
-        done(err);
-      });
+      client
+        .updateInstance(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(responses => {
+          assert.deepStrictEqual(responses[0], expectedResponse);
+          done();
+        })
+        .catch(err => {
+          done(err);
+        });
     });
 
     it('invokes updateInstance with error', done => {
@@ -417,18 +459,26 @@ describe('InstanceAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(request, null, error);
+      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(
+        request,
+        null,
+        error
+      );
 
-      client.updateInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(() => {
-        assert.fail();
-      }).catch(err => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        done();
-      });
+      client
+        .updateInstance(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(() => {
+          assert.fail();
+        })
+        .catch(err => {
+          assert(err instanceof Error);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
+          done();
+        });
     });
 
     it('has longrunning decoder functions', () => {
@@ -436,8 +486,14 @@ describe('InstanceAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      assert(client._descriptors.longrunning.updateInstance.responseDecoder instanceof Function);
-      assert(client._descriptors.longrunning.updateInstance.metadataDecoder instanceof Function);
+      assert(
+        client._descriptors.longrunning.updateInstance
+          .responseDecoder instanceof Function
+      );
+      assert(
+        client._descriptors.longrunning.updateInstance
+          .metadataDecoder instanceof Function
+      );
     });
   });
 
@@ -678,7 +734,6 @@ describe('InstanceAdminClient', () => {
       });
     });
   });
-
 });
 
 function mockSimpleGrpcMethod(expectedRequest, response, error) {
@@ -702,12 +757,11 @@ function mockLongRunningGrpcMethod(expectedRequest, response, error) {
         return new Promise((resolve, reject) => {
           if (error) {
             reject(error);
-          }
-          else {
+          } else {
             resolve([response]);
           }
         });
-      }
+      },
     };
     return Promise.resolve([mockOperation]);
   };
