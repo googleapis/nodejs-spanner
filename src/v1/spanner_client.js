@@ -125,9 +125,7 @@ class SpannerClient {
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this._descriptors.stream = {
-      executeStreamingSql: new gax.StreamDescriptor(
-        gax.StreamType.SERVER_STREAMING
-      ),
+      executeStreamingSql: new gax.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
       streamingRead: new gax.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
     };
 
@@ -178,8 +176,7 @@ class SpannerClient {
             }
         ),
         defaults[methodName],
-        this._descriptors.page[methodName] ||
-          this._descriptors.stream[methodName]
+        this._descriptors.page[methodName] || this._descriptors.stream[methodName]
       );
     }
   }
@@ -507,7 +504,7 @@ class SpannerClient {
       request,
       options
     );
-  }
+  };
 
   /**
    * Ends a session, releasing server resources associated with it.
@@ -1431,7 +1428,9 @@ class SpannerClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName).project;
+    return this._pathTemplates.databasePathTemplate
+      .match(databaseName)
+      .project;
   }
 
   /**
@@ -1442,7 +1441,8 @@ class SpannerClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName)
+    return this._pathTemplates.databasePathTemplate
+      .match(databaseName)
       .instance;
   }
 
@@ -1454,7 +1454,8 @@ class SpannerClient {
    * @returns {String} - A string representing the database.
    */
   matchDatabaseFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName)
+    return this._pathTemplates.databasePathTemplate
+      .match(databaseName)
       .database;
   }
 
@@ -1466,7 +1467,9 @@ class SpannerClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate.match(sessionName).project;
+    return this._pathTemplates.sessionPathTemplate
+      .match(sessionName)
+      .project;
   }
 
   /**
@@ -1477,7 +1480,9 @@ class SpannerClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate.match(sessionName).instance;
+    return this._pathTemplates.sessionPathTemplate
+      .match(sessionName)
+      .instance;
   }
 
   /**
@@ -1488,7 +1493,9 @@ class SpannerClient {
    * @returns {String} - A string representing the database.
    */
   matchDatabaseFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate.match(sessionName).database;
+    return this._pathTemplates.sessionPathTemplate
+      .match(sessionName)
+      .database;
   }
 
   /**
@@ -1499,8 +1506,11 @@ class SpannerClient {
    * @returns {String} - A string representing the session.
    */
   matchSessionFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate.match(sessionName).session;
+    return this._pathTemplates.sessionPathTemplate
+      .match(sessionName)
+      .session;
   }
 }
+
 
 module.exports = SpannerClient;
