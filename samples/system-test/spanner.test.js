@@ -47,17 +47,8 @@ describe('Spanner', () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
 
-    try {
-      await instance.delete();
-    } catch (err) {
-      // Ignore error
-    }
-
-    try {
-      await database.delete();
-    } catch (err) {
-      // Ignore error
-    }
+    await instance.delete();
+    await database.delete();
 
     const [, operation] = await instance.create({
       config: 'regional-us-central1',
@@ -67,11 +58,7 @@ describe('Spanner', () => {
       },
     });
 
-    try {
-      await operation.promise();
-    } catch (err) {
-      // Ignore error
-    }
+    await operation.promise();
 
     const [instances] = await spanner.getInstances({
       filter: 'labels.gcloud-sample-tests:true',
@@ -104,17 +91,8 @@ describe('Spanner', () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
 
-    try {
-      await database.delete();
-    } catch (err) {
-      // Ignore error
-    }
-
-    try {
-      await instance.delete();
-    } catch (err) {
-      // Ignore error
-    }
+    await database.delete();
+    await instance.delete();
   });
 
   // create_database
@@ -755,12 +733,7 @@ function apiRequest(reqOpts) {
             return;
           }
 
-          try {
-            resolve(JSON.parse(response.body));
-          } catch (e) {
-            reject(e);
-            return;
-          }
+          resolve(JSON.parse(response.body));
         });
       })
       .catch(reject);

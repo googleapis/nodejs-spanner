@@ -21,8 +21,8 @@ const assert = require(`assert`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
 describe('QuickStart', () => {
-  before(() => tools.stubConsole);
-  after(() => tools.restoreConsole);
+  before(tools.stubConsole);
+  after(tools.restoreConsole);
 
   it(`should query a table`, async () => {
     const databaseMock = {
