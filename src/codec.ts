@@ -175,7 +175,11 @@ function generateToJSONFromRow(row) {
           throw e;
         }
       }
-
+      
+      if(value instanceof Date){
+        value = value.toString();
+      }
+      
       serializedRow[name] = value;
 
       return serializedRow;
