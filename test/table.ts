@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
-
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import {split} from 'split-array-stream';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
-import * as pfy from '@google-cloud/promisify';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -35,7 +33,12 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-function FakeTransactionRequest() {}
+class FakeTransactionRequest {
+  static formatTimestampOptions;
+  static formatTimestampOptions_;
+  createReadStream;
+  deleteRows;
+}
 
 describe('Table', () => {
   // tslint:disable-next-line no-any variable-name
@@ -58,9 +61,10 @@ describe('Table', () => {
 
   before(() => {
     Table = proxyquire('../src/table.js', {
-      '@google-cloud/promisify': fakePfy,
-      './transaction-request.js': {TransactionRequest: FakeTransactionRequest},
-    }).Table;
+              '@google-cloud/promisify': fakePfy,
+              './transaction-request.js':
+                  {TransactionRequest: FakeTransactionRequest},
+            }).Table;
     TableCached = extend({}, Table);
   });
 
@@ -106,7 +110,7 @@ describe('Table', () => {
       table.database = {
         createTable(schema_, callback) {
           assert.strictEqual(schema_, schema);
-          callback(); // done()
+          callback();  // done()
         },
       };
 
@@ -120,15 +124,14 @@ describe('Table', () => {
 
       const parentMethodReturnValue = {};
 
-      FakeTransactionRequest.prototype = {
-        createReadStream(name, query_) {
-          assert.strictEqual(this, table);
-          assert.strictEqual(name, table.name);
-          assert.deepStrictEqual(query_, {
-            keys: query,
-          });
-          return parentMethodReturnValue;
-        },
+      FakeTransactionRequest.prototype.createReadStream = function(
+          name, query_) {
+        assert.strictEqual(this, table);
+        assert.strictEqual(name, table.name);
+        assert.deepStrictEqual(query_, {
+          keys: query,
+        });
+        return parentMethodReturnValue;
       };
 
       const readStream = table.createReadStream(query);
@@ -138,11 +141,9 @@ describe('Table', () => {
     it('should accept an array of keys', done => {
       const QUERY = ['a', 'b'];
 
-      FakeTransactionRequest.prototype = {
-        createReadStream(name, query) {
-          assert.strictEqual(query.keys, QUERY);
-          done();
-        },
+      FakeTransactionRequest.prototype.createReadStream = (name, query) => {
+        assert.strictEqual(query.keys, QUERY);
+        done();
       };
 
       table.createReadStream(QUERY);
@@ -154,25 +155,21 @@ describe('Table', () => {
       const FORMATTED_OPTIONS = {};
 
       const formatTimestampOptions =
-        (FakeTransactionRequest as any).formatTimestampOptions;
+          FakeTransactionRequest.formatTimestampOptions;
 
-      (FakeTransactionRequest as any).formatTimestampOptions_ = function(options) {
+      FakeTransactionRequest.formatTimestampOptions_ = (options) => {
         assert.strictEqual(options, OPTIONS);
         return FORMATTED_OPTIONS;
       };
 
-      FakeTransactionRequest.prototype = {
-        createReadStream(name, query) {
-          (FakeTransactionRequest as any).formatTimestampOptions_ = formatTimestampOptions;
+      FakeTransactionRequest.prototype.createReadStream = (name, query) => {
+        FakeTransactionRequest.formatTimestampOptions_ = formatTimestampOptions;
 
-          assert.strictEqual(
-            query.transaction.singleUse.readOnly,
-            FORMATTED_OPTIONS
-          );
+        assert.strictEqual(
+            query.transaction.singleUse.readOnly, FORMATTED_OPTIONS);
 
-          setImmediate(done);
-          return {};
-        },
+        setImmediate(done);
+        return {};
       };
 
       table.createReadStream(QUERY, OPTIONS);
@@ -181,7 +178,8 @@ describe('Table', () => {
 
   describe('delete', () => {
     it('should throw an error if any arguments are provided', () => {
-      const expectedErr = /Unexpected argument, please see Table#deleteRows to delete rows\./;
+      const expectedErr =
+          /Unexpected argument, please see Table#deleteRows to delete rows\./;
 
       assert.throws(() => table.delete([]), expectedErr);
     });
@@ -212,14 +210,13 @@ describe('Table', () => {
 
       const parentMethodReturnValue = {};
 
-      FakeTransactionRequest.prototype = {
-        deleteRows(name, keys_, callback_) {
-          assert.strictEqual(this, table);
-          assert.strictEqual(name, table.name);
-          assert.strictEqual(keys_, keys);
-          assert.strictEqual(callback_, callback);
-          return parentMethodReturnValue;
-        },
+      FakeTransactionRequest.prototype.deleteRows = function(
+          name, keys_, callback_) {
+        assert.strictEqual(this, table);
+        assert.strictEqual(name, table.name);
+        assert.strictEqual(keys_, keys);
+        assert.strictEqual(callback_, callback);
+        return parentMethodReturnValue;
       };
 
       const returnValue = table.deleteRows(keys, callback);
@@ -232,7 +229,7 @@ describe('Table', () => {
       const returnVal = Promise.resolve();
 
       table.delete = callback => {
-        setImmediate(callback); // the done fn
+        setImmediate(callback);  // the done fn
         return returnVal;
       };
 
@@ -269,7 +266,7 @@ describe('Table', () => {
 
       const rows = [{}, {}];
 
-      table.createReadStream = function(keyVals_, options) {
+      table.createReadStream = (keyVals_, options) => {
         assert.strictEqual(keyVals_, keyVals);
         assert.strictEqual(options, null);
 
@@ -294,7 +291,7 @@ describe('Table', () => {
     it('should accept an options object', done => {
       const OPTIONS = {};
 
-      table.createReadStream = function(keyVals, options) {
+      table.createReadStream = (keyVals, options) => {
         assert.strictEqual(OPTIONS, options);
 
         const stream = through.obj();
@@ -312,13 +309,11 @@ describe('Table', () => {
     it('should execute callback with error', done => {
       const error = new Error('Error.');
 
-      table.createReadStream = function() {
+      table.createReadStream = () => {
         const stream = through.obj();
-
         setImmediate(() => {
           stream.destroy(error);
         });
-
         return stream;
       };
 
@@ -337,7 +332,7 @@ describe('Table', () => {
 
       function callback() {}
 
-      table.mutate_ = function(method, name, keyVals_, callback_) {
+      table.mutate_ = (method, name, keyVals_, callback_) => {
         assert.strictEqual(method, 'replace');
         assert.strictEqual(name, table.name);
         assert.strictEqual(keyVals_, keyVals);
@@ -358,7 +353,7 @@ describe('Table', () => {
 
       function callback() {}
 
-      table.mutate_ = function(method, name, keyVals_, callback_) {
+      table.mutate_ = (method, name, keyVals_, callback_) => {
         assert.strictEqual(method, 'update');
         assert.strictEqual(name, table.name);
         assert.strictEqual(keyVals_, keyVals);
@@ -379,7 +374,7 @@ describe('Table', () => {
 
       function callback() {}
 
-      table.mutate_ = function(method, name, keyVals_, callback_) {
+      table.mutate_ = (method, name, keyVals_, callback_) => {
         assert.strictEqual(method, 'insertOrUpdate');
         assert.strictEqual(name, table.name);
         assert.strictEqual(keyVals_, keyVals);

@@ -27,12 +27,11 @@ import * as through from 'through2';
 import {codec} from './codec';
 import {partialResultStream} from './partial-result-stream';
 import {TransactionRequest} from './transaction-request';
-import { Metadata } from '@google-cloud/common';
-import { Session } from './session';
+import {Metadata} from '@google-cloud/common';
+import {Session} from './session';
 
-const config = require('./v1/spanner_client_config.json').interfaces[
-  'google.spanner.v1.Spanner'
-];
+const config = require('./v1/spanner_client_config.json')
+                   .interfaces['google.spanner.v1.Spanner'];
 
 /**
  * Metadata retry info key.
@@ -50,9 +49,8 @@ const DEFAULT_TRANSACTION_TIMEOUT = config.methods.Commit.timeout_millis;
 
 const root = new gax.GoogleProtoFilesRoot();
 const protoFilesRoot = protobuf.loadSync(
-  path.join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
-  root
-);
+    path.join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
+    root);
 
 // tslint:disable-next-line variable-name
 const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
@@ -203,39 +201,36 @@ class Transaction extends TransactionRequest {
     } else {
       options = {
         readOnly: extend(
-          {
-            returnReadTimestamp: true,
-          },
-          this.options
-        ),
+            {
+              returnReadTimestamp: true,
+            },
+            this.options),
       };
     }
     const reqOpts = {
       options,
     };
     this.request(
-      {
-        client: 'SpannerClient',
-        method: 'beginTransaction',
-        reqOpts,
-      },
-      (err, resp) => {
-        if (err) {
-          callback(err);
-          return;
-        }
-        this.attempts_ += 1;
-        this.ended_ = false;
-        this.id = resp.id;
-        this.metadata = resp;
-        if (resp.readTimestamp) {
-          this.readTimestamp = TransactionRequest.fromProtoTimestamp_(
-            resp.readTimestamp
-          );
-        }
-        callback(null, resp);
-      }
-    );
+        {
+          client: 'SpannerClient',
+          method: 'beginTransaction',
+          reqOpts,
+        },
+        (err, resp) => {
+          if (err) {
+            callback(err);
+            return;
+          }
+          this.attempts_ += 1;
+          this.ended_ = false;
+          this.id = resp.id;
+          this.metadata = resp;
+          if (resp.readTimestamp) {
+            this.readTimestamp =
+                TransactionRequest.fromProtoTimestamp_(resp.readTimestamp);
+          }
+          callback(null, resp);
+        });
   }
   /**
    * @typedef {object} CommitResponse
@@ -307,18 +302,17 @@ class Transaction extends TransactionRequest {
       };
     }
     this.request(
-      {
-        client: 'SpannerClient',
-        method: 'commit',
-        reqOpts,
-      },
-      (err, resp) => {
-        if (!err) {
-          this.end();
-        }
-        callback(err, resp);
-      }
-    );
+        {
+          client: 'SpannerClient',
+          method: 'commit',
+          reqOpts,
+        },
+        (err, resp) => {
+          if (!err) {
+            this.end();
+          }
+          callback(err, resp);
+        });
   }
   /**
    * Let the client know you're done with a particular transaction. This should
@@ -388,11 +382,10 @@ class Transaction extends TransactionRequest {
    */
   request(config, callback) {
     config.reqOpts = extend(
-      {
-        session: this.session.formattedName_,
-      },
-      config.reqOpts
-    );
+        {
+          session: this.session.formattedName_,
+        },
+        config.reqOpts);
     this.session.request(config, (err, resp) => {
       if (!this.runFn_ || !err || !this.isRetryableErrorCode_(err.code)) {
         callback(err, resp);
@@ -415,11 +408,10 @@ class Transaction extends TransactionRequest {
    */
   requestStream(config) {
     config.reqOpts = extend(
-      {
-        session: this.session.formattedName_,
-      },
-      config.reqOpts
-    );
+        {
+          session: this.session.formattedName_,
+        },
+        config.reqOpts);
     const requestStream = this.session.requestStream(config);
     if (!is.fn(this.runFn_)) {
       return requestStream;
@@ -499,18 +491,17 @@ class Transaction extends TransactionRequest {
       transactionId: this.id,
     };
     this.request(
-      {
-        client: 'SpannerClient',
-        method: 'rollback',
-        reqOpts,
-      },
-      (err, resp) => {
-        if (!err) {
-          this.end();
-        }
-        callback(err, resp);
-      }
-    );
+        {
+          client: 'SpannerClient',
+          method: 'rollback',
+          reqOpts,
+        },
+        (err, resp) => {
+          if (!err) {
+            this.end();
+          }
+          callback(err, resp);
+        });
   }
   /**
    * Execute a SQL statement on this database inside of a transaction.
@@ -519,8 +510,8 @@ class Transaction extends TransactionRequest {
    *
    * This method wraps the streaming method,
    * {@link Transaction#run} for your convenience. All rows will
-   * be stored in memory before being released to your callback. If you intend on
-   * receiving a lot of results from your query, consider using the streaming
+   * be stored in memory before being released to your callback. If you intend
+   * on receiving a lot of results from your query, consider using the streaming
    * method, so you can free each result from memory after consuming it.
    *
    * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
@@ -585,7 +576,8 @@ class Transaction extends TransactionRequest {
    * });
    *
    * //-
-   * // If you need to enforce a specific param type, a types map can be provided.
+   * // If you need to enforce a specific param type, a types map can be
+   * provided.
    * // This is typically useful if your param value can be null.
    * //-
    * database.runTransaction(function(err, transaction) {
@@ -613,16 +605,18 @@ class Transaction extends TransactionRequest {
     let stats;
 
     this.runStream(query)
-      .on('error', callback)
-      .on('data', row => {
-        rows.push(row);
-      })
-      .on('stats', s => {
-        stats = s;
-      })
-      .on('end', () => {
-        callback(null, rows, stats);
-      });
+        .on('error', callback)
+        .on('data',
+            row => {
+              rows.push(row);
+            })
+        .on('stats',
+            s => {
+              stats = s;
+            })
+        .on('end', () => {
+          callback(null, rows, stats);
+        });
   }
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -715,11 +709,10 @@ class Transaction extends TransactionRequest {
       };
     }
     const reqOpts = extend(
-      {
-        transaction: {},
-      },
-      codec.encodeQuery(query)
-    );
+        {
+          transaction: {},
+        },
+        codec.encodeQuery(query));
     if (this.id) {
       reqOpts.transaction.id = this.id;
     } else {
@@ -786,10 +779,8 @@ class Transaction extends TransactionRequest {
    */
   shouldRetry_(err) {
     return (
-      this.isRetryableErrorCode_(err.code) &&
-      is.fn(this.runFn_) &&
-      Date.now() - this.beginTime_! < this.timeout_
-    );
+        this.isRetryableErrorCode_(err.code) && is.fn(this.runFn_) &&
+        Date.now() - this.beginTime_! < this.timeout_);
   }
   /**
    * Specifies whether a specific error code can be retried.
