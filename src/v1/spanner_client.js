@@ -152,10 +152,10 @@ class SpannerClient {
       JSON.parse(fs.readFileSync(GRPC_CONFIG_FILE))
     );
 
-    opts['grpcGcp.channelFactoryOverride'] = grpcGcp.gcpChannelFactoryOverride;
-    opts['grpcGcp.callInvocationTransformer'] =
+    opts['grpc_gcp.channelFactoryOverride'] = grpcGcp.gcpChannelFactoryOverride;
+    opts['grpc_gcp.callInvocationTransformer'] =
       grpcGcp.gcpCallInvocationTransformer;
-    opts['grpcGcp.gcpApiConfig'] = apiConfig;
+    opts['grpc_gcp.gcpApiConfig'] = apiConfig;
 
     // Put together the "service stub" for
     // google.spanner.v1.Spanner.
