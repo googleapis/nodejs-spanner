@@ -46,9 +46,16 @@ describe('Spanner', () => {
     tools.checkCredentials();
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
-
-    await instance.delete();
-    await database.delete();
+    try {
+      await instance.delete();
+    } catch (err) {
+      // Ignore error
+    }
+    try {
+      await database.delete();
+    } catch (err) {
+      // Ignore error
+    }
 
     const [, operation] = await instance.create({
       config: 'regional-us-central1',
