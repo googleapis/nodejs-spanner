@@ -26,7 +26,7 @@ s.copy(spanner_admin_database, excludes=["src/v1/index.js", "src/index.js", "REA
 s.copy(spanner_admin_instance, excludes=["src/v1/index.js", "src/index.js", "README.md", "package.json"])
 
 common_templates = gcp.CommonTemplates()
-templates = common_templates.node_library()
+templates = common_templates.node_library(source_location='build/src')
 s.copy(templates)
 
 # nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and

@@ -27,10 +27,7 @@ import * as uuid from 'uuid';
 const {Spanner} = require('../src');
 
 const PREFIX = 'gcloud-tests-';
-const RUN_ID = uuid
-  .v1()
-  .split('-')
-  .shift(); // get a short uuid
+const RUN_ID = uuid.v1().split('-').shift();  // get a short uuid
 const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
@@ -50,14 +47,13 @@ describe('Spanner', () => {
 
   before(done => {
     async.series(
-      [
-        deleteTestResources,
-        (next) => {
-          instance.create(INSTANCE_CONFIG, execAfterOperationComplete(next));
-        },
-      ],
-      done
-    );
+        [
+          deleteTestResources,
+          (next) => {
+            instance.create(INSTANCE_CONFIG, execAfterOperationComplete(next));
+          },
+        ],
+        done);
   });
 
   after(deleteTestResources);
@@ -78,28 +74,27 @@ describe('Spanner', () => {
         }
 
         database.run(
-          {
-            sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
-            params: {
-              id,
+            {
+              sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
+              params: {
+                id,
+              },
             },
-          },
-          (err, rows, readResp) => {
-            if (err) {
-              callback(err);
-              return;
-            }
+            (err, rows, readResp) => {
+              if (err) {
+                callback(err);
+                return;
+              }
 
-            callback(null, rows.shift(), insertResp, readResp);
-          }
-        );
+              callback(null, rows.shift(), insertResp, readResp);
+            });
       });
     }
 
     before(done => {
       database.create(
-        {
-          schema: `
+          {
+            schema: `
             CREATE TABLE TypeCheck (
               Key STRING(MAX) NOT NULL,
               BytesValue BYTES(MAX),
@@ -119,9 +114,8 @@ describe('Spanner', () => {
               CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
             ) PRIMARY KEY (Key)
           `,
-        },
-        execAfterOperationComplete(done)
-      );
+          },
+          execAfterOperationComplete(done));
     });
 
     describe('uneven rows', () => {
@@ -143,27 +137,27 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           database.run(
-            {
-              sql: `SELECT * FROM \`${table.name}\` WHERE Key = @a OR KEY = @b`,
-              params: {
-                a: data[0].Key,
-                b: data[1].Key,
+              {
+                sql: `SELECT * FROM \`${
+                    table.name}\` WHERE Key = @a OR KEY = @b`,
+                params: {
+                  a: data[0].Key,
+                  b: data[1].Key,
+                },
               },
-            },
-            (err, rows) => {
-              assert.ifError(err);
+              (err, rows) => {
+                assert.ifError(err);
 
-              const row1 = rows[0].toJSON();
-              assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
-              assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
+                const row1 = rows[0].toJSON();
+                assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
+                assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
 
-              const row2 = rows[1].toJSON();
-              assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
-              assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
+                const row2 = rows[1].toJSON();
+                assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
+                assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
 
-              done();
-            }
-          );
+                done();
+              });
         });
       });
     });
@@ -200,13 +194,11 @@ describe('Spanner', () => {
           ];
 
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][0].value[0][0]),
-            JSON.stringify(expected[0].value[0][0])
-          );
+              JSON.stringify(rows[0][0].value[0][0]),
+              JSON.stringify(expected[0].value[0][0]));
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][0].value[0][1]),
-            JSON.stringify(expected[0].value[0][1])
-          );
+              JSON.stringify(rows[0][0].value[0][1]),
+              JSON.stringify(expected[0].value[0][1]));
 
           done();
         });
@@ -214,7 +206,7 @@ describe('Spanner', () => {
 
       it('should correctly decode structs', done => {
         const query =
-          'SELECT 1 as id, ARRAY(select as struct 2 as id, "hello" as name)';
+            'SELECT 1 as id, ARRAY(select as struct 2 as id, "hello" as name)';
 
         database.run(query, (err, rows) => {
           assert.ifError(err);
@@ -250,17 +242,13 @@ describe('Spanner', () => {
           ];
 
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][0]),
-            JSON.stringify(expected[0])
-          );
+              JSON.stringify(rows[0][0]), JSON.stringify(expected[0]));
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][1].value[0][0]),
-            JSON.stringify(expected[1].value[0][0])
-          );
+              JSON.stringify(rows[0][1].value[0][0]),
+              JSON.stringify(expected[1].value[0][0]));
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][1].value[0][1]),
-            JSON.stringify(expected[1].value[0][1])
-          );
+              JSON.stringify(rows[0][1].value[0][1]),
+              JSON.stringify(expected[1].value[0][1]));
 
           done();
         });
@@ -647,9 +635,8 @@ describe('Spanner', () => {
         insert(data, (err, row, commitResponse) => {
           assert.ifError(err);
 
-          const timestampFromCommit = fromProtoToDate(
-            commitResponse.commitTimestamp
-          );
+          const timestampFromCommit =
+              fromProtoToDate(commitResponse.commitTimestamp);
           const timestampFromRead = row.toJSON().CommitTimestamp;
 
           assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
@@ -679,11 +666,10 @@ describe('Spanner', () => {
       const instance = spanner.instance(generateName('instance'));
 
       const config = extend(
-        {
-          autoCreate: true,
-        },
-        INSTANCE_CONFIG
-      );
+          {
+            autoCreate: true,
+          },
+          INSTANCE_CONFIG);
 
       instance.get(config, err => {
         assert.ifError(err);
@@ -700,26 +686,20 @@ describe('Spanner', () => {
     });
 
     it('should list the instances in promise mode', done => {
-      spanner
-        .getInstances()
-        .then(data => {
-          const instances = data[0];
-          assert(instances.length > 0);
-          done();
-        })
-        .catch(done);
-    });
-
-    it('should list the instances in stream mode', done => {
-      spanner
-        .getInstancesStream()
-        .on('error', done)
-        .pipe(
-          concat(instances => {
+      spanner.getInstances()
+          .then(data => {
+            const instances = data[0];
             assert(instances.length > 0);
             done();
           })
-        );
+          .catch(done);
+    });
+
+    it('should list the instances in stream mode', done => {
+      spanner.getInstancesStream().on('error', done).pipe(concat(instances => {
+        assert(instances.length > 0);
+        done();
+      }));
     });
 
     it('should update the metadata', done => {
@@ -727,18 +707,16 @@ describe('Spanner', () => {
         displayName: 'new-display-name',
       };
 
-      instance.setMetadata(
-        newData,
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
+      instance.setMetadata(newData, execAfterOperationComplete(err => {
+                             assert.ifError(err);
 
-          instance.getMetadata((err, metadata) => {
-            assert.ifError(err);
-            assert.strictEqual(metadata.displayName, newData.displayName);
-            done();
-          });
-        })
-      );
+                             instance.getMetadata((err, metadata) => {
+                               assert.ifError(err);
+                               assert.strictEqual(
+                                   metadata.displayName, newData.displayName);
+                               done();
+                             });
+                           }));
     });
 
     it('should return true for instances that exist', done => {
@@ -768,26 +746,22 @@ describe('Spanner', () => {
     });
 
     it('should list the instanceConfigs in promise mode', done => {
-      spanner
-        .getInstanceConfigs()
-        .then(data => {
-          const instanceConfigs = data[0];
-          assert(instanceConfigs.length > 0);
-          done();
-        })
-        .catch(done);
-    });
-
-    it('should list the instanceConfigs in stream mode', done => {
-      spanner
-        .getInstanceConfigsStream()
-        .on('error', done)
-        .pipe(
-          concat(instanceConfigs => {
+      spanner.getInstanceConfigs()
+          .then(data => {
+            const instanceConfigs = data[0];
             assert(instanceConfigs.length > 0);
             done();
           })
-        );
+          .catch(done);
+    });
+
+    it('should list the instanceConfigs in stream mode', done => {
+      spanner.getInstanceConfigsStream()
+          .on('error', done)
+          .pipe(concat(instanceConfigs => {
+            assert(instanceConfigs.length > 0);
+            done();
+          }));
     });
   });
 
@@ -835,26 +809,20 @@ describe('Spanner', () => {
     });
 
     it('should list the databases in promise mode', done => {
-      instance
-        .getDatabases()
-        .then(data => {
-          const databases = data[0];
-          assert(databases.length > 0);
-          done();
-        })
-        .catch(done);
-    });
-
-    it('should list the databases in stream mode', done => {
-      instance
-        .getDatabasesStream()
-        .on('error', done)
-        .pipe(
-          concat(databases => {
+      instance.getDatabases()
+          .then(data => {
+            const databases = data[0];
             assert(databases.length > 0);
             done();
           })
-        );
+          .catch(done);
+    });
+
+    it('should list the databases in stream mode', done => {
+      instance.getDatabasesStream().on('error', done).pipe(concat(databases => {
+        assert(databases.length > 0);
+        done();
+      }));
     });
 
     it('should return true for databases that exist', done => {
@@ -883,24 +851,21 @@ describe('Spanner', () => {
         ) PRIMARY KEY(SingerId)`;
 
       database.updateSchema(
-        [createTableStatement],
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
-
-          function replaceNewLinesAndSpacing(str) {
-            return str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
-          }
-
-          database.getSchema((err, statements) => {
+          [createTableStatement], execAfterOperationComplete(err => {
             assert.ifError(err);
-            assert.strictEqual(
-              replaceNewLinesAndSpacing(statements[0]),
-              replaceNewLinesAndSpacing(createTableStatement)
-            );
-            done();
-          });
-        })
-      );
+
+            function replaceNewLinesAndSpacing(str) {
+              return str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
+            }
+
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.strictEqual(
+                  replaceNewLinesAndSpacing(statements[0]),
+                  replaceNewLinesAndSpacing(createTableStatement));
+              done();
+            });
+          }));
     });
   });
 
@@ -910,25 +875,23 @@ describe('Spanner', () => {
 
     before(done => {
       async.series(
-        [
-          (next) => {
-            database.create(
-              {
-                schema: `
+          [
+            (next) => {
+              database.create(
+                  {
+                    schema: `
                   CREATE TABLE Singers (
                     SingerId STRING(1024) NOT NULL,
                     Name STRING(1024),
                   ) PRIMARY KEY(SingerId)`,
-              },
-              execAfterOperationComplete(next)
-            );
-          },
-          (next) => {
-            session.create(next);
-          },
-        ],
-        done
-      );
+                  },
+                  execAfterOperationComplete(next));
+            },
+            (next) => {
+              session.create(next);
+            },
+          ],
+          done);
     });
 
     after(done => {
@@ -967,11 +930,10 @@ describe('Spanner', () => {
     const table = database.table('Singers');
 
     before(() => {
-      return database
-        .create()
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return table.create(`
+      return database.create()
+          .then(onPromiseOperationComplete)
+          .then(() => {
+            return table.create(`
             CREATE TABLE Singers (
               SingerId STRING(1024) NOT NULL,
               Name STRING(1024),
@@ -984,44 +946,39 @@ describe('Spanner', () => {
               PhoneNumbers ARRAY<INT64>,
               HasGear BOOL,
             ) PRIMARY KEY(SingerId)`);
-        })
-        .then(onPromiseOperationComplete);
+          })
+          .then(onPromiseOperationComplete);
     });
 
     after(() => {
-      return table
-        .delete()
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return database.delete();
-        });
+      return table.delete().then(onPromiseOperationComplete).then(() => {
+        return database.delete();
+      });
     });
 
     it('should throw an error for non-existant tables', done => {
       const table = database.table(generateName('nope'));
 
       table.insert(
-        {
-          SingerId: generateName('id'),
-        },
-        err => {
-          assert.strictEqual(err.code, 5);
-          done();
-        }
-      );
+          {
+            SingerId: generateName('id'),
+          },
+          err => {
+            assert.strictEqual(err.code, 5);
+            done();
+          });
     });
 
     it('should throw an error for non-existant columns', done => {
       table.insert(
-        {
-          SingerId: generateName('id'),
-          Nope: 'abc',
-        },
-        err => {
-          assert.strictEqual(err.code, 5);
-          done();
-        }
-      );
+          {
+            SingerId: generateName('id'),
+            Nope: 'abc',
+          },
+          err => {
+            assert.strictEqual(err.code, 5);
+            done();
+          });
     });
 
     it('should read rows as a stream', done => {
@@ -1029,39 +986,39 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
+          {
+            SingerId: id,
+            Name: name,
+          },
+          err => {
+            assert.ifError(err);
 
-          let rows: Array<{}> = [];
+            let rows: Array<{}> = [];
 
-          table
-            .createReadStream({
-              keys: [id],
-              columns: ['SingerId', 'name'],
-            })
-            .on('error', done)
-            .on('data', row => {
-              rows.push(row);
-            })
-            .on('end', () => {
-              // tslint:disable-next-line no-any
-              rows = rows.map(x => (x as any).toJSON());
+            table
+                .createReadStream({
+                  keys: [id],
+                  columns: ['SingerId', 'name'],
+                })
+                .on('error', done)
+                .on('data',
+                    row => {
+                      rows.push(row);
+                    })
+                .on('end', () => {
+                  // tslint:disable-next-line no-any
+                  rows = rows.map(x => (x as any).toJSON());
 
-              assert.deepStrictEqual(rows, [
-                {
-                  SingerId: id,
-                  Name: name,
-                },
-              ]);
+                  assert.deepStrictEqual(rows, [
+                    {
+                      SingerId: id,
+                      Name: name,
+                    },
+                  ]);
 
-              done();
-            });
-        }
-      );
+                  done();
+                });
+          });
     });
 
     it('should automatically convert to JSON', done => {
@@ -1069,68 +1026,67 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
+          {
+            SingerId: id,
+            Name: name,
+          },
+          err => {
+            assert.ifError(err);
 
-          const rows: Array<{}> = [];
+            const rows: Array<{}> = [];
 
-          table
-            .createReadStream({
-              keys: [id],
-              columns: ['SingerId', 'name'],
-              json: true,
-            })
-            .on('error', done)
-            .on('data', row => rows.push(row))
-            .on('end', () => {
-              assert.deepStrictEqual(rows, [
-                {
-                  SingerId: id,
-                  Name: name,
-                },
-              ]);
+            table
+                .createReadStream({
+                  keys: [id],
+                  columns: ['SingerId', 'name'],
+                  json: true,
+                })
+                .on('error', done)
+                .on('data', row => rows.push(row))
+                .on('end', () => {
+                  assert.deepStrictEqual(rows, [
+                    {
+                      SingerId: id,
+                      Name: name,
+                    },
+                  ]);
 
-              done();
-            });
-        }
-      );
+                  done();
+                });
+          });
     });
 
     it('should automatically convert to JSON with options', done => {
       const id = generateName('id');
 
       table.insert(
-        {
-          SingerId: id,
-          Int: 8,
-        },
-        err => {
-          assert.ifError(err);
+          {
+            SingerId: id,
+            Int: 8,
+          },
+          err => {
+            assert.ifError(err);
 
-          // tslint:disable-next-line no-any
-          const rows: any[] = [];
+            // tslint:disable-next-line no-any
+            const rows: any[] = [];
 
-          table
-            .createReadStream({
-              keys: [id],
-              columns: ['SingerId', 'Int'],
-              json: true,
-              jsonOptions: {wrapNumbers: true},
-            })
-            .on('error', done)
-            .on('data', row => {
-              rows.push(row);
-            })
-            .on('end', () => {
-              assert.strictEqual(rows[0].Int.value, '8');
-              done();
-            });
-        }
-      );
+            table
+                .createReadStream({
+                  keys: [id],
+                  columns: ['SingerId', 'Int'],
+                  json: true,
+                  jsonOptions: {wrapNumbers: true},
+                })
+                .on('error', done)
+                .on('data',
+                    row => {
+                      rows.push(row);
+                    })
+                .on('end', () => {
+                  assert.strictEqual(rows[0].Int.value, '8');
+                  done();
+                });
+          });
     });
 
     it('should insert and delete a row', done => {
@@ -1138,34 +1094,34 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
-
-          table.deleteRows([id], err => {
+          {
+            SingerId: id,
+            Name: name,
+          },
+          err => {
             assert.ifError(err);
-            // tslint:disable-next-line no-any
-            const rows: any[] = [];
 
-            table
-              .createReadStream({
-                keys: [id],
-                columns: ['SingerId'],
-              })
-              .on('error', done)
-              .on('data', row => {
-                rows.push(row);
-              })
-              .on('end', () => {
-                assert.strictEqual(rows.length, 0);
-                done();
-              });
+            table.deleteRows([id], err => {
+              assert.ifError(err);
+              // tslint:disable-next-line no-any
+              const rows: any[] = [];
+
+              table
+                  .createReadStream({
+                    keys: [id],
+                    columns: ['SingerId'],
+                  })
+                  .on('error', done)
+                  .on('data',
+                      row => {
+                        rows.push(row);
+                      })
+                  .on('end', () => {
+                    assert.strictEqual(rows.length, 0);
+                    done();
+                  });
+            });
           });
-        }
-      );
     });
 
     it('should insert and delete multiple rows', done => {
@@ -1175,41 +1131,41 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        [
-          {
-            SingerId: id,
-            Name: name,
-          },
-          {
-            SingerId: id2,
-            Name: name,
-          },
-        ],
-        err => {
-          assert.ifError(err);
-
-          table.deleteRows([id, id2], err => {
+          [
+            {
+              SingerId: id,
+              Name: name,
+            },
+            {
+              SingerId: id2,
+              Name: name,
+            },
+          ],
+          err => {
             assert.ifError(err);
 
-            // tslint:disable-next-line no-any
-            const rows: any[] = [];
+            table.deleteRows([id, id2], err => {
+              assert.ifError(err);
 
-            table
-              .createReadStream({
-                keys: [id, id2],
-                columns: ['SingerId'],
-              })
-              .on('error', done)
-              .on('data', row => {
-                rows.push(row);
-              })
-              .on('end', () => {
-                assert.strictEqual(rows.length, 0);
-                done();
-              });
+              // tslint:disable-next-line no-any
+              const rows: any[] = [];
+
+              table
+                  .createReadStream({
+                    keys: [id, id2],
+                    columns: ['SingerId'],
+                  })
+                  .on('error', done)
+                  .on('data',
+                      row => {
+                        rows.push(row);
+                      })
+                  .on('end', () => {
+                    assert.strictEqual(rows.length, 0);
+                    done();
+                  });
+            });
           });
-        }
-      );
     });
 
     it('should insert and delete multiple composite key rows', () => {
@@ -1224,50 +1180,48 @@ describe('Spanner', () => {
       const keys = [[id1, name1], [id2, name2]];
 
       return table
-        .create(
-          `
+          .create(`
           CREATE TABLE SingersComposite (
             SingerId INT64 NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId, Name)
-        `
-        )
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return table.insert([
-            {
-              SingerId: id1,
-              Name: name1,
-            },
-            {
-              SingerId: id2,
-              Name: name2,
-            },
-          ]);
-        })
-        .then(() => {
-          return table.read({
-            keys,
-            columns: ['SingerId', 'Name'],
-          });
-        })
-        .then(data => {
-          const rows = data[0];
+        `)
+          .then(onPromiseOperationComplete)
+          .then(() => {
+            return table.insert([
+              {
+                SingerId: id1,
+                Name: name1,
+              },
+              {
+                SingerId: id2,
+                Name: name2,
+              },
+            ]);
+          })
+          .then(() => {
+            return table.read({
+              keys,
+              columns: ['SingerId', 'Name'],
+            });
+          })
+          .then(data => {
+            const rows = data[0];
 
-          assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows.length, 2);
 
-          return table.deleteRows(keys);
-        })
-        .then(() => {
-          return table.read({
-            keys,
-            columns: ['SingerId', 'Name'],
+            return table.deleteRows(keys);
+          })
+          .then(() => {
+            return table.read({
+              keys,
+              columns: ['SingerId', 'Name'],
+            });
+          })
+          .then(data => {
+            const rows = data[0];
+            assert.strictEqual(rows.length, 0);
           });
-        })
-        .then(data => {
-          const rows = data[0];
-          assert.strictEqual(rows.length, 0);
-        });
     });
 
     it('should insert and query multiple rows', done => {
@@ -1278,37 +1232,36 @@ describe('Spanner', () => {
       const name2 = generateName('name');
 
       table.insert(
-        [
-          {
-            SingerId: id1,
-            Name: name1,
-          },
-          {
-            SingerId: id2,
-            Name: name2,
-          },
-        ],
-        err => {
-          assert.ifError(err);
-
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          [
+            {
+              SingerId: id1,
+              Name: name1,
+            },
+            {
+              SingerId: id2,
+              Name: name2,
+            },
+          ],
+          err => {
             assert.ifError(err);
 
-            // We just want the two most recent ones.
-            rows.splice(0, rows.length - 2);
+            database.run('SELECT * FROM Singers', (err, rows) => {
+              assert.ifError(err);
 
-            rows = rows.map(x => x.toJSON());
+              // We just want the two most recent ones.
+              rows.splice(0, rows.length - 2);
 
-            assert.strictEqual(rows[0].SingerId, id1);
-            assert.strictEqual(rows[0].Name, name1);
+              rows = rows.map(x => x.toJSON());
 
-            assert.strictEqual(rows[1].SingerId, id2);
-            assert.strictEqual(rows[1].Name, name2);
+              assert.strictEqual(rows[0].SingerId, id1);
+              assert.strictEqual(rows[0].Name, name1);
 
-            done();
+              assert.strictEqual(rows[1].SingerId, id2);
+              assert.strictEqual(rows[1].Name, name2);
+
+              done();
+            });
           });
-        }
-      );
     });
 
     it('should insert then replace a row', done => {
@@ -1328,21 +1281,20 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           table.read(
-            {
-              keys: [originalRow.SingerId],
-              columns: Object.keys(originalRow),
-            },
-            (err, rows) => {
-              assert.ifError(err);
+              {
+                keys: [originalRow.SingerId],
+                columns: Object.keys(originalRow),
+              },
+              (err, rows) => {
+                assert.ifError(err);
 
-              const row = rows[0].toJSON();
+                const row = rows[0].toJSON();
 
-              assert.strictEqual(row.SingerId, replacedRow.SingerId);
-              assert.strictEqual(row.Name, null);
+                assert.strictEqual(row.SingerId, replacedRow.SingerId);
+                assert.strictEqual(row.Name, null);
 
-              done();
-            }
-          );
+                done();
+              });
         });
       });
     });
@@ -1365,21 +1317,20 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           table.read(
-            {
-              keys: [originalRow.SingerId],
-              columns: Object.keys(originalRow),
-            },
-            (err, rows) => {
-              assert.ifError(err);
+              {
+                keys: [originalRow.SingerId],
+                columns: Object.keys(originalRow),
+              },
+              (err, rows) => {
+                assert.ifError(err);
 
-              const row = rows[0].toJSON();
+                const row = rows[0].toJSON();
 
-              assert.strictEqual(row.SingerId, updatedRow.SingerId);
-              assert.strictEqual(row.Name, updatedRow.Name);
+                assert.strictEqual(row.SingerId, updatedRow.SingerId);
+                assert.strictEqual(row.Name, updatedRow.Name);
 
-              done();
-            }
-          );
+                done();
+              });
         });
       });
     });
@@ -1431,17 +1382,15 @@ describe('Spanner', () => {
         };
 
         database.run(
-          {
-            sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-            params: {id: ID},
-          },
-          options,
-          (err, rows) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
-            done();
-          }
-        );
+            {
+              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+              params: {id: ID},
+            },
+            options, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
+              done();
+            });
       });
 
       it('should query in promise mode', done => {
@@ -1451,19 +1400,18 @@ describe('Spanner', () => {
         };
 
         database
-          .run(
-            {
-              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-              params: {id: ID},
-            },
-            options
-          )
-          .then(data => {
-            const rows = data[0];
-            assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
-            done();
-          })
-          .catch(done);
+            .run(
+                {
+                  sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+                  params: {id: ID},
+                },
+                options)
+            .then(data => {
+              const rows = data[0];
+              assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
+              done();
+            })
+            .catch(done);
       });
 
       it('should query in stream mode', done => {
@@ -1473,23 +1421,25 @@ describe('Spanner', () => {
         };
         let row;
 
-        const stream = database
-          .runStream(
-            {
-              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-              params: {id: ID},
-            },
-            options
-          )
-          .on('error', done)
-          .once('data', row_ => {
-            row = row_;
-            stream.end();
-          })
-          .on('end', () => {
-            assert.deepStrictEqual(row.toJSON(), EXPECTED_ROW);
-            done();
-          });
+        const stream =
+            database
+                .runStream(
+                    {
+                      sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+                      params: {id: ID},
+                    },
+                    options)
+                .on('error', done)
+                .once(
+                    'data',
+                    row_ => {
+                      row = row_;
+                      stream.end();
+                    })
+                .on('end', () => {
+                  assert.deepStrictEqual(row.toJSON(), EXPECTED_ROW);
+                  done();
+                });
       });
 
       it('should allow "SELECT 1" queries', done => {
@@ -1517,15 +1467,11 @@ describe('Spanner', () => {
 
           assert.strictEqual(values[0][0].value, 'a');
           assert.deepStrictEqual(
-            JSON.stringify(values[0][1].value),
-            JSON.stringify({value: '1'})
-          );
+              JSON.stringify(values[0][1].value), JSON.stringify({value: '1'}));
 
           assert.strictEqual(values[1][0].value, 'b');
           assert.deepStrictEqual(
-            JSON.stringify(values[1][1].value),
-            JSON.stringify({value: '2'})
-          );
+              JSON.stringify(values[1][1].value), JSON.stringify({value: '2'}));
 
           done();
         });
@@ -1691,9 +1637,7 @@ describe('Spanner', () => {
               });
 
               assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
-              );
+                  JSON.stringify(rows[0][0].value), JSON.stringify(expected));
               done();
             });
           });
@@ -1795,9 +1739,7 @@ describe('Spanner', () => {
               });
 
               assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
-              );
+                  JSON.stringify(rows[0][0].value), JSON.stringify(expected));
               done();
             });
           });
@@ -1909,9 +1851,7 @@ describe('Spanner', () => {
               });
 
               assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
-              );
+                  JSON.stringify(rows[0][0].value), JSON.stringify(expected));
               done();
             });
           });
@@ -2550,7 +2490,7 @@ describe('Spanner', () => {
           it('should allow equality checks', done => {
             const query = {
               sql:
-                'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
+                  'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
               params: {
                 structParam: Spanner.struct({
                   threadf: Spanner.int(1),
@@ -2707,8 +2647,8 @@ describe('Spanner', () => {
           const offset = Math.floor(Math.random() * 500);
 
           return new Array(25000 + offset)
-            .fill('The quick brown fox jumps over the lazy dog.')
-            .join('\n');
+              .fill('The quick brown fox jumps over the lazy dog.')
+              .join('\n');
         }
 
         function bytes() {
@@ -2723,52 +2663,50 @@ describe('Spanner', () => {
 
         before(() => {
           return table
-            .create(
-              `
+              .create(`
               CREATE TABLE LargeReads (
                 Key STRING(MAX) NOT NULL,
                 StringValue STRING(MAX),
                 StringArray ARRAY<STRING(MAX)>,
                 BytesValue BYTES(MAX),
                 BytesArray ARRAY<BYTES(MAX)>
-              ) PRIMARY KEY (Key)`
-            )
-            .then(onPromiseOperationComplete)
-            .then(() => {
-              return table.insert(expectedRow);
-            });
+              ) PRIMARY KEY (Key)`)
+              .then(onPromiseOperationComplete)
+              .then(() => {
+                return table.insert(expectedRow);
+              });
         });
 
         it('should read large datasets', done => {
           table.read(
-            {
-              keys: [expectedRow.Key],
-              columns: [
-                'Key',
-                'StringValue',
-                'StringArray',
-                'BytesValue',
-                'BytesArray',
-              ],
-            },
-            (err, rows) => {
-              assert.ifError(err);
+              {
+                keys: [expectedRow.Key],
+                columns: [
+                  'Key',
+                  'StringValue',
+                  'StringArray',
+                  'BytesValue',
+                  'BytesArray',
+                ],
+              },
+              (err, rows) => {
+                assert.ifError(err);
 
-              const row = rows[0].toJSON();
+                const row = rows[0].toJSON();
 
-              assert.strictEqual(row.Key, expectedRow.Key);
-              assert.strictEqual(row.StringValue, expectedRow.StringValue);
-              assert.deepStrictEqual(row.StringArray, expectedRow.StringArray);
+                assert.strictEqual(row.Key, expectedRow.Key);
+                assert.strictEqual(row.StringValue, expectedRow.StringValue);
+                assert.deepStrictEqual(
+                    row.StringArray, expectedRow.StringArray);
 
-              row.BytesValue = base64ToBuffer(row.BytesValue);
-              row.BytesArray = row.BytesArray.map(base64ToBuffer);
+                row.BytesValue = base64ToBuffer(row.BytesValue);
+                row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-              assert.deepStrictEqual(row.BytesValue, expectedRow.BytesValue);
-              assert.deepStrictEqual(row.BytesArray, expectedRow.BytesArray);
+                assert.deepStrictEqual(row.BytesValue, expectedRow.BytesValue);
+                assert.deepStrictEqual(row.BytesArray, expectedRow.BytesArray);
 
-              done();
-            }
-          );
+                done();
+              });
         });
 
         it('should query large datasets', done => {
@@ -2819,16 +2757,15 @@ describe('Spanner', () => {
             assert.ifError(err);
 
             table.read(
-              {
-                keys: [ROW.SingerId],
-                columns: Object.keys(ROW),
-              },
-              (err, rows) => {
-                assert.ifError(err);
-                assert.deepStrictEqual(rows[0].toJSON(), ROW);
-                done();
-              }
-            );
+                {
+                  keys: [ROW.SingerId],
+                  columns: Object.keys(ROW),
+                },
+                (err, rows) => {
+                  assert.ifError(err);
+                  assert.deepStrictEqual(rows[0].toJSON(), ROW);
+                  done();
+                });
           });
         });
       });
@@ -2838,16 +2775,15 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           table.read(
-            {
-              keys: [ROW.SingerId],
-              columns: Object.keys(ROW),
-            },
-            (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0].toJSON(), ROW);
-              done();
-            }
-          );
+              {
+                keys: [ROW.SingerId],
+                columns: Object.keys(ROW),
+              },
+              (err, rows) => {
+                assert.ifError(err);
+                assert.deepStrictEqual(rows[0].toJSON(), ROW);
+                done();
+              });
         });
       });
     });
@@ -2859,248 +2795,245 @@ describe('Spanner', () => {
 
       before(() => {
         return table
-          .create(
-            `
+            .create(`
             CREATE TABLE ReadTestTable (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
-            ) PRIMARY KEY (Key)`
-          )
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            return database.updateSchema(`
+            ) PRIMARY KEY (Key)`)
+            .then(onPromiseOperationComplete)
+            .then(() => {
+              return database.updateSchema(`
               CREATE INDEX ReadByValue ON ReadTestTable(StringValue)`);
-          })
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            const data: Array<{}> = [];
+            })
+            .then(onPromiseOperationComplete)
+            .then(() => {
+              const data: Array<{}> = [];
 
-            for (let i = 0; i < 15; ++i) {
-              data.push({
-                Key: 'k' + i,
-                StringValue: 'v' + i,
-              });
-            }
+              for (let i = 0; i < 15; ++i) {
+                data.push({
+                  Key: 'k' + i,
+                  StringValue: 'v' + i,
+                });
+              }
 
-            return table.insert(data);
-          });
+              return table.insert(data);
+            });
       });
 
       // all of these tests require testing with and without an index,
       // to cut back on duplication, the core sections of the tests have been
       // turned into configurations
-      [
-        {
-          test: 'should perform an empty read',
-          query: {
-            ranges: [
-              {
-                startClosed: 'k99',
-                endOpen: 'z',
-              },
-            ],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 0);
-          },
+      [{
+        test: 'should perform an empty read',
+        query: {
+          ranges: [
+            {
+              startClosed: 'k99',
+              endOpen: 'z',
+            },
+          ],
+          columns: ALL_COLUMNS,
         },
-        {
-          test: 'should read a single key',
-          query: {
-            keys: ['k1'],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 1);
-
-            const row = rows[0].toJSON();
-
-            assert.strictEqual(row.Key, 'k1');
-            assert.strictEqual(row.StringValue, 'v1');
-          },
+        assertions(err, rows) {
+          assert.ifError(err);
+          assert.strictEqual(rows.length, 0);
         },
-        {
-          test: 'should read a non-existant single key',
-          query: {
-            keys: ['k999'],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 0);
-          },
-        },
-        {
-          test: 'should read using partial keys',
-          query: {
-            ranges: [
-              {
-                startClosed: 'k7',
-                endClosed: null,
-              },
-            ],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
+      },
+       {
+         test: 'should read a single key',
+         query: {
+           keys: ['k1'],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 1);
 
-            assert.strictEqual(rows.length, 3);
+           const row = rows[0].toJSON();
 
-            rows = rows.map(row => {
-              return row.toJSON();
-            });
+           assert.strictEqual(row.Key, 'k1');
+           assert.strictEqual(row.StringValue, 'v1');
+         },
+       },
+       {
+         test: 'should read a non-existant single key',
+         query: {
+           keys: ['k999'],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 0);
+         },
+       },
+       {
+         test: 'should read using partial keys',
+         query: {
+           ranges: [
+             {
+               startClosed: 'k7',
+               endClosed: null,
+             },
+           ],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
 
-            assert.strictEqual(rows[0].Key, 'k7');
-            assert.strictEqual(rows[1].Key, 'k8');
-            assert.strictEqual(rows[2].Key, 'k9');
-          },
-        },
-        {
-          test: 'should read using an open-open range',
-          query: {
-            ranges: [
-              {
-                startOpen: 'k3',
-                endOpen: 'k5',
-              },
-            ],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 1);
+           assert.strictEqual(rows.length, 3);
 
-            const row = rows[0].toJSON();
+           rows = rows.map(row => {
+             return row.toJSON();
+           });
 
-            assert.strictEqual(row.Key, 'k4');
-          },
-        },
-        {
-          test: 'should read using an open-closed range',
-          query: {
-            ranges: [
-              {
-                startOpen: 'k3',
-                endClosed: 'k5',
-              },
-            ],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 2);
+           assert.strictEqual(rows[0].Key, 'k7');
+           assert.strictEqual(rows[1].Key, 'k8');
+           assert.strictEqual(rows[2].Key, 'k9');
+         },
+       },
+       {
+         test: 'should read using an open-open range',
+         query: {
+           ranges: [
+             {
+               startOpen: 'k3',
+               endOpen: 'k5',
+             },
+           ],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 1);
 
-            rows = rows.map(row => {
-              return row.toJSON();
-            });
+           const row = rows[0].toJSON();
 
-            assert.strictEqual(rows[0].Key, 'k4');
-            assert.strictEqual(rows[1].Key, 'k5');
-          },
-        },
-        {
-          test: 'should read using a closed-closed range',
-          query: {
-            ranges: [
-              {
-                startClosed: 'k3',
-                endClosed: 'k5',
-              },
-            ],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 3);
+           assert.strictEqual(row.Key, 'k4');
+         },
+       },
+       {
+         test: 'should read using an open-closed range',
+         query: {
+           ranges: [
+             {
+               startOpen: 'k3',
+               endClosed: 'k5',
+             },
+           ],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 2);
 
-            rows = rows.map(row => {
-              return row.toJSON();
-            });
+           rows = rows.map(row => {
+             return row.toJSON();
+           });
 
-            assert.strictEqual(rows[0].Key, 'k3');
-            assert.strictEqual(rows[1].Key, 'k4');
-            assert.strictEqual(rows[2].Key, 'k5');
-          },
-        },
-        {
-          test: 'should read using a closed-open range',
-          query: {
-            ranges: [
-              {
-                startClosed: 'k3',
-                endOpen: 'k5',
-              },
-            ],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 2);
+           assert.strictEqual(rows[0].Key, 'k4');
+           assert.strictEqual(rows[1].Key, 'k5');
+         },
+       },
+       {
+         test: 'should read using a closed-closed range',
+         query: {
+           ranges: [
+             {
+               startClosed: 'k3',
+               endClosed: 'k5',
+             },
+           ],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 3);
 
-            rows = rows.map(row => {
-              return row.toJSON();
-            });
+           rows = rows.map(row => {
+             return row.toJSON();
+           });
 
-            assert.strictEqual(rows[0].Key, 'k3');
-            assert.strictEqual(rows[1].Key, 'k4');
-          },
-        },
-        {
-          test: 'should accept a limit',
-          query: {
-            ranges: [
-              {
-                startClosed: 'k3',
-                endClosed: 'k7',
-              },
-            ],
-            columns: ALL_COLUMNS,
-            limit: 2,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 2);
-          },
-        },
-        {
-          test: 'should ignore limits of 0',
-          query: {
-            ranges: [
-              {
-                startClosed: 'k3',
-                endClosed: 'k7',
-              },
-            ],
-            columns: ALL_COLUMNS,
-            limit: 0,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 5);
-          },
-        },
-        {
-          test: 'should read using point keys',
-          query: {
-            keys: ['k3', 'k5', 'k7'],
-            columns: ALL_COLUMNS,
-          },
-          assertions(err, rows) {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 3);
+           assert.strictEqual(rows[0].Key, 'k3');
+           assert.strictEqual(rows[1].Key, 'k4');
+           assert.strictEqual(rows[2].Key, 'k5');
+         },
+       },
+       {
+         test: 'should read using a closed-open range',
+         query: {
+           ranges: [
+             {
+               startClosed: 'k3',
+               endOpen: 'k5',
+             },
+           ],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 2);
 
-            rows = rows.map(row => {
-              return row.toJSON();
-            });
+           rows = rows.map(row => {
+             return row.toJSON();
+           });
 
-            assert.strictEqual(rows[0].Key, 'k3');
-            assert.strictEqual(rows[1].Key, 'k5');
-            assert.strictEqual(rows[2].Key, 'k7');
-          },
-        },
+           assert.strictEqual(rows[0].Key, 'k3');
+           assert.strictEqual(rows[1].Key, 'k4');
+         },
+       },
+       {
+         test: 'should accept a limit',
+         query: {
+           ranges: [
+             {
+               startClosed: 'k3',
+               endClosed: 'k7',
+             },
+           ],
+           columns: ALL_COLUMNS,
+           limit: 2,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 2);
+         },
+       },
+       {
+         test: 'should ignore limits of 0',
+         query: {
+           ranges: [
+             {
+               startClosed: 'k3',
+               endClosed: 'k7',
+             },
+           ],
+           columns: ALL_COLUMNS,
+           limit: 0,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 5);
+         },
+       },
+       {
+         test: 'should read using point keys',
+         query: {
+           keys: ['k3', 'k5', 'k7'],
+           columns: ALL_COLUMNS,
+         },
+         assertions(err, rows) {
+           assert.ifError(err);
+           assert.strictEqual(rows.length, 3);
+
+           rows = rows.map(row => {
+             return row.toJSON();
+           });
+
+           assert.strictEqual(rows[0].Key, 'k3');
+           assert.strictEqual(rows[1].Key, 'k5');
+           assert.strictEqual(rows[2].Key, 'k7');
+         },
+       },
       ].forEach(test => {
         // test normally
         it(test.test, done => {
@@ -3113,11 +3046,10 @@ describe('Spanner', () => {
         // test using an index
         it(test.test + ' with an index', done => {
           const query = extend(
-            {
-              index: 'ReadByValue',
-            },
-            test.query
-          );
+              {
+                index: 'ReadByValue',
+              },
+              test.query);
 
           if (query.keys) {
             query.keys = query.keys.map(key => {
@@ -3209,22 +3141,20 @@ describe('Spanner', () => {
 
     before(done => {
       async.series(
-        [
-          (next) => {
-            database.create(
-              {
-                schema: `
+          [
+            (next) => {
+              database.create(
+                  {
+                    schema: `
                   CREATE TABLE Singers (
                     SingerId STRING(1024) NOT NULL,
                     Name STRING(1024),
                   ) PRIMARY KEY(SingerId)`,
-              },
-              execAfterOperationComplete(next)
-            );
-          },
-        ],
-        done
-      );
+                  },
+                  execAfterOperationComplete(next));
+            },
+          ],
+          done);
     });
 
     it('should insert and query a row', done => {
@@ -3232,23 +3162,22 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
-
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          {
+            SingerId: id,
+            Name: name,
+          },
+          err => {
             assert.ifError(err);
-            assert.deepStrictEqual(rows.pop().toJSON(), {
-              SingerId: id,
-              Name: name,
+
+            database.run('SELECT * FROM Singers', (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows.pop().toJSON(), {
+                SingerId: id,
+                Name: name,
+              });
+              done();
             });
-            done();
           });
-        }
-      );
     });
 
     it('should insert and query multiple rows', done => {
@@ -3259,42 +3188,41 @@ describe('Spanner', () => {
       const name2 = generateName('name');
 
       table.insert(
-        [
-          {
-            SingerId: id1,
-            Name: name1,
-          },
-          {
-            SingerId: id2,
-            Name: name2,
-          },
-        ],
-        err => {
-          assert.ifError(err);
-
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          [
+            {
+              SingerId: id1,
+              Name: name1,
+            },
+            {
+              SingerId: id2,
+              Name: name2,
+            },
+          ],
+          err => {
             assert.ifError(err);
 
-            // We just want the two most recent ones.
-            rows.splice(0, rows.length - 2);
+            database.run('SELECT * FROM Singers', (err, rows) => {
+              assert.ifError(err);
 
-            rows = rows.map(x => x.toJSON());
+              // We just want the two most recent ones.
+              rows.splice(0, rows.length - 2);
 
-            assert.deepStrictEqual(rows, [
-              {
-                SingerId: id1,
-                Name: name1,
-              },
-              {
-                SingerId: id2,
-                Name: name2,
-              },
-            ]);
+              rows = rows.map(x => x.toJSON());
 
-            done();
+              assert.deepStrictEqual(rows, [
+                {
+                  SingerId: id1,
+                  Name: name1,
+                },
+                {
+                  SingerId: id2,
+                  Name: name2,
+                },
+              ]);
+
+              done();
+            });
           });
-        }
-      );
     });
 
     it('should read rows as a stream', done => {
@@ -3302,39 +3230,39 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
+          {
+            SingerId: id,
+            Name: name,
+          },
+          err => {
+            assert.ifError(err);
 
-          // tslint:disable-next-line no-any
-          let rows: any[] = [];
+            // tslint:disable-next-line no-any
+            let rows: any[] = [];
 
-          table
-            .createReadStream({
-              keys: [id],
-              columns: ['SingerId', 'name'],
-            })
-            .on('error', done)
-            .on('data', row => {
-              rows.push(row);
-            })
-            .on('end', () => {
-              rows = rows.map(x => x.toJSON());
+            table
+                .createReadStream({
+                  keys: [id],
+                  columns: ['SingerId', 'name'],
+                })
+                .on('error', done)
+                .on('data',
+                    row => {
+                      rows.push(row);
+                    })
+                .on('end', () => {
+                  rows = rows.map(x => x.toJSON());
 
-              assert.deepStrictEqual(rows, [
-                {
-                  SingerId: id,
-                  Name: name,
-                },
-              ]);
+                  assert.deepStrictEqual(rows, [
+                    {
+                      SingerId: id,
+                      Name: name,
+                    },
+                  ]);
 
-              done();
-            });
-        }
-      );
+                  done();
+                });
+          });
     });
 
     it('should read rows', done => {
@@ -3342,35 +3270,33 @@ describe('Spanner', () => {
       const name = generateName('name');
 
       table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
+          {
+            SingerId: id,
+            Name: name,
+          },
+          err => {
+            assert.ifError(err);
 
-          table.read(
-            {
-              keys: [id],
-              columns: ['SingerId', 'Name'],
-            },
-            (err, rows) => {
-              assert.ifError(err);
-
-              rows = rows.map(x => x.toJSON());
-
-              assert.deepStrictEqual(rows, [
+            table.read(
                 {
-                  SingerId: id,
-                  Name: name,
+                  keys: [id],
+                  columns: ['SingerId', 'Name'],
                 },
-              ]);
+                (err, rows) => {
+                  assert.ifError(err);
 
-              done();
-            }
-          );
-        }
-      );
+                  rows = rows.map(x => x.toJSON());
+
+                  assert.deepStrictEqual(rows, [
+                    {
+                      SingerId: id,
+                      Name: name,
+                    },
+                  ]);
+
+                  done();
+                });
+          });
     });
   });
 
@@ -3382,44 +3308,42 @@ describe('Spanner', () => {
     const records: any[] = [];
 
     before(() => {
-      return database
-        .create()
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return table.create(`
+      return database.create()
+          .then(onPromiseOperationComplete)
+          .then(() => {
+            return table.create(`
             CREATE TABLE TxnTable (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX),
               NumberValue INT64
             ) PRIMARY KEY (Key)`);
-        })
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          // tslint:disable-next-line no-any
-          const data: any[] = [];
+          })
+          .then(onPromiseOperationComplete)
+          .then(() => {
+            // tslint:disable-next-line no-any
+            const data: any[] = [];
 
-          for (let i = 0; i < 5; i++) {
-            data.push({
-              Key: 'k' + i,
-              StringValue: 'v' + i,
-            });
-          }
+            for (let i = 0; i < 5; i++) {
+              data.push({
+                Key: 'k' + i,
+                StringValue: 'v' + i,
+              });
+            }
 
-          return data.reduce((promise, entry) => {
-            return promise.then(() => {
-              const record = extend(
-                {
-                  timestamp: new Date(),
-                },
-                entry
-              );
+            return data.reduce((promise, entry) => {
+              return promise.then(() => {
+                const record = extend(
+                    {
+                      timestamp: new Date(),
+                    },
+                    entry);
 
-              records.push(record);
+                records.push(record);
 
-              return table.insert(entry).then(wait.bind(null, 1000));
-            });
-          }, Promise.resolve());
-        });
+                return table.insert(entry).then(wait.bind(null, 1000));
+              });
+            }, Promise.resolve());
+          });
     });
 
     describe('read only', () => {
@@ -3565,23 +3489,22 @@ describe('Spanner', () => {
             assert.strictEqual(rows.length, records.length);
 
             table.update(
-              {
-                Key: 'k4',
-                StringValue: 'v44',
-              },
-              err => {
-                assert.ifError(err);
-
-                transaction.run(query, (err, rows_) => {
+                {
+                  Key: 'k4',
+                  StringValue: 'v44',
+                },
+                err => {
                   assert.ifError(err);
 
-                  const row = rows_.pop().toJSON();
-                  assert.strictEqual(row.StringValue, 'v4');
+                  transaction.run(query, (err, rows_) => {
+                    assert.ifError(err);
 
-                  transaction.end(done);
+                    const row = rows_.pop().toJSON();
+                    assert.strictEqual(row.StringValue, 'v4');
+
+                    transaction.end(done);
+                  });
                 });
-              }
-            );
           });
         });
       });
@@ -3604,24 +3527,23 @@ describe('Spanner', () => {
 
             // Make arbitrary update.
             table.update(
-              {
-                Key: rows[0].toJSON().Key,
-                StringValue: 'overridden value',
-              },
-              err => {
-                assert.ifError(err);
-
-                transaction.run(query, (err, rows_) => {
+                {
+                  Key: rows[0].toJSON().Key,
+                  StringValue: 'overridden value',
+                },
+                err => {
                   assert.ifError(err);
 
-                  rows_ = extend(true, {}, rows_);
+                  transaction.run(query, (err, rows_) => {
+                    assert.ifError(err);
 
-                  assert.deepStrictEqual(rows_, originalRows);
+                    rows_ = extend(true, {}, rows_);
 
-                  transaction.end(done);
+                    assert.deepStrictEqual(rows_, originalRows);
+
+                    transaction.end(done);
+                  });
                 });
-              }
-            );
           });
         });
       });
@@ -3642,21 +3564,20 @@ describe('Spanner', () => {
             assert.strictEqual(rows.length, 1);
 
             table.update(
-              {
-                Key: 'k4',
-                StringValue: 'overridden value',
-              },
-              err => {
-                assert.ifError(err);
-
-                transaction.run(query, (err, rows) => {
+                {
+                  Key: 'k4',
+                  StringValue: 'overridden value',
+                },
+                err => {
                   assert.ifError(err);
-                  assert.strictEqual(rows.length, 1);
 
-                  transaction.end(done);
+                  transaction.run(query, (err, rows) => {
+                    assert.ifError(err);
+                    assert.strictEqual(rows.length, 1);
+
+                    transaction.end(done);
+                  });
                 });
-              }
-            );
           });
         });
       });
@@ -3668,18 +3589,18 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction.runUpdate(
-            {
-              sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
-              params: {
-                key: 'k999',
-                str: 'abc',
+              {
+                sql:
+                    'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+                params: {
+                  key: 'k999',
+                  str: 'abc',
+                },
               },
-            },
-            err => {
-              assert.ifError(err);
-              transaction.commit(done);
-            }
-          );
+              err => {
+                assert.ifError(err);
+                transaction.commit(done);
+              });
         });
       });
 
@@ -3688,20 +3609,19 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction.runUpdate(
-            {
-              sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {
-                key: 'k999',
-                str: 'abcd',
+              {
+                sql:
+                    'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                params: {
+                  key: 'k999',
+                  str: 'abcd',
+                },
               },
-            },
-            (err, rowCount) => {
-              assert.ifError(err);
-              assert.strictEqual(rowCount, 1);
-              transaction.rollback(done);
-            }
-          );
+              (err, rowCount) => {
+                assert.ifError(err);
+                assert.strictEqual(rowCount, 1);
+                transaction.rollback(done);
+              });
         });
       });
 
@@ -3710,23 +3630,22 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction.run(
-            {
-              sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {
-                key: 'k999',
-                str: 'abcd',
+              {
+                sql:
+                    'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                params: {
+                  key: 'k999',
+                  str: 'abcd',
+                },
               },
-            },
-            (err, row, stats) => {
-              assert.ifError(err);
+              (err, row, stats) => {
+                assert.ifError(err);
 
-              const rowCount = Math.floor(stats[stats.rowCount]);
-              assert.strictEqual(rowCount, 1);
+                const rowCount = Math.floor(stats[stats.rowCount]);
+                assert.strictEqual(rowCount, 1);
 
-              transaction.rollback(done);
-            }
-          );
+                transaction.rollback(done);
+              });
         });
       });
 
@@ -3739,43 +3658,43 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction
-            .runUpdate({
-              sql:
-                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
-              params: {key, str},
-            })
-            .then(data => {
-              const rowCount = data[0];
-              assert.strictEqual(rowCount, 1);
-
-              return transaction.runUpdate({
+              .runUpdate({
                 sql:
-                  'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
-                params: {key, num},
-              });
-            })
-            .then(data => {
-              const rowCount = data[0];
-              assert.strictEqual(rowCount, 1);
+                    'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+                params: {key, str},
+              })
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
 
-              return transaction.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
-                params: {key},
-              });
-            })
-            .then(data => {
-              const rows = data[0].map(row => row.toJSON());
+                return transaction.runUpdate({
+                  sql:
+                      'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+                  params: {key, num},
+                });
+              })
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
 
-              assert.strictEqual(rows.length, 1);
-              assert.deepStrictEqual(rows[0], {
-                Key: key,
-                StringValue: str,
-                NumberValue: num,
-              });
+                return transaction.run({
+                  sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                  params: {key},
+                });
+              })
+              .then(data => {
+                const rows = data[0].map(row => row.toJSON());
 
-              return transaction.rollback();
-            })
-            .then(() => done(), done);
+                assert.strictEqual(rows.length, 1);
+                assert.deepStrictEqual(rows[0], {
+                  Key: key,
+                  StringValue: str,
+                  NumberValue: num,
+                });
+
+                return transaction.rollback();
+              })
+              .then(() => done(), done);
         });
       });
 
@@ -3787,24 +3706,24 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction
-            .runUpdate({
-              sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {key, str},
-            })
-            .then(() => {
-              return transaction.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
-                params: {key},
-              });
-            })
-            .then(data => {
-              const rows = data[0].map(row => row.toJSON());
+              .runUpdate({
+                sql:
+                    'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                params: {key, str},
+              })
+              .then(() => {
+                return transaction.run({
+                  sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                  params: {key},
+                });
+              })
+              .then(data => {
+                const rows = data[0].map(row => row.toJSON());
 
-              assert.strictEqual(rows.length, 1);
-              assert.strictEqual(rows[0].StringValue, str);
-            })
-            .then(() => transaction.rollback(done), done);
+                assert.strictEqual(rows.length, 1);
+                assert.strictEqual(rows[0].StringValue, str);
+              })
+              .then(() => transaction.rollback(done), done);
         });
       });
 
@@ -3816,24 +3735,24 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction
-            .runUpdate({
-              sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {key, str},
-            })
-            .then(() => transaction.rollback())
-            .then(() => {
-              return database.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
-                params: {key},
-              });
-            })
-            .then(data => {
-              const rows = data[0].map(row => row.toJSON());
-              assert.notStrictEqual(rows[0].StringValue, str);
-              done();
-            })
-            .catch(done);
+              .runUpdate({
+                sql:
+                    'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                params: {key, str},
+              })
+              .then(() => transaction.rollback())
+              .then(() => {
+                return database.run({
+                  sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                  params: {key},
+                });
+              })
+              .then(data => {
+                const rows = data[0].map(row => row.toJSON());
+                assert.notStrictEqual(rows[0].StringValue, str);
+                done();
+              })
+              .catch(done);
         });
       });
 
@@ -3844,35 +3763,35 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction
-            .runUpdate({
-              sql:
-                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
-              params: {
-                key: 'k1001',
-                str,
-              },
-            })
-            .then(() => {
-              transaction.insert('TxnTable', {
-                Key: 'k1002',
-                StringValue: str,
-              });
+              .runUpdate({
+                sql:
+                    'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+                params: {
+                  key: 'k1001',
+                  str,
+                },
+              })
+              .then(() => {
+                transaction.insert('TxnTable', {
+                  Key: 'k1002',
+                  StringValue: str,
+                });
 
-              return transaction.commit();
-            })
-            .then(() => {
-              return database.run({
-                sql: 'SELECT * FROM TxnTable WHERE StringValue = @str',
-                params: {str},
-              });
-            })
-            .then(data => {
-              const rows = data[0];
+                return transaction.commit();
+              })
+              .then(() => {
+                return database.run({
+                  sql: 'SELECT * FROM TxnTable WHERE StringValue = @str',
+                  params: {str},
+                });
+              })
+              .then(data => {
+                const rows = data[0];
 
-              assert.strictEqual(rows.length, 2);
-              done();
-            })
-            .catch(done);
+                assert.strictEqual(rows.length, 2);
+                done();
+              })
+              .catch(done);
         });
       });
     });
@@ -3880,57 +3799,53 @@ describe('Spanner', () => {
     describe('pdml', () => {
       it('should execute a simple pdml statement', done => {
         database.runPartitionedUpdate(
-          {
-            sql:
-              'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
-            params: {
-              key: 'k1',
-              str: 'abcde',
+            {
+              sql:
+                  'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              params: {
+                key: 'k1',
+                str: 'abcde',
+              },
             },
-          },
-          (err, rowCount) => {
-            assert.ifError(err);
-            assert.strictEqual(rowCount, 1);
-            done();
-          }
-        );
+            (err, rowCount) => {
+              assert.ifError(err);
+              assert.strictEqual(rowCount, 1);
+              done();
+            });
       });
 
       it.skip('should execute a long running pdml statement', () => {
         const count = 10000;
 
-        const tableData = new Array(count)
-          .fill(0)
-          .map((_, i) => {
-            return {Key: `longpdml${i}`, StringValue: 'a'};
-          });
+        const tableData = new Array(count).fill(0).map((_, i) => {
+          return {Key: `longpdml${i}`, StringValue: 'a'};
+        });
 
-        const str = new Array(1000)
-          .fill('b')
-          .join('\n');
+        const str = new Array(1000).fill('b').join('\n');
 
         return database
-          .runTransactionAsync(transaction => {
-            transaction.insert('TxnTable', tableData);
-            return transaction.commit();
-          })
-          .then(() => {
-            return database.runPartitionedUpdate({
-              sql: `UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'`,
-              params: {str},
-            });
-          })
-          .then(([rowCount]) => {
-            assert.strictEqual(rowCount, count);
+            .runTransactionAsync(transaction => {
+              transaction.insert('TxnTable', tableData);
+              return transaction.commit();
+            })
+            .then(() => {
+              return database.runPartitionedUpdate({
+                sql:
+                    `UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'`,
+                params: {str},
+              });
+            })
+            .then(([rowCount]) => {
+              assert.strictEqual(rowCount, count);
 
-            return database.run({
-              sql: `SELECT Key FROM TxnTable WHERE StringValue = @str`,
-              params: {str},
+              return database.run({
+                sql: `SELECT Key FROM TxnTable WHERE StringValue = @str`,
+                params: {str},
+              });
+            })
+            .then(([rows]) => {
+              assert.strictEqual(rows.length, count);
             });
-          })
-          .then(([rows]) => {
-            assert.strictEqual(rows.length, count);
-          });
       });
     });
 
@@ -4036,21 +3951,19 @@ describe('Spanner', () => {
 
           function getValue(txn, callback) {
             txn.read(
-              table.name,
-              {
-                keys: [defaultRowValues.Key],
-                columns: ['NumberValue'],
-              },
-              (err, rows) => {
-                if (err) {
-                  callback(err);
-                  return;
-                }
+                table.name, {
+                  keys: [defaultRowValues.Key],
+                  columns: ['NumberValue'],
+                },
+                (err, rows) => {
+                  if (err) {
+                    callback(err);
+                    return;
+                  }
 
-                const row = rows[0].toJSON();
-                callback(null, row.NumberValue);
-              }
-            );
+                  const row = rows[0].toJSON();
+                  callback(null, row.NumberValue);
+                });
           }
         });
 
@@ -4091,22 +4004,21 @@ describe('Spanner', () => {
 
           function getValue(txn, callback) {
             txn.run(
-              {
-                sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
-                params: {
-                  key: defaultRowValues.Key,
+                {
+                  sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
+                  params: {
+                    key: defaultRowValues.Key,
+                  },
                 },
-              },
-              (err, rows) => {
-                if (err) {
-                  callback(err);
-                  return;
-                }
+                (err, rows) => {
+                  if (err) {
+                    callback(err);
+                    return;
+                  }
 
-                const row = rows[0].toJSON();
-                callback(null, row.NumberValue);
-              }
-            );
+                  const row = rows[0].toJSON();
+                  callback(null, row.NumberValue);
+                });
           }
         });
       });
@@ -4206,7 +4118,7 @@ describe('Spanner', () => {
             if (attempts++ === 0) {
               runOtherTransaction(err => {
                 assert.ifError(err);
-                transaction.commit(done); // should not execute callback
+                transaction.commit(done);  // should not execute callback
               });
               return;
             }
@@ -4255,11 +4167,8 @@ describe('Spanner', () => {
         database.runTransaction(options, (err, transaction) => {
           if (attempts++ === 1) {
             assert.strictEqual(err.code, 4);
-            assert(
-              err.message.startsWith(
-                'Deadline for Transaction exceeded. - 10 ABORTED'
-              )
-            );
+            assert(err.message.startsWith(
+                'Deadline for Transaction exceeded. - 10 ABORTED'));
 
             done();
             return;
@@ -4311,15 +4220,7 @@ describe('Spanner', () => {
 });
 
 function generateName(resourceType) {
-  return (
-    PREFIX +
-    resourceType +
-    '-' +
-    uuid
-      .v1()
-      .split('-')
-      .shift()
-  );
+  return (PREFIX + resourceType + '-' + uuid.v1().split('-').shift());
 }
 
 function onPromiseOperationComplete(data) {
@@ -4347,28 +4248,23 @@ function execAfterOperationComplete(callback) {
 
 function deleteTestInstances(done) {
   spanner.getInstances(
-    {
-      filter: `labels.${LABEL}:true`,
-    },
-    (err, instances) => {
-      if (err) {
-        done(err);
-        return;
-      }
+      {
+        filter: `labels.${LABEL}:true`,
+      },
+      (err, instances) => {
+        if (err) {
+          done(err);
+          return;
+        }
 
-      async.eachLimit(
-        instances,
-        5,
-        (instance, callback) => {
+        async.eachLimit(instances, 5, (instance, callback) => {
           setTimeout(() => {
             // tslint:disable-next-line no-any
             (instance as any).delete(callback);
-          }, 500); // Delay allows the instance and its databases to fully clear.
-        },
-        done
-      );
-    }
-  );
+          }, 500);  // Delay allows the instance and its databases to fully
+                    // clear.
+        }, done);
+      });
 }
 
 function deleteTestResources(callback) {
