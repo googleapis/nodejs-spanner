@@ -440,12 +440,15 @@ describe('Transaction', () => {
       transaction.queuedMutations_ = QUEUED_MUTATIONS;
     });
 
-    it('should throw an error if the transaction was ended', () => {
+    it('should return an error if the transaction was ended', done => {
+      const expectedError = new Error('Transaction has already been ended.');
+
       transaction.ended_ = true;
 
-      assert.throws(() => {
-        transaction.commit(assert.ifError);
-      }, /Transaction has already been ended\./);
+      transaction.commit(err => {
+        assert.deepStrictEqual(err, expectedError);
+        done();
+      });
     });
 
     it('should make the correct request with an ID', done => {
@@ -525,14 +528,6 @@ describe('Transaction', () => {
   });
 
   describe('end', () => {
-    it('should throw an error if the transaction was ended', () => {
-      transaction.ended_ = true;
-
-      assert.throws(() => {
-        transaction.end(assert.ifError);
-      }, /Transaction has already been ended\./);
-    });
-
     it('should set ended_ to true', () => {
       transaction.end();
 
@@ -903,12 +898,16 @@ describe('Transaction', () => {
       transaction.id = ID;
     });
 
-    it('should throw if a transaction ID is not set', () => {
+    it('should throw if a transaction ID is not set', done => {
+      const expectedError =
+          new Error('Transaction ID is unknown, nothing to rollback.');
+
       delete transaction.id;
 
-      assert.throws(() => {
-        transaction.rollback(assert.ifError);
-      }, /Transaction ID is unknown, nothing to rollback\./);
+      transaction.rollback(err => {
+        assert.deepStrictEqual(err, expectedError);
+        done();
+      });
     });
 
     it('should make the correct request', done => {
