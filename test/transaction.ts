@@ -513,7 +513,7 @@ describe('Transaction', () => {
       });
 
       it('should destroy the transaction', done => {
-        transaction.end = done;
+        transaction.end = () => done();
         transaction.commit(assert.ifError);
       });
 
@@ -951,8 +951,9 @@ describe('Transaction', () => {
       };
 
       let destroyed = false;
-      transaction.end = () => {
+      transaction.end = callback => {
         destroyed = true;
+        callback(null);
       };
 
       transaction.rollback((err, apiResponse_) => {

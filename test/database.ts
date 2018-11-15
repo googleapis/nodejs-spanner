@@ -499,7 +499,7 @@ describe('Database', () => {
     });
   });
 
-  describe.only('decorateTransaction_', () => {
+  describe('decorateTransaction_', () => {
     beforeEach(() => {
       database.pool_ = {
         release: util.noop,
@@ -539,7 +539,7 @@ describe('Database', () => {
     });
 
     it('should return any release errors via callback', done => {
-      const transaction = {end: util.noop};
+      const transaction = {end: callback => callback()};
       const fakeError = new Error('err');
 
       database.pool_.release = () => {
@@ -556,7 +556,7 @@ describe('Database', () => {
     });
 
     it('should return any release errors via promise', () => {
-      const transaction = {end: util.noop};
+      const transaction = {end: () => Promise.resolve()};
       const fakeError = new Error('err');
 
       database.pool_.release = () => {
