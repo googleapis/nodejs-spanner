@@ -898,7 +898,7 @@ describe('Transaction', () => {
       transaction.id = ID;
     });
 
-    it('should throw if a transaction ID is not set', done => {
+    it('should return an error if transaction ID is not set', done => {
       const expectedError =
           new Error('Transaction ID is unknown, nothing to rollback.');
 
