@@ -254,8 +254,6 @@ class Transaction extends TransactionRequest {
    * @see {@link v1.SpannerClient#commit}
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @throws {Error} If transaction has already been ended.
-   *
    * @param {CommitCallback} [callback] Callback function.
    * @returns {Promise<CommitPromiseResponse>}
    *
@@ -288,7 +286,8 @@ class Transaction extends TransactionRequest {
    */
   commit(callback) {
     if (this.ended_) {
-      throw new Error('Transaction has already been ended.');
+      callback(new Error('Transaction has already been ended.'));
+      return;
     }
     // tslint:disable-next-line no-any
     const reqOpts: any = {
@@ -308,10 +307,12 @@ class Transaction extends TransactionRequest {
           reqOpts,
         },
         (err, resp) => {
-          if (!err) {
-            this.end();
+          if (err) {
+            callback(err, resp);
+            return;
           }
-          callback(err, resp);
+
+          this.end(() => callback(null, resp));
         });
   }
   /**
@@ -350,9 +351,6 @@ class Transaction extends TransactionRequest {
    * });
    */
   end(callback?) {
-    if (this.ended_) {
-      throw new Error('Transaction has already been ended.');
-    }
     this.ended_ = true;
     this.queuedMutations_ = [];
     this.runFn_ = null;
@@ -485,7 +483,8 @@ class Transaction extends TransactionRequest {
    */
   rollback(callback) {
     if (!this.id) {
-      throw new Error('Transaction ID is unknown, nothing to rollback.');
+      callback(new Error('Transaction ID is unknown, nothing to rollback.'));
+      return;
     }
     const reqOpts = {
       transactionId: this.id,
@@ -497,10 +496,12 @@ class Transaction extends TransactionRequest {
           reqOpts,
         },
         (err, resp) => {
-          if (!err) {
-            this.end();
+          if (err) {
+            callback(err, resp);
+            return;
           }
-          callback(err, resp);
+
+          this.end(() => callback(null, resp));
         });
   }
   /**

@@ -17,42 +17,43 @@
 
 const proxyquire = require(`proxyquire`).noPreserveCache();
 const sinon = require(`sinon`);
-const test = require(`ava`);
+const assert = require(`assert`);
 const tools = require(`@google-cloud/nodejs-repo-tools`);
 
-test.before(tools.stubConsole);
-test.after.always(tools.restoreConsole);
+describe('QuickStart', () => {
+  before(tools.stubConsole);
+  after(tools.restoreConsole);
 
-test.cb(`should query a table`, t => {
-  const databaseMock = {
-    run: _query => {
-      t.deepEqual(_query, {
-        sql: `SELECT 1`,
-      });
-      setTimeout(() => {
-        try {
-          t.deepEqual(console.log.getCall(0).args, [`test`]);
-          t.end();
-        } catch (err) {
-          t.end(err);
-        }
-      }, 200);
-      return Promise.resolve([['test']]);
-    },
-  };
-  const instanceMock = {
-    database: sinon.stub().returns(databaseMock),
-  };
-  const spannerMock = {
-    instance: sinon.stub().returns(instanceMock),
-  };
+  it(`should query a table`, async () => {
+    const databaseMock = {
+      run: async _query => {
+        assert.deepStrictEqual(_query, {
+          sql: `SELECT 1`,
+        });
 
-  proxyquire(`../quickstart`, {
-    '@google-cloud/spanner': {
-      Spanner: sinon.stub().returns(spannerMock),
-    },
+        await new Promise(r => setTimeout(r, 200));
+        assert.deepStrictEqual(console.log.getCall(0).args, [`test`]);
+        return [['test']];
+      },
+    };
+    const instanceMock = {
+      database: sinon.stub().returns(databaseMock),
+    };
+    const spannerMock = {
+      instance: sinon.stub().returns(instanceMock),
+    };
+
+    proxyquire(`../quickstart`, {
+      '@google-cloud/spanner': {
+        Spanner: sinon.stub().returns(spannerMock),
+      },
+    });
+
+    assert.deepStrictEqual(spannerMock.instance.getCall(0).args, [
+      `my-instance`,
+    ]);
+    assert.deepStrictEqual(instanceMock.database.getCall(0).args, [
+      `my-database`,
+    ]);
   });
-
-  t.deepEqual(spannerMock.instance.getCall(0).args, [`my-instance`]);
-  t.deepEqual(instanceMock.database.getCall(0).args, [`my-database`]);
 });

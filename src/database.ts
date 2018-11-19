@@ -475,12 +475,29 @@ class Database extends ServiceObject {
    * @returns {Transaction}
    */
   decorateTransaction_(transaction, session) {
-      const self = this;
       const end = transaction.end.bind(transaction);
+
       transaction.end = (callback) => {
-        self.pool_.release(session);
-        return end(callback);
+        let releaseError = null;
+
+        try {
+          this.pool_.release(session);
+        } catch (e) {
+          releaseError = e;
+        }
+
+        if (is.fn(callback)) {
+          end(() => callback(releaseError));
+          return;
+        }
+
+        if (releaseError) {
+          return end().then(() => Promise.reject(releaseError));
+        }
+
+        return end();
       };
+
       return transaction;
   }
   /**

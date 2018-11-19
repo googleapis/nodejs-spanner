@@ -1451,66 +1451,25 @@ describe('SessionPool', () => {
 
   describe('_startHouseKeeping', () => {
     it('should set an interval to evict idle sessions', done => {
-      const callIndex = 0;
       const expectedInterval = sessionPool.options.idlesAfter * 60000;
+      const clock = sandbox.useFakeTimers();
 
-      let intervalCalls = 0;
-      let unreffed = false;
-
-      const fakeHandle = {
-        unref() {
-          unreffed = true;
-        },
-      };
-
-      sandbox.stub(global, 'setInterval').callsFake((fn, interval) => {
-        if (intervalCalls++ !== callIndex) {
-          return {unref: noop};
-        }
-        assert.strictEqual(interval, expectedInterval);
-        setImmediate(fn);
-        return fakeHandle;
-      });
-
-      sessionPool._evictIdleSessions = () => {
-        assert.strictEqual(sessionPool._evictHandle, fakeHandle);
-        assert.strictEqual(unreffed, true);
-        done();
-      };
-
+      sessionPool._evictIdleSessions = done;
       sessionPool._startHouseKeeping();
+      clock.tick(expectedInterval);
     });
 
     it('should set an interval to ping sessions', done => {
-      const callIndex = 1;
       const expectedInterval = sessionPool.options.keepAlive * 60000;
-
-      let intervalCalls = 0;
-      let unreffed = false;
-
-      const fakeHandle = {
-        unref() {
-          unreffed = true;
-        },
-      };
-
-      sandbox.stub(global, 'setInterval').callsFake((fn, interval) => {
-        if (intervalCalls++ !== callIndex) {
-          return {unref: noop};
-        }
-        assert.strictEqual(interval, expectedInterval);
-        setImmediate(fn);
-        return fakeHandle;
-      });
+      const clock = sandbox.useFakeTimers();
 
       sessionPool._pingIdleSessions = () => {
-        assert.strictEqual(sessionPool._pingHandle, fakeHandle);
-        assert.strictEqual(unreffed, true);
         done();
         return Promise.resolve([]);
       };
 
       sessionPool._startHouseKeeping();
+      clock.tick(expectedInterval);
     });
   });
 
@@ -1520,15 +1479,14 @@ describe('SessionPool', () => {
       sessionPool._evictHandle = 'b';
 
       const fakeHandles = [sessionPool._pingHandle, sessionPool._evictHandle];
-
-      let clearCalls = 0;
-
-      sandbox.stub(global, 'clearInterval').callsFake(handle => {
-        assert.strictEqual(handle, fakeHandles[clearCalls++]);
-      });
+      const stub = sandbox.stub(global, 'clearInterval');
 
       sessionPool._stopHouseKeeping();
-      assert.strictEqual(clearCalls, 2);
+
+      fakeHandles.forEach((fakeHandle, i) => {
+        const [handle] = stub.getCall(i).args;
+        assert.strictEqual(handle, fakeHandle);
+      });
     });
   });
 });
