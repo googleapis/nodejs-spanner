@@ -537,6 +537,43 @@ describe('Database', () => {
           database.decorateTransaction_(transaction, SESSION);
       decoratedTransaction.end();
     });
+
+    it('should return any release errors via callback', done => {
+      const transaction = {end: callback => callback()};
+      const fakeError = new Error('err');
+
+      database.pool_.release = () => {
+        throw fakeError;
+      };
+
+      const decoratedTransaction =
+          database.decorateTransaction_(transaction, {});
+
+      decoratedTransaction.end(err => {
+        assert.deepStrictEqual(err, fakeError);
+        done();
+      });
+    });
+
+    it('should return any release errors via promise', () => {
+      const transaction = {end: () => Promise.resolve()};
+      const fakeError = new Error('err');
+
+      database.pool_.release = () => {
+        throw fakeError;
+      };
+
+      const decoratedTransaction =
+          database.decorateTransaction_(transaction, {});
+
+      return decoratedTransaction.end().then(
+          () => {
+            throw new Error('Should not be called.');
+          },
+          err => {
+            assert.deepStrictEqual(err, fakeError);
+          });
+    });
   });
 
   describe('delete', () => {
