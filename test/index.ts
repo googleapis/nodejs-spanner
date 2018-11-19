@@ -111,7 +111,7 @@ class FakeInstance {
   constructor() {
     this.calledWith_ = arguments;
   }
-  static formatName_(name: string) {
+  static formatName_(projectId: string, name: string) {
     return name;
   }
 }
@@ -357,13 +357,13 @@ describe('Spanner', () => {
     });
 
     it('should set the correct defaults on the request', done => {
-      sandbox.stub(FakeInstance, 'formatName_').callsFake((projectId, name) => {
-        assert.strictEqual(projectId, spanner.projectId);
-        assert.strictEqual(name, NAME);
-        return PATH;
-      });
+      const stub = sandbox.stub(FakeInstance, 'formatName_').returns(PATH);
 
       spanner.request = (config) => {
+        const [projectId, name] = stub.lastCall.args;
+        assert.strictEqual(projectId, spanner.projectId);
+        assert.strictEqual(name, NAME);
+
         assert.deepStrictEqual(CONFIG, ORIGINAL_CONFIG);
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'createInstance');
@@ -384,25 +384,24 @@ describe('Spanner', () => {
       spanner.createInstance(NAME, CONFIG, assert.ifError);
     });
 
-    it('should accept a path', done => {
-      sandbox.stub(FakeInstance, 'formatName_').callsFake((projectId, name) => {
-        assert.strictEqual(name, PATH);
-        setImmediate(done);
-        return name;
-      });
+    it('should accept a path', () => {
+      const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
       spanner.createInstance(PATH, CONFIG, assert.ifError);
+
+      const [projectId, name] = stub.lastCall.args;
+      assert.strictEqual(name, PATH);
     });
 
     describe('config.nodes', () => {
-      it('should rename to nodeCount', done => {
+      it('should rename to nodeCount', () => {
         const config = extend({}, CONFIG, {nodes: 10});
-        sandbox.stub(spanner, 'request').callsFake(config_ => {
-          const reqOpts = config_.reqOpts;
-          assert.strictEqual(reqOpts.instance.nodeCount, config.nodes);
-          assert.strictEqual(reqOpts.instance.nodes, undefined);
-          done();
-        });
+        const stub = sandbox.stub(spanner, 'request');
         spanner.createInstance(NAME, config, assert.ifError);
+
+        const [config_] = stub.lastCall.args;
+        const reqOpts = config_.reqOpts;
+        assert.strictEqual(reqOpts.instance.nodeCount, config.nodes);
+        assert.strictEqual(reqOpts.instance.nodes, undefined);
       });
     });
 
@@ -458,13 +457,13 @@ describe('Spanner', () => {
         const formattedName = 'formatted-name';
         sandbox.stub(FakeInstance, 'formatName_').returns(formattedName);
         const fakeInstanceInstance = {};
-        sandbox.stub(spanner, 'instance').callsFake(name => {
-          assert.strictEqual(name, formattedName);
-          return fakeInstanceInstance;
-        });
+        const instanceStub =
+            sandbox.stub(spanner, 'instance').returns(fakeInstanceInstance);
 
         spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
           assert.ifError(err);
+          const [instanceName] = instanceStub.lastCall.args;
+          assert.strictEqual(instanceName, formattedName);
           assert.strictEqual(instance, fakeInstanceInstance);
           assert.strictEqual(op, OPERATION);
           assert.strictEqual(resp, API_RESPONSE);
