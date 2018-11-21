@@ -1589,7 +1589,7 @@ class Database extends ServiceObject {
                     })
                     .catch(e => {
                       if (e.code === Transaction.ABORTED) throw e;
-                      throw new retry.AbortError(e.message);
+                      throw new retry.AbortError(e);
                     }));
   }
   /**
