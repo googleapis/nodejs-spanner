@@ -714,6 +714,10 @@ class Transaction extends TransactionRequest {
           transaction: {},
         },
         codec.encodeQuery(query));
+
+    delete reqOpts.json;
+    delete reqOpts.jsonOptions;
+
     if (this.id) {
       reqOpts.transaction.id = this.id;
     } else {
@@ -728,7 +732,10 @@ class Transaction extends TransactionRequest {
         reqOpts: extend({}, reqOpts, {resumeToken}),
       });
     };
-    return partialResultStream(makeRequest);
+    return partialResultStream(makeRequest, {
+      json: query.json,
+      jsonOptions: query.jsonOptions,
+    });
   }
   /**
    * @typedef {array} RunUpdateResponse
