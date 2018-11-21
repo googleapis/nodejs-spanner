@@ -1160,6 +1160,29 @@ describe('Transaction', () => {
       const makeRequestFn = stream.calledWith_[0];
       makeRequestFn(resumeToken);
     });
+
+    it('should not pass json options to the request', done => {
+      const query = extend({json: true, jsonOptions: {}}, QUERY);
+
+      transaction.requestStream = (options) => {
+        assert.strictEqual(options.reqOpts.json, undefined);
+        assert.strictEqual(options.reqOpts.jsonOptions, undefined);
+        done();
+      };
+
+      const stream = transaction.runStream(query);
+      const makeRequestFn = stream.calledWith_[0];
+      makeRequestFn();
+    });
+
+    it('should pass the json options', () => {
+      const expectedJsonOptions = {json: true, jsonOptions: {a: 'b'}};
+      const query = extend({}, expectedJsonOptions, QUERY);
+      const stream = transaction.runStream(query);
+      const options = stream.calledWith_[1];
+
+      assert.deepStrictEqual(options, expectedJsonOptions);
+    });
   });
 
   describe('runUpdate', () => {
