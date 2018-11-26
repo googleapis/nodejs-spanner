@@ -103,6 +103,19 @@ const fakeCodec: any = {
   SpannerDate() {},
 };
 
+class FakeAbortError {
+  error;
+  constructor(err) {
+    this.error = err;
+  }
+}
+
+const fakeRetry = fn => {
+  return fn();
+};
+
+fakeRetry.AbortError = FakeAbortError;
+
 describe('Database', () => {
   // tslint:disable-next-line variable-name
   let Database: typeof db.Database;
@@ -131,6 +144,7 @@ describe('Database', () => {
             ServiceObject: FakeGrpcServiceObject,
           },
           '@google-cloud/promisify': fakePfy,
+          'p-retry': fakeRetry,
           './batch-transaction': {BatchTransaction: FakeBatchTransaction},
           './codec': {codec: fakeCodec},
           './partial-result-stream':
@@ -1895,6 +1909,48 @@ describe('Database', () => {
       database.runPartitionedUpdate({}, (err, rowCount) => {
         assert.strictEqual(err, error);
         assert.strictEqual(rowCount, fakeRowCount);
+        done();
+      });
+    });
+  });
+
+  describe('runTransactionAsync', () => {
+    it('should pass a transaction to the callback', done => {
+      const fakeTransaction = {};
+
+      database.getTransaction = () => {
+        return Promise.resolve([fakeTransaction]);
+      };
+
+      database.runTransactionAsync(transaction => {
+        assert.strictEqual(transaction, fakeTransaction);
+        done();
+      });
+    });
+
+    it('should throw the original error if it is an ABORT error', done => {
+      const fakeError = {code: 10};
+
+      database.getTransaction = () => {
+        return Promise.reject(fakeError);
+      };
+
+      database.runTransactionAsync(() => {}).catch(err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
+
+    it('should throw an AbortError for non-retryable errors', done => {
+      const fakeError = {code: 1};
+
+      database.getTransaction = () => {
+        return Promise.reject(fakeError);
+      };
+
+      database.runTransactionAsync(() => {}).catch(err => {
+        assert(err instanceof FakeAbortError);
+        assert.strictEqual(err.error, fakeError);
         done();
       });
     });
