@@ -4,6 +4,68 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## v2.2.0
+
+11-27-2018 09:13 PST
+
+
+### Implementation Changes
+- fix: transaction async error handling that not thrown the full error ([#447](https://github.com/googleapis/nodejs-spanner/pull/447))
+- fix(transaction): accept json options in run/runStream ([#446](https://github.com/googleapis/nodejs-spanner/pull/446))
+- refactor(transaction): error handling ([#360](https://github.com/googleapis/nodejs-spanner/pull/360))
+- refactor(ts): enable noImplicitThis in the tsconfig ([#411](https://github.com/googleapis/nodejs-spanner/pull/411))
+- refactor(ts): use import/export for local files ([#408](https://github.com/googleapis/nodejs-spanner/pull/408))
+- refactor(ts): add type packages for many things ([#406](https://github.com/googleapis/nodejs-spanner/pull/406))
+- refactor(ts): convert tests to typescript ([#404](https://github.com/googleapis/nodejs-spanner/pull/404))
+- refactor(typescript): rename src and system-test files to *.ts ([#402](https://github.com/googleapis/nodejs-spanner/pull/402))
+- refactor(typescript): perform initial TypeScript conversion ([#384](https://github.com/googleapis/nodejs-spanner/pull/384))
+- fix: Only run mutations inside of a transaction. ([#361](https://github.com/googleapis/nodejs-spanner/pull/361))
+
+### New Features
+- feat(session): add label support ([#373](https://github.com/googleapis/nodejs-spanner/pull/373))
+
+### Dependencies
+- chore(deps): update dependency @types/sinon to v5.0.7 ([#444](https://github.com/googleapis/nodejs-spanner/pull/444))
+- fix: Pin @types/sinon to last compatible version ([#443](https://github.com/googleapis/nodejs-spanner/pull/443))
+- chore(deps): update dependency @types/p-queue to v3 ([#440](https://github.com/googleapis/nodejs-spanner/pull/440))
+- fix(deps): update dependency google-gax to ^0.22.0 ([#435](https://github.com/googleapis/nodejs-spanner/pull/435))
+- chore(deps): update dependency gts to ^0.9.0 ([#434](https://github.com/googleapis/nodejs-spanner/pull/434))
+- chore(deps): update dependency @google-cloud/nodejs-repo-tools to v3 ([#429](https://github.com/googleapis/nodejs-spanner/pull/429))
+- chore(deps): update dependency @types/is to v0.0.21 ([#426](https://github.com/googleapis/nodejs-spanner/pull/426))
+- fix(deps): update dependency through2 to v3 ([#423](https://github.com/googleapis/nodejs-spanner/pull/423))
+- chore: remove unused google-proto-files dep ([#421](https://github.com/googleapis/nodejs-spanner/pull/421))
+- chore(deps): update dependency eslint-plugin-node to v8 ([#407](https://github.com/googleapis/nodejs-spanner/pull/407))
+- refactor: drop dependency on delay ([#383](https://github.com/googleapis/nodejs-spanner/pull/383))
+- fix(deps): update dependency google-proto-files to ^0.17.0 ([#369](https://github.com/googleapis/nodejs-spanner/pull/369))
+- chore(deps): update dependency sinon to v7 ([#371](https://github.com/googleapis/nodejs-spanner/pull/371))
+
+### Documentation
+- docs(samples): updated samples code to use async await ([#385](https://github.com/googleapis/nodejs-spanner/pull/385))
+- Add Cloud Spanner DML/PDML samples. ([#366](https://github.com/googleapis/nodejs-spanner/pull/366))
+
+### Internal / Testing Changes
+- chore: add synth.metadata
+- test: fix broken tests ([#441](https://github.com/googleapis/nodejs-spanner/pull/441))
+- refactor(samples): convert ava tests to mocha ([#400](https://github.com/googleapis/nodejs-spanner/pull/400))
+- chore: update eslintignore config ([#433](https://github.com/googleapis/nodejs-spanner/pull/433))
+- chore(build): fix lint rules and build for generated code ([#430](https://github.com/googleapis/nodejs-spanner/pull/430))
+- chore: drop contributors from multiple places ([#427](https://github.com/googleapis/nodejs-spanner/pull/427))
+- chore: use latest npm on Windows ([#425](https://github.com/googleapis/nodejs-spanner/pull/425))
+- fix: update source location for synth ([#422](https://github.com/googleapis/nodejs-spanner/pull/422))
+- fix: re-enable linting and formatting ([#420](https://github.com/googleapis/nodejs-spanner/pull/420))
+- chore: improve typescript config and types ([#417](https://github.com/googleapis/nodejs-spanner/pull/417))
+- chore: update CircleCI config ([#416](https://github.com/googleapis/nodejs-spanner/pull/416))
+- chore: run gts fix ([#413](https://github.com/googleapis/nodejs-spanner/pull/413))
+- chore: remove old issue template ([#397](https://github.com/googleapis/nodejs-spanner/pull/397))
+- chore: update issue templates ([#401](https://github.com/googleapis/nodejs-spanner/pull/401))
+- build: run tests on node11 ([#395](https://github.com/googleapis/nodejs-spanner/pull/395))
+- chores(build): do not collect sponge.xml from windows builds ([#389](https://github.com/googleapis/nodejs-spanner/pull/389))
+- chores(build): run codecov on continuous builds ([#386](https://github.com/googleapis/nodejs-spanner/pull/386))
+- chore: update new issue template ([#382](https://github.com/googleapis/nodejs-spanner/pull/382))
+- fix(tests): use unique label for tests ([#367](https://github.com/googleapis/nodejs-spanner/pull/367))
+- build: fix codecov uploading on Kokoro ([#372](https://github.com/googleapis/nodejs-spanner/pull/372))
+- build(kokoro): test with spanner key ([#364](https://github.com/googleapis/nodejs-spanner/pull/364))
+
 ## v2.1.0
 
 ### Implementation Changes
