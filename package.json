@@ -86,7 +86,6 @@
     "@types/through2": "^2.0.34",
     "@types/time-span": "^2.0.0",
     "@types/uuid": "^3.4.4",
-    "async": "^2.6.1",
     "binary-search-bounds": "^2.0.4",
     "codecov": "^3.0.2",
     "concat-stream": "^1.6.2",
