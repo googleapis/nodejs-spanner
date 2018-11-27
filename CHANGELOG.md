@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## v2.2.1
+
+11-27-2018 13:18 PST
+
+### Internal / Testing Changes
+- fix(tests): replace system-test keys ([#451](https://github.com/googleapis/nodejs-spanner/pull/451))
+
 ## v2.2.0
 
 11-27-2018 09:13 PST
