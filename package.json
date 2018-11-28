@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -9,9 +9,11 @@
   },
   "repository": "googleapis/nodejs-spanner",
   "main": "./build/src/index.js",
+  "types": "./build/src/index.d.ts",
   "files": [
-    "protos",
-    "src",
+    "build/protos",
+    "build/src",
+    "!build/src/**/*.map",
     "AUTHORS",
     "CONTRIBUTORS",
     "LICENSE"
