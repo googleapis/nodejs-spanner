@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## v2.2.1
+
+11-28-2018 10:43 PST
+
+
+### Implementation Changes
+- Update package.json to include the build directory ([#454](https://github.com/googleapis/nodejs-spanner/pull/454))
+
 ## v2.2.0
 
 11-27-2018 09:13 PST
