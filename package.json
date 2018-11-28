@@ -9,9 +9,11 @@
   },
   "repository": "googleapis/nodejs-spanner",
   "main": "./build/src/index.js",
+  "types": "./build/src/index.d.ts",
   "files": [
-    "protos",
-    "src",
+    "build/protos",
+    "build/src",
+    "!build/src/**/*.map",
     "AUTHORS",
     "CONTRIBUTORS",
     "LICENSE"
