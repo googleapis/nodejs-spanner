@@ -187,8 +187,7 @@ class Session extends ServiceObject {
        */
       id: name,
       methods,
-      // tslint:disable-next-line no-any
-      createMethod: (
+      createMethod: (  // tslint:disable-next-line no-any
           _: any, optionsOrCallback: any|GetSessionCallback,
           callback: GetSessionCallback) => {
         const options =
@@ -239,10 +238,9 @@ class Session extends ServiceObject {
    * @example
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
-  // tslint:disable-next-line no-any
-  beginTransaction(
+  beginTransaction(  // tslint:disable-next-line no-any
       optionsOrCallback: any|BeginTransactionCallback,
-      callback: BeginTransactionCallback): Promise<BeginTransactionResponse>|
+      callback?: BeginTransactionCallback): Promise<BeginTransactionResponse>|
       void {
     const options =
         typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -252,10 +250,10 @@ class Session extends ServiceObject {
     const transaction = this.transaction(options);
     transaction.begin((err: Error|null, resp: r.Response) => {
       if (err) {
-        callback(err, null, resp);
+        callback!(err, null, resp);
         return;
       }
-      callback(null, transaction, resp);
+      callback!(null, transaction, resp);
     });
   }
   /**
