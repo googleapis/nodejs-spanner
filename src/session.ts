@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Google Inc. All Rights Reserved.
+ * Copyright 2016 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import * as is from 'is';
 import * as r from 'request';
 import {Transaction} from './transaction';
 import {Database} from './database';
@@ -36,10 +35,11 @@ export interface GetSessionCallback {
 }
 
 export interface BeginTransactionCallback {
-  (err: Error|null, transaction: Transaction|null, apiResponse: r.Response): void;
+  (err: Error|null, transaction: Transaction|null,
+   apiResponse: r.Response): void;
 }
 
-export type BeginTransactionResponse  = [Transaction, r.Response];
+export type BeginTransactionResponse = [Transaction, r.Response];
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -188,18 +188,24 @@ class Session extends ServiceObject {
       id: name,
       methods,
       // tslint:disable-next-line no-any
-      createMethod: (_: any, optionsOrCallback: any | GetSessionCallback, callback: GetSessionCallback) => {
-        let options = typeof optionsOrCallback === 'object' ? optionsOrCallback: {};
-        callback = typeof optionsOrCallback === 'function' ? optionsOrCallback: callback;
-        return database.createSession(options, (err: Error, session: Session, apiResponse: r.Response) => {
-          if (err) {
-            callback(err, null, apiResponse);
-            return;
-          }
+      createMethod: (
+          _: any, optionsOrCallback: any|GetSessionCallback,
+          callback: GetSessionCallback) => {
+        const options =
+            typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+        callback = typeof optionsOrCallback === 'function' ? optionsOrCallback :
+                                                             callback;
+        return database.createSession(
+            options,
+            (err: Error, session: Session, apiResponse: r.Response) => {
+              if (err) {
+                callback(err, null, apiResponse);
+                return;
+              }
 
-          extend(this, session);
-          callback(null, this, apiResponse);
-        });
+              extend(this, session);
+              callback(null, this, apiResponse);
+            });
       },
     } as {} as ServiceObjectConfig);
 
@@ -234,12 +240,17 @@ class Session extends ServiceObject {
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
   // tslint:disable-next-line no-any
-  beginTransaction(optionsOrCallback: any|BeginTransactionCallback, callback: BeginTransactionCallback): Promise<BeginTransactionResponse>|void {
-    let options = typeof optionsOrCallback === 'object' ? optionsOrCallback: {};
-    callback = typeof optionsOrCallback === 'function' ? optionsOrCallback: callback;
+  beginTransaction(
+      optionsOrCallback: any|BeginTransactionCallback,
+      callback: BeginTransactionCallback): Promise<BeginTransactionResponse>|
+      void {
+    const options =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
 
     const transaction = this.transaction(options);
-    transaction.begin((err: Error |null, resp: r.Response) => {
+    transaction.begin((err: Error|null, resp: r.Response) => {
       if (err) {
         callback(err, null, resp);
         return;
