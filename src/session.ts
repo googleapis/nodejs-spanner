@@ -31,12 +31,12 @@ import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, Resp
 export type GetSessionResponse = [Session, r.Response];
 
 export interface GetSessionCallback {
-  (err: Error|null, session: Session|null, apiResponse: r.Response): void;
+  (err: Error|null, session?: Session|null, apiResponse?: r.Response): void;
 }
 
 export interface BeginTransactionCallback {
-  (err: Error|null, transaction: Transaction|null,
-   apiResponse: r.Response): void;
+  (err: Error|null, transaction?: Transaction|null,
+   apiResponse?: r.Response): void;
 }
 
 export type BeginTransactionResponse = [Transaction, r.Response];
@@ -187,9 +187,9 @@ class Session extends ServiceObject {
        */
       id: name,
       methods,
-      createMethod: (  // tslint:disable-next-line no-any
-          _: any, optionsOrCallback: any|GetSessionCallback,
-          callback: GetSessionCallback) => {
+      createMethod: (
+          _: {}, optionsOrCallback: {}|GetSessionCallback,
+          callback?: GetSessionCallback) => {
         const options =
             typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
         callback = typeof optionsOrCallback === 'function' ? optionsOrCallback :
@@ -198,12 +198,12 @@ class Session extends ServiceObject {
             options,
             (err: Error, session: Session, apiResponse: r.Response) => {
               if (err) {
-                callback(err, null, apiResponse);
+                callback!(err, null, apiResponse);
                 return;
               }
 
               extend(this, session);
-              callback(null, this, apiResponse);
+              callback!(null, this, apiResponse);
             });
       },
     } as {} as ServiceObjectConfig);
