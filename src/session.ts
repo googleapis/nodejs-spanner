@@ -238,6 +238,9 @@ class Session extends ServiceObject {
    * @example
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
+  // tslint:disable-next-line no-any
+  beginTransaction(options: any): Promise<BeginTransactionResponse>;
+  beginTransaction(callback: BeginTransactionCallback): void;
   beginTransaction(  // tslint:disable-next-line no-any
       optionsOrCallback: any|BeginTransactionCallback,
       callback?: BeginTransactionCallback): Promise<BeginTransactionResponse>|
