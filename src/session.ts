@@ -187,25 +187,26 @@ class Session extends ServiceObject {
        */
       id: name,
       methods,
-      createMethod: (
-          _: {}, optionsOrCallback: {}|GetSessionCallback,
-          callback?: GetSessionCallback) => {
-        const options =
-            typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-        callback = typeof optionsOrCallback === 'function' ? optionsOrCallback :
-                                                             callback;
-        return database.createSession(
-            options,
-            (err: Error, session: Session, apiResponse: r.Response) => {
-              if (err) {
-                callback!(err, null, apiResponse);
-                return;
-              }
+      createMethod:
+          (_: {}, optionsOrCallback: {}|GetSessionCallback,
+           callback?: GetSessionCallback) => {
+            const options =
+                typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+            callback = typeof optionsOrCallback === 'function' ?
+                optionsOrCallback as GetSessionCallback :
+                callback;
+            return database.createSession(
+                options,
+                (err: Error, session: Session, apiResponse: r.Response) => {
+                  if (err) {
+                    callback!(err, null, apiResponse);
+                    return;
+                  }
 
-              extend(this, session);
-              callback!(null, this, apiResponse);
-            });
-      },
+                  extend(this, session);
+                  callback!(null, this, apiResponse);
+                });
+          },
     } as {} as ServiceObjectConfig);
 
     this.request = database.request;
