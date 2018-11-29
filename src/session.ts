@@ -1,5 +1,5 @@
 /*!
- * Copyright 2016 Google Inc. All Rights Reserved.
+ * Copyright 2018 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,19 @@ import * as is from 'is';
 import * as r from 'request';
 import {Transaction} from './transaction';
 import {Database} from './database';
-import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback} from '@google-cloud/common';
+import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, ResponseCallback} from '@google-cloud/common';
+
+export type GetSessionResponse = [Session, r.Response];
+
+export interface GetSessionCallback {
+  (err: Error|null, session: Session|null, apiResponse: r.Response): void;
+}
+
+export interface BeginTransactionCallback {
+  (err: Error|null, transaction: Transaction|null, apiResponse: r.Response): void;
+}
+
+export type BeginTransactionResponse  = [Transaction, r.Response];
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -175,12 +187,11 @@ class Session extends ServiceObject {
        */
       id: name,
       methods,
-      createMethod: (_, options, callback) => {
-        if (is.fn(options)) {
-          callback = options;
-          options = {};
-        }
-        return database.createSession(options, (err, session, apiResponse) => {
+      // tslint:disable-next-line no-any
+      createMethod: (_: any, optionsOrCallback: any | GetSessionCallback, callback: GetSessionCallback) => {
+        let options = typeof optionsOrCallback === 'object' ? optionsOrCallback: {};
+        callback = typeof optionsOrCallback === 'function' ? optionsOrCallback: callback;
+        return database.createSession(options, (err: Error, session: Session, apiResponse: r.Response) => {
           if (err) {
             callback(err, null, apiResponse);
             return;
@@ -222,13 +233,13 @@ class Session extends ServiceObject {
    * @example
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
-  beginTransaction(options, callback) {
-    if (is.fn(options)) {
-      callback = options;
-      options = {};
-    }
+  // tslint:disable-next-line no-any
+  beginTransaction(optionsOrCallback: any|BeginTransactionCallback, callback: BeginTransactionCallback): Promise<BeginTransactionResponse>|void {
+    let options = typeof optionsOrCallback === 'object' ? optionsOrCallback: {};
+    callback = typeof optionsOrCallback === 'function' ? optionsOrCallback: callback;
+
     const transaction = this.transaction(options);
-    transaction.begin((err, resp) => {
+    transaction.begin((err: Error |null, resp: r.Response) => {
       if (err) {
         callback(err, null, resp);
         return;
@@ -337,7 +348,9 @@ class Session extends ServiceObject {
    *   }
    * });
    */
-  keepAlive(callback) {
+  keepAlive(): Promise<[r.Response]>;
+  keepAlive(callback: ResponseCallback): void;
+  keepAlive(callback?: ResponseCallback): void|Promise<[r.Response]> {
     const reqOpts = {
       session: this.formattedName_,
       sql: 'SELECT 1',
@@ -348,7 +361,7 @@ class Session extends ServiceObject {
           method: 'executeSql',
           reqOpts,
         },
-        callback);
+        callback!);
   }
   /**
    * Create a Transaction object.
@@ -361,7 +374,7 @@ class Session extends ServiceObject {
    * @example
    * const transaction = database.transaction('transaction-id');
    */
-  transaction(id) {
+  transaction(id: string): Transaction {
     return new Transaction(this, id);
   }
   /**
@@ -378,7 +391,7 @@ class Session extends ServiceObject {
    * // 'projects/grape-spaceship-123/instances/my-instance/' +
    * // 'databases/my-database/sessions/my-session'
    */
-  static formatName_(databaseName, name) {
+  static formatName_(databaseName: string, name: string): string {
     if (name.indexOf('/') > -1) {
       return name;
     }
