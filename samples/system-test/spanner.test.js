@@ -133,6 +133,23 @@ describe('Spanner', () => {
     assert.strictEqual(new RegExp(/Inserted data\./).test(output), true);
   });
 
+  // delete_data
+  it(`should delete and then insert rows in the example tables`, async () => {
+    let results = await tools.runAsyncWithIO(
+      `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    let output = results.stdout + results.stderr;
+    assert.strictEqual(new RegExp(/Deleted data\./).test(output), true);
+
+    results = await tools.runAsyncWithIO(
+      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
+      cwd
+    );
+    output = results.stdout + results.stderr;
+    assert.strictEqual(new RegExp(/Inserted data\./).test(output), true);
+  });
+
   // query_data
   it(`should query an example table and return matching rows`, async () => {
     const results = await tools.runAsyncWithIO(
