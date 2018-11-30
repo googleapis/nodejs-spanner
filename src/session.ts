@@ -239,17 +239,17 @@ class Session extends ServiceObject {
    * @example
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
-  // tslint:disable-next-line no-any
-  beginTransaction(options: any): Promise<BeginTransactionResponse>;
+  beginTransaction(options: {}): Promise<BeginTransactionResponse>;
   beginTransaction(callback: BeginTransactionCallback): void;
-  beginTransaction(  // tslint:disable-next-line no-any
-      optionsOrCallback: any|BeginTransactionCallback,
+  beginTransaction(
+      optionsOrCallback: {}|BeginTransactionCallback,
       callback?: BeginTransactionCallback): Promise<BeginTransactionResponse>|
       void {
     const options =
         typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    callback =
-        typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
+    callback = typeof optionsOrCallback === 'function' ?
+        optionsOrCallback as BeginTransactionCallback :
+        callback;
 
     const transaction = this.transaction(options);
     transaction.begin((err: Error|null, resp: r.Response) => {
@@ -381,14 +381,14 @@ class Session extends ServiceObject {
    *
    * @throws {Error} If an ID is not provided.
    *
-   * @param {string} id The id of the transaction.
+   * @param {object} options The options of the transaction.
    * @return {Transaction} A Transaction object.
    *
    * @example
    * const transaction = database.transaction('transaction-id');
    */
-  transaction(id: string): Transaction {
-    return new Transaction(this, id);
+  transaction(options: object): Transaction {
+    return new Transaction(this, options);
   }
   /**
    * Format the session name to include the parent database's name.
