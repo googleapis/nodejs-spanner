@@ -17,7 +17,7 @@
 'use strict';
 
 import * as assert from 'assert';
-import * as async from 'async';
+import * as pLimit from 'p-limit';
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
 import * as extend from 'extend';
@@ -45,15 +45,10 @@ describe('Spanner', () => {
     },
   };
 
-  before(done => {
-    async.series(
-        [
-          deleteTestResources,
-          (next) => {
-            instance.create(INSTANCE_CONFIG, execAfterOperationComplete(next));
-          },
-        ],
-        done);
+  before(async () => {
+    await deleteTestResources;
+    await instance.create(INSTANCE_CONFIG);
+    await execAfterOperationComplete;
   });
 
   after(deleteTestResources);
@@ -873,25 +868,13 @@ describe('Spanner', () => {
     const database = instance.database(generateName('database'));
     const session = database.session();
 
-    before(done => {
-      async.series(
-          [
-            (next) => {
-              database.create(
-                  {
-                    schema: `
-                  CREATE TABLE Singers (
-                    SingerId STRING(1024) NOT NULL,
-                    Name STRING(1024),
-                  ) PRIMARY KEY(SingerId)`,
-                  },
-                  execAfterOperationComplete(next));
-            },
-            (next) => {
-              session.create(next);
-            },
-          ],
-          done);
+    before(async () => {
+      await database.create({
+        schema: `CREATE TABLE Singers (SingerId STRING(1024) NOT NULL,
+          Name STRING(1024),) PRIMARY KEY(SingerId)`,
+      });
+      await execAfterOperationComplete;
+      await session.create();
     });
 
     after(done => {
@@ -3139,22 +3122,14 @@ describe('Spanner', () => {
     const database = instance.database(generateName('database'));
     const table = database.table('Singers');
 
-    before(done => {
-      async.series(
-          [
-            (next) => {
-              database.create(
-                  {
-                    schema: `
-                  CREATE TABLE Singers (
-                    SingerId STRING(1024) NOT NULL,
-                    Name STRING(1024),
-                  ) PRIMARY KEY(SingerId)`,
-                  },
-                  execAfterOperationComplete(next));
-            },
-          ],
-          done);
+    before(async () => {
+      await database.create({
+        schema: `CREATE TABLE Singers (
+          SingerId STRING(1024) NOT NULL,
+          Name STRING(1024),
+        ) PRIMARY KEY(SingerId)`,
+      });
+      await execAfterOperationComplete;
     });
 
     it('should insert and query a row', done => {
@@ -4246,29 +4221,23 @@ function execAfterOperationComplete(callback) {
   };
 }
 
-function deleteTestInstances(done) {
-  spanner.getInstances(
-      {
-        filter: `labels.${LABEL}:true`,
-      },
-      (err, instances) => {
-        if (err) {
-          done(err);
-          return;
-        }
+async function deleteTestInstances() {
+  const [instances] = await spanner.getInstances({
+    filter: `labels.${LABEL}:true`,
+  });
 
-        async.eachLimit(instances, 5, (instance, callback) => {
-          setTimeout(() => {
-            // tslint:disable-next-line no-any
-            (instance as any).delete(callback);
-          }, 500);  // Delay allows the instance and its databases to fully
-                    // clear.
-        }, done);
-      });
+  const limit = pLimit(5);
+  const input: Array<{}> = [];
+  instances.forEach(instance => {
+    input.push(limit(async () => await instance.delete()));
+  });
+  return (async () => {
+    return await Promise.all(input);
+  })();
 }
 
-function deleteTestResources(callback) {
-  async.series([deleteTestInstances], callback);
+async function deleteTestResources() {
+  await deleteTestInstances;
 }
 
 function wait(time) {
