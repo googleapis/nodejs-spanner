@@ -110,6 +110,44 @@ async function insertData(instanceId, databaseId, projectId) {
   // [END spanner_insert_data]
 }
 
+async function deleteData(instanceId, databaseId, projectId) {
+  // [START spanner_delete_data]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  // Instantiate Spanner table object
+  const singersTable = database.table('Singers');
+
+  // Deletes rows from the Singers table and the Albums table,
+  // because Albums table is defined with ON DELETE CASCADE.
+  try {
+    const keys = [1, 2, 3, 4, 5];
+    await singersTable.deleteRows(keys);
+    console.log('Deleted data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    database.close();
+  }
+  // [END spanner_delete_data]
+}
+
 async function queryData(instanceId, databaseId, projectId) {
   // [START spanner_query_data]
   // Imports the Google Cloud client library
@@ -286,6 +324,12 @@ require(`yargs`)
     opts => insertData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
+    `delete <instanceName> <databaseName> <projectId>`,
+    `Deletes rows from an example Cloud Spanner table.`,
+    {},
+    opts => deleteData(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
     `read <instanceName> <databaseName> <projectId>`,
     `Reads data in an example Cloud Spanner table.`,
     {},
@@ -300,6 +344,7 @@ require(`yargs`)
   .example(`node $0 update "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 query "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 insert "my-instance" "my-database" "my-project-id"`)
+  .example(`node $0 delete "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 read "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 read-stale "my-instance" "my-database" "my-project-id"`)
   .wrap(120)
