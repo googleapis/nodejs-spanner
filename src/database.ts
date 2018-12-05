@@ -1135,7 +1135,7 @@ class Database extends ServiceObject {
    *
    * //-
    * // Alternatively, set `query.json` to `true`, and this step will be performed
-   * // automaticaly.
+   * // automatically.
    * //-
    * database.run(query, function(err, rows) {
    *   if (err) {
@@ -1311,7 +1311,7 @@ class Database extends ServiceObject {
    *
    * //-
    * // Alternatively, set `query.json` to `true`, and this step will be performed
-   * // automaticaly.
+   * // automatically.
    * //-
    * query.json = true;
    *

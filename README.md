@@ -5,8 +5,7 @@
 # [Cloud Spanner: Node.js Client](https://github.com/googleapis/nodejs-spanner)
 
 [![release level](https://img.shields.io/badge/release%20level-general%20availability%20%28GA%29-brightgreen.svg?style&#x3D;flat)](https://cloud.google.com/terms/launch-stages)
-[![CircleCI](https://img.shields.io/circleci/project/github/googleapis/nodejs-spanner.svg?style=flat)](https://circleci.com/gh/googleapis/nodejs-spanner)
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/googleapis/nodejs-spanner?branch=master&svg=true)](https://ci.appveyor.com/project/googleapis/nodejs-spanner)
+[![npm version](https://img.shields.io/npm/v/@google-cloud/spanner.svg)](https://www.npmjs.org/package/@google-cloud/spanner)
 [![codecov](https://img.shields.io/codecov/c/github/googleapis/nodejs-spanner/master.svg?style=flat)](https://codecov.io/gh/googleapis/nodejs-spanner)
 
 > Node.js idiomatic client for [Cloud Spanner][product-docs].
@@ -146,3 +145,4 @@ See [LICENSE](https://github.com/googleapis/nodejs-spanner/blob/master/LICENSE)
 [client-docs]: https://cloud.google.com/nodejs/docs/reference/spanner/latest/
 [product-docs]: https://cloud.google.com/spanner/docs/
 [shell_img]: https://gstatic.com/cloudssh/images/open-btn.png
+
