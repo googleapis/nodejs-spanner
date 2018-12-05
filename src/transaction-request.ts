@@ -165,7 +165,7 @@ class TransactionRequest {
    * //-
    * // Alternatively, set `query.json` to `true`, and this step will be
    * performed
-   * // automaticaly.
+   * // automatically.
    * //-
    * database.runTransaction(function(err, transaction) {
    *   if (err) {
@@ -532,7 +532,7 @@ class TransactionRequest {
    * //-
    * // Alternatively, set `query.json` to `true`, and this step will be
    * performed
-   * // automaticaly.
+   * // automatically.
    * //-
    * database.runTransaction(function(err, transaction) {
    *   if (err) {

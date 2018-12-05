@@ -521,7 +521,7 @@ class Table extends TransactionRequest {
    * //
    * // Alternatively, set `query.json` to `true`, and this step will be
    * performed
-   * // automaticaly.
+   * // automatically.
    * //-
    * table.read(query, function(err, rows) {
    *   if (err) {
