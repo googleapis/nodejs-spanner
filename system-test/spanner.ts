@@ -46,12 +46,12 @@ describe('Spanner', () => {
   };
 
   before(async () => {
-    await deleteTestResources;
+    await deleteTestInstances();
     await instance.create(INSTANCE_CONFIG);
     await execAfterOperationComplete;
   });
 
-  after(deleteTestResources);
+  after(deleteTestInstances);
 
   describe('types', () => {
     const database = instance.database(generateName('database'));
@@ -4227,17 +4227,8 @@ async function deleteTestInstances() {
   });
 
   const limit = pLimit(5);
-  const input: Array<{}> = [];
-  instances.forEach(instance => {
-    input.push(limit(async () => await instance.delete()));
-  });
-  return (async () => {
-    return await Promise.all(input);
-  })();
-}
-
-async function deleteTestResources() {
-  await deleteTestInstances;
+  return await Promise.all(
+      instances.map(instance => limit(() => instance.delete())));
 }
 
 function wait(time) {

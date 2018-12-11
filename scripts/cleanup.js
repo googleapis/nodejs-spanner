@@ -31,14 +31,7 @@ async function deleteStaleInstances(labelFilter) {
   });
 
   const limit = pLimit(5);
-  const input = [];
-  filtered.forEach(instance => {
-    input.push(limit(async () => await instance.delete()));
-  });
-
-  (async () => {
-    return await Promise.all(input);
-  })();
+  await Promise.all(filtered.map(instance => limit(() => instance.delete())));
 }
 
 describe('Clean up', () => {
