@@ -518,7 +518,7 @@ describe('SessionPool', () => {
         const fakeSession = createSession('id', {type: sp.types.ReadOnly});
 
         prepStub.rejects();
-        sinon.stub(sessionPool, '_release')
+        sandbox.stub(sessionPool, '_release')
             .withArgs(fakeSession)
             .callsFake(() => done());
 
@@ -536,7 +536,7 @@ describe('SessionPool', () => {
       });
 
       it('should prep a new transaction', done => {
-        sinon.stub(sessionPool, '_release');
+        sandbox.stub(sessionPool, '_release');
         prepStub.withArgs(fakeSession).callsFake(async () => done());
 
         sessionPool.release(fakeSession);
@@ -544,7 +544,7 @@ describe('SessionPool', () => {
 
       it('should release the read/write session', done => {
         prepStub.resolves();
-        sinon.stub(sessionPool, '_release')
+        sandbox.stub(sessionPool, '_release')
             .withArgs(fakeSession)
             .callsFake(() => done());
 
@@ -552,7 +552,7 @@ describe('SessionPool', () => {
       });
 
       it('should convert to a read session if txn fails', done => {
-        const stub = sinon.stub(sessionPool, '_release').callsFake(() => {
+        const stub = sandbox.stub(sessionPool, '_release').callsFake(() => {
           const session = stub.getCall(0).args[0];
           assert.strictEqual(session, fakeSession);
           assert.strictEqual(session.type, sp.types.ReadOnly);
@@ -1221,7 +1221,7 @@ describe('SessionPool', () => {
       const keepAliveStub = fakeSession.keepAlive as sinon.SinonStub;
 
       keepAliveStub.rejects();
-      sinon.stub(sessionPool, '_isValidSession').returns(true);
+      sandbox.stub(sessionPool, '_isValidSession').returns(true);
 
       const destroyStub = sandbox.stub(sessionPool, '_destroy')
                               .withArgs(fakeSession)
