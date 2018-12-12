@@ -17,7 +17,7 @@
 'use strict';
 
 import * as assert from 'assert';
-import * as pLimit from 'p-limit';
+import pLimit = require('p-limit');
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
 import * as extend from 'extend';
@@ -47,8 +47,9 @@ describe('Spanner', () => {
 
   before(async () => {
     await deleteTestInstances();
-    await instance.create(INSTANCE_CONFIG);
-    await execAfterOperationComplete;
+    return await instance.create(INSTANCE_CONFIG)
+        .then(execAfterOperationComplete)
+        .catch(execAfterOperationComplete);
   });
 
   after(deleteTestInstances);
@@ -869,11 +870,13 @@ describe('Spanner', () => {
     const session = database.session();
 
     before(async () => {
-      await database.create({
-        schema: `CREATE TABLE Singers (SingerId STRING(1024) NOT NULL,
+      await database
+          .create({
+            schema: `CREATE TABLE Singers (SingerId STRING(1024) NOT NULL,
           Name STRING(1024),) PRIMARY KEY(SingerId)`,
-      });
-      await execAfterOperationComplete;
+          })
+          .then(data => execAfterOperationComplete(data))
+          .catch(err => execAfterOperationComplete(err));
       await session.create();
     });
 
@@ -3123,13 +3126,15 @@ describe('Spanner', () => {
     const table = database.table('Singers');
 
     before(async () => {
-      await database.create({
-        schema: `CREATE TABLE Singers (
-          SingerId STRING(1024) NOT NULL,
-          Name STRING(1024),
-        ) PRIMARY KEY(SingerId)`,
-      });
-      await execAfterOperationComplete;
+      await database
+          .create({
+            schema: `CREATE TABLE Singers (
+        SingerId STRING(1024) NOT NULL,
+        Name STRING(1024),
+      ) PRIMARY KEY(SingerId)`,
+          })
+          .then(data => execAfterOperationComplete(data))
+          .catch(err => execAfterOperationComplete(err));
     });
 
     it('should insert and query a row', done => {
