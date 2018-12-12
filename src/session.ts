@@ -229,10 +229,15 @@ export class Session extends ServiceObject {
    * @example
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
-  beginTransaction(options?: TransactionOptions): Promise<BeginTransactionResponse>;
+  beginTransaction(options?: TransactionOptions):
+      Promise<BeginTransactionResponse>;
   beginTransaction(callback: BeginTransactionCallback): void;
-  beginTransaction(options: TransactionOptions, callback: BeginTransactionCallback): void;
-  beginTransaction(options?: TransactionOptions|BeginTransactionCallback, callback?: BeginTransactionCallback): void|Promise<BeginTransactionResponse> {
+  beginTransaction(
+      options: TransactionOptions, callback: BeginTransactionCallback): void;
+  beginTransaction(
+      options?: TransactionOptions|BeginTransactionCallback,
+      callback?: BeginTransactionCallback):
+      void|Promise<BeginTransactionResponse> {
     if (is.fn(options)) {
       callback = options as BeginTransactionCallback;
       options = {} as TransactionOptions;

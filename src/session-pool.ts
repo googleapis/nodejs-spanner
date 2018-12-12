@@ -28,7 +28,7 @@ import {Transaction, TransactionOptions} from './transaction';
  * @param {?Error} error Closing error, if any.
  */
 export interface SessionPoolCloseCallback {
-  (error?: Error): void;
+  (error?: SessionLeakError): void;
 }
 
 /**
@@ -154,9 +154,32 @@ const DEFAULTS: SessionPoolOptions = {
 };
 
 /**
+ * Error to be thrown when attempting to release unknown resources.
+ */
+export class ReleaseError extends Error {
+  // tslint:disable-next-line no-any
+  resource: any;
+  constructor(resource) {
+    super('Unable to release unknown resource.');
+    this.resource = resource;
+  }
+}
+
+/**
+ * Error to be thrown when session leaks are detected.
+ */
+export class SessionLeakError extends Error {
+  messages: string[];
+  constructor(leaks: string[]) {
+    super(`${leaks.length} session leak(s) detected.`);
+    this.messages = leaks;
+  }
+}
+
+/**
  * enum to capture the possible session types
  */
-const enum types {
+export const enum types {
   ReadOnly = 'readonly',
   ReadWrite = 'readwrite'
 }
@@ -173,29 +196,6 @@ interface SessionInventory {
   [types.ReadOnly]: Session[];
   [types.ReadWrite]: Session[];
   borrowed: Set<Session>;
-}
-
-/**
- * Error to be thrown when attempting to release unknown resources.
- */
-class ReleaseError extends Error {
-  // tslint:disable-next-line no-any
-  resource: any;
-  constructor(resource) {
-    super('Unable to release unknown resource.');
-    this.resource = resource;
-  }
-}
-
-/**
- * Error to be thrown when session leaks are detected.
- */
-class SessionLeakError extends Error {
-  messages: string[];
-  constructor(leaks: string[]) {
-    super(`${leaks.length} session leak(s) detected.`);
-    this.messages = leaks;
-  }
 }
 
 /**
@@ -270,15 +270,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get reads(): number {
-    let count = this._inventory[types.ReadOnly].length;
+    const available = this._inventory[types.ReadOnly].length;
+    const borrowed = [...this._inventory.borrowed]
+                         .filter(session => session.type === types.ReadOnly)
+                         .length;
 
-    for (const session of this._inventory.borrowed) {
-      if (session.type === types.ReadOnly) {
-        count += 1;
-      }
-    }
-
-    return count;
+    return available + borrowed;
   }
 
   /**
@@ -294,15 +291,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get writes(): number {
-    let count = this._inventory[types.ReadWrite].length;
+    const available = this._inventory[types.ReadWrite].length;
+    const borrowed = [...this._inventory.borrowed]
+                         .filter(session => session.type === types.ReadWrite)
+                         .length;
 
-    for (const session of this._inventory.borrowed) {
-      if (session.type === types.ReadWrite) {
-        count += 1;
-      }
-    }
-
-    return count;
+    return available + borrowed;
   }
 
   /**
@@ -347,7 +341,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#close
    * @param {SessionPoolCloseCallback} callback The callback function.
    */
-  async close(callback: SessionPoolCloseCallback): Promise<void> {
+  close(callback: SessionPoolCloseCallback): void {
     const sessions: Session[] = [
       ...this._inventory[types.ReadOnly], ...this._inventory[types.ReadWrite],
       ...this._inventory.borrowed
@@ -363,16 +357,17 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.emit('close');
 
     sessions.forEach(session => this._destroy(session));
-    await this._requests.onIdle();
 
-    const leaks = this._getLeaks();
-    let error;
+    this._requests.onIdle().then(() => {
+      const leaks = this._getLeaks();
+      let error;
 
-    if (leaks.length) {
-      error = new SessionLeakError(leaks);
-    }
+      if (leaks.length) {
+        error = new SessionLeakError(leaks);
+      }
 
-    callback(error);
+      callback(error);
+    });
   }
 
   /**
@@ -380,17 +375,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {GetReadSessionCallback} callback The callback function.
    */
-  async getReadSession(callback: GetReadSessionCallback): Promise<void> {
-    let session;
-
-    try {
-      session = await this._acquire(types.ReadOnly);
-    } catch (e) {
-      callback(e);
-      return;
-    }
-
-    callback(null, session);
+  getReadSession(callback: GetReadSessionCallback): void {
+    this._acquire(types.ReadOnly)
+        .then(session => callback(null, session), callback);
   }
 
   /**
@@ -398,17 +385,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {GetWriteSessionCallback} callback The callback function.
    */
-  async getWriteSession(callback: GetWriteSessionCallback): Promise<void> {
-    let session;
-
-    try {
-      session = await this._acquire(types.ReadWrite);
-    } catch (e) {
-      callback(e);
-      return;
-    }
-
-    callback(null, session, session.txn);
+  getWriteSession(callback: GetWriteSessionCallback): void {
+    this._acquire(types.ReadWrite)
+        .then(session => callback(null, session, session.txn), callback);
   }
 
   /**
@@ -437,7 +416,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#error
    * @param {Session} session The session to release.
    */
-  async release(session: Session): Promise<void> {
+  release(session: Session): void {
     if (!this._inventory.borrowed.has(session)) {
       throw new ReleaseError(session);
     }
@@ -445,15 +424,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     delete session.txn;
     session.lastUsed = Date.now();
 
-    if (session.type === types.ReadWrite) {
-      try {
-        await this._prepareTransaction(session);
-      } catch (e) {
-        session.type = types.ReadOnly;
-      }
+    if (session.type === types.ReadOnly) {
+      this._release(session);
+      return;
     }
 
-    this._release(session);
+    this._prepareTransaction(session)
+        .catch(() => (session.type = types.ReadOnly))
+        .then(() => this._release(session));
   }
 
   /**
@@ -472,7 +450,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const startTime = Date.now();
     const timeout = this.options.acquireTimeout;
 
-    // wrapping this logic in a function to maybe recursively if the session
+    // wrapping this logic in a function to call recursively if the session
     // we end up with is already dead
     const getSession = async(): Promise<Session> => {
       const elapsed = Date.now() - startTime;
@@ -495,7 +473,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     if (type === types.ReadWrite && session.type === types.ReadOnly) {
       try {
-        await this._convertSession(session);
+        await this._prepareTransaction(session);
       } catch (e) {
         this._release(session);
         throw e;
@@ -557,24 +535,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     return this._borrowFrom(types.ReadOnly);
-  }
-
-  /**
-   * Converts a read only session to a read/write session.
-   *
-   * @private
-   *
-   * @param {Session} session Session to be converted.
-   * @returns {Promise<Session>}
-   */
-  async _convertSession(session: Session): Promise<Session> {
-    try {
-      await this._prepareTransaction(session);
-      return session;
-    } catch (e) {
-      this._release(session);
-      throw e;
-    }
   }
 
   /**
@@ -730,7 +690,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {string[]}
    */
   _getLeaks(): string[] {
-    return Array.from(this._traces.values()).map(SessionPool.formatTrace);
+    return [...this._traces.values()].map(SessionPool.formatTrace);
   }
 
   /**
