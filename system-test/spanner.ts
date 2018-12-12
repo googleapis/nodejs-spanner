@@ -48,8 +48,8 @@ describe('Spanner', () => {
   before(async () => {
     await deleteTestInstances();
     return await instance.create(INSTANCE_CONFIG)
-        .then(execAfterOperationComplete)
-        .catch(execAfterOperationComplete);
+        .then(data => execAfterOperationComplete(data))
+        .catch(err => execAfterOperationComplete(err));
   });
 
   after(deleteTestInstances);
