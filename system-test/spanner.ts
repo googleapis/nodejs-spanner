@@ -47,9 +47,8 @@ describe('Spanner', () => {
 
   before(async () => {
     await deleteTestInstances();
-    return await instance.create(INSTANCE_CONFIG)
-        .then(data => execAfterOperationComplete(data))
-        .catch(err => execAfterOperationComplete(err));
+    const [, operation] = await instance.create(INSTANCE_CONFIG);
+    await operation.promise();
   });
 
   after(deleteTestInstances);
@@ -870,13 +869,14 @@ describe('Spanner', () => {
     const session = database.session();
 
     before(async () => {
-      await database
-          .create({
-            schema: `CREATE TABLE Singers (SingerId STRING(1024) NOT NULL,
-          Name STRING(1024),) PRIMARY KEY(SingerId)`,
-          })
-          .then(data => execAfterOperationComplete(data))
-          .catch(err => execAfterOperationComplete(err));
+      const [, operation] = await database.create({
+        schema: `
+              CREATE TABLE Singers (
+                SingerId STRING(1024) NOT NULL,
+                Name STRING(1024),
+              ) PRIMARY KEY(SingerId)`,
+      });
+      await operation.promise();
       await session.create();
     });
 
@@ -3126,15 +3126,14 @@ describe('Spanner', () => {
     const table = database.table('Singers');
 
     before(async () => {
-      await database
-          .create({
-            schema: `CREATE TABLE Singers (
-        SingerId STRING(1024) NOT NULL,
-        Name STRING(1024),
-      ) PRIMARY KEY(SingerId)`,
-          })
-          .then(data => execAfterOperationComplete(data))
-          .catch(err => execAfterOperationComplete(err));
+      const [, operation] = await database.create({
+        schema: `
+            CREATE TABLE Singers (
+              SingerId STRING(1024) NOT NULL,
+              Name STRING(1024),
+            ) PRIMARY KEY(SingerId)`,
+      });
+      await operation.promise();
     });
 
     it('should insert and query a row', done => {
@@ -4232,8 +4231,9 @@ async function deleteTestInstances() {
   });
 
   const limit = pLimit(5);
-  return await Promise.all(
-      instances.map(instance => limit(() => instance.delete())));
+  return Promise.all(instances.map(instance => limit(() => setTimeout(() => {
+                                                       instance.delete();
+                                                     }, 500))));
 }
 
 function wait(time) {
