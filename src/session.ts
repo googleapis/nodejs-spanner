@@ -23,11 +23,24 @@
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import * as is from 'is';
 import * as r from 'request';
 import {Transaction} from './transaction';
 import {Database} from './database';
-import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback} from '@google-cloud/common';
+import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, ResponseCallback} from '@google-cloud/common';
+import {TransactionOptions, CreateSessionOptions} from './common';
+
+export type GetSessionResponse = [Session, r.Response];
+
+export interface CreateSessionCallback {
+  (err: Error|null, session?: Session|null, apiResponse?: r.Response): void;
+}
+
+export interface BeginTransactionCallback {
+  (err: Error|null, transaction?: Transaction|null,
+   apiResponse?: r.Response): void;
+}
+
+export type BeginTransactionResponse = [Transaction, r.Response];
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -88,7 +101,7 @@ class Session extends ServiceObject {
        * });
        *
        * //-
-       * // If the callback is omitted, we'll return a Promise.
+       * //Returns a Promise if the callback is omitted.
        * //-
        * session.create()
        *   .then(function(data) {
@@ -119,7 +132,7 @@ class Session extends ServiceObject {
        * session.exists(function(err, exists) {});
        *
        * //-
-       * // If the callback is omitted, we'll return a Promise.
+       * //Returns a Promise if the callback is omitted.
        * //-
        * session.exists().then(function(data) {
        *   const exists = data[0];
@@ -132,7 +145,7 @@ class Session extends ServiceObject {
        * @property {object} 1 The full API response.
        */
       /**
-       * @callback GetSessionCallback
+       * @callback CreateSessionCallback
        * @param {?Error} err Request error, if any.
        * @param {Session} session The {@link Session}.
        * @param {object} apiResponse The full API response.
@@ -149,7 +162,7 @@ class Session extends ServiceObject {
        * @param {options} [options] Configuration object.
        * @param {boolean} [options.autoCreate=false] Automatically create the
        *     object if it does not exist.
-       * @param {GetSessionCallback} [callback] Callback function.
+       * @param {CreateSessionCallback} [callback] Callback function.
        * @returns {Promise<GetSessionResponse>}
        *
        * @example
@@ -158,7 +171,7 @@ class Session extends ServiceObject {
        * });
        *
        * //-
-       * // If the callback is omitted, we'll return a Promise.
+       * //Returns a Promise if the callback is omitted.
        * //-
        * session.get().then(function(data) {
        *   const session = data[0];
@@ -175,21 +188,26 @@ class Session extends ServiceObject {
        */
       id: name,
       methods,
-      createMethod: (_, options, callback) => {
-        if (is.fn(options)) {
-          callback = options;
-          options = {};
-        }
-        return database.createSession(options, (err, session, apiResponse) => {
-          if (err) {
-            callback(err, null, apiResponse);
-            return;
-          }
+      createMethod:
+          (_: {}, optionsOrCallback: CreateSessionOptions|CreateSessionCallback,
+           callback: CreateSessionCallback) => {
+            const options =
+                typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+            callback = typeof optionsOrCallback === 'function' ?
+                optionsOrCallback as CreateSessionCallback :
+                callback;
+            return database.createSession(
+                options,
+                (err: Error, session: Session, apiResponse: r.Response) => {
+                  if (err) {
+                    callback(err, null, apiResponse);
+                    return;
+                  }
 
-          extend(this, session);
-          callback(null, this, apiResponse);
-        });
-      },
+                  extend(this, session);
+                  callback(null, this, apiResponse);
+                });
+          },
     } as {} as ServiceObjectConfig);
 
     this.request = database.request;
@@ -222,18 +240,28 @@ class Session extends ServiceObject {
    * @example
    * session.beginTransaction(function(err, transaction, apiResponse) {});
    */
-  beginTransaction(options, callback) {
-    if (is.fn(options)) {
-      callback = options;
-      options = {};
-    }
+  beginTransaction(options?: TransactionOptions):
+      Promise<BeginTransactionResponse>;
+  beginTransaction(callback: BeginTransactionCallback): void;
+  beginTransaction(
+      options: TransactionOptions, callback: BeginTransactionCallback): void;
+  beginTransaction(
+      optionsOrCallback?: TransactionOptions|BeginTransactionCallback,
+      callback?: BeginTransactionCallback): Promise<BeginTransactionResponse>|
+      void {
+    const options =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    callback = typeof optionsOrCallback === 'function' ?
+        optionsOrCallback as BeginTransactionCallback :
+        callback;
+
     const transaction = this.transaction(options);
-    transaction.begin((err, resp) => {
+    transaction.begin((err: Error|null, resp: r.Response) => {
       if (err) {
-        callback(err, null, resp);
+        callback!(err, null, resp);
         return;
       }
-      callback(null, transaction, resp);
+      callback!(null, transaction, resp);
     });
   }
   /**
@@ -257,7 +285,7 @@ class Session extends ServiceObject {
    * });
    *
    * //-
-   * // If the callback is omitted, we'll return a Promise.
+   * //Returns a Promise if the callback is omitted.
    * //-
    * session.delete().then(function(data) {
    *   const apiResponse = data[0];
@@ -303,7 +331,7 @@ class Session extends ServiceObject {
    * session.getMetadata(function(err, metadata, apiResponse) {});
    *
    * //-
-   * // If the callback is omitted, we'll return a Promise.
+   * //Returns a Promise if the callback is omitted.
    * //-
    * session.getMetadata().then(function(data) {
    *   const metadata = data[0];
@@ -337,7 +365,7 @@ class Session extends ServiceObject {
    *   }
    * });
    */
-  keepAlive(callback) {
+  keepAlive(callback?: ResponseCallback): void|Promise<[r.Response]> {
     const reqOpts = {
       session: this.formattedName_,
       sql: 'SELECT 1',
@@ -348,21 +376,21 @@ class Session extends ServiceObject {
           method: 'executeSql',
           reqOpts,
         },
-        callback);
+        callback!);
   }
   /**
    * Create a Transaction object.
    *
    * @throws {Error} If an ID is not provided.
    *
-   * @param {string} id The id of the transaction.
+   * @param {object} options The options of the transaction.
    * @return {Transaction} A Transaction object.
    *
    * @example
    * const transaction = database.transaction('transaction-id');
    */
-  transaction(id) {
-    return new Transaction(this, id);
+  transaction(options: TransactionOptions): Transaction {
+    return new Transaction(this, options);
   }
   /**
    * Format the session name to include the parent database's name.
@@ -378,7 +406,7 @@ class Session extends ServiceObject {
    * // 'projects/grape-spaceship-123/instances/my-instance/' +
    * // 'databases/my-database/sessions/my-session'
    */
-  static formatName_(databaseName, name) {
+  static formatName_(databaseName: string, name: string): string {
     if (name.indexOf('/') > -1) {
       return name;
     }

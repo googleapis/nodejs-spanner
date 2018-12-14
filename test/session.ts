@@ -186,7 +186,7 @@ describe('Session', () => {
         const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
-        session.calledWith_[0].createMethod(null, {}, (err, sess, resp) => {
+        session.calledWith_[0].createMethod(null, (err, sess, resp) => {
           assert.strictEqual(err, error);
           assert.strictEqual(sess, null);
           assert.strictEqual(resp, apiResponse);
