@@ -419,7 +419,7 @@ class TransactionRequest {
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
    *     specifying `wrapNumbers: true` to protect large integer values outside
    * of the range of JavaScript Number. If set, FLOAT64 values will be returned
-   *     as {@link Spanner.Float} objects and INT64 values as @{link
+   *     as {@link Spanner.Float} objects and INT64 values as {@link
    * Spanner.Int}.
    */
   /**
@@ -430,7 +430,7 @@ class TransactionRequest {
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
    *     specifying `wrapNumbers: true` to protect large integer values outside
    * of the range of JavaScript Number. If set, FLOAT64 values will be returned
-   *     as {@link Spanner.Float} objects and INT64 values as @{link
+   *     as {@link Spanner.Float} objects and INT64 values as {@link
    * Spanner.Int}.
    */
   /**
