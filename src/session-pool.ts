@@ -590,9 +590,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   async _createSessionInBackground(type: types): Promise<void> {
     try {
       await this._createSession(type);
-      process.nextTick(() => this.emit('available'));
+      this.emit('available');
     } catch (e) {
-      process.nextTick(() => this.emit('error', e));
+      this.emit('error', e);
     }
   }
 
@@ -610,7 +610,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     try {
       await this._requests.add(() => session.delete());
     } catch (e) {
-      process.nextTick(() => this.emit('error', e));
+      this.emit('error', e);
     }
   }
 
