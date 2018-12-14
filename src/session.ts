@@ -190,7 +190,7 @@ class Session extends ServiceObject {
       methods,
       createMethod:
           (optionsOrCallback: GetSession|GetSessionCallback,
-           callback?: GetSessionCallback) => {
+           callback: GetSessionCallback) => {
             const options =
                 typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
             callback = typeof optionsOrCallback === 'function' ?
@@ -200,12 +200,12 @@ class Session extends ServiceObject {
                 options,
                 (err: Error, session: Session, apiResponse: r.Response) => {
                   if (err) {
-                    callback!(err, null, apiResponse);
+                    callback(err, null, apiResponse);
                     return;
                   }
 
                   extend(this, session);
-                  callback!(null, this, apiResponse);
+                  callback(null, this, apiResponse);
                 });
           },
     } as {} as ServiceObjectConfig);
