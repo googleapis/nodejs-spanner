@@ -189,7 +189,7 @@ class Session extends ServiceObject {
       id: name,
       methods,
       createMethod:
-          (optionsOrCallback: GetSession|GetSessionCallback,
+          (_: {}, optionsOrCallback: GetSession|GetSessionCallback,
            callback: GetSessionCallback) => {
             const options =
                 typeof optionsOrCallback === 'object' ? optionsOrCallback : {};

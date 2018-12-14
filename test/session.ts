@@ -140,17 +140,18 @@ describe('Session', () => {
         const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
-        session.calledWith_[0].createMethod(options, (err, sess, resp) => {
-          assert.ifError(err);
+        session.calledWith_[0].createMethod(
+            null, options, (err, sess, resp) => {
+              assert.ifError(err);
 
-          assert.strictEqual(sess, session);
+              assert.strictEqual(sess, session);
 
-          assert.strictEqual(session.uniqueProperty, true);
+              assert.strictEqual(session.uniqueProperty, true);
 
-          assert.strictEqual(resp, apiResponse);
+              assert.strictEqual(resp, apiResponse);
 
-          done();
-        });
+              done();
+            });
       });
 
       it('should check for options', done => {
@@ -164,7 +165,7 @@ describe('Session', () => {
         const session = new Session(databaseInstance, NAME);
         const apiResponse = {};
 
-        session.calledWith_[0].createMethod((err, sess, resp) => {
+        session.calledWith_[0].createMethod(null, (err, sess, resp) => {
           assert.ifError(err);
           assert.strictEqual(sess, session);
           assert.strictEqual(resp, apiResponse);
@@ -185,7 +186,7 @@ describe('Session', () => {
         const session = new Session(databaseInstance, NAME);
         assert(session instanceof FakeGrpcServiceObject);
 
-        session.calledWith_[0].createMethod({}, (err, sess, resp) => {
+        session.calledWith_[0].createMethod(null, (err, sess, resp) => {
           assert.strictEqual(err, error);
           assert.strictEqual(sess, null);
           assert.strictEqual(resp, apiResponse);
