@@ -6,7 +6,7 @@ export interface TransactionOptions {
   returnTimestamp?: boolean;
   strong?: boolean;
 }
-export interface GetSession {
+export interface CreateSessionOptions {
   name: string;
   labels: {[key: string]: string;};
   createTime: GetTimestamp;

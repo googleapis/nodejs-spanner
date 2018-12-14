@@ -27,11 +27,11 @@ import * as r from 'request';
 import {Transaction} from './transaction';
 import {Database} from './database';
 import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, ResponseCallback} from '@google-cloud/common';
-import {TransactionOptions, GetSession} from './common';
+import {TransactionOptions, CreateSessionOptions} from './common';
 
 export type GetSessionResponse = [Session, r.Response];
 
-export interface GetSessionCallback {
+export interface CreateSessionCallback {
   (err: Error|null, session?: Session|null, apiResponse?: r.Response): void;
 }
 
@@ -145,7 +145,7 @@ class Session extends ServiceObject {
        * @property {object} 1 The full API response.
        */
       /**
-       * @callback GetSessionCallback
+       * @callback CreateSessionCallback
        * @param {?Error} err Request error, if any.
        * @param {Session} session The {@link Session}.
        * @param {object} apiResponse The full API response.
@@ -162,7 +162,7 @@ class Session extends ServiceObject {
        * @param {options} [options] Configuration object.
        * @param {boolean} [options.autoCreate=false] Automatically create the
        *     object if it does not exist.
-       * @param {GetSessionCallback} [callback] Callback function.
+       * @param {CreateSessionCallback} [callback] Callback function.
        * @returns {Promise<GetSessionResponse>}
        *
        * @example
@@ -189,12 +189,12 @@ class Session extends ServiceObject {
       id: name,
       methods,
       createMethod:
-          (_: {}, optionsOrCallback: GetSession|GetSessionCallback,
-           callback: GetSessionCallback) => {
+          (_: {}, optionsOrCallback: CreateSessionOptions|CreateSessionCallback,
+           callback: CreateSessionCallback) => {
             const options =
                 typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
             callback = typeof optionsOrCallback === 'function' ?
-                optionsOrCallback as GetSessionCallback :
+                optionsOrCallback as CreateSessionCallback :
                 callback;
             return database.createSession(
                 options,
