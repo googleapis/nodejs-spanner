@@ -15,8 +15,7 @@
  */
 
 const {Spanner} = require('../');
-const async = require('async');
-
+const pLimit = require('p-limit');
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
 // Delete instances that are 1 hour old.
@@ -31,21 +30,16 @@ async function deleteStaleInstances(labelFilter) {
     return labelFilter(instance.metadata.labels);
   });
 
-  return new Promise((resolve, reject) => {
-    async.eachLimit(
-      filtered,
-      5,
-      (instance, callback) => {
+  const limit = pLimit(5);
+  await Promise.all(
+    filtered.map(instance =>
+      limit(() =>
         setTimeout(() => {
-          instance.delete(callback);
-        }, 500); // Delay allows the instance and its databases to fully clear.
-      },
-      (err, res) => {
-        if (err) return reject(err);
-        resolve(res);
-      }
-    );
-  });
+          instance.delete();
+        }, 500)
+      )
+    )
+  );
 }
 
 describe('Clean up', () => {
