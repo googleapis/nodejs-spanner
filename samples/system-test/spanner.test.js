@@ -16,10 +16,9 @@
 'use strict';
 
 const path = require(`path`);
-const request = require(`request`);
 const {Spanner} = require(`@google-cloud/spanner`);
-const assert = require('assert');
-const tools = require(`@google-cloud/nodejs-repo-tools`);
+const {assert} = require('chai');
+const execa = require('execa');
 
 const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
@@ -31,6 +30,7 @@ const structCmd = `node struct.js`;
 const dmlCmd = `node dml.js`;
 
 const cwd = path.join(__dirname, `..`);
+const exec = async cmd => (await execa.shell(cmd, {cwd})).stdout;
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -43,7 +43,6 @@ const spanner = new Spanner({
 
 describe('Spanner', () => {
   before(async () => {
-    tools.checkCredentials();
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
     try {
@@ -73,8 +72,11 @@ describe('Spanner', () => {
 
     await Promise.all(
       instances.map(async instance => {
-        const {operations} = await getOperations(instance.metadata.name);
-
+        const instanceName = instance.metadata.name;
+        const res = await spanner.auth.request({
+          url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
+        });
+        const operations = res.data.operations;
         await Promise.all(
           operations
             .filter(operation => {
@@ -83,9 +85,7 @@ describe('Spanner', () => {
             .filter(operation => {
               const yesterday = new Date();
               yesterday.setHours(-24);
-
               const instanceCreated = new Date(operation.metadata.startTime);
-
               return instanceCreated < yesterday;
             })
             .map(instance.delete)
@@ -104,107 +104,70 @@ describe('Spanner', () => {
 
   // create_database
   it(`should create an example database`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`).test(
-        output
-      ),
-      true
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
     );
-    assert.strictEqual(
-      new RegExp(
-        `Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`
-      ).test(output),
-      true
+    assert.match(
+      output,
+      new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
     );
   });
 
   // insert_data
   it(`should insert rows into an example table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Inserted data\./).test(output), true);
+    assert.match(output, /Inserted data\./);
   });
 
   // delete_data
   it(`should delete and then insert rows in the example tables`, async () => {
-    let results = await tools.runAsyncWithIO(
-      `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    let output = await exec(
+      `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    let output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Deleted data\./).test(output), true);
-
-    results = await tools.runAsyncWithIO(
-      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    assert.match(output, /Deleted data\./);
+    output = await exec(
+      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Inserted data\./).test(output), true);
+    assert.match(output, /Inserted data\./);
   });
 
   // query_data
   it(`should query an example table and return matching rows`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/).test(
-        output
-      ),
-      true
-    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
   // read_data
   it(`should read an example table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/).test(
-        output
-      ),
-      true
-    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
   // add_column
   it(`should add a column to a table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Waiting for operation to complete\.\.\./).test(output),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/Added the MarketingBudget column\./).test(output),
-      true
-    );
+    assert.match(output, /Waiting for operation to complete\.\.\./);
+    assert.match(output, /Added the MarketingBudget column\./);
   });
 
   // update_data
   it(`should update existing rows in an example table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Updated data\./).test(output), true);
+    assert.match(output, /Updated data\./);
   });
 
   // read_stale_data
@@ -212,203 +175,116 @@ describe('Spanner', () => {
     // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
     // 15 seconds have elapsed since the update_data test.
     await new Promise(r => setTimeout(r, 16000));
-    const results = await tools.runAsyncWithIO(
-      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(
-        /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
-      ).test(output),
-      true
+    assert.match(
+      output,
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
     );
-    assert.strictEqual(
-      new RegExp(
-        /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
-      ).test(output),
-      true
+    assert.match(
+      output,
+      /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
     );
   });
 
   // query_data_with_new_column
   it(`should query an example table with an additional column and return matching rows`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 1, AlbumId: 1, MarketingBudget: 100000/).test(
-        output
-      ),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/SingerId: 2, AlbumId: 2, MarketingBudget: 500000/).test(
-        output
-      ),
-      true
-    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
+    assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/);
   });
 
   // create_index
   it(`should create an index in an example table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Waiting for operation to complete\.\.\./).test(output),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/Added the AlbumsByAlbumTitle index\./).test(output),
-      true
-    );
+    assert.match(output, /Waiting for operation to complete\.\.\./);
+    assert.match(output, /Added the AlbumsByAlbumTitle index\./);
   });
 
   // create_storing_index
   it(`should create a storing index in an example table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Waiting for operation to complete\.\.\./).test(output),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/Added the AlbumsByAlbumTitle2 index\./).test(output),
-      true
-    );
+    assert.match(output, /Waiting for operation to complete\.\.\./);
+    assert.match(output, /Added the AlbumsByAlbumTitle2 index\./);
   });
 
   // query_data_with_index
   it(`should query an example table with an index and return matching rows`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/).test(
-        output
-      ),
-      true
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
     );
-    assert.deepStrictEqual(
-      output.includes(`AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:`),
-      false
+    assert.notMatch(
+      output,
+      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
     );
   });
 
   it(`should respect query boundaries when querying an example table with an index`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`,
-      cwd
+    const output = await exec(
+      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/).test(
-        output
-      ),
-      true
+    assert.match(
+      output,
+      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
     );
-    assert.strictEqual(
-      new RegExp(/AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/).test(
-        output
-      ),
-      true
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
     );
   });
 
   // read_data_with_index
   it(`should read an example table with an index`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/AlbumId: 1, AlbumTitle: Total Junk/).test(output),
-      true
-    );
+    assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
   // read_data_with_storing_index
   it(`should read an example table with a storing index`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/AlbumId: 1, AlbumTitle: Total Junk/).test(output),
-      true
-    );
+    assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
   // read_only_transaction
   it(`should read an example table using transactions`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/).test(
-        output
-      ),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/Successfully executed read-only transaction\./).test(output),
-      true
-    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+    assert.match(output, /Successfully executed read-only transaction\./);
   });
 
   // read_write_transaction
   it(`should read from and write to an example table using transactions`, async () => {
-    let results = await tools.runAsyncWithIO(
-      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    let output = await exec(
+      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    let output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/The first album's marketing budget: 100000/).test(output),
-      true
+    assert.match(output, /The first album's marketing budget: 100000/);
+    assert.match(output, /The second album's marketing budget: 500000/);
+    assert.match(
+      output,
+      /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
     );
-    assert.strictEqual(
-      new RegExp(/The second album's marketing budget: 500000/).test(output),
-      true
+    output = await exec(
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.strictEqual(
-      new RegExp(
-        /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
-      ).test(output),
-      true
-    );
-    results = await tools.runAsyncWithIO(
-      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
-    );
-
-    output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 1, AlbumId: 1, MarketingBudget: 300000/).test(
-        output
-      ),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/SingerId: 2, AlbumId: 2, MarketingBudget: 300000/).test(
-        output
-      ),
-      true
-    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
+    assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
   });
 
   // create_query_partitions
@@ -418,18 +294,10 @@ describe('Spanner', () => {
     const [transaction] = await database.createBatchTransaction();
     const identifier = JSON.stringify(transaction.identifier());
 
-    const results = await tools.runAsyncWithIO(
-      `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`
     );
-
-    const output = results.stdout + results.stderr;
-
-    assert.strictEqual(
-      new RegExp(/Successfully created \d query partitions\./).test(output),
-      true
-    );
-
+    assert.match(output, /Successfully created \d query partitions\./);
     await transaction.close();
   });
 
@@ -444,328 +312,207 @@ describe('Spanner', () => {
     const [partitions] = await transaction.createQueryPartitions(query);
     const partition = JSON.stringify(partitions[0]);
 
-    const results = await tools.runAsyncWithIO(
-      `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`
     );
-
-    const output = results.stdout + results.stderr;
-
-    assert.strictEqual(
-      new RegExp(/Successfully received \d from executed partition\./).test(
-        output
-      ),
-      true
-    );
-
+    assert.match(output, /Successfully received \d from executed partition\./);
     await transaction.close();
   });
 
   // add_timestamp_column
   it(`should add a timestamp column to a table`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Waiting for operation to complete\.\.\./).test(output),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(
-        /Added LastUpdateTime as a commit timestamp column in Albums table\./
-      ).test(output),
-      true
+    assert.match(output, /Waiting for operation to complete\.\.\./);
+    assert.match(
+      output,
+      /Added LastUpdateTime as a commit timestamp column in Albums table\./
     );
   });
 
   // update_data_with_timestamp_column
   it(`should update existing rows in an example table with commit timestamp column`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Updated data\./).test(output), true);
+    assert.match(output, /Updated data\./);
   });
 
   // query_data_with_timestamp_column
   it(`should query an example table with an additional timestamp column and return matching rows`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(
-        /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
-      ).test(output),
-      true
+    assert.match(
+      output,
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
     );
-    assert.strictEqual(
-      new RegExp(
-        /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
-      ).test(output),
-      true
+    assert.match(
+      output,
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
     );
   });
 
   // create_table_with_timestamp_column
   it(`should create an example table with a timestamp column`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`).test(
-        output
-      ),
-      true
+
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
     );
-    assert.strictEqual(
-      new RegExp(`Created table Performances in database ${DATABASE_ID}.`).test(
-        output
-      ),
-      true
+    assert.match(
+      output,
+      new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
     );
   });
 
   // insert_data_with_timestamp
   it(`should insert rows into an example table with timestamp column`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Inserted data\./).test(output), true);
+    assert.match(output, /Inserted data\./);
   });
 
   // query_new_table_with_timestamp
   it(`should query an example table with a non-null timestamp column and return matching rows`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 1, VenueId: 4, EventDate:/).test(output),
-      true
-    );
-    assert.strictEqual(
-      new RegExp(/Revenue: 15000, LastUpdateTime:/).test(output),
-      true
-    );
+    assert.match(output, /SingerId: 1, VenueId: 4, EventDate:/);
+    assert.match(output, /Revenue: 15000, LastUpdateTime:/);
   });
 
   // write_data_for_struct_queries
   it(`should insert rows into an example table for use with struct query examples`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Inserted data\./).test(output), true);
+    assert.match(output, /Inserted data\./);
   });
 
   // query_with_struct_param
   it(`should query an example table with a STRUCT param`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/SingerId: 6/).test(output), true);
+    assert.match(output, /SingerId: 6/);
   });
 
   // query_with_array_of_struct_param
   it(`should query an example table with an array of STRUCT param`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/SingerId: 6\nSingerId: 7/).test(output),
-      true
-    );
+    assert.match(output, /SingerId: 6\nSingerId: 7/);
   });
 
   // query_with_struct_field_param
   it(`should query an example table with a STRUCT field param`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/SingerId: 6/).test(output), true);
+    assert.match(output, /SingerId: 6/);
   });
 
   // query_with_nested_struct_param
   it(`should query an example table with a nested STRUCT param`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(
-        /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
-      ).test(output),
-      true
+    assert.match(
+      output,
+      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
     );
   });
 
   // dml_standard_insert
   it(`should insert rows into an example table using a DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully inserted 1 record into the Singers table/).test(
-        output
-      ),
-      true
+    assert.match(
+      output,
+      /Successfully inserted 1 record into the Singers table/
     );
   });
 
   // dml_standard_update
   it(`should update a row in an example table using a DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully updated 1 record/).test(output),
-      true
-    );
+    assert.match(output, /Successfully updated 1 record/);
   });
 
   // dml_standard_delete
   it(`should delete a row from an example table using a DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully deleted 1 record\./).test(output),
-      true
-    );
+    assert.match(output, /Successfully deleted 1 record\./);
   });
 
   // dml_standard_update_with_timestamp
   it(`should update the timestamp of multiple records in an example table using a DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully updated 2 records/).test(output),
-      true
-    );
+    assert.match(output, /Successfully updated 2 records/);
   });
 
   // dml_write_then_read
   it(`should insert a record in an example table using a DML statement and then query the record`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/Timothy Campbell/).test(output), true);
+    assert.match(output, /Timothy Campbell/);
   });
 
   // dml_structs
   it(`should update a record in an example table using a DML statement along with a struct value`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully updated 1 record/).test(output),
-      true
-    );
+    assert.match(output, /Successfully updated 1 record/);
   });
 
   // dml_getting_started_insert
   it(`should insert multiple records into an example table using a DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(new RegExp(/4 records inserted/).test(output), true);
+    assert.match(output, /4 records inserted/);
   });
 
   // dml_getting_started_update
   it(`should transfer value from one record to another using DML statements within a transaction`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(
-        /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
-      ).test(output),
-      true
+    assert.match(
+      output,
+      /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
     );
   });
 
   //  dml_partitioned_update
   it(`should update multiple records using a partitioned DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully updated 3 records/).test(output),
-      true
-    );
+    assert.match(output, /Successfully updated 3 records/);
   });
 
   //  dml_partitioned_delete
   it(`should delete multiple records using a partitioned DML statement`, async () => {
-    const results = await tools.runAsyncWithIO(
-      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
-      cwd
+    const output = await exec(
+      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    const output = results.stdout + results.stderr;
-    assert.strictEqual(
-      new RegExp(/Successfully deleted 5 records/).test(output),
-      true
-    );
+    assert.match(output, /Successfully deleted 5 records/);
   });
 });
-
-function apiRequest(reqOpts) {
-  return new Promise((resolve, reject) => {
-    spanner.auth
-      .authorizeRequest(reqOpts)
-      .then(reqOpts => {
-        request(reqOpts, (err, response) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve(JSON.parse(response.body));
-        });
-      })
-      .catch(reject);
-  });
-}
-
-function getOperations(instanceName) {
-  return apiRequest({
-    uri: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
-  });
-}
