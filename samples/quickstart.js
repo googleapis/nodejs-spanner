@@ -16,21 +16,16 @@
 'use strict';
 
 // [START spanner_quickstart]
-async function quickstart(projectId) {
+async function quickstart(
+  projectId = 'YOUR-PROJECT-ID', // Your Google Cloud Platform project ID
+  instanceId = 'my-instance', // Your Cloud Spanner instance ID
+  databaseId = 'my-database' // Your Cloud Spanner database ID
+) {
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Your Google Cloud Platform project ID
-  projectId = projectId || process.env.GCLOUD_PROJECT;
-
   // Creates a client
   const spanner = new Spanner({projectId});
-
-  // Your Cloud Spanner instance ID
-  const instanceId = 'my-instance';
-
-  // Your Cloud Spanner database ID
-  const databaseId = 'my-database';
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -43,6 +38,7 @@ async function quickstart(projectId) {
 
   // Execute a simple SQL statement
   const [rows] = await database.run(query);
+  console.log(`Query: ${rows.length} found.`);
   rows.forEach(row => console.log(row));
 }
 // [END spanner_quickstart]
