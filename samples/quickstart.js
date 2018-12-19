@@ -16,41 +16,36 @@
 'use strict';
 
 // [START spanner_quickstart]
-// Imports the Google Cloud client library
-const {Spanner} = require('@google-cloud/spanner');
+async function quickstart(projectId) {
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
 
-// Your Google Cloud Platform project ID
-const projectId = 'YOUR_PROJECT_ID';
+  // Your Google Cloud Platform project ID
+  projectId = projectId || process.env.GCLOUD_PROJECT;
 
-// Creates a client
-const spanner = new Spanner({
-  projectId: projectId,
-});
+  // Creates a client
+  const spanner = new Spanner({projectId});
 
-// Your Cloud Spanner instance ID
-const instanceId = 'my-instance';
+  // Your Cloud Spanner instance ID
+  const instanceId = 'my-instance';
 
-// Your Cloud Spanner database ID
-const databaseId = 'my-database';
+  // Your Cloud Spanner database ID
+  const databaseId = 'my-database';
 
-// Gets a reference to a Cloud Spanner instance and database
-const instance = spanner.instance(instanceId);
-const database = instance.database(databaseId);
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
 
-// The query to execute
-const query = {
-  sql: 'SELECT 1',
-};
+  // The query to execute
+  const query = {
+    sql: 'SELECT 1',
+  };
 
-// Execute a simple SQL statement
-database
-  .run(query)
-  .then(results => {
-    const rows = results[0];
-
-    rows.forEach(row => console.log(row));
-  })
-  .catch(err => {
-    console.error('ERROR:', err);
-  });
+  // Execute a simple SQL statement
+  const [rows] = await database.run(query);
+  rows.forEach(row => console.log(row));
+}
 // [END spanner_quickstart]
+
+const args = process.argv.slice(2);
+quickstart(...args).catch(console.error);
