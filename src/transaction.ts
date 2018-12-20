@@ -75,6 +75,15 @@ const RetryInfo = protoFilesRoot.lookup('google.rpc.RetryInfo');
  *     committed transactions are visible. This is only applicable for read-only
  *     transactions.
  */
+export interface TransactionOptions {
+  timeout?: number;
+  readOnly?: boolean;
+  exactStaleness?: number;
+  readTimestamp?: number;
+  returnTimestamp?: boolean;
+  strong?: boolean;
+}
+
 /**
  * Use a Transaction object to read and write against your Cloud Spanner
  * database.

@@ -44,66 +44,12 @@ export interface DatabaseCallback {
 }
 
 /**
- * Interface for implementing custom session pooling logic, it should extend the
- * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
- * asynchronous errors via an error event.
- *
- * @interface SessionPoolCtor
- * @extends external:{@link https://nodejs.org/api/events.html|EventEmitter}
- */
-/**
- * @constructs SessionPoolCtor
- * @param {Database} database The database to create a pool for.
- */
-/**
- * Will be called by the Database object, should be used to start creating
- * sessions/etc.
- *
- * @name SessionPoolCtor#open
- */
-/**
- * Will be called via {@link Database#close}. Indicates that the pool should
- * perform any necessary teardown actions to its resources.
- *
- * @name SessionPoolCtor#close
- * @param {BasicCallback} callback The callback function.
- */
-/**
- * @callback GetReadSessionCallback
- * @param {?Error} error Request error, if any.
- * @param {Session} session The read-only session.
- */
-/**
- * When called returns a read-only session.
- *
- * @name SessionPoolCtor#getReadSession
- * @param {GetReadSessionCallback} callback The callback function.
- */
-/**
- * @callback GetWriteSessionCallback
- * @param {?Error} error Request error, if any.
- * @param {Session} session The read-write session.
- * @param {Transaction} transaction The transaction object.
- */
-/**
- * When called returns a read-write session with prepared transaction.
- *
- * @name SessionPoolCtor#getWriteSession
- * @param {GetWriteSessionCallback} callback The callback function.
- */
-/**
- * To be called when releasing a session back into the pool.
- *
- * @name SessionPoolCtor#release
- * @param {Session} session The session to be released.
- */
-/**
  * Create a Database object to interact with a Cloud Spanner database.
  *
  * @class
  *
  * @param {string} name Name of the database.
- * @param {SessionPoolOptions|SessionPoolCtor} options Session pool
+ * @param {SessionPoolOptions|SessionPoolInterface} options Session pool
  *     configuration options or custom pool interface.
  *
  * @example

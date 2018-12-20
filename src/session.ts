@@ -23,11 +23,12 @@
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
+import * as is from 'is';
 import * as r from 'request';
-import {Transaction} from './transaction';
+import {Transaction, TransactionOptions} from './transaction';
 import {Database} from './database';
 import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, ResponseCallback} from '@google-cloud/common';
-import {TransactionOptions, CreateSessionOptions} from './common';
+import {CreateSessionOptions} from './common';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -80,7 +81,8 @@ export type BeginTransactionResponse = [Transaction, r.Response];
  * //-
  * const session = database.session_('session-name');
  */
-class Session extends ServiceObject {
+export class Session extends ServiceObject {
+  id!: string;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -246,16 +248,14 @@ class Session extends ServiceObject {
   beginTransaction(
       options: TransactionOptions, callback: BeginTransactionCallback): void;
   beginTransaction(
-      optionsOrCallback?: TransactionOptions|BeginTransactionCallback,
-      callback?: BeginTransactionCallback): Promise<BeginTransactionResponse>|
-      void {
-    const options =
-        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    callback = typeof optionsOrCallback === 'function' ?
-        optionsOrCallback as BeginTransactionCallback :
-        callback;
-
-    const transaction = this.transaction(options);
+      options?: TransactionOptions|BeginTransactionCallback,
+      callback?: BeginTransactionCallback):
+      void|Promise<BeginTransactionResponse> {
+    if (is.fn(options)) {
+      callback = options as BeginTransactionCallback;
+      options = {};
+    }
+    const transaction = this.transaction(options as TransactionOptions);
     transaction.begin((err: Error|null, resp: r.Response) => {
       if (err) {
         callback!(err, null, resp);
@@ -365,7 +365,7 @@ class Session extends ServiceObject {
    *   }
    * });
    */
-  keepAlive(callback?: ResponseCallback): void|Promise<[r.Response]> {
+  keepAlive(callback?): void|Promise<void> {
     const reqOpts = {
       session: this.formattedName_,
       sql: 'SELECT 1',
@@ -423,5 +423,3 @@ class Session extends ServiceObject {
 promisifyAll(Session, {
   exclude: ['delete', 'getMetadata', 'transaction'],
 });
-
-export {Session};

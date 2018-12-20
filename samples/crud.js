@@ -105,7 +105,7 @@ async function insertData(instanceId, databaseId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    database.close();
+    await database.close();
   }
   // [END spanner_insert_data]
 }
@@ -143,7 +143,7 @@ async function deleteData(instanceId, databaseId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    database.close();
+    await database.close();
   }
   // [END spanner_delete_data]
 }
@@ -189,7 +189,7 @@ async function queryData(instanceId, databaseId, projectId) {
     console.error('ERROR:', err);
   } finally {
     // Close the database when finished.
-    database.close();
+    await database.close();
   }
   // [END spanner_query_data]
 }
@@ -240,7 +240,7 @@ async function readData(instanceId, databaseId, projectId) {
     console.error('ERROR:', err);
   } finally {
     // Close the database when finished.
-    database.close();
+    await database.close();
   }
   // [END spanner_read_data]
 }
@@ -298,7 +298,7 @@ async function readStaleData(instanceId, databaseId, projectId) {
     console.error('ERROR:', err);
   } finally {
     // Close the database when finished.
-    database.close();
+    await database.close();
   }
   // [END spanner_read_stale_data]
 }
