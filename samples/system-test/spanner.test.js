@@ -15,7 +15,6 @@
 
 'use strict';
 
-const path = require(`path`);
 const {Spanner} = require(`@google-cloud/spanner`);
 const {assert} = require('chai');
 const execa = require('execa');
@@ -29,9 +28,7 @@ const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
 const dmlCmd = `node dml.js`;
 
-const cwd = path.join(__dirname, `..`);
-const exec = async cmd => (await execa.shell(cmd, {cwd})).stdout;
-
+const exec = async cmd => (await execa.shell(cmd)).stdout;
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
 const INSTANCE_ID = `test-instance-${date}`;
@@ -88,7 +85,7 @@ describe('Spanner', () => {
               const instanceCreated = new Date(operation.metadata.startTime);
               return instanceCreated < yesterday;
             })
-            .map(instance.delete)
+            .map(() => instance.delete())
         );
       })
     );
@@ -97,7 +94,6 @@ describe('Spanner', () => {
   after(async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
-
     await database.delete();
     await instance.delete();
   });
@@ -115,6 +111,17 @@ describe('Spanner', () => {
       output,
       new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
     );
+  });
+
+  describe('quickstart', () => {
+    // Running the quickstart test in here since there's already a spanner
+    // instance and database set up at this point.
+    it('should query a table', async () => {
+      const output = await exec(
+        `node quickstart ${PROJECT_ID} ${INSTANCE_ID} ${DATABASE_ID}`
+      );
+      assert.match(output, /Query: \d+ found./);
+    });
   });
 
   // insert_data
