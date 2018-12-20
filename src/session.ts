@@ -23,11 +23,12 @@
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
+import * as is from 'is';
 import * as r from 'request';
 import {Transaction, TransactionOptions} from './transaction';
 import {Database} from './database';
 import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, ResponseCallback} from '@google-cloud/common';
-import {TransactionOptions, CreateSessionOptions} from './common';
+import {CreateSessionOptions} from './common';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -41,12 +42,6 @@ export interface BeginTransactionCallback {
 }
 
 export type BeginTransactionResponse = [Transaction, r.Response];
-
-export type BeginTransactionResponse = [Transaction, r.Response];
-export interface BeginTransactionCallback {
-  (error: null|Error, transaction: null|Transaction,
-   apiResponse?: r.Response): void;
-}
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -258,9 +253,9 @@ export class Session extends ServiceObject {
       void|Promise<BeginTransactionResponse> {
     if (is.fn(options)) {
       callback = options as BeginTransactionCallback;
-      options = {} as TransactionOptions;
+      options = {};
     }
-    const transaction = this.transaction(options);
+    const transaction = this.transaction(options as TransactionOptions);
     transaction.begin((err: Error|null, resp: r.Response) => {
       if (err) {
         callback!(err, null, resp);
