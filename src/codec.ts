@@ -187,6 +187,15 @@ function convertFieldsToJson(fields: Field[], options?: JsonOptions): Json {
   return json;
 }
 
+export interface JSONOptions {
+  wrapNumbers: boolean;
+}
+
+export interface RowJSON {
+  // tslint:disable-next-line no-any
+  [field: string]: any;
+}
+
 /**
  * Attempts to convert a wrapped or nested value into a native JavaScript type.
  *
