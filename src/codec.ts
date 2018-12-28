@@ -36,10 +36,13 @@ interface Json {
 /**
  * @typedef JsonOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
- *     wrapped in convenience wrappers.
+ *     wrapped in Int/Float wrappers.
+ * @property {boolean} [wrapStructs=false] Indicates if the structs should be
+ *     wrapped in Struct wrapper.
  */
 interface JsonOptions {
-  wrapNumbers: boolean;
+  wrapNumbers?: boolean;
+  wrapStructs?: boolean;
 }
 
 /**
@@ -162,7 +165,9 @@ export function convertFieldsToJson(
     fields: Field[], options?: JsonOptions): Json {
   const json: Json = {};
 
-  options = Object.assign({wrapNumbers: false}, options);
+  const defaultOptions = {wrapNumbers: false, wrapStructs: false};
+
+  options = Object.assign(defaultOptions, options);
 
   for (const {name, value} of fields) {
     if (!name) {
@@ -198,7 +203,14 @@ function convertValueToJson(value: Value, options: JsonOptions): Value {
   }
 
   if (value instanceof Struct) {
-    return value.toJSON(options);
+    if (!options.wrapStructs) {
+      return value.toJSON(options);
+    }
+
+    return value.map(({name, value}) => {
+      value = convertValueToJson(value, options);
+      return {name, value};
+    });
   }
 
   if (Array.isArray(value)) {
