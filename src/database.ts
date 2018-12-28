@@ -26,7 +26,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 
 import {BatchTransaction} from './batch-transaction';
-import {codec} from './codec';
+import * as codec from './codec';
 import {Instance} from './instance';
 import {partialResultStream} from './partial-result-stream';
 import {Session} from './session';
@@ -1332,8 +1332,7 @@ class Database extends ServiceObject {
           },
         };
       }
-      delete reqOpts.json;
-      delete reqOpts.jsonOptions;
+
       function makeRequest(resumeToken) {
         return self.makePooledStreamingRequest_({
           client: 'SpannerClient',

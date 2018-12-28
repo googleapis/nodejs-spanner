@@ -19,7 +19,7 @@ import * as arrify from 'arrify';
 import * as extend from 'extend';
 import * as is from 'is';
 
-import {codec} from './codec';
+import * as codec from './codec';
 import {partialResultStream} from './partial-result-stream';
 
 /**
@@ -209,18 +209,16 @@ class TransactionRequest {
    */
   createReadStream(table, query) {
     const reqOpts = codec.encodeRead(query);
+    const gaxOptions = query.gaxOptions;
+
     reqOpts.table = table;
-    delete reqOpts.json;
-    delete reqOpts.jsonOptions;
+
     if (this.transaction && this.id) {
       reqOpts.transaction = {
         id: this.id,
       };
     }
-    const gaxOptions = query.gaxOptions;
-    if (gaxOptions) {
-      delete reqOpts.gaxOptions;
-    }
+
     const makeRequest = resumeToken => {
       return this.requestStream({
         client: 'SpannerClient',
