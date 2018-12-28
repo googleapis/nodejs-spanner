@@ -4213,7 +4213,7 @@ function execAfterOperationComplete(callback) {
 
 async function deleteTestInstances() {
   const [instances] = await spanner.getInstances({
-    // filter: `labels.${LABEL}:true`,
+    filter: `labels.${LABEL}:true`,
   });
 
   const limit = pLimit(5);
