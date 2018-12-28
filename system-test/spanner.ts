@@ -164,10 +164,6 @@ describe('Spanner', () => {
         database.run(query, (err, rows) => {
           assert.ifError(err);
 
-          const symbols = Object.getOwnPropertySymbols(rows[0][0].value[0]);
-          assert.strictEqual(symbols.length, 1);
-          assert.strictEqual(rows[0][0].value[0][symbols[0]], 'struct');
-
           const expected = [
             {
               name: '',
@@ -205,10 +201,6 @@ describe('Spanner', () => {
 
         database.run(query, (err, rows) => {
           assert.ifError(err);
-
-          const symbols = Object.getOwnPropertySymbols(rows[0][1].value[0]);
-          assert.strictEqual(symbols.length, 1);
-          assert.strictEqual(rows[0][1].value[0][symbols[0]], 'struct');
 
           const expected = [
             {
@@ -328,8 +320,9 @@ describe('Spanner', () => {
 
         insert({IntValue: value}, (err, row) => {
           assert.ifError(err);
-          const intValue = row.toJSON({wrapNumbers: true}).IntValue.value;
-          assert.strictEqual(intValue, value);
+          const expected = Spanner.int(value);
+          const actual = row.toJSON({wrapNumbers: true}).IntValue;
+          assert.deepStrictEqual(actual, expected);
           done();
         });
       });
@@ -355,9 +348,7 @@ describe('Spanner', () => {
 
         insert({IntArray: values}, (err, row) => {
           assert.ifError(err);
-
-          const expected = values.map(Spanner.int);
-          assert.deepStrictEqual(row.toJSON().IntArray, expected);
+          assert.deepStrictEqual(row.toJSON().IntArray, values);
           done();
         });
       });
@@ -365,7 +356,7 @@ describe('Spanner', () => {
 
     describe('float64s', () => {
       it('should write float64 values', done => {
-        insert({FloatValue: Spanner.float(8.2)}, (err, row) => {
+        insert({FloatValue: 8.2}, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatValue, 8.2);
           done();
@@ -433,9 +424,7 @@ describe('Spanner', () => {
 
         insert({FloatArray: values}, (err, row) => {
           assert.ifError(err);
-
-          const expected = values.map(Spanner.float);
-          assert.deepStrictEqual(row.toJSON().FloatArray, expected);
+          assert.deepStrictEqual(row.toJSON().FloatArray, values);
           done();
         });
       });
@@ -1352,10 +1341,7 @@ describe('Spanner', () => {
       EXPECTED_ROW.DOB = DATE;
       EXPECTED_ROW.Float = FLOAT;
       EXPECTED_ROW.Int = INT;
-      EXPECTED_ROW.PhoneNumbers = [
-        Spanner.int(PHONE_NUMBERS[0]),
-        Spanner.int(PHONE_NUMBERS[1]),
-      ];
+      EXPECTED_ROW.PhoneNumbers = PHONE_NUMBERS;
 
       before(() => {
         return table.insert(INSERT_ROW);
@@ -4227,7 +4213,7 @@ function execAfterOperationComplete(callback) {
 
 async function deleteTestInstances() {
   const [instances] = await spanner.getInstances({
-    filter: `labels.${LABEL}:true`,
+    // filter: `labels.${LABEL}:true`,
   });
 
   const limit = pLimit(5);
