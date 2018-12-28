@@ -49,7 +49,7 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-describe.only('TransactionRequest', () => {
+describe('TransactionRequest', () => {
   // tslint:disable-next-line variable-name
   let TransactionRequest: typeof tr.TransactionRequest;
   let transactionRequest: tr.TransactionRequest;
