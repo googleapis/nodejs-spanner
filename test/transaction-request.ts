@@ -64,8 +64,7 @@ describe('TransactionRequest', () => {
                            '@google-cloud/promisify': fakePfy,
                            './codec.js': codec,
                            './partial-result-stream':
-                               {partialResultStream:
-                               fakePartialResultStream},
+                               {partialResultStream: fakePartialResultStream},
                          }).TransactionRequest;
   });
 
@@ -214,11 +213,7 @@ describe('TransactionRequest', () => {
 
   describe('createReadStream', () => {
     const TABLE = 'table-name';
-    const QUERY = {
-      session: 'a',
-      table: 'b',
-      keySet: {all: true}
-    };
+    const QUERY = {session: 'a', table: 'b', keySet: {all: true}};
 
     let stub: sinon.SinonStub;
 
@@ -277,8 +272,7 @@ describe('TransactionRequest', () => {
     describe('PartialResultStream', () => {
       it('should return PartialResultStream', () => {
         const stream = transactionRequest.createReadStream(TABLE, QUERY);
-        assert.strictEqual(stream.partialResultStream,
-        fakePartialResultStream);
+        assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
       });
 
       it('should make and return the correct request', done => {
@@ -368,10 +362,7 @@ describe('TransactionRequest', () => {
     const TABLE = 'table-name';
     const KEYS = ['key', ['composite', 'key']];
 
-    const ENCODED_VALUE = {
-      kind: 'stringValue',
-      stringValue: 'value'
-    };
+    const ENCODED_VALUE = {kind: 'stringValue', stringValue: 'value'};
 
     const EXPECTED_MUTATION = {
       delete: {
@@ -518,8 +509,8 @@ describe('TransactionRequest', () => {
         return mutateReturnValue;
       };
 
-      const returnValue = transactionRequest.insert(table, keyVals,
-      callback); assert.strictEqual(returnValue, mutateReturnValue);
+      const returnValue = transactionRequest.insert(table, keyVals, callback);
+      assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
@@ -588,8 +579,8 @@ describe('TransactionRequest', () => {
         return mutateReturnValue;
       };
 
-      const returnValue = transactionRequest.replace(table, keyVals,
-      callback); assert.strictEqual(returnValue, mutateReturnValue);
+      const returnValue = transactionRequest.replace(table, keyVals, callback);
+      assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
@@ -609,8 +600,8 @@ describe('TransactionRequest', () => {
         return mutateReturnValue;
       };
 
-      const returnValue = transactionRequest.update(table, keyVals,
-      callback); assert.strictEqual(returnValue, mutateReturnValue);
+      const returnValue = transactionRequest.update(table, keyVals, callback);
+      assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
@@ -630,8 +621,8 @@ describe('TransactionRequest', () => {
         return mutateReturnValue;
       };
 
-      const returnValue = transactionRequest.upsert(table, keyVals,
-      callback); assert.strictEqual(returnValue, mutateReturnValue);
+      const returnValue = transactionRequest.upsert(table, keyVals, callback);
+      assert.strictEqual(returnValue, mutateReturnValue);
     });
   });
 
@@ -753,14 +744,9 @@ describe('TransactionRequest', () => {
 
     it('should correctly make and return the request', done => {
       const expectedValues = [
-        KEYVALS[0].anotherNullable,
-        KEYVALS[0].key,
-        KEYVALS[0].nonNullable,
-        KEYVALS[0].nullable,
-        KEYVALS[1].anotherNullable,
-        KEYVALS[1].key,
-        KEYVALS[1].nonNullable,
-        KEYVALS[1].nullable
+        KEYVALS[0].anotherNullable, KEYVALS[0].key, KEYVALS[0].nonNullable,
+        KEYVALS[0].nullable, KEYVALS[1].anotherNullable, KEYVALS[1].key,
+        KEYVALS[1].nonNullable, KEYVALS[1].nullable
       ];
 
       transactionRequest.queue_ = mutation => {
