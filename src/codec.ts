@@ -121,7 +121,7 @@ export class Struct extends Array<Field> {
    * @returns {object}
    */
   toJSON(options?: JsonOptions): Json {
-    return convertFieldsToJson(this, options);
+    return codec.convertFieldsToJson(this, options);
   }
   /**
    * Converts an array of fields to a struct.
@@ -161,8 +161,7 @@ export class Struct extends Array<Field> {
  * @param {JsonOptions} [options] JSON options.
  * @returns {object}
  */
-export function convertFieldsToJson(
-    fields: Field[], options?: JsonOptions): Json {
+function convertFieldsToJson(fields: Field[], options?: JsonOptions): Json {
   const json: Json = {};
 
   const defaultOptions = {wrapNumbers: false, wrapStructs: false};
@@ -229,7 +228,7 @@ function convertValueToJson(value: Value, options: JsonOptions): Value {
  * @param {object[]} type Value type object.
  * @returns {*}
  */
-export function decode(value: Value, type: s.Type): Value {
+function decode(value: Value, type: s.Type): Value {
   if (is.null(value)) {
     return null;
   }
@@ -309,7 +308,7 @@ function encodeValue(value: Value): Value {
   }
 
   if (value instanceof Struct) {
-    return value.map(field => encodeValue(field.value));
+    return Array.from(value).map(field => encodeValue(field.value));
   }
 
   if (is.array(value)) {
@@ -401,7 +400,7 @@ function getType(value: Value): Type {
   if (value instanceof Struct) {
     return {
       type: 'struct',
-      fields: value.map(({name, value}) => {
+      fields: Array.from(value).map(({name, value}) => {
         return Object.assign({name}, getType(value));
       }),
     };
@@ -467,7 +466,7 @@ export interface ExecuteSqlRequest extends s.ExecuteSqlRequest, RequestOptions {
  * @param {ExecuteSqlRequest} query The request object.
  * @returns {object}
  */
-export function encodeQuery(query: ExecuteSqlRequest): s.ExecuteSqlRequest {
+function encodeQuery(query: ExecuteSqlRequest): s.ExecuteSqlRequest {
   query = Object.assign({}, query);
 
   if (query.params) {
@@ -482,9 +481,9 @@ export function encodeQuery(query: ExecuteSqlRequest): s.ExecuteSqlRequest {
     Object.keys(query.params).forEach(param => {
       const value = query.params![param];
       if (!types[param]) {
-        types[param] = getType(value);
+        types[param] = codec.getType(value);
       }
-      fields[param] = encode(value);
+      fields[param] = codec.encode(value);
     });
 
     query.params = {fields};
@@ -494,7 +493,7 @@ export function encodeQuery(query: ExecuteSqlRequest): s.ExecuteSqlRequest {
     const paramTypes = {};
 
     Object.keys(query.types).forEach(param => {
-      paramTypes[param] = createTypeObject(query.types![param]);
+      paramTypes[param] = codec.createTypeObject(query.types![param]);
     });
 
     query.paramTypes = paramTypes;
@@ -558,7 +557,7 @@ interface KeyRange {
  *     serialized objects.
  */
 export interface ReadRequest extends s.ReadRequest, RequestOptions {
-  keys: string[];
+  keys?: string[];
   ranges?: KeyRange[];
 }
 
@@ -574,7 +573,7 @@ export function encodeRead(query: ReadRequest): s.ReadRequest {
   query = Object.assign({}, query);
 
   if (!query.keySet) {
-    query.keySet = {all: false};
+    query.keySet = {};
 
     if (!query.keys && !query.ranges) {
       query.keySet.all = true;
@@ -582,9 +581,7 @@ export function encodeRead(query: ReadRequest): s.ReadRequest {
   }
 
   if (query.keys) {
-    query.keySet.keys = arrify(query.keys).map(key => {
-      return {values: arrify(key).map(encode)};
-    });
+    query.keySet.keys = arrify(query.keys).map(convertToListValue);
     delete query.keys;
   }
 
@@ -593,7 +590,7 @@ export function encodeRead(query: ReadRequest): s.ReadRequest {
       const range: s.KeyRange = {};
 
       Object.keys(keyRange).forEach(bound => {
-        range[bound] = {values: arrify(keyRange[bound]).map(encode)};
+        range[bound] = convertToListValue(keyRange[bound]);
       });
 
       return range;
@@ -611,6 +608,19 @@ export function encodeRead(query: ReadRequest): s.ReadRequest {
   }
 
   return query;
+}
+
+/**
+ * Converts a value to google.protobuf.ListValue
+ *
+ * @private
+ *
+ * @param {*} value The value to convert.
+ * @returns {object}
+ */
+function convertToListValue<T>(value: T): p.IListValue {
+  const values = arrify(value).map(codec.encode);
+  return {values};
 }
 
 /**
@@ -635,16 +645,30 @@ function createTypeObject(friendlyType?: string|Type): s.Type {
   const type: s.Type = {code};
 
   if (code === s.TypeCode.ARRAY) {
-    type.arrayElementType = createTypeObject(config.child);
+    type.arrayElementType = codec.createTypeObject(config.child);
   }
 
   if (code === s.TypeCode.STRUCT) {
     type.structType = {
       fields: arrify(config.fields).map(field => {
-        return {name: field.name, type: createTypeObject(field)};
+        return {name: field.name, type: codec.createTypeObject(field)};
       })
     };
   }
 
   return type;
 }
+
+export const codec = {
+  createTypeObject,
+  SpannerDate,
+  Float,
+  Int,
+  convertFieldsToJson,
+  decode,
+  encode,
+  getType,
+  encodeQuery,
+  encodeRead,
+  Struct
+};

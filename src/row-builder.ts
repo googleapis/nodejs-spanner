@@ -16,7 +16,7 @@
 
 'use strict';
 
-import * as codec from './codec';
+import {codec} from './codec';
 import {Service} from '@google-cloud/common-grpc';
 import * as is from 'is';
 

@@ -17,7 +17,7 @@
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import * as codec from './codec';
+import {codec} from './codec';
 import {Transaction} from './transaction';
 
 /**

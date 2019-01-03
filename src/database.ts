@@ -26,7 +26,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 
 import {BatchTransaction} from './batch-transaction';
-import * as codec from './codec';
+import {codec} from './codec';
 import {Instance} from './instance';
 import {partialResultStream} from './partial-result-stream';
 import {Session} from './session';

@@ -19,7 +19,7 @@ import * as arrify from 'arrify';
 import * as extend from 'extend';
 import * as is from 'is';
 
-import * as codec from './codec';
+import {codec} from './codec';
 import {partialResultStream} from './partial-result-stream';
 
 /**

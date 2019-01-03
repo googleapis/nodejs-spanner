@@ -27,7 +27,7 @@ import * as path from 'path';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
-import * as codec from './codec';
+import {codec} from './codec';
 import {Database} from './database';
 import {Instance} from './instance';
 import {Session} from './session';

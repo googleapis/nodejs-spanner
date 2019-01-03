@@ -24,7 +24,7 @@ import * as is from 'is';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as through from 'through2';
-import * as codec from './codec';
+import {codec} from './codec';
 import {partialResultStream} from './partial-result-stream';
 import {TransactionRequest} from './transaction-request';
 import {Metadata} from '@google-cloud/common';
