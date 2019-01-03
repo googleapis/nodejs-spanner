@@ -23,7 +23,7 @@ import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
 import * as through from 'through2';
 
-import * as codec from '../src/codec';
+import {codec} from '../src/codec';
 import * as tr from '../src/transaction-request';
 
 class FakeGrpcService {
@@ -62,7 +62,7 @@ describe('TransactionRequest', () => {
                              Service: FakeGrpcService,
                            },
                            '@google-cloud/promisify': fakePfy,
-                           './codec.js': codec,
+                           './codec.js': {codec},
                            './partial-result-stream':
                                {partialResultStream: fakePartialResultStream},
                          }).TransactionRequest;

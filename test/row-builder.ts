@@ -20,7 +20,7 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import * as codec from '../src/codec';
+import {codec} from '../src/codec';
 import * as rb from '../src/row-builder';
 import {SpannerClient as s} from '../src/v1';
 
@@ -43,7 +43,7 @@ describe('RowBuilder', () => {
                    '@google-cloud/common-grpc': {
                      Service: FakeGrpcService,
                    },
-                   './codec.js': codec,
+                   './codec.js': {codec},
                  }).RowBuilder;
     RowBuilderCached = extend({}, RowBuilder);
   });
