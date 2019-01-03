@@ -276,7 +276,7 @@ function decode(value: Value, type: s.Type): Value {
  * @param {*} value The value to be encoded.
  * @returns {object} google.protobuf.Value
  */
-export function encode(value: Value): p.IValue {
+function encode(value: Value): p.IValue {
   return Service.encodeValue_(encodeValue(value));
 }
 
