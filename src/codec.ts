@@ -13,15 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Service} from '@google-cloud/common-grpc';
 import * as arrify from 'arrify';
-import * as extend from 'extend';
+import {CallOptions} from 'google-gax';
 import * as is from 'is';
+import {common as p} from 'protobufjs';
 
+import {SpannerClient as s} from './v1';
+
+// tslint:disable-next-line no-any
+type Value = any;
+
+interface Field {
+  name: string;
+  value: Value;
+}
+
+interface Json {
+  [field: string]: Value;
+}
+
+/**
+ * @typedef JsonOptions
+ * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
+ *     wrapped in Int/Float wrappers.
+ * @property {boolean} [wrapStructs=false] Indicates if the structs should be
+ *     wrapped in Struct wrapper.
+ */
+interface JsonOptions {
+  wrapNumbers?: boolean;
+  wrapStructs?: boolean;
+}
+
+/**
+ * @typedef SpannerDate
+ * @see Spanner.date
+ */
 export class SpannerDate {
-  value;
-  constructor(value) {
+  value: string;
+  constructor(value?: string|number|Date) {
     if (arguments.length > 1) {
       throw new TypeError([
         'The spanner.date function accepts a Date object or a',
@@ -31,156 +61,162 @@ export class SpannerDate {
     if (is.undefined(value)) {
       value = new Date();
     }
-    this.value = new Date(value).toJSON().replace(/T.+/, '');
+    this.value = new Date(value!).toJSON().replace(/T.+/, '');
   }
 }
 
-export class Float {
-  value;
-  constructor(value) {
+/**
+ * Using an abstract class to simplify checking for wrapped numbers.
+ *
+ * @private
+ */
+abstract class WrappedNumber {
+  value!: string|number;
+  abstract valueOf(): number;
+}
+
+/**
+ * @typedef Float
+ * @see Spanner.float
+ */
+export class Float extends WrappedNumber {
+  value: number;
+  constructor(value: number) {
+    super();
     this.value = value;
   }
-  valueOf() {
+  valueOf(): number {
     return Number(this.value);
   }
 }
 
-export class Int {
-  value;
-  constructor(value) {
+/**
+ * @typedef Int
+ * @see Spanner.int
+ */
+export class Int extends WrappedNumber {
+  value: string;
+  constructor(value: string) {
+    super();
     this.value = value.toString();
   }
-  valueOf() {
+  valueOf(): number {
     const num = Number(this.value);
     if (num > Number.MAX_SAFE_INTEGER) {
-      throw new Error('Integer ' + this.value + ' is out of bounds.');
+      throw new Error(`Integer ${this.value} is out of bounds.`);
     }
     return num;
   }
 }
 
 /**
- * We use this symbol as a means to identify if an array is actually a struct.
- * We need to do this because changing Structs from an object to an array would
- * be a major breaking change.
- *
- * @private
- *
- * @example
- * const struct = [];
- * struct[TYPE] = 'struct';
+ * @typedef Struct
+ * @see Spanner.struct
  */
-const TYPE = Symbol();
-
-/**
- * Struct wrapper. This returns an array, but will decorate the array to give it
- * struct characteristics.
- *
- * @private
- *
- * @returns {array}
- */
-export class Struct extends Array {
-  constructor() {
-    super();
-    this[TYPE] = Struct.TYPE;
-    Object.defineProperty(
-        this, 'toJSON',
-        {enumerable: false, value: codec.generateToJSONFromRow(this)});
-  }
-
+export class Struct extends Array<Field> {
   /**
-   * Use this to assign/check the type when dealing with structs.
+   * Converts struct into a pojo (plain old JavaScript object).
    *
-   * @private
+   * @param {JsonOptions} [options] JSON options.
+   * @returns {object}
    */
-  static TYPE = 'struct';
-
+  toJSON(options?: JsonOptions): Json {
+    return codec.convertFieldsToJson(this, options);
+  }
   /**
-   * Converts an array of objects to a struct array.
+   * Converts an array of fields to a struct.
    *
    * @private
    *
-   * @param {object[]} arr Struct array.
+   * @param {object[]} fields List of struct fields.
    * @return {Struct}
    */
-  static fromArray(arr) {
-    const struct = new Struct();
-    struct.push.apply(struct, arr);
-    return struct;
+  static fromArray(fields: Field[]): Struct {
+    return new Struct(...fields);
   }
-
   /**
-   * Converts a JSON object to a struct array.
+   * Converts a JSON object to a struct.
    *
    * @private
    *
    * @param {object} json Struct JSON.
    * @return {Struct}
    */
-  static fromJSON(json: {}) {
-    const struct = new Struct();
-    Object.keys(json || {}).forEach(name => {
+  static fromJSON(json: Json): Struct {
+    const fields = Object.keys(json || {}).map(name => {
       const value = json[name];
-      struct.push({name, value});
+      return {name, value};
     });
-    return struct;
-  }
-
-  /**
-   * Checks to see if the provided object is a Struct.
-   *
-   * @private
-   *
-   * @param {*} thing The object to check.
-   * @returns {boolean}
-   */
-  static isStruct(thing: {}): thing is Struct {
-    return !!(thing && thing[TYPE] === Struct.TYPE);
+    return Struct.fromArray(fields);
   }
 }
 
 /**
- * Wherever a row object is returned, it is assigned a "toJSON" function. This
- * function will create that function in a consistent format.
+ * Wherever a row or struct object is returned, it is assigned a "toJSON"
+ * function. This function will generate the JSON for that row.
+ *
+ * @private
  *
  * @param {array} row The row to generate JSON for.
- * @returns {function}
+ * @param {JsonOptions} [options] JSON options.
+ * @returns {object}
  */
-function generateToJSONFromRow(row) {
-  return (options) => {
-    options = extend(
-        {
-          wrapNumbers: false,
-        },
-        options);
+function convertFieldsToJson(fields: Field[], options?: JsonOptions): Json {
+  const json: Json = {};
 
-    return row.reduce((serializedRow, keyVal) => {
-      const name = keyVal.name;
-      let value = keyVal.value;
+  const defaultOptions = {wrapNumbers: false, wrapStructs: false};
 
-      if (!name) {
-        return serializedRow;
-      }
+  options = Object.assign(defaultOptions, options);
 
-      const isNumber = value instanceof Float || value instanceof Int;
-      if (!options.wrapNumbers && isNumber) {
-        try {
-          value = value.valueOf();
-        } catch (e) {
-          e.message = [
-            `Serializing column "${name}" encountered an error: ${e.message}`,
-            'Call row.toJSON({ wrapNumbers: true }) to receive a custom type.',
-          ].join(' ');
-          throw e;
-        }
-      }
+  for (const {name, value} of fields) {
+    if (!name) {
+      continue;
+    }
 
-      serializedRow[name] = value;
+    try {
+      json[name] = convertValueToJson(value, options);
+    } catch (e) {
+      e.message = [
+        `Serializing column "${name}" encountered an error: ${e.message}`,
+        'Call row.toJSON({ wrapNumbers: true }) to receive a custom type.',
+      ].join(' ');
+      throw e;
+    }
+  }
 
-      return serializedRow;
-    }, {});
-  };
+  return json;
+}
+
+/**
+ * Attempts to convert a wrapped or nested value into a native JavaScript type.
+ *
+ * @private
+ *
+ * @param {*} value The value to convert.
+ * @param {JsonOptions} options JSON options.
+ * @return {*}
+ */
+function convertValueToJson(value: Value, options: JsonOptions): Value {
+  if (!options.wrapNumbers && value instanceof WrappedNumber) {
+    return value.valueOf();
+  }
+
+  if (value instanceof Struct) {
+    if (!options.wrapStructs) {
+      return value.toJSON(options);
+    }
+
+    return value.map(({name, value}) => {
+      value = convertValueToJson(value, options);
+      return {name, value};
+    });
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(child => convertValueToJson(child, options));
+  }
+
+  return value;
 }
 
 /**
@@ -189,53 +225,47 @@ function generateToJSONFromRow(row) {
  * @private
  *
  * @param {*} value Value to decode
- * @param {object[]} field Struct fields
+ * @param {object[]} type Value type object.
  * @returns {*}
  */
-function decode(value, field) {
-  function decodeValue_(decoded, type) {
-    if (is.null(decoded)) {
-      return null;
-    }
-    switch (type.code) {
-      case 'BYTES':
-        decoded = Buffer.from(decoded, 'base64');
-        break;
-      case 'FLOAT64':
-        decoded = new codec.Float(decoded);
-        break;
-      case 'INT64':
-        decoded = new codec.Int(decoded);
-        break;
-      case 'TIMESTAMP':  // falls through
-      case 'DATE':
-        decoded = new Date(decoded);
-        break;
-      case 'ARRAY':
-        decoded = decoded.map(value => {
-          return decodeValue_(value, type.arrayElementType);
-        });
-        break;
-      case 'STRUCT':
-        // tslint:disable-next-line no-any
-        const struct = new (Struct as any)();
-        const fields = type.structType.fields;
-        fields.forEach((field, index) => {
-          const name = field.name;
-          let value = decoded[name] || decoded[index];
-          value = decodeValue_(value, field.type);
-          struct.push({name, value});
-        });
-        decoded = struct;
-        break;
-      default:
-        break;
-    }
-
-    return decoded;
+function decode(value: Value, type: s.Type): Value {
+  if (is.null(value)) {
+    return null;
   }
 
-  return decodeValue_(value, field.type);
+  let decoded = value;
+
+  switch (type.code) {
+    case s.TypeCode.BYTES:
+      decoded = Buffer.from(decoded, 'base64');
+      break;
+    case s.TypeCode.FLOAT64:
+      decoded = new Float(decoded);
+      break;
+    case s.TypeCode.INT64:
+      decoded = new Int(decoded);
+      break;
+    case s.TypeCode.TIMESTAMP:  // falls through
+    case s.TypeCode.DATE:
+      decoded = new Date(decoded);
+      break;
+    case s.TypeCode.ARRAY:
+      decoded = decoded.map(value => {
+        return decode(value, type.arrayElementType!);
+      });
+      break;
+    case s.TypeCode.STRUCT:
+      const fields = type.structType!.fields.map(({name, type}, index) => {
+        const value = decode(decoded[name] || decoded[index], type!);
+        return {name, value};
+      });
+      decoded = Struct.fromArray(fields);
+      break;
+    default:
+      break;
+  }
+
+  return decoded;
 }
 
 /**
@@ -243,108 +273,144 @@ function decode(value, field) {
  *
  * @private
  *
- * @param {*} value The value to be encoded
- * @returns {*}
+ * @param {*} value The value to be encoded.
+ * @returns {object} google.protobuf.Value
  */
-function encode(value) {
-  function preEncode(value) {
-    const numberShouldBeStringified =
-        (!(value instanceof Float) && is.integer(value)) ||
-        value instanceof Int || is.infinite(value) || Number.isNaN(value);
-
-    if (is.date(value)) {
-      value = value.toJSON();
-    } else if (
-        value instanceof SpannerDate || value instanceof Float ||
-        value instanceof Int) {
-      value = value.value;
-    } else if (Buffer.isBuffer(value)) {
-      value = value.toString('base64');
-    } else if (Struct.isStruct(value)) {
-      value = value.map(field => preEncode(field.value));
-    } else if (is.array(value)) {
-      value = value.map(preEncode);
-    } else if (is.object(value) && is.fn(value.hasOwnProperty)) {
-      for (const prop in value) {
-        if (value.hasOwnProperty(prop)) {
-          value[prop] = preEncode(value[prop]);
-        }
-      }
-    }
-
-    if (numberShouldBeStringified) {
-      value = value.toString();
-    }
-
-    return value;
-  }
-  // tslint:disable-next-line no-any
-  return (Service as any).encodeValue_(preEncode(value));
+function encode(value: Value): p.IValue {
+  return Service.encodeValue_(encodeValue(value));
 }
 
 /**
- * Get the corresponding Spanner data type.
+ * Formats values into expected format of google.protobuf.Value. The actual
+ * conversion to a google.protobuf.Value object happens via
+ * `Service.encodeValue_`
  *
  * @private
  *
- * @param {*} field - The field value.
- * @returns {string}
+ * @param {*} value The value to be encoded.
+ * @returns {*}
+ */
+function encodeValue(value: Value): Value {
+  if (is.number(value) && !is.decimal(value)) {
+    return value.toString();
+  }
+
+  if (is.date(value)) {
+    return value.toJSON();
+  }
+
+  if (value instanceof WrappedNumber || value instanceof SpannerDate) {
+    return value.value;
+  }
+
+  if (Buffer.isBuffer(value)) {
+    return value.toString('base64');
+  }
+
+  if (value instanceof Struct) {
+    return Array.from(value).map(field => encodeValue(field.value));
+  }
+
+  if (is.array(value)) {
+    return value.map(encodeValue);
+  }
+
+  return value;
+}
+
+/**
+ * Just a map with friendlier names for the types.
+ *
+ * @private
+ * @enum {string}
+ */
+enum TypeCode {
+  unspecified = s.TypeCode.TYPE_CODE_UNSPECIFIED,
+  bool = s.TypeCode.BOOL,
+  int64 = s.TypeCode.INT64,
+  float64 = s.TypeCode.FLOAT64,
+  timestamp = s.TypeCode.TIMESTAMP,
+  date = s.TypeCode.DATE,
+  string = s.TypeCode.STRING,
+  bytes = s.TypeCode.BYTES,
+  array = s.TypeCode.ARRAY,
+  struct = s.TypeCode.STRUCT
+}
+
+/**
+ * Conveniece Type object that simplifies specifying the data type, the array
+ * child type and/or struct fields.
+ *
+ * @private
+ */
+interface Type {
+  type: string;
+  fields?: FieldType[];
+  child?: Type;
+}
+
+interface FieldType extends Type {
+  name: string;
+}
+
+/**
+ * Get the corresponding Spanner data type for the provided value.
+ *
+ * @private
+ *
+ * @param {*} value - The value.
+ * @returns {object}
  *
  * @example
- * Database.getType_(NaN);
- * // 'float64'
+ * codec.getType(NaN);
+ * // {type: 'float64'}
  */
-function getType(field) {
-  if (is.boolean(field)) {
-    return 'bool';
+function getType(value: Value): Type {
+  const isSpecialNumber = is.infinite(value) ||
+      (is.number(value) && isNaN(value));
+
+  if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
+    return {type: 'float64'};
   }
 
-  const isSpecialNumber = is.infinite(field) ||
-      (is.number(field) && isNaN(field));
-
-  if (is.decimal(field) || isSpecialNumber || field instanceof Float) {
-    return 'float64';
+  if (is.number(value) || value instanceof Int) {
+    return {type: 'int64'};
   }
 
-  if (is.number(field) || field instanceof Int) {
-    return 'int64';
+  if (is.boolean(value)) {
+    return {type: 'bool'};
   }
 
-  if (is.string(field)) {
-    return 'string';
+  if (is.string(value)) {
+    return {type: 'string'};
   }
 
-  if (Buffer.isBuffer(field)) {
-    return 'bytes';
+  if (Buffer.isBuffer(value)) {
+    return {type: 'bytes'};
   }
 
-  if (is.date(field)) {
-    return 'timestamp';
+  if (is.date(value)) {
+    return {type: 'timestamp'};
   }
 
-  if (field instanceof SpannerDate) {
-    return 'date';
+  if (value instanceof SpannerDate) {
+    return {type: 'date'};
   }
 
-  if (Struct.isStruct(field)) {
-    const fields = field.map(field => {
-      return {
-        name: field.name,
-        type: getType(field.value),
-      };
-    });
-
+  if (value instanceof Struct) {
     return {
       type: 'struct',
-      fields,
+      fields: Array.from(value).map(({name, value}) => {
+        return Object.assign({name}, getType(value));
+      }),
     };
   }
 
-  if (is.array(field)) {
+  if (is.array(value)) {
     let child;
 
-    for (let i = 0; i < field.length; i++) {
-      child = field[i];
+    for (let i = 0; i < value.length; i++) {
+      child = value[i];
 
       if (!is.null(child)) {
         break;
@@ -357,40 +423,51 @@ function getType(field) {
     };
   }
 
-  return 'unspecified';
+  return {type: 'unspecified'};
 }
 
 /**
- * A list of available Spanner types. The index of said type in Array aligns
- * with the type code that query params require.
+ * Generic request options.
  *
  * @private
  */
-const TYPES = [
-  'unspecified',
-  'bool',
-  'int64',
-  'float64',
-  'timestamp',
-  'date',
-  'string',
-  'bytes',
-  'array',
-  'struct',
-];
+interface RequestOptions {
+  json?: boolean;
+  jsonOptions?: JsonOptions;
+  gaxOptions?: CallOptions;
+}
+
+/**
+ * ExecuteSql request options. This includes all standard ExecuteSqlRequest
+ * options as well as several convenience properties.
+ *
+ * @see [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
+ * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
+ *
+ * @typedef ExecuteSqlRequest
+ * @property {object} [params] A map of parameter names to values.
+ * @property {object} [types] A map of parameter names to types. If omitted the
+ *     client will attempt to guess for all non-null values.
+ * @property {boolean} [json=false] Receive the rows as serialized objects. This
+ *     is the equivalent of calling `toJSON()` on each row.
+ * @property {JsonOptions} [jsonOptions] Configuration options for the
+ *     serialized objects.
+ */
+export interface ExecuteSqlRequest extends s.ExecuteSqlRequest, RequestOptions {
+  params?: {[field: string]: Value};
+  types?: {[field: string]: string|Type};
+}
 
 /**
  * Encodes a ExecuteSqlRequest object into the correct format.
  *
  * @private
  *
- * @param {object} query The query object.
- * @param {object} [query.params] A map of parameter name to values.
- * @param {object} [query.types] A map of parameter types.
+ * @param {ExecuteSqlRequest} query The request object.
  * @returns {object}
  */
-function encodeQuery(query) {
-  query = extend({}, query);
+function encodeQuery(query: ExecuteSqlRequest): s.ExecuteSqlRequest {
+  query = Object.assign({}, query);
 
   if (query.params) {
     const fields = {};
@@ -399,29 +476,89 @@ function encodeQuery(query) {
       query.types = {};
     }
 
-    // tslint:disable-next-line forin
-    for (const prop in query.params) {
-      const field = query.params[prop];
-      if (!query.types[prop]) {
-        query.types[prop] = codec.getType(field);
+    const types = query.types!;
+
+    Object.keys(query.params).forEach(param => {
+      const value = query.params![param];
+      if (!types[param]) {
+        types[param] = codec.getType(value);
       }
-      fields[prop] = codec.encode(field);
-    }
+      fields[param] = codec.encode(value);
+    });
 
     query.params = {fields};
   }
 
   if (query.types) {
-    const formattedTypes = {};
-    // tslint:disable-next-line forin
-    for (const field in query.types) {
-      formattedTypes[field] = codec.createTypeObject(query.types[field]);
-    }
+    const paramTypes = {};
+
+    Object.keys(query.types).forEach(param => {
+      paramTypes[param] = codec.createTypeObject(query.types![param]);
+    });
+
+    query.paramTypes = paramTypes;
     delete query.types;
-    query.paramTypes = formattedTypes;
+  }
+
+  if (query.json) {
+    delete query.json;
+    delete query.jsonOptions;
+  }
+
+  if (query.gaxOptions) {
+    delete query.gaxOptions;
   }
 
   return query;
+}
+
+/**
+ * A KeyRange represents a range of rows in a table or index.
+ *
+ * A range has a start key and an end key. These keys can be open or closed,
+ * indicating if the range includes rows with that key.
+ *
+ * Keys are represented by an array of strings where the nth value in the list
+ * corresponds to the nth component of the table or index primary key.
+ *
+ * @typedef KeyRange
+ * @property {string[]} [startClosed] If the start is closed, then the range
+ *     includes all rows whose first key columns exactly match.
+ * @property {string[]} [startOpen] If the start is open, then the range
+ *     excludes rows whose first key columns exactly match.
+ * @property {string[]} [endClosed] If the end is closed, then the range
+ *     includes all rows whose first key columns exactly match.
+ * @property {string[]} [endOpen] If the end is open, then the range excludes
+ *     rows whose first key columns exactly match.
+ */
+interface KeyRange {
+  startClosed?: Value[];
+  startOpen?: Value[];
+  endClosed?: Value[];
+  endOpen?: Value[];
+}
+
+/**
+ * Read request options. This includes all standard ReadRequest options as well
+ * as several convenience properties.
+ *
+ * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
+ * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
+ *
+ * @typedef ReadRequest
+ * @property {string[]} [keys] The primary keys of the rows in this table to be
+ *     yielded. If using a composite key, provide an array within this array.
+ *     See the example below.
+ * @property {KeyRange[]} [ranges] An alternative to the keys property, this can
+ *       be used to define a range of keys to be yielded.
+ * @property {boolean} [json=false] Receive the rows as serialized objects. This
+ *     is the equivalent of calling `toJSON()` on each row.
+ * @property {JsonOptions} [jsonOptions] Configuration options for the
+ *     serialized objects.
+ */
+export interface ReadRequest extends s.ReadRequest, RequestOptions {
+  keys?: string[];
+  ranges?: KeyRange[];
 }
 
 /**
@@ -429,47 +566,61 @@ function encodeQuery(query) {
  *
  * @private
  *
- * @param {object|string|string[]} query The query
+ * @param {ReadRequest} query The query
  * @returns {object}
  */
-function encodeRead(query) {
-  if (is.array(query) || is.string(query)) {
-    query = {
-      keys: query,
-    };
-  }
+export function encodeRead(query: ReadRequest): s.ReadRequest {
+  query = Object.assign({}, query);
 
-  const encoded = extend({}, query);
+  if (!query.keySet) {
+    query.keySet = {};
 
-  if (query.keys || query.ranges) {
-    encoded.keySet = {};
+    if (!query.keys && !query.ranges) {
+      query.keySet.all = true;
+    }
   }
 
   if (query.keys) {
-    encoded.keySet.keys = arrify(query.keys).map(key => {
-      return {
-        values: arrify(key).map(codec.encode),
-      };
-    });
-    delete encoded.keys;
+    query.keySet.keys = arrify(query.keys).map(convertToListValue);
+    delete query.keys;
   }
 
   if (query.ranges) {
-    encoded.keySet.ranges = arrify(query.ranges).map(rawRange => {
-      const range = extend({}, rawRange);
-      // tslint:disable-next-line forin
-      for (const bound in range) {
-        range[bound] = {
-          values: arrify(range[bound]).map(codec.encode),
-        };
-      }
+    query.keySet.ranges = arrify(query.ranges).map(keyRange => {
+      const range: s.KeyRange = {};
+
+      Object.keys(keyRange).forEach(bound => {
+        range[bound] = convertToListValue(keyRange[bound]);
+      });
 
       return range;
     });
-    delete encoded.ranges;
+    delete query.ranges;
   }
 
-  return encoded;
+  if (query.json) {
+    delete query.json;
+    delete query.jsonOptions;
+  }
+
+  if (query.gaxOptions) {
+    delete query.gaxOptions;
+  }
+
+  return query;
+}
+
+/**
+ * Converts a value to google.protobuf.ListValue
+ *
+ * @private
+ *
+ * @param {*} value The value to convert.
+ * @returns {object}
+ */
+function convertToListValue<T>(value: T): p.IListValue {
+  const values = arrify(value).map(codec.encode);
+  return {values};
 }
 
 /**
@@ -480,40 +631,32 @@ function encodeRead(query) {
  * @param {object|string} [config='unspecified'] Type config.
  * @return {object}
  */
-function createTypeObject(config) {
-  config = config || 'unspecified';
-
-  if (is.string(config)) {
-    config = {type: config};
+function createTypeObject(friendlyType?: string|Type): s.Type {
+  if (!friendlyType) {
+    friendlyType = 'unspecified';
   }
 
-  const type = config.type;
-  let code = TYPES.indexOf(type);
-
-  if (code === -1) {
-    code = 0;  // unspecified
+  if (is.string(friendlyType)) {
+    friendlyType = {type: friendlyType} as Type;
   }
 
-  // tslint:disable-next-line no-any
-  const typeObject: any = {code};
+  const config: Type = (friendlyType as Type);
+  const code: s.TypeCode = TypeCode[config.type] || TypeCode.unspecified;
+  const type: s.Type = {code};
 
-  if (type === 'array') {
-    typeObject.arrayElementType = createTypeObject(config.child);
+  if (code === s.TypeCode.ARRAY) {
+    type.arrayElementType = codec.createTypeObject(config.child);
   }
 
-  if (type === 'struct') {
-    typeObject.structType = {};
-    typeObject.structType.fields = arrify(config.fields).map(field => {
-      const fieldConfig = is.object(field.type) ? field.type : field;
-
-      return {
-        name: field.name,
-        type: createTypeObject(fieldConfig),
-      };
-    });
+  if (code === s.TypeCode.STRUCT) {
+    type.structType = {
+      fields: arrify(config.fields).map(field => {
+        return {name: field.name, type: codec.createTypeObject(field)};
+      })
+    };
   }
 
-  return typeObject;
+  return type;
 }
 
 export const codec = {
@@ -521,13 +664,11 @@ export const codec = {
   SpannerDate,
   Float,
   Int,
-  TYPE,
-  generateToJSONFromRow,
+  convertFieldsToJson,
   decode,
   encode,
   getType,
   encodeQuery,
-  TYPES,
   encodeRead,
   Struct
 };

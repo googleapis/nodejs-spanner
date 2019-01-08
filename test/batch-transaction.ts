@@ -123,26 +123,6 @@ describe('BatchTransaction', () => {
 
       batchTransaction.createQueryPartitions(QUERY.sql, done);
     });
-
-    it('should remove gax options from the query', done => {
-      const fakeQuery = {
-        sql: QUERY.sql,
-        gaxOptions: GAX_OPTS,
-      };
-
-      fakeCodec.encodeQuery = (query) => {
-        assert.strictEqual(query, fakeQuery);
-        return extend({a: 'b'}, QUERY);
-      };
-
-      batchTransaction.createPartitions_ = (config, callback) => {
-        assert.deepStrictEqual(config.reqOpts, {sql: QUERY.sql, a: 'b'});
-        assert.strictEqual(config.gaxOpts, GAX_OPTS);
-        callback();  // the done fn
-      };
-
-      batchTransaction.createQueryPartitions(fakeQuery, done);
-    });
   });
 
   describe('createPartitions_', () => {
@@ -248,22 +228,6 @@ describe('BatchTransaction', () => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'partitionRead');
         assert.strictEqual(config.reqOpts, QUERY);
-        callback();  // the done fn
-      };
-
-      batchTransaction.createReadPartitions(query, done);
-    });
-
-    it('should remove gax options from the query', done => {
-      const query = {gaxOptions: GAX_OPTS};
-
-      fakeCodec.encodeRead = () => {
-        return extend({}, QUERY);
-      };
-
-      batchTransaction.createPartitions_ = (config, callback) => {
-        assert.deepStrictEqual(config.reqOpts, {table: QUERY.table});
-        assert.strictEqual(config.gaxOpts, GAX_OPTS);
         callback();  // the done fn
       };
 

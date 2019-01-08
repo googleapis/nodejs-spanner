@@ -1332,8 +1332,7 @@ class Database extends ServiceObject {
           },
         };
       }
-      delete reqOpts.json;
-      delete reqOpts.jsonOptions;
+
       function makeRequest(resumeToken) {
         return self.makePooledStreamingRequest_({
           client: 'SpannerClient',

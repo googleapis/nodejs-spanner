@@ -19,6 +19,7 @@ import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
 import * as through from 'through2';
 
@@ -48,15 +49,12 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-const fakeCodec: typeof codec = {
-  encode: util.noop
-  // tslint:disable-next-line no-any
-} as any;
-
 describe('TransactionRequest', () => {
   // tslint:disable-next-line variable-name
   let TransactionRequest: typeof tr.TransactionRequest;
   let transactionRequest: tr.TransactionRequest;
+
+  const sandbox = sinon.createSandbox();
 
   before(() => {
     TransactionRequest = proxyquire('../src/transaction-request', {
@@ -64,7 +62,7 @@ describe('TransactionRequest', () => {
                              Service: FakeGrpcService,
                            },
                            '@google-cloud/promisify': fakePfy,
-                           './codec.js': {codec: fakeCodec},
+                           './codec.js': {codec},
                            './partial-result-stream':
                                {partialResultStream: fakePartialResultStream},
                          }).TransactionRequest;
@@ -72,11 +70,12 @@ describe('TransactionRequest', () => {
 
   beforeEach(() => {
     FakeGrpcService.encodeValue_ = util.noop;
-    fakeCodec.encode = util.noop;
     transactionRequest = new TransactionRequest();
     transactionRequest.request = util.noop;
     transactionRequest.requestStream = util.noop;
   });
+
+  afterEach(() => sandbox.restore());
 
   describe('instantiation', () => {
     let formatTimestamp;
@@ -214,12 +213,12 @@ describe('TransactionRequest', () => {
 
   describe('createReadStream', () => {
     const TABLE = 'table-name';
-    const QUERY = {e: 'f'};
+    const QUERY = {session: 'a', table: 'b', keySet: {all: true}};
+
+    let stub: sinon.SinonStub;
 
     beforeEach(() => {
-      fakeCodec.encodeRead = () => {
-        return QUERY;
-      };
+      stub = sandbox.stub(codec, 'encodeRead').returns(QUERY);
     });
 
     it('should accept a query object', done => {
@@ -232,12 +231,9 @@ describe('TransactionRequest', () => {
         table: TABLE,
       });
 
-      fakeCodec.encodeRead = (readRequest) => {
-        assert.strictEqual(readRequest, query);
-        return QUERY;
-      };
-
       transactionRequest.requestStream = (options) => {
+        const [readRequest] = stub.lastCall.args;
+        assert.strictEqual(readRequest, query);
         assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
         done();
       };
@@ -366,9 +362,7 @@ describe('TransactionRequest', () => {
     const TABLE = 'table-name';
     const KEYS = ['key', ['composite', 'key']];
 
-    const ENCODED_VALUE = {
-      encoded: true,
-    };
+    const ENCODED_VALUE = {kind: 'stringValue', stringValue: 'value'};
 
     const EXPECTED_MUTATION = {
       delete: {
@@ -386,12 +380,11 @@ describe('TransactionRequest', () => {
       },
     };
 
+    let stub: sinon.SinonStub;
+
     beforeEach(() => {
       transactionRequest.transaction = true;
-
-      fakeCodec.encode = () => {
-        return ENCODED_VALUE;
-      };
+      stub = sandbox.stub(codec, 'encode').returns(ENCODED_VALUE);
     });
 
     describe('non-transactional instance', () => {
@@ -460,29 +453,14 @@ describe('TransactionRequest', () => {
     });
 
     it('should correctly make and return the request', done => {
-      let numEncodeRequests = 0;
-
-      fakeCodec.encode = (key) => {
-        numEncodeRequests++;
-
-        switch (numEncodeRequests) {
-          case 1:
-            assert.strictEqual(key, KEYS[0]);
-            break;
-          case 2:
-            assert.strictEqual(key, KEYS[1][0]);
-            break;
-          case 3:
-            assert.strictEqual(key, KEYS[1][1]);
-            break;
-          default:
-            break;
-        }
-
-        return ENCODED_VALUE;
-      };
+      const expectedKeys = [KEYS[0], KEYS[1][0], KEYS[1][1]];
 
       transactionRequest.queue_ = (mutation) => {
+        expectedKeys.forEach((expectedKey, i) => {
+          const [key] = stub.getCall(i).args;
+          assert.strictEqual(key, expectedKey);
+        });
+
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
@@ -500,13 +478,6 @@ describe('TransactionRequest', () => {
     });
 
     it('should accept just a key', done => {
-      const encodedValue = {
-        encoded: true,
-      };
-      fakeCodec.encode = () => {
-        return encodedValue;
-      };
-
       transactionRequest.queue_ = (mutation) => {
         const expectedSingleMutation = extend(true, {}, EXPECTED_MUTATION);
 
@@ -698,12 +669,11 @@ describe('TransactionRequest', () => {
       ],
     };
 
+    let stub: sinon.SinonStub;
+
     beforeEach(() => {
       transactionRequest.transaction = true;
-
-      fakeCodec.encode = (value) => {
-        return value;
-      };
+      stub = sandbox.stub(codec, 'encode').callsFake(value => value);
     });
 
     describe('non-transactional instance', () => {
@@ -773,44 +743,17 @@ describe('TransactionRequest', () => {
     });
 
     it('should correctly make and return the request', done => {
-      let numEncodeRequests = 0;
-
-      fakeCodec.encode = (value) => {
-        numEncodeRequests++;
-
-        switch (numEncodeRequests) {
-          case 1:
-            assert.strictEqual(value, KEYVALS[0].anotherNullable);
-            break;
-          case 2:
-            assert.strictEqual(value, KEYVALS[0].key);
-            break;
-          case 3:
-            assert.strictEqual(value, KEYVALS[0].nonNullable);
-            break;
-          case 4:
-            assert.strictEqual(value, KEYVALS[0].nullable);
-            break;
-          case 5:
-            assert.strictEqual(value, KEYVALS[1].anotherNullable);
-            break;
-          case 6:
-            assert.strictEqual(value, KEYVALS[1].key);
-            break;
-          case 7:
-            assert.strictEqual(value, KEYVALS[1].nonNullable);
-            break;
-          case 8:
-            assert.strictEqual(value, KEYVALS[1].nullable);
-            break;
-          default:
-            break;
-        }
-
-        return value;
-      };
+      const expectedValues = [
+        KEYVALS[0].anotherNullable, KEYVALS[0].key, KEYVALS[0].nonNullable,
+        KEYVALS[0].nullable, KEYVALS[1].anotherNullable, KEYVALS[1].key,
+        KEYVALS[1].nonNullable, KEYVALS[1].nullable
+      ];
 
       transactionRequest.queue_ = mutation => {
+        expectedValues.forEach((expectedValue, i) => {
+          const [value] = stub.getCall(i).args;
+          assert.strictEqual(value, expectedValue);
+        });
         assert.deepStrictEqual(mutation, EXPECTED_MUTATION);
         done();
       };
