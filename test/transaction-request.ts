@@ -21,18 +21,11 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
-import {PassThrough} from 'stream';
 import * as through from 'through2';
 
 import {codec} from '../src/codec';
 import {PartialResultStream} from '../src/partial-result-stream';
 import * as tr from '../src/transaction-request';
-
-class FakePartialResultStream extends PassThrough {
-  constructor() {
-    super({objectMode: true});
-  }
-}
 
 class FakeGrpcService {
   static encodeValue_;
@@ -51,6 +44,9 @@ const fakePfy = extend({}, pfy, {
     pfy.promisifyAll(klass, options);
   },
 });
+
+// tslint:disable-next-line variable-name
+const FakePartialResultStream = through.ctor({objectMode: true});
 
 describe('TransactionRequest', () => {
   // tslint:disable-next-line variable-name

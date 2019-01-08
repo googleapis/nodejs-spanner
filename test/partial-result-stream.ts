@@ -21,7 +21,8 @@ const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {PassThrough, Transform} from 'stream';
+import {Transform} from 'stream';
+import * as through from 'through2';
 
 import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
@@ -179,9 +180,20 @@ describe('PartialResultStream', () => {
     });
 
     describe('destroy', () => {
+      let destroy;
+
+      beforeEach(() => {
+        destroy = Transform.prototype.destroy;
+      });
+
+      afterEach(() => {
+        Transform.prototype.destroy = destroy;
+      });
+
       it('should use the parent destroy method if available', () => {
-        const stub = sandbox.stub(Transform.prototype, 'destroy');
         const fakeError = new Error('err');
+
+        const stub = Transform.prototype.destroy = sandbox.stub();
 
         stream.destroy(fakeError);
 
@@ -197,12 +209,10 @@ describe('PartialResultStream', () => {
 
         stream.on('error', errorStub).on('close', closeStub);
 
-        const destroy = Transform.prototype.destroy;
-
         // tslint:disable-next-line no-any
         Transform.prototype.destroy = (false as any);
+
         stream.destroy(fakeError);
-        Transform.prototype.destroy = destroy;
 
         setImmediate(() => {
           assert.strictEqual(errorStub.callCount, 1);
@@ -215,14 +225,14 @@ describe('PartialResultStream', () => {
 
   describe('partialResultStream', () => {
     let stream: prs.PartialResultStream;
-    let fakeRequestStream: PassThrough;
+    let fakeRequestStream;
 
     const RESULT_WITH_TOKEN = Object.assign({}, RESULT, {
       resumeToken: '...',
     });
 
     beforeEach(() => {
-      fakeRequestStream = new PassThrough({objectMode: true});
+      fakeRequestStream = through.obj();
       stream = partialResultStream(() => fakeRequestStream);
     });
 
@@ -267,13 +277,13 @@ describe('PartialResultStream', () => {
       // - Error event (should retry)
       // - Two rows
       // - Confirm all rows were received.
-      const fakeCheckpointStream = new PassThrough({objectMode: true});
+      const fakeCheckpointStream = through.obj();
       // tslint:disable-next-line no-any
       const resetStub = (fakeCheckpointStream as any).reset = () => {};
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
-      const firstFakeRequestStream = new PassThrough({objectMode: true});
-      const secondFakeRequestStream = new PassThrough({objectMode: true});
+      const firstFakeRequestStream = through.obj();
+      const secondFakeRequestStream = through.obj();
 
       const requestFnStub = sandbox.stub();
 
