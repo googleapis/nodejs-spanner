@@ -22,14 +22,14 @@ import {common as p} from 'protobufjs';
 import {SpannerClient as s} from './v1';
 
 // tslint:disable-next-line no-any
-type Value = any;
+export type Value = any;
 
-interface Field {
+export interface Field {
   name: string;
   value: Value;
 }
 
-interface Json {
+export interface Json {
   [field: string]: Value;
 }
 
@@ -189,11 +189,6 @@ function convertFieldsToJson(fields: Field[], options?: JsonOptions): Json {
 
 export interface JSONOptions {
   wrapNumbers: boolean;
-}
-
-export interface RowJSON {
-  // tslint:disable-next-line no-any
-  [field: string]: any;
 }
 
 /**

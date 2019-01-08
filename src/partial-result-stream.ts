@@ -25,8 +25,10 @@ import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
 
-import {codec, JSONOptions, RowJSON} from './codec';
+import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {SpannerClient as s} from './v1';
+
+type ResumeToken = string|Uint8Array;
 
 /**
  * @callback RequestFunction
@@ -34,7 +36,7 @@ import {SpannerClient as s} from './v1';
  * @returns {Stream}
  */
 interface RequestFunction {
-  (resumeToken?: string): Readable;
+  (resumeToken?: ResumeToken): Readable;
 }
 
 /**
@@ -54,32 +56,70 @@ export interface RowOptions {
  *
  * If you prefer plain objects, you can use the {@link Row#toJSON} method.
  * NOTE: If you have duplicate field names only the last field will be present.
+ *
+ * @typedef {Array.<{name: string, value}>} Row
  */
-export class Row extends Array {
-  /**
-   * @hideconstructor
-   *
-   * @param {Array.<Object>} fields The field info for this row.
-   * @param {Array.<*>} values The row values.
-   */
-  constructor(fields: s.Field[], values: p.IValue[]) {
-    super();
-
-    values.forEach((value, index) => {
-      const field = fields[index];
-
-      this.push({name: field.name, value: codec.decode(value, field)});
-    });
-  }
+export interface Row extends Array<Field> {
   /**
    * Converts the Row object into a pojo (plain old JavaScript object).
+   *
+   * @memberof Row
+   * @name toJSON
    *
    * @param {JSONOptions} [options] JSON options.
    * @returns {object}
    */
-  toJSON(options?: JSONOptions): RowJSON {
-    return codec.generateToJSONFromRow(this)(options);
-  }
+  toJSON(options?: JSONOptions): JSON;
+}
+
+/**
+ * @callback PartialResultStream~rowCallback
+ * @param {Row|object} row The row data.
+ */
+interface RowCallback {
+  (row: Row|Json): void;
+}
+
+/**
+ * @callback PartialResultStream~statsCallback
+ * @param {object} stats The result stats.
+ */
+interface StatsCallback {
+  (stats: s.ResultSetStats): void;
+}
+
+/**
+ * @callback PartialResultStream~responseCallback
+ * @param {object} response The full API response.
+ */
+interface ResponseCallback {
+  (response: s.PartialResultSet): void;
+}
+
+interface ResultEvents {
+  addListener(event: 'data', listener: RowCallback): this;
+  addListener(event: 'stats', listener: StatsCallback): this;
+  addListener(event: 'response', listener: ResponseCallback): this;
+
+  emit(event: 'data', data: Row|Json): boolean;
+  emit(event: 'stats', data: s.ResultSetStats): boolean;
+  emit(event: 'response', data: s.PartialResultSet): boolean;
+
+  on(event: 'data', listener: RowCallback): this;
+  on(event: 'stats', listener: StatsCallback): this;
+  on(event: 'response', listener: ResponseCallback): this;
+
+  once(event: 'data', listener: RowCallback): this;
+  once(event: 'stats', listener: StatsCallback): this;
+  once(event: 'response', listener: ResponseCallback): this;
+
+  prependListener(event: 'data', listener: RowCallback): this;
+  prependListener(event: 'stats', listener: StatsCallback): this;
+  prependListener(event: 'response', listener: ResponseCallback): this;
+
+  prependOnceListener(event: 'data', listener: RowCallback): this;
+  prependOnceListener(event: 'stats', listener: StatsCallback): this;
+  prependOnceListener(event: 'response', listener: ResponseCallback): this;
 }
 
 /**
@@ -91,7 +131,7 @@ export class Row extends Array {
  *
  * @param {RowOptions} [options] The row options.
  */
-export class PartialResultStream extends Transform {
+export class PartialResultStream extends Transform implements ResultEvents {
   private _fields!: s.Field[];
   private _options: RowOptions;
   private _pendingValue?: p.IValue;
@@ -153,25 +193,26 @@ export class PartialResultStream extends Transform {
    * @param {object} chunk The partial result set.
    */
   private _addChunk(chunk: s.PartialResultSet): void {
+    const values: Value[] = chunk.values.map(Service.decodeValue_);
+
     // If we have a chunk to merge, merge the values now.
     if (this._pendingValue) {
-      const currentColumn = this._values.length % this._fields.length;
+      const currentField = this._values.length % this._fields.length;
+      const field = this._fields[currentField];
       const merged = PartialResultStream.merge(
-          this._fields[currentColumn].type!, this._pendingValue,
-          chunk.values.shift());
+          field.type!, this._pendingValue, values.shift());
 
-      chunk.values = [...merged, ...chunk.values];
+      values.unshift(...merged);
       delete this._pendingValue;
     }
 
     // If the chunk is chunked, store the last value for merging with the next
     // chunk to be processed.
     if (chunk.chunkedValue) {
-      this._pendingValue = chunk.values.pop();
+      this._pendingValue = values.pop();
     }
 
-    chunk.values.map(PartialResultStream.getValue)
-        .forEach(value => this._addValue(value));
+    values.forEach(value => this._addValue(value));
   }
   /**
    * Manages complete values, pushing a completed row into the stream once all
@@ -181,7 +222,7 @@ export class PartialResultStream extends Transform {
    *
    * @param {*} value The complete value.
    */
-  private _addValue(value: p.IValue): void {
+  private _addValue(value: Value): void {
     const values = this._values;
 
     values.push(value);
@@ -192,48 +233,36 @@ export class PartialResultStream extends Transform {
 
     this._values = [];
 
-    let row: Row|RowJSON = new Row(this._fields, values);
+    const row: Row = this._createRow(values);
 
     if (this._options.json) {
-      row = row.toJSON(this._options.jsonOptions);
+      this.push(row.toJSON(this._options.jsonOptions));
+      return;
     }
 
     this.push(row);
   }
   /**
-   * Checks to see if two values of the same type are mergeable.
+   * Converts an array of values into a row.
    *
-   * @static
    * @private
    *
-   * @param {object} type The value type object.
-   * @param {*} a The first value.
-   * @param {*} b The second value.
-   * @returns {boolean}
+   * @param {Array.<*>} values The row values.
+   * @returns {Row}
    */
-  static isMergeable({code}: s.Type, a: p.IValue, b: p.IValue): boolean {
-    return code !== 'FLOAT64' && !is.null(a) && !is.null(b);
-  }
-  /**
-   * Attempts to unpack a value from a response.
-   *
-   * @static
-   * @private
-   *
-   * @param {*} data The response data.
-   * @returns {*} The unpacked value.
-   */
-  static getValue(data) {
-    let value = data;
+  private _createRow(values: Value[]): Row {
+    const fields = values.map((value, index) => {
+      const {name, type} = this._fields[index];
+      return {name, value: codec.decode(value, type!)};
+    });
 
-    if (data && data.kind) {
-      value = Service.decodeValue_(data);
-    }
-    if (is.object(value) && value.values) {
-      value = value.values;
-    }
+    Object.defineProperty(fields, 'toJSON', {
+      value: (options?: JSONOptions): Json => {
+        return codec.convertFieldsToJson(fields, options);
+      }
+    });
 
-    return value;
+    return fields as Row;
   }
   /**
    * Attempts to merge chunked values together.
@@ -247,29 +276,41 @@ export class PartialResultStream extends Transform {
    * @returns {Array.<*>}
    */
   // tslint:disable-next-line no-any
-  static merge(type: s.Type, head, tail): any[] {
-    head = PartialResultStream.getValue(head);
-    tail = PartialResultStream.getValue(tail);
-
-    if (type.code === 'ARRAY') {
-      const t = type.arrayElementType!;
-      const merged = PartialResultStream.merge(t, head.pop(), tail.shift());
-
-      return [[...head, ...merged, ...tail]];
+  static merge(type: s.Type, head: Value, tail: Value): Value[] {
+    if (type.code === s.TypeCode.ARRAY || type.code === s.TypeCode.STRUCT) {
+      return [PartialResultStream.mergeLists(type, head, tail)];
     }
 
-    if (type.code === 'STRUCT') {
-      const t = type.structType!.fields[head.length - 1].type!;
-      const merged = PartialResultStream.merge(t, head.pop(), tail.shift());
-
-      return [[...head, ...merged, ...tail]];
-    }
-
-    if (PartialResultStream.isMergeable(type, head, tail)) {
+    if (is.string(head) && is.string(tail)) {
       return [head + tail];
     }
 
     return [head, tail];
+  }
+  /**
+   * Attempts to merge chunked lists together.
+   *
+   * @static
+   * @private
+   *
+   * @param {object} type The list type.
+   * @param {Array.<*>} head The beginning of the list.
+   * @param {Array.<*>} tail The end of the list.
+   * @returns {Array.<*>}
+   */
+  static mergeLists(type: s.Type, head: Value[], tail: Value[]): Value[] {
+    let listType: s.Type;
+
+    if (type.code === 'ARRAY') {
+      listType = type.arrayElementType!;
+    } else {
+      listType = type.structType!.fields[head.length - 1].type!;
+    }
+
+    const merged =
+        PartialResultStream.merge(listType, head.pop(), tail.shift());
+
+    return [...head, ...merged, ...tail];
   }
 }
 
@@ -291,7 +332,7 @@ export class PartialResultStream extends Transform {
  */
 export function partialResultStream(
     requestFn: RequestFunction, options?: RowOptions): PartialResultStream {
-  let lastResumeToken;
+  let lastResumeToken: ResumeToken;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
@@ -299,16 +340,16 @@ export function partialResultStream(
   const userStream = streamEvents(new PartialResultStream(options));
   const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
-    isCheckpointFn(row: s.PartialResultSet) {
+    isCheckpointFn: (row: s.PartialResultSet): boolean => {
       return is.defined(row.resumeToken);
     }
   });
 
-  const makeRequest = () => {
+  const makeRequest = (): void => {
     requestsStream.add(requestFn(lastResumeToken));
   };
 
-  const retry = (err: Error) => {
+  const retry = (err: Error): void => {
     if (!lastResumeToken) {
       // We won't retry the request, so this will flush any rows the
       // checkpoint stream has queued. After that, we will destroy the
