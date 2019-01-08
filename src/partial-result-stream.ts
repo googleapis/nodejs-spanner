@@ -69,7 +69,7 @@ export interface Row extends Array<Field> {
    * @param {JSONOptions} [options] JSON options.
    * @returns {object}
    */
-  toJSON(options?: JSONOptions): JSON;
+  toJSON(options?: JSONOptions): Json;
 }
 
 /**

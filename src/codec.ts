@@ -34,13 +34,13 @@ export interface Json {
 }
 
 /**
- * @typedef JsonOptions
+ * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
  * @property {boolean} [wrapStructs=false] Indicates if the structs should be
  *     wrapped in Struct wrapper.
  */
-interface JsonOptions {
+export interface JSONOptions {
   wrapNumbers?: boolean;
   wrapStructs?: boolean;
 }
@@ -117,10 +117,10 @@ export class Struct extends Array<Field> {
   /**
    * Converts struct into a pojo (plain old JavaScript object).
    *
-   * @param {JsonOptions} [options] JSON options.
+   * @param {JSONOptions} [options] JSON options.
    * @returns {object}
    */
-  toJSON(options?: JsonOptions): Json {
+  toJSON(options?: JSONOptions): Json {
     return codec.convertFieldsToJson(this, options);
   }
   /**
@@ -158,10 +158,10 @@ export class Struct extends Array<Field> {
  * @private
  *
  * @param {array} row The row to generate JSON for.
- * @param {JsonOptions} [options] JSON options.
+ * @param {JSONOptions} [options] JSON options.
  * @returns {object}
  */
-function convertFieldsToJson(fields: Field[], options?: JsonOptions): Json {
+function convertFieldsToJson(fields: Field[], options?: JSONOptions): Json {
   const json: Json = {};
 
   const defaultOptions = {wrapNumbers: false, wrapStructs: false};
@@ -187,20 +187,16 @@ function convertFieldsToJson(fields: Field[], options?: JsonOptions): Json {
   return json;
 }
 
-export interface JSONOptions {
-  wrapNumbers: boolean;
-}
-
 /**
  * Attempts to convert a wrapped or nested value into a native JavaScript type.
  *
  * @private
  *
  * @param {*} value The value to convert.
- * @param {JsonOptions} options JSON options.
+ * @param {JSONOptions} options JSON options.
  * @return {*}
  */
-function convertValueToJson(value: Value, options: JsonOptions): Value {
+function convertValueToJson(value: Value, options: JSONOptions): Value {
   if (!options.wrapNumbers && value instanceof WrappedNumber) {
     return value.valueOf();
   }
@@ -437,7 +433,7 @@ function getType(value: Value): Type {
  */
 interface RequestOptions {
   json?: boolean;
-  jsonOptions?: JsonOptions;
+  jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
 }
 
@@ -454,7 +450,7 @@ interface RequestOptions {
  *     client will attempt to guess for all non-null values.
  * @property {boolean} [json=false] Receive the rows as serialized objects. This
  *     is the equivalent of calling `toJSON()` on each row.
- * @property {JsonOptions} [jsonOptions] Configuration options for the
+ * @property {JSONOptions} [jsonOptions] Configuration options for the
  *     serialized objects.
  */
 export interface ExecuteSqlRequest extends s.ExecuteSqlRequest, RequestOptions {
@@ -557,7 +553,7 @@ interface KeyRange {
  *       be used to define a range of keys to be yielded.
  * @property {boolean} [json=false] Receive the rows as serialized objects. This
  *     is the equivalent of calling `toJSON()` on each row.
- * @property {JsonOptions} [jsonOptions] Configuration options for the
+ * @property {JSONOptions} [jsonOptions] Configuration options for the
  *     serialized objects.
  */
 export interface ReadRequest extends s.ReadRequest, RequestOptions {
