@@ -167,7 +167,7 @@ declare namespace SpannerClient {
     transaction?: TransactionSelector;
     sql: string;
     params?: protobuf.IStruct;
-    paramTypes: Array<[string, Type]>;
+    paramTypes?: {[field: string]: Type};
     resumeToken: Uint8Array | string;
     queryMode: QueryMode;
     partitionToken: Uint8Array | string;
@@ -219,12 +219,12 @@ declare namespace SpannerClient {
     session: string;
     transaction?: TransactionSelector;
     table: string;
-    index: string;
-    columns: string[];
-    keySet?: KeySet;
-    limit: number;
-    resumeToken: Uint8Array | string;
-    partitionToken: Uint8Array | string;
+    index?: string;
+    columns?: string[];
+    keySet: KeySet;
+    limit?: number;
+    resumeToken?: Uint8Array | string;
+    partitionToken?: Uint8Array | string;
   }
 
   interface ReadCallback {
@@ -272,9 +272,9 @@ declare namespace SpannerClient {
   }
 
   interface KeySet {
-    keys: protobuf.IListValue[];
-    ranges: KeyRange[];
-    all: boolean;
+    keys?: protobuf.IListValue[];
+    ranges?: KeyRange[];
+    all?: boolean;
   }
 
   interface Write {
@@ -375,21 +375,21 @@ declare namespace SpannerClient {
 
   interface TransactionSelector {
     singleUse?: TransactionOptions;
-    id: Uint8Array | string;
+    id?: Uint8Array | string;
     begin?: TransactionOptions;
   }
 
-  enum TypeCode {
-    TYPE_CODE_UNSPECIFIED,
-    BOOL,
-    INT64,
-    FLOAT64,
-    TIMESTAMP,
-    DATE,
-    STRING,
-    BYTES,
-    ARRAY,
-    STRUCT
+  const enum TypeCode {
+    TYPE_CODE_UNSPECIFIED = 'TYPE_CODE_UNSPECIFIED',
+    BOOL = 'BOOL',
+    INT64 = 'INT64',
+    FLOAT64 = 'FLOAT64',
+    TIMESTAMP = 'TIMESTAMP',
+    DATE = 'DATE',
+    STRING = 'STRING',
+    BYTES = 'BYTES',
+    ARRAY = 'ARRAY',
+    STRUCT = 'STRUCT'
   }
 
   interface Type {

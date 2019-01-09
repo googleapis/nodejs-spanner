@@ -724,9 +724,6 @@ class Transaction extends TransactionRequest {
         },
         codec.encodeQuery(query));
 
-    delete reqOpts.json;
-    delete reqOpts.jsonOptions;
-
     if (this.id) {
       reqOpts.transaction.id = this.id;
     } else {

@@ -113,12 +113,12 @@ class RowBuilder {
         const field = this.fields[index];
         return {
           name: field.name,
-          value: RowBuilder.formatValue(field, value),
+          value: codec.decode(value, field.type),
         };
       });
       Object.defineProperty(formattedRow, 'toJSON', {
         enumerable: false,
-        value: codec.generateToJSONFromRow(formattedRow),
+        value: options => codec.convertFieldsToJson(formattedRow, options),
       });
       return formattedRow;
     });
@@ -139,31 +139,6 @@ class RowBuilder {
       value = value.values;
     }
     return value;
-  }
-  /**
-   * Format a value into the expected structure, e.g. turn struct values into an
-   * object.
-   *
-   * @param {object} field Field object
-   * @param {*} value Field value
-   * @returns {*}
-   */
-  static formatValue(field, value) {
-    if (value === 'NULL_VALUE') {
-      return null;
-    }
-    if (field.code === 'ARRAY') {
-      return value.map(value => {
-        return RowBuilder.formatValue(field.arrayElementType, value);
-      });
-    }
-    if (field.code !== 'STRUCT') {
-      return codec.decode(value, field);
-    }
-    return field.structType.fields.reduce((struct, field, index) => {
-      struct[field.name] = RowBuilder.formatValue(field, value[index]);
-      return struct;
-    }, {});
   }
   /**
    * Merge chunk values.

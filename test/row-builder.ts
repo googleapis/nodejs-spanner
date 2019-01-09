@@ -18,21 +18,11 @@ import {util} from '@google-cloud/common-grpc';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
 import * as rb from '../src/row-builder';
-
-let decodeOverride;
-let generateToJSONFromRowOverride;
-const fakeCodec = {
-  decode() {
-    return (decodeOverride || codec.decode).apply(null, arguments);
-  },
-  generateToJSONFromRow() {
-    return (generateToJSONFromRowOverride || codec.generateToJSONFromRow)
-        .apply(null, arguments);
-  },
-};
+import {SpannerClient as s} from '../src/v1';
 
 class FakeGrpcService {
   static decodeValue_(value) {}
@@ -45,6 +35,7 @@ describe('RowBuilder', () => {
   let RowBuilderCached: typeof rb.RowBuilder;
   let rowBuilder: rb.RowBuilder;
 
+  const sandbox = sinon.createSandbox();
   const FIELDS = [{}, {}];
 
   before(() => {
@@ -52,18 +43,18 @@ describe('RowBuilder', () => {
                    '@google-cloud/common-grpc': {
                      Service: FakeGrpcService,
                    },
-                   './codec.js': {codec: fakeCodec},
+                   './codec.js': {codec},
                  }).RowBuilder;
     RowBuilderCached = extend({}, RowBuilder);
   });
 
   beforeEach(() => {
     FakeGrpcService.decodeValue_ = util.noop;
-    decodeOverride = null;
-    generateToJSONFromRowOverride = null;
     extend(RowBuilder, RowBuilderCached);
     rowBuilder = new RowBuilder(FIELDS);
   });
+
+  afterEach(() => sandbox.restore());
 
   describe('acceptance tests', () => {
     const TESTS =
@@ -166,85 +157,6 @@ describe('RowBuilder', () => {
       const value = null;
 
       assert.strictEqual(RowBuilder.getValue(value), value);
-    });
-  });
-
-  describe('formatValue', () => {
-    it('should iterate an array', () => {
-      const field = {
-        code: 'ARRAY',
-        arrayElementType: 'type',
-      };
-
-      const value = [{}];
-      const decodedValue = {};
-
-      decodeOverride = (value_, field_) => {
-        assert.strictEqual(value_, value[0]);
-        assert.strictEqual(field_, field.arrayElementType);
-        return decodedValue;
-      };
-
-      const formattedValue = RowBuilder.formatValue(field, value);
-      assert.deepStrictEqual(formattedValue, [decodedValue]);
-    });
-
-    it('should return null if value is NULL_VALUE', () => {
-      const field = {
-        code: 'ARRAY',
-        arrayElementType: 'type',
-      };
-
-      const value = 'NULL_VALUE';
-
-      const formattedValue = RowBuilder.formatValue(field, value);
-      assert.strictEqual(formattedValue, null);
-    });
-
-    it('should return decoded value if not an array or struct', () => {
-      const field = {
-        code: 'NOT_STRUCT_OR_ARRAY',
-      };
-
-      const value = [{}];
-      const decodedValue = {};
-
-      decodeOverride = (value_, field_) => {
-        assert.strictEqual(value_, value);
-        assert.strictEqual(field_, field);
-        return decodedValue;
-      };
-
-      const formattedValue = RowBuilder.formatValue(field, value);
-      assert.strictEqual(formattedValue, decodedValue);
-    });
-
-    it('should iterate a struct', () => {
-      const field = {
-        code: 'STRUCT',
-        structType: {
-          fields: [
-            {
-              name: 'fieldName',
-              type: 'NOT_STRUCT_OR_ARRAY',  // so it returns original value
-            },
-          ],
-        },
-      };
-
-      const value = [{}];
-      const decodedValue = {};
-
-      decodeOverride = (value_, field_) => {
-        assert.strictEqual(value_, value[0]);
-        assert.strictEqual(field_, field.structType.fields[0]);
-        return decodedValue;
-      };
-
-      const formattedValue = RowBuilder.formatValue(field, value);
-      assert.deepStrictEqual(formattedValue, {
-        fieldName: decodedValue,
-      });
     });
   });
 
@@ -523,15 +435,14 @@ describe('RowBuilder', () => {
     });
 
     it('should format the values', () => {
+      const value = ROWS[0][0];
+      const type = rowBuilder.fields[0].type;
+
       const formattedValue = {
         formatted: true,
       };
 
-      RowBuilder.formatValue = (field, value) => {
-        assert.strictEqual(field, rowBuilder.fields[0]);
-        assert.strictEqual(value, ROWS[0][0]);
-        return formattedValue;
-      };
+      sinon.stub(codec, 'decode').withArgs(value, type).returns(formattedValue);
 
       const rows = rowBuilder.toJSON(ROWS);
       const row = rows[0];
@@ -548,28 +459,23 @@ describe('RowBuilder', () => {
       });
     });
 
-    describe('toJSON', () => {
-      const toJSONOverride = () => {};
+    describe('Row#toJSON', () => {
       let FORMATTED_ROW;
 
       beforeEach(() => {
-        generateToJSONFromRowOverride = () => {
-          return toJSONOverride;
-        };
-
-        const formattedValue = {};
-
-        RowBuilder.formatValue = () => {
-          return formattedValue;
-        };
-
-        rowBuilder.rows = [[{}]];
-
         FORMATTED_ROW = rowBuilder.toJSON(ROWS)[0];
       });
 
       it('should assign a toJSON method', () => {
-        assert.strictEqual(FORMATTED_ROW.toJSON, toJSONOverride);
+        const fakeJson = {};
+        const fakeOptions = {wrapNumbers: false};
+
+        sandbox.stub(codec, 'convertFieldsToJson')
+            .withArgs(FORMATTED_ROW, fakeOptions)
+            .returns(fakeJson);
+
+        const json = FORMATTED_ROW.toJSON(fakeOptions);
+        assert.strictEqual(json, fakeJson);
       });
 
       it('should not include toJSON when iterated', () => {

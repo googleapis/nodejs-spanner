@@ -119,9 +119,7 @@ class BatchTransaction extends Transaction {
     }
     const reqOpts = codec.encodeQuery(query);
     const gaxOpts = query.gaxOptions;
-    if (gaxOpts) {
-      delete reqOpts.gaxOptions;
-    }
+
     this.createPartitions_(
         {
           client: 'SpannerClient',
@@ -194,9 +192,7 @@ class BatchTransaction extends Transaction {
   createReadPartitions(options, callback) {
     const reqOpts = codec.encodeRead(options);
     const gaxOpts = options.gaxOptions;
-    if (gaxOpts) {
-      delete reqOpts.gaxOptions;
-    }
+
     this.createPartitions_(
         {
           client: 'SpannerClient',
