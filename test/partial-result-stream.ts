@@ -180,27 +180,6 @@ describe('PartialResultStream', () => {
     });
 
     describe('destroy', () => {
-      let destroy;
-
-      beforeEach(() => {
-        destroy = Transform.prototype.destroy;
-      });
-
-      afterEach(() => {
-        Transform.prototype.destroy = destroy;
-      });
-
-      it('should use the parent destroy method if available', () => {
-        const fakeError = new Error('err');
-
-        const stub = Transform.prototype.destroy = sandbox.stub();
-
-        stream.destroy(fakeError);
-
-        const [error] = stub.lastCall.args;
-        assert.strictEqual(error, fakeError);
-      });
-
       it('should ponyfill the destroy method', done => {
         const fakeError = new Error('err');
 
@@ -208,10 +187,6 @@ describe('PartialResultStream', () => {
         const closeStub = sandbox.stub();
 
         stream.on('error', errorStub).on('close', closeStub);
-
-        // tslint:disable-next-line no-any
-        Transform.prototype.destroy = (false as any);
-
         stream.destroy(fakeError);
 
         setImmediate(() => {

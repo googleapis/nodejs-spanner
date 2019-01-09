@@ -132,6 +132,7 @@ interface ResultEvents {
  * @param {RowOptions} [options] The row options.
  */
 export class PartialResultStream extends Transform implements ResultEvents {
+  private _destroyed: boolean;
   private _fields!: s.Field[];
   private _options: RowOptions;
   private _pendingValue?: p.IValue;
@@ -139,6 +140,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
   constructor(options = {}) {
     super({objectMode: true});
 
+    this._destroyed = false;
     this._options = options;
     this._values = [];
   }
@@ -148,9 +150,11 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {Error} [err] Optional error to destroy stream with.
    */
   destroy(err?: Error): void {
-    if (super.destroy) {
-      return super.destroy(err);
+    if (this._destroyed) {
+      return;
     }
+
+    this._destroyed = true;
 
     process.nextTick(() => {
       if (err) {
