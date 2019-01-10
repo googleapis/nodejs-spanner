@@ -66,6 +66,12 @@ const gapic = Object.freeze({
  * @namespace google.spanner.admin
  */
 /**
+ * @namespace google.spanner.admin.database.v1
+ */
+/**
+ * @namespace google.spanner.admin.instance.v1
+ */
+/**
  * @namespace google.spanner.database
  */
 /**
