@@ -134,7 +134,8 @@ class Table {
    */
   create(schema: Schema): CreateTablePromise;
   create(schema: Schema, callback: CreateTableCallback): void;
-  create(schema: Schema, callback?: CreateTableCallback): CreateTablePromise|void {
+  create(schema: Schema, callback?: CreateTableCallback): CreateTablePromise|
+      void {
     this.database.createTable(schema, callback!);
   }
   /**
@@ -596,8 +597,12 @@ class Table {
    */
   read(request: ReadRequest, options?: TransactionOptions): ReadPromise;
   read(request: ReadRequest, callback: ReadCallback): void;
-  read(request: ReadRequest, options: TransactionOptions, callback: ReadCallback): void;
-  read(request: ReadRequest, options?: TransactionOptions|ReadCallback, callback?: ReadCallback): ReadPromise|void {
+  read(
+      request: ReadRequest, options: TransactionOptions,
+      callback: ReadCallback): void;
+  read(
+      request: ReadRequest, options?: TransactionOptions|ReadCallback,
+      callback?: ReadCallback): ReadPromise|void {
     const rows: Row[] = [];
 
     if (is.fn(options)) {

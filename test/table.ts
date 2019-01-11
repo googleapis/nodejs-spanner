@@ -107,9 +107,7 @@ describe('Table', () => {
   describe('createReadStream', () => {
     let fakeReadStream: Transform;
 
-    const REQUEST = {
-      keys: ['key']
-    };
+    const REQUEST = {keys: ['key']};
 
     beforeEach(() => {
       fakeReadStream = through.obj();
@@ -129,40 +127,39 @@ describe('Table', () => {
     it('should destroy the user stream if unable to get a txn', done => {
       const fakeError = new Error('err');
 
-      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
-        callback(fakeError);
-      });
+      sandbox.stub(DATABASE, 'runTransaction')
+          .callsFake((options, callback) => {
+            callback(fakeError);
+          });
 
-      table.createReadStream(REQUEST)
-        .on('error', err => {
-          assert.strictEqual(err, fakeError);
-          done();
-        });
+      table.createReadStream(REQUEST).on('error', err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
     });
 
     it('should destroy the user stream and end the txn on error', done => {
       const fakeError = new Error('err');
 
-      table.createReadStream(REQUEST)
-        .on('error', err => {
-          assert.strictEqual(err, fakeError);
-          done();
-        });
+      table.createReadStream(REQUEST).on('error', err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
 
       fakeReadStream.emit('error', fakeError);
     });
 
     it('should pipe data into the user stream', done => {
       const expectedData = [{}, {}, {}];
-      const received: Array<{}> = []
+      const received: Array<{}> = [];
 
       table.createReadStream(REQUEST)
-        .on('error', done)
-        .on('data', data => received.push(data))
-        .on('end', () => {
-          assert.deepStrictEqual(received, expectedData);
-          done();
-        });
+          .on('error', done)
+          .on('data', data => received.push(data))
+          .on('end', () => {
+            assert.deepStrictEqual(received, expectedData);
+            done();
+          });
 
       expectedData.forEach(data => fakeReadStream.write(data));
       fakeReadStream.end();
@@ -207,9 +204,10 @@ describe('Table', () => {
     it('should return an error if unable to get a txn', done => {
       const fakeError = new Error('err');
 
-      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
-        callback(fakeError);
-      });
+      sandbox.stub(DATABASE, 'runTransaction')
+          .callsFake((options, callback) => {
+            callback(fakeError);
+          });
 
       table.deleteRows(KEYS, err => {
         assert.strictEqual(err, fakeError);
@@ -218,7 +216,8 @@ describe('Table', () => {
     });
 
     it('should delete the rows via transaction', done => {
-      const stub = sandbox.stub(TRANSACTION, 'deleteRows').withArgs(table.name, KEYS);
+      const stub =
+          sandbox.stub(TRANSACTION, 'deleteRows').withArgs(table.name, KEYS);
 
       sandbox.stub(TRANSACTION, 'commit').callsFake(callback => callback());
 
@@ -251,9 +250,10 @@ describe('Table', () => {
     it('should return any runTransaction errors', done => {
       const fakeError = new Error('err');
 
-      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
-        callback(fakeError);
-      });
+      sandbox.stub(DATABASE, 'runTransaction')
+          .callsFake((options, callback) => {
+            callback(fakeError);
+          });
 
       table.insert(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -262,7 +262,8 @@ describe('Table', () => {
     });
 
     it('should insert via transaction', done => {
-      const stub = sandbox.stub(TRANSACTION, 'insert').withArgs(table.name, ROW);
+      const stub =
+          sandbox.stub(TRANSACTION, 'insert').withArgs(table.name, ROW);
 
       table.insert(ROW, err => {
         assert.ifError(err);
@@ -342,9 +343,10 @@ describe('Table', () => {
     it('should return any runTransaction errors', done => {
       const fakeError = new Error('err');
 
-      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
-        callback(fakeError);
-      });
+      sandbox.stub(DATABASE, 'runTransaction')
+          .callsFake((options, callback) => {
+            callback(fakeError);
+          });
 
       table.replace(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -353,7 +355,8 @@ describe('Table', () => {
     });
 
     it('should replace via transaction', done => {
-      const stub = sandbox.stub(TRANSACTION, 'replace').withArgs(table.name, ROW);
+      const stub =
+          sandbox.stub(TRANSACTION, 'replace').withArgs(table.name, ROW);
 
       table.replace(ROW, err => {
         assert.ifError(err);
@@ -369,9 +372,10 @@ describe('Table', () => {
     it('should return any runTransaction errors', done => {
       const fakeError = new Error('err');
 
-      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
-        callback(fakeError);
-      });
+      sandbox.stub(DATABASE, 'runTransaction')
+          .callsFake((options, callback) => {
+            callback(fakeError);
+          });
 
       table.update(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -380,7 +384,8 @@ describe('Table', () => {
     });
 
     it('should update via transaction', done => {
-      const stub = sandbox.stub(TRANSACTION, 'update').withArgs(table.name, ROW);
+      const stub =
+          sandbox.stub(TRANSACTION, 'update').withArgs(table.name, ROW);
 
       table.update(ROW, err => {
         assert.ifError(err);
@@ -396,9 +401,10 @@ describe('Table', () => {
     it('should return any runTransaction errors', done => {
       const fakeError = new Error('err');
 
-      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
-        callback(fakeError);
-      });
+      sandbox.stub(DATABASE, 'runTransaction')
+          .callsFake((options, callback) => {
+            callback(fakeError);
+          });
 
       table.upsert(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -407,7 +413,8 @@ describe('Table', () => {
     });
 
     it('should upsert via transaction', done => {
-      const stub = sandbox.stub(TRANSACTION, 'upsert').withArgs(table.name, ROW);
+      const stub =
+          sandbox.stub(TRANSACTION, 'upsert').withArgs(table.name, ROW);
 
       table.upsert(ROW, err => {
         assert.ifError(err);
