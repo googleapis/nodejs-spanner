@@ -19,274 +19,231 @@
 import * as assert from 'assert';
 const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
-import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
+import {Transform} from 'stream';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
 
-let checkpointStreamOverride;
-function fakeCheckpointStream() {}
-fakeCheckpointStream.obj = (...args) => {
-  return (checkpointStreamOverride || checkpointStream.obj).apply(null, args);
-};
-
-// tslint:disable-next-line variable-name no-any
-let FakeRowBuilderOverrides: any = {};
-class FakeRowBuilder {
-  calledWith_: IArguments;
-  constructor() {
-    this.calledWith_ = arguments;
-  }
-  addRow() {
-    if (!FakeRowBuilderOverrides.addRow) {
-      return this;
-    }
-    return FakeRowBuilderOverrides.addRow.apply(this, arguments);
-  }
-
-  build() {
-    if (!FakeRowBuilderOverrides.build) {
-      return this;
-    }
-    return FakeRowBuilderOverrides.build.apply(this, arguments);
-  }
-
-  flush() {
-    if (!FakeRowBuilderOverrides.flush) {
-      return this;
-    }
-    return FakeRowBuilderOverrides.flush.apply(this, arguments);
-  }
-
-  toJSON() {
-    if (!FakeRowBuilderOverrides.toJSON) {
-      return this;
-    }
-    return FakeRowBuilderOverrides.toJSON.apply(this, arguments);
-  }
-}
+import {codec} from '../src/codec';
+import * as prs from '../src/partial-result-stream';
 
 describe('PartialResultStream', () => {
-  let partialResultStreamModule;
-  let partialResultStreamCached;
+  const sandbox = sinon.createSandbox();
 
-  let fakeRequestStream;
+  // tslint:disable-next-line variable-name
+  let PartialResultStream: typeof prs.PartialResultStream;
   let partialResultStream;
 
-  const RESULT_WITH_TOKEN = {
+  const NAME = 'f1';
+  const VALUE = 'abc';
+  const STATS = {rowCountExact: 1};
+
+  const EXPECTED_ROW = [{name: NAME, value: VALUE}];
+
+  const RESULT = {
     metadata: {
       rowType: {
-        fields: [],
+        fields: [{
+          name: NAME,
+          type: {code: 'STRING'},
+        }],
       },
     },
-    resumeToken: '...',
-    values: [{}],
+    stats: STATS,
+    values: [
+      convertToIValue(VALUE),
+    ],
   };
-  const RESULT_WITHOUT_TOKEN = {
-    metadata: {
-      rowType: {
-        fields: [],
-      },
-    },
-    values: [{}],
-  };
-  const RESULT_WITHOUT_VALUE = {
-    metadata: {
-      rowType: {
-        fields: [],
-      },
-    },
-    resumeToken: '...',
-    values: [],
-  };
-  const RESULT_WITH_STATS = extend(RESULT_WITH_TOKEN, {
-    stats: {},
-  });
 
   before(() => {
-    partialResultStreamModule =
-        proxyquire('../src/partial-result-stream.js', {
-          'checkpoint-stream': fakeCheckpointStream,
-          './row-builder.js': {RowBuilder: FakeRowBuilder},
-        }).partialResultStream;
-    partialResultStreamCached = extend({}, partialResultStreamModule);
+    const prsExports = proxyquire('../src/partial-result-stream.js', {
+      'checkpoint-stream': checkpointStream,
+      'stream': {Transform},
+      './codec': {codec},
+    });
+
+    PartialResultStream = prsExports.PartialResultStream;
+    partialResultStream = prsExports.partialResultStream;
   });
 
-  beforeEach(() => {
-    FakeRowBuilderOverrides = {};
-    checkpointStreamOverride = null;
-    fakeRequestStream = through.obj();
+  afterEach(() => sandbox.restore());
 
-    extend(partialResultStreamModule, partialResultStreamCached);
+  describe('acceptance tests', () => {
+    const TESTS =
+        require('../../test/data/streaming-read-acceptance-test.json').tests;
 
-    partialResultStream = partialResultStreamModule(() => {
-      return fakeRequestStream;
+    beforeEach(() => {
+      sandbox.stub(codec, 'decode').callsFake(value => value);
+    });
+
+    TESTS.forEach(test => {
+      it(`should pass acceptance test: ${test.name}`, done => {
+        // tslint:disable-next-line no-any
+        const values: any[] = [];
+        const stream = new PartialResultStream();
+
+        stream.on('error', done)
+            .on('data',
+                row => {
+                  values.push(row.map(({value}) => value));
+                })
+            .on('end', () => {
+              assert.deepStrictEqual(values, test.result.value);
+              done();
+            });
+
+        test.chunks.forEach(chunk => {
+          const parsed = JSON.parse(chunk);
+          // for whatever reason the acceptance test values come as raw values
+          // where as grpc gives them to us as google.protobuf.Value objects
+          parsed.values = parsed.values.map(convertToIValue);
+          stream.write(parsed);
+        });
+
+        stream.end();
+      });
     });
   });
 
-  describe('stream', () => {
+  // use this block to test anything the acceptance tests don't cover
+  describe('PartialResultStream', () => {
+    let stream: prs.PartialResultStream;
+
     beforeEach(() => {
-      FakeRowBuilderOverrides.addRow = function(row) {
-        this.row = row;
+      stream = new PartialResultStream();
+    });
+
+    afterEach(() => stream.destroy());
+
+    it('should emit the response', done => {
+      const stream = new PartialResultStream();
+
+      stream.on('error', done).on('response', response => {
+        assert.strictEqual(response, RESULT);
+        done();
+      });
+
+      stream.write(RESULT);
+    });
+
+    it('should emit the result stats', done => {
+      stream.on('error', done).on('stats', stats => {
+        assert.strictEqual(stats, STATS);
+        done();
+      });
+
+      stream.write(RESULT);
+    });
+
+    it('should "skip" responses with empty values', done => {
+      const fakeResponse = Object.assign({}, RESULT, {values: []});
+      const shouldNotBeCalled = () => {
+        done(new Error('Should not be called.'));
       };
 
-      FakeRowBuilderOverrides.build = util.noop;
+      stream.on('error', done)
+          .on('data', shouldNotBeCalled)
+          .on('response', response => {
+            assert.strictEqual(response, fakeResponse);
+            done();
+          });
 
-      FakeRowBuilderOverrides.flush = function() {
-        return this.row;
-      };
+      stream.write(fakeResponse);
+    });
 
-      FakeRowBuilderOverrides.toJSON = (obj) => {
-        return [obj];
-      };
+    it('should emit rows', done => {
+      stream.on('error', done).on('data', row => {
+        assert.deepStrictEqual(row, EXPECTED_ROW);
+        done();
+      });
+
+      stream.write(RESULT);
+    });
+
+    it('should emit rows as JSON', done => {
+      const jsonOptions = {};
+      const stream = new PartialResultStream({json: true, jsonOptions});
+
+      const fakeJson = {};
+      const stub = sandbox.stub(codec, 'convertFieldsToJson').returns(fakeJson);
+
+      stream.on('error', done).on('data', json => {
+        assert.deepStrictEqual(json, fakeJson);
+
+        const [row, options] = stub.lastCall.args;
+        assert.deepStrictEqual(row, EXPECTED_ROW);
+        assert.strictEqual(options, jsonOptions);
+        done();
+      });
+
+      stream.write(RESULT);
+    });
+
+    describe('destroy', () => {
+      it('should ponyfill the destroy method', done => {
+        const fakeError = new Error('err');
+
+        const errorStub = sandbox.stub().withArgs(fakeError);
+        const closeStub = sandbox.stub();
+
+        stream.on('error', errorStub).on('close', closeStub);
+        stream.destroy(fakeError);
+
+        setImmediate(() => {
+          assert.strictEqual(errorStub.callCount, 1);
+          assert.strictEqual(closeStub.callCount, 1);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('partialResultStream', () => {
+    let stream: prs.PartialResultStream;
+    let fakeRequestStream;
+
+    const RESULT_WITH_TOKEN = Object.assign({}, RESULT, {
+      resumeToken: '...',
+    });
+
+    beforeEach(() => {
+      fakeRequestStream = through.obj();
+      stream = partialResultStream(() => fakeRequestStream);
     });
 
     it('should only push rows when there is a token', done => {
-      let eventsEmitted = 0;
-
-      function assertDoesNotEmit() {
-        done();  // will cause test to fail
-      }
-
-      function assertDoesEmit(row) {
-        eventsEmitted++;
-
-        if (eventsEmitted < 3) {
-          assert.strictEqual(row, RESULT_WITHOUT_TOKEN);
-        } else {
-          assert.strictEqual(row, RESULT_WITH_TOKEN);
+      const expectedRow = sinon.match(EXPECTED_ROW);
+      const stub = sandbox.stub().withArgs(expectedRow).callsFake(() => {
+        if (stub.callCount === 3) {
           done();
         }
+      });
+
+      function assertDoesNotEmit() {
+        done(new Error('Should not be called.'));
       }
 
-      partialResultStream.on('data', assertDoesNotEmit);
-      fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
-      fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
-      partialResultStream.removeListener('data', assertDoesNotEmit);
+      stream.on('data', assertDoesNotEmit);
+      fakeRequestStream.push(RESULT);
+      fakeRequestStream.push(RESULT);
+      stream.removeListener('data', assertDoesNotEmit);
 
-      partialResultStream.on('data', assertDoesEmit);
+      stream.on('data', stub);
       fakeRequestStream.push(RESULT_WITH_TOKEN);
       fakeRequestStream.push(null);
-    });
-
-    it('should emit the raw response', done => {
-      fakeRequestStream.push(RESULT_WITH_TOKEN);
-      fakeRequestStream.push(null);
-
-      partialResultStream.on('error', done)
-          .on('response',
-              response => {
-                assert.strictEqual(response, RESULT_WITH_TOKEN);
-                done();
-              })
-          .resume();
-    });
-
-    it('should effectively skip rows without values', done => {
-      fakeRequestStream.push(RESULT_WITHOUT_VALUE);
-      fakeRequestStream.push(null);
-
-      partialResultStream.on('error', done).pipe(concat(rows => {
-        assert.strictEqual(rows.length, 0);
-        done();
-      }));
     });
 
     it('should not queue more than 10 results', done => {
       for (let i = 0; i < 11; i += 1) {
-        fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
+        fakeRequestStream.push(RESULT);
       }
+
       fakeRequestStream.push(null);
 
-      partialResultStream.on('error', done).pipe(concat(rows => {
+      stream.on('error', done).pipe(concat(rows => {
         assert.strictEqual(rows.length, 11);
         done();
       }));
-    });
-
-    it('should emit the row stats', done => {
-      setImmediate(() => {
-        fakeRequestStream.push(RESULT_WITH_STATS);
-        fakeRequestStream.push(null);
-      });
-
-      partialResultStream.on('error', done)
-          .on('data', () => {})
-          .on('stats', stats => {
-            assert.strictEqual(stats, RESULT_WITH_STATS.stats);
-            done();
-          });
-    });
-
-    describe('RowBuilder', () => {
-      it('should create a RowBuiler instance', done => {
-        const fields = [];
-        const row = extend(true, {}, RESULT_WITH_TOKEN);
-        row.metadata.rowType.fields = fields;
-
-        FakeRowBuilderOverrides.addRow = function() {
-          assert.strictEqual(this.calledWith_[0], fields);
-          done();
-        };
-
-        fakeRequestStream.push(row);
-        fakeRequestStream.push(null);
-
-        partialResultStream.on('error', done).resume();
-      });
-
-      it('should run chunks through RowBuilder', done => {
-        const builtRow = {};
-        let wasBuildCalled = false;
-
-        FakeRowBuilderOverrides.addRow = (row) => {
-          assert.strictEqual(row, RESULT_WITH_TOKEN);
-        };
-
-        FakeRowBuilderOverrides.build = () => {
-          wasBuildCalled = true;
-        };
-
-        FakeRowBuilderOverrides.flush = () => {
-          return builtRow;
-        };
-
-        fakeRequestStream.push(RESULT_WITH_TOKEN);
-        fakeRequestStream.push(null);
-
-        partialResultStream.on('error', done).pipe(concat(rows => {
-          assert.strictEqual(wasBuildCalled, true);
-          assert.strictEqual(rows[0], builtRow);
-          done();
-        }));
-      });
-
-      it('should return the formatted row as JSON', done => {
-        const options = {
-          json: true,
-          jsonOptions: {},
-        };
-
-        const partialResultStream = partialResultStreamModule(() => {
-          return fakeRequestStream;
-        }, options);
-
-        const formattedRow = {
-          toJSON(options_) {
-            assert.strictEqual(options_, options.jsonOptions);
-            done();
-          },
-        };
-
-        FakeRowBuilderOverrides.flush = () => {
-          return formattedRow;
-        };
-
-        fakeRequestStream.push(RESULT_WITH_TOKEN);
-        fakeRequestStream.push(null);
-
-        partialResultStream.on('error', done).resume();
-      });
     });
 
     it('should resume if there was an error', done => {
@@ -295,150 +252,92 @@ describe('PartialResultStream', () => {
       // - Error event (should retry)
       // - Two rows
       // - Confirm all rows were received.
+      const fakeCheckpointStream = through.obj();
       // tslint:disable-next-line no-any
-      const fakeCheckpointStream: any = through.obj();
-      fakeCheckpointStream.reset = util.noop;
-      checkpointStreamOverride = () => {
-        return fakeCheckpointStream;
-      };
+      const resetStub = (fakeCheckpointStream as any).reset = () => {};
+      sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();
       const secondFakeRequestStream = through.obj();
 
-      let numTimesRequestFnCalled = 0;
+      const requestFnStub = sandbox.stub();
 
-      function requestFn(resumeToken) {
-        numTimesRequestFnCalled++;
+      requestFnStub.onCall(0).callsFake(() => {
+        setTimeout(() => {
+          firstFakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+          firstFakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
 
-        if (numTimesRequestFnCalled === 1) {
           setTimeout(() => {
-            firstFakeRequestStream.push(RESULT_WITH_TOKEN);
-            fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
-            firstFakeRequestStream.push(RESULT_WITH_TOKEN);
-            fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
-
-            setTimeout(() => {
-              // This causes a new request stream to be created.
-              firstFakeRequestStream.emit('error', new Error('Error.'));
-              firstFakeRequestStream.end();
-            }, 50);
+            // This causes a new request stream to be created.
+            firstFakeRequestStream.emit('error', new Error('Error.'));
+            firstFakeRequestStream.end();
           }, 50);
+        }, 50);
 
-          return firstFakeRequestStream;
-        }
+        return firstFakeRequestStream;
+      });
 
-        if (numTimesRequestFnCalled === 2) {
-          assert.strictEqual(resumeToken, RESULT_WITH_TOKEN.resumeToken);
+      requestFnStub.onCall(1).callsFake(resumeToken => {
+        assert.strictEqual(resumeToken, RESULT_WITH_TOKEN.resumeToken);
 
-          setTimeout(() => {
-            secondFakeRequestStream.push(RESULT_WITH_TOKEN);
-            fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
-            secondFakeRequestStream.push(RESULT_WITH_TOKEN);
-            fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+        setTimeout(() => {
+          secondFakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+          secondFakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
 
-            secondFakeRequestStream.end();
-          }, 500);
+          secondFakeRequestStream.end();
+        }, 500);
 
-          return secondFakeRequestStream;
-        }
-        return null;
-      }
+        return secondFakeRequestStream;
+      });
 
-      partialResultStreamModule(requestFn)
-          .on('error', done)
-          .pipe(concat(rows => {
-            assert.strictEqual(rows.length, 4);
-            done();
-          }));
+      partialResultStream(requestFnStub).on('error', done).pipe(concat(rows => {
+        assert.strictEqual(rows.length, 4);
+        done();
+      }));
     });
 
     it('should emit rows and error when there is no token', done => {
+      const expectedRow = sinon.match(EXPECTED_ROW);
       const error = new Error('Error.');
 
-      let eventsEmitted = 0;
+      const dataStub = sandbox.stub().withArgs(expectedRow);
 
-      partialResultStream
-          .on('data',
-              row => {
-                eventsEmitted++;
-                assert.strictEqual(row, RESULT_WITHOUT_TOKEN);
-              })
-          .on('error', err => {
-            assert.strictEqual(eventsEmitted, 3);
-            assert.strictEqual(err, error);
-            done();
-          });
+      stream.on('data', dataStub).on('error', err => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(dataStub.callCount, 3);
+        done();
+      });
 
       // No rows with tokens were emitted, so this should destroy the stream.
-      fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
-      fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
-      fakeRequestStream.push(RESULT_WITHOUT_TOKEN);
+      fakeRequestStream.push(RESULT);
+      fakeRequestStream.push(RESULT);
+      fakeRequestStream.push(RESULT);
       fakeRequestStream.destroy(error);
-    });
-
-    it('should let user abort request', done => {
-      fakeRequestStream.abort = () => {
-        done();
-      };
-
-      const partialResultStream = partialResultStreamModule(() => {
-        return fakeRequestStream;
-      });
-
-      partialResultStream.emit('reading');
-      partialResultStream.abort();
-    });
-
-    it('should silently no-op abort if no active request', done => {
-      // If no request is ever made, then there should be no active
-      // stream to be aborted.
-      fakeRequestStream.abort = () => {
-        done(new Error('No request ever made; nothing to abort.'));
-      };
-
-      // Create a partial result stream and then abort it, without
-      // ever sending a request.
-      const partialResultStream = partialResultStreamModule(() => {
-        return fakeRequestStream;
-      });
-      partialResultStream.abort();
-      done();
-    });
-
-    it('should let user abort the most recent request', done => {
-      fakeRequestStream.abort = () => {
-        done(new Error('Wrong stream was aborted.'));
-      };
-
-      // tslint:disable-next-line no-any
-      const secondFakeRequestStream: any = through.obj();
-      secondFakeRequestStream.abort = () => {
-        done();  // this is the one we want to call
-      };
-
-      let numTimesRequestFnCalled = 0;
-
-      const partialResultStream = partialResultStreamModule(() => {
-        numTimesRequestFnCalled++;
-
-        if (numTimesRequestFnCalled === 1) {
-          return fakeRequestStream;
-        }
-
-        if (numTimesRequestFnCalled === 2) {
-          setImmediate(() => {
-            partialResultStream.abort();
-          });
-          return secondFakeRequestStream;
-        }
-      });
-
-      partialResultStream.emit('reading');
-
-      // Destroy the stream to trigger a new request stream to be created.
-      partialResultStream.on('error', util.noop);
-      fakeRequestStream.push(RESULT_WITH_TOKEN);
-      fakeRequestStream.destroy(new Error('Error.'));
     });
   });
 });
+
+function convertToIValue(value) {
+  let kind: string;
+
+  if (typeof value === 'number') {
+    kind = 'numberValue';
+  } else if (typeof value === 'string') {
+    kind = 'stringValue';
+  } else if (typeof value === 'boolean') {
+    kind = 'boolValue';
+  } else if (Array.isArray(value)) {
+    const values = value.map(convertToIValue);
+    kind = 'listValue';
+    value = {values};
+  } else {
+    kind = 'nullValue';
+    value = null;
+  }
+
+  return {kind, [kind]: value};
+}

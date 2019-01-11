@@ -227,6 +227,7 @@ class TransactionRequest {
         gaxOpts: gaxOptions,
       });
     };
+
     return partialResultStream(makeRequest, {
       json: query.json,
       jsonOptions: query.jsonOptions,
@@ -628,7 +629,8 @@ class TransactionRequest {
    * @abstract
    * @private
    */
-  requestStream(options) {}
+  // tslint:disable-next-line no-any
+  requestStream(options): any {}
   /**
    * Update rows of data within a table.
    *

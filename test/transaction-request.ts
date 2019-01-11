@@ -24,15 +24,11 @@ import {split} from 'split-array-stream';
 import * as through from 'through2';
 
 import {codec} from '../src/codec';
+import {PartialResultStream} from '../src/partial-result-stream';
 import * as tr from '../src/transaction-request';
 
 class FakeGrpcService {
   static encodeValue_;
-}
-
-function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
-  this.calledWith_ = arguments;
-  return this;
 }
 
 let promisified = false;
@@ -49,12 +45,19 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
+// tslint:disable-next-line variable-name
+const FakePartialResultStream = through.ctor({objectMode: true});
+
 describe('TransactionRequest', () => {
   // tslint:disable-next-line variable-name
   let TransactionRequest: typeof tr.TransactionRequest;
   let transactionRequest: tr.TransactionRequest;
 
   const sandbox = sinon.createSandbox();
+  const partialResultStreamStub = sandbox.stub().callsFake(requestFn => {
+    requestFn();
+    return new FakePartialResultStream();
+  });
 
   before(() => {
     TransactionRequest = proxyquire('../src/transaction-request', {
@@ -63,8 +66,10 @@ describe('TransactionRequest', () => {
                            },
                            '@google-cloud/promisify': fakePfy,
                            './codec.js': {codec},
-                           './partial-result-stream':
-                               {partialResultStream: fakePartialResultStream},
+                           './partial-result-stream': {
+                             partialResultStream: partialResultStreamStub,
+                             PartialResultStream: FakePartialResultStream
+                           },
                          }).TransactionRequest;
   });
 
@@ -238,9 +243,7 @@ describe('TransactionRequest', () => {
         done();
       };
 
-      const stream = transactionRequest.createReadStream(TABLE, query);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
+      transactionRequest.createReadStream(TABLE, query);
     });
 
     it('should set the transaction id', done => {
@@ -263,16 +266,13 @@ describe('TransactionRequest', () => {
         done();
       };
 
-      const stream = transactionRequest.createReadStream(TABLE, {});
-      const makeRequestFn = stream.calledWith_[0];
-
-      makeRequestFn();
+      transactionRequest.createReadStream(TABLE, {});
     });
 
     describe('PartialResultStream', () => {
       it('should return PartialResultStream', () => {
         const stream = transactionRequest.createReadStream(TABLE, QUERY);
-        assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
+        assert(stream instanceof FakePartialResultStream);
       });
 
       it('should make and return the correct request', done => {
@@ -293,9 +293,7 @@ describe('TransactionRequest', () => {
           done();
         };
 
-        const stream = transactionRequest.createReadStream(TABLE, query);
-        const makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
+        transactionRequest.createReadStream(TABLE, query);
       });
 
       it('should respect gaxOptions', done => {
@@ -308,9 +306,7 @@ describe('TransactionRequest', () => {
           done();
         };
 
-        const stream = transactionRequest.createReadStream(TABLE, query);
-        const makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
+        transactionRequest.createReadStream(TABLE, query);
       });
 
       it('should assign a resumeToken to the request', done => {
@@ -321,9 +317,12 @@ describe('TransactionRequest', () => {
           done();
         };
 
-        const stream = transactionRequest.createReadStream(TABLE, QUERY);
-        const makeRequestFn = stream.calledWith_[0];
-        makeRequestFn(resumeToken);
+        partialResultStreamStub.callsFake(makeRequestFn => {
+          makeRequestFn(resumeToken);
+          return new FakePartialResultStream();
+        });
+
+        transactionRequest.createReadStream(TABLE, QUERY);
       });
 
       it('should accept json and jsonOptions', () => {
@@ -333,7 +332,7 @@ describe('TransactionRequest', () => {
         };
 
         const stream = transactionRequest.createReadStream(TABLE, query);
-        const streamOptions = stream.calledWith_[1];
+        const [, streamOptions] = partialResultStreamStub.lastCall.args;
 
         assert.strictEqual(streamOptions.json, query.json);
         assert.strictEqual(streamOptions.jsonOptions, query.jsonOptions);
@@ -351,9 +350,7 @@ describe('TransactionRequest', () => {
           done();
         };
 
-        const stream = transactionRequest.createReadStream(TABLE, query);
-        const makeRequestFn = stream.calledWith_[0];
-        makeRequestFn();
+        transactionRequest.createReadStream(TABLE, query);
       });
     });
   });
@@ -521,20 +518,19 @@ describe('TransactionRequest', () => {
 
       const rows = [{}, {}];
 
-      transactionRequest.createReadStream = (table_, keyVals_) => {
-        assert.strictEqual(table_, table);
-        assert.strictEqual(keyVals_, keyVals);
+      sandbox.stub(transactionRequest, 'createReadStream')
+          .withArgs(table, keyVals)
+          .callsFake(() => {
+            const stream = new FakePartialResultStream();
 
-        const stream = through.obj();
+            setImmediate(() => {
+              split(rows, stream).then(() => {
+                stream.end();
+              });
+            });
 
-        setImmediate(() => {
-          split(rows, stream).then(() => {
-            stream.end();
+            return stream as PartialResultStream;
           });
-        });
-
-        return stream;
-      };
 
       transactionRequest.read(table, keyVals, (err, rows_) => {
         assert.ifError(err);
@@ -546,15 +542,15 @@ describe('TransactionRequest', () => {
     it('should execute callback with error', done => {
       const error = new Error('Error.');
 
-      transactionRequest.createReadStream = () => {
-        const stream = through.obj();
+      sandbox.stub(transactionRequest, 'createReadStream').callsFake(() => {
+        const stream = new FakePartialResultStream();
 
         setImmediate(() => {
           stream.destroy(error);
         });
 
-        return stream;
-      };
+        return stream as PartialResultStream;
+      });
 
       transactionRequest.read('table-name', [], err => {
         assert.strictEqual(err, error);
