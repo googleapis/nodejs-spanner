@@ -34,7 +34,7 @@ type Schema = string|string[]|{statements: string[], operationId?: string};
 type CommitPromise = Promise<[s.CommitResponse]>;
 type CreateTablePromise = Promise<[Table, d.Operation, d.GrpcOperation]>;
 type DropTablePromise = Promise<[d.Operation, d.GrpcOperation]>;
-type ReadPromise = Promise<[Row[]]>;
+type ReadPromise = Promise<[Array<Row|Json>]>;
 
 interface CreateTableCallback {
   (err: null|ServiceError, table: Table, operation: d.Operation,
@@ -47,7 +47,7 @@ interface DropTableCallback {
 }
 
 interface ReadCallback {
-  (err: null|ServiceError, rows: Row[]): void;
+  (err: null|ServiceError, rows: Array<Row|Json>): void;
 }
 
 /**
@@ -604,7 +604,7 @@ class Table {
   read(
       request: ReadRequest, options?: TransactionOptions|ReadCallback,
       callback?: ReadCallback): ReadPromise|void {
-    const rows: Row[] = [];
+    const rows: Array<Row|Json> = [];
 
     if (is.fn(options)) {
       callback = options as ReadCallback;
@@ -613,7 +613,7 @@ class Table {
 
     this.createReadStream(request, options as TransactionOptions)
         .on('error', callback!)
-        .on('data', (row: Row) => rows.push(row))
+        .on('data', (row: Row|Json) => rows.push(row))
         .on('end', () => callback!(null, rows));
   }
   /**
