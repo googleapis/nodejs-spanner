@@ -28,6 +28,7 @@ import {PartialResultStream, Row} from './partial-result-stream';
 import {TransactionOptions} from './transaction';
 
 type Key = string|string[];
+type KeyVals = Json|Json[];
 type Schema = string|string[]|{statements: string[], operationId?: string};
 
 type CommitPromise = Promise<[s.CommitResponse]>;
@@ -438,10 +439,10 @@ class Table {
    * region_tag:spanner_insert_data
    * Full example:
    */
-  insert(row: Json): CommitPromise;
-  insert(row: Json, callback: s.CommitCallback): void;
-  insert(row: Json, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('insert', row, callback!);
+  insert(keyVals: KeyVals): CommitPromise;
+  insert(keyVals: KeyVals, callback: s.CommitCallback): void;
+  insert(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('insert', keyVals, callback!);
   }
   /**
    * Configuration object, describing what to read from the table.
@@ -654,10 +655,10 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  replace(row: Json): CommitPromise;
-  replace(row: Json, callback: s.CommitCallback): void;
-  replace(row: Json, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('replace', row, callback!);
+  replace(keyVals: KeyVals): CommitPromise;
+  replace(keyVals: KeyVals, callback: s.CommitCallback): void;
+  replace(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('replace', keyVals, callback!);
   }
   /**
    * Update rows of data within this table.
@@ -702,10 +703,10 @@ class Table {
    * region_tag:spanner_update_data
    * Full example:
    */
-  update(row: Json): CommitPromise;
-  update(row: Json, callback: s.CommitCallback): void;
-  update(row: Json, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('update', row, callback!);
+  update(keyVals: KeyVals): CommitPromise;
+  update(keyVals: KeyVals, callback: s.CommitCallback): void;
+  update(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('update', keyVals, callback!);
   }
   /**
    * Insert or update rows of data within this table.
@@ -746,10 +747,10 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  upsert(row: Json): CommitPromise;
-  upsert(row: Json, callback: s.CommitCallback): void;
-  upsert(row: Json, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('upsert', row, callback!);
+  upsert(keyVals: KeyVals): CommitPromise;
+  upsert(keyVals: KeyVals, callback: s.CommitCallback): void;
+  upsert(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('upsert', keyVals, callback!);
   }
   /**
    * Creates a new transaction and applies the desired mutation via
@@ -760,17 +761,18 @@ class Table {
    * @private
    *
    * @param {string} method CRUD method (insert, update, etc.).
-   * @param {object} row Hash of key value pairs.
+   * @param {object|object[]} keyVals A map of names to values of data to insert
+   *     into this table.
    * @param {function} callback The callback function.
    */
-  private _mutate(method: string, row: Json, callback: s.CommitCallback): void {
+  private _mutate(method: string, keyVals: KeyVals, callback: s.CommitCallback): void {
     this.database.runTransaction(null, (err, transaction) => {
       if (err) {
         callback(err);
         return;
       }
 
-      transaction[method](this.name, row);
+      transaction[method](this.name, keyVals);
       transaction.commit(callback);
     });
   }
