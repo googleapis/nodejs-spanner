@@ -19,7 +19,9 @@ import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
+import {Transform} from 'stream';
 import * as through from 'through2';
 
 let promisified = false;
@@ -33,14 +35,9 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
-class FakeTransactionRequest {
-  static formatTimestampOptions;
-  static formatTimestampOptions_;
-  createReadStream;
-  deleteRows;
-}
-
 describe('Table', () => {
+  const sandbox = sinon.createSandbox();
+
   // tslint:disable-next-line no-any variable-name
   let Table: any;
   // tslint:disable-next-line no-any variable-name
@@ -48,13 +45,18 @@ describe('Table', () => {
   let table;
 
   const DATABASE = {
-    api: {},
-    makePooledRequest_() {
-      return util.noop;
-    },
-    makePooledStreamingRequest_() {
-      return util.noop;
-    },
+    runTransaction: (options, callback) => callback(null, TRANSACTION)
+  };
+
+  const TRANSACTION = {
+    commit: callback => callback(),
+    createReadStream: () => through.obj(),
+    deleteRows: (name, keys) => {},
+    end: () => {},
+    insert: (table, row) => {},
+    replace: (table, row) => {},
+    upsert: (table, row) => {},
+    update: (table, row) => {},
   };
 
   const NAME = 'table-name';
@@ -62,8 +64,6 @@ describe('Table', () => {
   before(() => {
     Table = proxyquire('../src/table.js', {
               '@google-cloud/promisify': fakePfy,
-              './transaction-request.js':
-                  {TransactionRequest: FakeTransactionRequest},
             }).Table;
     TableCached = extend({}, Table);
   });
@@ -73,13 +73,11 @@ describe('Table', () => {
     table = new Table(DATABASE, NAME);
   });
 
+  afterEach(() => sandbox.restore());
+
   describe('instantiation', () => {
     it('should promisify all the things', () => {
       assert(promisified);
-    });
-
-    it('should localize API', () => {
-      assert.strictEqual(table.api, DATABASE.api);
     });
 
     it('should localize database', () => {
@@ -88,18 +86,6 @@ describe('Table', () => {
 
     it('should localize name', () => {
       assert.strictEqual(table.name, NAME);
-    });
-
-    it('should localize request from pool', () => {
-      assert.strictEqual(table.request(), util.noop);
-    });
-
-    it('should localize requestStream from pool', () => {
-      assert.strictEqual(table.requestStream(), util.noop);
-    });
-
-    it('should inherit from TransactionRequest', () => {
-      assert(table instanceof FakeTransactionRequest);
     });
   });
 
@@ -119,60 +105,73 @@ describe('Table', () => {
   });
 
   describe('createReadStream', () => {
-    it('should call and return parent method', () => {
-      const query = 'SELECT * from Everything';
+    let fakeReadStream: Transform;
 
-      const parentMethodReturnValue = {};
+    const REQUEST = {
+      keys: ['key']
+    };
 
-      FakeTransactionRequest.prototype.createReadStream = function(
-          name, query_) {
-        assert.strictEqual(this, table);
-        assert.strictEqual(name, table.name);
-        assert.deepStrictEqual(query_, {
-          keys: query,
+    beforeEach(() => {
+      fakeReadStream = through.obj();
+      sandbox.stub(TRANSACTION, 'createReadStream').returns(fakeReadStream);
+    });
+
+    it('should pass in transaction options', () => {
+      const stub = sandbox.stub(DATABASE, 'runTransaction');
+      const fakeOptions = {};
+
+      table.createReadStream(REQUEST, fakeOptions);
+
+      const [options] = stub.lastCall.args;
+      assert.strictEqual(options, fakeOptions);
+    });
+
+    it('should destroy the user stream if unable to get a txn', done => {
+      const fakeError = new Error('err');
+
+      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
+        callback(fakeError);
+      });
+
+      table.createReadStream(REQUEST)
+        .on('error', err => {
+          assert.strictEqual(err, fakeError);
+          done();
         });
-        return parentMethodReturnValue;
-      };
-
-      const readStream = table.createReadStream(query);
-      assert.strictEqual(readStream, parentMethodReturnValue);
     });
 
-    it('should accept an array of keys', done => {
-      const QUERY = ['a', 'b'];
+    it('should destroy the user stream and end the txn on error', done => {
+      const fakeError = new Error('err');
 
-      FakeTransactionRequest.prototype.createReadStream = (name, query) => {
-        assert.strictEqual(query.keys, QUERY);
-        done();
-      };
+      table.createReadStream(REQUEST)
+        .on('error', err => {
+          assert.strictEqual(err, fakeError);
+          done();
+        });
 
-      table.createReadStream(QUERY);
+      fakeReadStream.emit('error', fakeError);
     });
 
-    it('should support timestamp options', done => {
-      const QUERY = 'SELECT * from Everything';
-      const OPTIONS = {};
-      const FORMATTED_OPTIONS = {};
+    it('should pipe data into the user stream', done => {
+      const expectedData = [{}, {}, {}];
+      const received: Array<{}> = []
 
-      const formatTimestampOptions =
-          FakeTransactionRequest.formatTimestampOptions;
+      table.createReadStream(REQUEST)
+        .on('error', done)
+        .on('data', data => received.push(data))
+        .on('end', () => {
+          assert.deepStrictEqual(received, expectedData);
+          done();
+        });
 
-      FakeTransactionRequest.formatTimestampOptions_ = (options) => {
-        assert.strictEqual(options, OPTIONS);
-        return FORMATTED_OPTIONS;
-      };
+      expectedData.forEach(data => fakeReadStream.write(data));
+      fakeReadStream.end();
+    });
 
-      FakeTransactionRequest.prototype.createReadStream = (name, query) => {
-        FakeTransactionRequest.formatTimestampOptions_ = formatTimestampOptions;
-
-        assert.strictEqual(
-            query.transaction.singleUse.readOnly, FORMATTED_OPTIONS);
-
-        setImmediate(done);
-        return {};
-      };
-
-      table.createReadStream(QUERY, OPTIONS);
+    it('should end the transaction on stream end', done => {
+      sandbox.stub(TRANSACTION, 'end').callsFake(done);
+      table.createReadStream(REQUEST).on('error', done);
+      fakeReadStream.end();
     });
   });
 
@@ -203,24 +202,31 @@ describe('Table', () => {
   });
 
   describe('deleteRows', () => {
-    it('should call and return parent method', () => {
-      const keys = [];
+    const KEYS = ['key'];
 
-      function callback() {}
+    it('should return an error if unable to get a txn', done => {
+      const fakeError = new Error('err');
 
-      const parentMethodReturnValue = {};
+      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
+        callback(fakeError);
+      });
 
-      FakeTransactionRequest.prototype.deleteRows = function(
-          name, keys_, callback_) {
-        assert.strictEqual(this, table);
-        assert.strictEqual(name, table.name);
-        assert.strictEqual(keys_, keys);
-        assert.strictEqual(callback_, callback);
-        return parentMethodReturnValue;
-      };
+      table.deleteRows(KEYS, err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
 
-      const returnValue = table.deleteRows(keys, callback);
-      assert.strictEqual(returnValue, parentMethodReturnValue);
+    it('should delete the rows via transaction', done => {
+      const stub = sandbox.stub(TRANSACTION, 'deleteRows').withArgs(table.name, KEYS);
+
+      sandbox.stub(TRANSACTION, 'commit').callsFake(callback => callback());
+
+      table.deleteRows(KEYS, err => {
+        assert.ifError(err);
+        assert.strictEqual(stub.callCount, 1);
+        done();
+      });
     });
   });
 
@@ -240,23 +246,29 @@ describe('Table', () => {
   });
 
   describe('insert', () => {
-    it('should call and return mutate_ method', () => {
-      const mutateReturnValue = {};
+    const ROW = {};
 
-      const keyVals = [];
+    it('should return any runTransaction errors', done => {
+      const fakeError = new Error('err');
 
-      function callback() {}
+      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
+        callback(fakeError);
+      });
 
-      table.mutate_ = (method, name, keyVals_, callback_) => {
-        assert.strictEqual(method, 'insert');
-        assert.strictEqual(name, table.name);
-        assert.strictEqual(keyVals_, keyVals);
-        assert.strictEqual(callback_, callback);
-        return mutateReturnValue;
-      };
+      table.insert(ROW, err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
 
-      const returnValue = table.insert(keyVals, callback);
-      assert.strictEqual(returnValue, mutateReturnValue);
+    it('should insert via transaction', done => {
+      const stub = sandbox.stub(TRANSACTION, 'insert').withArgs(table.name, ROW);
+
+      table.insert(ROW, err => {
+        assert.ifError(err);
+        assert.strictEqual(stub.callCount, 1);
+        done();
+      });
     });
   });
 
@@ -268,7 +280,7 @@ describe('Table', () => {
 
       table.createReadStream = (keyVals_, options) => {
         assert.strictEqual(keyVals_, keyVals);
-        assert.strictEqual(options, null);
+        assert.deepStrictEqual(options, {});
 
         const stream = through.obj();
 
@@ -325,65 +337,83 @@ describe('Table', () => {
   });
 
   describe('replace', () => {
-    it('should call and return mutate_ method', () => {
-      const mutateReturnValue = {};
+    const ROW = {};
 
-      const keyVals = [];
+    it('should return any runTransaction errors', done => {
+      const fakeError = new Error('err');
 
-      function callback() {}
+      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
+        callback(fakeError);
+      });
 
-      table.mutate_ = (method, name, keyVals_, callback_) => {
-        assert.strictEqual(method, 'replace');
-        assert.strictEqual(name, table.name);
-        assert.strictEqual(keyVals_, keyVals);
-        assert.strictEqual(callback_, callback);
-        return mutateReturnValue;
-      };
+      table.replace(ROW, err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
 
-      const returnValue = table.replace(keyVals, callback);
-      assert.strictEqual(returnValue, mutateReturnValue);
+    it('should replace via transaction', done => {
+      const stub = sandbox.stub(TRANSACTION, 'replace').withArgs(table.name, ROW);
+
+      table.replace(ROW, err => {
+        assert.ifError(err);
+        assert.strictEqual(stub.callCount, 1);
+        done();
+      });
     });
   });
 
   describe('update', () => {
-    it('should call and return mutate_ method', () => {
-      const mutateReturnValue = {};
+    const ROW = {};
 
-      const keyVals = [];
+    it('should return any runTransaction errors', done => {
+      const fakeError = new Error('err');
 
-      function callback() {}
+      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
+        callback(fakeError);
+      });
 
-      table.mutate_ = (method, name, keyVals_, callback_) => {
-        assert.strictEqual(method, 'update');
-        assert.strictEqual(name, table.name);
-        assert.strictEqual(keyVals_, keyVals);
-        assert.strictEqual(callback_, callback);
-        return mutateReturnValue;
-      };
+      table.update(ROW, err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
 
-      const returnValue = table.update(keyVals, callback);
-      assert.strictEqual(returnValue, mutateReturnValue);
+    it('should update via transaction', done => {
+      const stub = sandbox.stub(TRANSACTION, 'update').withArgs(table.name, ROW);
+
+      table.update(ROW, err => {
+        assert.ifError(err);
+        assert.strictEqual(stub.callCount, 1);
+        done();
+      });
     });
   });
 
   describe('upsert', () => {
-    it('should call and return mutate_ method', () => {
-      const mutateReturnValue = {};
+    const ROW = {};
 
-      const keyVals = [];
+    it('should return any runTransaction errors', done => {
+      const fakeError = new Error('err');
 
-      function callback() {}
+      sandbox.stub(DATABASE, 'runTransaction').callsFake((options, callback) => {
+        callback(fakeError);
+      });
 
-      table.mutate_ = (method, name, keyVals_, callback_) => {
-        assert.strictEqual(method, 'insertOrUpdate');
-        assert.strictEqual(name, table.name);
-        assert.strictEqual(keyVals_, keyVals);
-        assert.strictEqual(callback_, callback);
-        return mutateReturnValue;
-      };
+      table.upsert(ROW, err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
 
-      const returnValue = table.upsert(keyVals, callback);
-      assert.strictEqual(returnValue, mutateReturnValue);
+    it('should upsert via transaction', done => {
+      const stub = sandbox.stub(TRANSACTION, 'upsert').withArgs(table.name, ROW);
+
+      table.upsert(ROW, err => {
+        assert.ifError(err);
+        assert.strictEqual(stub.callCount, 1);
+        done();
+      });
     });
   });
 });
