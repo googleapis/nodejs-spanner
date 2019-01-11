@@ -22,6 +22,7 @@ import * as proxyquire from 'proxyquire';
 
 import {Session} from '../src';
 import * as bt from '../src/batch-transaction';
+import {PartialResultStream} from '../src/partial-result-stream';
 
 function getFake(obj: {}) {
   return obj as {
@@ -261,7 +262,7 @@ describe('BatchTransaction', () => {
   });
 
   describe('executeStream', () => {
-    const STREAM = {};
+    const STREAM = {} as PartialResultStream;
 
     it('should make read streams for read partitions', () => {
       const partition = {table: 'abc'};
