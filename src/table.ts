@@ -765,7 +765,8 @@ class Table {
    *     into this table.
    * @param {function} callback The callback function.
    */
-  private _mutate(method: string, keyVals: KeyVals, callback: s.CommitCallback): void {
+  private _mutate(method: string, keyVals: KeyVals, callback: s.CommitCallback):
+      void {
     this.database.runTransaction(null, (err, transaction) => {
       if (err) {
         callback(err);
