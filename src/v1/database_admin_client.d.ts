@@ -16,7 +16,7 @@
 
 import {EventEmitter} from 'events';
 import {CallOptions, GrpcClientOptions} from 'google-gax';
-import {ClientReadableStream, ServiceError} from 'grpc';
+import {ClientReadableStream, ServiceError, StatusObject} from 'grpc';
 import {common as protobuf} from 'protobufjs';
 
 declare class DatabaseAdminClient {
@@ -42,7 +42,7 @@ declare class DatabaseAdminClient {
   getDatabase(request: DatabaseAdminClient.GetDatabaseRequest, callback: DatabaseAdminClient.GetDatabaseCallback): void;
   getDatabase(request: DatabaseAdminClient.GetDatabaseRequest, options: CallOptions, callback: DatabaseAdminClient.GetDatabaseCallback): void;
 
-  updateDatabaseDdl(request: DatabaseAdminClient.UpdateDatabaseDdlRequest, options?: CallOptions): DatabaseAdminClient.CancelablePromise<[DatabaseAdminClient.Operation]>;
+  updateDatabaseDdl(request: DatabaseAdminClient.UpdateDatabaseDdlRequest, options?: CallOptions): DatabaseAdminClient.CancelablePromise<[DatabaseAdminClient.Operation, DatabaseAdminClient.GrpcOperation]>;
   updateDatabaseDdl(request: DatabaseAdminClient.UpdateDatabaseDdlRequest, callback: DatabaseAdminClient.UpdateDatabaseDdlCallback): void;
   updateDatabaseDdl(request: DatabaseAdminClient.UpdateDatabaseDdlRequest, options: CallOptions, callback: DatabaseAdminClient.UpdateDatabaseDdlCallback): void;
 
@@ -147,6 +147,8 @@ declare namespace DatabaseAdminClient {
     operationId?: string;
   }
 
+
+
   interface UpdateDatabaseDdlMetadata {
     database: string;
     statements: string[];
@@ -154,7 +156,7 @@ declare namespace DatabaseAdminClient {
   }
 
   interface UpdateDatabaseDdlCallback {
-    (error: null | ServiceError, operation: Operation): void;
+    (error: null | ServiceError, operation: Operation, response: GrpcOperation): void;
   }
 
   interface DropDatabaseRequest {
@@ -219,9 +221,17 @@ declare namespace DatabaseAdminClient {
   }
 
   interface Operation extends EventEmitter {
-    cancel(): Promise<void>
-    getOperation(): Promise<{}>
+    cancel(): Promise<void>;
+    getOperation(): Promise<{}>;
     getOperation(callback: (err?: Error) => void): void;
-    promise(): Promise<void>
+    promise(): Promise<void>;
+  }
+
+  interface GrpcOperation {
+    name: string;
+    metadata: protobuf.IAny;
+    done: boolean;
+    error?: StatusObject;
+    response?: protobuf.IAny;
   }
 }
