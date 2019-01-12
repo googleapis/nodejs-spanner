@@ -50,9 +50,18 @@ s.replace("src/v1/database_admin_client.js", "../../package.json", "../../../pac
 s.replace("src/v1/instance_admin_client.js", "../../package.json", "../../../package.json")
 s.replace("src/v1/spanner_client.js", "../../package.json", "../../../package.json")
 
+# Fix a dead link issue with specifying regex in comments that looks
+# similar to a Markdown link.
+s.replace("src/v1/doc/google/spanner/**/admin/instance/v1/doc_spanner*.js",
+    "`\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?`",
+    "`[a-z]([-a-z0-9]*[a-z0-9])?`")
+
+s.replace("src/v1/doc/google/spanner/admin/instance/v1/doc_spanner.js",
+    "`\(\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?\)\?`",
+    "`([a-z]([-a-z0-9]*[a-z0-9])?)?`")
+
 # '''
 # Node.js specific cleanup
 # '''
 subprocess.run(['npm', 'install'])
 subprocess.run(['npm', 'run', 'fix'])
-
