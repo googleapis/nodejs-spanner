@@ -52,13 +52,13 @@ s.replace("src/v1/spanner_client.js", "../../package.json", "../../../package.js
 
 # Fix a dead link issue with specifying regex in comments that looks
 # similar to a Markdown link.
-s.replace("src/v1/doc/google/spanner/**/admin/instance/v1/doc_spanner*.js",
+s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
     "`\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?`",
-    "`[a-z]([-a-z0-9]*[a-z0-9])?`")
+    "`\[a-z]([-a-z0-9]*[a-z0-9])?`")
 
-s.replace("src/v1/doc/google/spanner/admin/instance/v1/doc_spanner.js",
+s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
     "`\(\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?\)\?`",
-    "`([a-z]([-a-z0-9]*[a-z0-9])?)?`")
+    "`(\[a-z]([-a-z0-9]*[a-z0-9])?)?`")
 
 # '''
 # Node.js specific cleanup
