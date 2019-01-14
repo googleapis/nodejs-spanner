@@ -60,6 +60,9 @@ const gapic = Object.freeze({
  * @namespace google.rpc
  */
 /**
+ * @namespace google.longrunning
+ */
+/**
  * @namespace google.spanner
  */
 /**

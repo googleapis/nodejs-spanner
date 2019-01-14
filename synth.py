@@ -50,6 +50,16 @@ s.replace("src/v1/database_admin_client.js", "../../package.json", "../../../pac
 s.replace("src/v1/instance_admin_client.js", "../../package.json", "../../../package.json")
 s.replace("src/v1/spanner_client.js", "../../package.json", "../../../package.json")
 
+
+# [START fix-dead-link]
+s.replace('**/doc/google/protobuf/doc_timestamp.js',
+        'https:\/\/cloud\.google\.com[\s\*]*http:\/\/(.*)[\s\*]*\)',
+        r"https://\1)")
+
+s.replace('**/doc/google/protobuf/doc_timestamp.js',
+        'toISOString\]',
+        'toISOString)')
+
 # Fix a dead link issue with specifying regex in comments that looks
 # similar to a Markdown link.
 s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
@@ -59,6 +69,7 @@ s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
 s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
     "`\(\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?\)\?`",
     "`(\[a-z]([-a-z0-9]*[a-z0-9])?)?`")
+# [END fix-dead-link]
 
 # '''
 # Node.js specific cleanup
