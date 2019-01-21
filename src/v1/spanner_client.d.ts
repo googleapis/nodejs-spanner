@@ -252,7 +252,7 @@ declare namespace SpannerClient {
   }
 
   interface CommitCallback {
-    (error: null | ServiceError, response: CommitResponse): void;
+    (error: null | ServiceError, response?: CommitResponse): void;
   }
 
   interface RollbackRequest {
