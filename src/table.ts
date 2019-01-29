@@ -18,14 +18,43 @@
 
 import {promisifyAll} from '@google-cloud/promisify';
 import * as is from 'is';
-import {TransactionRequest} from './transaction-request';
+import {ServiceError} from 'grpc';
+import * as through from 'through2';
+
+import {ReadRequest, Json} from './codec';
+import {Database} from './database';
+import {DatabaseAdminClient as d, SpannerClient as s} from './v1';
+import {PartialResultStream, Row} from './partial-result-stream';
+import {TransactionOptions} from './transaction';
+
+type Key = string|string[];
+type KeyVals = Json|Json[];
+type Schema = string|string[]|{statements: string[], operationId?: string};
+
+type CommitPromise = Promise<[s.CommitResponse]>;
+type CreateTablePromise = Promise<[Table, d.Operation, d.GrpcOperation]>;
+type DropTablePromise = Promise<[d.Operation, d.GrpcOperation]>;
+type ReadPromise = Promise<[Array<Row|Json>]>;
+
+interface CreateTableCallback {
+  (err: null|ServiceError, table: Table, operation: d.Operation,
+   apiResponse: d.GrpcOperation): void;
+}
+
+interface DropTableCallback {
+  (err: null|ServiceError, operation: d.Operation,
+   apiResponse: d.GrpcOperation): void;
+}
+
+interface ReadCallback {
+  (err: null|ServiceError, rows: Array<Row|Json>): void;
+}
 
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
  *
  * @class
- * @extends TransactionRequest
  *
  * @param {Database} database {@link Database} instance.
  * @param {string} name Name of the table.
@@ -38,25 +67,10 @@ import {TransactionRequest} from './transaction-request';
  * const database = instance.database('my-database');
  * const table = database.table('my-table');
  */
-class Table extends TransactionRequest {
-  api;
+class Table {
+  database: Database;
   name: string;
-  constructor(database, name) {
-    super();
-    /**
-     * @name Table#api
-     * @type {object}
-     * @property {v1.DatabaseAdminClient} Database Reference to an instance of the
-     *     low-level {@link v1.DatabaseAdminClient} class used by this
-     *     {@link Table} instance.
-     * @property {v1.InstanceAdminClient} Instance Reference to an instance of the
-     *     low-level {@link v1.InstanceAdminClient} class used by this
-     *     {@link Table} instance.
-     * @property {v1.SpannerClient} Spanner Reference to an instance of the
-     *     low-level {@link v1.SpannerClient} class used by this {@link Table}
-     *     instance.
-     */
-    this.api = database.api;
+  constructor(database: Database, name: string) {
     /**
      * The {@link Database} instance of this {@link Table} instance.
      * @name Table#database
@@ -69,8 +83,6 @@ class Table extends TransactionRequest {
      * @type {string}
      */
     this.name = name;
-    this.request = database.makePooledRequest_.bind(database);
-    this.requestStream = database.makePooledStreamingRequest_.bind(database);
   }
   /**
    * Create a table.
@@ -121,8 +133,11 @@ class Table extends TransactionRequest {
    *     // Table created successfully.
    *   });
    */
-  create(schema, callback) {
-    this.database.createTable(schema, callback);
+  create(schema: Schema): CreateTablePromise;
+  create(schema: Schema, callback: CreateTableCallback): void;
+  create(schema: Schema, callback?: CreateTableCallback): CreateTablePromise|
+      void {
+    this.database.createTable(schema, callback!);
   }
   /**
    * Create a readable object stream to receive rows from the database using key
@@ -131,7 +146,7 @@ class Table extends TransactionRequest {
    * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
-   * @param {ReadStreamRequestOptions} query Configuration object. See
+   * @param {ReadRequest} query Configuration object. See
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
    * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
    * @returns {ReadableStream}
@@ -188,21 +203,27 @@ class Table extends TransactionRequest {
    *     this.end();
    *   });
    */
-  createReadStream(query, options) {
-    if (is.array(query) || is.string(query)) {
-      query = {
-        keys: query,
-      };
-    }
-    if (options) {
-      query.transaction = {
-        singleUse: {
-          readOnly: TransactionRequest.formatTimestampOptions_(options),
-        },
-      };
-    }
-    return TransactionRequest.prototype.createReadStream.call(
-        this, this.name, query);
+  createReadStream(request: ReadRequest, options?: TransactionOptions):
+      PartialResultStream {
+    const proxyStream = through.obj();
+
+    this.database.runTransaction(options, (err, transaction) => {
+      if (err) {
+        proxyStream.destroy(err);
+        return;
+      }
+
+      transaction.createReadStream(this.name, request)
+          .on('error',
+              err => {
+                proxyStream.destroy(err);
+                transaction.end();
+              })
+          .on('end', () => transaction.end())
+          .pipe(proxyStream);
+    });
+
+    return proxyStream as PartialResultStream;
   }
   /**
    * Delete the table. Not to be confused with {@link Table#deleteRows}.
@@ -247,14 +268,16 @@ class Table extends TransactionRequest {
    *     // Table deleted successfully.
    *   });
    */
-  delete(callback) {
+  delete(): DropTablePromise;
+  delete(callback: DropTableCallback): void;
+  delete(callback?: DropTableCallback): DropTablePromise|void {
     if (callback && !is.fn(callback)) {
       throw new TypeError(
           'Unexpected argument, please see Table#deleteRows to delete rows.');
     }
 
     return this.database.updateSchema(
-        'DROP TABLE `' + this.name + '`', callback);
+        'DROP TABLE `' + this.name + '`', callback!);
   }
   /**
    * Delete rows from this table.
@@ -301,9 +324,18 @@ class Table extends TransactionRequest {
    *     const apiResponse = data[0];
    *   });
    */
-  deleteRows(keys, callback) {
-    return TransactionRequest.prototype.deleteRows.call(
-        this, this.name, keys, callback);
+  deleteRows(keys: Key[]): CommitPromise;
+  deleteRows(keys: Key[], callback: s.CommitCallback): void;
+  deleteRows(keys: Key[], callback?: s.CommitCallback): CommitPromise|void {
+    this.database.runTransaction(null, (err, transaction) => {
+      if (err) {
+        callback!(err);
+        return;
+      }
+
+      transaction.deleteRows(this.name, keys);
+      transaction.commit(callback!);
+    });
   }
   /**
    * Drop the table.
@@ -346,8 +378,10 @@ class Table extends TransactionRequest {
    *     // Table dropped successfully.
    *   });
    */
-  drop(callback) {
-    return this.delete(callback);
+  drop(): DropTablePromise;
+  drop(callback: DropTableCallback): void;
+  drop(callback?: DropTableCallback): DropTablePromise|void {
+    return this.delete(callback!);
   }
   /**
    * Insert rows of data into this table.
@@ -405,8 +439,10 @@ class Table extends TransactionRequest {
    * region_tag:spanner_insert_data
    * Full example:
    */
-  insert(keyVals, callback) {
-    return this.mutate_('insert', this.name, keyVals, callback);
+  insert(keyVals: KeyVals): CommitPromise;
+  insert(keyVals: KeyVals, callback: s.CommitCallback): void;
+  insert(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('insert', keyVals, callback!);
   }
   /**
    * Configuration object, describing what to read from the table.
@@ -460,7 +496,7 @@ class Table extends TransactionRequest {
    * on receiving a lot of results from your query, consider using the streaming
    * method, so you can free each result from memory after consuming it.
    *
-   * @param {TableReadRequestOptions} query Configuration object, describing
+   * @param {ReadRequest} query Configuration object, describing
    *     what to read from the table.
    * @param {TransactionOptions} options [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
    * @param {TableReadCallback} [callback] Callback function.
@@ -541,7 +577,7 @@ class Table extends TransactionRequest {
    * //-
    * table.read(query)
    *   .then(function(data) {
-   *     const apiResponse = data[0];
+   *     const rows = data[0];
    *   });
    *
    * @example <caption>include:samples/crud.js</caption>
@@ -560,21 +596,25 @@ class Table extends TransactionRequest {
    * region_tag:spanner_read_data_with_storing_index
    * Reading data using a storing index:
    */
-  read(query, options, callback) {
-    const rows: Array<{}> = [];
+  read(request: ReadRequest, options?: TransactionOptions): ReadPromise;
+  read(request: ReadRequest, callback: ReadCallback): void;
+  read(
+      request: ReadRequest, options: TransactionOptions,
+      callback: ReadCallback): void;
+  read(
+      request: ReadRequest, options?: TransactionOptions|ReadCallback,
+      callback?: ReadCallback): ReadPromise|void {
+    const rows: Array<Row|Json> = [];
+
     if (is.fn(options)) {
-      callback = options;
-      options = null;
+      callback = options as ReadCallback;
+      options = {} as TransactionOptions;
     }
-    this.createReadStream(query, options)
-        .on('error', callback)
-        .on('data',
-            row => {
-              rows.push(row);
-            })
-        .on('end', () => {
-          callback(null, rows);
-        });
+
+    this.createReadStream(request, options as TransactionOptions)
+        .on('error', callback!)
+        .on('data', (row: Row|Json) => rows.push(row))
+        .on('end', () => callback!(null, rows));
   }
   /**
    * Replace rows of data within this table.
@@ -615,8 +655,10 @@ class Table extends TransactionRequest {
    *     const apiResponse = data[0];
    *   });
    */
-  replace(keyVals, callback) {
-    return this.mutate_('replace', this.name, keyVals, callback);
+  replace(keyVals: KeyVals): CommitPromise;
+  replace(keyVals: KeyVals, callback: s.CommitCallback): void;
+  replace(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('replace', keyVals, callback!);
   }
   /**
    * Update rows of data within this table.
@@ -661,8 +703,10 @@ class Table extends TransactionRequest {
    * region_tag:spanner_update_data
    * Full example:
    */
-  update(keyVals, callback) {
-    return this.mutate_('update', this.name, keyVals, callback);
+  update(keyVals: KeyVals): CommitPromise;
+  update(keyVals: KeyVals, callback: s.CommitCallback): void;
+  update(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('update', keyVals, callback!);
   }
   /**
    * Insert or update rows of data within this table.
@@ -703,8 +747,35 @@ class Table extends TransactionRequest {
    *     const apiResponse = data[0];
    *   });
    */
-  upsert(keyVals, callback) {
-    return this.mutate_('insertOrUpdate', this.name, keyVals, callback);
+  upsert(keyVals: KeyVals): CommitPromise;
+  upsert(keyVals: KeyVals, callback: s.CommitCallback): void;
+  upsert(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
+    this._mutate('upsert', keyVals, callback!);
+  }
+  /**
+   * Creates a new transaction and applies the desired mutation via
+   * {@link Transaction#commit}.
+   *
+   * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
+   *
+   * @private
+   *
+   * @param {string} method CRUD method (insert, update, etc.).
+   * @param {object|object[]} keyVals A map of names to values of data to insert
+   *     into this table.
+   * @param {function} callback The callback function.
+   */
+  private _mutate(method: string, keyVals: KeyVals, callback: s.CommitCallback):
+      void {
+    this.database.runTransaction(null, (err, transaction) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      transaction[method](this.name, keyVals);
+      transaction.commit(callback);
+    });
   }
 }
 
