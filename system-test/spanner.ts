@@ -29,7 +29,7 @@ const {Spanner} = require('../src');
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = uuid.v1().split('-').shift();  // get a short uuid
 const LABEL = `gcloud-tests-${RUN_ID}`;
-const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
+const spanner = new Spanner();
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 

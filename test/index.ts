@@ -690,7 +690,8 @@ describe('Spanner', () => {
     });
 
     it('should return an Operation object', () => {
-      const operation = spanner.operation(NAME);
+      // tslint:disable-next-line no-any
+      const operation: any = spanner.operation(NAME);
       assert(operation instanceof FakeGrpcOperation);
       assert.strictEqual(operation.calledWith_[0], spanner);
       assert.strictEqual(operation.calledWith_[1], NAME);
