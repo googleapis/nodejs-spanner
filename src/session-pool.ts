@@ -22,6 +22,7 @@ import * as trace from 'stack-trace';
 import {Database} from './database';
 import {Session} from './session';
 import {Transaction, TransactionOptions} from './transaction';
+import {Any} from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -157,9 +158,8 @@ const DEFAULTS: SessionPoolOptions = {
  * Error to be thrown when attempting to release unknown resources.
  */
 export class ReleaseError extends Error {
-  // tslint:disable-next-line no-any
-  resource: any;
-  constructor(resource) {
+  resource: Any;
+  constructor(resource: Session) {
     super('Unable to release unknown resource.');
     this.resource = resource;
   }
@@ -193,6 +193,7 @@ const enum errors {
 }
 
 interface SessionInventory {
+  [key: string]: Any;
   [types.ReadOnly]: Session[];
   [types.ReadWrite]: Session[];
   borrowed: Set<Session>;
@@ -712,7 +713,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new Error('No resources available.');
     }
 
-    let removeListener;
+    let removeListener: Function|undefined;
 
     const promises = [
       this._onClose.then(() => {
@@ -745,7 +746,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     try {
       await Promise.race(promises);
     } catch (e) {
-      removeListener();
+      removeListener!();
       throw e;
     }
 

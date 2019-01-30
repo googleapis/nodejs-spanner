@@ -44,7 +44,11 @@
     "compile": "tsc -p . && cp -r src/v1 build/src && cp -r protos build && cp test/*.js build/test",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "presystem-test": "npm run compile"
+    "presystem-test": "npm run compile",
+    "proto": "npm run proto:spanner && npm run proto:spanner_instance_admin && npm run proto:spanner_database_admin",
+    "proto:spanner": "mkdir -p proto && pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/v1/spanner.proto | pbts -o proto/spanner.d.ts -",
+    "proto:spanner_instance_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/instance/v1/spanner_instance_admin.proto | pbts -o proto/spanner_instance_admin.d.ts -",
+    "proto:spanner_database_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/database/v1/spanner_database_admin.proto | pbts -o proto/spanner_database_admin.d.ts -"
   },
   "dependencies": {
     "@google-cloud/common-grpc": "^0.9.2",
