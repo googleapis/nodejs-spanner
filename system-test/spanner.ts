@@ -3285,9 +3285,8 @@ describe('Spanner', () => {
         const entry = {Key: `k${i}`, StringValue: `v${i}`};
 
         const [{commitTimestamp}] = await table.insert(entry);
-        const record = Object.assign({}, entry, {
-          timestamp: fromProtoToDate(commitTimestamp),
-        });
+        const timestamp = fromProtoToDate(commitTimestamp).getTime();
+        const record = Object.assign({timestamp}, entry);
 
         records.push(record);
         await wait(100);
@@ -3339,7 +3338,7 @@ describe('Spanner', () => {
 
       it('should accept a read timestamp', done => {
         const options = {
-          readTimestamp: records[1].timestamp,
+          readTimestamp: new Date(records[1].timestamp),
         };
 
         database.getSnapshot(options, (err, transaction) => {
@@ -3379,7 +3378,7 @@ describe('Spanner', () => {
 
       it('should accept an exact staleness', done => {
         const options = {
-          exactStaleness: Date.now() - records[1].timestamp,
+          exactStaleness: Date.now() - records[2].timestamp,
         };
 
         database.getSnapshot(options, (err, transaction) => {
@@ -3456,7 +3455,7 @@ describe('Spanner', () => {
 
       it('should do an exact read with concurrent updates', done => {
         const options = {
-          readTimestamp: records[records.length - 1].timestamp,
+          readTimestamp: new Date(records[records.length - 1].timestamp),
         };
 
         database.getSnapshot(options, (err, transaction) => {
@@ -3495,7 +3494,7 @@ describe('Spanner', () => {
 
       it('should read with staleness & concurrent updates', done => {
         const options = {
-          exactStaleness: Date.now() - records[0].timestamp,
+          exactStaleness: Date.now() - records[1].timestamp,
         };
 
         database.getSnapshot(options, (err, transaction) => {
