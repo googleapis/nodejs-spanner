@@ -211,7 +211,6 @@ interface SessionInventory {
  * you.**
  *
  * @class
- * @ignore
  * @extends {EventEmitter}
  */
 export class SessionPool extends EventEmitter implements SessionPoolInterface {

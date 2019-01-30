@@ -231,9 +231,8 @@ export class Snapshot extends EventEmitter {
    *   }
    * });
    *
-   * //-
-   * // If the callback is omitted, we'll return a Promise.
-   * //-
+   * @example <caption>If the callback is omitted, we'll return a Promise
+   * </caption>
    * transaction.begin()
    *   .then(function(data) {
    *     const apiResponse = data[0];
@@ -962,9 +961,8 @@ promisifyAll(Snapshot, {
  * Dml class should never be used directly. Instead it should be extended upon
  * if a class requires DML capabilities.
  *
+ * @private
  * @class
- * @ignore
- * @extends Snapshot
  */
 export class Dml extends Snapshot {
   protected _seqno = 1;
@@ -983,6 +981,8 @@ export class Dml extends Snapshot {
   /**
    * Execute a DML statements and get the affected row count.
    *
+   * @private
+   *
    * @see {@link Transaction#run}
    *
    * @param {string|object} query A DML statement or
@@ -992,15 +992,6 @@ export class Dml extends Snapshot {
    * @param {object} [query.types] A map of parameter types.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
-   *
-   * @example
-   * const query = 'UPDATE Account SET Balance = 1000 WHERE Key = 1';
-   *
-   * transaction.runUpdate(query, (err, rowCount) => {
-   *   if (err) {
-   *     // Error handling omitted.
-   *   }
-   * });
    */
   runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
       void|RunUpdatePromise {
@@ -1053,7 +1044,6 @@ promisifyAll(Dml);
  *
  * @class
  * @extends Snapshot
- * @borrows Dml#runUpdate as Transaction#runUpdate
  *
  * @param {Session} session The parent Session object.
  *
@@ -1084,6 +1074,30 @@ export class Transaction extends Dml {
    *
    * @name Transaction#commitTimestamp
    * @type {?Date}
+   */
+  /**
+   * Execute a DML statements and get the affected row count.
+   *
+   * @name Transaction#runUpdate
+   *
+   * @see {@link Transaction#run}
+   *
+   * @param {string|object} query A DML statement or
+   *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+   *     object.
+   * @param {object} [query.params] A map of parameter name to values.
+   * @param {object} [query.types] A map of parameter types.
+   * @param {RunUpdateCallback} [callback] Callback function.
+   * @returns {Promise<RunUpdateResponse>}
+   *
+   * @example
+   * const query = 'UPDATE Account SET Balance = 1000 WHERE Key = 1';
+   *
+   * transaction.runUpdate(query, (err, rowCount) => {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   * });
    */
   constructor(session: Session, options = {} as s.ReadWrite) {
     super(session);
