@@ -38,7 +38,8 @@ type ReadPromise = Promise<[Array<Row|Json>]>;
 
 interface CreateTableCallback {
   (err: ServiceError, table?: null, operation?: null, apiResponse?: null): void;
-  (err: null, table: Table, operation: d.Operation, apiResponse: d.GrpcOperation): void;
+  (err: null, table: Table, operation: d.Operation,
+   apiResponse: d.GrpcOperation): void;
 }
 
 interface DropTableCallback {
