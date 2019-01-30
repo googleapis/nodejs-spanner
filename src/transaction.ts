@@ -962,8 +962,8 @@ promisifyAll(Snapshot, {
  * Dml class should never be used directly. Instead it should be extended upon
  * if a class requires DML capabilities.
  *
- * @private
  * @class
+ * @ignore
  * @extends Snapshot
  */
 export class Dml extends Snapshot {

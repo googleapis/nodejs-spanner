@@ -348,7 +348,7 @@ export class Session extends ServiceObject {
    * @returns {Snapshot}
    *
    * @example
-   * const snapshot = session.snapshot();
+   * const snapshot = session.snapshot({strong: false});
    */
   snapshot(options?: TimestampBounds): Snapshot {
     return new Snapshot(this, options);
@@ -359,7 +359,7 @@ export class Session extends ServiceObject {
    * @return {Transaction}
    *
    * @example
-   * const transaction = session.transaction({strong: false});
+   * const transaction = session.transaction();
    */
   transaction(): Transaction {
     return new Transaction(this);

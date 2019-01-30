@@ -210,8 +210,8 @@ interface SessionInventory {
  * **You don't need to use this class directly, connections will be handled for
  * you.**
  *
- * @private
  * @class
+ * @ignore
  * @extends {EventEmitter}
  */
 export class SessionPool extends EventEmitter implements SessionPoolInterface {
