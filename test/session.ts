@@ -31,6 +31,8 @@ const fakePfy = extend({}, pfy, {
     assert.deepStrictEqual(options.exclude, [
       'delete',
       'getMetadata',
+      'partitionedDml',
+      'snapshot',
       'transaction',
     ]);
   },
@@ -43,12 +45,15 @@ class FakeGrpcServiceObject {
   }
 }
 
-class FakeTransaction {
+class FakeSnapshot {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
   }
 }
+
+class FakeTransaction extends FakeSnapshot {}
+class FakePartitionedDml extends FakeSnapshot {}
 
 describe('Session', () => {
   // tslint:disable-next-line no-any variable-name
@@ -70,7 +75,11 @@ describe('Session', () => {
                   ServiceObject: FakeGrpcServiceObject,
                 },
                 '@google-cloud/promisify': fakePfy,
-                './transaction.js': {Transaction: FakeTransaction},
+                './transaction.js': {
+                  Snapshot: FakeSnapshot,
+                  Transaction: FakeTransaction,
+                  PartitionedDml: FakePartitionedDml,
+                },
               }).Session;
   });
 
@@ -210,56 +219,6 @@ describe('Session', () => {
     });
   });
 
-  describe('beginTransaction', () => {
-    let TRANSACTION;
-    let RESPONSE;
-
-    beforeEach(() => {
-      TRANSACTION = {begin: util.noop};
-      RESPONSE = {};
-      session.transaction = () => TRANSACTION;
-    });
-
-    it('should pass the transaction options', done => {
-      const OPTIONS = {};
-
-      session.transaction = (options) => {
-        assert.strictEqual(options, OPTIONS);
-        done();
-      };
-
-      session.beginTransaction(OPTIONS, assert.ifError);
-    });
-
-    it('should begin a transaction', done => {
-      TRANSACTION.begin = (callback) => {
-        callback(null, RESPONSE);
-      };
-
-      session.beginTransaction((err, transaction, response) => {
-        assert.ifError(err);
-        assert.strictEqual(transaction, TRANSACTION);
-        assert.strictEqual(response, RESPONSE);
-        done();
-      });
-    });
-
-    it('should return any api errors', done => {
-      const ERROR = new Error('err');
-
-      TRANSACTION.begin = (callback) => {
-        callback(ERROR, RESPONSE);
-      };
-
-      session.beginTransaction((err, transaction, response) => {
-        assert.strictEqual(err, ERROR);
-        assert.strictEqual(transaction, null);
-        assert.strictEqual(response, RESPONSE);
-        done();
-      });
-    });
-  });
-
   describe('delete', () => {
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
@@ -324,14 +283,30 @@ describe('Session', () => {
     });
   });
 
-  describe('transaction', () => {
-    const ID = 'transaction-id';
+  describe('partitionedDml', () => {
+    it('should return a Transaction object', () => {
+      const pdml = session.partitionedDml();
+      assert(pdml instanceof FakePartitionedDml);
+      assert.strictEqual(pdml.calledWith_[0], session);
+    });
+  });
+
+  describe('snapshot', () => {
+    const OPTIONS = {};
 
     it('should return a Transaction object', () => {
-      const transaction = session.transaction(ID);
+      const snapshot = session.snapshot(OPTIONS);
+      assert(snapshot instanceof FakeSnapshot);
+      assert.strictEqual(snapshot.calledWith_[0], session);
+      assert.strictEqual(snapshot.calledWith_[1], OPTIONS);
+    });
+  });
+
+  describe('transaction', () => {
+    it('should return a Transaction object', () => {
+      const transaction = session.transaction();
       assert(transaction instanceof FakeTransaction);
       assert.strictEqual(transaction.calledWith_[0], session);
-      assert.strictEqual(transaction.calledWith_[1], ID);
     });
   });
 });

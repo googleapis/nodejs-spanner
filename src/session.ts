@@ -25,7 +25,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as r from 'request';
-import {Transaction, TransactionOptions} from './transaction';
+import {Snapshot, Transaction, PartitionedDml, TimestampBounds} from './transaction';
 import {Database} from './database';
 import {ServiceObjectConfig, DeleteCallback, Metadata, MetadataCallback} from '@google-cloud/common';
 import {CreateSessionOptions} from './common';
@@ -35,13 +35,6 @@ export type GetSessionResponse = [Session, r.Response];
 export interface CreateSessionCallback {
   (err: Error|null, session?: Session|null, apiResponse?: r.Response): void;
 }
-
-export interface BeginTransactionCallback {
-  (err: Error|null, transaction?: Transaction|null,
-   apiResponse?: r.Response): void;
-}
-
-export type BeginTransactionResponse = [Transaction, r.Response];
 
 /**
  * Create a Session object to interact with a Cloud Spanner session.
@@ -65,7 +58,7 @@ export type BeginTransactionResponse = [Transaction, r.Response];
  * //-
  * // To create a session manually, don't provide a name.
  * //-
- * const session = database.session_();
+ * const session = database.session();
  *
  * session.create(function(err) {
  *   if (err) {
@@ -79,7 +72,7 @@ export type BeginTransactionResponse = [Transaction, r.Response];
  * //-
  * // To access a previously-created session, provide a name.
  * //-
- * const session = database.session_('session-name');
+ * const session = database.session('session-name');
  */
 export class Session extends ServiceObject {
   id!: string;
@@ -224,51 +217,6 @@ export class Session extends ServiceObject {
     }
   }
   /**
-   * @typedef {array} BeginTransactionResponse
-   * @property {Transaction} 0 The new {@link Transaction}.
-   * @property {object} 1 The full API response.
-   */
-  /**
-   * @callback BeginTransactionCallback
-   * @param {?Error} err Request error, if any.
-   * @param {Transaction} transaction The transaction object.
-   * @param {object} apiResponse The full API response.
-   */
-  /**
-   * Begin a new transaction.
-   *
-   * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
-   *
-   * @param {object=} options Timestamp bound options.
-   * @param {BeginTransactionCallback} callback The callback function.
-   * @returns {Promise<BeginTransactionResponse>}
-   *
-   * @example
-   * session.beginTransaction(function(err, transaction, apiResponse) {});
-   */
-  beginTransaction(options?: TransactionOptions):
-      Promise<BeginTransactionResponse>;
-  beginTransaction(callback: BeginTransactionCallback): void;
-  beginTransaction(
-      options: TransactionOptions, callback: BeginTransactionCallback): void;
-  beginTransaction(
-      options?: TransactionOptions|BeginTransactionCallback,
-      callback?: BeginTransactionCallback):
-      void|Promise<BeginTransactionResponse> {
-    if (is.fn(options)) {
-      callback = options as BeginTransactionCallback;
-      options = {};
-    }
-    const transaction = this.transaction(options as TransactionOptions);
-    transaction.begin((err: Error|null, resp: r.Response) => {
-      if (err) {
-        callback!(err, null, resp);
-        return;
-      }
-      callback!(null, transaction, resp);
-    });
-  }
-  /**
    * Delete a session.
    *
    * Wrapper around {@link v1.SpannerClient#deleteSession}.
@@ -383,18 +331,38 @@ export class Session extends ServiceObject {
         callback!);
   }
   /**
-   * Create a Transaction object.
+   * Create a PartitionedDml transaction.
    *
-   * @throws {Error} If an ID is not provided.
-   *
-   * @param {object} options The options of the transaction.
-   * @return {Transaction} A Transaction object.
+   * @returns {PartitionedDml}
    *
    * @example
-   * const transaction = database.transaction('transaction-id');
+   * const transaction = session.partitionedDml();
    */
-  transaction(options: TransactionOptions): Transaction {
-    return new Transaction(this, options);
+  partitionedDml(): PartitionedDml {
+    return new PartitionedDml(this);
+  }
+  /**
+   * Create a Snapshot transaction.
+   *
+   * @param {TimestampBounds} [options] The timestamp bounds.
+   * @returns {Snapshot}
+   *
+   * @example
+   * const snapshot = session.snapshot();
+   */
+  snapshot(options?: TimestampBounds): Snapshot {
+    return new Snapshot(this, options);
+  }
+  /**
+   * Create a read write Transaction.
+   *
+   * @return {Transaction}
+   *
+   * @example
+   * const transaction = session.transaction({strong: false});
+   */
+  transaction(): Transaction {
+    return new Transaction(this);
   }
   /**
    * Format the session name to include the parent database's name.
@@ -425,5 +393,6 @@ export class Session extends ServiceObject {
  * that a callback is omitted.
  */
 promisifyAll(Session, {
-  exclude: ['delete', 'getMetadata', 'transaction'],
+  exclude:
+      ['delete', 'getMetadata', 'partitionedDml', 'snapshot', 'transaction'],
 });

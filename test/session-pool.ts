@@ -26,6 +26,7 @@ import * as timeSpan from 'time-span';
 import {Session, Transaction} from '../src';
 import {Database} from '../src/database';
 import * as sp from '../src/session-pool';
+import {Transaction} from '../src/transaction';
 
 let pQueueOverride: typeof PQueue|null = null;
 
@@ -38,6 +39,7 @@ class FakeTransaction {
   constructor(options?) {
     this.options = options;
   }
+  async begin(): Promise<void> {}
 }
 
 const fakeStackTrace = extend({}, stackTrace);
@@ -62,10 +64,10 @@ describe('SessionPool', () => {
     }
 
     return Object.assign(new Session(DATABASE, name), props, {
-      beginTransaction: sandbox.stub().resolves([new FakeTransaction()]),
       create: sandbox.stub().resolves(),
       delete: sandbox.stub().resolves(),
       keepAlive: sandbox.stub().resolves(),
+      transaction: sandbox.stub().returns(new FakeTransaction()),
     });
   };
 
@@ -312,9 +314,11 @@ describe('SessionPool', () => {
       sessionPool._destroy = sandbox.stub().resolves();
     });
 
-    it('should clear the inventory', () => {
-      sessionPool.close(noop);
-      assert.strictEqual(sessionPool.size, 0);
+    it('should clear the inventory', done => {
+      sessionPool.close(() => {
+        assert.strictEqual(sessionPool.size, 0);
+        done();
+      });
     });
 
     it('should stop housekeeping', done => {
@@ -1267,14 +1271,15 @@ describe('SessionPool', () => {
   describe('_prepareTransaction', () => {
     it('should prepare a transaction', async () => {
       const fakeSession = createSession();
-      const stub = fakeSession.beginTransaction as sinon.SinonStub;
-      const options = {};
+      const fakeTransaction = new FakeTransaction();
+      const beginStub = sandbox.stub(fakeTransaction, 'begin').resolves();
 
-      await sessionPool._prepareTransaction(fakeSession, options);
+      fakeSession.transaction = sandbox.stub().returns(fakeTransaction);
 
-      assert(fakeSession.txn instanceof FakeTransaction);
-      const calledWith = stub.getCall(0).args[0];
-      assert.strictEqual(calledWith, options);
+      await sessionPool._prepareTransaction(fakeSession);
+
+      assert.strictEqual(fakeSession.txn, fakeTransaction);
+      assert.strictEqual(beginStub.callCount, 1);
     });
   });
 

@@ -18,23 +18,18 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
 import {codec} from './codec';
-import {Transaction} from './transaction';
+import {Snapshot} from './transaction';
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
  * your Cloud Spanner database.
  *
  * @class
- * @extends Transaction
+ * @extends Snapshot
  *
- * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+ * @param {TimestampBounds} [options] [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds).
  */
-class BatchTransaction extends Transaction {
-  readTimestamp?: {};
-
-  constructor(session) {
-    super(session, {readOnly: true});
-  }
+class BatchTransaction extends Snapshot {
   /**
    * Closes all open resources.
    *
@@ -117,15 +112,18 @@ class BatchTransaction extends Transaction {
         sql: query,
       };
     }
-    const reqOpts = codec.encodeQuery(query);
-    const gaxOpts = query.gaxOptions;
+
+    const reqOpts = Object.assign({}, query, Snapshot.encodeParams(query));
+
+    delete reqOpts.gaxOptions;
+    delete reqOpts.types;
 
     this.createPartitions_(
         {
           client: 'SpannerClient',
           method: 'partitionQuery',
           reqOpts,
-          gaxOpts,
+          gaxOpts: query.gaxOptions,
         },
         callback);
   }
@@ -146,7 +144,7 @@ class BatchTransaction extends Transaction {
     });
     config.reqOpts = extend({}, query);
     delete query.partitionOptions;
-    this.request(config, (err, resp) => {
+    this.session.request(config, (err, resp) => {
       if (err) {
         callback(err, null, resp);
         return;
@@ -190,15 +188,20 @@ class BatchTransaction extends Transaction {
    * @returns {Promise<CreateReadPartitionsResponse>}
    */
   createReadPartitions(options, callback) {
-    const reqOpts = codec.encodeRead(options);
-    const gaxOpts = options.gaxOptions;
+    const reqOpts = Object.assign({}, options, {
+      keySet: Snapshot.encodeKeySet(options),
+    });
+
+    delete reqOpts.gaxOptions;
+    delete reqOpts.keys;
+    delete reqOpts.ranges;
 
     this.createPartitions_(
         {
           client: 'SpannerClient',
           method: 'partitionRead',
           reqOpts,
-          gaxOpts,
+          gaxOpts: options.gaxOptions,
         },
         callback);
   }
@@ -301,8 +304,10 @@ class BatchTransaction extends Transaction {
    * });
    */
   identifier() {
+    const transaction = (this.id! as Buffer).toString('base64');
+
     return {
-      transaction: this.id.toString('base64'),
+      transaction,
       session: this.session.id,
       timestamp: this.readTimestamp,
     };

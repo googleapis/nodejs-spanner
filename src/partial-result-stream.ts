@@ -28,7 +28,7 @@ import * as streamEvents from 'stream-events';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {SpannerClient as s} from './v1';
 
-type ResumeToken = string|Uint8Array;
+export type ResumeToken = string|Uint8Array;
 
 /**
  * @callback RequestFunction

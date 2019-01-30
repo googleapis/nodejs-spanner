@@ -21,14 +21,14 @@ import * as is from 'is';
 import {ServiceError} from 'grpc';
 import * as through from 'through2';
 
-import {ReadRequest, Json} from './codec';
+import {Json} from './codec';
 import {Database} from './database';
 import {DatabaseAdminClient as d, SpannerClient as s} from './v1';
 import {PartialResultStream, Row} from './partial-result-stream';
-import {TransactionOptions} from './transaction';
+import {Snapshot, ReadRequest, Transaction, TimestampBounds} from './transaction';
 
-type Key = string|string[];
-type KeyVals = Json|Json[];
+export type Key = string|string[];
+
 type Schema = string|string[]|{statements: string[], operationId?: string};
 
 type CommitPromise = Promise<[s.CommitResponse]>;
@@ -37,17 +37,18 @@ type DropTablePromise = Promise<[d.Operation, d.GrpcOperation]>;
 type ReadPromise = Promise<[Array<Row|Json>]>;
 
 interface CreateTableCallback {
-  (err: null|ServiceError, table: Table, operation: d.Operation,
-   apiResponse: d.GrpcOperation): void;
+  (err: ServiceError, table?: null, operation?: null, apiResponse?: null): void;
+  (err: null, table: Table, operation: d.Operation, apiResponse: d.GrpcOperation): void;
 }
 
 interface DropTableCallback {
-  (err: null|ServiceError, operation: d.Operation,
-   apiResponse: d.GrpcOperation): void;
+  (err: ServiceError, operation?: null, apiResponse?: null): void;
+  (err: null, operation: d.Operation, apiResponse: d.GrpcOperation): void;
 }
 
 interface ReadCallback {
-  (err: null|ServiceError, rows: Array<Row|Json>): void;
+  (err: ServiceError, rows?: null): void;
+  (err: null, rows: Array<Row|Json>): void;
 }
 
 /**
@@ -146,9 +147,10 @@ class Table {
    * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
-   * @param {ReadRequest} query Configuration object. See
+   * @param {ReadRequest} query Configuration object. See official
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
-   * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+   *     API documentation.
+   * @param {TimestampBounds} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
    * @returns {ReadableStream}
    *
    * @example
@@ -203,23 +205,23 @@ class Table {
    *     this.end();
    *   });
    */
-  createReadStream(request: ReadRequest, options?: TransactionOptions):
+  createReadStream(request: ReadRequest, options = {} as TimestampBounds):
       PartialResultStream {
     const proxyStream = through.obj();
 
-    this.database.runTransaction(options, (err, transaction) => {
+    this.database.getSnapshot(options, (err, snapshot) => {
       if (err) {
         proxyStream.destroy(err);
         return;
       }
 
-      transaction.createReadStream(this.name, request)
+      snapshot.createReadStream(this.name, request)
           .on('error',
               err => {
                 proxyStream.destroy(err);
-                transaction.end();
+                snapshot.end();
               })
-          .on('end', () => transaction.end())
+          .on('end', () => snapshot.end())
           .pipe(proxyStream);
     });
 
@@ -327,15 +329,7 @@ class Table {
   deleteRows(keys: Key[]): CommitPromise;
   deleteRows(keys: Key[], callback: s.CommitCallback): void;
   deleteRows(keys: Key[], callback?: s.CommitCallback): CommitPromise|void {
-    this.database.runTransaction(null, (err, transaction) => {
-      if (err) {
-        callback!(err);
-        return;
-      }
-
-      transaction.deleteRows(this.name, keys);
-      transaction.commit(callback!);
-    });
+    return this._mutate('deleteRows', keys, callback!);
   }
   /**
    * Drop the table.
@@ -388,7 +382,7 @@ class Table {
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object|object[]} keyVals A map of names to values of data to insert
+   * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
@@ -439,10 +433,11 @@ class Table {
    * region_tag:spanner_insert_data
    * Full example:
    */
-  insert(keyVals: KeyVals): CommitPromise;
-  insert(keyVals: KeyVals, callback: s.CommitCallback): void;
-  insert(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('insert', keyVals, callback!);
+  insert(rows: object|object[]): CommitPromise;
+  insert(rows: object|object[], callback: s.CommitCallback): void;
+  insert(rows: object|object[], callback?: s.CommitCallback): CommitPromise|
+      void {
+    this._mutate('insert', rows, callback!);
   }
   /**
    * Configuration object, describing what to read from the table.
@@ -498,7 +493,7 @@ class Table {
    *
    * @param {ReadRequest} query Configuration object, describing
    *     what to read from the table.
-   * @param {TransactionOptions} options [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+   * @param {TimestampBounds} options [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
    * @param {TableReadCallback} [callback] Callback function.
    * @returns {Promise<TableReadResponse>}
    *
@@ -596,22 +591,21 @@ class Table {
    * region_tag:spanner_read_data_with_storing_index
    * Reading data using a storing index:
    */
-  read(request: ReadRequest, options?: TransactionOptions): ReadPromise;
+  read(request: ReadRequest, options?: TimestampBounds): ReadPromise;
   read(request: ReadRequest, callback: ReadCallback): void;
+  read(request: ReadRequest, options: TimestampBounds, callback: ReadCallback):
+      void;
   read(
-      request: ReadRequest, options: TransactionOptions,
-      callback: ReadCallback): void;
-  read(
-      request: ReadRequest, options?: TransactionOptions|ReadCallback,
+      request: ReadRequest, options?: TimestampBounds|ReadCallback,
       callback?: ReadCallback): ReadPromise|void {
     const rows: Array<Row|Json> = [];
 
     if (is.fn(options)) {
       callback = options as ReadCallback;
-      options = {} as TransactionOptions;
+      options = {} as TimestampBounds;
     }
 
-    this.createReadStream(request, options as TransactionOptions)
+    this.createReadStream(request, options as TimestampBounds)
         .on('error', callback!)
         .on('data', (row: Row|Json) => rows.push(row))
         .on('end', () => callback!(null, rows));
@@ -621,7 +615,7 @@ class Table {
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object|object[]} keyVals A map of names to values of data to insert
+   * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
@@ -655,17 +649,18 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  replace(keyVals: KeyVals): CommitPromise;
-  replace(keyVals: KeyVals, callback: s.CommitCallback): void;
-  replace(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('replace', keyVals, callback!);
+  replace(rows: object|object[]): CommitPromise;
+  replace(rows: object|object[], callback: s.CommitCallback): void;
+  replace(rows: object|object[], callback?: s.CommitCallback): CommitPromise|
+      void {
+    this._mutate('replace', rows, callback!);
   }
   /**
    * Update rows of data within this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object|object[]} keyVals A map of names to values of data to insert
+   * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
@@ -703,17 +698,18 @@ class Table {
    * region_tag:spanner_update_data
    * Full example:
    */
-  update(keyVals: KeyVals): CommitPromise;
-  update(keyVals: KeyVals, callback: s.CommitCallback): void;
-  update(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('update', keyVals, callback!);
+  update(rows: object|object[]): CommitPromise;
+  update(rows: object|object[], callback: s.CommitCallback): void;
+  update(rows: object|object[], callback?: s.CommitCallback): CommitPromise|
+      void {
+    this._mutate('update', rows, callback!);
   }
   /**
    * Insert or update rows of data within this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object|object[]} keyVals A map of names to values of data to insert
+   * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
@@ -747,10 +743,11 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  upsert(keyVals: KeyVals): CommitPromise;
-  upsert(keyVals: KeyVals, callback: s.CommitCallback): void;
-  upsert(keyVals: KeyVals, callback?: s.CommitCallback): CommitPromise|void {
-    this._mutate('upsert', keyVals, callback!);
+  upsert(rows: object|object[]): CommitPromise;
+  upsert(rows: object|object[], callback: s.CommitCallback): void;
+  upsert(rows: object|object[], callback?: s.CommitCallback): CommitPromise|
+      void {
+    this._mutate('upsert', rows, callback!);
   }
   /**
    * Creates a new transaction and applies the desired mutation via
@@ -761,19 +758,19 @@ class Table {
    * @private
    *
    * @param {string} method CRUD method (insert, update, etc.).
-   * @param {object|object[]} keyVals A map of names to values of data to insert
+   * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {function} callback The callback function.
    */
-  private _mutate(method: string, keyVals: KeyVals, callback: s.CommitCallback):
-      void {
-    this.database.runTransaction(null, (err, transaction) => {
+  private _mutate(
+      method: string, rows: object|object[], callback: s.CommitCallback): void {
+    this.database.runTransaction((err, transaction) => {
       if (err) {
         callback(err);
         return;
       }
 
-      transaction[method](this.name, keyVals);
+      transaction[method](this.name, rows);
       transaction.commit(callback);
     });
   }
