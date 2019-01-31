@@ -19,10 +19,10 @@ import * as is from 'is';
 import * as PQueue from 'p-queue';
 import * as trace from 'stack-trace';
 
+import {Any} from './common';
 import {Database} from './database';
 import {Session} from './session';
 import {Transaction, TransactionOptions} from './transaction';
-import {Any} from './common';
 
 /**
  * @callback SessionPoolCloseCallback
