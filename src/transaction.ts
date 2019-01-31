@@ -98,9 +98,9 @@ export interface RunUpdateCallback {
  *     committed transactions are visible.
  * @property {Date|google.protobuf.Timestamp} [minReadTimestamp] Executes all
  *     reads at a `timestamp >= minReadTimestamp`.
- * @property {number||google.protobuf.Timestamp} [maxStaleness] Read data at a
+ * @property {number|google.protobuf.Timestamp} [maxStaleness] Read data at a
  *     `timestamp >= NOW - maxStaleness` (milliseconds).
- * @property {Date||google.protobuf.Timestamp} [readTimestamp] Executes all
+ * @property {Date|google.protobuf.Timestamp} [readTimestamp] Executes all
  *     reads at the given timestamp.
  * @property {number|google.protobuf.Timestamp} [exactStaleness] Executes all
  *     reads at a timestamp that is `exactStaleness` (milliseconds) old.
