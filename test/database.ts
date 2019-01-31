@@ -240,7 +240,8 @@ describe('Database', () => {
         },
       });
 
-      const database = new Database(instanceInstance, NAME);
+      // tslint:disable-next-line no-any
+      const database: any = new Database(instanceInstance, NAME);
       assert(database instanceof FakeGrpcServiceObject);
 
       const calledWith = database.calledWith_[0];
