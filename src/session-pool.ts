@@ -158,8 +158,8 @@ const DEFAULTS: SessionPoolOptions = {
  * Error to be thrown when attempting to release unknown resources.
  */
 export class ReleaseError extends Error {
-  resource: Any;
-  constructor(resource: Session) {
+  resource: unknown;
+  constructor(resource: unknown) {
     super('Unable to release unknown resource.');
     this.resource = resource;
   }
@@ -713,7 +713,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new Error('No resources available.');
     }
 
-    let removeListener: Function|undefined;
+    let removeListener: Function;
 
     const promises = [
       this._onClose.then(() => {
