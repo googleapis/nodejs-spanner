@@ -23,7 +23,7 @@ import * as sinon from 'sinon';
 import * as stackTrace from 'stack-trace';
 import * as timeSpan from 'time-span';
 
-import {Session} from '../src';
+import {Session, Transaction} from '../src';
 import {Database} from '../src/database';
 import * as sp from '../src/session-pool';
 
@@ -407,7 +407,7 @@ describe('SessionPool', () => {
   describe('getWriteSession', () => {
     it('should pass back the session and txn', done => {
       const fakeSession = createSession();
-      const fakeTxn = new FakeTransaction();
+      const fakeTxn = new FakeTransaction() as Transaction;
 
       fakeSession.txn = fakeTxn;
 
@@ -496,7 +496,7 @@ describe('SessionPool', () => {
 
       sessionPool._release = noop;
       inventory.borrowed.add(session);
-      session.txn = {};
+      session.txn = {} as Transaction;
 
       sessionPool.release(session);
       assert.strictEqual(session.txn, undefined);
@@ -507,7 +507,7 @@ describe('SessionPool', () => {
 
       sessionPool._release = noop;
       inventory.borrowed.add(session);
-      session.lastUsed = null;
+      session.lastUsed = null!;
 
       sessionPool.release(session);
       assert(isAround(session.lastUsed, Date.now()));

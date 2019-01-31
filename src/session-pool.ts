@@ -493,7 +493,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {Session} session The session object.
    */
   _borrow(session: Session): void {
-    const type = session.type;
+    const type = session.type!;
     const index = this._inventory[type].indexOf(session);
 
     this._inventory.borrowed.add(session);
@@ -635,7 +635,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         continue;
       }
 
-      const type = session.type;
+      const type = session.type!;
       const index = this._inventory[type].indexOf(session);
 
       this._inventory[type].splice(index, 1);
@@ -681,7 +681,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     ];
 
     return sessions.filter(session => {
-      return Date.now() - session.lastUsed >= idlesAfter;
+      return Date.now() - session.lastUsed! >= idlesAfter;
     });
   }
 
@@ -763,7 +763,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // unpinged sessions only stay good for 1 hour
     const MAX_DURATION = 60000 * 60;
 
-    return Date.now() - session.lastUsed < MAX_DURATION;
+    return Date.now() - session.lastUsed! < MAX_DURATION;
   }
 
   /**
@@ -830,7 +830,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {Session} session The session object.
    */
   _release(session: Session): void {
-    const type = session.type;
+    const type = session.type!;
 
     this._inventory[type].unshift(session);
     this._inventory.borrowed.delete(session);
