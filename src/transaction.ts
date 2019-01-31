@@ -94,15 +94,16 @@ export interface RunUpdateCallback {
 
 /**
  * @typedef {object} TimestampBounds
- * @property {boolean} [strong=true] Read at a timestamp where all previously committed
- *     transactions are visible.
- * @property {Date} [minReadTimestamp] Executes all reads at a
- *     `timestamp >= minReadTimestamp`.
- * @property {number} [maxStaleness] Read data at a
+ * @property {boolean} [strong=true] Read at a timestamp where all previously
+ *     committed transactions are visible.
+ * @property {Date|google.protobuf.Timestamp} [minReadTimestamp] Executes all
+ *     reads at a `timestamp >= minReadTimestamp`.
+ * @property {number||google.protobuf.Timestamp} [maxStaleness] Read data at a
  *     `timestamp >= NOW - maxStaleness` (milliseconds).
- * @property {Date} [readTimestamp] Executes all reads at the given timestamp.
- * @property {number} [exactStaleness] Executes all reads at a timestamp that is
- *     `exactStaleness` (milliseconds) old.
+ * @property {Date||google.protobuf.Timestamp} [readTimestamp] Executes all
+ *     reads at the given timestamp.
+ * @property {number|google.protobuf.Timestamp} [exactStaleness] Executes all
+ *     reads at a timestamp that is `exactStaleness` (milliseconds) old.
  * @property {boolean} [returnReadTimestamp=true] When true,
  *     {@link Snapshot#readTimestamp} will be populated after
  *     {@link Snapshot#begin} is called.
@@ -878,11 +879,7 @@ export class Snapshot extends EventEmitter {
    */
   static encodeTimestampBounds(options: TimestampBounds): s.ReadOnly {
     const {returnReadTimestamp = true} = options;
-    const readOnly: s.ReadOnly = {returnReadTimestamp};
-
-    if (is.boolean(options.strong)) {
-      readOnly.strong = options.strong;
-    }
+    const readOnly: s.ReadOnly = {};
 
     if (is.date(options.minReadTimestamp)) {
       const timestamp = (options.minReadTimestamp as Date).getTime();
@@ -904,11 +901,18 @@ export class Snapshot extends EventEmitter {
           codec.convertMsToProtoTimestamp(options.exactStaleness as number);
     }
 
+    // if we didn't detect a convenience format, we'll just assume that maybe
+    // they passed in a protobuf timestamp.
+    if (is.empty(readOnly)) {
+      Object.assign(readOnly, options);
+    }
+
+    readOnly.returnReadTimestamp = returnReadTimestamp;
     return readOnly;
   }
 
   /**
-   * Encodes conveience options `param` and `types` into the proto formatted.
+   * Encodes convenience options `param` and `types` into the proto formatted.
    *
    * @private
    * @static

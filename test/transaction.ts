@@ -750,6 +750,21 @@ describe('Transaction', () => {
 
         assert.strictEqual(options.exactStaleness, PROTO_TIMESTAMP);
       });
+
+      it('should accept proto timestamp', () => {
+        const fakeOptions = {
+          exactStaleness: {
+            seconds: 23423424,
+            nanos: 23234234,
+          },
+          returnReadTimestamp: false,
+        };
+
+        const options = Snapshot.encodeTimestampBounds(fakeOptions);
+
+        assert.deepStrictEqual(options, fakeOptions);
+        assert.notStrictEqual(options, fakeOptions);
+      });
     });
 
     describe('encodeParams', () => {

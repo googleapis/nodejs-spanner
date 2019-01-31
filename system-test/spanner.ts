@@ -3285,11 +3285,13 @@ describe('Spanner', () => {
         const entry = {Key: `k${i}`, StringValue: `v${i}`};
 
         const [{commitTimestamp}] = await table.insert(entry);
-        const timestamp = fromProtoToDate(commitTimestamp).getTime();
-        const record = Object.assign({timestamp}, entry);
+        const record = Object.assign(entry, {
+          commitTimestamp,
+          localTimestamp: Date.now(),
+        });
 
         records.push(record);
-        await wait(100);
+        await wait(1000);
       }
     });
 
@@ -3338,7 +3340,7 @@ describe('Spanner', () => {
 
       it('should accept a read timestamp', done => {
         const options = {
-          readTimestamp: new Date(records[1].timestamp),
+          readTimestamp: records[0].commitTimestamp,
         };
 
         database.getSnapshot(options, (err, transaction) => {
@@ -3368,7 +3370,7 @@ describe('Spanner', () => {
         };
 
         // minTimestamp can only be used in single use transactions
-        // so we can't use database.runTransaction here
+        // so we can't use database.getSnapshot here
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows.length, records.length);
@@ -3378,7 +3380,7 @@ describe('Spanner', () => {
 
       it('should accept an exact staleness', done => {
         const options = {
-          exactStaleness: Date.now() - records[2].timestamp,
+          exactStaleness: Date.now() - records[1].localTimestamp,
         };
 
         database.getSnapshot(options, (err, transaction) => {
@@ -3409,7 +3411,7 @@ describe('Spanner', () => {
         };
 
         // maxStaleness can only be used in single use transactions
-        // so we can't use database.runTransaction here
+        // so we can't use database.getSnapshot here
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows.length, records.length);
@@ -3455,7 +3457,7 @@ describe('Spanner', () => {
 
       it('should do an exact read with concurrent updates', done => {
         const options = {
-          readTimestamp: new Date(records[records.length - 1].timestamp),
+          readTimestamp: records[records.length - 1].commitTimestamp,
         };
 
         database.getSnapshot(options, (err, transaction) => {
@@ -3494,7 +3496,7 @@ describe('Spanner', () => {
 
       it('should read with staleness & concurrent updates', done => {
         const options = {
-          exactStaleness: Date.now() - records[1].timestamp,
+          exactStaleness: Date.now() - records[0].localTimestamp,
         };
 
         database.getSnapshot(options, (err, transaction) => {
