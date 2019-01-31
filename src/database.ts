@@ -899,7 +899,7 @@ class Database extends ServiceObject {
         callback = cb!;
       }
 
-      this.pool_.getReadSession((err: null|Error, session: Session) => {
+      this.pool_.getReadSession((err, session) => {
         if (err) {
           callback(err);
           return;
@@ -1222,7 +1222,7 @@ class Database extends ServiceObject {
    * @returns {Promise<RunUpdateResponse>}
    */
   runPartitionedUpdate(query, callback) {
-      this.pool_.getReadSession((err: null|Error, session: Session): void => {
+      this.pool_.getReadSession((err, session) => {
         if (err) {
           callback(err, 0);
           return;
@@ -1368,7 +1368,7 @@ class Database extends ServiceObject {
   runStream(query, options = {}): PartialResultStream {
       const proxyStream = through.obj();
 
-      this.pool_.getReadSession((err: null|Error, session: Session) => {
+      this.pool_.getReadSession((err, session) => {
         if (err) {
           proxyStream.destroy(err);
           return;

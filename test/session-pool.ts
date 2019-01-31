@@ -26,7 +26,6 @@ import * as timeSpan from 'time-span';
 import {Session, Transaction} from '../src';
 import {Database} from '../src/database';
 import * as sp from '../src/session-pool';
-import {Transaction} from '../src/transaction';
 
 let pQueueOverride: typeof PQueue|null = null;
 
@@ -410,8 +409,8 @@ describe('SessionPool', () => {
 
   describe('getWriteSession', () => {
     it('should pass back the session and txn', done => {
+      const fakeTxn = new FakeTransaction() as unknown as Transaction;
       const fakeSession = createSession();
-      const fakeTxn = new FakeTransaction() as Transaction;
 
       fakeSession.txn = fakeTxn;
 

@@ -393,7 +393,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   getWriteSession(callback: GetWriteSessionCallback): void {
     this._acquire(types.ReadWrite)
-        .then(session => callback(null, session, session.txn), callback);
+        .then(session => callback(null, session, session.txn!), callback);
   }
 
   /**

@@ -240,7 +240,7 @@ export class Snapshot extends EventEmitter {
    *   });
    */
   begin(callback?: s.BeginTransactionCallback): void|BeginPromise {
-    const session = this.session.formattedName_;
+    const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: s.BeginTransactionRequest = {session, options};
 
@@ -431,7 +431,7 @@ export class Snapshot extends EventEmitter {
     delete request.ranges;
 
     const reqOpts: s.ReadRequest = Object.assign(request, {
-      session: this.session.formattedName_,
+      session: this.session.formattedName_!,
       transaction,
       table,
       keySet,
@@ -815,7 +815,7 @@ export class Snapshot extends EventEmitter {
     delete query.types;
 
     const reqOpts: s.ExecuteSqlRequest = Object.assign(query, {
-      session: this.session.formattedName_,
+      session: this.session.formattedName_!,
       transaction,
       params,
       paramTypes,
@@ -1160,7 +1160,7 @@ export class Transaction extends Dml {
    */
   commit(callback?: s.CommitCallback): void|CommitPromise {
     const mutations = this._queuedMutations;
-    const session = this.session.formattedName_;
+    const session = this.session.formattedName_!;
     const reqOpts: s.CommitRequest = {mutations, session};
 
     if (this.id) {
@@ -1369,7 +1369,7 @@ export class Transaction extends Dml {
       return;
     }
 
-    const session = this.session.formattedName_;
+    const session = this.session.formattedName_!;
     const transactionId = this.id;
     const reqOpts: s.RollbackRequest = {session, transactionId};
 
