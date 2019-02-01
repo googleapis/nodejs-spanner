@@ -27,7 +27,7 @@ import * as is from 'is';
 import * as r from 'request';
 import {Transaction, TransactionOptions} from './transaction';
 import {Database} from './database';
-import {ServiceObjectConfig, DeleteCallback, Metadata, GetMetadataCallback, ResponseCallback} from '@google-cloud/common';
+import {ServiceObjectConfig, DeleteCallback, Metadata, MetadataCallback} from '@google-cloud/common';
 import {CreateSessionOptions} from './common';
 
 export type GetSessionResponse = [Session, r.Response];
@@ -83,6 +83,10 @@ export type BeginTransactionResponse = [Transaction, r.Response];
  */
 export class Session extends ServiceObject {
   id!: string;
+  formattedName_?: string;
+  type?: string;
+  txn?: Transaction;
+  lastUsed?: number;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -339,8 +343,8 @@ export class Session extends ServiceObject {
    * });
    */
   getMetadata(): Promise<[Metadata]>;
-  getMetadata(callback: GetMetadataCallback): void;
-  getMetadata(callback?: GetMetadataCallback): void|Promise<[Metadata]> {
+  getMetadata(callback: MetadataCallback): void;
+  getMetadata(callback?: MetadataCallback): void|Promise<[Metadata]> {
     const reqOpts = {
       name: this.formattedName_,
     };

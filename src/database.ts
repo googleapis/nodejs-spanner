@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ApiError, DeleteCallback, ExistsCallback, GetMetadataCallback, Metadata, ServiceObjectConfig} from '@google-cloud/common';
+import {ApiError, DeleteCallback, ExistsCallback, Metadata, MetadataCallback, ServiceObjectConfig} from '@google-cloud/common';
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as arrify from 'arrify';
@@ -59,6 +59,8 @@ export interface DatabaseCallback {
  * const database = instance.database('my-database');
  */
 class Database extends ServiceObject {
+  formattedName_: string;
+  pool_: SessionPool;
   constructor(instance: Instance, name: string, poolOptions?) {
     const methods = {
       /**
@@ -659,8 +661,8 @@ class Database extends ServiceObject {
    * });
    */
   getMetadata(): Promise<Metadata>;
-  getMetadata(callback: GetMetadataCallback): void;
-  getMetadata(callback?: GetMetadataCallback): void|Promise<Metadata> {
+  getMetadata(callback: MetadataCallback): void;
+  getMetadata(callback?: MetadataCallback): void|Promise<Metadata> {
       const reqOpts = {
         name: this.formattedName_,
       };
@@ -904,9 +906,9 @@ class Database extends ServiceObject {
           callback(err, null);
           return;
         }
-        session.beginTransaction(options, (err, transaction) => {
+        session!.beginTransaction(options, (err, transaction) => {
           if (err) {
-            this.pool_.release(session);
+            this.pool_.release(session!);
             callback(err, null);
             return;
           }
@@ -930,10 +932,10 @@ class Database extends ServiceObject {
           callback(err, null);
           return;
         }
-        config.reqOpts.session = session.formattedName_;
+        config.reqOpts.session = session!.formattedName_;
         // tslint:disable-next-line only-arrow-functions
         this.request(config, function() {
-          pool.release(session);
+          pool.release(session!);
           callback.apply(null, arguments);
         });
       });
