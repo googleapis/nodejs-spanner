@@ -154,7 +154,8 @@ class BatchTransaction extends Snapshot {
       });
       if (resp.transaction) {
         this.id = resp.transaction.id;
-        this.readTimestamp = resp.transaction.readTimestamp;
+        this.readTimestamp =
+            codec.convertProtoTimestampToDate(resp.transaction.readTimestamp);
       }
       callback(null, partitions, resp);
     });

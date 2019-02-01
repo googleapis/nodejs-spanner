@@ -1,315 +1,341 @@
-// /*!
-//  * Copyright 2018 Google Inc. All Rights Reserved.
-//  *
-//  * Licensed under the Apache License, Version 2.0 (the "License");
-//  * you may not use this file except in compliance with the License.
-//  * You may obtain a copy of the License at
-//  *
-//  *      http://www.apache.org/licenses/LICENSE-2.0
-//  *
-//  * Unless required by applicable law or agreed to in writing, software
-//  * distributed under the License is distributed on an "AS IS" BASIS,
-//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  * See the License for the specific language governing permissions and
-//  * limitations under the License.
-//  */
+/*!
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// import {util} from '@google-cloud/common-grpc';
-// import * as pfy from '@google-cloud/promisify';
-// import * as assert from 'assert';
-// import * as extend from 'extend';
-// import * as proxyquire from 'proxyquire';
+import {util} from '@google-cloud/common-grpc';
+import * as pfy from '@google-cloud/promisify';
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 
-// import {Session} from '../src';
-// import * as bt from '../src/batch-transaction';
-// import {PartialResultStream} from '../src/partial-result-stream';
+import {Session} from '../src';
+import * as bt from '../src/batch-transaction';
+import {PartialResultStream} from '../src/partial-result-stream';
 
-// function getFake(obj: {}) {
-//   return obj as {
-//     calledWith_: IArguments;
-//   };
-// }
+function getFake(obj: {}) {
+  return obj as {
+    calledWith_: IArguments;
+  };
+}
 
-// let promisified = false;
-// const fakePfy = extend({}, pfy, {
-//   promisifyAll(klass, options) {
-//     if (klass.name !== 'BatchTransaction') {
-//       return;
-//     }
-//     assert.deepStrictEqual(options.exclude, ['identifier']);
-//     promisified = true;
-//   },
-// });
+let promisified = false;
+const fakePfy = extend({}, pfy, {
+  promisifyAll(klass, options) {
+    if (klass.name !== 'BatchTransaction') {
+      return;
+    }
+    assert.deepStrictEqual(options.exclude, ['identifier']);
+    promisified = true;
+  },
+});
 
-// // tslint:disable-next-line no-any
-// const fakeCodec: any = {
-//   encode: util.noop,
-//   Int() {},
-//   Float() {},
-//   SpannerDate() {},
-// };
+// tslint:disable-next-line no-any
+const fakeCodec: any = {
+  encode: util.noop,
+  Int() {},
+  Float() {},
+  SpannerDate() {},
+  convertProtoTimestampToDate() {}
+};
 
-// class FakeTransaction {
-//   calledWith_: IArguments;
-//   session;
-//   constructor(session) {
-//     this.calledWith_ = arguments;
-//     this.session = session;
-//   }
-// }
+class FakeTransaction {
+  calledWith_: IArguments;
+  session;
+  constructor(session) {
+    this.calledWith_ = arguments;
+    this.session = session;
+  }
+  static encodeKeySet(query: object): object {
+    return {};
+  }
+  static encodeParams(request: object): object {
+    return {};
+  }
+  run() {}
+  read() {}
+}
 
-// describe('BatchTransaction', () => {
-//   // tslint:disable-next-line variable-name
-//   let BatchTransaction: typeof bt.BatchTransaction;
-//   let batchTransaction: bt.BatchTransaction;
+describe('BatchTransaction', () => {
+  const sandbox = sinon.createSandbox();
 
-//   // tslint:disable-next-line no-any
-//   const SESSION: any = {};
+  // tslint:disable-next-line variable-name
+  let BatchTransaction: typeof bt.BatchTransaction;
+  let batchTransaction: bt.BatchTransaction;
 
-//   before(() => {
-//     BatchTransaction = proxyquire('../src/batch-transaction.js', {
-//                          '@google-cloud/promisify': fakePfy,
-//                          './codec.js': {codec: fakeCodec},
-//                          './transaction.js': {Transaction: FakeTransaction},
-//                        }).BatchTransaction;
-//   });
+  // tslint:disable-next-line no-any
+  const SESSION: any = {};
 
-//   beforeEach(() => {
-//     batchTransaction = new BatchTransaction(SESSION);
-//   });
+  before(() => {
+    BatchTransaction = proxyquire('../src/batch-transaction.js', {
+                         '@google-cloud/promisify': fakePfy,
+                         './codec.js': {codec: fakeCodec},
+                         './transaction.js': {Snapshot: FakeTransaction},
+                       }).BatchTransaction;
+  });
 
-//   describe('instantiation', () => {
-//     it('should promisify all the things', () => {
-//       assert(promisified);
-//     });
+  beforeEach(() => {
+    batchTransaction = new BatchTransaction(SESSION);
+  });
 
-//     it('should extend the Transaction class', () => {
-//       const batchTransaction = new BatchTransaction(SESSION);
-//       assert(batchTransaction instanceof FakeTransaction);
-//       assert.strictEqual(getFake(batchTransaction).calledWith_[0], SESSION);
-//       assert.deepStrictEqual(
-//           getFake(batchTransaction).calledWith_[1], {readOnly: true});
-//     });
-//   });
+  afterEach(() => sandbox.restore());
 
-//   describe('close', () => {
-//     it('should delete the session', done => {
-//       SESSION.delete = (callback) => {
-//         callback();  // the done fn
-//       };
+  describe('instantiation', () => {
+    it('should promisify all the things', () => {
+      assert(promisified);
+    });
 
-//       batchTransaction.close(done);
-//     });
-//   });
+    it('should extend the Snapshot class', () => {
+      const batchTransaction = new BatchTransaction(SESSION);
+      assert(batchTransaction instanceof FakeTransaction);
+    });
+  });
 
-//   describe('createQueryPartitions', () => {
-//     const GAX_OPTS = {a: 'b'};
-//     const QUERY = {
-//       sql: 'SELECT * FROM Singers',
-//       gaxOptions: GAX_OPTS,
-//     };
+  describe('close', () => {
+    it('should delete the session', done => {
+      SESSION.delete = (callback) => {
+        callback();  // the done fn
+      };
 
-//     it('should make the correct request', done => {
-//       fakeCodec.encodeQuery = (query) => {
-//         assert.deepStrictEqual(query, {sql: QUERY.sql});
-//         return QUERY;
-//       };
+      batchTransaction.close(done);
+    });
+  });
 
-//       batchTransaction.createPartitions_ = (config, callback) => {
-//         assert.strictEqual(config.client, 'SpannerClient');
-//         assert.strictEqual(config.method, 'partitionQuery');
-//         assert.strictEqual(config.reqOpts, QUERY);
-//         callback();  // the done fn
-//       };
+  describe('createQueryPartitions', () => {
+    const GAX_OPTS = {a: 'b'};
+    const QUERY = {
+      sql: 'SELECT * FROM Singers',
+      gaxOptions: GAX_OPTS,
+      params: {},
+      types: {},
+    };
 
-//       batchTransaction.createQueryPartitions(QUERY.sql, done);
-//     });
-//   });
+    it('should make the correct request', () => {
+      const fakeParams = {
+        params: {a: 'b'},
+        paramTypes: {a: 'string'},
+      };
 
-//   describe('createPartitions_', () => {
-//     const SESSION = {formattedName_: 'abcdef'};
-//     const ID = 'ghijkl';
-//     const TIMESTAMP = {seconds: 0, nanos: 0};
+      const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-//     const PARTITIONS = [{partitionToken: 'a'}, {partitionToken: 'b'}];
-//     const RESPONSE = {partitions: PARTITIONS};
+      sandbox.stub(FakeTransaction, 'encodeParams')
+          .withArgs(QUERY)
+          .returns(fakeParams);
 
-//     const QUERY = {a: 'b'};
-//     const CONFIG = {reqOpts: QUERY};
+      batchTransaction.createQueryPartitions(QUERY, assert.ifError);
 
-//     beforeEach(() => {
-//       batchTransaction.session = SESSION as {} as Session;
-//       batchTransaction.id = ID;
+      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionQuery');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, GAX_OPTS);
+    });
+  });
 
-//       batchTransaction.request = (config, callback) => {
-//         callback(null, RESPONSE);
-//       };
-//     });
+  describe('createPartitions_', () => {
+    const REQUEST = sandbox.stub();
+    const SESSION = {
+      formattedName_: 'abcdef',
+      request: REQUEST,
+    };
+    const ID = 'ghijkl';
+    const TIMESTAMP = {seconds: 0, nanos: 0};
 
-//     it('should insert the session and transaction ids', done => {
-//       batchTransaction.request = (config) => {
-//         assert.strictEqual(config.reqOpts.a, 'b');
-//         assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
-//         assert.deepStrictEqual(config.reqOpts.transaction, {id: ID});
-//         done();
-//       };
+    const PARTITIONS = [{partitionToken: 'a'}, {partitionToken: 'b'}];
+    const RESPONSE = {partitions: PARTITIONS};
 
-//       batchTransaction.createPartitions_(CONFIG, assert.ifError);
-//     });
+    const QUERY = {a: 'b'};
+    const CONFIG = {reqOpts: QUERY};
 
-//     it('should return any request errors', done => {
-//       const error = new Error('err');
-//       const response = {};
+    beforeEach(() => {
+      batchTransaction.session = SESSION as {} as Session;
+      batchTransaction.id = ID;
 
-//       batchTransaction.request = (config, callback) => {
-//         callback(error, response);
-//       };
+      REQUEST.callsFake((_, callback) => callback(null, RESPONSE));
+    });
 
-//       batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
-//         assert.strictEqual(err, error);
-//         assert.strictEqual(parts, null);
-//         assert.strictEqual(resp, response);
-//         done();
-//       });
-//     });
+    it('should insert the session and transaction ids', () => {
+      batchTransaction.createPartitions_(CONFIG, assert.ifError);
 
-//     it('should return the prepared partition configs', done => {
-//       const expectedQuery = {
-//         a: 'b',
-//         session: SESSION.formattedName_,
-//         transaction: {id: ID},
-//       };
+      const {reqOpts} = REQUEST.lastCall.args[0];
+      assert.strictEqual(reqOpts.a, 'b');
+      assert.strictEqual(reqOpts.session, SESSION.formattedName_);
+      assert.deepStrictEqual(reqOpts.transaction, {id: ID});
+    });
 
-//       batchTransaction.createPartitions_(CONFIG, (err, parts) => {
-//         assert.ifError(err);
+    it('should return any request errors', done => {
+      const error = new Error('err');
+      const response = {};
 
-//         parts.forEach((partition, i) => {
-//           const expectedPartition = extend({}, expectedQuery, PARTITIONS[i]);
-//           assert.deepStrictEqual(partition, expectedPartition);
-//         });
+      REQUEST.callsFake((_, callback) => callback(error, response));
 
-//         done();
-//       });
-//     });
+      batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(parts, null);
+        assert.strictEqual(resp, response);
+        done();
+      });
+    });
 
-//     it('should update the transaction with returned metadata', done => {
-//       const response = extend({}, RESPONSE, {
-//         transaction: {
-//           id: ID,
-//           readTimestamp: TIMESTAMP,
-//         },
-//       });
+    it('should return the prepared partition configs', done => {
+      const expectedQuery = {
+        a: 'b',
+        session: SESSION.formattedName_,
+        transaction: {id: ID},
+      };
 
-//       batchTransaction.request = (config, callback) => {
-//         callback(null, response);
-//       };
+      batchTransaction.createPartitions_(CONFIG, (err, parts) => {
+        assert.ifError(err);
 
-//       batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
-//         assert.strictEqual(resp, response);
-//         assert.strictEqual(batchTransaction.id, ID);
-//         assert.strictEqual(batchTransaction.readTimestamp, TIMESTAMP);
-//         done();
-//       });
-//     });
-//   });
+        parts.forEach((partition, i) => {
+          const expectedPartition = extend({}, expectedQuery, PARTITIONS[i]);
+          assert.deepStrictEqual(partition, expectedPartition);
+        });
 
-//   describe('createReadPartitions', () => {
-//     const GAX_OPTS = {};
-//     const QUERY = {table: 'abc', gaxOptions: GAX_OPTS};
+        done();
+      });
+    });
 
-//     it('should make the correct request', done => {
-//       const query = {};
+    it('should update the transaction with returned metadata', done => {
+      const fakeTimestamp = new Date();
+      const response = extend({}, RESPONSE, {
+        transaction: {
+          id: ID,
+          readTimestamp: TIMESTAMP,
+        },
+      });
 
-//       fakeCodec.encodeRead = (options) => {
-//         assert.strictEqual(options, query);
-//         return QUERY;
-//       };
+      REQUEST.callsFake((_, callback) => callback(null, response));
+      sandbox.stub(fakeCodec, 'convertProtoTimestampToDate')
+          .withArgs(TIMESTAMP)
+          .returns(fakeTimestamp);
 
-//       batchTransaction.createPartitions_ = (config, callback) => {
-//         assert.strictEqual(config.client, 'SpannerClient');
-//         assert.strictEqual(config.method, 'partitionRead');
-//         assert.strictEqual(config.reqOpts, QUERY);
-//         callback();  // the done fn
-//       };
+      batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
+        assert.strictEqual(resp, response);
+        assert.strictEqual(batchTransaction.id, ID);
+        assert.strictEqual(batchTransaction.readTimestamp, fakeTimestamp);
+        done();
+      });
+    });
+  });
 
-//       batchTransaction.createReadPartitions(query, done);
-//     });
-//   });
+  describe('createReadPartitions', () => {
+    const GAX_OPTS = {};
+    const QUERY = {
+      table: 'abc',
+      keys: ['a', 'b'],
+      ranges: [{}, {}],
+      gaxOptions: GAX_OPTS,
+    };
 
-//   describe('execute', () => {
-//     it('should make read requests for read partitions', done => {
-//       const partition = {table: 'abc'};
+    it('should make the correct request', () => {
+      const fakeKeySet = {};
+      const expectedQuery = {
+        table: QUERY.table,
+        keySet: fakeKeySet,
+      };
 
-//       batchTransaction.read = (table, options, callback) => {
-//         assert.strictEqual(table, partition.table);
-//         assert.strictEqual(options, partition);
-//         callback();  // the done fn
-//       };
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-//       batchTransaction.execute(partition, done);
-//     });
+      sandbox.stub(FakeTransaction, 'encodeKeySet')
+          .withArgs(QUERY)
+          .returns(fakeKeySet);
 
-//     it('should make query requests for non-read partitions', done => {
-//       const partition = {sql: 'SELECT * FROM Singers'};
+      batchTransaction.createReadPartitions(QUERY, assert.ifError);
 
-//       batchTransaction.run = (query, callback) => {
-//         assert.strictEqual(query, partition);
-//         callback();  // the done fn
-//       };
+      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionRead');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, GAX_OPTS);
+    });
+  });
 
-//       batchTransaction.execute(partition, done);
-//     });
-//   });
+  describe('execute', () => {
+    it('should make read requests for read partitions', () => {
+      const partition = {table: 'abc'};
+      const stub = sandbox.stub(batchTransaction, 'read');
 
-//   describe('executeStream', () => {
-//     const STREAM = {} as PartialResultStream;
+      batchTransaction.execute(partition, assert.ifError);
 
-//     it('should make read streams for read partitions', () => {
-//       const partition = {table: 'abc'};
+      const [table, options] = stub.lastCall.args;
+      assert.strictEqual(table, partition.table);
+      assert.strictEqual(options, partition);
+    });
 
-//       batchTransaction.createReadStream = (table, options) => {
-//         assert.strictEqual(table, partition.table);
-//         assert.strictEqual(options, partition);
-//         return STREAM;
-//       };
+    it('should make query requests for non-read partitions', () => {
+      const partition = {sql: 'SELECT * FROM Singers'};
+      const stub = sandbox.stub(batchTransaction, 'run');
 
-//       const stream = batchTransaction.executeStream(partition);
+      batchTransaction.execute(partition, assert.ifError);
 
-//       assert.strictEqual(stream, STREAM);
-//     });
+      const query = stub.lastCall.args[0];
+      assert.strictEqual(query, partition);
+    });
+  });
 
-//     it('should make query streams for query partitions', () => {
-//       const partition = {sql: 'SELECT * FROM Singers'};
+  describe('executeStream', () => {
+    const STREAM = {} as PartialResultStream;
 
-//       batchTransaction.runStream = (query) => {
-//         assert.strictEqual(query, partition);
-//         return STREAM;
-//       };
+    it('should make read streams for read partitions', () => {
+      const partition = {table: 'abc'};
 
-//       const stream = batchTransaction.executeStream(partition);
+      batchTransaction.createReadStream = (table, options) => {
+        assert.strictEqual(table, partition.table);
+        assert.strictEqual(options, partition);
+        return STREAM;
+      };
 
-//       assert.strictEqual(stream, STREAM);
-//     });
-//   });
+      const stream = batchTransaction.executeStream(partition);
 
-//   describe('identifier', () => {
-//     const ID = Buffer.from('abc');
-//     const SESSION = {id: 'def'};
-//     const TIMESTAMP = {seconds: 0, nanos: 0};
+      assert.strictEqual(stream, STREAM);
+    });
 
-//     beforeEach(() => {
-//       batchTransaction.id = ID;
-//       batchTransaction.session = SESSION as Session;
-//       batchTransaction.readTimestamp = TIMESTAMP;
-//     });
+    it('should make query streams for query partitions', () => {
+      const partition = {sql: 'SELECT * FROM Singers'};
 
-//     it('should create a transaction identifier', () => {
-//       const expectedId = ID.toString('base64');
-//       const identifier = batchTransaction.identifier();
+      batchTransaction.runStream = (query) => {
+        assert.strictEqual(query, partition);
+        return STREAM;
+      };
 
-//       assert.strictEqual(identifier.transaction, expectedId);
-//       assert.strictEqual(identifier.session, SESSION.id);
-//       assert.strictEqual(identifier.timestamp, TIMESTAMP);
-//     });
-//   });
-// });
+      const stream = batchTransaction.executeStream(partition);
+
+      assert.strictEqual(stream, STREAM);
+    });
+  });
+
+  describe('identifier', () => {
+    const ID = Buffer.from('abc');
+    const SESSION = {id: 'def'};
+    const TIMESTAMP = new Date();
+
+    beforeEach(() => {
+      batchTransaction.id = ID;
+      batchTransaction.session = SESSION as Session;
+      batchTransaction.readTimestamp = TIMESTAMP;
+    });
+
+    it('should create a transaction identifier', () => {
+      const expectedId = ID.toString('base64');
+      const identifier = batchTransaction.identifier();
+
+      assert.strictEqual(identifier.transaction, expectedId);
+      assert.strictEqual(identifier.session, SESSION.id);
+      assert.strictEqual(identifier.timestamp, TIMESTAMP);
+    });
+  });
+});
