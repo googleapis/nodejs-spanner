@@ -149,14 +149,22 @@ class BatchTransaction extends Snapshot {
         callback(err, null, resp);
         return;
       }
+
       const partitions = resp.partitions.map(partition => {
         return extend({}, query, partition);
       });
+
       if (resp.transaction) {
-        this.id = resp.transaction.id;
-        this.readTimestamp =
-            codec.convertProtoTimestampToDate(resp.transaction.readTimestamp);
+        const {id, readTimestamp} = resp.transaction;
+
+        this.id = id;
+
+        if (readTimestamp) {
+          this.readTimestampProto = readTimestamp;
+          this.readTimestamp = codec.convertProtoTimestampToDate(readTimestamp);
+        }
       }
+
       callback(null, partitions, resp);
     });
   }
@@ -305,12 +313,10 @@ class BatchTransaction extends Snapshot {
    * });
    */
   identifier() {
-    const transaction = (this.id! as Buffer).toString('base64');
-
     return {
-      transaction,
+      transaction: (this.id! as Buffer).toString('base64'),
       session: this.session.id,
-      timestamp: this.readTimestamp,
+      timestamp: this.readTimestampProto,
     };
   }
 }

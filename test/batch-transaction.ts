@@ -227,6 +227,7 @@ describe('BatchTransaction', () => {
         assert.strictEqual(resp, response);
         assert.strictEqual(batchTransaction.id, ID);
         assert.strictEqual(batchTransaction.readTimestamp, fakeTimestamp);
+        assert.strictEqual(batchTransaction.readTimestampProto, TIMESTAMP);
         done();
       });
     });
@@ -321,12 +322,12 @@ describe('BatchTransaction', () => {
   describe('identifier', () => {
     const ID = Buffer.from('abc');
     const SESSION = {id: 'def'};
-    const TIMESTAMP = new Date();
+    const TIMESTAMP = {seconds: 0, nanos: 0};
 
     beforeEach(() => {
       batchTransaction.id = ID;
       batchTransaction.session = SESSION as Session;
-      batchTransaction.readTimestamp = TIMESTAMP;
+      batchTransaction.readTimestampProto = TIMESTAMP;
     });
 
     it('should create a transaction identifier', () => {

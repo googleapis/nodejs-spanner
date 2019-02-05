@@ -150,6 +150,7 @@ export class Snapshot extends EventEmitter {
   ended: boolean;
   metadata?: s.Transaction;
   readTimestamp?: Date;
+  readTimestampProto?: p.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -180,6 +181,14 @@ export class Snapshot extends EventEmitter {
    *
    * @name Snapshot#readTimestamp
    * @type {?Date}
+   */
+  /**
+   * **Snapshot only**
+   * The protobuf version of {@link Snapshot#readTimestamp}. This is useful if
+   * you require microsecond precision.
+   *
+   * @name Snapshot#readTimestampProto
+   * @type {?google.protobuf.Timestamp}
    */
   /**
    * @constructor
@@ -262,6 +271,7 @@ export class Snapshot extends EventEmitter {
           this.metadata = resp;
 
           if (readTimestamp) {
+            this.readTimestampProto = readTimestamp;
             this.readTimestamp =
                 codec.convertProtoTimestampToDate(readTimestamp);
           }
@@ -1070,6 +1080,7 @@ promisifyAll(Dml);
  */
 export class Transaction extends Dml {
   commitTimestamp?: Date;
+  commitTimestampProto?: p.ITimestamp;
   private _queuedMutations: s.Mutation[];
 
   /**
@@ -1078,6 +1089,13 @@ export class Transaction extends Dml {
    *
    * @name Transaction#commitTimestamp
    * @type {?Date}
+   */
+  /**
+   * The protobuf version of {@link Transaction#commitTimestamp}. This is useful
+   * if you require microsecond precision.
+   *
+   * @name Transaction#commitTimestampProto
+   * @type {?google.protobuf.Timestamp}
    */
   /**
    * Execute a DML statements and get the affected row count.
@@ -1179,6 +1197,7 @@ export class Transaction extends Dml {
           this.end();
 
           if (resp && resp.commitTimestamp) {
+            this.commitTimestampProto = resp.commitTimestamp;
             this.commitTimestamp =
                 codec.convertProtoTimestampToDate(resp.commitTimestamp);
           }

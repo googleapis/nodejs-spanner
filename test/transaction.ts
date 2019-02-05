@@ -181,6 +181,7 @@ describe('Transaction', () => {
         snapshot.begin(err => {
           assert.ifError(err);
           assert.strictEqual(snapshot.readTimestamp, convertedTimestamp);
+          assert.strictEqual(snapshot.readTimestampProto, readTimestamp);
           done();
         });
       });
@@ -1025,6 +1026,7 @@ describe('Transaction', () => {
         requestCallback(null, {commitTimestamp: fakeTimestamp});
 
         assert.strictEqual(transaction.commitTimestamp, formattedTimestamp);
+        assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
       });
 
       it('should return any errors and the response', () => {
