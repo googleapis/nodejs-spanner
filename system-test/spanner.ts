@@ -1349,7 +1349,6 @@ describe('Spanner', () => {
 
       it('should query in callback mode', done => {
         const options = {
-          readOnly: true,
           strong: true,
         };
 
@@ -1367,7 +1366,6 @@ describe('Spanner', () => {
 
       it('should query in promise mode', done => {
         const options = {
-          readOnly: true,
           strong: true,
         };
 
@@ -1388,7 +1386,6 @@ describe('Spanner', () => {
 
       it('should query in stream mode', done => {
         const options = {
-          readOnly: true,
           strong: true,
         };
         let row;
@@ -3269,73 +3266,56 @@ describe('Spanner', () => {
     const database = instance.database(generateName('database'));
     const table = database.table('TxnTable');
 
+    const schema = `
+      CREATE TABLE TxnTable (
+        Key STRING(MAX) NOT NULL,
+        StringValue STRING(MAX),
+        NumberValue INT64
+      ) PRIMARY KEY (Key)
+    `;
+
     // tslint:disable-next-line no-any
     const records: any[] = [];
 
-    before(() => {
-      return database.create()
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            return table.create(`
-            CREATE TABLE TxnTable (
-              Key STRING(MAX) NOT NULL,
-              StringValue STRING(MAX),
-              NumberValue INT64
-            ) PRIMARY KEY (Key)`);
-          })
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            // tslint:disable-next-line no-any
-            const data: any[] = [];
+    before(async () => {
+      await onPromiseOperationComplete(await database.create());
+      await onPromiseOperationComplete(await table.create(schema));
 
-            for (let i = 0; i < 5; i++) {
-              data.push({
-                Key: 'k' + i,
-                StringValue: 'v' + i,
-              });
-            }
+      for (let i = 0; i < 5; i++) {
+        const entry = {Key: `k${i}`, StringValue: `v${i}`};
 
-            return data.reduce((promise, entry) => {
-              return promise.then(() => {
-                const record = extend(
-                    {
-                      timestamp: new Date(),
-                    },
-                    entry);
+        const [{commitTimestamp}] = await table.insert(entry);
+        const record = Object.assign(entry, {
+          commitTimestamp,
+          localTimestamp: Date.now(),
+        });
 
-                records.push(record);
-
-                return table.insert(entry).then(wait.bind(null, 1000));
-              });
-            }, Promise.resolve());
-          });
+        records.push(record);
+        await wait(1000);
+      }
     });
 
-    describe('read only', () => {
+    describe('snapshots', () => {
       it('should run a read only transaction', done => {
         const options = {
-          readOnly: true,
           strong: true,
         };
 
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           transaction.run('SELECT * FROM TxnTable', (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
-            transaction.end(done);
+            transaction.end();
+            done();
           });
         });
       });
 
       it('should read keys from a table', done => {
-        const options = {
-          readOnly: true,
-        };
-
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot((err, transaction) => {
           assert.ifError(err);
 
           const query = {
@@ -3352,18 +3332,18 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
-            transaction.end(done);
+            transaction.end();
+            done();
           });
         });
       });
 
       it('should accept a read timestamp', done => {
         const options = {
-          readOnly: true,
-          readTimestamp: records[1].timestamp,
+          readTimestamp: records[0].commitTimestamp,
         };
 
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           transaction.run('SELECT * FROM TxnTable', (err, rows) => {
@@ -3376,7 +3356,8 @@ describe('Spanner', () => {
             assert.strictEqual(row.Key, records[0].Key);
             assert.strictEqual(row.StringValue, records[0].StringValue);
 
-            transaction.end(done);
+            transaction.end();
+            done();
           });
         });
       });
@@ -3389,7 +3370,7 @@ describe('Spanner', () => {
         };
 
         // minTimestamp can only be used in single use transactions
-        // so we can't use database.runTransaction here
+        // so we can't use database.getSnapshot here
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows.length, records.length);
@@ -3399,11 +3380,10 @@ describe('Spanner', () => {
 
       it('should accept an exact staleness', done => {
         const options = {
-          readOnly: true,
-          exactStaleness: Math.ceil((Date.now() - records[2].timestamp) / 1000),
+          exactStaleness: Date.now() - records[1].localTimestamp,
         };
 
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           transaction.run('SELECT * FROM TxnTable', (err, rows) => {
@@ -3417,7 +3397,8 @@ describe('Spanner', () => {
             assert.strictEqual(rows[1].Key, 'k1');
             assert.strictEqual(rows[1].StringValue, 'v1');
 
-            transaction.end(done);
+            transaction.end();
+            done();
           });
         });
       });
@@ -3429,8 +3410,8 @@ describe('Spanner', () => {
           maxStaleness: 1,
         };
 
-        // minTimestamp can only be used in single use transactions
-        // so we can't use database.runTransaction here
+        // maxStaleness can only be used in single use transactions
+        // so we can't use database.getSnapshot here
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows.length, records.length);
@@ -3440,11 +3421,10 @@ describe('Spanner', () => {
 
       it('should do a strong read with concurrent updates', done => {
         const options = {
-          readOnly: true,
           strong: true,
         };
 
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -3467,7 +3447,8 @@ describe('Spanner', () => {
                     const row = rows_.pop().toJSON();
                     assert.strictEqual(row.StringValue, 'v4');
 
-                    transaction.end(done);
+                    transaction.end();
+                    done();
                   });
                 });
           });
@@ -3476,11 +3457,10 @@ describe('Spanner', () => {
 
       it('should do an exact read with concurrent updates', done => {
         const options = {
-          readOnly: true,
-          readTimestamp: records[records.length - 1].timestamp,
+          readTimestamp: records[records.length - 1].commitTimestamp,
         };
 
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -3506,7 +3486,8 @@ describe('Spanner', () => {
 
                     assert.deepStrictEqual(rows_, originalRows);
 
-                    transaction.end(done);
+                    transaction.end();
+                    done();
                   });
                 });
           });
@@ -3515,11 +3496,10 @@ describe('Spanner', () => {
 
       it('should read with staleness & concurrent updates', done => {
         const options = {
-          readOnly: true,
-          exactStaleness: Math.ceil((Date.now() - records[1].timestamp) / 1000),
+          exactStaleness: Date.now() - records[0].localTimestamp,
         };
 
-        database.runTransaction(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -3540,7 +3520,8 @@ describe('Spanner', () => {
                     assert.ifError(err);
                     assert.strictEqual(rows.length, 1);
 
-                    transaction.end(done);
+                    transaction.end();
+                    done();
                   });
                 });
           });
@@ -3841,7 +3822,9 @@ describe('Spanner', () => {
             caughtErrorMessage = e.message;
           }
           assert.strictEqual(caughtErrorMessage, expectedErrorMessage);
-          transaction.end(done);
+
+          transaction.end();
+          done();
         });
       });
 
@@ -4132,8 +4115,8 @@ describe('Spanner', () => {
         database.runTransaction(options, (err, transaction) => {
           if (attempts++ === 1) {
             assert.strictEqual(err.code, 4);
-            assert(err.message.startsWith(
-                'Deadline for Transaction exceeded. - 10 ABORTED'));
+            assert(
+                err.message.startsWith('Deadline for Transaction exceeded.'));
 
             done();
             return;

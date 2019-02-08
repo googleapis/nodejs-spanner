@@ -45,7 +45,8 @@ describe('Table', () => {
   let table;
 
   const DATABASE = {
-    runTransaction: (options, callback) => callback(null, TRANSACTION)
+    runTransaction: callback => callback(null, TRANSACTION),
+    getSnapshot: (options, callback) => callback(null, TRANSACTION),
   };
 
   const TRANSACTION = {
@@ -106,47 +107,50 @@ describe('Table', () => {
 
   describe('createReadStream', () => {
     let fakeReadStream: Transform;
+    let getSnapshotStub: sinon.SinonStub;
 
     const REQUEST = {keys: ['key']};
 
     beforeEach(() => {
       fakeReadStream = through.obj();
       sandbox.stub(TRANSACTION, 'createReadStream').returns(fakeReadStream);
+      getSnapshotStub =
+          sandbox.stub(DATABASE, 'getSnapshot')
+              .callsFake((_, callback) => callback(null, TRANSACTION));
     });
 
-    it('should pass in transaction options', () => {
-      const stub = sandbox.stub(DATABASE, 'runTransaction');
+    it('should destroy the user stream if unable to get a snapshot', done => {
+      const fakeError = new Error('err');
+
+      getSnapshotStub.callsFake((options, callback) => callback(fakeError));
+
+      table.createReadStream(REQUEST).on('error', err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
+
+    it('should pass in timestamp bounds', () => {
       const fakeOptions = {};
 
       table.createReadStream(REQUEST, fakeOptions);
 
-      const [options] = stub.lastCall.args;
+      const options = getSnapshotStub.lastCall.args[0];
+
       assert.strictEqual(options, fakeOptions);
     });
 
-    it('should destroy the user stream if unable to get a txn', done => {
-      const fakeError = new Error('err');
-
-      sandbox.stub(DATABASE, 'runTransaction')
-          .callsFake((options, callback) => {
-            callback(fakeError);
-          });
-
-      table.createReadStream(REQUEST).on('error', err => {
-        assert.strictEqual(err, fakeError);
-        done();
-      });
-    });
-
     it('should destroy the user stream and end the txn on error', done => {
+      const endStub = sandbox.stub(TRANSACTION, 'end');
       const fakeError = new Error('err');
 
       table.createReadStream(REQUEST).on('error', err => {
         assert.strictEqual(err, fakeError);
+        assert.strictEqual(endStub.callCount, 1);
         done();
       });
 
-      fakeReadStream.emit('error', fakeError);
+      fakeReadStream.destroy(fakeError);
     });
 
     it('should pipe data into the user stream', done => {
@@ -205,9 +209,7 @@ describe('Table', () => {
       const fakeError = new Error('err');
 
       sandbox.stub(DATABASE, 'runTransaction')
-          .callsFake((options, callback) => {
-            callback(fakeError);
-          });
+          .callsFake(callback => callback(fakeError));
 
       table.deleteRows(KEYS, err => {
         assert.strictEqual(err, fakeError);
@@ -251,9 +253,7 @@ describe('Table', () => {
       const fakeError = new Error('err');
 
       sandbox.stub(DATABASE, 'runTransaction')
-          .callsFake((options, callback) => {
-            callback(fakeError);
-          });
+          .callsFake(callback => callback(fakeError));
 
       table.insert(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -344,9 +344,7 @@ describe('Table', () => {
       const fakeError = new Error('err');
 
       sandbox.stub(DATABASE, 'runTransaction')
-          .callsFake((options, callback) => {
-            callback(fakeError);
-          });
+          .callsFake(callback => callback(fakeError));
 
       table.replace(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -373,9 +371,7 @@ describe('Table', () => {
       const fakeError = new Error('err');
 
       sandbox.stub(DATABASE, 'runTransaction')
-          .callsFake((options, callback) => {
-            callback(fakeError);
-          });
+          .callsFake(callback => callback(fakeError));
 
       table.update(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -402,9 +398,7 @@ describe('Table', () => {
       const fakeError = new Error('err');
 
       sandbox.stub(DATABASE, 'runTransaction')
-          .callsFake((options, callback) => {
-            callback(fakeError);
-          });
+          .callsFake(callback => callback(fakeError));
 
       table.upsert(ROW, err => {
         assert.strictEqual(err, fakeError);

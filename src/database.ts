@@ -20,7 +20,6 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as arrify from 'arrify';
 import * as extend from 'extend';
 import * as is from 'is';
-import * as retry from 'p-retry';
 import * as r from 'request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
@@ -28,12 +27,12 @@ import * as through from 'through2';
 import {BatchTransaction} from './batch-transaction';
 import {codec} from './codec';
 import {Instance} from './instance';
-import {partialResultStream} from './partial-result-stream';
+import {partialResultStream, PartialResultStream} from './partial-result-stream';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {Transaction} from './transaction';
-import {TransactionRequest} from './transaction-request';
+import {PartitionedDml, Snapshot, TimestampBounds, Transaction} from './transaction';
+import {AsyncRunTransactionCallback, AsyncTransactionRunner, RunTransactionCallback, RunTransactionOptions, TransactionRunner} from './transaction-runner';
 
 export interface GetDatabaseOptions {
   autoCreate?: boolean;
@@ -41,6 +40,16 @@ export interface GetDatabaseOptions {
 export type DatabaseResponse = [Database, r.Response];
 export interface DatabaseCallback {
   (err: Error|null, database?: Database, apiResponse?: r.Response): void;
+}
+
+export interface GetSnapshotCallback {
+  (err: Error, snapshot?: null): void;
+  (err: null, snapshot: Snapshot): void;
+}
+
+export interface GetTransactionCallback {
+  (err: Error, transaction?: null): void;
+  (err: null, transaction: Transaction): void;
 }
 
 /**
@@ -152,13 +161,13 @@ class Database extends ServiceObject {
    *   readTimestamp: 1518464696657
    * });
    */
-  batchTransaction(identifier) {
+  batchTransaction(identifier, options?) {
     let session = identifier.session;
     const id = identifier.transaction;
     if (is.string(session)) {
       session = this.session(session);
     }
-    const transaction = new BatchTransaction(session);
+    const transaction = new BatchTransaction(session, options);
     transaction.id = id;
     transaction.readTimestamp = identifier.readTimestamp;
     return transaction;
@@ -232,8 +241,7 @@ class Database extends ServiceObject {
         callback(err, null, resp);
         return;
       }
-      const transaction = this.batchTransaction({session});
-      transaction.options = extend({}, options);
+      const transaction = this.batchTransaction({session}, options);
       transaction.begin((err, resp) => {
         if (err) {
           callback(err, null, resp);
@@ -418,35 +426,18 @@ class Database extends ServiceObject {
    *
    * @private
    *
-   * @param {Transaction} transaction The transaction to decorate.
    * @param {Session} session The session to release.
+   * @param {Transaction} transaction The transaction to observe.
    * @returns {Transaction}
    */
-  decorateTransaction_(transaction, session) {
-      const end = transaction.end.bind(transaction);
-
-      transaction.end = (callback) => {
-        let releaseError = null;
-
+  private _releaseOnEnd(session, transaction) {
+      transaction.once('end', () => {
         try {
           this.pool_.release(session);
         } catch (e) {
-          releaseError = e;
+          this.emit('error', e);
         }
-
-        if (is.fn(callback)) {
-          end(() => callback(releaseError));
-          return;
-        }
-
-        if (releaseError) {
-          return end().then(() => Promise.reject(releaseError));
-        }
-
-        return end();
-      };
-
-      return transaction;
+      });
   }
   /**
    * Delete the database.
@@ -842,6 +833,95 @@ class Database extends ServiceObject {
             callback.apply(null, arguments);
           });
   }
+
+  getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
+  getSnapshot(callback: GetSnapshotCallback): void;
+  getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
+  /**
+   * @typedef {array} GetSnapshotResponse
+   * @property {Snapshot} 0 The snapshot object.
+   */
+  /**
+   * @callback GetSnapshotCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Snapshot} snapshot The snapshot object.
+   */
+  /**
+   * Get a read only {@link Snapshot} transaction.
+   *
+   * Wrapper around {@link v1.SpannerClient#beginTransaction}.
+   *
+   * **NOTE:** When finished with the Snapshot, {@link Snapshot#end} should be
+   * called to release the underlying {@link Session}. **Failure to do could
+   * result in a Session leak.**
+   *
+   * @see {@link v1.SpannerClient#beginTransaction}
+   *
+   * @param {TimestampBounds} [options] Timestamp bounds.
+   * @param {GetSnapshotCallback} [callback] Callback function.
+   * @returns {Promise<GetSnapshotResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * database.getSnapshot(function(err, transaction) {
+   *   if (err) {
+   *    // Error handling omitted.
+   *   }
+   *
+   *   // Should be called when finished with Snapshot.
+   *   transaction.end();
+   * });
+   *
+   * @example <caption>If the callback is omitted, we'll return a Promise.
+   * </caption>
+   * database.getSnapshot().then(function(data) {
+   *   const transaction = data[0];
+   * });
+   *
+   * @example <caption>include:samples/transaction.js</caption>
+   * region_tag:spanner_read_only_transaction
+   * Read-only transaction:
+   */
+  getSnapshot(optionsOrCallback?: TimestampBounds|GetSnapshotCallback, cb?: GetSnapshotCallback): void|Promise<[Snapshot]> {
+      let options: TimestampBounds;
+      let callback: GetSnapshotCallback;
+
+      if (is.fn(optionsOrCallback)) {
+        callback = optionsOrCallback! as GetSnapshotCallback;
+        options = {};
+      } else {
+        options = optionsOrCallback as TimestampBounds;
+        callback = cb!;
+      }
+
+      this.pool_.getReadSession((err, session) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        const snapshot = session.snapshot(options);
+
+        snapshot.begin((err: null|Error): void => {
+          if (err) {
+            this.pool_.release(session);
+            callback(err);
+            return;
+          }
+
+          this._releaseOnEnd(session, snapshot);
+          callback(err, snapshot);
+        });
+      });
+  }
+
+  getTransaction(): Promise<[Transaction]>;
+  getTransaction(callback: GetTransactionCallback): void;
   /**
    * @typedef {array} GetTransactionResponse
    * @property {Transaction} 0 The transaction object.
@@ -852,13 +932,18 @@ class Database extends ServiceObject {
    * @param {Transaction} transaction The transaction object.
    */
   /**
-   * Get a read/write ready Transaction object.
+   * Get a read/write ready {@link Transaction} object.
+   *
+   * **NOTE:** In the event that you encounter an error while reading/writing,
+   * if you decide to forgo calling {@link Transaction#commit} or
+   * {@link Transaction#rollback}, then you need to call
+   * {@link Transaction#end} to release the underlying {@link Session} object.
+   * **Failure to do could result in a Session leak.**
    *
    * Wrapper around {@link v1.SpannerClient#beginTransaction}.
    *
    * @see {@link v1.SpannerClient#beginTransaction}
    *
-   * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
    * @param {GetTransactionCallback} [callback] Callback function.
    * @returns {Promise<GetTransactionResponse>}
    *
@@ -871,50 +956,18 @@ class Database extends ServiceObject {
    *
    * database.getTransaction(function(err, transaction) {});
    *
-   * //-
-   * // If the callback is omitted, we'll return a Promise.
-   * //-
+   * @example <caption>If the callback is omitted, we'll return a Promise.
+   * </caption>
    * database.getTransaction().then(function(data) {
    *   const transaction = data[0];
    * });
    */
-  // tslint:disable-next-line no-any
-  getTransaction(options?): Promise<any>;
-  getTransaction(options, callback): void;
-  getTransaction(callback): void;
-  // tslint:disable-next-line no-any
-  getTransaction(options?, callback?): void|Promise<any> {
-      if (is.fn(options)) {
-        callback = options;
-        options = null;
-      }
-
-      const isReadWrite =
-          !options || (!options.readOnly && !options.partitioned);
-
-      if (isReadWrite) {
-        this.pool_.getWriteSession((err, session, transaction) => {
-          if (!err) {
-            transaction = this.decorateTransaction_(transaction, session);
-          }
-          callback(err, transaction);
-        });
-        return;
-      }
-      this.pool_.getReadSession((err, session) => {
-        if (err) {
-          callback(err, null);
-          return;
+  getTransaction(callback?: GetTransactionCallback): void|Promise<[Transaction]> {
+      this.pool_.getWriteSession((err, session, transaction) => {
+        if (!err) {
+          this._releaseOnEnd(session, transaction);
         }
-        session!.beginTransaction(options, (err, transaction) => {
-          if (err) {
-            this.pool_.release(session!);
-            callback(err, null);
-            return;
-          }
-          transaction = this.decorateTransaction_(transaction, session);
-          callback(null, transaction);
-        });
+        callback!(err, transaction);
       });
   }
   /**
@@ -1021,18 +1074,9 @@ class Database extends ServiceObject {
    * @see [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
    * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
    *
-   * @param {string|object} query A SQL query or query object. See an
-   *     [ExecuteSqlRequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
-   *     object.
-   * @param {boolean} [query.json=false] Receive the rows as serialized objects.
-   *     This is the equivalent of calling `toJSON()` on each row.
-   * @param {object} [query.jsonOptions] Configuration options for the serialized
-   *     objects.
-   * @param {boolean} [query.jsonOptions.wrapNumbers=false] Protect large integer
-   *     values outside of the range of JavaScript Number.
-   * @param {object} [query.params] A map of parameter name to values.
-   * @param {object} [query.types] A map of parameter types.
-   * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+   * @param {string|ExecuteSqlRequest} query A SQL query or
+   *     {@link ExecuteSqlRequest} object.
+   * @param {TimestampBounds} [options] Snapshot timestamp bounds.
    * @param {RunCallback} [callback] Callback function.
    * @returns {Promise<RunResponse>}
    *
@@ -1164,8 +1208,8 @@ class Database extends ServiceObject {
    * Partitioned DML transactions are used to execute DML statements with a
    * different execution strategy that provides different, and often better,
    * scalability properties for large, table-wide operations than DML in a
-   * ReadWrite transaction. Smaller scoped statements, such as an OLTP workload,
-   * should prefer using ReadWrite transactions.
+   * Transaction transaction. Smaller scoped statements, such as an OLTP workload,
+   * should prefer using Transaction transactions.
    *
    * @see {@link Transaction#runUpdate}
    *
@@ -1178,20 +1222,25 @@ class Database extends ServiceObject {
    * @returns {Promise<RunUpdateResponse>}
    */
   runPartitionedUpdate(query, callback) {
-      this.getTransaction(
-          {
-            partitioned: true,
-          },
-          (err, transaction) => {
-            if (err) {
-              callback(err, null);
-              return;
-            }
-            transaction.runUpdate(query, (runErr, rowCount) => {
-              transaction.end();
-              callback(runErr, rowCount);
-            });
-          });
+      this.pool_.getReadSession((err, session) => {
+        if (err) {
+          callback(err, 0);
+          return;
+        }
+
+        const transaction = session.partitionedDml();
+
+        transaction.begin((err: null|Error) => {
+          if (err) {
+            this.pool_.release(session);
+            callback(err, 0);
+            return;
+          }
+
+          this._releaseOnEnd(session, transaction);
+          transaction.runUpdate(query, callback);
+        });
+      });
   }
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1205,12 +1254,9 @@ class Database extends ServiceObject {
    *
    * @fires PartialResultStream#response
    *
-   * @param {string|object} query A SQL query or query object. See an
-   *     [ExecuteSqlFequest](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
-   *     object.
-   * @param {object} [query.params] A map of parameter name to values.
-   * @param {object} [query.types] A map of parameter types.
-   * @param {DatabaseRunRequest} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+   * @param {string|ExecuteSqlRequest} query A SQL query or
+   *     {@link ExecuteSqlRequest} object.
+   * @param {TimestampBounds} [options] Snapshot timestamp bounds.
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
@@ -1319,41 +1365,35 @@ class Database extends ServiceObject {
    *     this.end();
    *   });
    */
-  runStream(query, options) {
-      const self = this;
-      if (is.string(query)) {
-        query = {
-          sql: query,
-        };
-      }
-      const reqOpts = codec.encodeQuery(query);
-      if (options) {
-        reqOpts.transaction = {
-          singleUse: {
-            readOnly: TransactionRequest.formatTimestampOptions_(options),
-          },
-        };
-      }
+  runStream(query, options = {}): PartialResultStream {
+      const proxyStream = through.obj();
 
-      function makeRequest(resumeToken) {
-        return self.makePooledStreamingRequest_({
-          client: 'SpannerClient',
-          method: 'executeStreamingSql',
-          reqOpts: extend(reqOpts, {resumeToken}),
-        });
-      }
-      return partialResultStream(makeRequest, {
-        json: query.json,
-        jsonOptions: query.jsonOptions,
+      this.pool_.getReadSession((err, session) => {
+        if (err) {
+          proxyStream.destroy(err);
+          return;
+        }
+
+        const snapshot = session.snapshot(options);
+
+        this._releaseOnEnd(session, snapshot);
+
+        snapshot.runStream(query)
+            .once(
+                'error',
+                err => {
+                  proxyStream.destroy(err);
+                  snapshot.end();
+                })
+            .once('end', () => snapshot.end())
+            .pipe(proxyStream);
       });
+
+      return proxyStream as PartialResultStream;
   }
-  /**
-   * A function to execute in the context of a transaction.
-   * @callback RunTransactionCallback
-   * @param {?Error} err An error returned while making this request.
-   * @param {Transaction} transaction The transaction object. The transaction has
-   *     already been created, and is ready to be queried and committed against.
-   */
+
+  runTransaction(runFn: RunTransactionCallback): void;
+  runTransaction(options: RunTransactionOptions, runFn: RunTransactionCallback): void;
   /**
    * A transaction in Cloud Spanner is a set of reads and writes that execute
    * atomically at a single logical point in time across columns, rows, and tables
@@ -1372,6 +1412,12 @@ class Database extends ServiceObject {
    * entirety. If you prefer to handle aborted errors for yourself please refer to
    * {@link Database#getTransaction}.
    *
+   * **NOTE:** In the event that you encounter an error while reading/writing,
+   * if you decide to forgo calling {@link Transaction#commit} or
+   * {@link Transaction#rollback}, then you need to call
+   * {@link Transaction#end} to release the underlying {@link Session} object.
+   * **Failure to do could result in a Session leak.**
+   *
    * For a more complete listing of functionality available to a Transaction, see
    * the {@link Transaction} API documentation. For a general overview of
    * transactions within Cloud Spanner, see
@@ -1382,9 +1428,8 @@ class Database extends ServiceObject {
    * async/await, use {@link Database#runTransactionAsync}.
    *
    * @see [Transactions](https://cloud.google.com/spanner/docs/transactions)
-   * @see [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
    *
-   * @param {TransactionOptions} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
+   * @param {RunTransactionOptions} [options] Transaction runner options.
    * @param {RunTransactionCallback} callback A function to execute in the context
    *     of a transaction.
    *
@@ -1421,64 +1466,28 @@ class Database extends ServiceObject {
    *   });
    * });
    *
-   * //-
-   * // For read-only transactions, use the `transaction.end()` function to
-   * // release the transaction.
-   * //-
-   * const options = {
-   *   readOnly: true,
-   *   strong: true
-   * };
-   *
-   * database.runTransaction(options, function(err, transaction) {
-   *   if (err) {
-   *     // Error handling omitted.
-   *   }
-   *
-   *   transaction.run('SELECT * FROM Singers', function(err, rows) {
-   *     if (err) {
-   *       // Error handling omitted.
-   *     }
-   *
-   *     // End the transaction. Note that no callback is provided.
-   *     transaction.end();
-   *   });
-   * });
-   *
-   * @example <caption>include:samples/transaction.js</caption>
-   * region_tag:spanner_read_only_transaction
-   * Read-only transaction:
-   *
    * @example <caption>include:samples/transaction.js</caption>
    * region_tag:spanner_read_write_transaction
    * Read-write transaction:
    */
-  runTransaction(options, callback) {
-      if (is.fn(options)) {
-        callback = options;
-        options = null;
+  runTransaction(optionsOrRunFn: RunTransactionOptions|RunTransactionCallback, fn?: RunTransactionCallback): void {
+      let options: RunTransactionOptions;
+      let runFn: RunTransactionCallback;
+
+      if (is.fn(optionsOrRunFn)) {
+        runFn = optionsOrRunFn as RunTransactionCallback;
+        options = {};
+      } else {
+        options = optionsOrRunFn as RunTransactionOptions;
+        runFn = fn!;
       }
-      options = extend({}, options);
-      this.getTransaction(options, (err, transaction) => {
-        if (err) {
-          callback(err);
-          return;
-        }
-        transaction.beginTime_ = Date.now();
-        transaction.runFn_ = callback;
-        if (options && options.timeout) {
-          transaction.timeout_ = options.timeout;
-          delete options.timeout;
-        }
-        callback(null, transaction);
-      });
+
+      const runner = new TransactionRunner(this, runFn, options);
+      runner.run().catch(runFn);
   }
-  /**
-   * A function to execute in the context of a transaction.
-   * @callback RunTransactionAsyncCallback
-   * @param {Transaction} transaction The transaction object. The transaction has
-   *     already been created, and is ready to be queried and committed against.
-   */
+
+  runTransactionAsync<T = {}>(runFn: AsyncRunTransactionCallback<T>): Promise<T>;
+  runTransactionAsync<T = {}>(options: RunTransactionOptions, runFn: AsyncRunTransactionCallback<T>): Promise<T>;
   /**
    * A transaction in Cloud Spanner is a set of reads and writes that execute
    * atomically at a single logical point in time across columns, rows, and tables
@@ -1497,6 +1506,12 @@ class Database extends ServiceObject {
    * entirety. If you prefer to handle aborted errors for yourself please refer to
    * {@link Database#getTransaction}.
    *
+   * **NOTE:** In the event that you encounter an error while reading/writing,
+   * if you decide to forgo calling {@link Transaction#commit} or
+   * {@link Transaction#rollback}, then you need to call
+   * {@link Transaction#end} to release the underlying {@link Session} object.
+   * **Failure to do could result in a Session leak.**
+   *
    * For a more complete listing of functionality available to a Transaction, see
    * the {@link Transaction} API documentation. For a general overview of
    * transactions within Cloud Spanner, see
@@ -1504,9 +1519,9 @@ class Database extends ServiceObject {
    * official Cloud Spanner documentation.
    *
    * @see [Transactions](https://cloud.google.com/spanner/docs/transactions)
-   * @see [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds)
    *
-   * @param {RunTransactionAsyncCallback} callback A function to execute in the
+   * @param {RunTransactionOptions} [options] Transaction runner options.
+   * @param {AsyncRunTransactionCallback} callback A function to execute in the
    *      context of a transaction.
    * @returns {Promise}
    *
@@ -1517,27 +1532,28 @@ class Database extends ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    *
-   * await database.runTransactionAsync(async (transaction) => {
+   * const data = await database.runTransactionAsync(async (transaction) => {
    *   const [rows] = await transaction.run('SELECT * FROM MyTable');
    *   const data = rows.map(row => row.thing);
    *
    *   await transaction.commit();
    *   return data;
-   * }).then(data => {
-   *   // ...
    * });
    */
-  runTransactionAsync(callback) {
-      return retry(
-          () => this.getTransaction()
-                    .then(r => {
-                      const transaction = r[0];
-                      return callback(transaction);
-                    })
-                    .catch(e => {
-                      if (e.code === Transaction.ABORTED) throw e;
-                      throw new retry.AbortError(e);
-                    }));
+  runTransactionAsync<T = {}>(optionsOrRunFn: RunTransactionOptions|AsyncRunTransactionCallback<T>, fn?: AsyncRunTransactionCallback<T>): Promise<T> {
+      let options: RunTransactionOptions;
+      let runFn: AsyncRunTransactionCallback<T>;
+
+      if (is.fn(optionsOrRunFn)) {
+        runFn = optionsOrRunFn as AsyncRunTransactionCallback<T>;
+        options = {};
+      } else {
+        options = optionsOrRunFn as RunTransactionOptions;
+        runFn = fn!;
+      }
+
+      const runner = new AsyncTransactionRunner<T>(this, runFn, options);
+      return runner.run();
   }
   /**
    * Create a Session object.

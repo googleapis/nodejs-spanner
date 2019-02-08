@@ -67,7 +67,6 @@
     "merge-stream": "^1.0.1",
     "p-limit": "^2.0.0",
     "p-queue": "^3.0.0",
-    "p-retry": "^3.0.0",
     "protobufjs": "^6.8.6",
     "split-array-stream": "^2.0.0",
     "stack-trace": "0.0.10",

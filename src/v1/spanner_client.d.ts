@@ -168,10 +168,10 @@ declare namespace SpannerClient {
     sql: string;
     params?: protobuf.IStruct;
     paramTypes?: {[field: string]: Type};
-    resumeToken: Uint8Array | string;
-    queryMode: QueryMode;
-    partitionToken: Uint8Array | string;
-    seqno: number;
+    resumeToken?: Uint8Array | string;
+    queryMode?: QueryMode;
+    partitionToken?: Uint8Array | string;
+    seqno?: number;
   }
 
   interface ExecuteSqlCallback {
@@ -242,9 +242,9 @@ declare namespace SpannerClient {
 
   interface CommitRequest {
     session: string;
-    transactionId: Uint8Array | string;
+    transactionId?: Uint8Array | string;
     singleUseTransaction?: TransactionOptions;
-    mutations: Mutation;
+    mutations: Mutation[];
   }
 
   interface CommitResponse {
@@ -261,7 +261,7 @@ declare namespace SpannerClient {
   }
 
   interface RollbackCallback {
-    (error: null|ServiceError): void;
+    (error: null | ServiceError): void;
   }
 
   interface KeyRange {
@@ -318,8 +318,9 @@ declare namespace SpannerClient {
   interface ResultSetStats {
     queryPlan?: QueryPlan;
     queryStats?: protobuf.IStruct;
-    rowCountExact: number;
-    rowCountLowerBound: number;
+    rowCount: string;
+    rowCountExact?: number;
+    rowCountLowerBound?: number;
   }
 
   enum Kind {
@@ -354,17 +355,21 @@ declare namespace SpannerClient {
   }
 
   interface ReadOnly {
-    strong: boolean;
+    strong?: boolean;
     minReadTimestamp?: protobuf.ITimestamp;
     maxStaleness?: protobuf.IDuration;
     readTimestamp?: protobuf.ITimestamp;
     exactStaleness?: protobuf.IDuration;
-    returnReadTimestamp: boolean;
+    returnReadTimestamp?: boolean;
   }
 
+  interface ReadWrite {}
+
+  interface PartitionedDml {}
+
   interface TransactionOptions {
-    readWrite?: {};
-    partitionedDml?: {};
+    readWrite?: ReadWrite;
+    partitionedDml?: PartitionedDml;
     readOnly?: ReadOnly;
   }
 
