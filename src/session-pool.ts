@@ -21,7 +21,7 @@ import * as trace from 'stack-trace';
 
 import {Database} from './database';
 import {Session} from './session';
-import {Transaction, TransactionOptions} from './transaction';
+import {Transaction} from './transaction';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -37,7 +37,8 @@ export interface SessionPoolCloseCallback {
  * @param {Session} session The read-only session.
  */
 export interface GetReadSessionCallback {
-  (error: null|Error, session?: Session): void;
+  (err: Error, session?: null): void;
+  (err: null, session: Session): void;
 }
 
 /**
@@ -47,7 +48,8 @@ export interface GetReadSessionCallback {
  * @param {Transaction} transaction The transaction object.
  */
 export interface GetWriteSessionCallback {
-  (error: null|Error, session?: Session, transaction?: Transaction): void;
+  (err: Error, session?: null, transaction?: null): void;
+  (err: null, session: Session, transaction: Transaction): void;
 }
 
 /**
@@ -155,6 +157,8 @@ const DEFAULTS: SessionPoolOptions = {
 
 /**
  * Error to be thrown when attempting to release unknown resources.
+ *
+ * @private
  */
 export class ReleaseError extends Error {
   // tslint:disable-next-line no-any
@@ -167,6 +171,8 @@ export class ReleaseError extends Error {
 
 /**
  * Error to be thrown when session leaks are detected.
+ *
+ * @private
  */
 export class SessionLeakError extends Error {
   messages: string[];
@@ -349,10 +355,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this.isOpen = false;
 
-    this._inventory[types.ReadOnly] = [];
-    this._inventory[types.ReadWrite] = [];
-    this._inventory.borrowed.clear();
-
     this._stopHouseKeeping();
     this.emit('close');
 
@@ -361,6 +363,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._requests.onIdle().then(() => {
       const leaks = this._getLeaks();
       let error;
+
+      this._inventory[types.ReadOnly] = [];
+      this._inventory[types.ReadWrite] = [];
+      this._inventory.borrowed.clear();
 
       if (leaks.length) {
         error = new SessionLeakError(leaks);
@@ -387,7 +393,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   getWriteSession(callback: GetWriteSessionCallback): void {
     this._acquire(types.ReadWrite)
-        .then(session => callback(null, session, session.txn), callback);
+        .then(session => callback(null, session, session.txn!), callback);
   }
 
   /**
@@ -814,9 +820,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {object} options The transaction options.
    * @returns {Promise}
    */
-  async _prepareTransaction(session: Session, options?: TransactionOptions):
-      Promise<void> {
-    const [transaction] = await session.beginTransaction(options);
+  async _prepareTransaction(session: Session): Promise<void> {
+    const transaction = session.transaction();
+    await transaction.begin();
     session.txn = transaction;
   }
 

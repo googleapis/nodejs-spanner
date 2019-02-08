@@ -38,7 +38,7 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
 
   // Gets a transaction object that captures the database state
   // at a specific point in time
-  database.runTransaction({readOnly: true}, async (err, transaction) => {
+  database.getSnapshot(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
@@ -60,9 +60,6 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
 
       const queryTwo = {
         columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
-        keySet: {
-          all: true,
-        },
       };
 
       // Read #2, using the `read` method. Even if changes occur
@@ -80,12 +77,12 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
       });
 
       console.log('Successfully executed read-only transaction.');
-      await transaction.end();
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
+      transaction.end();
       // Close the database when finished.
-      database.close();
+      await database.close();
     }
   });
   // [END spanner_read_only_transaction]

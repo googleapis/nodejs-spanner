@@ -33,13 +33,6 @@ export interface Json {
   [field: string]: Value;
 }
 
-/**
- * @typedef JSONOptions
- * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
- *     wrapped in Int/Float wrappers.
- * @property {boolean} [wrapStructs=false] Indicates if the structs should be
- *     wrapped in Struct wrapper.
- */
 export interface JSONOptions {
   wrapNumbers?: boolean;
   wrapStructs?: boolean;
@@ -151,6 +144,13 @@ export class Struct extends Array<Field> {
   }
 }
 
+/**
+ * @typedef JSONOptions
+ * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
+ *     wrapped in Int/Float wrappers.
+ * @property {boolean} [wrapStructs=false] Indicates if the structs should be
+ *     wrapped in Struct wrapper.
+ */
 /**
  * Wherever a row or struct object is returned, it is assigned a "toJSON"
  * function. This function will generate the JSON for that row.
@@ -343,7 +343,7 @@ enum TypeCode {
  *
  * @private
  */
-interface Type {
+export interface Type {
   type: string;
   fields?: FieldType[];
   child?: Type;
@@ -353,6 +353,27 @@ interface FieldType extends Type {
   name: string;
 }
 
+/**
+ * @typedef {ParamType} StructField
+ * @property {string} name The name of the field.
+ */
+/**
+ * @typedef {object} ParamType
+ * @property {string} type The param type. Must be one of the following:
+ *     - float64
+ *     - int64
+ *     - bool
+ *     - string
+ *     - bytes
+ *     - timestamp
+ *     - date
+ *     - struct
+ *     - array
+ * @property {StructField[]} [fields] **For struct types only**. Type
+ *     definitions for the individual fields.
+ * @property {string|ParamType} [child] **For array types only**. The array
+ *     element type.
+ */
 /**
  * Get the corresponding Spanner data type for the provided value.
  *
@@ -427,190 +448,6 @@ function getType(value: Value): Type {
 }
 
 /**
- * Generic request options.
- *
- * @private
- */
-interface RequestOptions {
-  json?: boolean;
-  jsonOptions?: JSONOptions;
-  gaxOptions?: CallOptions;
-}
-
-/**
- * ExecuteSql request options. This includes all standard ExecuteSqlRequest
- * options as well as several convenience properties.
- *
- * @see [Query Syntax](https://cloud.google.com/spanner/docs/query-syntax)
- * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
- *
- * @typedef ExecuteSqlRequest
- * @property {object} [params] A map of parameter names to values.
- * @property {object} [types] A map of parameter names to types. If omitted the
- *     client will attempt to guess for all non-null values.
- * @property {boolean} [json=false] Receive the rows as serialized objects. This
- *     is the equivalent of calling `toJSON()` on each row.
- * @property {JSONOptions} [jsonOptions] Configuration options for the
- *     serialized objects.
- */
-export interface ExecuteSqlRequest extends s.ExecuteSqlRequest, RequestOptions {
-  params?: {[field: string]: Value};
-  types?: {[field: string]: string|Type};
-}
-
-/**
- * Encodes a ExecuteSqlRequest object into the correct format.
- *
- * @private
- *
- * @param {ExecuteSqlRequest} query The request object.
- * @returns {object}
- */
-function encodeQuery(query: ExecuteSqlRequest): s.ExecuteSqlRequest {
-  query = Object.assign({}, query);
-
-  if (query.params) {
-    const fields = {};
-
-    if (!query.types) {
-      query.types = {};
-    }
-
-    const types = query.types!;
-
-    Object.keys(query.params).forEach(param => {
-      const value = query.params![param];
-      if (!types[param]) {
-        types[param] = codec.getType(value);
-      }
-      fields[param] = codec.encode(value);
-    });
-
-    query.params = {fields};
-  }
-
-  if (query.types) {
-    const paramTypes = {};
-
-    Object.keys(query.types).forEach(param => {
-      paramTypes[param] = codec.createTypeObject(query.types![param]);
-    });
-
-    query.paramTypes = paramTypes;
-    delete query.types;
-  }
-
-  if (query.json) {
-    delete query.json;
-    delete query.jsonOptions;
-  }
-
-  if (query.gaxOptions) {
-    delete query.gaxOptions;
-  }
-
-  return query;
-}
-
-/**
- * A KeyRange represents a range of rows in a table or index.
- *
- * A range has a start key and an end key. These keys can be open or closed,
- * indicating if the range includes rows with that key.
- *
- * Keys are represented by an array of strings where the nth value in the list
- * corresponds to the nth component of the table or index primary key.
- *
- * @typedef KeyRange
- * @property {string[]} [startClosed] If the start is closed, then the range
- *     includes all rows whose first key columns exactly match.
- * @property {string[]} [startOpen] If the start is open, then the range
- *     excludes rows whose first key columns exactly match.
- * @property {string[]} [endClosed] If the end is closed, then the range
- *     includes all rows whose first key columns exactly match.
- * @property {string[]} [endOpen] If the end is open, then the range excludes
- *     rows whose first key columns exactly match.
- */
-interface KeyRange {
-  startClosed?: Value[];
-  startOpen?: Value[];
-  endClosed?: Value[];
-  endOpen?: Value[];
-}
-
-/**
- * Read request options. This includes all standard ReadRequest options as well
- * as several convenience properties.
- *
- * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
- * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
- *
- * @typedef ReadRequest
- * @property {string[]} [keys] The primary keys of the rows in this table to be
- *     yielded. If using a composite key, provide an array within this array.
- *     See the example below.
- * @property {KeyRange[]} [ranges] An alternative to the keys property, this can
- *       be used to define a range of keys to be yielded.
- * @property {boolean} [json=false] Receive the rows as serialized objects. This
- *     is the equivalent of calling `toJSON()` on each row.
- * @property {JSONOptions} [jsonOptions] Configuration options for the
- *     serialized objects.
- */
-export interface ReadRequest extends s.ReadRequest, RequestOptions {
-  keys?: string[];
-  ranges?: KeyRange[];
-}
-
-/**
- * Encodes a ReadRequest into the correct format.
- *
- * @private
- *
- * @param {ReadRequest} query The query
- * @returns {object}
- */
-export function encodeRead(query: ReadRequest): s.ReadRequest {
-  query = Object.assign({}, query);
-
-  if (!query.keySet) {
-    query.keySet = {};
-
-    if (!query.keys && !query.ranges) {
-      query.keySet.all = true;
-    }
-  }
-
-  if (query.keys) {
-    query.keySet.keys = arrify(query.keys).map(convertToListValue);
-    delete query.keys;
-  }
-
-  if (query.ranges) {
-    query.keySet.ranges = arrify(query.ranges).map(keyRange => {
-      const range: s.KeyRange = {};
-
-      Object.keys(keyRange).forEach(bound => {
-        range[bound] = convertToListValue(keyRange[bound]);
-      });
-
-      return range;
-    });
-    delete query.ranges;
-  }
-
-  if (query.json) {
-    delete query.json;
-    delete query.jsonOptions;
-  }
-
-  if (query.gaxOptions) {
-    delete query.gaxOptions;
-  }
-
-  return query;
-}
-
-/**
  * Converts a value to google.protobuf.ListValue
  *
  * @private
@@ -621,6 +458,36 @@ export function encodeRead(query: ReadRequest): s.ReadRequest {
 function convertToListValue<T>(value: T): p.IListValue {
   const values = arrify(value).map(codec.encode);
   return {values};
+}
+
+/**
+ * Converts milliseconds to google.protobuf.Timestamp
+ *
+ * @private
+ *
+ * @param {number} ms The milliseconds to convert.
+ * @returns {object}
+ */
+function convertMsToProtoTimestamp(ms: number): p.ITimestamp {
+  const rawSeconds = ms / 1000;
+  const seconds = Math.floor(rawSeconds);
+  const nanos = Math.round((rawSeconds - seconds) * 1e9);
+  return {seconds, nanos};
+}
+
+/**
+ * Converts google.protobuf.Timestamp to Date object.
+ *
+ * @private
+ *
+ * @param {object} timestamp The protobuf timestamp.
+ * @returns {Date}
+ */
+function convertProtoTimestampToDate({nanos = 0, seconds = 0}: p.ITimestamp):
+    Date {
+  const ms = Math.floor(nanos) / 1e6;
+  const s = Math.floor(seconds as number);
+  return new Date(s * 1000 + ms);
 }
 
 /**
@@ -660,6 +527,9 @@ function createTypeObject(friendlyType?: string|Type): s.Type {
 }
 
 export const codec = {
+  convertToListValue,
+  convertMsToProtoTimestamp,
+  convertProtoTimestampToDate,
   createTypeObject,
   SpannerDate,
   Float,
@@ -668,7 +538,5 @@ export const codec = {
   decode,
   encode,
   getType,
-  encodeQuery,
-  encodeRead,
   Struct
 };
