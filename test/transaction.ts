@@ -14,1402 +14,1370 @@
  * limitations under the License.
  */
 
-import {util} from '@google-cloud/common-grpc';
-import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
-import * as extend from 'extend';
-import * as gax from 'google-gax';
-import * as path from 'path';
+import {EventEmitter} from 'events';
+import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
-import {split} from 'split-array-stream';
-import * as through from 'through2';
+import * as sinon from 'sinon';
 
-// tslint:disable-next-line no-any variable-name
-const FakeRetryInfo: any = {
-  decode: util.noop,
-};
-
-const fakeGax = {
-  GoogleProtoFilesRoot: class extends gax.GoogleProtoFilesRoot{
-    loadSync(filename) {
-      assert.strictEqual(
-          filename,
-          path.resolve(__dirname, '../protos/google/rpc/error_details.proto'));
-      const result = super.loadSync(filename);
-      const n = 'nested';
-      result[n]!.google[n].rpc[n].RetryInfo = FakeRetryInfo;
-      return result;
-    }
-  },
-};
-
-let promisified = false;
-const fakePfy = extend({}, pfy, {
-  promisifyAll(klass, options) {
-    if (klass.name !== 'Transaction') {
-      return;
-    }
-    promisified = true;
-    assert.strictEqual(options, undefined);
-    pfy.promisifyAll(klass, options);
-  },
-});
-
-class FakeGrpcService {
-  static objToStruct_() {}
-}
-
-function fakePartialResultStream(this: Function&{calledWith_: IArguments}) {
-  this.calledWith_ = arguments;
-  return this;
-}
-
-class FakeTransactionRequest {
-  calledWith_: IArguments;
-  options: {};
-  constructor(options: {}) {
-    this.calledWith_ = arguments;
-    this.options = options;
-  }
-}
-
-// tslint:disable-next-line no-any
-const fakeCodec: any = {
-  encode: util.noop,
-};
-
-const FAKE_COMMIT_TIMEOUT = 12345;
-const fakeConfig = {
-  interfaces: {
-    'google.spanner.v1.Spanner': {
-      methods: {
-        Commit: {
-          timeout_millis: FAKE_COMMIT_TIMEOUT,
-        },
-      },
-    },
-  },
-};
+import {codec} from '../src/codec';
+import {SpannerClient as s} from '../src/v1';
 
 describe('Transaction', () => {
-  // tslint:disable-next-line no-any variable-name
-  let TransactionCached: any;
-  // tslint:disable-next-line no-any variable-name
-  let Transaction: any;
-  let transaction;
+  const sandbox = sinon.createSandbox();
+
+  const REQUEST = sandbox.stub();
+  const REQUEST_STREAM = sandbox.stub();
+  const SESSION_NAME = 'session-123';
 
   const SESSION = {
-    request: util.noop,
-    formattedName_: 'formatted-session-name',
+    formattedName_: SESSION_NAME,
+    request: REQUEST,
+    requestStream: REQUEST_STREAM,
   };
 
-  const ID = 'transaction-id';
+  const PARTIAL_RESULT_STREAM = sandbox.stub();
+  const PROMISIFY_ALL = sandbox.stub();
+
+  // tslint:disable-next-line no-any variable-name
+  let Snapshot;
+  // tslint:disable-next-line no-any variable-name
+  let Dml;
+  // tslint:disable-next-line no-any variable-name
+  let Transaction;
+  // tslint:disable-next-line no-any variable-name
+  let PartitionedDml;
 
   before(() => {
-    Transaction =
-        proxyquire('../src/transaction', {
-          'google-gax': fakeGax,
-          '@google-cloud/common-grpc': {
-            Service: FakeGrpcService,
-          },
-          '@google-cloud/promisify': fakePfy,
-          './codec': {codec: fakeCodec},
-          './partial-result-stream':
-              {partialResultStream: fakePartialResultStream},
-          './transaction-request': {TransactionRequest: FakeTransactionRequest},
-          './v1/spanner_client_config.json': fakeConfig,
-        }).Transaction;
+    const txns = proxyquire('../src/transaction', {
+      '@google-cloud/promisify': {promisifyAll: PROMISIFY_ALL},
+      './codec': {codec},
+      './partial-result-stream': {partialResultStream: PARTIAL_RESULT_STREAM},
+    });
 
-    TransactionCached = extend({}, Transaction);
+    Snapshot = txns.Snapshot;
+    Dml = txns.Dml;
+    Transaction = txns.Transaction;
+    PartitionedDml = txns.PartitionedDml;
   });
 
-  beforeEach(() => {
-    FakeGrpcService.objToStruct_ = util.noop;
-    FakeRetryInfo.decode = util.noop;
+  afterEach(() => sandbox.restore());
 
-    extend(Transaction, TransactionCached);
-    transaction = new Transaction(SESSION);
-  });
+  describe('Snapshot', () => {
+    const OPTIONS = {a: 'b', c: 'd'};
 
-  describe('instantiation', () => {
-    it('should promisify all the things', () => {
-      assert(promisified);
+    let snapshot;
+
+    beforeEach(() => {
+      sandbox.stub(Snapshot, 'encodeTimestampBounds').returns(OPTIONS);
+      snapshot = new Snapshot(SESSION);
     });
 
-    it('should localize the session', () => {
-      assert.strictEqual(transaction.session, SESSION);
-    });
+    describe('initialization', () => {
+      it('should promisify all the things', () => {
+        const expectedOptions = sinon.match({
+          exclude: ['end'],
+        });
 
-    it('should set flag to identify as a Transaction object', () => {
-      assert.strictEqual(transaction.transaction, true);
-    });
+        const stub = PROMISIFY_ALL.withArgs(Snapshot, expectedOptions);
 
-    it('should track the number of attempts made', () => {
-      assert.strictEqual(transaction.attempts_, 0);
-    });
-
-    it('should initialize the seqno property', () => {
-      assert.strictEqual(transaction.seqno, 1);
-    });
-
-    it('should initialize an empty queue', () => {
-      assert.deepStrictEqual(transaction.queuedMutations_, []);
-    });
-
-    it('should initialize a null run function', () => {
-      assert.strictEqual(transaction.runFn_, null);
-    });
-
-    it('should set ended_ to false', () => {
-      assert.strictEqual(transaction.ended_, false);
-    });
-
-    it('should inherit from TransactionRequest', () => {
-      const OPTIONS = {};
-      transaction = new Transaction(SESSION, OPTIONS);
-      assert(transaction instanceof FakeTransactionRequest);
-    });
-
-    describe('timeout_', () => {
-      it('should default to the commit timeout', () => {
-        assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
+        assert.strictEqual(stub.callCount, 1);
       });
 
-      it('should capture the user timeout', () => {
-        const timeout = 321;
-        const transaction = new Transaction(SESSION, {timeout});
-
-        assert.strictEqual(transaction.timeout_, timeout);
-        // check to make sure the timeout isn't captured for requests
-        assert.deepStrictEqual(transaction.calledWith_[0], {});
+      it('should extend EventEmitter', () => {
+        assert(snapshot instanceof EventEmitter);
       });
 
-      it('should ignore non-number values', () => {
-        const timeout = 'abc';
-        const transaction = new Transaction(SESSION, {timeout});
-
-        assert.strictEqual(transaction.timeout_, FAKE_COMMIT_TIMEOUT);
+      it('should default `ended` to false', () => {
+        assert.strictEqual(snapshot.ended, false);
       });
 
-      it('should not alter user options', () => {
-        const options = {timeout: 1234};
-        const optionsCopy = Object.assign({}, options);
-        const transaction = new Transaction(SESSION, options);
+      it('should localize the session', () => {
+        assert.strictEqual(snapshot.session, SESSION);
+      });
 
-        assert.strictEqual(transaction.timeout_, options.timeout);
-        assert.deepStrictEqual(options, optionsCopy);
+      it('should localize `Session#request`', () => {
+        snapshot.request();
+        assert.strictEqual(REQUEST.callCount, 1);
+      });
+
+      it('should localize `Session#requestStream`', () => {
+        snapshot.requestStream();
+        assert.strictEqual(REQUEST_STREAM.callCount, 1);
       });
     });
-  });
 
-  describe('createDeadlineError_', () => {
-    it('should augment the error', () => {
-      const originalError = {
-        code: 10,
-        message: 'Transaction aborted.',
-        a: 'a',
-        b: 'b',
+    describe('begin', () => {
+      const BEGIN_RESPONSE = {
+        id: Buffer.from('transaction-id-123'),
       };
 
-      const formattedError = Transaction.createDeadlineError_(originalError);
+      it('should send the correct request', () => {
+        snapshot.begin();
 
-      assert.strictEqual(formattedError.code, 4);
-      assert.strictEqual(
-          formattedError.message,
-          'Deadline for Transaction exceeded. - Transaction aborted.');
-      assert.deepStrictEqual(originalError, formattedError.errors[0]);
-      assert.notStrictEqual(originalError, formattedError);
+        const {client, method, reqOpts} = REQUEST.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.strictEqual(reqOpts.session, SESSION_NAME);
+      });
+
+      it('should send the formatted options', () => {
+        const fakeOptions = {a: 'b'};
+        const fakeEncodedOptions = {c: 'd'};
+        const expectedOptions = {readOnly: fakeEncodedOptions};
+
+        Snapshot.encodeTimestampBounds.withArgs(fakeOptions)
+            .returns(fakeEncodedOptions);
+
+        new Snapshot(SESSION, fakeOptions).begin();
+
+        const {reqOpts} = REQUEST.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+      });
+
+      it('should return any request errors', done => {
+        const fakeError = new Error('err');
+
+        REQUEST.callsFake((_, callback) => callback(fakeError));
+
+        snapshot.begin(err => {
+          assert.strictEqual(err, fakeError);
+          done();
+        });
+      });
+
+      it('should localize `id`', done => {
+        REQUEST.callsFake((_, callback) => callback(null, BEGIN_RESPONSE));
+
+        snapshot.begin(err => {
+          assert.ifError(err);
+          assert.strictEqual(snapshot.id, BEGIN_RESPONSE.id);
+          done();
+        });
+      });
+
+      it('should localize the response as `metadata`', done => {
+        REQUEST.callsFake((_, callback) => callback(null, BEGIN_RESPONSE));
+
+        snapshot.begin(err => {
+          assert.ifError(err);
+          assert.strictEqual(snapshot.metadata, BEGIN_RESPONSE);
+          done();
+        });
+      });
+
+      it('should localize `readTimestamp` if present', done => {
+        const convertedTimestamp = new Date();
+        const readTimestamp = {};
+        const response = Object.assign({readTimestamp}, BEGIN_RESPONSE);
+
+        REQUEST.callsFake((_, callback) => callback(null, response));
+        sandbox.stub(codec, 'convertProtoTimestampToDate')
+            .withArgs(readTimestamp)
+            .returns(convertedTimestamp);
+
+        snapshot.begin(err => {
+          assert.ifError(err);
+          assert.strictEqual(snapshot.readTimestamp, convertedTimestamp);
+          assert.strictEqual(snapshot.readTimestampProto, readTimestamp);
+          done();
+        });
+      });
+
+      it('should return the response', done => {
+        REQUEST.callsFake((_, callback) => callback(null, BEGIN_RESPONSE));
+
+        snapshot.begin((err, resp) => {
+          assert.ifError(err);
+          assert.strictEqual(resp, BEGIN_RESPONSE);
+          done();
+        });
+      });
     });
-  });
 
-  describe('getRetryDelay_', () => {
-    it('should return the retry delay when available', () => {
-      const fakeError = new Error('err');
-      const fakeRetryInfo = Buffer.from('hi');
+    describe('createReadStream', () => {
+      const TABLE = 'my-table-123';
 
-      // tslint:disable-next-line no-any
-      (fakeError as any).metadata = {
-        get(key) {
-          assert.strictEqual(key, 'google.rpc.retryinfo-bin');
-          return [fakeRetryInfo];
-        },
-      };
+      beforeEach(() => {
+        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
 
-      const seconds = 25;
-      const nanos = 100;
+      it('should send the correct request', () => {
+        snapshot.createReadStream(TABLE);
 
-      FakeRetryInfo.decode = (retryInfo) => {
-        assert.strictEqual(retryInfo, fakeRetryInfo);
+        const {client, method} = REQUEST_STREAM.lastCall.args[0];
 
-        return {
-          retryDelay: {
-            seconds: {
-              toNumber() {
-                return seconds;
-              },
-            },
-            nanos,
-          },
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'streamingRead');
+      });
+
+      it('should use the transaction id if present', () => {
+        const id = 'transaction-id-123';
+        const expectedTransaction = {id};
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+      });
+
+      it('should configure `singleUse` if id is absent', () => {
+        const expectedTransaction = {
+          singleUse: {readOnly: OPTIONS},
         };
-      };
 
-      const expectedDelay = seconds * 1000 + nanos / 1e6;
-      const delay = Transaction.getRetryDelay_(fakeError);
+        snapshot.createReadStream(TABLE);
 
-      assert.strictEqual(delay, expectedDelay);
-    });
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-    it('should create backoff from counter when delay is absent', () => {
-      const fakeError = new Error('err');
-      // tslint:disable-next-line no-any
-      (fakeError as any).metadata = {
-        get() {
-          return [];
-        },
-      };
+        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+      });
 
-      const random = Math.random();
-      const _random = Math.random;
+      it('should send the correct `reqOpts`', () => {
+        const id = 'transaction-id-123';
+        const fakeKeySet = {all: true};
 
-      global.Math.random = () => random;
-      const attempts = 3;
-      const expectedDelay =
-          Math.pow(2, attempts) * 1000 + Math.floor(random * 1000);
-      const delay = Transaction.getRetryDelay_(fakeError, attempts);
+        const fakeRequest = {
+          keys: ['a', 'b', 'c'],
+          ranges: [{}, {}],
+          columns: ['name'],
+        };
 
-      assert.strictEqual(delay, expectedDelay);
+        const expectedRequest = {
+          session: SESSION_NAME,
+          transaction: {id},
+          table: TABLE,
+          keySet: fakeKeySet,
+          resumeToken: undefined,
+          columns: ['name'],
+        };
 
-      global.Math.random = _random;
-    });
-  });
+        sandbox.stub(Snapshot, 'encodeKeySet')
+            .withArgs(fakeRequest)
+            .returns(fakeKeySet);
 
-  describe('begin', () => {
-    const OPTIONS = {
-      readOnly: true,
-      boundOptions: true,
-      returnReadTimestamp: true,
-    };
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE, fakeRequest);
 
-    const EXPECTED_REQ_OPTS = {
-      options: {
-        readOnly: OPTIONS,
-      },
-    };
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-    it('should make the correct request', done => {
-      const transaction = new Transaction(SESSION, OPTIONS);
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
 
-      transaction.readOnly = true;
-      transaction.request = (config) => {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'beginTransaction');
-        assert.deepStrictEqual(config.reqOpts, EXPECTED_REQ_OPTS);
-        done();
-      };
+      it('should pass along `gaxOpts`', () => {
+        const fakeOptions = {};
 
-      transaction.begin(assert.ifError);
-    });
+        snapshot.createReadStream(TABLE, {gaxOptions: fakeOptions});
 
-    it('should not require options', done => {
-      transaction.readOnly = false;
-      transaction.request = (config) => {
-        assert.deepStrictEqual(config.reqOpts, {
-          options: {
-            readWrite: {},
-          },
-        });
-        done();
-      };
+        const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-      transaction.begin(assert.ifError);
-    });
+        assert.strictEqual(gaxOpts, fakeOptions);
+        assert.strictEqual(reqOpts.gaxOptions, undefined);
+      });
 
-    it('should send the partitioned options', done => {
-      transaction.partitioned = true;
+      it('should pass a stream to `PartialResultStream`', () => {
+        const fakeStream = new EventEmitter();
 
-      transaction.request = (config) => {
-        assert.deepStrictEqual(config.reqOpts, {
-          options: {
-            partitionedDml: {},
-          },
-        });
+        REQUEST_STREAM.returns(fakeStream);
+        snapshot.createReadStream(TABLE);
 
-        done();
-      };
+        const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
+        const stream = makeRequest();
 
-      transaction.begin(assert.ifError);
-    });
+        assert.strictEqual(stream, fakeStream);
+      });
 
-    it('should execute callback with error', done => {
-      const error = new Error('Error.');
+      it('should update the `resumeToken` for subsequent requests', () => {
+        const fakeToken = 'fake-token-123';
 
-      transaction.request = (config, callback) => {
-        callback(error);
-      };
+        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest(fakeToken));
+        snapshot.createReadStream(TABLE);
 
-      transaction.begin(err => {
-        assert.strictEqual(err, error);
-        done();
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.resumeToken, fakeToken);
+      });
+
+      it('should return a `PartialResultStream`', () => {
+        const fakeStream = new EventEmitter();
+
+        PARTIAL_RESULT_STREAM.returns(fakeStream);
+
+        const stream = snapshot.createReadStream(TABLE);
+
+        assert.strictEqual(stream, fakeStream);
+      });
+
+      it('should pass along json options', () => {
+        const fakeOptions = {
+          json: true,
+          jsonOptions: {a: 'b'},
+        };
+
+        snapshot.createReadStream(TABLE, fakeOptions);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.json, undefined);
+        assert.strictEqual(reqOpts.jsonOptions, undefined);
+
+        const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
+
+        assert.deepStrictEqual(options, fakeOptions);
       });
     });
 
-    describe('success', () => {
-      const API_RESPONSE = {
-        id: 'transaction-id',
+    describe('end', () => {
+      it('should set `ended` to true', () => {
+        snapshot.end();
+
+        assert.strictEqual(snapshot.ended, true);
+      });
+
+      it('should emit an "end" event', done => {
+        snapshot.on('end', done);
+        snapshot.end();
+      });
+
+      it('should noop if already ended', done => {
+        snapshot.on('end', done);
+        snapshot.end();
+        snapshot.end();
+      });
+    });
+
+    describe('read', () => {
+      const TABLE = 'my-table-123';
+
+      let fakeStream;
+      let stub;
+
+      beforeEach(() => {
+        fakeStream = new EventEmitter();
+        stub = sandbox.stub(snapshot, 'createReadStream').returns(fakeStream);
+      });
+
+      it('should call through to `createReadStream`', () => {
+        const fakeRequest = {};
+
+        snapshot.read(TABLE, fakeRequest, () => {});
+
+        const [table, request] = stub.lastCall.args;
+
+        assert.strictEqual(table, TABLE);
+        assert.strictEqual(request, fakeRequest);
+      });
+
+      it('should return any request errors', done => {
+        const fakeError = new Error('err');
+
+        snapshot.read(TABLE, {}, err => {
+          assert.strictEqual(err, fakeError);
+          done();
+        });
+
+        fakeStream.emit('error', fakeError);
+      });
+
+      it('should concatenate rows and return them on "end" event', done => {
+        const fakeRows = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
+
+        snapshot.read(TABLE, {}, (err, rows) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(rows, fakeRows);
+          done();
+        });
+
+        fakeRows.forEach(row => fakeStream.emit('data', row));
+        fakeStream.emit('end');
+      });
+
+      it('should optionally accept a request object', done => {
+        snapshot.read(TABLE, done);
+        fakeStream.emit('end');
+      });
+    });
+
+    describe('run', () => {
+      const QUERY = 'SELET * FROM `MyTable`';
+
+      let fakeStream;
+      let stub;
+
+      beforeEach(() => {
+        fakeStream = new EventEmitter();
+        stub = sandbox.stub(snapshot, 'runStream').returns(fakeStream);
+      });
+
+      it('should call through to `runStream`', () => {
+        snapshot.run(QUERY, () => {});
+
+        const query = stub.lastCall.args[0];
+
+        assert.strictEqual(query, QUERY);
+      });
+
+      it('should return any request errors', done => {
+        const fakeError = new Error('err');
+
+        snapshot.run(QUERY, err => {
+          assert.strictEqual(err, fakeError);
+          done();
+        });
+
+        fakeStream.emit('error', fakeError);
+      });
+
+      it('should concatenate rows and return them on "end" event', done => {
+        const fakeRows = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
+
+        snapshot.run(QUERY, (err, rows) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(rows, fakeRows);
+          done();
+        });
+
+        fakeRows.forEach(row => fakeStream.emit('data', row));
+        fakeStream.emit('end');
+      });
+
+      it('should pass back `stats` if available', done => {
+        const fakeStats = {};
+
+        snapshot.run(QUERY, (err, rows, stats) => {
+          assert.ifError(err);
+          assert.strictEqual(stats, fakeStats);
+          done();
+        });
+
+        fakeStream.emit('stats', fakeStats);
+        fakeStream.emit('end');
+      });
+    });
+
+    describe('runStream', () => {
+      const QUERY = {
+        sql: 'SELECT * FROM `MyTable`',
       };
 
       beforeEach(() => {
-        transaction.request = (config, callback) => {
-          callback(null, API_RESPONSE);
+        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('should send the correct request', () => {
+        snapshot.runStream(QUERY);
+
+        const {client, method} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'executeStreamingSql');
+      });
+
+      it('should use the transaction id if present', () => {
+        const id = 'transaction-id-123';
+        const expectedTransaction = {id};
+
+        snapshot.id = id;
+        snapshot.runStream(QUERY);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+      });
+
+      it('should configure `singleUse` if id is absent', () => {
+        const expectedTransaction = {
+          singleUse: {readOnly: OPTIONS},
         };
+
+        snapshot.runStream(QUERY);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
       });
 
-      it('should increment the attempts property', done => {
-        transaction.begin(err => {
-          assert.ifError(err);
-          assert.strictEqual(transaction.attempts_, 1);
-          done();
+      it('should send the correct `reqOpts`', () => {
+        const id = 'transaction-id-123';
+        const fakeParams = {b: 'a'};
+        const fakeParamTypes = {b: 'number'};
+
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {a: 'b'},
+          types: {a: 'string'},
+          seqno: 1,
         });
-      });
 
-      it('should set ended_ to false', done => {
-        transaction.begin(err => {
-          assert.ifError(err);
-          assert.strictEqual(transaction.ended_, false);
-          done();
+        const expectedRequest = {
+          session: SESSION_NAME,
+          transaction: {id},
+          sql: QUERY.sql,
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+          seqno: 1,
+          resumeToken: undefined,
+        };
+
+        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
+          params: fakeParams,
+          paramTypes: fakeParamTypes
         });
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
       });
 
-      it('should update ID', done => {
-        transaction.begin(err => {
-          assert.ifError(err);
-          assert.strictEqual(transaction.id, API_RESPONSE.id);
-          done();
+      it('should accept just a sql string', () => {
+        snapshot.runStream(QUERY.sql);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.sql, QUERY.sql);
+      });
+
+      it('should pass along `gaxOpts`', () => {
+        const fakeQuery = Object.assign({gaxOptions: {}}, QUERY);
+
+        snapshot.runStream(fakeQuery);
+
+        const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.gaxOptions, undefined);
+        assert.strictEqual(gaxOpts, fakeQuery.gaxOptions);
+      });
+
+      it('should pass a stream to `PartialResultStream`', () => {
+        const fakeStream = new EventEmitter();
+
+        REQUEST_STREAM.returns(fakeStream);
+        snapshot.runStream(QUERY);
+
+        const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
+        const stream = makeRequest();
+
+        assert.strictEqual(stream, fakeStream);
+      });
+
+      it('should return a `PartialResultStream`', () => {
+        const fakeStream = new EventEmitter();
+
+        PARTIAL_RESULT_STREAM.returns(fakeStream);
+
+        const stream = snapshot.runStream(QUERY);
+
+        assert.strictEqual(stream, fakeStream);
+      });
+
+      it('should update the `resumeToken` for subsequent requests', () => {
+        const fakeToken = 'fake-token-123';
+
+        snapshot.runStream(QUERY);
+
+        const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
+
+        makeRequest(fakeToken);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.resumeToken, fakeToken);
+      });
+
+      it('should pass along json options', () => {
+        const expectedOptions = {
+          json: true,
+          jsonOptions: {a: 'b'},
+        };
+
+        const fakeQuery = Object.assign({}, QUERY, expectedOptions);
+
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.json, undefined);
+        assert.strictEqual(reqOpts.jsonOptions, undefined);
+
+        const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
+
+        assert.deepStrictEqual(options, expectedOptions);
+      });
+    });
+
+    describe('encodeKeySet', () => {
+      function toListValue(thing): p.IListValue {
+        return {
+          values: [{stringValue: thing}],
+        };
+      }
+
+      it('should encode an array of `keys`', () => {
+        const fakeKeys = ['a', 'b', 'c'];
+        const encodedKeys = fakeKeys.map(toListValue);
+
+        const stub = sandbox.stub(codec, 'convertToListValue');
+
+        fakeKeys.forEach((key, i) => {
+          stub.withArgs(key).returns(encodedKeys[i]);
         });
+
+        const expectedKeySet = {keys: encodedKeys};
+        const keySet = Snapshot.encodeKeySet({keys: fakeKeys});
+
+        assert.deepStrictEqual(keySet, expectedKeySet);
       });
 
-      it('should update metadata', done => {
-        transaction.begin(err => {
-          assert.ifError(err);
-          assert.strictEqual(transaction.metadata, API_RESPONSE);
-          done();
-        });
+      it('should encode an array of `ranges`', () => {
+        const fakeRanges = [
+          {startClosed: 'a', endOpen: 'b'},
+          {startOpen: 'c', endClosed: 'd'},
+        ];
+
+        const encodedRanges = [
+          {startClosed: toListValue('a'), endOpen: toListValue('b')},
+          {startOpen: toListValue('c'), endClosed: toListValue('d')},
+        ];
+
+        sandbox.stub(codec, 'convertToListValue').callsFake(toListValue);
+
+        const expectedKeySet = {ranges: encodedRanges};
+        const keySet = Snapshot.encodeKeySet({ranges: fakeRanges});
+
+        assert.deepStrictEqual(keySet, expectedKeySet);
       });
 
-      it('should execute callback with API response', done => {
-        transaction.begin((err, apiResponse) => {
-          assert.ifError(err);
-          assert.strictEqual(apiResponse, API_RESPONSE);
-          done();
-        });
+      it('should return all keys by default', () => {
+        const keySet = Snapshot.encodeKeySet({});
+
+        assert.deepStrictEqual(keySet, {all: true});
       });
 
-      it('should set the timestamp if applicable', done => {
-        const fakeProtoTimestamp = {};
+      it('should preserve passed in keySet', () => {
+        const fakeKeySet = {all: false};
+        const keySet = Snapshot.encodeKeySet({keySet: fakeKeySet});
+
+        assert.deepStrictEqual(keySet, fakeKeySet);
+      });
+    });
+
+    describe('encodeTimestampBounds', () => {
+      const PROTO_TIMESTAMP = {
+        nanos: 123123,
+        seconds: 453452234,
+      };
+
+      beforeEach(() => {
+        Snapshot.encodeTimestampBounds.restore();
+      });
+
+      it('should accept `strong` user value', () => {
+        const options = Snapshot.encodeTimestampBounds({strong: false});
+
+        assert.strictEqual(options.strong, false);
+      });
+
+      it('should default `returnReadTimestamp` to true', () => {
+        const options = Snapshot.encodeTimestampBounds({});
+
+        assert.strictEqual(options.returnReadTimestamp, true);
+      });
+
+      it('should accept `returnReadTimestamp` user value', () => {
+        const options =
+            Snapshot.encodeTimestampBounds({returnReadTimestamp: false});
+
+        assert.strictEqual(options.returnReadTimestamp, false);
+      });
+
+      it('should convert `minReadTimestamp` Date to proto', () => {
+        const fakeTimestamp = Date.now();
         const fakeDate = new Date();
 
-        transaction.request = (config, callback) => {
-          callback(
-              null,
-              extend(
-                  {
-                    readTimestamp: fakeProtoTimestamp,
-                  },
-                  API_RESPONSE));
+        sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
+        sandbox.stub(codec, 'convertMsToProtoTimestamp')
+            .withArgs(fakeTimestamp)
+            .returns(PROTO_TIMESTAMP);
+
+        const options =
+            Snapshot.encodeTimestampBounds({minReadTimestamp: fakeDate});
+
+        assert.strictEqual(options.minReadTimestamp, PROTO_TIMESTAMP);
+      });
+
+      it('should convert `readTimestamp` Date to proto', () => {
+        const fakeTimestamp = Date.now();
+        const fakeDate = new Date();
+
+        sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
+        sandbox.stub(codec, 'convertMsToProtoTimestamp')
+            .withArgs(fakeTimestamp)
+            .returns(PROTO_TIMESTAMP);
+
+        const options =
+            Snapshot.encodeTimestampBounds({readTimestamp: fakeDate});
+
+        assert.strictEqual(options.readTimestamp, PROTO_TIMESTAMP);
+      });
+
+      it('should convert `maxStaleness` ms to proto', () => {
+        const fakeTimestamp = Date.now();
+
+        sandbox.stub(codec, 'convertMsToProtoTimestamp')
+            .withArgs(fakeTimestamp)
+            .returns(PROTO_TIMESTAMP);
+
+        const options =
+            Snapshot.encodeTimestampBounds({maxStaleness: fakeTimestamp});
+
+        assert.strictEqual(options.maxStaleness, PROTO_TIMESTAMP);
+      });
+
+      it('should convert `exactStaleness` ms to proto', () => {
+        const fakeTimestamp = Date.now();
+
+        sandbox.stub(codec, 'convertMsToProtoTimestamp')
+            .withArgs(fakeTimestamp)
+            .returns(PROTO_TIMESTAMP);
+
+        const options =
+            Snapshot.encodeTimestampBounds({exactStaleness: fakeTimestamp});
+
+        assert.strictEqual(options.exactStaleness, PROTO_TIMESTAMP);
+      });
+
+      it('should accept proto timestamp', () => {
+        const fakeOptions = {
+          exactStaleness: {
+            seconds: 23423424,
+            nanos: 23234234,
+          },
+          returnReadTimestamp: false,
         };
 
-        // tslint:disable-next-line no-any
-        (FakeTransactionRequest as any).fromProtoTimestamp_ = (value) => {
-          assert.strictEqual(value, fakeProtoTimestamp);
-          return fakeDate;
+        const options = Snapshot.encodeTimestampBounds(fakeOptions);
+
+        assert.deepStrictEqual(options, fakeOptions);
+        assert.notStrictEqual(options, fakeOptions);
+      });
+    });
+
+    describe('encodeParams', () => {
+      it('should encode param values', () => {
+        const fakeParams = {a: 'foo', b: 3};
+        const encodedParams = {
+          a: {stringValue: 'bar'},
+          b: {numberValue: 4},
         };
 
-        transaction.begin(err => {
-          assert.ifError(err);
-          assert.strictEqual(transaction.readTimestamp, fakeDate);
-          done();
+        const stub = sandbox.stub(codec, 'encode');
+
+        stub.withArgs(fakeParams.a).returns(encodedParams.a);
+        stub.withArgs(fakeParams.b).returns(encodedParams.b);
+
+        const expectedParams = {fields: encodedParams};
+        const {params} = Snapshot.encodeParams({params: fakeParams});
+
+        assert.deepStrictEqual(params, expectedParams);
+      });
+
+      it('should encode param types', () => {
+        const fakeTypes = {a: 'string', b: 'number'};
+        const expectedTypes = {
+          a: {code: s.TypeCode.STRING},
+          b: {code: s.TypeCode.INT64},
+        };
+
+        const stub = sandbox.stub(codec, 'createTypeObject');
+
+        stub.withArgs(fakeTypes.a).returns(expectedTypes.a);
+        stub.withArgs(fakeTypes.b).returns(expectedTypes.b);
+
+        const {paramTypes} = Snapshot.encodeParams({types: fakeTypes});
+
+        assert.deepStrictEqual(paramTypes, expectedTypes);
+      });
+
+      it('should guess missing param types', () => {
+        const fakeParams = {a: 'foo', b: 3};
+        const fakeTypes = {b: 'number'};
+        const fakeMissingType = {type: 'string'};
+        const expectedType = {code: s.TypeCode.STRING};
+
+        sandbox.stub(codec, 'getType')
+            .withArgs(fakeParams.a)
+            .returns(fakeMissingType);
+
+        sandbox.stub(codec, 'createTypeObject')
+            .withArgs(fakeMissingType)
+            .returns(expectedType);
+
+        const {paramTypes} = Snapshot.encodeParams({
+          params: fakeParams,
+          types: fakeTypes,
         });
+
+        assert.strictEqual(paramTypes.a, expectedType);
       });
     });
   });
 
-  describe('commit', () => {
-    const QUEUED_MUTATIONS = [{}];
+  describe('Dml', () => {
+    let dml;
 
     beforeEach(() => {
-      transaction.queuedMutations_ = QUEUED_MUTATIONS;
+      dml = new Dml(SESSION);
     });
 
-    it('should return an error if the transaction was ended', done => {
-      const expectedError = new Error('Transaction has already been ended.');
+    describe('initialization', () => {
+      it('should promisify all the things', () => {
+        const stub = PROMISIFY_ALL.withArgs(Dml);
 
-      transaction.ended_ = true;
+        assert.strictEqual(stub.callCount, 1);
+      });
 
-      transaction.commit(err => {
-        assert.deepStrictEqual(err, expectedError);
-        done();
+      it('should inherit from Snapshot', () => {
+        assert(dml instanceof Snapshot);
       });
     });
 
-    it('should make the correct request with an ID', done => {
-      transaction.id = 'transaction-id';
+    describe('runUpdate', () => {
+      const SQL = 'SELECT * FROM `MyTable`';
 
-      transaction.request = (config) => {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'commit');
-        assert.deepStrictEqual(config.reqOpts, {
-          transactionId: transaction.id,
-          mutations: QUEUED_MUTATIONS,
-        });
+      it('should call through to `run`', () => {
+        const fakeQuery = {sql: SQL};
+        const expectedQuery = Object.assign({seqno: 1}, fakeQuery);
 
-        done();
-      };
+        const stub =
+            sandbox.stub(dml, 'run').withArgs(sinon.match(expectedQuery));
 
-      transaction.commit(assert.ifError);
-    });
+        dml.runUpdate(fakeQuery);
 
-    it('should make the correct request without an ID', done => {
-      delete transaction.id;
+        assert.strictEqual(stub.callCount, 1);
+      });
 
-      transaction.request = (config) => {
-        assert.deepStrictEqual(config.reqOpts, {
-          singleUseTransaction: {
-            readWrite: {},
-          },
-          mutations: QUEUED_MUTATIONS,
-        });
-        done();
-      };
+      it('should accept a sql string', () => {
+        const expectedQuery = {sql: SQL, seqno: 1};
 
-      transaction.commit(assert.ifError);
-    });
+        const stub =
+            sandbox.stub(dml, 'run').withArgs(sinon.match(expectedQuery));
 
-    describe('error', () => {
-      const ERROR = new Error('Error.');
-      const API_RESPONSE = {};
+        dml.runUpdate(SQL);
 
-      beforeEach(() => {
-        transaction.request = (config, callback) => {
-          callback(ERROR, API_RESPONSE);
+        assert.strictEqual(stub.callCount, 1);
+      });
+
+      it('should update the `seqno` for each call', () => {
+        const stub = sandbox.stub(dml, 'run');
+
+        dml.runUpdate(SQL);
+        dml.runUpdate(SQL);
+
+        const call1 = stub.getCall(0).args[0];
+        const call2 = stub.getCall(1).args[0];
+
+        assert.strictEqual(call1.seqno, 1);
+        assert.strictEqual(call2.seqno, 2);
+      });
+
+      it('should return any request errors', () => {
+        const fakeError = new Error('err');
+        const stub = sandbox.stub(dml, 'run');
+        const callback = sandbox.stub().withArgs(fakeError, 0);
+
+        dml.runUpdate(SQL, callback);
+
+        const runCallback = stub.lastCall.args[1];
+        runCallback(fakeError);
+
+        assert.strictEqual(callback.callCount, 1);
+      });
+
+      it('should return the `rowCount`', () => {
+        const fakeRowCount = 5;
+        const fakeStats = {
+          rowCount: 'rowCountExact',
+          rowCountExact: fakeRowCount,
         };
-      });
 
-      it('should execute callback with error and API response', done => {
-        transaction.commit((err, apiResponse) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(apiResponse, API_RESPONSE);
-          done();
-        });
-      });
-    });
+        const stub = sandbox.stub(dml, 'run');
+        const callback = sandbox.stub().withArgs(null, fakeRowCount);
 
-    describe('success', () => {
-      const API_RESPONSE = {};
+        dml.runUpdate(SQL, callback);
 
-      beforeEach(() => {
-        transaction.request = (config, callback) => {
-          callback(null, API_RESPONSE);
-        };
-      });
+        const runCallback = stub.lastCall.args[1];
+        runCallback(null, fakeStats);
 
-      it('should destroy the transaction', done => {
-        transaction.end = () => done();
-        transaction.commit(assert.ifError);
-      });
-
-      it('should execute callback with the API response', done => {
-        transaction.commit((err, apiResponse) => {
-          assert.ifError(err);
-          assert.strictEqual(apiResponse, API_RESPONSE);
-          done();
-        });
+        assert.strictEqual(callback.callCount, 1);
       });
     });
   });
 
-  describe('end', () => {
-    it('should set ended_ to true', () => {
-      transaction.end();
-
-      assert.strictEqual(transaction.ended_, true);
-    });
-
-    it('should empty the queue', () => {
-      transaction.queuedMutations_ = [{}, {}];
-      transaction.end();
-      assert.strictEqual(transaction.queuedMutations_.length, 0);
-    });
-
-    it('should nullify the run function', () => {
-      transaction.runFn_ = () => {};
-      transaction.end();
-      assert.strictEqual(transaction.runFn_, null);
-    });
-
-    it('should reset the attempts property', () => {
-      transaction.attempts_ = 100;
-      transaction.end();
-      assert.strictEqual(transaction.attempts_, 0);
-    });
-
-    it('should delete the ID', () => {
-      transaction.id = 'transaction-id';
-      transaction.end();
-      assert.strictEqual(transaction.id, undefined);
-    });
-
-    it('should optionally execute a callback', done => {
-      transaction.end(done);
-    });
-  });
-
-  describe('queue_', () => {
-    it('should push a mutation object into the queue array', () => {
-      const mutation = {};
-      assert.deepStrictEqual(transaction.queuedMutations_, []);
-      transaction.queue_(mutation);
-      assert.strictEqual(transaction.queuedMutations_[0], mutation);
-    });
-  });
-
-  describe('request', () => {
-    it('should make the correct request', done => {
-      const config = {
-        reqOpts: {
-          a: 'b',
-          c: 'd',
-        },
-      };
-
-      transaction.session.request = (config_) => {
-        const expectedReqOpts = extend({}, config.reqOpts, {
-          session: transaction.session.formattedName_,
-        });
-        assert.deepStrictEqual(config_.reqOpts, expectedReqOpts);
-        done();
-      };
-
-      transaction.request(config, assert.ifError);
-    });
-
-    it('should pass the response back to the callback', done => {
-      const resp = {};
-
-      const config = {
-        reqOpts: {},
-      };
-
-      transaction.session.request = (config_, callback) => {
-        callback(null, resp);
-      };
-
-      transaction.request(config, (err, apiResponse) => {
-        assert.ifError(err);
-        assert.strictEqual(apiResponse, resp);
-        done();
-      });
-    });
-
-    describe('aborted errors', () => {
-      const abortedError = {code: 10};
-      const resp = {};
-
-      const fakeDelay = 123;
-      const config = {};
-      let getRetryDelay;
-
-      before(() => {
-        getRetryDelay = Transaction.getRetryDelay_;
-      });
-
-      beforeEach(() => {
-        transaction.session.request = (config, callback) => {
-          callback(abortedError, resp);
-        };
-        Transaction.getRetryDelay_ = () => fakeDelay;
-      });
-
-      after(() => {
-        Transaction.getRetryDelay_ = getRetryDelay;
-      });
-
-      it('should pass error code to isRetryableErrorCode', done => {
-        transaction.runFn_ = () => {};
-
-        const config = {
-          reqOpts: {},
-        };
-
-        transaction.isRetryableErrorCode_ = (code: number) => {
-          assert.strictEqual(code, abortedError.code);
-          done();
-        };
-
-        transaction.request(config, () => {});
-      });
-
-      it('should retry the txn if abort occurs', done => {
-        const attempts_ = 123;
-
-        Transaction.getRetryDelay_ = (err: Error, attempts: number) => {
-          assert.strictEqual(err, abortedError);
-          assert.strictEqual(attempts, attempts_);
-          return fakeDelay;
-        };
-
-        transaction.retry_ = (delay: number) => {
-          assert.strictEqual(delay, fakeDelay);
-          done();
-        };
-
-        transaction.shouldRetry_ = (err: Error) => {
-          assert.strictEqual(err, abortedError);
-          return true;
-        };
-
-        transaction.runFn_ = () => {
-          done(new Error('Should not have been called.'));
-        };
-
-        transaction.attempts_ = attempts_;
-
-        transaction.request(config, () => {
-          done(new Error('Should not have been called.'));
-        });
-      });
-
-      it('should return a deadline error if not retrying', done => {
-        transaction.retry_ = () => {
-          done(new Error('Should not have been called.'));
-        };
-
-        transaction.shouldRetry_ = (err: Error) => {
-          assert.strictEqual(err, abortedError);
-          return false;
-        };
-
-        const createDeadlineError = Transaction.createDeadlineError_;
-        const deadlineError = {};
-
-        Transaction.createDeadlineError_ = (err: Error) => {
-          assert.strictEqual(err, abortedError);
-          return deadlineError;
-        };
-
-        transaction.runFn_ = (err: Error) => {
-          assert.strictEqual(err, deadlineError);
-
-          Transaction.createDeadlineError_ = createDeadlineError;
-          done();
-        };
-
-        transaction.request(config, () => {
-          done(new Error('Should not have been called.'));
-        });
-      });
-
-      it('should return the aborted error if no runFn', done => {
-        transaction.runFn_ = null;
-
-        transaction.request(config, err => {
-          assert.strictEqual(err, abortedError);
-          done();
-        });
-      });
-    });
-  });
-
-  describe('requestStream', () => {
-    it('should make the correct request', () => {
-      const methodReturnValue = {};
-
-      const config = {
-        reqOpts: {
-          a: 'b',
-          c: 'd',
-        },
-      };
-
-      transaction.session.requestStream = (config_) => {
-        const expectedReqOpts = extend({}, config.reqOpts, {
-          session: transaction.session.formattedName_,
-        });
-
-        assert.deepStrictEqual(config_.reqOpts, expectedReqOpts);
-
-        return methodReturnValue;
-      };
-
-      const returnValue = transaction.requestStream(config);
-      assert.strictEqual(returnValue, methodReturnValue);
-    });
-
-    describe('runTransaction mode', () => {
-      let fakeStream;
-
-      const config = {
-        reqOpts: {},
-      };
-
-      beforeEach(() => {
-        fakeStream = through.obj();
-        transaction.session.requestStream = () => {
-          return fakeStream;
-        };
-        transaction.runFn_ = () => {};
-      });
-
-      it('should pipe the request stream to the user stream', done => {
-        const fakeData = {
-          a: 'a',
-        };
-
-        transaction.requestStream(config).on('error', done).on('data', data => {
-          assert.strictEqual(data, fakeData);
-          done();
-        });
-
-        fakeStream.push(fakeData);
-      });
-
-      it('should emit non-abort errors to the user stream', done => {
-        const error = new Error('ohnoes');
-        const userStream = transaction.requestStream(config);
-
-        userStream.destroy = (err: Error) => {
-          assert.strictEqual(err, error);
-          done();
-        };
-
-        fakeStream.emit('error', error);
-      });
-
-      it('isRetryableErrorCode should be called on error', done => {
-        const error = {code: 'sentinel'};
-        const userStream = transaction.requestStream(config);
-
-        transaction.isRetryableErrorCode_ = (code: number) => {
-          assert.strictEqual(code, error.code);
-          done();
-        };
-
-        userStream.destroy = () => {};
-
-        fakeStream.emit('error', error);
-      });
-
-      it('should retry the transaction for UNKNOWN', done => {
-        const error = {code: 2};
-        const fakeDelay = 123;
-        const attempts_ = 321;
-        const getRetryDelay = Transaction.getRetryDelay_;
-
-        Transaction.getRetryDelay_ = (err: Error, attempts: number) => {
-          assert.strictEqual(err, error);
-          assert.strictEqual(attempts, attempts_);
-          Transaction.getRetryDelay_ = getRetryDelay;
-          return fakeDelay;
-        };
-
-        transaction.shouldRetry_ = (err: Error) => {
-          assert.strictEqual(err, error);
-          return true;
-        };
-
-        transaction.runFn_ = done;  // should not be called
-        transaction.attempts_ = attempts_;
-
-        transaction.retry_ = (delay: number) => {
-          assert.strictEqual(delay, fakeDelay);
-          assert(stream._destroyed);
-          done();
-        };
-
-        const stream = transaction.requestStream(config);
-        stream.on('error', done);  // should not be called
-
-        fakeStream.emit('error', error);
-      });
-
-      it('should retry the transaction for ABORTED', done => {
-        const error = {code: 10};
-        const fakeDelay = 123;
-        const getRetryDelay = Transaction.getRetryDelay_;
-
-        Transaction.getRetryDelay_ = (err: Error) => {
-          assert.strictEqual(err, error);
-          Transaction.getRetryDelay_ = getRetryDelay;
-          return fakeDelay;
-        };
-
-        transaction.shouldRetry_ = (err: Error) => {
-          assert.strictEqual(err, error);
-          return true;
-        };
-
-        transaction.runFn_ = done;  // should not be called
-
-        transaction.retry_ = (delay: number) => {
-          assert.strictEqual(delay, fakeDelay);
-          assert(stream._destroyed);
-          done();
-        };
-
-        const stream = transaction.requestStream(config);
-        stream.on('error', done);  // should not be called
-
-        fakeStream.emit('error', error);
-      });
-
-      it('should send a deadline error to the runFn', done => {
-        const error = {code: 10};
-        const deadlineError = {};
-        const createDeadlineError = Transaction.createDeadlineError_;
-
-        Transaction.createDeadlineError_ = (err: Error) => {
-          assert.strictEqual(err, error);
-          return deadlineError;
-        };
-
-        transaction.shouldRetry_ = (err: Error) => {
-          assert.strictEqual(err, error);
-          return false;
-        };
-
-        transaction.retry_ = done;  // should not be called
-
-        transaction.runFn_ = (err: Error) => {
-          assert.strictEqual(err, deadlineError);
-          assert(stream._destroyed);
-
-          Transaction.createDeadlineError_ = createDeadlineError;
-          done();
-        };
-
-        const stream = transaction.requestStream(config);
-        stream.on('error', done);  // should not be called
-        fakeStream.emit('error', error);
-      });
-    });
-  });
-
-  describe('rollback', () => {
-    beforeEach(() => {
-      transaction.id = ID;
-    });
-
-    it('should return an error if transaction ID is not set', done => {
-      const expectedError =
-          new Error('Transaction ID is unknown, nothing to rollback.');
-
-      delete transaction.id;
-
-      transaction.rollback(err => {
-        assert.deepStrictEqual(err, expectedError);
-        done();
-      });
-    });
-
-    it('should make the correct request', done => {
-      transaction.request = (config) => {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'rollback');
-        assert.deepStrictEqual(config.reqOpts, {
-          transactionId: transaction.id,
-        });
-
-        done();
-      };
-
-      transaction.rollback(assert.ifError);
-    });
-
-    it('should execute callback with error & API response', done => {
-      const error = new Error('Error.');
-      const apiResponse = {};
-
-      transaction.request = (config, callback) => {
-        callback(error, apiResponse);
-      };
-
-      transaction.end = () => {
-        done(new Error('Should not be destroyed.'));
-      };
-
-      transaction.rollback((err, apiResponse_) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(apiResponse_, apiResponse);
-        done();
-      });
-    });
-
-    it('should destroy the transaction if rollback worked', done => {
-      const apiResponse = {};
-
-      transaction.request = (config, callback) => {
-        callback(null, apiResponse);
-      };
-
-      let destroyed = false;
-      transaction.end = callback => {
-        destroyed = true;
-        callback(null);
-      };
-
-      transaction.rollback((err, apiResponse_) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(apiResponse_, apiResponse);
-        assert.strictEqual(destroyed, true);
-        done();
-      });
-    });
-  });
-
-  describe('run', () => {
-    it('should call and collect results from a stream', done => {
-      const query = {};
-
-      const rows = [{}, {}];
-      const fakeStats = {};
-
-      transaction.runStream = (query_: {}) => {
-        assert.strictEqual(query_, query);
-
-        const stream = through.obj();
-
-        setImmediate(() => {
-          stream.emit('stats', fakeStats);
-
-          split(rows, stream).then(() => {
-            stream.end();
-          });
-        });
-
-        return stream;
-      };
-
-      transaction.run(query, (err, rows_, stats) => {
-        assert.ifError(err);
-        assert.deepStrictEqual(rows_, rows);
-        assert.strictEqual(stats, fakeStats);
-        done();
-      });
-    });
-
-    it('should execute callback with error', done => {
-      const error = new Error('Error.');
-
-      transaction.runStream = () => {
-        const stream = through.obj();
-
-        setImmediate(() => {
-          stream.destroy(error);
-        });
-
-        return stream;
-      };
-
-      transaction.run({}, err => {
-        assert.strictEqual(err, error);
-        done();
-      });
-    });
-
-    it('should return a promise when callback is not specified', () => {
-      const query = {};
-
-      const rows = [{}, {}];
-
-      transaction.runStream = (query_: {}) => {
-        assert.strictEqual(query_, query);
-        const stream = through.obj();
-        setImmediate(() => {
-          split(rows, stream).then(() => {
-            stream.end();
-          });
-        });
-        return stream;
-      };
-
-      return transaction.run(query).then(args => {
-        assert.deepStrictEqual(args[0], rows);
-      });
-    });
-  });
-
-  describe('runStream', () => {
-    const QUERY = {
-      sql: 'SELECT * FROM table',
-      a: 'b',
-      c: 'd',
-    };
-
-    const OPTIONS = {
-      timestampBoundOptions: true,
-    };
-
-    const ENCODED_QUERY = extend({}, QUERY);
-
-    const EXPECTED_REQ_OPTS = extend({}, QUERY, {
-      transaction: {
-        id: ID,
-      },
-    });
+  describe('Transaction', () => {
+    let transaction;
 
     beforeEach(() => {
-      transaction = new Transaction(SESSION, OPTIONS);
-      transaction.id = ID;
-
-      fakeCodec.encodeQuery = () => {
-        return ENCODED_QUERY;
-      };
+      transaction = new Transaction(SESSION);
     });
 
-    it('should make the correct request', done => {
-      fakeCodec.encodeQuery = query => {
-        assert.strictEqual(query, QUERY);
-        return ENCODED_QUERY;
-      };
-
-      transaction.requestStream = config => {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'executeStreamingSql');
-        assert.deepStrictEqual(config.reqOpts, EXPECTED_REQ_OPTS);
-        done();
-      };
-
-      const stream = transaction.runStream(QUERY, OPTIONS);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-
-    it('should accept a query string', done => {
-      fakeCodec.encodeQuery = (query) => {
-        assert.strictEqual(query.sql, QUERY.sql);
-        return ENCODED_QUERY;
-      };
-
-      transaction.requestStream = (options) => {
-        assert.deepStrictEqual(options.reqOpts, EXPECTED_REQ_OPTS);
-        done();
-      };
-
-      const stream = transaction.runStream(QUERY.sql, OPTIONS);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-
-    it('should not require a transaction ID', done => {
-      delete transaction.id;
-
-      transaction.requestStream = (options) => {
-        const expectedReqOpts = extend(true, {}, EXPECTED_REQ_OPTS, {
-          transaction: {
-            singleUse: {
-              readOnly: OPTIONS,
-            },
-          },
+    describe('initialization', () => {
+      it('should promisify all the things', () => {
+        const expectedOptions = sinon.match({
+          exclude: [
+            'deleteRows',
+            'insert',
+            'replace',
+            'update',
+            'upsert',
+          ],
         });
 
-        delete expectedReqOpts.transaction.id;
-        assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
-        done();
-      };
+        const stub = PROMISIFY_ALL.withArgs(Transaction, expectedOptions);
 
-      const stream = transaction.runStream(QUERY, OPTIONS);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
+        assert.strictEqual(stub.callCount, 1);
+      });
 
-    it('should not require timestamp bounds', done => {
-      delete transaction.id;
-      delete transaction.options;
-
-      transaction.requestStream = (options) => {
-        const expectedReqOpts = extend(true, {}, EXPECTED_REQ_OPTS, {
-          transaction: {
-            singleUse: {
-              readOnly: {},
-            },
-          },
-        });
-        delete expectedReqOpts.transaction.id;
-        assert.deepStrictEqual(options.reqOpts, expectedReqOpts);
-        done();
-      };
-
-      const stream = transaction.runStream(QUERY);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-
-    it('should return PartialResultStream', () => {
-      const stream = transaction.runStream(QUERY, OPTIONS);
-      assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
-    });
-
-    it('should assign a resumeToken to the request', done => {
-      const resumeToken = 'resume-token';
-
-      transaction.requestStream = (options) => {
-        assert.strictEqual(options.reqOpts.resumeToken, resumeToken);
-        done();
-      };
-
-      const stream = transaction.runStream(QUERY, OPTIONS);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn(resumeToken);
-    });
-
-    it('should not pass json options to the request', done => {
-      const query = extend({json: true, jsonOptions: {}}, QUERY);
-
-      transaction.requestStream = (options) => {
-        assert.strictEqual(options.reqOpts.json, undefined);
-        assert.strictEqual(options.reqOpts.jsonOptions, undefined);
-        done();
-      };
-
-      const stream = transaction.runStream(query);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-
-    it('should pass the json options', () => {
-      const expectedJsonOptions = {json: true, jsonOptions: {a: 'b'}};
-      const query = extend({}, expectedJsonOptions, QUERY);
-      const stream = transaction.runStream(query);
-      const options = stream.calledWith_[1];
-
-      assert.deepStrictEqual(options, expectedJsonOptions);
-    });
-  });
-
-  describe('runUpdate', () => {
-    it('should run the query', done => {
-      const fakeQuery = {sql: 'SELECT 1'};
-      const expectedQuery = extend({seqno: transaction.seqno}, fakeQuery);
-
-      transaction.run = (query: {}) => {
-        assert.deepStrictEqual(query, expectedQuery);
-        done();
-      };
-
-      transaction.runUpdate(fakeQuery, assert.ifError);
-    });
-
-    it('should accept a sql string', done => {
-      const fakeQuery = 'SELECT 1';
-      const expectedQuery = {
-        sql: fakeQuery,
-        seqno: transaction.seqno,
-      };
-
-      transaction.run = (query: {}) => {
-        assert.deepStrictEqual(query, expectedQuery);
-        done();
-      };
-
-      transaction.runUpdate(fakeQuery, assert.ifError);
-    });
-
-    it('should return any request errors', done => {
-      const error = new Error('err');
-
-      transaction.run = (query, callback) => {
-        callback(error);
-      };
-
-      transaction.runUpdate({}, err => {
-        assert.strictEqual(err, error);
-        done();
+      it('should inherit from Dml', () => {
+        assert(transaction instanceof Dml);
       });
     });
 
-    it('should return the rowCount if available', done => {
-      const stats = {
-        rowCount: 'rowCountExact',
-        rowCountExact: 5,
-      };
+    describe('begin', () => {
+      it('should send the correct options', () => {
+        const stub = sandbox.stub(transaction, 'request');
 
-      transaction.run = (query, callback) => {
-        callback(null, [], stats);
-      };
+        transaction.begin();
 
-      transaction.runUpdate({}, (err, rowCount) => {
-        assert.strictEqual(rowCount, stats.rowCountExact);
-        done();
+        const expectedOptions = {readWrite: {}};
+        const {reqOpts} = stub.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
       });
     });
-  });
 
-  describe('retry_', () => {
-    it('should begin the transaction', done => {
-      transaction.begin = () => {
-        done();
-      };
+    describe('commit', () => {
+      it('should make the correct request', () => {
+        const stub = sandbox.stub(transaction, 'request');
 
-      transaction.retry_();
-    });
+        transaction.commit();
 
-    it('should return an error if transaction cannot begin', done => {
-      const error = new Error('Error.');
+        const {client, method, reqOpts} = stub.lastCall.args[0];
 
-      transaction.begin = (callback) => {
-        callback(error);
-      };
-
-      transaction.runFn_ = (err: Error) => {
-        assert.strictEqual(err, error);
-        done();
-      };
-
-      transaction.retry_();
-    });
-
-    describe('transaction began successfully', () => {
-      const fakeDelay = 1123123;
-      let _setTimeout;
-
-      before(() => {
-        _setTimeout = global.setTimeout;
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'commit');
+        assert.strictEqual(reqOpts.session, SESSION_NAME);
+        assert.deepStrictEqual(reqOpts.mutations, []);
       });
+
+      it('should use the transaction `id` when set', () => {
+        const id = 'transaction-id-123';
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.id = id;
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+
+        assert.strictEqual(reqOpts.transactionId, id);
+      });
+
+      it('should set `singleUseTransaction` when `id` is not set', () => {
+        const expectedOptions = {readWrite: {}};
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.singleUseTransaction, expectedOptions);
+      });
+
+      it('should call `end` once complete', () => {
+        const endStub = sandbox.stub(transaction, 'end');
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        transaction.commit(() => {});
+
+        const requestCallback = requestStub.lastCall.args[1];
+        requestCallback();
+
+        assert.strictEqual(endStub.callCount, 1);
+      });
+
+      it('should set the `commitTimestamp` if in response', () => {
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        const fakeTimestamp = {};
+        const formattedTimestamp = new Date();
+
+        sandbox.stub(codec, 'convertProtoTimestampToDate')
+            .withArgs(fakeTimestamp)
+            .returns(formattedTimestamp);
+
+        transaction.commit(() => {});
+
+        const requestCallback = requestStub.lastCall.args[1];
+        requestCallback(null, {commitTimestamp: fakeTimestamp});
+
+        assert.strictEqual(transaction.commitTimestamp, formattedTimestamp);
+        assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
+      });
+
+      it('should return any errors and the response', () => {
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        const fakeError = new Error('err');
+        const fakeResponse = {};
+        const callback = sandbox.stub().withArgs(fakeError, fakeResponse);
+
+        transaction.commit(callback);
+
+        const requestCallback = requestStub.lastCall.args[1];
+        requestCallback(fakeError, fakeResponse);
+
+        assert.strictEqual(callback.callCount, 1);
+      });
+    });
+
+    describe('deleteRows', () => {
+      it('should queue a "delete" mutation', () => {
+        const fakeTable = 'my-table-123';
+        const fakeKeys = ['a', 'b'];
+
+        const expectedKeySet = {
+          keys: fakeKeys.map(key => {
+            return {
+              values: [{stringValue: key}],
+            };
+          })
+        };
+
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.deleteRows(fakeTable, fakeKeys);
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+        const {table, keySet} = reqOpts.mutations[0].delete;
+
+        assert.strictEqual(table, fakeTable);
+        assert.deepStrictEqual(keySet, expectedKeySet);
+      });
+    });
+
+    describe('insert', () => {
+      it('should queue an "insert" mutation', () => {
+        const fakeTable = 'my-table-123';
+        const fakeKeyVals = {
+          name: 'Joe West',
+          id: 'Id3b',
+        };
+
+        const expectedColumns = Object.keys(fakeKeyVals).sort();
+        const expectedValues = [{
+          values: expectedColumns.map(column => {
+            return {stringValue: fakeKeyVals[column]};
+          }),
+        }];
+
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.insert(fakeTable, fakeKeyVals);
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+        const {table, columns, values} = reqOpts.mutations[0].insert;
+
+        assert.strictEqual(table, fakeTable);
+        assert.deepStrictEqual(columns, expectedColumns);
+        assert.deepStrictEqual(values, expectedValues);
+      });
+    });
+
+    describe('replace', () => {
+      it('should queue a "replace" mutation', () => {
+        const fakeTable = 'my-table-123';
+        const fakeKeyVals = {
+          name: 'Joe West',
+          id: 'Id3b',
+        };
+
+        const expectedColumns = Object.keys(fakeKeyVals).sort();
+        const expectedValues = [{
+          values: expectedColumns.map(column => {
+            return {stringValue: fakeKeyVals[column]};
+          }),
+        }];
+
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.replace(fakeTable, fakeKeyVals);
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+        const {table, columns, values} = reqOpts.mutations[0].replace;
+
+        assert.strictEqual(table, fakeTable);
+        assert.deepStrictEqual(columns, expectedColumns);
+        assert.deepStrictEqual(values, expectedValues);
+      });
+    });
+
+    describe('rollback', () => {
+      const ID = 'transaction-id-123';
 
       beforeEach(() => {
-        // tslint:disable-next-line no-any
-        (global as any).setTimeout = () => {};
-        transaction.runFn_ = () => {};
-        transaction.begin = (callback) => callback();
+        transaction.id = ID;
       });
 
-      after(() => {
-        global.setTimeout = _setTimeout;
-      });
+      it('should return an error if the `id` is not set', done => {
+        const expectedError =
+            new Error('Transaction ID is unknown, nothing to rollback.');
 
-      it('should empty queued mutations', () => {
-        transaction.queuedMutations_ = [{}];
-        transaction.retry_(fakeDelay);
+        delete transaction.id;
 
-        assert.deepStrictEqual(transaction.queuedMutations_, []);
-      });
-
-      it('should execute run function after timeout', done => {
-        // tslint:disable-next-line no-any
-        (global as any).setTimeout = (cb, timeout) => {
-          assert.strictEqual(timeout, fakeDelay);
-          cb();
-        };
-
-        transaction.runFn_ = (err, txn) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual(txn, transaction);
+        transaction.rollback(err => {
+          assert.deepStrictEqual(err, expectedError);
           done();
+        });
+      });
+
+      it('should make the correct request', () => {
+        const stub = sandbox.stub(transaction, 'request');
+        const expectedReqOpts = {
+          session: SESSION_NAME,
+          transactionId: ID,
         };
 
-        transaction.retry_(fakeDelay);
+        transaction.rollback();
+
+        const {client, method, reqOpts} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'rollback');
+        assert.deepStrictEqual(reqOpts, expectedReqOpts);
+      });
+
+      it('should call through to `end`', () => {
+        const endStub = sandbox.stub(transaction, 'end');
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        transaction.rollback(() => {});
+
+        const requestCallback = requestStub.lastCall.args[1];
+        requestCallback(null);
+
+        assert.strictEqual(endStub.callCount, 1);
+      });
+
+      it('should return any request errors', () => {
+        const fakeError = new Error('err');
+        const callback = sandbox.stub().withArgs(fakeError);
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        transaction.rollback(callback);
+
+        const requestCallback = requestStub.lastCall.args[1];
+        requestCallback(fakeError);
+
+        assert.strictEqual(callback.callCount, 1);
+      });
+    });
+
+    describe('update', () => {
+      it('should queue an "update" mutation', () => {
+        const fakeTable = 'my-table-123';
+        const fakeKeyVals = {
+          name: 'Joe West',
+          id: 'Id3b',
+        };
+
+        const expectedColumns = Object.keys(fakeKeyVals).sort();
+        const expectedValues = [{
+          values: expectedColumns.map(column => {
+            return {stringValue: fakeKeyVals[column]};
+          }),
+        }];
+
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.update(fakeTable, fakeKeyVals);
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+        const {table, columns, values} = reqOpts.mutations[0].update;
+
+        assert.strictEqual(table, fakeTable);
+        assert.deepStrictEqual(columns, expectedColumns);
+        assert.deepStrictEqual(values, expectedValues);
+      });
+    });
+
+    describe('upsert', () => {
+      it('should queue an "insertOrUpdate" mutation', () => {
+        const fakeTable = 'my-table-123';
+        const fakeKeyVals = {
+          name: 'Joe West',
+          id: 'Id3b',
+        };
+
+        const expectedColumns = Object.keys(fakeKeyVals).sort();
+        const expectedValues = [{
+          values: expectedColumns.map(column => {
+            return {stringValue: fakeKeyVals[column]};
+          }),
+        }];
+
+        const stub = sandbox.stub(transaction, 'request');
+
+        transaction.upsert(fakeTable, fakeKeyVals);
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+        const {table, columns, values} = reqOpts.mutations[0].insertOrUpdate;
+
+        assert.strictEqual(table, fakeTable);
+        assert.deepStrictEqual(columns, expectedColumns);
+        assert.deepStrictEqual(values, expectedValues);
+      });
+    });
+
+    describe('mutations', () => {
+      it('should accept an array of rows', () => {
+        const stub = sandbox.stub(transaction, 'request');
+
+        const fakeTable = 'my-table-123';
+        const rows = [
+          {name: 'dave', id: '1'},
+          {name: 'stephen', id: '2'},
+        ];
+
+        const expectedColumns = Object.keys(rows[0]).sort();
+        const expectedValues = rows.map(row => {
+          return {
+            values: expectedColumns.map(column => {
+              return {stringValue: row[column]};
+            }),
+          };
+        });
+
+        transaction.insert(fakeTable, rows);
+        transaction.commit();
+
+        const {reqOpts} = stub.lastCall.args[0];
+        const {columns, values} = reqOpts.mutations[0].insert;
+
+        assert.deepStrictEqual(columns, expectedColumns);
+        assert.deepStrictEqual(values, expectedValues);
+      });
+
+      it('should throw an error if missing columns', () => {
+        const table = 'my-table-123';
+        const rows = [
+          {name: 'dave', id: '1'},
+          {name: 'stephen'},
+        ];
+
+        const errorRegExp =
+            /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns\: \[\"id\"\]/;
+
+        assert.throws(() => transaction.insert(table, rows), errorRegExp);
+      });
+    });
+
+    describe('getUniqueKeys', () => {
+      it('should create a list of unique keys', () => {
+        const rows = [
+          {name: 'dave', id: '1'},
+          {name: 'stephen', age: 102},
+          {big: 'monies', no: 'whammies', id: '2'},
+        ];
+
+        const expectedKeys = ['age', 'big', 'id', 'name', 'no'];
+        const keys = Transaction.getUniqueKeys(rows);
+
+        assert.deepStrictEqual(keys, expectedKeys);
       });
     });
   });
 
-  describe('shouldRetry_', () => {
-    let abortedError;
-    let unknownError;
+  describe('PartitionedDml', () => {
+    let pdml;
 
     beforeEach(() => {
-      abortedError = {
-        code: 10,
-        metadata: {
-          get() {
-            return [];
-          },
-        },
-      };
-      unknownError = {
-        code: 2,
-        metadata: {
-          get() {
-            return [];
-          },
-        },
-      };
+      pdml = new PartitionedDml(SESSION);
     });
 
-    it('should pass error code to isRetryableErrorCode', () => {
-      const error = {code: 'sentinel'};
+    describe('initialization', () => {
+      it('should promisify all the things', () => {
+        const stub = PROMISIFY_ALL.withArgs(PartitionedDml);
 
-      const isRetryableErrorCode = Transaction.isRetryableErrorCode_;
-      Transaction.isRetryableErrorCode_ = (code: number) => {
-        assert.strictEqual(code, error.code);
-        return isRetryableErrorCode(code);
-      };
+        assert.strictEqual(stub.callCount, 1);
+      });
 
-      transaction.shouldRetry_(error);
+      it('should inherit from Dml', () => {
+        assert(pdml instanceof Dml);
+      });
     });
 
-    it('should not retry if non-aborted error', () => {
-      const shouldRetry = transaction.shouldRetry_({code: 4});
-      assert.strictEqual(shouldRetry, false);
+    describe('begin', () => {
+      it('should send the correct options', () => {
+        const stub = sandbox.stub(pdml, 'request');
+
+        pdml.begin();
+
+        const expectedOptions = {partitionedDml: {}};
+        const {reqOpts} = stub.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+      });
     });
 
-    it('should not retry if runFn is missing', () => {
-      transaction.runFn_ = null;
+    describe('runUpdate', () => {
+      const SQL = 'SELECT * FROM `MyTable`';
 
-      const shouldRetry = transaction.shouldRetry_(abortedError);
-      assert.strictEqual(shouldRetry, false);
-    });
+      it('should call through to `super.runUpdate`', () => {
+        const stub = sandbox.stub(Dml.prototype, 'runUpdate');
 
-    it('should not retry if deadline is exceeded', () => {
-      transaction.timeout_ = 1;
-      transaction.beginTime_ = Date.now() - 2;
+        pdml.runUpdate(SQL);
 
-      const shouldRetry = transaction.shouldRetry_(abortedError);
-      assert.strictEqual(shouldRetry, false);
-    });
+        const query = stub.lastCall.args[0];
 
-    it('should retry if all conditions are met - Aborted', () => {
-      transaction.runFn_ = () => {};
-      transaction.timeout_ = 1000;
-      transaction.beginTime_ = Date.now() - 2;
-      abortedError.metadata.get = (key) => {
-        assert.strictEqual(key, 'google.rpc.retryinfo-bin');
-        return [{}];
-      };
+        assert.strictEqual(query, SQL);
+      });
 
-      const shouldRetry = transaction.shouldRetry_(abortedError);
-      assert.strictEqual(shouldRetry, true);
-    });
+      it('should end the transaction after a request', () => {
+        const endStub = sandbox.stub(pdml, 'end');
+        const superStub = sandbox.stub(Dml.prototype, 'runUpdate');
 
-    it('should retry if all conditions are met - Unknown', () => {
-      transaction.runFn_ = () => {};
-      transaction.timeout_ = 1000;
-      transaction.beginTime_ = Date.now() - 2;
-      unknownError.metadata.get = (key) => {
-        assert.strictEqual(key, 'google.rpc.retryinfo-bin');
-        return [{}];
-      };
+        pdml.runUpdate(SQL, () => {});
 
-      const shouldRetry = transaction.shouldRetry_(unknownError);
-      assert.strictEqual(shouldRetry, true);
-    });
-  });
+        const superCallback = superStub.lastCall.args[1];
+        superCallback();
 
-  describe('isRetryableErrorCode_', () => {
-    const abortedErrorCode = 10;
-    const unknownErrorCode = 2;
+        assert.strictEqual(endStub.callCount, 1);
+      });
 
-    it('should return true for ABORTED', () => {
-      const isRetryable = transaction.isRetryableErrorCode_(abortedErrorCode);
-      assert.strictEqual(isRetryable, true);
-    });
+      it('should return any errors and the row count', () => {
+        const fakeErr = new Error('err');
+        const fakeRowCount = 5;
 
-    it('should return true for UNKNOWN', () => {
-      const isRetryable = transaction.isRetryableErrorCode_(unknownErrorCode);
-      assert.strictEqual(isRetryable, true);
-    });
+        const superStub = sandbox.stub(Dml.prototype, 'runUpdate');
+        const callback = sandbox.stub().withArgs(fakeErr, fakeRowCount);
 
-    it('should return false for other error codes', () => {
-      const isRetryable = transaction.isRetryableErrorCode_(4);
-      assert.strictEqual(isRetryable, false);
+        pdml.runUpdate(SQL, callback);
+
+        const superCallback = superStub.lastCall.args[1];
+        superCallback(fakeErr, fakeRowCount);
+
+        assert.strictEqual(callback.callCount, 1);
+      });
     });
   });
 });

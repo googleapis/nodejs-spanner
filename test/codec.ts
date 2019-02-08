@@ -590,253 +590,55 @@ describe('codec', () => {
     });
   });
 
-  describe('encodeQuery', () => {
-    const SQL = 'SELECT * FROM table';
-    const QUERY = {
-      sql: SQL,
-    };
-
-    it('should return the query', () => {
-      const encodedQuery = codec.encodeQuery(QUERY);
-
-      assert.deepStrictEqual(QUERY, encodedQuery);
-    });
-
-    it('should clone the query', () => {
-      const encodedQuery = codec.encodeQuery(QUERY);
-      assert.notStrictEqual(QUERY, encodedQuery);
-
-      delete encodedQuery.sql;
-      assert.strictEqual(QUERY.sql, SQL);
-    });
-
-    it('should encode query parameters', () => {
-      const encodedValue = {};
-      const fakeQuery = Object.assign({}, QUERY, {params: {test: 'value'}});
-
-      sandbox.stub(codec, 'encode')
-          .withArgs(fakeQuery.params.test)
-          .returns(encodedValue);
-
-      const encodedQuery = codec.encodeQuery(fakeQuery);
-      assert.strictEqual(encodedQuery.params.fields.test, encodedValue);
-    });
-
-    it('should attempt to guess the parameter types', () => {
-      const params = {
-        unspecified: null,
-        bool: true,
-        int64: 1234,
-        float64: 2.2,
-        timestamp: new Date(),
-        date: new codec.SpannerDate(),
-        string: 'abc',
-        bytes: Buffer.from('abc'),
-      };
-
-      const fakeQuery = Object.assign({}, QUERY, {params});
-      const encodedQuery = codec.encodeQuery(fakeQuery);
-
-      assert.deepStrictEqual(encodedQuery.paramTypes, {
-        unspecified: {
-          code: s.TypeCode.TYPE_CODE_UNSPECIFIED,
-        },
-        bool: {
-          code: s.TypeCode.BOOL,
-        },
-        int64: {
-          code: s.TypeCode.INT64,
-        },
-        float64: {
-          code: s.TypeCode.FLOAT64,
-        },
-        timestamp: {
-          code: s.TypeCode.TIMESTAMP,
-        },
-        date: {
-          code: s.TypeCode.DATE,
-        },
-        string: {
-          code: s.TypeCode.STRING,
-        },
-        bytes: {
-          code: s.TypeCode.BYTES,
-        },
+  describe('convertToListValue', () => {
+    beforeEach(() => {
+      sandbox.stub(codec, 'encode').callsFake(value => {
+        return {stringValue: value};
       });
     });
 
-    it('should not overwrite existing type definitions', () => {
-      const fakeQuery = Object.assign({}, QUERY, {
-        params: {
-          test: 123,
-        },
-        types: {
-          test: 'string',
-        },
-      });
-
-      sandbox.stub(codec, 'getType').throws();
-
-      const query = codec.encodeQuery(fakeQuery);
-
-      assert.deepStrictEqual(
-          query.paramTypes, {test: {code: s.TypeCode.STRING}});
-    });
-
-    it('should delete the type map from the request options', () => {
-      const fakeQuery = {
-        params: {
-          test: 'abc',
-        },
-        types: {
-          test: 'string',
-        },
+    it('should map values to encoded versions', () => {
+      const actual = ['hi', 'bye'];
+      const expected = {
+        values: [{stringValue: 'hi'}, {stringValue: 'bye'}],
       };
 
-      const encodedQuery = codec.encodeQuery(fakeQuery);
-      assert.strictEqual(encodedQuery.types, undefined);
+      const converted = codec.convertToListValue(actual);
+      assert.deepStrictEqual(converted, expected);
+    });
+
+    it('should convert a single value to a list value', () => {
+      const actual = 'hi';
+      const expected = {
+        values: [{stringValue: 'hi'}],
+      };
+
+      const converted = codec.convertToListValue(actual);
+      assert.deepStrictEqual(converted, expected);
     });
   });
 
-  describe('encodeRead', () => {
-    it('should return all keys if ranges/keys are absent', () => {
-      const encoded = codec.encodeRead({});
+  describe('convertMsToProtoTimestamp', () => {
+    it('should convert ms to google.protobuf.Timestamp', () => {
+      const ms = 5000.00001;
+      const expected = {
+        nanos: 10,
+        seconds: 5,
+      };
 
-      assert.deepStrictEqual(encoded, {keySet: {all: true}});
+      const converted = codec.convertMsToProtoTimestamp(ms);
+      assert.deepStrictEqual(converted, expected);
     });
+  });
 
-    describe('query.keys', () => {
-      it('should encode and map input to keySet', () => {
-        const keyMap = {key: {}, composite: {}, key2: {}};
+  describe('convertProtoTimestampToDate', () => {
+    it('should convert google.protobuf.Timestamp to Date', () => {
+      const timestamp = {nanos: 10, seconds: 5};
 
-        const query = {
-          keys: [
-            'key', ['composite', 'key2'],  // composite key
-          ],
-        };
+      const expected = new Date(5000.00001);
+      const converted = codec.convertProtoTimestampToDate(timestamp);
 
-        const stub = sandbox.stub(codec, 'encode');
-
-        Object.keys(keyMap).forEach(key => {
-          stub.withArgs(key).returns(keyMap[key]);
-        });
-
-        const expectedKeys = [
-          {
-            values: [keyMap.key],
-          },
-          {
-            values: [keyMap.composite, keyMap.key2],
-          },
-        ];
-
-        const encoded = codec.encodeRead(query);
-        assert.deepStrictEqual(encoded.keySet.keys, expectedKeys);
-      });
-
-      it('should arrify query.keys', () => {
-        const query = {keys: 'key'};
-        const encodedValue = {};
-
-        sandbox.stub(codec, 'encode')
-            .withArgs(query.keys)
-            .returns(encodedValue);
-
-        const encoded = codec.encodeRead(query);
-        assert.strictEqual(encoded.keySet.keys[0].values[0], encodedValue);
-      });
-
-      it('should remove keys property from request object', () => {
-        const query = {
-          keys: ['key'],
-        };
-
-        const encoded = codec.encodeRead(query);
-        assert.strictEqual(encoded.keys, undefined);
-      });
-    });
-
-    describe('query.ranges', () => {
-      it('should encode/map the inputs', () => {
-        const keyMap = {key: {}, composite: {}, key2: {}};
-
-        const query = {
-          ranges: [
-            {
-              startOpen: 'key',
-              endClosed: ['composite', 'key2'],
-            },
-          ],
-        };
-
-        const stub = sandbox.stub(codec, 'encode');
-
-        Object.keys(keyMap).forEach(key => {
-          stub.withArgs(key).returns(keyMap[key]);
-        });
-
-        const expectedRanges = [
-          {
-            startOpen: {
-              values: [keyMap.key],
-            },
-            endClosed: {
-              values: [keyMap.composite, keyMap.key2],
-            },
-          },
-        ];
-
-        const encoded = codec.encodeRead(query);
-        assert.deepStrictEqual(encoded.keySet.ranges, expectedRanges);
-      });
-
-      it('should arrify query.ranges', () => {
-        const keyMap = {start: {}, end: {}};
-
-        const query = {
-          ranges: [
-            {
-              startOpen: 'start',
-              endClosed: 'end',
-            },
-          ],
-        };
-
-        const stub = sandbox.stub(codec, 'encode');
-
-        Object.keys(keyMap).forEach(key => {
-          stub.withArgs(key).returns(keyMap[key]);
-        });
-
-        const expectedRanges = [
-          {
-            startOpen: {
-              values: [keyMap.start],
-            },
-            endClosed: {
-              values: [keyMap.end],
-            },
-          },
-        ];
-
-        const encoded = codec.encodeRead(query);
-        assert.deepStrictEqual(encoded.keySet.ranges, expectedRanges);
-      });
-
-      it('should remove the ranges property from the query', () => {
-        const query = {
-          ranges: [
-            {
-              startOpen: 'start',
-              endClosed: 'end',
-            },
-          ],
-        };
-
-        const encoded = codec.encodeRead(query);
-
-        assert.strictEqual(encoded.ranges, undefined);
-      });
+      assert.deepStrictEqual(converted, expected);
     });
   });
 

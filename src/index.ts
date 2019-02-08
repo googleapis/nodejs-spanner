@@ -33,8 +33,7 @@ import {Instance} from './instance';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {Transaction} from './transaction';
-import {TransactionRequest} from './transaction-request';
+import {PartitionedDml, Snapshot, Transaction} from './transaction';
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -936,6 +935,24 @@ export {SessionPool};
 export {Table};
 
 /**
+ * {@link PartitionedDml} class.
+ *
+ * @name Spanner.PartitionedDml
+ * @see PartitionedDml
+ * @type {Constructor}
+ */
+export {PartitionedDml};
+
+/**
+ * {@link Snapshot} class.
+ *
+ * @name Spanner.Snapshot
+ * @see Snapshot
+ * @type {Constructor}
+ */
+export {Snapshot};
+
+/**
  * {@link Transaction} class.
  *
  * @name Spanner.Transaction
@@ -943,15 +960,6 @@ export {Table};
  * @type {Constructor}
  */
 export {Transaction};
-
-/**
- * {@link TransactionRequest} class.
- *
- * @name Spanner.TransactionRequest
- * @see TransactionRequest
- * @type {Constructor}
- */
-export {TransactionRequest};
 
 /**
  * @type {object}

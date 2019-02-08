@@ -21,6 +21,8 @@ import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import {ApiError} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
+import {Transform} from 'stream';
 import * as through from 'through2';
 import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
@@ -70,6 +72,12 @@ class FakeSession {
   constructor() {
     this.calledWith_ = arguments;
   }
+  partitionedDml(): FakeTransaction {
+    return new FakeTransaction();
+  }
+  snapshot(options?): FakeTransaction {
+    return new FakeTransaction(options);
+  }
 }
 
 class FakeSessionPool extends EventEmitter {
@@ -79,6 +87,9 @@ class FakeSessionPool extends EventEmitter {
     this.calledWith_ = arguments;
   }
   open() {}
+  getReadSession(callback: Function) {}
+  getWriteSession(callback: Function) {}
+  release(session: FakeSession) {}
 }
 
 class FakeTable {
@@ -88,10 +99,41 @@ class FakeTable {
   }
 }
 
-class FakeTransactionRequest {
+class FakeTransaction extends EventEmitter {
+  calledWith_: IArguments;
+  constructor(options?) {
+    super();
+    this.calledWith_ = arguments;
+  }
+  begin(callback: Function) {}
+  end() {}
+  runStream(query: string|object): Transform {
+    return through.obj();
+  }
+  runUpdate(query: string|object, callback: Function) {}
+}
+
+let fakeTransactionRunner: FakeTransactionRunner;
+
+class FakeTransactionRunner {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
+    fakeTransactionRunner = this;
+  }
+  async run(): Promise<void> {}
+}
+
+let fakeAsyncTransactionRunner: FakeAsyncTransactionRunner<{}>;
+
+class FakeAsyncTransactionRunner<T> {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+    fakeAsyncTransactionRunner = this;
+  }
+  async run(): Promise<T> {
+    return {} as T;
   }
 }
 
@@ -117,6 +159,8 @@ const fakeRetry = fn => {
 fakeRetry.AbortError = FakeAbortError;
 
 describe('Database', () => {
+  const sandbox = sinon.createSandbox();
+
   // tslint:disable-next-line variable-name
   let Database: typeof db.Database;
   // tslint:disable-next-line variable-name
@@ -152,7 +196,10 @@ describe('Database', () => {
           './session-pool': {SessionPool: FakeSessionPool},
           './session': {Session: FakeSession},
           './table': {Table: FakeTable},
-          './transaction-request': {TransactionRequest: FakeTransactionRequest},
+          './transaction-runner': {
+            TransactionRunner: FakeTransactionRunner,
+            AsyncTransactionRunner: FakeAsyncTransactionRunner
+          }
         }).Database;
     DatabaseCached = extend({}, Database);
   });
@@ -163,6 +210,8 @@ describe('Database', () => {
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
   });
+
+  afterEach(() => sandbox.restore());
 
   describe('instantiation', () => {
     it('should promisify all the things', () => {
@@ -395,15 +444,15 @@ describe('Database', () => {
         },
       };
 
-      database.batchTransaction = (identifier) => {
+      database.batchTransaction = (identifier, options) => {
         assert.deepStrictEqual(identifier, {session: SESSION});
+        assert.strictEqual(options, opts);
         return fakeTransaction;
       };
 
       database.createBatchTransaction(opts, (err, transaction, resp) => {
         assert.strictEqual(err, null);
         assert.strictEqual(transaction, fakeTransaction);
-        assert.deepStrictEqual(transaction.options, opts);
         assert.strictEqual(resp, RESPONSE);
         done();
       });
@@ -511,83 +560,6 @@ describe('Database', () => {
           done();
         });
       });
-    });
-  });
-
-  describe('decorateTransaction_', () => {
-    beforeEach(() => {
-      database.pool_ = {
-        release: util.noop,
-      };
-    });
-
-    it('should decorate the end() method', done => {
-      // tslint:disable-next-line no-any
-      const transaction: any = {};
-      const end = function(this: {}, callback) {
-        assert.strictEqual(this, transaction);
-        callback();  // done fn
-      };
-
-      transaction.end = end;
-
-      const decoratedTransaction = database.decorateTransaction_(transaction);
-
-      assert.strictEqual(decoratedTransaction, transaction);
-      assert.notStrictEqual(end, decoratedTransaction.end);
-
-      decoratedTransaction.end(done);
-    });
-
-    it('should release the session back into the pool', done => {
-      const SESSION = {};
-      const transaction = {end: util.noop};
-
-      database.pool_.release = (session) => {
-        assert.strictEqual(session, SESSION);
-        done();
-      };
-
-      const decoratedTransaction =
-          database.decorateTransaction_(transaction, SESSION);
-      decoratedTransaction.end();
-    });
-
-    it('should return any release errors via callback', done => {
-      const transaction = {end: callback => callback()};
-      const fakeError = new Error('err');
-
-      database.pool_.release = () => {
-        throw fakeError;
-      };
-
-      const decoratedTransaction =
-          database.decorateTransaction_(transaction, {});
-
-      decoratedTransaction.end(err => {
-        assert.deepStrictEqual(err, fakeError);
-        done();
-      });
-    });
-
-    it('should return any release errors via promise', () => {
-      const transaction = {end: () => Promise.resolve()};
-      const fakeError = new Error('err');
-
-      database.pool_.release = () => {
-        throw fakeError;
-      };
-
-      const decoratedTransaction =
-          database.decorateTransaction_(transaction, {});
-
-      return decoratedTransaction.end().then(
-          () => {
-            throw new Error('Should not be called.');
-          },
-          err => {
-            assert.deepStrictEqual(err, fakeError);
-          });
     });
   });
 
@@ -1269,187 +1241,101 @@ describe('Database', () => {
       c: 'd',
     };
 
-    const ENCODED_QUERY = extend({}, QUERY);
+    let fakePool: FakeSessionPool;
+    let fakeSession: FakeSession;
+    let fakeSnapshot: FakeTransaction;
+    let fakeStream: Transform;
+
+    let getReadSessionStub: sinon.SinonStub;
+    let snapshotStub: sinon.SinonStub;
+    let runStreamStub: sinon.SinonStub;
 
     beforeEach(() => {
-      fakeCodec.encodeQuery = () => {
-        return ENCODED_QUERY;
-      };
+      fakePool = database.pool_;
+      fakeSession = new FakeSession();
+      fakeSnapshot = new FakeTransaction();
+      fakeStream = through.obj();
+
+      getReadSessionStub =
+          sandbox.stub(fakePool, 'getReadSession')
+              .callsFake(callback => callback(null, fakeSession));
+
+      snapshotStub =
+          sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
+
+      runStreamStub =
+          sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
     });
 
-    it('should accept a query object', done => {
-      fakeCodec.encodeQuery = (query) => {
-        assert.strictEqual(query, QUERY);
-        return ENCODED_QUERY;
-      };
+    it('should get a read session via `getReadSession`', () => {
+      getReadSessionStub.callsFake(() => {});
+      database.runStream(QUERY);
 
-      database.makePooledStreamingRequest_ = (config) => {
-        assert.strictEqual(config.client, 'SpannerClient');
-        assert.strictEqual(config.method, 'executeStreamingSql');
-        assert.deepStrictEqual(config.reqOpts, ENCODED_QUERY);
-        done();
-      };
-
-      const stream = database.runStream(QUERY);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
+      assert.strictEqual(getReadSessionStub.callCount, 1);
     });
 
-    it('should accept a query string', done => {
-      fakeCodec.encodeQuery = (query) => {
-        assert.strictEqual(query.sql, QUERY.sql);
-        return ENCODED_QUERY;
-      };
+    it('should destroy the stream if `getReadSession` errors', done => {
+      const fakeError = new Error('err');
 
-      database.makePooledStreamingRequest_ = (config) => {
-        assert.deepStrictEqual(config.reqOpts, ENCODED_QUERY);
-        done();
-      };
+      getReadSessionStub.callsFake(callback => callback(fakeError));
 
-      const stream = database.runStream(QUERY.sql);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-
-    it('should return PartialResultStream', () => {
-      const stream = database.runStream(QUERY);
-      assert.strictEqual(stream.partialResultStream, fakePartialResultStream);
-    });
-
-    it('should pass json, jsonOptions to PartialResultStream', () => {
-      // tslint:disable-next-line no-any
-      const query: any = extend({}, QUERY);
-      query.json = {};
-      query.jsonOptions = {};
-
-      const stream = database.runStream(query);
-      assert.deepStrictEqual(stream.calledWith_[1], {
-        json: query.json,
-        jsonOptions: query.jsonOptions,
-      });
-    });
-
-    it('should not pass json, jsonOptions to request', done => {
-      database.makePooledStreamingRequest_ = (config) => {
-        assert.strictEqual(config.reqOpts.json, undefined);
-        assert.strictEqual(config.reqOpts.jsonOptions, undefined);
-        done();
-      };
-
-      // tslint:disable-next-line no-any
-      const query: any = extend({}, QUERY);
-      query.json = {};
-      query.jsonOptions = {};
-
-      const stream = database.runStream(query);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-
-    it('should assign a resumeToken to the request', done => {
-      const resumeToken = 'resume-token';
-
-      database.makePooledStreamingRequest_ = (config) => {
-        assert.strictEqual(config.reqOpts.resumeToken, resumeToken);
-        done();
-      };
-
-      const stream = database.runStream(QUERY);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn(resumeToken);
-    });
-
-    it('should add timestamp options', done => {
-      const OPTIONS = {a: 'a'};
-      const FORMATTED_OPTIONS = {b: 'b'};
-
-      // tslint:disable-next-line no-any
-      (FakeTransactionRequest as any).formatTimestampOptions_ = (options) => {
-        assert.strictEqual(options, OPTIONS);
-        return FORMATTED_OPTIONS;
-      };
-
-      database.makePooledStreamingRequest_ = (config) => {
-        assert.deepStrictEqual(
-            config.reqOpts.transaction.singleUse.readOnly, FORMATTED_OPTIONS);
-
-        done();
-      };
-
-      const stream = database.runStream(QUERY, OPTIONS);
-      const makeRequestFn = stream.calledWith_[0];
-      makeRequestFn();
-    });
-  });
-
-  describe('runTransaction', () => {
-    it('should get a Transaction object', done => {
-      database.getTransaction = () => {
-        done();
-      };
-
-      database.runTransaction(assert.ifError);
-    });
-
-    it('should execute callback with error', done => {
-      const error = new Error('Error.');
-
-      database.getTransaction = (options, callback) => {
-        callback(error);
-      };
-
-      database.runTransaction(err => {
-        assert.strictEqual(err, error);
+      database.runStream(QUERY).on('error', err => {
+        assert.strictEqual(err, fakeError);
         done();
       });
     });
 
-    it('should run the transaction', done => {
-      const TRANSACTION = {};
-      const OPTIONS = {
-        a: 'a',
-      };
+    it('should pass through timestamp bounds', () => {
+      const fakeOptions = {strong: false};
+      database.runStream(QUERY, fakeOptions);
 
-      const dateNow = Date.now;
-      const fakeDate = 123445668382;
-
-      Date.now = () => {
-        return fakeDate;
-      };
-
-      database.getTransaction = (options, callback) => {
-        assert.deepStrictEqual(options, OPTIONS);
-        callback(null, TRANSACTION);
-      };
-
-      function runFn(err, transaction) {
-        assert.strictEqual(err, null);
-        assert.strictEqual(transaction, TRANSACTION);
-        assert.strictEqual(transaction.runFn_, runFn);
-        assert.strictEqual(transaction.beginTime_, fakeDate);
-
-        Date.now = dateNow;
-        done();
-      }
-
-      database.runTransaction(OPTIONS, runFn);
+      const options = snapshotStub.lastCall.args[0];
+      assert.strictEqual(options, fakeOptions);
     });
 
-    it('should capture the timeout', done => {
-      const TRANSACTION = {};
-      const OPTIONS = {
-        timeout: 1000,
-      };
+    it('should call through to `snapshot.runStream`', () => {
+      const pipeStub = sandbox.stub(fakeStream, 'pipe');
+      const proxyStream = database.runStream(QUERY);
 
-      database.getTransaction = (options, callback) => {
-        callback(null, TRANSACTION);
-      };
+      const query = runStreamStub.lastCall.args[0];
+      assert.strictEqual(query, QUERY);
 
-      database.runTransaction(OPTIONS, (err, txn) => {
-        assert.ifError(err);
-        assert.strictEqual(txn.timeout_, OPTIONS.timeout);
+      const stream = pipeStub.lastCall.args[0];
+      assert.strictEqual(stream, proxyStream);
+    });
+
+    it('should end the snapshot on stream end', done => {
+      const endStub = sandbox.stub(fakeSnapshot, 'end');
+
+      database.runStream(QUERY).on('data', done).on('end', () => {
+        assert.strictEqual(endStub.callCount, 1);
         done();
       });
+
+      fakeStream.push(null);
+    });
+
+    it('should clean up the stream/transaction on error', done => {
+      const fakeError = new Error('err');
+      const endStub = sandbox.stub(fakeSnapshot, 'end');
+
+      database.runStream(QUERY).on('error', err => {
+        assert.strictEqual(err, fakeError);
+        assert.strictEqual(endStub.callCount, 1);
+        done();
+      });
+
+      fakeStream.destroy(fakeError);
+    });
+
+    it('should release the session on transaction end', () => {
+      const releaseStub = sandbox.stub(fakePool, 'release');
+
+      database.runStream(QUERY);
+      fakeSnapshot.emit('end');
+
+      const session = releaseStub.lastCall.args[0];
+      assert.strictEqual(session, fakeSession);
     });
   });
 
@@ -1620,157 +1506,157 @@ describe('Database', () => {
     });
   });
 
-  describe('getTransaction', () => {
-    let SESSION;
-    let TRANSACTION;
+  describe('getSnapshot', () => {
+    let fakePool: FakeSessionPool;
+    let fakeSession: FakeSession;
+    let fakeSnapshot: FakeTransaction;
+
+    let beginSnapshotStub: sinon.SinonStub;
+    let getReadSessionStub: sinon.SinonStub;
+    let snapshotStub: sinon.SinonStub;
 
     beforeEach(() => {
-      TRANSACTION = {};
+      fakePool = database.pool_;
+      fakeSession = new FakeSession();
+      fakeSnapshot = new FakeTransaction();
 
-      SESSION = {
-        beginTransaction(options, callback) {
-          callback(null, TRANSACTION);
-        },
-      };
+      beginSnapshotStub = sandbox.stub(fakeSnapshot, 'begin')
+                              .callsFake(callback => callback(null));
 
-      database.pool_ = {
-        getWriteSession(callback) {
-          callback(null, SESSION, TRANSACTION);
-        },
-      };
+      getReadSessionStub =
+          sandbox.stub(fakePool, 'getReadSession')
+              .callsFake(callback => callback(null, fakeSession));
 
-      database.decorateTransaction_ = (txn) => {
-        return txn;
-      };
+      snapshotStub =
+          sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
     });
 
-    describe('write mode', () => {
-      it('should get a session from the pool', done => {
-        database.getTransaction((err, transaction) => {
-          assert.ifError(err);
-          assert.strictEqual(transaction, TRANSACTION);
-          done();
-        });
-      });
+    it('should call through to `SessionPool#getReadSession`', () => {
+      getReadSessionStub.callsFake(() => {});
 
-      it('should decorate the transaction', done => {
-        const DECORATED_TRANSACTION = {};
+      database.getSnapshot(assert.ifError);
 
-        database.decorateTransaction_ = (transaction, session) => {
-          assert.strictEqual(transaction, TRANSACTION);
-          assert.strictEqual(session, SESSION);
-          return DECORATED_TRANSACTION;
-        };
+      assert.strictEqual(getReadSessionStub.callCount, 1);
+    });
 
-        database.getTransaction((err, transaction) => {
-          assert.ifError(err);
-          assert.strictEqual(transaction, DECORATED_TRANSACTION);
-          done();
-        });
-      });
+    it('should return any pool errors', done => {
+      const fakeError = new Error('err');
 
-      it('should return errors to the callback', done => {
-        const error = new Error('Error.');
+      getReadSessionStub.callsFake(callback => callback(fakeError));
 
-        database.pool_ = {
-          getWriteSession(callback) {
-            callback(error);
-          },
-        };
-
-        database.getTransaction(err => {
-          assert.strictEqual(err, error);
-          done();
-        });
+      database.getSnapshot(err => {
+        assert.strictEqual(err, fakeError);
+        done();
       });
     });
 
-    describe('readOnly mode', () => {
-      const OPTIONS = {
-        readOnly: true,
-        a: 'a',
-      };
+    it('should pass the timestamp bounds to the snapshot', () => {
+      const fakeTimestampBounds = {};
 
-      beforeEach(() => {
-        database.pool_ = {
-          getReadSession(callback) {
-            callback(null, SESSION);
-          },
-          release: util.noop,
-        };
-      });
+      database.getSnapshot(fakeTimestampBounds, assert.ifError);
 
-      it('should get a session from the pool', done => {
-        database.pool_.getReadSession = () => {
-          done();
-        };
+      const bounds = snapshotStub.lastCall.args[0];
+      assert.strictEqual(bounds, fakeTimestampBounds);
+    });
 
-        database.getTransaction(OPTIONS, assert.ifError);
-      });
+    it('should begin a snapshot', () => {
+      beginSnapshotStub.callsFake(() => {});
 
-      it('should return an error if could not get session', done => {
-        const error = new Error('err.');
+      database.getSnapshot(assert.ifError);
 
-        database.pool_.getReadSession = (callback) => {
-          callback(error);
-        };
+      assert.strictEqual(beginSnapshotStub.callCount, 1);
+    });
 
-        database.getTransaction(OPTIONS, err => {
-          assert.strictEqual(err, error);
-          done();
-        });
-      });
+    it('should release the session if `begin` errors', done => {
+      const fakeError = new Error('err');
 
-      it('should should create a transaction', done => {
-        SESSION.beginTransaction = (options) => {
-          assert.strictEqual(options, OPTIONS);
-          done();
-        };
+      beginSnapshotStub.callsFake(callback => callback(fakeError));
 
-        database.getTransaction(OPTIONS, assert.ifError);
-      });
+      const releaseStub =
+          sandbox.stub(fakePool, 'release').withArgs(fakeSession);
 
-      it('should decorate the transaction', done => {
-        const DECORATED_TRANSACTION = {};
-
-        database.decorateTransaction_ = (transaction, session) => {
-          assert.strictEqual(transaction, TRANSACTION);
-          assert.strictEqual(session, SESSION);
-          return DECORATED_TRANSACTION;
-        };
-
-        database.getTransaction(OPTIONS, (err, transaction) => {
-          assert.ifError(err);
-          assert.strictEqual(transaction, DECORATED_TRANSACTION);
-          done();
-        });
-      });
-
-      it('should return an error if transaction cannot begin', done => {
-        const error = new Error('err');
-
-        SESSION.beginTransaction = (options, callback) => {
-          callback(error);
-        };
-
-        database.getTransaction(OPTIONS, err => {
-          assert.strictEqual(err, error);
-          done();
-        });
+      database.getSnapshot(err => {
+        assert.strictEqual(err, fakeError);
+        assert.strictEqual(releaseStub.callCount, 1);
+        done();
       });
     });
 
-    describe('partitioned mode', () => {
-      const OPTIONS = {
-        partitioned: true,
-      };
+    it('should return the `snapshot`', done => {
+      database.getSnapshot((err, snapshot) => {
+        assert.ifError(err);
+        assert.strictEqual(snapshot, fakeSnapshot);
+        done();
+      });
+    });
 
-      it('should get a session from the pool', (done) => {
-        database.pool_.getReadSession = () => {
-          setImmediate(done);
-          return Promise.resolve();
-        };
-        database.getTransaction(OPTIONS, assert.ifError);
+    it('should release the snapshot on `end`', done => {
+      const releaseStub =
+          sandbox.stub(fakePool, 'release').withArgs(fakeSession);
+
+      database.getSnapshot(err => {
+        assert.ifError(err);
+        fakeSnapshot.emit('end');
+        assert.strictEqual(releaseStub.callCount, 1);
+        done();
+      });
+    });
+  });
+
+  describe('getTransaction', () => {
+    let fakePool: FakeSessionPool;
+    let fakeSession: FakeSession;
+    let fakeTransaction: FakeTransaction;
+
+    let getWriteSessionStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      fakePool = database.pool_;
+      fakeSession = new FakeSession();
+      fakeTransaction = new FakeTransaction();
+
+      getWriteSessionStub =
+          sandbox.stub(fakePool, 'getWriteSession').callsFake(callback => {
+            callback(null, fakeSession, fakeTransaction);
+          });
+    });
+
+    it('should get a read/write transaction', () => {
+      getWriteSessionStub.callsFake(() => {});
+
+      database.getTransaction(assert.ifError);
+
+      assert.strictEqual(getWriteSessionStub.callCount, 1);
+    });
+
+    it('should return any pool errors', done => {
+      const fakeError = new Error('err');
+
+      getWriteSessionStub.callsFake(callback => callback(fakeError));
+
+      database.getTransaction(err => {
+        assert.strictEqual(err, fakeError);
+        done();
+      });
+    });
+
+    it('should return the read/write transaction', done => {
+      database.getTransaction((err, transaction) => {
+        assert.ifError(err);
+        assert.strictEqual(transaction, fakeTransaction);
+        done();
+      });
+    });
+
+    it('should release the session on transaction end', done => {
+      const releaseStub =
+          sandbox.stub(fakePool, 'release').withArgs(fakeSession);
+
+      database.getTransaction((err, transaction) => {
+        assert.ifError(err);
+        transaction.emit('end');
+        assert.strictEqual(releaseStub.callCount, 1);
+        done();
       });
     });
   });
@@ -1842,118 +1728,175 @@ describe('Database', () => {
   });
 
   describe('runPartitionedUpdate', () => {
-    it('should get a session from the pool', done => {
-      database.getTransaction = (options) => {
-        assert.deepStrictEqual(options, {partitioned: true});
-        done();
-      };
-      database.runPartitionedUpdate({}, assert.ifError);
+    const QUERY = {
+      sql: 'INSERT INTO `MyTable` (Key, Thing) VALUES(@key, @thing)',
+      params: {
+        key: 'k999',
+        thing: 'abc',
+      },
+    };
+
+    let fakePool: FakeSessionPool;
+    let fakeSession: FakeSession;
+    let fakePartitionedDml: FakeTransaction;
+
+    let getReadSessionStub: sinon.SinonStub;
+    let partitionedDmlStub: sinon.SinonStub;
+    let beginStub: sinon.SinonStub;
+    let runUpdateStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      fakePool = database.pool_;
+      fakeSession = new FakeSession();
+      fakePartitionedDml = new FakeTransaction();
+
+      getReadSessionStub =
+          sandbox.stub(fakePool, 'getReadSession').callsFake(callback => {
+            callback(null, fakeSession, fakePartitionedDml);
+          });
+
+      partitionedDmlStub = sandbox.stub(fakeSession, 'partitionedDml')
+                               .returns(fakePartitionedDml);
+
+      beginStub = sandbox.stub(fakePartitionedDml, 'begin')
+                      .callsFake(callback => callback(null));
+
+      runUpdateStub = sandbox.stub(fakePartitionedDml, 'runUpdate');
     });
 
-    it('should return any getTransaction errors', done => {
-      const error = new Error('err');
+    it('should get a read only session from the pool', () => {
+      getReadSessionStub.callsFake(() => {});
 
-      database.getTransaction = (options, callback) => {
-        callback(error);
-      };
-      database.runPartitionedUpdate({}, err => {
-        assert.strictEqual(err, error);
+      database.runPartitionedUpdate(QUERY, assert.ifError);
+
+      assert.strictEqual(getReadSessionStub.callCount, 1);
+    });
+
+    it('should return any pool errors', () => {
+      const fakeError = new Error('err');
+      const fakeCallback = sandbox.spy();
+
+      getReadSessionStub.callsFake(callback => callback(fakeError));
+      database.runPartitionedUpdate(QUERY, fakeCallback);
+
+      const [err, rowCount] = fakeCallback.lastCall.args;
+
+      assert.strictEqual(err, fakeError);
+      assert.strictEqual(rowCount, 0);
+    });
+
+    it('should call transaction begin', () => {
+      beginStub.callsFake(() => {});
+      database.runPartitionedUpdate(QUERY, assert.ifError);
+
+      assert.strictEqual(beginStub.callCount, 1);
+    });
+
+    it('should return any begin errors', done => {
+      const fakeError = new Error('err');
+
+      beginStub.callsFake(callback => callback(fakeError));
+
+      const releaseStub =
+          sandbox.stub(fakePool, 'release').withArgs(fakeSession);
+
+      database.runPartitionedUpdate(QUERY, (err, rowCount) => {
+        assert.strictEqual(err, fakeError);
+        assert.strictEqual(rowCount, 0);
+        assert.strictEqual(releaseStub.callCount, 1);
         done();
       });
     });
 
-    it('should run the query', done => {
-      const fakeQuery = {};
-      const transaction = {
-        runUpdate(query) {
-          assert.strictEqual(query, fakeQuery);
-          done();
-        },
-      };
+    it('call `runUpdate` on the transaction', () => {
+      const fakeCallback = sandbox.spy();
 
-      database.getTransaction = (options, callback) => {
-        callback(null, transaction);
-      };
+      database.runPartitionedUpdate(QUERY, fakeCallback);
 
-      database.runPartitionedUpdate(fakeQuery, assert.ifError);
+      const [query, callback] = runUpdateStub.lastCall.args;
+
+      assert.strictEqual(query, QUERY);
+      assert.strictEqual(callback, fakeCallback);
     });
 
-    it('should end the transaction', done => {
-      const transaction = {
-        runUpdate(query, callback) {
-          callback(null);
-        },
-        end: done,
-      };
+    it('should release the session on transaction end', () => {
+      const releaseStub =
+          sandbox.stub(fakePool, 'release').withArgs(fakeSession);
 
-      database.getTransaction = (options, callback) => {
-        callback(null, transaction);
-      };
+      database.runPartitionedUpdate(QUERY, assert.ifError);
+      fakePartitionedDml.emit('end');
 
-      database.runPartitionedUpdate({}, assert.ifError);
+      assert.strictEqual(releaseStub.callCount, 1);
+    });
+  });
+
+  describe('runTransaction', () => {
+    it('should create a `TransactionRunner`', () => {
+      const fakeRunFn = sandbox.spy();
+
+      database.runTransaction(fakeRunFn);
+
+      const [db, runFn, options] = fakeTransactionRunner.calledWith_;
+
+      assert.strictEqual(db, database);
+      assert.strictEqual(runFn, fakeRunFn);
+      assert.deepStrictEqual(options, {});
     });
 
-    it('should pass back the row count', done => {
-      const error = new Error('err');
-      const fakeRowCount = 5;
-      const transaction = {
-        runUpdate: (query, callback) => {
-          callback(error, fakeRowCount);
-        },
-        end: () => {},
-      };
+    it('should optionally accept runner `options`', () => {
+      const fakeOptions = {timeout: 1};
 
-      database.getTransaction = (options, callback) => {
-        callback(null, transaction);
-      };
+      database.runTransaction(fakeOptions, assert.ifError);
 
-      database.runPartitionedUpdate({}, (err, rowCount) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(rowCount, fakeRowCount);
+      const options = fakeTransactionRunner.calledWith_[2];
+
+      assert.strictEqual(options, fakeOptions);
+    });
+
+    it('should catch any run errors and return them', done => {
+      const fakeError = new Error('err');
+
+      sandbox.stub(FakeTransactionRunner.prototype, 'run').rejects(fakeError);
+
+      database.runTransaction(err => {
+        assert.strictEqual(err, fakeError);
         done();
       });
     });
   });
 
   describe('runTransactionAsync', () => {
-    it('should pass a transaction to the callback', done => {
-      const fakeTransaction = {};
+    it('should create an `AsyncTransactionRunner`', () => {
+      const fakeRunFn = sandbox.spy();
 
-      database.getTransaction = () => {
-        return Promise.resolve([fakeTransaction]);
-      };
+      database.runTransactionAsync(fakeRunFn);
 
-      database.runTransactionAsync(transaction => {
-        assert.strictEqual(transaction, fakeTransaction);
-        done();
-      });
+      const [db, runFn, options] = fakeAsyncTransactionRunner.calledWith_;
+
+      assert.strictEqual(db, database);
+      assert.strictEqual(runFn, fakeRunFn);
+      assert.deepStrictEqual(options, {});
     });
 
-    it('should throw the original error if it is an ABORT error', done => {
-      const fakeError = {code: 10};
+    it('should optionally accept runner `options`', () => {
+      const fakeOptions = {timeout: 1};
 
-      database.getTransaction = () => {
-        return Promise.reject(fakeError);
-      };
+      database.runTransactionAsync(fakeOptions, assert.ifError);
 
-      database.runTransactionAsync(() => {}).catch(err => {
-        assert.strictEqual(err, fakeError);
-        done();
-      });
+      const options = fakeAsyncTransactionRunner.calledWith_[2];
+
+      assert.strictEqual(options, fakeOptions);
     });
 
-    it('should throw an AbortError for non-retryable errors', done => {
-      const fakeError = {code: 1};
+    it('should return the runner promise', () => {
+      const fakePromise = Promise.resolve();
 
-      database.getTransaction = () => {
-        return Promise.reject(fakeError);
-      };
+      sandbox.stub(FakeAsyncTransactionRunner.prototype, 'run')
+          .returns(fakePromise);
 
-      database.runTransactionAsync(() => {}).catch(err => {
-        assert(err instanceof FakeAbortError);
-        assert.strictEqual(err.error, fakeError);
-        done();
-      });
+      const promise = database.runTransactionAsync(assert.ifError);
+
+      assert.strictEqual(promise, fakePromise);
     });
   });
 

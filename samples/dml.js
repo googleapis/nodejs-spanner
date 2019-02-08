@@ -42,7 +42,7 @@ function insertUsingDml(instanceId, databaseId, projectId) {
       return;
     }
     try {
-      const rowCount = await transaction.runUpdate({
+      const [rowCount] = await transaction.runUpdate({
         sql:
           'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
         params: {
@@ -93,7 +93,7 @@ function updateUsingDml(instanceId, databaseId, projectId) {
       return;
     }
     try {
-      const rowCount = await transaction.runUpdate({
+      const [rowCount] = await transaction.runUpdate({
         sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
           WHERE SingerId = 1 and AlbumId = 1`,
       });
@@ -137,7 +137,7 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
       return;
     }
     try {
-      const rowCount = await transaction.runUpdate({
+      const [rowCount] = await transaction.runUpdate({
         sql: `DELETE Singers WHERE FirstName = 'Alice'`,
       });
 
@@ -180,7 +180,7 @@ function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
       return;
     }
     try {
-      const rowCount = await transaction.runUpdate({
+      const [rowCount] = await transaction.runUpdate({
         sql: `UPDATE Albums
           SET LastUpdateTime = PENDING_COMMIT_TIMESTAMP()
           WHERE SingerId = 1`,
@@ -281,7 +281,7 @@ function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
       return;
     }
     try {
-      const rowCount = await transaction.runUpdate({
+      const [rowCount] = await transaction.runUpdate({
         sql: `UPDATE Singers SET LastName = 'Grant'
         WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) = @name`,
         params: {
@@ -328,7 +328,7 @@ function writeUsingDml(instanceId, databaseId, projectId) {
       return;
     }
     try {
-      const rowCount = await transaction.runUpdate({
+      const [rowCount] = await transaction.runUpdate({
         sql: `INSERT Singers (SingerId, FirstName, LastName) VALUES
         (12, 'Melissa', 'Garcia'),
         (13, 'Russell', 'Morales'),
@@ -481,7 +481,7 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   try {
-    const rowCount = await database.runPartitionedUpdate({
+    const [rowCount] = await database.runPartitionedUpdate({
       sql: `UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 1`,
     });
     console.log(`Successfully updated ${rowCount} records.`);
@@ -516,7 +516,7 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   try {
-    const rowCount = await database.runPartitionedUpdate({
+    const [rowCount] = await database.runPartitionedUpdate({
       sql: `DELETE Singers WHERE SingerId > 10`,
     });
     console.log(`Successfully deleted ${rowCount} records.`);
