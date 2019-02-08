@@ -37,6 +37,14 @@ export interface CreateSessionCallback {
 }
 
 /**
+ * enum to capture the possible session types
+ */
+export const enum types {
+  ReadOnly = 'readonly',
+  ReadWrite = 'readwrite'
+}
+
+/**
  * Create a Session object to interact with a Cloud Spanner session.
  *
  * **It is unlikely you will need to interact with sessions directly. By
@@ -77,7 +85,7 @@ export interface CreateSessionCallback {
 export class Session extends ServiceObject {
   id!: string;
   formattedName_?: string;
-  type?: string;
+  type?: types;
   txn?: Transaction;
   lastUsed?: number;
   constructor(database: Database, name?: string) {

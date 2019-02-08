@@ -20,7 +20,7 @@ import * as PQueue from 'p-queue';
 import * as trace from 'stack-trace';
 
 import {Database} from './database';
-import {Session} from './session';
+import {Session, types} from './session';
 import {Transaction} from './transaction';
 
 /**
@@ -161,9 +161,8 @@ const DEFAULTS: SessionPoolOptions = {
  * @private
  */
 export class ReleaseError extends Error {
-  // tslint:disable-next-line no-any
-  resource: any;
-  constructor(resource) {
+  resource: unknown;
+  constructor(resource: unknown) {
     super('Unable to release unknown resource.');
     this.resource = resource;
   }
@@ -180,14 +179,6 @@ export class SessionLeakError extends Error {
     super(`${leaks.length} session leak(s) detected.`);
     this.messages = leaks;
   }
-}
-
-/**
- * enum to capture the possible session types
- */
-export const enum types {
-  ReadOnly = 'readonly',
-  ReadWrite = 'readwrite'
 }
 
 /**
@@ -718,7 +709,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new Error('No resources available.');
     }
 
-    let removeListener;
+    let removeListener: Function;
 
     const promises = [
       this._onClose.then(() => {
@@ -751,7 +742,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     try {
       await Promise.race(promises);
     } catch (e) {
-      removeListener();
+      removeListener!();
       throw e;
     }
 
