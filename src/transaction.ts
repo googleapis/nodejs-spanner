@@ -23,7 +23,7 @@ import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
 
-import {codec, Json, JSONOptions, Type, Value} from './codec';
+import {codec, Json, JSONOptions, Timestamp, Type, Value} from './codec';
 import {PartialResultStream, partialResultStream, ResumeToken, Row} from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
@@ -33,9 +33,9 @@ export type Rows = Array<Row|Json>;
 
 export interface TimestampBounds {
   strong?: boolean;
-  minReadTimestamp?: Date|p.ITimestamp;
+  minReadTimestamp?: Timestamp|p.ITimestamp;
   maxStaleness?: number|p.IDuration;
-  readTimestamp?: Date|p.ITimestamp;
+  readTimestamp?: Timestamp|p.ITimestamp;
   exactStaleness?: number|p.IDuration;
   returnReadTimestamp?: boolean;
 }
@@ -96,11 +96,11 @@ export interface RunUpdateCallback {
  * @typedef {object} TimestampBounds
  * @property {boolean} [strong=true] Read at a timestamp where all previously
  *     committed transactions are visible.
- * @property {Date|google.protobuf.Timestamp} [minReadTimestamp] Executes all
+ * @property {Timestamp|google.protobuf.Timestamp} [minReadTimestamp] Executes all
  *     reads at a `timestamp >= minReadTimestamp`.
  * @property {number|google.protobuf.Timestamp} [maxStaleness] Read data at a
  *     `timestamp >= NOW - maxStaleness` (milliseconds).
- * @property {Date|google.protobuf.Timestamp} [readTimestamp] Executes all
+ * @property {Timestamp|google.protobuf.Timestamp} [readTimestamp] Executes all
  *     reads at the given timestamp.
  * @property {number|google.protobuf.Timestamp} [exactStaleness] Executes all
  *     reads at a timestamp that is `exactStaleness` (milliseconds) old.
@@ -149,7 +149,7 @@ export class Snapshot extends EventEmitter {
   id?: string|Uint8Array;
   ended: boolean;
   metadata?: s.Transaction;
-  readTimestamp?: Date;
+  readTimestamp?: Timestamp;
   readTimestampProto?: p.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
@@ -180,7 +180,7 @@ export class Snapshot extends EventEmitter {
    * The timestamp at which all reads will be performed.
    *
    * @name Snapshot#readTimestamp
-   * @type {?Date}
+   * @type {?Timestamp}
    */
   /**
    * **Snapshot only**
@@ -272,8 +272,7 @@ export class Snapshot extends EventEmitter {
 
           if (readTimestamp) {
             this.readTimestampProto = readTimestamp;
-            this.readTimestamp =
-                codec.convertProtoTimestampToDate(readTimestamp);
+            this.readTimestamp = Timestamp.fromProto(readTimestamp);
           }
 
           callback!(null, resp);
@@ -891,14 +890,13 @@ export class Snapshot extends EventEmitter {
     const {returnReadTimestamp = true} = options;
     const readOnly: s.ReadOnly = {};
 
-    if (is.date(options.minReadTimestamp)) {
-      const timestamp = (options.minReadTimestamp as Date).getTime();
-      readOnly.minReadTimestamp = codec.convertMsToProtoTimestamp(timestamp);
+    if (options.minReadTimestamp instanceof Timestamp) {
+      readOnly.minReadTimestamp =
+          (options.minReadTimestamp as Timestamp).toProto();
     }
 
-    if (is.date(options.readTimestamp)) {
-      const timestamp = (options.readTimestamp as Date).getTime();
-      readOnly.readTimestamp = codec.convertMsToProtoTimestamp(timestamp);
+    if (options.readTimestamp instanceof Timestamp) {
+      readOnly.readTimestamp = (options.readTimestamp as Timestamp).toProto();
     }
 
     if (is.number(options.maxStaleness)) {
@@ -1079,7 +1077,7 @@ promisifyAll(Dml);
  * });
  */
 export class Transaction extends Dml {
-  commitTimestamp?: Date;
+  commitTimestamp?: Timestamp;
   commitTimestampProto?: p.ITimestamp;
   private _queuedMutations: s.Mutation[];
 
@@ -1088,7 +1086,7 @@ export class Transaction extends Dml {
    * {@link Transaction#commit} is called.
    *
    * @name Transaction#commitTimestamp
-   * @type {?Date}
+   * @type {?Timestamp}
    */
   /**
    * The protobuf version of {@link Transaction#commitTimestamp}. This is useful
@@ -1198,8 +1196,7 @@ export class Transaction extends Dml {
 
           if (resp && resp.commitTimestamp) {
             this.commitTimestampProto = resp.commitTimestamp;
-            this.commitTimestamp =
-                codec.convertProtoTimestampToDate(resp.commitTimestamp);
+            this.commitTimestamp = Timestamp.fromProto(resp.commitTimestamp);
           }
 
           callback!(err, resp);

@@ -42,9 +42,16 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
+class FakeTimestamp {
+  static fromProto(proto: object) {
+    return new FakeTimestamp();
+  }
+}
+
 // tslint:disable-next-line no-any
 const fakeCodec: any = {
   encode: util.noop,
+  Timestamp: FakeTimestamp,
   Int() {},
   Float() {},
   SpannerDate() {},
@@ -79,11 +86,12 @@ describe('BatchTransaction', () => {
   const SESSION: any = {};
 
   before(() => {
-    BatchTransaction = proxyquire('../src/batch-transaction.js', {
-                         '@google-cloud/promisify': fakePfy,
-                         './codec.js': {codec: fakeCodec},
-                         './transaction.js': {Snapshot: FakeTransaction},
-                       }).BatchTransaction;
+    BatchTransaction =
+        proxyquire('../src/batch-transaction.js', {
+          '@google-cloud/promisify': fakePfy,
+          './codec.js': {codec: fakeCodec, Timestamp: FakeTimestamp},
+          './transaction.js': {Snapshot: FakeTransaction},
+        }).BatchTransaction;
   });
 
   beforeEach(() => {
@@ -219,7 +227,7 @@ describe('BatchTransaction', () => {
       });
 
       REQUEST.callsFake((_, callback) => callback(null, response));
-      sandbox.stub(fakeCodec, 'convertProtoTimestampToDate')
+      sandbox.stub(FakeTimestamp, 'fromProto')
           .withArgs(TIMESTAMP)
           .returns(fakeTimestamp);
 

@@ -39,22 +39,254 @@ export interface JSONOptions {
 }
 
 /**
- * @typedef SpannerDate
+ * Date-like object used to represent Cloud Spanner Dates.
+ *
  * @see Spanner.date
+ * @see https://cloud.google.com/spanner/docs/data-types#date-type
+ *
+ * @class
+ * @extends Date
+ *
+ * @param {string|number} [date] String or number representing the date.
+ *
+ * @example
+ * Spanner.date('3-3-1933');
  */
-export class SpannerDate {
-  value: string;
-  constructor(value?: string|number|Date) {
-    if (arguments.length > 1) {
-      throw new TypeError([
-        'The spanner.date function accepts a Date object or a',
-        'single argument parseable by Date\'s constructor.',
-      ].join(' '));
+export class SpannerDate extends Date {
+  constructor(value?: string|number) {
+    const date = new Date(value || Date.now());
+    const dateStr = SpannerDate.getDateString(date);
+
+    super(dateStr);
+  }
+  /**
+   * Returns the date in Cloud Spanner date format.
+   * `YYYY-[M]M-[D]D`
+   *
+   * @returns {string}
+   */
+  toJSON() {
+    return SpannerDate.getDateString(this);
+  }
+  /**
+   * Formats an ISO string into a Cloud Spanner Date string.
+   *
+   * @private
+   *
+   * @param {Date} date The date to extract the `YYYY-[M]M-[D]D` value from.
+   */
+  static getDateString(date: Date): string {
+    return date.toISOString().replace(/T.+/, '');
+  }
+}
+
+/**
+ * Date-like object used to represent Cloud Spanner Timestamps.
+ *
+ * @see Spanner.timestamp
+ * @see https://cloud.google.com/spanner/docs/data-types#timestamp-type
+ *
+ * @class
+ * @extends Date
+ *
+ * @example
+ * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
+ *
+ * @example <caption>With a `google.protobuf.Timestamp` object</caption>
+ * const [seconds, nanos] = process.hrtime();
+ * const timestamp = Spanner.timestamp({seconds, nanos});
+ *
+ * @example <caption>With a Date timestamp</caption>
+ * const timestamp = Spanner.timestamp(Date.now());
+ */
+export class Timestamp extends Date {
+  private _micros = 0;
+  private _nanos = 0;
+  /**
+   * Returns a number, between 0 and 999, representing the microseconds of the
+   * timestamp.
+   *
+   * @returns {number}
+   */
+  getMicroseconds(): number {
+    return this._micros;
+  }
+  /**
+   * Returns a number, between 0 and 999, representing the nanoseconds of the
+   * timestamp.
+   *
+   * @returns {number}
+   */
+  getNanoseconds(): number {
+    return this._nanos;
+  }
+  /**
+   * Sets the microseconds for the specified date.
+   *
+   * @param {number} microseconds A number representing the microseconds.
+   * @returns {number} The number of milliseconds between 1 January 1970
+   *     00:00:00 UTC and the updated date.
+   */
+  setMicroseconds(micros: number): number {
+    if (micros >= 1000) {
+      const ms = Math.floor(micros / 1000);
+      this.setMilliseconds(this.getMilliseconds() + ms);
+      micros -= ms * 1000;
     }
-    if (is.undefined(value)) {
-      value = new Date();
+    this._micros = micros;
+    return this.getTime();
+  }
+  /**
+   * Sets the nanoseconds for the specified date.
+   *
+   * @param {number} nanoseconds A number representing the nanoseconds.
+   * @returns {number} The number of milliseconds between 1 January 1970
+   *     00:00:00 UTC and the updated date.
+   */
+  setNanoseconds(nanos: number): number {
+    if (nanos >= 1000) {
+      const micros = Math.floor(nanos / 1000);
+      this.setMicroseconds(this._micros + micros);
+      nanos -= micros * 1000;
     }
-    this.value = new Date(value!).toJSON().replace(/T.+/, '');
+    this._nanos = nanos;
+    return this.getTime();
+  }
+  /**
+   * Returns a RFC 3339 timestamp formatted string.
+   *
+   * @returns {string}
+   */
+  toISOString(): string {
+    const micros = Timestamp.padLeft(this._micros);
+    const nanos = Timestamp.padLeft(this._nanos);
+    const ms = `${micros}${nanos}`.replace(/0+$/, '');
+    return super.toISOString().replace(/z$/i, `${ms}Z`);
+  }
+  /**
+   * Returns the timestamp as a protobuf timestamp.
+   *
+   * @returns {google.protobuf.Timestamp}
+   */
+  toProto(): p.ITimestamp {
+    const seconds = Math.floor(this.getTime() / 1000);
+    const msInNanos = this.getMilliseconds() * 1e6;
+    const microsInNanos = this._micros * 1000;
+    const nanos = this._nanos + msInNanos + microsInNanos;
+    return {seconds, nanos};
+  }
+  /**
+   * Checks to see if a string is an ISO formatted timestamp.
+   *
+   * @private
+   * @static
+   *
+   * @param {string} timestamp The string to check.
+   * @returns {boolean}
+   */
+  static isISOString(timestamp?: unknown): boolean {
+    if (typeof timestamp !== 'string') {
+      return false;
+    }
+
+    const isoReg = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+Z/;
+    return isoReg.test(timestamp);
+  }
+  /**
+   * Pads a number with 0s on the left hand size.
+   * 1 -> 001
+   *
+   * @private
+   * @static
+   *
+   * @param {number|string} n number to pad.
+   * @param {number} [size=3] Desired string size.
+   * @returns {string}
+   */
+  static padLeft(n: number|string, size = 3): string {
+    const padding = '0'.repeat(size - 1);
+    return `${padding}${n}`.substr(-size);
+  }
+  /**
+   * Pads a number with 0s on the right hand size.
+   * 1 -> 100
+   *
+   * @private
+   * @static
+   *
+   * @param {number|string} n number to pad.
+   * @param {number} [size=3] Desired string size.
+   * @returns {string}
+   */
+  static padRight(n: number|string, size = 3): string {
+    const padding = '0'.repeat(size - 1);
+    return `${n}${padding}`.substr(0, size);
+  }
+  /**
+   * Creates a new Timestamp from a RFC 3339 timestamp formatted string.
+   *
+   * @private
+   * @static
+   *
+   * @param {string} timestamp RFC 3339 timestamp formatted string.
+   * @returns {Timestamp}
+   */
+  static fromISOString(timestamp: string): Timestamp {
+    const instance = new Timestamp(timestamp);
+
+    // no dot, no digits!
+    if (!timestamp.includes('.')) {
+      return instance;
+    }
+
+    const digits = timestamp.replace(/.+\./, '').match(/^\d{1,9}/);
+    let groups: string[] = [];
+
+    if (digits && digits.length) {
+      groups = digits.pop()!.match(/\d{1,3}/g) as string[];
+    }
+
+    // Date object will parse the ms, so we can toss them
+    groups.shift();
+
+    const [micros = 0, nanos = 0] = groups.map(n => {
+      const padded = Timestamp.padRight(n);
+      return Number(padded);
+    });
+
+    instance.setMicroseconds(micros);
+    instance.setNanoseconds(nanos);
+
+    return instance;
+  }
+  /**
+   * Creates a new Timestamp from a {@link google.protobuf.Timestamp} object.
+   *
+   * @private
+   * @static
+   *
+   * @param {google.protobuf.Timestamp} timestamp The protobuf timestamp.
+   * @returns {Timestamp}
+   */
+  static fromProto({seconds = 0, nanos = 0}: p.ITimestamp): Timestamp {
+    const instance = new Timestamp();
+
+    if (typeof seconds === 'string') {
+      seconds = Number(seconds);
+    } else if (typeof seconds !== 'number') {
+      // tslint:disable-next-line no-any
+      seconds = (seconds as any).toNumber() as number;
+    }
+
+    const groups = Timestamp.padLeft(nanos, 9).match(/\d{3}/g);
+    const [ms, micros, ns] = groups!.map(Number);
+
+    instance.setTime(seconds * 1000);
+    instance.setMilliseconds(ms);
+    instance.setMicroseconds(micros);
+    instance.setNanoseconds(ns);
+
+    return instance;
   }
 }
 
@@ -245,9 +477,11 @@ function decode(value: Value, type: s.Type): Value {
     case s.TypeCode.INT64:
       decoded = new Int(decoded);
       break;
-    case s.TypeCode.TIMESTAMP:  // falls through
+    case s.TypeCode.TIMESTAMP:
+      decoded = Timestamp.fromISOString(decoded);
+      break;
     case s.TypeCode.DATE:
-      decoded = new Date(decoded);
+      decoded = new SpannerDate(decoded);
       break;
     case s.TypeCode.ARRAY:
       decoded = decoded.map(value => {
@@ -299,7 +533,7 @@ function encodeValue(value: Value): Value {
     return value.toJSON();
   }
 
-  if (value instanceof WrappedNumber || value instanceof SpannerDate) {
+  if (value instanceof WrappedNumber) {
     return value.value;
   }
 
@@ -410,7 +644,7 @@ function getType(value: Value): Type {
     return {type: 'bytes'};
   }
 
-  if (is.date(value)) {
+  if (value instanceof Timestamp) {
     return {type: 'timestamp'};
   }
 
@@ -532,6 +766,7 @@ export const codec = {
   convertProtoTimestampToDate,
   createTypeObject,
   SpannerDate,
+  Timestamp,
   Float,
   Int,
   convertFieldsToJson,

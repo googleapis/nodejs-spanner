@@ -17,7 +17,7 @@
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {codec} from './codec';
+import {codec, Timestamp} from './codec';
 import {Snapshot} from './transaction';
 
 /**
@@ -161,7 +161,7 @@ class BatchTransaction extends Snapshot {
 
         if (readTimestamp) {
           this.readTimestampProto = readTimestamp;
-          this.readTimestamp = codec.convertProtoTimestampToDate(readTimestamp);
+          this.readTimestamp = Timestamp.fromProto(readTimestamp);
         }
       }
 

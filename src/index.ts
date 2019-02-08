@@ -24,10 +24,11 @@ import * as extend from 'extend';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as is from 'is';
 import * as path from 'path';
+import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
-import {codec} from './codec';
+import {codec, Timestamp} from './codec';
 import {Database} from './database';
 import {Instance} from './instance';
 import {Session} from './session';
@@ -768,10 +769,8 @@ class Spanner extends Service {
   /**
    * Helper function to get a Cloud Spanner Date object.
    *
-   * @method Spanner.date
    * @param {string|date} value The date as a string or Date object.
-   * @returns {object}
-   * @see {@link Spanner#date}
+   * @returns {SpannerDate}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -782,12 +781,50 @@ class Spanner extends Service {
   }
 
   /**
+   * Helper function to get a Cloud Spanner Timestamp object.
+   *
+   * String timestamps should have a canonical format of
+   * `YYYY-[M]M-[D]D[( |T)[H]H:[M]M:[S]S[.DDDDDDDDD]]Z`
+   *
+   * **Timestamp values must be expressed in Zulu time and cannot include a UTC
+   * offset.**
+   *
+   * @see https://cloud.google.com/spanner/docs/data-types#timestamp-type
+   *
+   * @param {string|number|google.protobuf.Timestamp} [timestamp] Either a
+   *      RFC 3339 timestamp formatted string or
+   *      {@link google.protobuf.Timestamp} object.
+   * @returns {Timestamp}
+   *
+   * @example
+   * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
+   *
+   * @example <caption>With a `google.protobuf.Timestamp` object</caption>
+   * const [seconds, nanos] = process.hrtime();
+   * const timestamp = Spanner.timestamp({seconds, nanos});
+   *
+   * @example <caption>With a Date timestamp</caption>
+   * const timestamp = Spanner.timestamp(Date.now());
+   */
+  static timestamp(timestamp?: string|number|p.ITimestamp): Timestamp {
+    timestamp = timestamp || Date.now();
+
+    if (is.object(timestamp)) {
+      return codec.Timestamp.fromProto(timestamp as p.ITimestamp);
+    }
+
+    if (Timestamp.isISOString(timestamp)) {
+      return codec.Timestamp.fromISOString(timestamp as string);
+    }
+
+    return new codec.Timestamp(timestamp as number);
+  }
+
+  /**
    * Helper function to get a Cloud Spanner Float64 object.
    *
-   * @method Spanner.float
    * @param {string|number} value The float as a number or string.
    * @returns {object}
-   * @see {@link Spanner#float}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -800,10 +837,8 @@ class Spanner extends Service {
   /**
    * Helper function to get a Cloud Spanner Int64 object.
    *
-   * @method Spanner.int
    * @param {string|number} value The int as a number or string.
    * @returns {object}
-   * @see {@link Spanner#int}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');

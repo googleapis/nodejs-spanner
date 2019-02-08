@@ -169,12 +169,12 @@ describe('Transaction', () => {
       });
 
       it('should localize `readTimestamp` if present', done => {
-        const convertedTimestamp = new Date();
+        const convertedTimestamp = new codec.Timestamp();
         const readTimestamp = {};
         const response = Object.assign({readTimestamp}, BEGIN_RESPONSE);
 
         REQUEST.callsFake((_, callback) => callback(null, response));
-        sandbox.stub(codec, 'convertProtoTimestampToDate')
+        sandbox.stub(codec.Timestamp, 'fromProto')
             .withArgs(readTimestamp)
             .returns(convertedTimestamp);
 
@@ -697,31 +697,25 @@ describe('Transaction', () => {
       });
 
       it('should convert `minReadTimestamp` Date to proto', () => {
-        const fakeTimestamp = Date.now();
-        const fakeDate = new Date();
+        const fakeTimestamp = new codec.Timestamp();
 
-        sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox.stub(fakeTimestamp, 'toProto').returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({minReadTimestamp: fakeDate});
+        const options = Snapshot.encodeTimestampBounds({
+          minReadTimestamp: fakeTimestamp,
+        });
 
         assert.strictEqual(options.minReadTimestamp, PROTO_TIMESTAMP);
       });
 
       it('should convert `readTimestamp` Date to proto', () => {
-        const fakeTimestamp = Date.now();
-        const fakeDate = new Date();
+        const fakeTimestamp = new codec.Timestamp();
 
-        sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox.stub(fakeTimestamp, 'toProto').returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({readTimestamp: fakeDate});
+        const options = Snapshot.encodeTimestampBounds({
+          readTimestamp: fakeTimestamp,
+        });
 
         assert.strictEqual(options.readTimestamp, PROTO_TIMESTAMP);
       });
@@ -1014,9 +1008,9 @@ describe('Transaction', () => {
         const requestStub = sandbox.stub(transaction, 'request');
 
         const fakeTimestamp = {};
-        const formattedTimestamp = new Date();
+        const formattedTimestamp = new codec.Timestamp();
 
-        sandbox.stub(codec, 'convertProtoTimestampToDate')
+        sandbox.stub(codec.Timestamp, 'fromProto')
             .withArgs(fakeTimestamp)
             .returns(formattedTimestamp);
 
