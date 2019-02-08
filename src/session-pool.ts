@@ -19,9 +19,8 @@ import * as is from 'is';
 import * as PQueue from 'p-queue';
 import * as trace from 'stack-trace';
 
-import {Any} from './common';
 import {Database} from './database';
-import {Session} from './session';
+import {Session, types} from './session';
 import {Transaction, TransactionOptions} from './transaction';
 
 /**
@@ -177,14 +176,6 @@ export class SessionLeakError extends Error {
 }
 
 /**
- * enum to capture the possible session types
- */
-export const enum types {
-  ReadOnly = 'readonly',
-  ReadWrite = 'readwrite'
-}
-
-/**
  * enum to capture errors that can appear from multiple places
  */
 const enum errors {
@@ -193,7 +184,6 @@ const enum errors {
 }
 
 interface SessionInventory {
-  [key: string]: Any;
   [types.ReadOnly]: Session[];
   [types.ReadWrite]: Session[];
   borrowed: Set<Session>;

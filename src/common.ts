@@ -15,6 +15,3 @@ export interface CreateSessionOptions {
 export type GetTimestamp = {
   nanos: number; seconds: number;
 };
-
-// tslint:disable-next-line no-any
-export type Any = any;
