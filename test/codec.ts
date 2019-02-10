@@ -99,6 +99,64 @@ describe('codec', () => {
       it('should default nanoseconds to 0', () => {
         assert.strictEqual(timestamp.getNanoseconds(), 0);
       });
+
+      it('should accept a complete ISO string', () => {
+        const isoString = '2019-02-08T10:34:29.123456789Z';
+        const date = new Date(isoString);
+
+        timestamp = new codec.Timestamp(isoString);
+
+        assert.strictEqual(date.getTime(), timestamp.getTime());
+        assert.strictEqual(timestamp.getMicroseconds(), 456);
+        assert.strictEqual(timestamp.getNanoseconds(), 789);
+      });
+
+      describe('from protobuf Timestamp', () => {
+        const SECONDS = 1549622069;
+        const NANOS = 481320032;
+        const MILLIS = 481;
+        const MICROS = 320;
+        const NS = 32;
+
+        it('should accept a protobuf timestamp', () => {
+          const proto = {seconds: SECONDS, nanos: NANOS};
+          const expectedTime = Math.floor(SECONDS * 1000) + MILLIS;
+
+          timestamp = new codec.Timestamp(proto);
+          assert.strictEqual(timestamp.getTime(), expectedTime);
+          assert.strictEqual(timestamp.getMicroseconds(), MICROS);
+          assert.strictEqual(timestamp.getNanoseconds(), NS);
+        });
+
+        it('should accept seconds as a string', () => {
+          const proto = {seconds: SECONDS.toString(), nanos: NANOS};
+          const expectedTime = Math.floor(SECONDS * 1000) + MILLIS;
+
+          timestamp = new codec.Timestamp(proto);
+          assert.strictEqual(timestamp.getTime(), expectedTime);
+        });
+
+        it('should accept seconds as a long', () => {
+          const fakeLong = {toNumber: () => SECONDS};
+          const proto = {seconds: fakeLong, nanos: NANOS};
+          const expectedTime = Math.floor(SECONDS * 1000) + MILLIS;
+
+          timestamp = new codec.Timestamp(proto);
+          assert.strictEqual(timestamp.getTime(), expectedTime);
+        });
+      });
+    });
+
+    describe('getFullTimeString', () => {
+      it('should return the combined value of `toProto`', () => {
+        const fakeProto = {seconds: 1234, nanos: 987654321};
+        const expected = `${fakeProto.seconds}${fakeProto.nanos}`;
+
+        sandbox.stub(timestamp, 'toProto').returns(fakeProto);
+
+        const fullTime = timestamp.getFullTimeString();
+        assert.strictEqual(fullTime, expected);
+      });
     });
 
     describe('getMicroseconds', () => {
@@ -114,6 +172,37 @@ describe('codec', () => {
         const nanos = 456;
         timestamp.setNanoseconds(nanos);
         assert.strictEqual(timestamp.getNanoseconds(), nanos);
+      });
+    });
+
+    describe('setFullTime', () => {
+      it('should accept a string of nanoseconds', () => {
+        const seconds = 1234;
+        const expectedTime = seconds * 1000;
+        const expectedNanos = 987654321;
+        const fullTime = `${seconds}${expectedNanos}`;
+
+        const setTimeStub =
+            sandbox.stub(timestamp, 'setTime').withArgs(expectedTime);
+
+        const setNanosecondsStub =
+            sandbox.stub(timestamp, 'setNanoseconds').withArgs(expectedNanos);
+
+        timestamp.setFullTime(fullTime);
+
+        console.log();
+
+        assert.strictEqual(setTimeStub.callCount, 1);
+        assert.strictEqual(setNanosecondsStub.callCount, 1);
+      });
+
+      it('should return the full time', () => {
+        const fakeFullTime = '123';
+
+        sandbox.stub(timestamp, 'getFullTimeString').returns(fakeFullTime);
+
+        const fullTime = timestamp.setFullTime('0');
+        assert.strictEqual(fullTime, fakeFullTime);
       });
     });
 
@@ -162,6 +251,25 @@ describe('codec', () => {
 
         assert.strictEqual(timestamp.getMicroseconds(), 1);
         assert.strictEqual(timestamp.getNanoseconds(), 1);
+      });
+    });
+
+    describe('setTime', () => {
+      it('should reset micros and nanos', () => {
+        timestamp.setMicroseconds(1);
+        timestamp.setNanoseconds(2);
+
+        timestamp.setTime(Date.now());
+
+        assert.strictEqual(timestamp.getMicroseconds(), 0);
+        assert.strictEqual(timestamp.getNanoseconds(), 0);
+      });
+
+      it('should return `super.setTime` value', () => {
+        const fakeTime = Date.now();
+        const time = timestamp.setTime(fakeTime);
+
+        assert.strictEqual(time, fakeTime);
       });
     });
 
@@ -246,6 +354,34 @@ describe('codec', () => {
       });
     });
 
+    describe('isFullISOString', () => {
+      it('should return false for non-string values', () => {
+        const isISO = codec.Timestamp.isFullISOString(10);
+        assert.strictEqual(isISO, false);
+      });
+
+      it('should return false for non-iso strings', () => {
+        const isISO = codec.Timestamp.isFullISOString('hi there');
+        assert.strictEqual(isISO, false);
+      });
+
+      it('should return false for iso strings with 3 or less digits', () => {
+        const incompleteISOString = '2019-02-08T10:34:29.123Z';
+        const isISO = codec.Timestamp.isFullISOString(incompleteISOString);
+        assert.strictEqual(isISO, false);
+      });
+
+      it('should return true with 4 or more digits', () => {
+        const min = '2019-02-08T10:34:29.1234Z';
+        const minIsISO = codec.Timestamp.isFullISOString(min);
+        assert.strictEqual(minIsISO, true);
+
+        const max = '2019-02-08T10:34:29.123456789Z';
+        const maxIsISO = codec.Timestamp.isFullISOString(max);
+        assert.strictEqual(maxIsISO, true);
+      });
+    });
+
     describe('padLeft', () => {
       it('should pad to the left', () => {
         const expected = '001';
@@ -271,87 +407,6 @@ describe('codec', () => {
         const expected = '11000';
         const actual = codec.Timestamp.padRight(11, 5);
         assert.strictEqual(actual, expected);
-      });
-    });
-
-    describe('fromISOString', () => {
-      it('should accept a complete ISO string', () => {
-        const isoString = '2019-02-08T10:34:29.123456789Z';
-        const date = new Date(isoString);
-
-        timestamp = codec.Timestamp.fromISOString(isoString);
-
-        assert.strictEqual(date.getTime(), timestamp.getTime());
-        assert.strictEqual(timestamp.getMicroseconds(), 456);
-        assert.strictEqual(timestamp.getNanoseconds(), 789);
-      });
-
-      it('should accept milliseconds and microseconds', () => {
-        const isoString = '2019-02-08T10:34:29.123456Z';
-        const date = new Date(isoString);
-
-        timestamp = codec.Timestamp.fromISOString(isoString);
-
-        assert.strictEqual(date.getTime(), timestamp.getTime());
-        assert.strictEqual(timestamp.getMicroseconds(), 456);
-        assert.strictEqual(timestamp.getNanoseconds(), 0);
-      });
-
-      it('should accept just milliseconds', () => {
-        const isoString = '2019-02-08T10:34:29.123Z';
-        const date = new Date(isoString);
-
-        timestamp = codec.Timestamp.fromISOString(isoString);
-
-        assert.strictEqual(date.getTime(), timestamp.getTime());
-        assert.strictEqual(timestamp.getMicroseconds(), 0);
-        assert.strictEqual(timestamp.getNanoseconds(), 0);
-      });
-
-      it('should accept no digits', () => {
-        const isoString = '2019-02-08T10:34:29Z';
-        const date = new Date(isoString);
-
-        timestamp = codec.Timestamp.fromISOString(isoString);
-
-        assert.strictEqual(date.getTime(), timestamp.getTime());
-        assert.strictEqual(timestamp.getMicroseconds(), 0);
-        assert.strictEqual(timestamp.getNanoseconds(), 0);
-      });
-    });
-
-    describe('fromProto', () => {
-      const SECONDS = 1549622069;
-      const NANOS = 481320032;
-      const MILLIS = 481;
-      const MICROS = 320;
-      const NS = 32;
-
-      it('should accept a protobuf timestamp', () => {
-        const proto = {seconds: SECONDS, nanos: NANOS};
-        const expectedTime = Math.floor(SECONDS * 1000) + MILLIS;
-
-        timestamp = codec.Timestamp.fromProto(proto);
-        assert.strictEqual(timestamp.getTime(), expectedTime);
-        assert.strictEqual(timestamp.getMicroseconds(), MICROS);
-        assert.strictEqual(timestamp.getNanoseconds(), NS);
-      });
-
-      it('should accept seconds as a string', () => {
-        const proto = {seconds: SECONDS.toString(), nanos: NANOS};
-        const expectedTime = Math.floor(SECONDS * 1000) + MILLIS;
-
-        timestamp = codec.Timestamp.fromProto(proto);
-        assert.strictEqual(timestamp.getTime(), expectedTime);
-      });
-
-      it('should accept seconds as a long', () => {
-        const fakeLong = {toNumber: () => SECONDS};
-        const proto = {seconds: fakeLong, nanos: NANOS};
-        const expectedTime = Math.floor(SECONDS * 1000) + MILLIS;
-
-        timestamp = codec.Timestamp.fromProto(proto);
-        assert.strictEqual(timestamp.getTime(), expectedTime);
       });
     });
   });
@@ -839,14 +894,18 @@ describe('codec', () => {
           codec.getType(Buffer.from('abc')), {type: 'bytes'});
     });
 
+    it('should determine if the value is a date', () => {
+      assert.deepStrictEqual(
+          codec.getType(new codec.SpannerDate()), {type: 'date'});
+    });
+
     it('should determine if the value is a timestamp', () => {
       assert.deepStrictEqual(
           codec.getType(new codec.Timestamp()), {type: 'timestamp'});
     });
 
-    it('should determine if the value is a date', () => {
-      assert.deepStrictEqual(
-          codec.getType(new codec.SpannerDate()), {type: 'date'});
+    it('should accept a plain date object as a timestamp', () => {
+      assert.deepStrictEqual(codec.getType(new Date()), {type: 'timestamp'});
     });
 
     it('should determine if the value is a struct', () => {

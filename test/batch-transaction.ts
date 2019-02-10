@@ -43,8 +43,9 @@ const fakePfy = extend({}, pfy, {
 });
 
 class FakeTimestamp {
-  static fromProto(proto: object) {
-    return new FakeTimestamp();
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
   }
 }
 
@@ -218,7 +219,6 @@ describe('BatchTransaction', () => {
     });
 
     it('should update the transaction with returned metadata', done => {
-      const fakeTimestamp = new Date();
       const response = extend({}, RESPONSE, {
         transaction: {
           id: ID,
@@ -227,15 +227,17 @@ describe('BatchTransaction', () => {
       });
 
       REQUEST.callsFake((_, callback) => callback(null, response));
-      sandbox.stub(FakeTimestamp, 'fromProto')
-          .withArgs(TIMESTAMP)
-          .returns(fakeTimestamp);
 
       batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
         assert.strictEqual(resp, response);
         assert.strictEqual(batchTransaction.id, ID);
-        assert.strictEqual(batchTransaction.readTimestamp, fakeTimestamp);
         assert.strictEqual(batchTransaction.readTimestampProto, TIMESTAMP);
+
+        const timestamp =
+            batchTransaction.readTimestamp as unknown as FakeTimestamp;
+        assert(timestamp instanceof FakeTimestamp);
+        assert.strictEqual(timestamp.calledWith_[0], TIMESTAMP);
+
         done();
       });
     });

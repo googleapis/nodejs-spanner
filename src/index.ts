@@ -806,18 +806,8 @@ class Spanner extends Service {
    * @example <caption>With a Date timestamp</caption>
    * const timestamp = Spanner.timestamp(Date.now());
    */
-  static timestamp(timestamp?: string|number|p.ITimestamp): Timestamp {
-    timestamp = timestamp || Date.now();
-
-    if (is.object(timestamp)) {
-      return codec.Timestamp.fromProto(timestamp as p.ITimestamp);
-    }
-
-    if (Timestamp.isISOString(timestamp)) {
-      return codec.Timestamp.fromISOString(timestamp as string);
-    }
-
-    return new codec.Timestamp(timestamp as number);
+  static timestamp(value?: string|number|p.ITimestamp): Timestamp {
+    return new codec.Timestamp(value);
   }
 
   /**
@@ -883,6 +873,7 @@ promisifyAll(Spanner, {
     'instance',
     'int',
     'operation',
+    'timestamp',
   ],
 });
 

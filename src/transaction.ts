@@ -272,7 +272,7 @@ export class Snapshot extends EventEmitter {
 
           if (readTimestamp) {
             this.readTimestampProto = readTimestamp;
-            this.readTimestamp = Timestamp.fromProto(readTimestamp);
+            this.readTimestamp = new Timestamp(readTimestamp);
           }
 
           callback!(null, resp);
@@ -1196,7 +1196,7 @@ export class Transaction extends Dml {
 
           if (resp && resp.commitTimestamp) {
             this.commitTimestampProto = resp.commitTimestamp;
-            this.commitTimestamp = Timestamp.fromProto(resp.commitTimestamp);
+            this.commitTimestamp = new Timestamp(resp.commitTimestamp);
           }
 
           callback!(err, resp);

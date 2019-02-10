@@ -100,8 +100,37 @@ export class SpannerDate extends Date {
  * const timestamp = Spanner.timestamp(Date.now());
  */
 export class Timestamp extends Date {
-  private _micros = 0;
-  private _nanos = 0;
+  private _micros: number;
+  private _nanos: number;
+  constructor(value?: string|number|p.ITimestamp) {
+    const isProto = is.object(value);
+
+    if (typeof value === 'undefined') {
+      value = Date.now();
+    }
+
+    super(isProto ? 0 : value as number);
+
+    this._micros = 0;
+    this._nanos = 0;
+
+    if (isProto) {
+      this._fromProto(value as p.ITimestamp);
+    } else if (Timestamp.isFullISOString(value)) {
+      this._fromISOString(value as string);
+    }
+  }
+  /**
+   * Returns the string value corresponding to the time for the specified
+   * timestamp according to universal time.
+   *
+   * @returns {string} A string representing the nanoseconds elapsed between
+   *     1 January 1970 00:00:00 UTC and the given timestamp.
+   */
+  getFullTimeString(): string {
+    const {seconds, nanos} = this.toProto();
+    return `${seconds}${nanos}`;
+  }
   /**
    * Returns a number, between 0 and 999, representing the microseconds of the
    * timestamp.
@@ -121,11 +150,31 @@ export class Timestamp extends Date {
     return this._nanos;
   }
   /**
-   * Sets the microseconds for the specified date.
+   * Sets the exact time for the specified timestamp.
+   *
+   * @param {string} nanoseconds A string representing the number of nanoseconds
+   *     since 1 January 1970, 00:00:00 UTC.
+   * @returns {string} A string representing the number of nanoseconds between
+   *     1 January 1970 00:00:00 UTC and the updated date. (effectively, the
+   *     value of the argument).
+   */
+  setFullTime(nanoseconds: string): string {
+    nanoseconds = Timestamp.padLeft(nanoseconds, 10);
+
+    const seconds = Number(nanoseconds.substr(0, nanoseconds.length - 9));
+    const nanos = Number(nanoseconds.substr(-9));
+
+    this.setTime(seconds * 1000);
+    this.setNanoseconds(nanos);
+
+    return this.getFullTimeString();
+  }
+  /**
+   * Sets the microseconds for the specified timestamp.
    *
    * @param {number} microseconds A number representing the microseconds.
    * @returns {number} The number of milliseconds between 1 January 1970
-   *     00:00:00 UTC and the updated date.
+   *     00:00:00 UTC and the updated timestamp.
    */
   setMicroseconds(micros: number): number {
     if (micros >= 1000) {
@@ -137,11 +186,11 @@ export class Timestamp extends Date {
     return this.getTime();
   }
   /**
-   * Sets the nanoseconds for the specified date.
+   * Sets the nanoseconds for the specified timestamp.
    *
    * @param {number} nanoseconds A number representing the nanoseconds.
    * @returns {number} The number of milliseconds between 1 January 1970
-   *     00:00:00 UTC and the updated date.
+   *     00:00:00 UTC and the updated timestamp.
    */
   setNanoseconds(nanos: number): number {
     if (nanos >= 1000) {
@@ -153,6 +202,22 @@ export class Timestamp extends Date {
     return this.getTime();
   }
   /**
+   * Sets the Timestamp to the time represented by a number of milliseconds
+   * since January 1, 1970, 00:00:00 UTC. Calling this method will reset both
+   * the microseconds and nanoseconds to 0.
+   *
+   * @param {number} milliseconds An integer representing the number of
+   *     milliseconds since 1 January 1970, 00:00:00 UTC.
+   * @returns {number} The number of milliseconds between
+   *     1 January 1970 00:00:00 UTC and the updated date (effectively, the
+   *     value of the argument).
+   */
+  setTime(milliseconds: number): number {
+    this._micros = 0;
+    this._nanos = 0;
+    return super.setTime(milliseconds);
+  }
+  /**
    * Returns a RFC 3339 timestamp formatted string.
    *
    * @returns {string}
@@ -160,8 +225,8 @@ export class Timestamp extends Date {
   toISOString(): string {
     const micros = Timestamp.padLeft(this._micros);
     const nanos = Timestamp.padLeft(this._nanos);
-    const ms = `${micros}${nanos}`.replace(/0+$/, '');
-    return super.toISOString().replace(/z$/i, `${ms}Z`);
+    const digits = `${micros}${nanos}`.replace(/0+$/, '');
+    return super.toISOString().replace(/z$/i, `${digits}Z`);
   }
   /**
    * Returns the timestamp as a protobuf timestamp.
@@ -176,21 +241,74 @@ export class Timestamp extends Date {
     return {seconds, nanos};
   }
   /**
+   * Sets time via RFC 3339 timestamp formatted string.
+   *
+   * @private
+   *
+   * @param {string} timestamp The timestamp.
+   */
+  private _fromISOString(timestamp: string): void {
+    let digits = '0';
+
+    timestamp = timestamp.replace(/\.(\d+)/, ($0, $1) => {
+      digits = $1;
+      return '.000';
+    });
+
+    const time = new Date(timestamp).getTime();
+    const nanos = Number(Timestamp.padRight(digits, 9));
+
+    this.setTime(time);
+    this.setNanoseconds(nanos);
+  }
+  /**
+   * Sets time via {@link google.protobuf.Timestamp} object.
+   *
+   * @private
+   *
+   * @param {google.protobuf.Timestamp} timestamp The timestamp.
+   */
+  private _fromProto({seconds = 0, nanos = 0}: p.ITimestamp): void {
+    if (typeof seconds === 'string') {
+      seconds = Number(seconds);
+    } else if (typeof seconds !== 'number') {
+      // tslint:disable-next-line no-any
+      seconds = (seconds as any).toNumber() as number;
+    }
+
+    this.setTime(seconds * 1000);
+    this.setNanoseconds(nanos);
+  }
+  /**
    * Checks to see if a string is an ISO formatted timestamp.
    *
    * @private
    * @static
    *
-   * @param {string} timestamp The string to check.
+   * @param {string} value The value to check.
    * @returns {boolean}
    */
-  static isISOString(timestamp?: unknown): boolean {
-    if (typeof timestamp !== 'string') {
+  static isFullISOString(value?: unknown): boolean {
+    if (typeof value !== 'string') {
       return false;
     }
 
-    const isoReg = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+Z/;
-    return isoReg.test(timestamp);
+    const isoReg = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d{4,9}Z/;
+    return isoReg.test(value);
+  }
+  /**
+   * Creates padding for string based on current size and desired size.
+   *
+   * @private
+   * @static
+   *
+   * @param {string} n stringified number to pad.
+   * @param {number} [size=3] Desired string size.
+   * @returns {string}
+   */
+  static getPadding(n: string, size = 3): string {
+    const padding = Math.max(size - n.length, 0);
+    return '0'.repeat(padding);
   }
   /**
    * Pads a number with 0s on the left hand size.
@@ -203,9 +321,9 @@ export class Timestamp extends Date {
    * @param {number} [size=3] Desired string size.
    * @returns {string}
    */
-  static padLeft(n: number|string, size = 3): string {
-    const padding = '0'.repeat(size - 1);
-    return `${padding}${n}`.substr(-size);
+  static padLeft(n: number|string, size?: number): string {
+    const padding = Timestamp.getPadding(n.toString(), size);
+    return `${padding}${n}`;
   }
   /**
    * Pads a number with 0s on the right hand size.
@@ -218,52 +336,9 @@ export class Timestamp extends Date {
    * @param {number} [size=3] Desired string size.
    * @returns {string}
    */
-  static padRight(n: number|string, size = 3): string {
-    const padding = '0'.repeat(size - 1);
-    return `${n}${padding}`.substr(0, size);
-  }
-  /**
-   * Creates a new Timestamp from a RFC 3339 timestamp formatted string.
-   *
-   * @private
-   * @static
-   *
-   * @param {string} timestamp RFC 3339 timestamp formatted string.
-   * @returns {Timestamp}
-   */
-  static fromISOString(timestamp: string): Timestamp {
-    let digits = '0';
-
-    timestamp = timestamp.replace(/\.(\d+)/, ($0, $1) => {
-      digits = $1;
-      return '.000';
-    });
-
-    const instance = new Timestamp(timestamp);
-    const nanos = Number(Timestamp.padRight(digits, 9));
-    instance.setNanoseconds(nanos);
-    return instance;
-  }
-  /**
-   * Creates a new Timestamp from a {@link google.protobuf.Timestamp} object.
-   *
-   * @private
-   * @static
-   *
-   * @param {google.protobuf.Timestamp} timestamp The protobuf timestamp.
-   * @returns {Timestamp}
-   */
-  static fromProto({seconds = 0, nanos = 0}: p.ITimestamp): Timestamp {
-    if (typeof seconds === 'string') {
-      seconds = Number(seconds);
-    } else if (typeof seconds !== 'number') {
-      // tslint:disable-next-line no-any
-      seconds = (seconds as any).toNumber() as number;
-    }
-
-    const instance = new Timestamp(seconds * 1000);
-    instance.setNanoseconds(nanos);
-    return instance;
+  static padRight(n: number|string, size?: number): string {
+    const padding = Timestamp.getPadding(n.toString(), size);
+    return `${n}${padding}`;
   }
 }
 
@@ -455,7 +530,7 @@ function decode(value: Value, type: s.Type): Value {
       decoded = new Int(decoded);
       break;
     case s.TypeCode.TIMESTAMP:
-      decoded = Timestamp.fromISOString(decoded);
+      decoded = new Timestamp(decoded);
       break;
     case s.TypeCode.DATE:
       decoded = new SpannerDate(decoded);
@@ -621,12 +696,12 @@ function getType(value: Value): Type {
     return {type: 'bytes'};
   }
 
-  if (value instanceof Timestamp) {
-    return {type: 'timestamp'};
-  }
-
   if (value instanceof SpannerDate) {
     return {type: 'date'};
+  }
+
+  if (is.date(value)) {
+    return {type: 'timestamp'};
   }
 
   if (value instanceof Struct) {

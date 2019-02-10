@@ -66,6 +66,7 @@ const fakePfy = extend({}, pfy, {
       'instance',
       'int',
       'operation',
+      'timestamp',
     ]);
   },
 });
@@ -261,6 +262,23 @@ describe('Spanner', () => {
       };
 
       const date = Spanner.date(value);
+      assert.strictEqual(date, customValue);
+    });
+  });
+
+  describe('timestamp', () => {
+    it('should create a Timestamp instance', () => {
+      const value = {};
+      const customValue = {};
+
+      fakeCodec.Timestamp = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.timestamp(value);
       assert.strictEqual(date, customValue);
     });
   });

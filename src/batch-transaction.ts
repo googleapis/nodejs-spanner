@@ -161,7 +161,7 @@ class BatchTransaction extends Snapshot {
 
         if (readTimestamp) {
           this.readTimestampProto = readTimestamp;
-          this.readTimestamp = Timestamp.fromProto(readTimestamp);
+          this.readTimestamp = new Timestamp(readTimestamp);
         }
       }
 
