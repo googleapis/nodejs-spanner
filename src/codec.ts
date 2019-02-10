@@ -232,31 +232,16 @@ export class Timestamp extends Date {
    * @returns {Timestamp}
    */
   static fromISOString(timestamp: string): Timestamp {
-    const instance = new Timestamp(timestamp);
+    let digits = '0';
 
-    // no dot, no digits!
-    if (!timestamp.includes('.')) {
-      return instance;
-    }
-
-    const digits = timestamp.replace(/.+\./, '').match(/^\d{1,9}/);
-    let groups: string[] = [];
-
-    if (digits && digits.length) {
-      groups = digits.pop()!.match(/\d{1,3}/g) as string[];
-    }
-
-    // Date object will parse the ms, so we can toss them
-    groups.shift();
-
-    const [micros = 0, nanos = 0] = groups.map(n => {
-      const padded = Timestamp.padRight(n);
-      return Number(padded);
+    timestamp = timestamp.replace(/\.(\d+)/, ($0, $1) => {
+      digits = $1;
+      return '.000';
     });
 
-    instance.setMicroseconds(micros);
+    const instance = new Timestamp(timestamp);
+    const nanos = Number(Timestamp.padRight(digits, 9));
     instance.setNanoseconds(nanos);
-
     return instance;
   }
   /**
@@ -269,8 +254,6 @@ export class Timestamp extends Date {
    * @returns {Timestamp}
    */
   static fromProto({seconds = 0, nanos = 0}: p.ITimestamp): Timestamp {
-    const instance = new Timestamp();
-
     if (typeof seconds === 'string') {
       seconds = Number(seconds);
     } else if (typeof seconds !== 'number') {
@@ -278,14 +261,8 @@ export class Timestamp extends Date {
       seconds = (seconds as any).toNumber() as number;
     }
 
-    const groups = Timestamp.padLeft(nanos, 9).match(/\d{3}/g);
-    const [ms, micros, ns] = groups!.map(Number);
-
-    instance.setTime(seconds * 1000);
-    instance.setMilliseconds(ms);
-    instance.setMicroseconds(micros);
-    instance.setNanoseconds(ns);
-
+    const instance = new Timestamp(seconds * 1000);
+    instance.setNanoseconds(nanos);
     return instance;
   }
 }

@@ -353,16 +353,6 @@ describe('codec', () => {
         timestamp = codec.Timestamp.fromProto(proto);
         assert.strictEqual(timestamp.getTime(), expectedTime);
       });
-
-      it('should left pad the nanoseconds if need be', () => {
-        const proto = {seconds: SECONDS, nanos: 4123};
-        const expectedMicros = 4;
-        const expectedNanos = 123;
-
-        timestamp = codec.Timestamp.fromProto(proto);
-        assert.strictEqual(timestamp.getMicroseconds(), expectedMicros);
-        assert.strictEqual(timestamp.getNanoseconds(), expectedNanos);
-      });
     });
   });
 
