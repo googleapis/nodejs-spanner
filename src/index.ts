@@ -18,6 +18,7 @@
 
 import {Service, Operation} from '@google-cloud/common-grpc';
 import {paginator} from '@google-cloud/paginator';
+import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
@@ -28,7 +29,7 @@ import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
-import {codec, Timestamp} from './codec';
+import {codec} from './codec';
 import {Database} from './database';
 import {Instance} from './instance';
 import {Session} from './session';
@@ -781,6 +782,12 @@ class Spanner extends Service {
   }
 
   /**
+   * Date object with nanosecond precision. Supports all standard Date arguments
+   * in addition to several custom types.
+   * @external PreciseDate
+   * @see {@link https://github.com/googleapis/nodejs-precise-date|PreciseDate}
+   */
+  /**
    * Helper function to get a Cloud Spanner Timestamp object.
    *
    * String timestamps should have a canonical format of
@@ -794,7 +801,7 @@ class Spanner extends Service {
    * @param {string|number|google.protobuf.Timestamp} [timestamp] Either a
    *      RFC 3339 timestamp formatted string or
    *      {@link google.protobuf.Timestamp} object.
-   * @returns {Timestamp}
+   * @returns {external:PreciseDate}
    *
    * @example
    * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
@@ -806,8 +813,9 @@ class Spanner extends Service {
    * @example <caption>With a Date timestamp</caption>
    * const timestamp = Spanner.timestamp(Date.now());
    */
-  static timestamp(value?: string|number|p.ITimestamp): Timestamp {
-    return new codec.Timestamp(value);
+  static timestamp(value?: string|number|p.ITimestamp): PreciseDate {
+    value = value || Date.now();
+    return new PreciseDate(value as number);
   }
 
   /**

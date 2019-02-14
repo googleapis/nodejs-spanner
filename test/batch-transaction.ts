@@ -89,8 +89,9 @@ describe('BatchTransaction', () => {
   before(() => {
     BatchTransaction =
         proxyquire('../src/batch-transaction.js', {
+          '@google-cloud/precise-date': {PreciseDate: FakeTimestamp},
           '@google-cloud/promisify': fakePfy,
-          './codec.js': {codec: fakeCodec, Timestamp: FakeTimestamp},
+          './codec.js': {codec: fakeCodec},
           './transaction.js': {Snapshot: FakeTransaction},
         }).BatchTransaction;
   });

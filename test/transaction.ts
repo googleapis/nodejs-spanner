@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
@@ -169,7 +170,7 @@ describe('Transaction', () => {
       });
 
       it('should localize `readTimestamp` if present', done => {
-        const expectedTimestamp = new codec.Timestamp(0);
+        const expectedTimestamp = new PreciseDate(0);
         const readTimestamp = {seconds: 0, nanos: 0};
         const response = Object.assign({readTimestamp}, BEGIN_RESPONSE);
 
@@ -694,9 +695,9 @@ describe('Transaction', () => {
       });
 
       it('should convert `minReadTimestamp` Date to proto', () => {
-        const fakeTimestamp = new codec.Timestamp();
+        const fakeTimestamp = new PreciseDate();
 
-        sandbox.stub(fakeTimestamp, 'toProto').returns(PROTO_TIMESTAMP);
+        sandbox.stub(fakeTimestamp, 'toStruct').returns(PROTO_TIMESTAMP);
 
         const options = Snapshot.encodeTimestampBounds({
           minReadTimestamp: fakeTimestamp,
@@ -706,9 +707,9 @@ describe('Transaction', () => {
       });
 
       it('should convert `readTimestamp` Date to proto', () => {
-        const fakeTimestamp = new codec.Timestamp();
+        const fakeTimestamp = new PreciseDate();
 
-        sandbox.stub(fakeTimestamp, 'toProto').returns(PROTO_TIMESTAMP);
+        sandbox.stub(fakeTimestamp, 'toStruct').returns(PROTO_TIMESTAMP);
 
         const options = Snapshot.encodeTimestampBounds({
           readTimestamp: fakeTimestamp,
@@ -1004,7 +1005,7 @@ describe('Transaction', () => {
       it('should set the `commitTimestamp` if in response', () => {
         const requestStub = sandbox.stub(transaction, 'request');
 
-        const expectedTimestamp = new codec.Timestamp(0);
+        const expectedTimestamp = new PreciseDate(0);
         const fakeTimestamp = {seconds: 0, nanos: 0};
 
         transaction.commit(() => {});

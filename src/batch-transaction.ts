@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {codec, Timestamp} from './codec';
+import {codec} from './codec';
 import {Snapshot} from './transaction';
 
 /**
@@ -161,7 +162,7 @@ class BatchTransaction extends Snapshot {
 
         if (readTimestamp) {
           this.readTimestampProto = readTimestamp;
-          this.readTimestamp = new Timestamp(readTimestamp);
+          this.readTimestamp = new PreciseDate(readTimestamp);
         }
       }
 
