@@ -56,7 +56,7 @@
     "@google-cloud/common-grpc": "^0.10.0",
     "@google-cloud/paginator": "^0.1.0",
     "@google-cloud/projectify": "^0.3.0",
-    "@google-cloud/promisify": "^0.3.0",
+    "@google-cloud/promisify": "^0.4.0",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
