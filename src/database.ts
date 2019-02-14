@@ -25,13 +25,12 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 
 import {BatchTransaction} from './batch-transaction';
-import {codec} from './codec';
 import {Instance} from './instance';
-import {partialResultStream, PartialResultStream} from './partial-result-stream';
+import {PartialResultStream} from './partial-result-stream';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {PartitionedDml, Snapshot, TimestampBounds, Transaction} from './transaction';
+import {Snapshot, TimestampBounds, Transaction} from './transaction';
 import {AsyncRunTransactionCallback, AsyncTransactionRunner, RunTransactionCallback, RunTransactionOptions, TransactionRunner} from './transaction-runner';
 
 export interface GetDatabaseOptions {

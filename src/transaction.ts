@@ -20,76 +20,81 @@ import {EventEmitter} from 'events';
 import {CallOptions} from 'google-gax';
 import {ServiceError} from 'grpc';
 import * as is from 'is';
-import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
 
-import {codec, Json, JSONOptions, Type, Value} from './codec';
-import {PartialResultStream, partialResultStream, ResumeToken, Row} from './partial-result-stream';
+import {google as spanner_client} from '../proto/spanner';
+import {codec, JSONOptions, Type, Value} from './codec';
+import {PartialResultStream, partialResultStream, ResumeToken} from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
 
-export type Rows = Array<Row|Json>;
-
-export interface TimestampBounds {
-  strong?: boolean;
-  minReadTimestamp?: Date|p.ITimestamp;
-  maxStaleness?: number|p.IDuration;
-  readTimestamp?: Date|p.ITimestamp;
-  exactStaleness?: number|p.IDuration;
-  returnReadTimestamp?: boolean;
+export interface EncodeParamsResponse {
+  params: spanner_client.protobuf.IStruct;
+  paramTypes: {
+    [field: string]: s.Type;
+  };
 }
-
-export interface RequestOptions {
-  json?: boolean;
-  jsonOptions?: JSONOptions;
-  gaxOptions?: CallOptions;
-}
-
 export interface ExecuteSqlRequest extends RequestOptions {
-  sql: string;
+  sql?: string;
   params?: {[param: string]: string};
   types?: {[param: string]: string};
   resumeToken?: ResumeToken;
-  queryMode?: s.QueryMode;
+  queryMode?: spanner_client.spanner.v1.ExecuteSqlRequest.QueryMode;
   partitionToken?: Uint8Array|string;
   seqno?: number;
 }
-
-export interface KeyRange {
-  startClosed?: Value[];
-  startOpen?: Value[];
-  endClosed?: Value[];
-  endOpen?: Value[];
+export interface Fields {
+  [key: string]: spanner_client.protobuf.IValue;
 }
-
+export interface KeyRange extends spanner_client.spanner.v1.IKeyRange {
+  [key: string]: Value;
+}
+export type KeyVals = KeyValObject|KeyValObject[];
+export interface KeyValObject {
+  [key: string]: Value;
+}
+export interface ParamTypes {
+  [field: string]: s.Type;
+}
+export interface ReadCallback {
+  (err: null|ServiceError, rows: Rows): void;
+}
 export interface ReadRequest extends RequestOptions {
-  keySet?: s.KeySet;
+  keySet?: spanner_client.spanner.v1.KeySet;
   keys?: string[];
-  ranges?: KeyRange[];
+  ranges?: spanner_client.spanner.v1.KeyRange[];
   index?: string;
   columns?: string[];
   limit?: number;
   resumeToken?: ResumeToken;
   partitionToken?: Uint8Array|string;
 }
-
-export type BeginPromise = Promise<[s.Transaction]>;
-export type CommitPromise = Promise<[s.CommitResponse]>;
-export type ReadPromise = Promise<[Rows]>;
-export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
-export type RunUpdatePromise = Promise<[number]>;
-
-export interface ReadCallback {
-  (err: null|ServiceError, rows: Rows): void;
+export interface RequestOptions {
+  json?: boolean;
+  jsonOptions?: JSONOptions;
+  gaxOptions?: CallOptions;
 }
-
+export type Rows = spanner_client.protobuf.ListValue[];
 export interface RunCallback {
-  (err: null|ServiceError, rows: Rows, stats: s.ResultSetStats): void;
+  (err: null|ServiceError, rows: Rows, stats: spanner_client.spanner.v1.ResultSetStats): void;
 }
-
 export interface RunUpdateCallback {
   (err: null|ServiceError, rowCount: number): void;
+}
+export interface Stats extends spanner_client.spanner.v1.ResultSetStats {
+  [key: string]: Value;
+}
+export interface TimestampBounds {
+  strong?: boolean;
+  minReadTimestamp?: Date|spanner_client.protobuf.Timestamp;
+  maxStaleness?: number|spanner_client.protobuf.Duration;
+  readTimestamp?: Date|spanner_client.protobuf.Timestamp;
+  exactStaleness?: number|spanner_client.protobuf.Duration;
+  returnReadTimestamp?: boolean;
+}
+export interface TypeMap {
+  [field: string]: string|Type;
 }
 
 /**
@@ -114,7 +119,7 @@ export interface RunUpdateCallback {
  * to read at timestamps in the past.
  *
  * When finished with the Snapshot, you should call {@link Snapshot#end} to
- * release the underlying {@link Session}. Failure to do can result in a
+ * release the underlying {@link Session}. Failure to do so can result in a
  * Session leak.
  *
  * **This object is created and returned from {@link Database#getSnapshot}.**
@@ -145,12 +150,12 @@ export interface RunUpdateCallback {
  * });
  */
 export class Snapshot extends EventEmitter {
-  protected _options!: s.TransactionOptions;
-  id?: string|Uint8Array;
+  protected _options!: spanner_client.spanner.v1.ITransactionOptions;
+  id?: string|Uint8Array|null;
   ended: boolean;
-  metadata?: s.Transaction;
+  metadata?: spanner_client.spanner.v1.Transaction;
   readTimestamp?: Date;
-  readTimestampProto?: p.ITimestamp;
+  readTimestampProto?: spanner_client.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -204,12 +209,12 @@ export class Snapshot extends EventEmitter {
     this.request = session.request.bind(session);
     this.requestStream = session.requestStream.bind(session);
 
-    const readOnly = Snapshot.encodeTimestampBounds(options || {});
+    const readOnly: spanner_client.spanner.v1.TransactionOptions.IReadOnly = Snapshot.encodeTimestampBounds(options || {});
     this._options = {readOnly};
   }
 
-  begin(): BeginPromise;
-  begin(callback: s.BeginTransactionCallback): void;
+  begin(): Promise<[spanner_client.spanner.v1.Transaction]>;
+  begin(callback: spanner_client.spanner.v1.Spanner.BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -248,10 +253,10 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: s.BeginTransactionCallback): void|BeginPromise {
-    const session = this.session.formattedName_!;
-    const options = this._options;
-    const reqOpts: s.BeginTransactionRequest = {session, options};
+  begin(callback?: spanner_client.spanner.v1.Spanner.BeginTransactionCallback): void|Promise<[spanner_client.spanner.v1.Transaction]> {
+    const session: string = this.session.formattedName_!;
+    const options: spanner_client.spanner.v1.ITransactionOptions = this._options;
+    const reqOpts: spanner_client.spanner.v1.IBeginTransactionRequest = {session, options};
 
     this.request(
         {
@@ -259,7 +264,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
         },
-        (err: null|ServiceError, resp: s.Transaction) => {
+        (err: null|ServiceError, resp: spanner_client.spanner.v1.Transaction) => {
           if (err) {
             callback!(err, resp);
             return;
@@ -272,8 +277,7 @@ export class Snapshot extends EventEmitter {
 
           if (readTimestamp) {
             this.readTimestampProto = readTimestamp;
-            this.readTimestamp =
-                codec.convertProtoTimestampToDate(readTimestamp);
+            this.readTimestamp = codec.convertProtoTimestampToDate(readTimestamp);
           }
 
           callback!(null, resp);
@@ -289,7 +293,7 @@ export class Snapshot extends EventEmitter {
    * Keys are represented by an array of strings where the nth value in the list
    * corresponds to the nth component of the table or index primary key.
    *
-   * @typedef {object} KeyRange
+   * @typedef {object} spanner_client.spanner.v1.KeyRange
    * @property {string[]} [startClosed] If the start is closed, then the range
    *     includes all rows whose first key columns exactly match.
    * @property {string[]} [startOpen] If the start is open, then the range
@@ -420,11 +424,11 @@ export class Snapshot extends EventEmitter {
    *     this.end();
    *   });
    */
-  createReadStream(table: string, request = {} as ReadRequest):
+  createReadStream(table: string, request: ReadRequest = {}):
       PartialResultStream {
     const {gaxOptions, json, jsonOptions} = request;
-    const keySet = Snapshot.encodeKeySet(request);
-    const transaction: s.TransactionSelector = {};
+    const keySet: spanner_client.spanner.v1.IKeySet = Snapshot.encodeKeySet(request);
+    const transaction: spanner_client.spanner.v1.ITransactionSelector = {};
 
     if (this.id) {
       transaction.id = this.id;
@@ -440,7 +444,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
 
-    const reqOpts: s.ReadRequest = Object.assign(request, {
+    const reqOpts: spanner_client.spanner.v1.IReadRequest = Object.assign(request, {
       session: this.session.formattedName_!,
       transaction,
       table,
@@ -509,7 +513,7 @@ export class Snapshot extends EventEmitter {
     process.nextTick(() => this.emit('end'));
   }
 
-  read(table: string, request: ReadRequest): ReadPromise;
+  read(table: string, request: ReadRequest): Promise<[Rows]>;
   read(table: string, callback: ReadCallback): void;
   read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
@@ -621,21 +625,10 @@ export class Snapshot extends EventEmitter {
    *   // }
    * });
    */
-  read(
-      table: string, requestOrCallback: ReadRequest|ReadCallback,
-      cb?: ReadCallback): void|ReadPromise {
+  read(table: string, requestOrCallback: ReadRequest|ReadCallback, cb?: ReadCallback): void|Promise<[Rows]> {
     const rows: Rows = [];
-
-    let request: ReadRequest;
-    let callback: ReadCallback;
-
-    if (is.fn(requestOrCallback)) {
-      request = {} as RequestOptions;
-      callback = requestOrCallback as ReadCallback;
-    } else {
-      request = requestOrCallback as RequestOptions;
-      callback = cb as ReadCallback;
-    }
+    const callback: ReadCallback = typeof requestOrCallback === 'function' ? requestOrCallback as ReadCallback : cb! ;
+    const request: ReadRequest = typeof requestOrCallback === 'object' && requestOrCallback as ReadRequest ? requestOrCallback : {} ;
 
     this.createReadStream(table, request)
         .on('error', callback!)
@@ -643,7 +636,7 @@ export class Snapshot extends EventEmitter {
         .on('end', () => callback!(null, rows));
   }
 
-  run(query: string|ExecuteSqlRequest): RunPromise;
+  run(query: string|ExecuteSqlRequest): Promise<[Rows, spanner_client.spanner.v1.ResultSetStats]>;
   run(query: string|ExecuteSqlRequest, callback: RunCallback): void;
   /**
    * Execute a SQL statement on this database inside of a transaction.
@@ -719,9 +712,9 @@ export class Snapshot extends EventEmitter {
    * });
    */
   run(query: string|ExecuteSqlRequest,
-      callback?: RunCallback): void|RunPromise {
+      callback?: RunCallback): void|Promise<[Rows, spanner_client.spanner.v1.ResultSetStats]> {
     const rows: Rows = [];
-    let stats;
+    let stats: spanner_client.spanner.v1.ResultSetStats;
 
     this.runStream(query)
         .on('error', callback!)
@@ -803,7 +796,7 @@ export class Snapshot extends EventEmitter {
    *   });
    */
   runStream(query: string|ExecuteSqlRequest): PartialResultStream {
-    if (is.string(query)) {
+    if (typeof query === 'string') {
       query = {sql: query} as ExecuteSqlRequest;
     }
 
@@ -811,7 +804,7 @@ export class Snapshot extends EventEmitter {
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
-    const transaction: s.TransactionSelector = {};
+    const transaction: spanner_client.spanner.v1.ITransactionSelector = {};
 
     if (this.id) {
       transaction.id = this.id;
@@ -824,7 +817,7 @@ export class Snapshot extends EventEmitter {
     delete query.jsonOptions;
     delete query.types;
 
-    const reqOpts: s.ExecuteSqlRequest = Object.assign(query, {
+    const reqOpts: ExecuteSqlRequest = Object.assign(query, {
       session: this.session.formattedName_!,
       transaction,
       params,
@@ -852,16 +845,16 @@ export class Snapshot extends EventEmitter {
    * @param {ReadRequest} request The read request.
    * @returns {object}
    */
-  static encodeKeySet(request: ReadRequest): s.KeySet {
-    const keySet: s.KeySet = request.keySet || {};
+  static encodeKeySet(request: ReadRequest): spanner_client.spanner.v1.IKeySet {
+    const keySet: spanner_client.spanner.v1.IKeySet = request.keySet || {};
 
     if (request.keys) {
       keySet.keys = arrify(request.keys).map(codec.convertToListValue);
     }
 
     if (request.ranges) {
-      keySet.ranges = arrify(request.ranges).map(range => {
-        const encodedRange: s.KeyRange = {};
+      keySet.ranges = arrify(request.ranges).map((range: KeyRange) => {
+        const encodedRange: KeyRange = {};
 
         Object.keys(range).forEach(bound => {
           encodedRange[bound] = codec.convertToListValue(range[bound]);
@@ -887,9 +880,9 @@ export class Snapshot extends EventEmitter {
    * @param {TimestampBounds} options The user supplied options.
    * @returns {object}
    */
-  static encodeTimestampBounds(options: TimestampBounds): s.ReadOnly {
+  static encodeTimestampBounds(options: TimestampBounds): spanner_client.spanner.v1.TransactionOptions.IReadOnly {
     const {returnReadTimestamp = true} = options;
-    const readOnly: s.ReadOnly = {};
+    const readOnly: spanner_client.spanner.v1.TransactionOptions.IReadOnly = {};
 
     if (is.date(options.minReadTimestamp)) {
       const timestamp = (options.minReadTimestamp as Date).getTime();
@@ -930,16 +923,16 @@ export class Snapshot extends EventEmitter {
    * @param {ExecuteSqlRequest} request The sql request.
    * @returns {object}
    */
-  static encodeParams(request: ExecuteSqlRequest) {
-    const typeMap: {[field: string]: string|Type} = request.types || {};
+  static encodeParams(request: ExecuteSqlRequest): EncodeParamsResponse {
+    const typeMap: TypeMap = request.types || {};
 
-    const params: p.IStruct = {};
-    const paramTypes: {[field: string]: s.Type} = {};
+    const params: spanner_client.protobuf.IStruct = {};
+    const paramTypes: ParamTypes = {};
 
     if (request.params) {
-      const fields = {};
+      const fields: Fields = {};
 
-      Object.keys(request.params).forEach(param => {
+      Object.keys(request.params).forEach((param: string) => {
         const value = request.params![param];
 
         if (!typeMap[param]) {
@@ -952,7 +945,7 @@ export class Snapshot extends EventEmitter {
     }
 
     if (!is.empty(typeMap)) {
-      Object.keys(typeMap).forEach(param => {
+      Object.keys(typeMap).forEach((param: string) => {
         const type = typeMap[param];
         paramTypes[param] = codec.createTypeObject(type);
       });
@@ -981,7 +974,7 @@ promisifyAll(Snapshot, {
 export class Dml extends Snapshot {
   protected _seqno = 1;
 
-  runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(query: string|ExecuteSqlRequest): Promise<[number]>;
   runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
   /**
    * @typedef {array} RunUpdateResponse
@@ -993,7 +986,7 @@ export class Dml extends Snapshot {
    * @param {number} rowCount Affected row count.
    */
   /**
-   * Execute a DML statements and get the affected row count.
+   * Execute DML statements and get the affected row count.
    *
    * @private
    *
@@ -1008,21 +1001,21 @@ export class Dml extends Snapshot {
    * @returns {Promise<RunUpdateResponse>}
    */
   runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
-      void|RunUpdatePromise {
-    if (is.string(query)) {
+      void|Promise<[number]> {
+    if (typeof query === 'string') {
       query = {sql: query} as ExecuteSqlRequest;
     }
 
     const seqno = this._seqno++;
-    const reqOpts = Object.assign({seqno}, query);
+    const reqOpts: ExecuteSqlRequest = Object.assign({seqno}, query);
 
     this.run(
         reqOpts,
-        (err: null|ServiceError, rows: Rows, stats: s.ResultSetStats) => {
+        (err: null|ServiceError, rows: Rows, stats: Stats) => {
           let rowCount = 0;
 
           if (stats && stats.rowCount) {
-            rowCount = Math.floor(stats[stats.rowCount]);
+            rowCount = Math.floor(stats[Number(stats.rowCount)]);
           }
 
           callback!(err, rowCount);
@@ -1080,8 +1073,8 @@ promisifyAll(Dml);
  */
 export class Transaction extends Dml {
   commitTimestamp?: Date;
-  commitTimestampProto?: p.ITimestamp;
-  private _queuedMutations: s.Mutation[];
+  commitTimestampProto?: spanner_client.protobuf.ITimestamp;
+  private _queuedMutations: spanner_client.spanner.v1.IMutation[];
 
   /**
    * Timestamp at which the transaction was committed. Will be populated once
@@ -1098,7 +1091,7 @@ export class Transaction extends Dml {
    * @type {?google.protobuf.Timestamp}
    */
   /**
-   * Execute a DML statements and get the affected row count.
+   * Execute DML statements and get the affected row count.
    *
    * @name Transaction#runUpdate
    *
@@ -1121,15 +1114,15 @@ export class Transaction extends Dml {
    *   }
    * });
    */
-  constructor(session: Session, options = {} as s.ReadWrite) {
+  constructor(session: Session, options = {} as spanner_client.spanner.v1.TransactionOptions.ReadWrite) {
     super(session);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
   }
 
-  commit(): CommitPromise;
-  commit(callback: s.CommitCallback): void;
+  commit(): Promise<[spanner_client.spanner.v1.CommitResponse]>;
+  commit(callback: spanner_client.spanner.v1.Spanner.CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1176,10 +1169,10 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: s.CommitCallback): void|CommitPromise {
-    const mutations = this._queuedMutations;
-    const session = this.session.formattedName_!;
-    const reqOpts: s.CommitRequest = {mutations, session};
+  commit(callback?: spanner_client.spanner.v1.Spanner.CommitCallback): void|Promise<[spanner_client.spanner.v1.CommitResponse]> {
+    const mutations: spanner_client.spanner.v1.IMutation[] = this._queuedMutations;
+    const session: string = this.session.formattedName_!;
+    const reqOpts: spanner_client.spanner.v1.ICommitRequest = {mutations, session};
 
     if (this.id) {
       reqOpts.transactionId = this.id;
@@ -1193,7 +1186,7 @@ export class Transaction extends Dml {
           method: 'commit',
           reqOpts,
         },
-        (err: null|Error, resp: s.CommitResponse) => {
+        (err: null|Error, resp: spanner_client.spanner.v1.CommitResponse) => {
           this.end();
 
           if (resp && resp.commitTimestamp) {
@@ -1250,8 +1243,8 @@ export class Transaction extends Dml {
    * ];
    */
   deleteRows(table: string, keys: Key[]): void {
-    const keySet: s.KeySet = {keys: arrify(keys).map(codec.convertToListValue)};
-    const mutation: s.Mutation = {delete: {table, keySet}};
+    const keySet: spanner_client.spanner.v1.IKeySet = {keys: arrify(keys).map(codec.convertToListValue)};
+    const mutation: spanner_client.spanner.v1.IMutation = {delete: {table, keySet}};
 
     this._queuedMutations.push(mutation);
   }
@@ -1314,7 +1307,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  insert(table: string, rows: object|object[]): void {
+  insert(table: string, rows: KeyVals): void {
     this._mutate('insert', table, rows);
   }
 
@@ -1350,7 +1343,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  replace(table: string, rows: object|object[]): void {
+  replace(table: string, rows: KeyVals): void {
     this._mutate('replace', table, rows);
   }
 
@@ -1382,15 +1375,15 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: s.RollbackCallback): void|Promise<void> {
+  rollback(callback?: spanner_client.spanner.v1.Spanner.RollbackCallback): void|Promise<void> {
     if (!this.id) {
       callback!(new Error('Transaction ID is unknown, nothing to rollback.'));
       return;
     }
 
-    const session = this.session.formattedName_!;
-    const transactionId = this.id;
-    const reqOpts: s.RollbackRequest = {session, transactionId};
+    const session: string = this.session.formattedName_!;
+    const transactionId: (string|Uint8Array) = this.id;
+    const reqOpts: spanner_client.spanner.v1.IRollbackRequest = {session, transactionId};
 
     this.request(
         {
@@ -1436,7 +1429,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  update(table: string, rows: object|object[]): void {
+  update(table: string, rows: KeyVals): void {
     this._mutate('update', table, rows);
   }
 
@@ -1472,7 +1465,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  upsert(table: string, rows: object|object[]): void {
+  upsert(table: string, rows: KeyVals): void {
     this._mutate('insertOrUpdate', table, rows);
   }
 
@@ -1487,14 +1480,14 @@ export class Transaction extends Dml {
    * @param {string} table Table to perform mutations in.
    * @param {object} rows Hash of key value pairs.
    */
-  private _mutate(method: string, table: string, keyVals: object|object[]):
+  private _mutate(method: string, table: string, keyVals: KeyVals):
       void {
-    const rows: object[] = arrify(keyVals);
-    const columns = Transaction.getUniqueKeys(rows);
+    const rows: KeyValObject[] = arrify(keyVals);
+    const columns: string[] = Transaction.getUniqueKeys(rows);
 
-    const values = rows.map((row, index) => {
-      const keys = Object.keys(row);
-      const missingColumns = columns.filter(column => !keys.includes(column));
+    const values: spanner_client.protobuf.IListValue[] = rows.map((row: KeyValObject, index: number) => {
+      const keys: string[] = Object.keys(row);
+      const missingColumns: string[] = columns.filter((column: string) => !keys.includes(column));
 
       if (missingColumns.length > 0) {
         throw new Error([
@@ -1504,11 +1497,11 @@ export class Transaction extends Dml {
         ].join('\n\n'));
       }
 
-      const values = columns.map(column => row[column]);
+      const values: KeyValObject = columns.map(column => row[column]);
       return codec.convertToListValue(values);
     });
 
-    const mutation: s.Mutation = {
+    const mutation: spanner_client.spanner.v1.IMutation = {
       [method]: {table, columns, values},
     };
 
@@ -1523,10 +1516,10 @@ export class Transaction extends Dml {
    * @param {object[]} rows The rows.
    * @returns {string[]}
    */
-  static getUniqueKeys(rows: object[]): string[] {
+  static getUniqueKeys(rows: KeyValObject): string[] {
     const allKeys: string[] = [];
     rows.forEach(row => allKeys.push(...Object.keys(row)));
-    const unique = new Set(allKeys);
+    const unique: Set<string> = new Set(allKeys);
     return Array.from(unique).sort();
   }
 }
@@ -1561,15 +1554,15 @@ promisifyAll(Transaction, {
  * @see Database#runPartitionedUpdate
  */
 export class PartitionedDml extends Dml {
-  constructor(session: Session, options = {} as s.PartitionedDml) {
+  constructor(session: Session, options = {} as spanner_client.spanner.v1.TransactionOptions.PartitionedDml) {
     super(session);
     this._options = {partitionedDml: options};
   }
 
-  runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(query: string|ExecuteSqlRequest): Promise<[number]>;
   runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
   /**
-   * Execute a DML statements and get the affected row count. Unlike
+   * Execute DML statements and get the affected row count. Unlike
    * {@link Transaction#runUpdate} after using this method you should
    * immediately discard this transaction, internally it will invoke
    * {@link PartitionedDml#end}.
@@ -1592,8 +1585,8 @@ export class PartitionedDml extends Dml {
    * });
    */
   runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
-      void|RunUpdatePromise {
-    super.runUpdate(query, (err, count) => {
+      void|Promise<[number]> {
+    super.runUpdate(query, (err: null|ServiceError, count: number) => {
       this.end();
       callback!(err, count);
     });
