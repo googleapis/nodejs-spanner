@@ -49,14 +49,14 @@
     "proto:spanner": "mkdir -p proto && pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/v1/spanner.proto | pbts -o proto/spanner.d.ts -",
     "proto:spanner_instance_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/instance/v1/spanner_instance_admin.proto | pbts -o proto/spanner_instance_admin.d.ts -",
     "proto:spanner_database_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/database/v1/spanner_database_admin.proto | pbts -o proto/spanner_database_admin.d.ts -",
-    "docs-test": "blcl docs -r --exclude www.googleapis.com",
+    "docs-test": "linkinator docs -r --skip www.googleapis.com",
     "predocs-test": "npm run docs"
   },
   "dependencies": {
     "@google-cloud/common-grpc": "^0.10.0",
     "@google-cloud/paginator": "^0.1.0",
     "@google-cloud/projectify": "^0.3.0",
-    "@google-cloud/promisify": "^0.3.0",
+    "@google-cloud/promisify": "^0.4.0",
     "arrify": "^1.0.1",
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
@@ -118,6 +118,6 @@
     "typescript": "~3.3.0",
     "uuid": "^3.3.2",
     "yargs": "^13.0.0",
-    "broken-link-checker-local": "^0.2.0"
+    "linkinator": "^1.1.2"
   }
 }
