@@ -40,6 +40,8 @@ const gapic = Object.freeze({
   v1: require('./v1'),
 });
 
+const gcpApiConfig = require('./spanner_grpc_config.json');
+
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
  */
@@ -205,6 +207,9 @@ class Spanner extends Service {
           scopes,
         },
         options || {});
+
+    // Enable grpc-gcp support
+    options = Object.assign({'grpc_gcp.apiConfig': gcpApiConfig}, options);
 
     const config = {
       baseUrl: options.servicePath || gapic.v1.SpannerClient.servicePath,
