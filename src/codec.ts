@@ -54,7 +54,24 @@ export class SpannerDate {
     if (is.undefined(value)) {
       value = new Date();
     }
-    this.value = new Date(value!).toJSON().replace(/T.+/, '');
+    
+    value = new Date(value!);
+    const year = value.getFullYear();
+    // Since Months start at 0, we need to add 1 when retrieving it
+    let month = (value.getMonth() + 1).toString();
+    let date = value.getDate().toString();
+
+    // Appending `0` to the beginning
+    // Not using padStart() as it is not supported in Node 6.x
+    if (month.length === 1) {
+      month = `0${month}`;
+    }
+    
+    if (date.length === 1) {
+      date = `0${date}`;
+    }
+
+    this.value = `${year}-${month}-${date}`
   }
 }
 
