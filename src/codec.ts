@@ -45,6 +45,8 @@ export interface JSONOptions {
 export class SpannerDate {
   value: string;
   constructor(value?: string|number|Date) {
+    let dateObject: Date;
+
     if (arguments.length > 1) {
       throw new TypeError([
         'The spanner.date function accepts a Date object or a',
@@ -54,24 +56,32 @@ export class SpannerDate {
     if (is.undefined(value)) {
       value = new Date();
     }
-    
-    value = new Date(value!);
-    const year = value.getFullYear();
+
+    // if value is instance of Date and the getDate() returns a number
+    // then it is already a Date object. So no nned to use Date constructor.
+    // If it is an invalid Date, then getDate() returns NaN.
+    if (value instanceof Date && value.getDate()) {
+      dateObject = value;
+    } else {
+      dateObject = new Date(value!);
+    }
+
+    const year = dateObject.getFullYear();
     // Since Months start at 0, we need to add 1 when retrieving it
-    let month = (value.getMonth() + 1).toString();
-    let date = value.getDate().toString();
+    let month = (dateObject.getMonth() + 1).toString();
+    let date = dateObject.getDate().toString();
 
     // Appending `0` to the beginning
     // Not using padStart() as it is not supported in Node 6.x
     if (month.length === 1) {
       month = `0${month}`;
     }
-    
+
     if (date.length === 1) {
       date = `0${date}`;
     }
 
-    this.value = `${year}-${month}-${date}`
+    this.value = `${year}-${month}-${date}`;
   }
 }
 

@@ -59,9 +59,27 @@ describe('codec', () => {
     });
 
     it('should create an instance from a Date object', () => {
-      const date = new Date();
-      const spannerDate = new codec.SpannerDate(date);
-      assert.strictEqual(spannerDate.value, date.toJSON().replace(/T.+/, ''));
+      const dateObject = new Date();
+      const spannerDate = new codec.SpannerDate(dateObject);
+
+      const year = dateObject.getFullYear();
+      // Since Months start at 0, we need to add 1 when retrieving it
+      let month = (dateObject.getMonth() + 1).toString();
+      let date = dateObject.getDate().toString();
+  
+      // Appending `0` to the beginning
+      // Not using padStart() as it is not supported in Node 6.x
+      if (month.length === 1) {
+        month = `0${month}`;
+      }
+  
+      if (date.length === 1) {
+        date = `0${date}`;
+      }
+  
+      let value = `${year}-${month}-${date}`;
+
+      assert.strictEqual(spannerDate.value, value);
     });
   });
 
