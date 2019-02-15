@@ -54,7 +54,14 @@ export class SpannerDate {
     if (is.undefined(value)) {
       value = new Date();
     }
-    this.value = new Date(value!).toJSON().replace(/T.+/, '');
+
+    value = new Date(value!);
+    const year = value.getFullYear();
+    // Since Months start at 0, we need to add 1 when retrieving it.
+    const month = (value.getMonth() + 1).toString().padStart(2, '0');
+    const date = value.getDate().toString().padStart(2, '0');
+
+    this.value = `${year}-${month}-${date}`
   }
 }
 
