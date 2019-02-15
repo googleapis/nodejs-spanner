@@ -121,7 +121,9 @@ class InstanceAdminClient {
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
     this._pathTemplates = {
-      projectPathTemplate: new gax.PathTemplate('projects/{project}'),
+      projectPathTemplate: new gax.PathTemplate(
+        'projects/{project}'
+      ),
       instanceConfigPathTemplate: new gax.PathTemplate(
         'projects/{project}/instanceConfigs/{instance_config}'
       ),
@@ -147,15 +149,10 @@ class InstanceAdminClient {
     };
     let protoFilesRoot = new gax.GoogleProtoFilesRoot();
     protoFilesRoot = protobuf.loadSync(
-      path.join(
-        __dirname,
-        '..',
-        '..',
-        'protos',
-        'google/spanner/admin/instance/v1/spanner_instance_admin.proto'
-      ),
+      path.join(__dirname, '..', '..', 'protos', 'google/spanner/admin/instance/v1/spanner_instance_admin.proto'),
       protoFilesRoot
     );
+
 
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
@@ -239,8 +236,7 @@ class InstanceAdminClient {
             }
         ),
         defaults[methodName],
-        this._descriptors.page[methodName] ||
-          this._descriptors.longrunning[methodName]
+        this._descriptors.page[methodName] || this._descriptors.longrunning[methodName]
       );
     }
   }
@@ -434,7 +430,7 @@ class InstanceAdminClient {
       request,
       options
     );
-  }
+  };
 
   /**
    * Gets information about a particular instance configuration.
@@ -672,7 +668,7 @@ class InstanceAdminClient {
       request,
       options
     );
-  }
+  };
 
   /**
    * Gets information about a particular instance.
@@ -1283,7 +1279,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromProjectName(projectName) {
-    return this._pathTemplates.projectPathTemplate.match(projectName).project;
+    return this._pathTemplates.projectPathTemplate
+      .match(projectName)
+      .project;
   }
 
   /**
@@ -1294,9 +1292,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromInstanceConfigName(instanceConfigName) {
-    return this._pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
-    ).project;
+    return this._pathTemplates.instanceConfigPathTemplate
+      .match(instanceConfigName)
+      .project;
   }
 
   /**
@@ -1307,9 +1305,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the instance_config.
    */
   matchInstanceConfigFromInstanceConfigName(instanceConfigName) {
-    return this._pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
-    ).instance_config;
+    return this._pathTemplates.instanceConfigPathTemplate
+      .match(instanceConfigName)
+      .instance_config;
   }
 
   /**
@@ -1320,7 +1318,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
+    return this._pathTemplates.instancePathTemplate
+      .match(instanceName)
+      .project;
   }
 
   /**
@@ -1331,9 +1331,11 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName)
+    return this._pathTemplates.instancePathTemplate
+      .match(instanceName)
       .instance;
   }
 }
+
 
 module.exports = InstanceAdminClient;
