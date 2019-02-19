@@ -252,7 +252,7 @@ describe('Spanner', () => {
 
   describe('date', () => {
     it('should create a SpannerDate instance', () => {
-      const value = {};
+      const value = '1999-1-1';
       const customValue = {};
 
       fakeCodec.SpannerDate = class {

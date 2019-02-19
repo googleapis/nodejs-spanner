@@ -43,44 +43,61 @@ describe('codec', () => {
   afterEach(() => sandbox.restore());
 
   describe('SpannerDate', () => {
-    const EXPECTED = '1985-06-03T00:00:00.000Z';
-
     describe('instantiation', () => {
-      it('should passthrough/truncate the date value', () => {
-        const actual = new codec.SpannerDate('6-3-1985');
-        assert.strictEqual(actual.toISOString(), EXPECTED);
+      it('should accept date strings', () => {
+        const date = new codec.SpannerDate('3-22-1986');
+        const json = date.toJSON();
+
+        assert.strictEqual(json, '1986-03-22');
       });
 
-      it('should default/truncate the current time', () => {
-        const date = new Date('1985-06-03T22:37:14.312Z');
-        const now = date.getTime();
-        sandbox.stub(global.Date, 'now').returns(now);
+      it('should interpret ISO date strings as local time', () => {
+        const date = new codec.SpannerDate('1986-03-22');
+        const json = date.toJSON();
 
-        const actual = new codec.SpannerDate();
-        assert.strictEqual(actual.toISOString(), EXPECTED);
+        assert.strictEqual(json, '1986-03-22');
+      });
+
+      it('should accept y/m/d number values', () => {
+        const date = new codec.SpannerDate(1986, 2, 22);
+        const json = date.toJSON();
+
+        assert.strictEqual(json, '1986-03-22');
+      });
+
+      it('should truncate additional date fields', () => {
+        const truncated = new codec.SpannerDate(1986, 2, 22, 4, 8, 10);
+        const expected = new codec.SpannerDate(1986, 2, 22);
+
+        assert.deepStrictEqual(truncated, expected);
       });
     });
 
     describe('toJSON', () => {
-      it('should return the spanner date string', () => {
-        const date = new codec.SpannerDate();
-        const fakeStr = 'abcd';
+      let date: Date;
 
-        sandbox.stub(codec.SpannerDate, 'getDateString')
-            .withArgs(date)
-            .returns(fakeStr);
-
-        const str = date.toJSON();
-        assert.strictEqual(str, fakeStr);
+      beforeEach(() => {
+        date = new codec.SpannerDate();
+        sandbox.stub(date, 'getFullYear').returns(1999);
+        sandbox.stub(date, 'getMonth').returns(11);
+        sandbox.stub(date, 'getDate').returns(31);
       });
-    });
 
-    describe('getDateString', () => {
-      it('should format the date', () => {
-        const date = new Date();
-        const expected = date.toISOString().replace(/T.+/, '');
-        const actual = codec.SpannerDate.getDateString(date);
-        assert.strictEqual(actual, expected);
+      it('should return the spanner date string', () => {
+        const json = date.toJSON();
+        assert.strictEqual(json, '1999-12-31');
+      });
+
+      it('should pad single digit months', () => {
+        (date.getMonth as sinon.SinonStub).returns(8);
+        const json = date.toJSON();
+        assert.strictEqual(json, '1999-09-31');
+      });
+
+      it('should pad single digit dates', () => {
+        (date.getDate as sinon.SinonStub).returns(3);
+        const json = date.toJSON();
+        assert.strictEqual(json, '1999-12-03');
       });
     });
   });
@@ -390,7 +407,7 @@ describe('codec', () => {
 
     it('should decode DATE', () => {
       const value = new Date();
-      const expected = new codec.SpannerDate(value.getTime());
+      const expected = new codec.SpannerDate(value.toISOString());
       const decoded = codec.decode(value.toJSON(), {
         code: s.TypeCode.DATE,
       });

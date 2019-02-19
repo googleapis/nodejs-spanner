@@ -767,18 +767,32 @@ class Spanner extends Service {
     return stream;
   }
 
+  static date(dateString?: string);
+  static date(year: number, month: number, date: number);
   /**
    * Helper function to get a Cloud Spanner Date object.
    *
-   * @param {string|date} value The date as a string or Date object.
+   * DATE types represent a logical calendar date, independent of time zone.
+   * DATE values do not represent a specific 24-hour period. Rather, a given
+   * DATE value represents a different 24-hour period when interpreted in a
+   * different time zone. Because of this, all values passed to
+   * {@link Spanner.date} will be interpreted as local time.
+   *
+   * To represent an absolute point in time, use {@link Spanner.timestamp}.
+   *
+   * @param {string|number} [date] String representing the date or number
+   *     representing the year.
+   * @param {number} [month] Number representing the month.
+   * @param {number} [date] Number representing the date.
    * @returns {SpannerDate}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
    */
-  static date(value?) {
-    return new codec.SpannerDate(value);
+  // tslint:disable-next-line no-any
+  static date(...dateFields: any[]) {
+    return new codec.SpannerDate(...dateFields);
   }
 
   /**

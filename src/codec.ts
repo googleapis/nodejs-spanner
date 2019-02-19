@@ -39,8 +39,18 @@ export interface JSONOptions {
   wrapStructs?: boolean;
 }
 
+// https://github.com/Microsoft/TypeScript/issues/27920
+type DateFields = [number, number, number];
+
 /**
- * Date-like object used to represent Cloud Spanner Dates.
+ * Date-like object used to represent Cloud Spanner Dates. DATE types represent
+ * a logical calendar date, independent of time zone. DATE values do not
+ * represent a specific 24-hour period. Rather, a given DATE value represents a
+ * different 24-hour period when interpreted in a different time zone. Because
+ * of this, all values passed to {@link Spanner.date} will be interpreted as
+ * local time.
+ *
+ * To represent an absolute point in time, use {@link Spanner.timestamp}.
  *
  * @see Spanner.date
  * @see https://cloud.google.com/spanner/docs/data-types#date-type
@@ -48,38 +58,52 @@ export interface JSONOptions {
  * @class
  * @extends Date
  *
- * @param {string|number} [date] String or number representing the date.
+ * @param {string|number} [date] String representing the date or number
+ *     representing the year.
+ * @param {number} [month] Number representing the month.
+ * @param {number} [date] Number representing the date.
  *
  * @example
  * Spanner.date('3-3-1933');
  */
 export class SpannerDate extends Date {
-  constructor(value?: string|number) {
-    const date = new Date(value || Date.now());
-    const dateStr = SpannerDate.getDateString(date);
+  constructor(dateString?: string);
+  constructor(year: number, month: number, date: number);
+  constructor(...dateFields: Array<string|number|undefined>) {
+    const yearOrDateString = dateFields[0];
 
-    super(dateStr);
+    // JavaScript Date objects will interpret ISO strings as Zulu time,
+    // but by formatting it, we can infer local time.
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(yearOrDateString as string)) {
+      const [year, month, date] = (yearOrDateString as string).split(/-|T/);
+      dateFields = [`${month}-${date}-${year}`];
+    }
+
+    super(...dateFields.slice(0, 3) as DateFields);
   }
   /**
-   * Returns the date in Cloud Spanner date format.
+   * Returns the date in ISO date format.
    * `YYYY-[M]M-[D]D`
    *
    * @returns {string}
    */
-  toJSON() {
-    return SpannerDate.getDateString(this);
-  }
-  /**
-   * Formats an ISO string into a Cloud Spanner Date string.
-   *
-   * @private
-   *
-   * @param {Date} date The date to extract the `YYYY-[M]M-[D]D` value from.
-   */
-  static getDateString(date: Date): string {
-    return date.toISOString().replace(/T.+/, '');
+  toJSON(): string {
+    const year = this.getFullYear();
+    let month = (this.getMonth() + 1).toString();
+    let date = this.getDate().toString();
+
+    if (month.length === 1) {
+      month = `0${month}`;
+    }
+
+    if (date.length === 1) {
+      date = `0${date}`;
+    }
+
+    return `${year}-${month}-${date}`;
   }
 }
+
 
 /**
  * Using an abstract class to simplify checking for wrapped numbers.
