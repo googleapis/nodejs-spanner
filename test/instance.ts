@@ -73,13 +73,13 @@ describe('Instance', () => {
 
   before(() => {
     Instance = proxyquire('../src/instance.js', {
-                 '@google-cloud/common-grpc': {
-                   ServiceObject: FakeGrpcServiceObject,
-                 },
-                 '@google-cloud/promisify': fakePfy,
-                 '@google-cloud/paginator': fakePaginator,
-                 './database.js': {Database: FakeDatabase},
-               }).Instance;
+      '@google-cloud/common-grpc': {
+        ServiceObject: FakeGrpcServiceObject,
+      },
+      '@google-cloud/promisify': fakePfy,
+      '@google-cloud/paginator': fakePaginator,
+      './database.js': {Database: FakeDatabase},
+    }).Instance;
   });
 
   beforeEach(() => {
@@ -142,7 +142,7 @@ describe('Instance', () => {
         createInstance(name, options_, callback) {
           assert.strictEqual(name, instance.formattedName_);
           assert.strictEqual(options_, options);
-          callback();  // done()
+          callback(); // done()
         },
       });
 
@@ -188,7 +188,7 @@ describe('Instance', () => {
     });
 
     it('should make the correct default request', done => {
-      instance.request = (config) => {
+      instance.request = config => {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'createDatabase');
         assert.deepStrictEqual(config.reqOpts, {
@@ -203,15 +203,16 @@ describe('Instance', () => {
     });
 
     it('should accept options', done => {
-      instance.request = (config) => {
+      instance.request = config => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         const expectedReqOpts = extend(
-            {
-              parent: instance.formattedName_,
-              createStatement: 'CREATE DATABASE `' + NAME + '`',
-            },
-            OPTIONS);
+          {
+            parent: instance.formattedName_,
+            createStatement: 'CREATE DATABASE `' + NAME + '`',
+          },
+          OPTIONS
+        );
 
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
 
@@ -222,13 +223,14 @@ describe('Instance', () => {
     });
 
     it('should only use the name in the createStatement', done => {
-      instance.request = (config) => {
+      instance.request = config => {
         const expectedReqOpts = extend(
-            {
-              parent: instance.formattedName_,
-              createStatement: 'CREATE DATABASE `' + NAME + '`',
-            },
-            OPTIONS);
+          {
+            parent: instance.formattedName_,
+            createStatement: 'CREATE DATABASE `' + NAME + '`',
+          },
+          OPTIONS
+        );
 
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
 
@@ -268,7 +270,7 @@ describe('Instance', () => {
           schema: SCHEMA,
         });
 
-        instance.request = (config) => {
+        instance.request = config => {
           assert.deepStrictEqual(config.reqOpts.extraStatements, [SCHEMA]);
           assert.strictEqual(config.reqOpts.schema, undefined);
           done();
@@ -311,7 +313,7 @@ describe('Instance', () => {
       it('should exec callback with a Database and Operation', done => {
         const fakeDatabaseInstance = {};
 
-        instance.database = (name) => {
+        instance.database = name => {
           assert.strictEqual(name, NAME);
           return fakeDatabaseInstance;
         };
@@ -408,7 +410,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
         });
-        callback();  // done()
+        callback(); // done()
       };
 
       instance.delete(done);
@@ -436,7 +438,7 @@ describe('Instance', () => {
     it('should return any non-404 like errors', done => {
       const error = {code: 3};
 
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(error);
       };
 
@@ -448,7 +450,7 @@ describe('Instance', () => {
     });
 
     it('should return true if error is absent', done => {
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(null);
       };
 
@@ -462,7 +464,7 @@ describe('Instance', () => {
     it('should return false if not found error if present', done => {
       const error = {code: 5};
 
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(error);
       };
 
@@ -512,7 +514,7 @@ describe('Instance', () => {
       beforeEach(() => {
         OPERATION.listeners = {};
 
-        instance.getMetadata = (callback) => {
+        instance.getMetadata = callback => {
           callback(error);
         };
 
@@ -522,7 +524,7 @@ describe('Instance', () => {
       });
 
       it('should call create', done => {
-        instance.create = (options) => {
+        instance.create = options => {
           assert.strictEqual(options, OPTIONS);
           done();
         };
@@ -582,7 +584,7 @@ describe('Instance', () => {
         autoCreate: true,
       };
 
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(error);
       };
 
@@ -600,7 +602,7 @@ describe('Instance', () => {
       const error = new ApiError('Error.');
       error.code = 5;
 
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(error);
       };
 
@@ -617,7 +619,7 @@ describe('Instance', () => {
     it('should return an error from getMetadata', done => {
       const error = new Error('Error.');
 
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(error);
       };
 
@@ -630,7 +632,7 @@ describe('Instance', () => {
     it('should return self and API response', done => {
       const apiResponse = {};
 
-      instance.getMetadata = (callback) => {
+      instance.getMetadata = callback => {
         callback(null, apiResponse);
       };
 
@@ -654,7 +656,7 @@ describe('Instance', () => {
         parent: instance.formattedName_,
       });
 
-      instance.request = (config) => {
+      instance.request = config => {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'listDatabases');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
@@ -671,7 +673,7 @@ describe('Instance', () => {
     });
 
     it('should not require a query', done => {
-      instance.request = (config) => {
+      instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
         });
@@ -720,7 +722,7 @@ describe('Instance', () => {
       it('should create and return Database objects', done => {
         const fakeDatabaseInstance = {};
 
-        instance.database = (name) => {
+        instance.database = name => {
           assert.strictEqual(name, DATABASES[0].name);
           return fakeDatabaseInstance;
         };

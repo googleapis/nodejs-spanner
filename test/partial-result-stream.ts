@@ -43,22 +43,22 @@ describe('PartialResultStream', () => {
   const RESULT = {
     metadata: {
       rowType: {
-        fields: [{
-          name: NAME,
-          type: {code: 'STRING'},
-        }],
+        fields: [
+          {
+            name: NAME,
+            type: {code: 'STRING'},
+          },
+        ],
       },
     },
     stats: STATS,
-    values: [
-      convertToIValue(VALUE),
-    ],
+    values: [convertToIValue(VALUE)],
   };
 
   before(() => {
     const prsExports = proxyquire('../src/partial-result-stream.js', {
       'checkpoint-stream': checkpointStream,
-      'stream': {Transform},
+      stream: {Transform},
       './codec': {codec},
     });
 
@@ -69,8 +69,8 @@ describe('PartialResultStream', () => {
   afterEach(() => sandbox.restore());
 
   describe('acceptance tests', () => {
-    const TESTS =
-        require('../../test/data/streaming-read-acceptance-test.json').tests;
+    const TESTS = require('../../test/data/streaming-read-acceptance-test.json')
+      .tests;
 
     beforeEach(() => {
       sandbox.stub(codec, 'decode').callsFake(value => value);
@@ -82,15 +82,15 @@ describe('PartialResultStream', () => {
         const values: any[] = [];
         const stream = new PartialResultStream();
 
-        stream.on('error', done)
-            .on('data',
-                row => {
-                  values.push(row.map(({value}) => value));
-                })
-            .on('end', () => {
-              assert.deepStrictEqual(values, test.result.value);
-              done();
-            });
+        stream
+          .on('error', done)
+          .on('data', row => {
+            values.push(row.map(({value}) => value));
+          })
+          .on('end', () => {
+            assert.deepStrictEqual(values, test.result.value);
+            done();
+          });
 
         test.chunks.forEach(chunk => {
           const parsed = JSON.parse(chunk);
@@ -141,12 +141,13 @@ describe('PartialResultStream', () => {
         done(new Error('Should not be called.'));
       };
 
-      stream.on('error', done)
-          .on('data', shouldNotBeCalled)
-          .on('response', response => {
-            assert.strictEqual(response, fakeResponse);
-            done();
-          });
+      stream
+        .on('error', done)
+        .on('data', shouldNotBeCalled)
+        .on('response', response => {
+          assert.strictEqual(response, fakeResponse);
+          done();
+        });
 
       stream.write(fakeResponse);
     });
@@ -213,11 +214,14 @@ describe('PartialResultStream', () => {
 
     it('should only push rows when there is a token', done => {
       const expectedRow = sinon.match(EXPECTED_ROW);
-      const stub = sandbox.stub().withArgs(expectedRow).callsFake(() => {
-        if (stub.callCount === 3) {
-          done();
-        }
-      });
+      const stub = sandbox
+        .stub()
+        .withArgs(expectedRow)
+        .callsFake(() => {
+          if (stub.callCount === 3) {
+            done();
+          }
+        });
 
       function assertDoesNotEmit() {
         done(new Error('Should not be called.'));
@@ -240,10 +244,12 @@ describe('PartialResultStream', () => {
 
       fakeRequestStream.push(null);
 
-      stream.on('error', done).pipe(concat(rows => {
-        assert.strictEqual(rows.length, 11);
-        done();
-      }));
+      stream.on('error', done).pipe(
+        concat(rows => {
+          assert.strictEqual(rows.length, 11);
+          done();
+        })
+      );
     });
 
     it('should resume if there was an error', done => {
@@ -254,7 +260,7 @@ describe('PartialResultStream', () => {
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
       // tslint:disable-next-line no-any
-      const resetStub = (fakeCheckpointStream as any).reset = () => {};
+      const resetStub = ((fakeCheckpointStream as any).reset = () => {});
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();
@@ -294,10 +300,14 @@ describe('PartialResultStream', () => {
         return secondFakeRequestStream;
       });
 
-      partialResultStream(requestFnStub).on('error', done).pipe(concat(rows => {
-        assert.strictEqual(rows.length, 4);
-        done();
-      }));
+      partialResultStream(requestFnStub)
+        .on('error', done)
+        .pipe(
+          concat(rows => {
+            assert.strictEqual(rows.length, 4);
+            done();
+          })
+        );
     });
 
     it('should emit rows and error when there is no token', done => {

@@ -44,12 +44,14 @@ export interface JSONOptions {
  */
 export class SpannerDate {
   value: string;
-  constructor(value?: string|number|Date) {
+  constructor(value?: string | number | Date) {
     if (arguments.length > 1) {
-      throw new TypeError([
-        'The spanner.date function accepts a Date object or a',
-        'single argument parseable by Date\'s constructor.',
-      ].join(' '));
+      throw new TypeError(
+        [
+          'The spanner.date function accepts a Date object or a',
+          "single argument parseable by Date's constructor.",
+        ].join(' ')
+      );
     }
     if (is.undefined(value)) {
       value = new Date();
@@ -64,7 +66,7 @@ export class SpannerDate {
  * @private
  */
 abstract class WrappedNumber {
-  value!: string|number;
+  value!: string | number;
   abstract valueOf(): number;
 }
 
@@ -245,7 +247,7 @@ function decode(value: Value, type: s.Type): Value {
     case s.TypeCode.INT64:
       decoded = new Int(decoded);
       break;
-    case s.TypeCode.TIMESTAMP:  // falls through
+    case s.TypeCode.TIMESTAMP: // falls through
     case s.TypeCode.DATE:
       decoded = new Date(decoded);
       break;
@@ -334,7 +336,7 @@ enum TypeCode {
   string = s.TypeCode.STRING,
   bytes = s.TypeCode.BYTES,
   array = s.TypeCode.ARRAY,
-  struct = s.TypeCode.STRUCT
+  struct = s.TypeCode.STRUCT,
 }
 
 /**
@@ -387,8 +389,8 @@ interface FieldType extends Type {
  * // {type: 'float64'}
  */
 function getType(value: Value): Type {
-  const isSpecialNumber = is.infinite(value) ||
-      (is.number(value) && isNaN(value));
+  const isSpecialNumber =
+    is.infinite(value) || (is.number(value) && isNaN(value));
 
   if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
     return {type: 'float64'};
@@ -483,8 +485,10 @@ function convertMsToProtoTimestamp(ms: number): p.ITimestamp {
  * @param {object} timestamp The protobuf timestamp.
  * @returns {Date}
  */
-function convertProtoTimestampToDate({nanos = 0, seconds = 0}: p.ITimestamp):
-    Date {
+function convertProtoTimestampToDate({
+  nanos = 0,
+  seconds = 0,
+}: p.ITimestamp): Date {
   const ms = Math.floor(nanos) / 1e6;
   const s = Math.floor(seconds as number);
   return new Date(s * 1000 + ms);
@@ -498,7 +502,7 @@ function convertProtoTimestampToDate({nanos = 0, seconds = 0}: p.ITimestamp):
  * @param {object|string} [config='unspecified'] Type config.
  * @return {object}
  */
-function createTypeObject(friendlyType?: string|Type): s.Type {
+function createTypeObject(friendlyType?: string | Type): s.Type {
   if (!friendlyType) {
     friendlyType = 'unspecified';
   }
@@ -507,7 +511,7 @@ function createTypeObject(friendlyType?: string|Type): s.Type {
     friendlyType = {type: friendlyType} as Type;
   }
 
-  const config: Type = (friendlyType as Type);
+  const config: Type = friendlyType as Type;
   const code: s.TypeCode = TypeCode[config.type] || TypeCode.unspecified;
   const type: s.Type = {code};
 
@@ -519,7 +523,7 @@ function createTypeObject(friendlyType?: string|Type): s.Type {
     type.structType = {
       fields: arrify(config.fields).map(field => {
         return {name: field.name, type: codec.createTypeObject(field)};
-      })
+      }),
     };
   }
 
@@ -538,5 +542,5 @@ export const codec = {
   decode,
   encode,
   getType,
-  Struct
+  Struct,
 };

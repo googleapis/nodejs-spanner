@@ -30,8 +30,8 @@ describe('codec', () => {
 
   before(() => {
     codec = proxyquire('../src/codec.js', {
-              '@google-cloud/common-grpc': {Service},
-            }).codec;
+      '@google-cloud/common-grpc': {Service},
+    }).codec;
   });
 
   beforeEach(() => {
@@ -45,7 +45,7 @@ describe('codec', () => {
     it('should choke on multiple arguments', () => {
       const expectedErrorMessage = [
         'The spanner.date function accepts a Date object or a',
-        'single argument parseable by Date\'s constructor.',
+        "single argument parseable by Date's constructor.",
       ].join(' ');
 
       assert.throws(() => {
@@ -115,9 +115,10 @@ describe('codec', () => {
         const options = {};
         const fakeJson = {};
 
-        const stub = sandbox.stub(codec, 'convertFieldsToJson')
-                         .withArgs(struct, options)
-                         .returns(fakeJson);
+        const stub = sandbox
+          .stub(codec, 'convertFieldsToJson')
+          .withArgs(struct, options)
+          .returns(fakeJson);
 
         assert.strictEqual(struct.toJSON(options), fakeJson);
       });
@@ -188,9 +189,7 @@ describe('codec', () => {
         const struct = new codec.Struct();
         const stub = sandbox.stub(struct, 'toJSON').returns(fakeStructJson);
 
-        const row = [
-          {name: 'Struct', value: struct},
-        ];
+        const row = [{name: 'Struct', value: struct}];
 
         const json = codec.convertFieldsToJson(row, options);
 
@@ -204,9 +203,7 @@ describe('codec', () => {
         const expectedStruct = codec.Struct.fromJSON({Number: value});
         const struct = codec.Struct.fromJSON({Number: new codec.Float(value)});
 
-        const row = [
-          {name: 'Struct', value: struct},
-        ];
+        const row = [{name: 'Struct', value: struct}];
 
         const json = codec.convertFieldsToJson(row, {wrapStructs: true});
         assert.deepStrictEqual(json.Struct, expectedStruct);
@@ -426,8 +423,8 @@ describe('codec', () => {
       const defaultEncodedValue = {};
 
       (Service.encodeValue_ as sinon.SinonStub)
-          .withArgs(value)
-          .returns(defaultEncodedValue);
+        .withArgs(value)
+        .returns(defaultEncodedValue);
 
       const encoded = codec.encode(value);
       assert.strictEqual(encoded, defaultEncodedValue);
@@ -483,7 +480,7 @@ describe('codec', () => {
       const encoded = codec.encode(value);
 
       assert.deepStrictEqual(encoded, [
-        value.toString(),  // (tests that it is stringified)
+        value.toString(), // (tests that it is stringified)
       ]);
     });
 
@@ -530,8 +527,9 @@ describe('codec', () => {
       assert.deepStrictEqual(codec.getType(Infinity), {type: 'float64'});
       assert.deepStrictEqual(codec.getType(-Infinity), {type: 'float64'});
       assert.deepStrictEqual(codec.getType(2.2), {type: 'float64'});
-      assert.deepStrictEqual(
-          codec.getType(new codec.Float(1.1)), {type: 'float64'});
+      assert.deepStrictEqual(codec.getType(new codec.Float(1.1)), {
+        type: 'float64',
+      });
     });
 
     it('should determine if the value is an int', () => {
@@ -544,8 +542,9 @@ describe('codec', () => {
     });
 
     it('should determine if the value is bytes', () => {
-      assert.deepStrictEqual(
-          codec.getType(Buffer.from('abc')), {type: 'bytes'});
+      assert.deepStrictEqual(codec.getType(Buffer.from('abc')), {
+        type: 'bytes',
+      });
     });
 
     it('should determine if the value is a timestamp', () => {
@@ -553,8 +552,9 @@ describe('codec', () => {
     });
 
     it('should determine if the value is a date', () => {
-      assert.deepStrictEqual(
-          codec.getType(new codec.SpannerDate()), {type: 'date'});
+      assert.deepStrictEqual(codec.getType(new codec.SpannerDate()), {
+        type: 'date',
+      });
     });
 
     it('should determine if the value is a struct', () => {
@@ -563,9 +563,7 @@ describe('codec', () => {
 
       assert.deepStrictEqual(type, {
         type: 'struct',
-        fields: [
-          {name: 'a', type: 'string'},
-        ]
+        fields: [{name: 'a', type: 'string'}],
       });
     });
 
@@ -574,7 +572,7 @@ describe('codec', () => {
         type: 'array',
         child: {
           type: 'float64',
-        }
+        },
       });
     });
 
@@ -585,7 +583,7 @@ describe('codec', () => {
         type: 'array',
         child: {
           type: 'unspecified',
-        }
+        },
       });
     });
   });
@@ -673,12 +671,12 @@ describe('codec', () => {
           code: s.TypeCode.ARRAY,
           arrayElementType: {
             code: s.TypeCode.TYPE_CODE_UNSPECIFIED,
-          }
+          },
         },
         struct: {
           code: s.TypeCode.STRUCT,
           structType: {fields: []},
-        }
+        },
       };
 
       Object.keys(typeMap).forEach(key => {

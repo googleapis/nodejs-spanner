@@ -201,17 +201,18 @@ class Spanner extends Service {
       }
     }
     options = extend(
-        {
-          libName: 'gccl',
-          libVersion: require('../../package.json').version,
-          scopes,
-        },
-        options || {});
+      {
+        libName: 'gccl',
+        libVersion: require('../../package.json').version,
+        scopes,
+      },
+      options || {}
+    );
 
     // Enable grpc-gcp support
     options = Object.assign({'grpc_gcp.apiConfig': gcpApiConfig}, options);
 
-    const config = {
+    const config = ({
       baseUrl: options.servicePath || gapic.v1.SpannerClient.servicePath,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
@@ -222,13 +223,12 @@ class Spanner extends Service {
       },
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       packageJson: require('../../package.json'),
-    } as {} as GrpcServiceConfig;
+    } as {}) as GrpcServiceConfig;
     super(config, options);
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
-
 
     /**
      * Get a list of {@link Instance} objects as a readable object stream.
@@ -347,9 +347,9 @@ class Spanner extends Service {
       throw new Error('A name is required to create an instance.');
     }
     if (!config) {
-      throw new Error([
-        'A configuration object is required to create an instance.'
-      ].join(''));
+      throw new Error(
+        ['A configuration object is required to create an instance.'].join('')
+      );
     }
     const formattedName = Instance.formatName_(this.projectId, name);
     const shortName = formattedName.split('/').pop();
@@ -357,34 +357,37 @@ class Spanner extends Service {
       parent: 'projects/' + this.projectId,
       instanceId: shortName,
       instance: extend(
-          {
-            name: formattedName,
-            displayName: shortName,
-          },
-          config),
+        {
+          name: formattedName,
+          displayName: shortName,
+        },
+        config
+      ),
     };
     if (is.defined(config.nodes)) {
       reqOpts.instance.nodeCount = config.nodes;
       delete reqOpts.instance.nodes;
     }
     if (config.config && config.config.indexOf('/') === -1) {
-      reqOpts.instance.config =
-          `projects/${this.projectId}/instanceConfigs/${config.config}`;
+      reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${
+        config.config
+      }`;
     }
     this.request(
-        {
-          client: 'InstanceAdminClient',
-          method: 'createInstance',
-          reqOpts,
-        },
-        (err, operation, resp) => {
-          if (err) {
-            callback(err, null, null, resp);
-            return;
-          }
-          const instance = this.instance(formattedName);
-          callback(null, instance, operation, resp);
-        });
+      {
+        client: 'InstanceAdminClient',
+        method: 'createInstance',
+        reqOpts,
+      },
+      (err, operation, resp) => {
+        if (err) {
+          callback(err, null, null, resp);
+          return;
+        }
+        const instance = this.instance(formattedName);
+        callback(null, instance, operation, resp);
+      }
+    );
   }
 
   /**
@@ -476,24 +479,25 @@ class Spanner extends Service {
       parent: 'projects/' + this.projectId,
     });
     this.request(
-        {
-          client: 'InstanceAdminClient',
-          method: 'listInstances',
-          reqOpts,
-          gaxOpts: query,
-        },
-        // tslint:disable-next-line only-arrow-functions
-        function(err, instances) {
-          if (instances) {
-            arguments[1] = instances.map(instance => {
-              const instanceInstance = self.instance(instance.name);
-              // tslint:disable-next-line no-any
-              (instanceInstance as any).metadata = instance;
-              return instanceInstance;
-            });
-          }
-          callback.apply(null, arguments);
-        });
+      {
+        client: 'InstanceAdminClient',
+        method: 'listInstances',
+        reqOpts,
+        gaxOpts: query,
+      },
+      // tslint:disable-next-line only-arrow-functions
+      function(err, instances) {
+        if (instances) {
+          arguments[1] = instances.map(instance => {
+            const instanceInstance = self.instance(instance.name);
+            // tslint:disable-next-line no-any
+            (instanceInstance as any).metadata = instance;
+            return instanceInstance;
+          });
+        }
+        callback.apply(null, arguments);
+      }
+    );
   }
 
   /**
@@ -578,13 +582,14 @@ class Spanner extends Service {
       parent: 'projects/' + this.projectId,
     });
     return this.request(
-        {
-          client: 'InstanceAdminClient',
-          method: 'listInstanceConfigs',
-          reqOpts,
-          gaxOpts: query,
-        },
-        callback);
+      {
+        client: 'InstanceAdminClient',
+        method: 'listInstanceConfigs',
+        reqOpts,
+        gaxOpts: query,
+      },
+      callback
+    );
   }
 
   /**
@@ -699,8 +704,11 @@ class Spanner extends Service {
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
       reqOpts = replaceProjectIdToken(reqOpts, projectId!);
-      const requestFn =
-          gaxClient[config.method].bind(gaxClient, reqOpts, config.gaxOpts);
+      const requestFn = gaxClient[config.method].bind(
+        gaxClient,
+        reqOpts,
+        config.gaxOpts
+      );
       callback(null, requestFn);
     });
   }
@@ -760,11 +768,10 @@ class Spanner extends Service {
           return;
         }
         requestFn()
-            .on('error',
-                err => {
-                  stream.destroy(err);
-                })
-            .pipe(stream);
+          .on('error', err => {
+            stream.destroy(err);
+          })
+          .pipe(stream);
       });
     });
     return stream;
@@ -838,7 +845,6 @@ class Spanner extends Service {
     return codec.Struct.fromJSON(value);
   }
 }
-
 
 /*! Developer Documentation
  *

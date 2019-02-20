@@ -48,7 +48,7 @@ const fakeCodec: any = {
   Int() {},
   Float() {},
   SpannerDate() {},
-  convertProtoTimestampToDate() {}
+  convertProtoTimestampToDate() {},
 };
 
 class FakeTransaction {
@@ -80,10 +80,10 @@ describe('BatchTransaction', () => {
 
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
-                         '@google-cloud/promisify': fakePfy,
-                         './codec.js': {codec: fakeCodec},
-                         './transaction.js': {Snapshot: FakeTransaction},
-                       }).BatchTransaction;
+      '@google-cloud/promisify': fakePfy,
+      './codec.js': {codec: fakeCodec},
+      './transaction.js': {Snapshot: FakeTransaction},
+    }).BatchTransaction;
   });
 
   beforeEach(() => {
@@ -105,8 +105,8 @@ describe('BatchTransaction', () => {
 
   describe('close', () => {
     it('should delete the session', done => {
-      SESSION.delete = (callback) => {
-        callback();  // the done fn
+      SESSION.delete = callback => {
+        callback(); // the done fn
       };
 
       batchTransaction.close(done);
@@ -131,9 +131,10 @@ describe('BatchTransaction', () => {
       const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-      sandbox.stub(FakeTransaction, 'encodeParams')
-          .withArgs(QUERY)
-          .returns(fakeParams);
+      sandbox
+        .stub(FakeTransaction, 'encodeParams')
+        .withArgs(QUERY)
+        .returns(fakeParams);
 
       batchTransaction.createQueryPartitions(QUERY, assert.ifError);
 
@@ -161,7 +162,7 @@ describe('BatchTransaction', () => {
     const CONFIG = {reqOpts: QUERY};
 
     beforeEach(() => {
-      batchTransaction.session = SESSION as {} as Session;
+      batchTransaction.session = (SESSION as {}) as Session;
       batchTransaction.id = ID;
 
       REQUEST.callsFake((_, callback) => callback(null, RESPONSE));
@@ -219,9 +220,10 @@ describe('BatchTransaction', () => {
       });
 
       REQUEST.callsFake((_, callback) => callback(null, response));
-      sandbox.stub(fakeCodec, 'convertProtoTimestampToDate')
-          .withArgs(TIMESTAMP)
-          .returns(fakeTimestamp);
+      sandbox
+        .stub(fakeCodec, 'convertProtoTimestampToDate')
+        .withArgs(TIMESTAMP)
+        .returns(fakeTimestamp);
 
       batchTransaction.createPartitions_(CONFIG, (err, parts, resp) => {
         assert.strictEqual(resp, response);
@@ -251,9 +253,10 @@ describe('BatchTransaction', () => {
 
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-      sandbox.stub(FakeTransaction, 'encodeKeySet')
-          .withArgs(QUERY)
-          .returns(fakeKeySet);
+      sandbox
+        .stub(FakeTransaction, 'encodeKeySet')
+        .withArgs(QUERY)
+        .returns(fakeKeySet);
 
       batchTransaction.createReadPartitions(QUERY, assert.ifError);
 
@@ -308,7 +311,7 @@ describe('BatchTransaction', () => {
     it('should make query streams for query partitions', () => {
       const partition = {sql: 'SELECT * FROM Singers'};
 
-      batchTransaction.runStream = (query) => {
+      batchTransaction.runStream = query => {
         assert.strictEqual(query, partition);
         return STREAM;
       };

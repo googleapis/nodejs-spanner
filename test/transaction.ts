@@ -127,8 +127,9 @@ describe('Transaction', () => {
         const fakeEncodedOptions = {c: 'd'};
         const expectedOptions = {readOnly: fakeEncodedOptions};
 
-        Snapshot.encodeTimestampBounds.withArgs(fakeOptions)
-            .returns(fakeEncodedOptions);
+        Snapshot.encodeTimestampBounds
+          .withArgs(fakeOptions)
+          .returns(fakeEncodedOptions);
 
         new Snapshot(SESSION, fakeOptions).begin();
 
@@ -174,9 +175,10 @@ describe('Transaction', () => {
         const response = Object.assign({readTimestamp}, BEGIN_RESPONSE);
 
         REQUEST.callsFake((_, callback) => callback(null, response));
-        sandbox.stub(codec, 'convertProtoTimestampToDate')
-            .withArgs(readTimestamp)
-            .returns(convertedTimestamp);
+        sandbox
+          .stub(codec, 'convertProtoTimestampToDate')
+          .withArgs(readTimestamp)
+          .returns(convertedTimestamp);
 
         snapshot.begin(err => {
           assert.ifError(err);
@@ -256,9 +258,10 @@ describe('Transaction', () => {
           columns: ['name'],
         };
 
-        sandbox.stub(Snapshot, 'encodeKeySet')
-            .withArgs(fakeRequest)
-            .returns(fakeKeySet);
+        sandbox
+          .stub(Snapshot, 'encodeKeySet')
+          .withArgs(fakeRequest)
+          .returns(fakeKeySet);
 
         snapshot.id = id;
         snapshot.createReadStream(TABLE, fakeRequest);
@@ -522,10 +525,13 @@ describe('Transaction', () => {
           resumeToken: undefined,
         };
 
-        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
-          params: fakeParams,
-          paramTypes: fakeParamTypes
-        });
+        sandbox
+          .stub(Snapshot, 'encodeParams')
+          .withArgs(fakeQuery)
+          .returns({
+            params: fakeParams,
+            paramTypes: fakeParamTypes,
+          });
 
         snapshot.id = id;
         snapshot.runStream(fakeQuery);
@@ -690,8 +696,9 @@ describe('Transaction', () => {
       });
 
       it('should accept `returnReadTimestamp` user value', () => {
-        const options =
-            Snapshot.encodeTimestampBounds({returnReadTimestamp: false});
+        const options = Snapshot.encodeTimestampBounds({
+          returnReadTimestamp: false,
+        });
 
         assert.strictEqual(options.returnReadTimestamp, false);
       });
@@ -701,12 +708,14 @@ describe('Transaction', () => {
         const fakeDate = new Date();
 
         sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox
+          .stub(codec, 'convertMsToProtoTimestamp')
+          .withArgs(fakeTimestamp)
+          .returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({minReadTimestamp: fakeDate});
+        const options = Snapshot.encodeTimestampBounds({
+          minReadTimestamp: fakeDate,
+        });
 
         assert.strictEqual(options.minReadTimestamp, PROTO_TIMESTAMP);
       });
@@ -716,12 +725,14 @@ describe('Transaction', () => {
         const fakeDate = new Date();
 
         sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox
+          .stub(codec, 'convertMsToProtoTimestamp')
+          .withArgs(fakeTimestamp)
+          .returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({readTimestamp: fakeDate});
+        const options = Snapshot.encodeTimestampBounds({
+          readTimestamp: fakeDate,
+        });
 
         assert.strictEqual(options.readTimestamp, PROTO_TIMESTAMP);
       });
@@ -729,12 +740,14 @@ describe('Transaction', () => {
       it('should convert `maxStaleness` ms to proto', () => {
         const fakeTimestamp = Date.now();
 
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox
+          .stub(codec, 'convertMsToProtoTimestamp')
+          .withArgs(fakeTimestamp)
+          .returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({maxStaleness: fakeTimestamp});
+        const options = Snapshot.encodeTimestampBounds({
+          maxStaleness: fakeTimestamp,
+        });
 
         assert.strictEqual(options.maxStaleness, PROTO_TIMESTAMP);
       });
@@ -742,12 +755,14 @@ describe('Transaction', () => {
       it('should convert `exactStaleness` ms to proto', () => {
         const fakeTimestamp = Date.now();
 
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox
+          .stub(codec, 'convertMsToProtoTimestamp')
+          .withArgs(fakeTimestamp)
+          .returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({exactStaleness: fakeTimestamp});
+        const options = Snapshot.encodeTimestampBounds({
+          exactStaleness: fakeTimestamp,
+        });
 
         assert.strictEqual(options.exactStaleness, PROTO_TIMESTAMP);
       });
@@ -810,13 +825,15 @@ describe('Transaction', () => {
         const fakeMissingType = {type: 'string'};
         const expectedType = {code: s.TypeCode.STRING};
 
-        sandbox.stub(codec, 'getType')
-            .withArgs(fakeParams.a)
-            .returns(fakeMissingType);
+        sandbox
+          .stub(codec, 'getType')
+          .withArgs(fakeParams.a)
+          .returns(fakeMissingType);
 
-        sandbox.stub(codec, 'createTypeObject')
-            .withArgs(fakeMissingType)
-            .returns(expectedType);
+        sandbox
+          .stub(codec, 'createTypeObject')
+          .withArgs(fakeMissingType)
+          .returns(expectedType);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
@@ -854,8 +871,9 @@ describe('Transaction', () => {
         const fakeQuery = {sql: SQL};
         const expectedQuery = Object.assign({seqno: 1}, fakeQuery);
 
-        const stub =
-            sandbox.stub(dml, 'run').withArgs(sinon.match(expectedQuery));
+        const stub = sandbox
+          .stub(dml, 'run')
+          .withArgs(sinon.match(expectedQuery));
 
         dml.runUpdate(fakeQuery);
 
@@ -865,8 +883,9 @@ describe('Transaction', () => {
       it('should accept a sql string', () => {
         const expectedQuery = {sql: SQL, seqno: 1};
 
-        const stub =
-            sandbox.stub(dml, 'run').withArgs(sinon.match(expectedQuery));
+        const stub = sandbox
+          .stub(dml, 'run')
+          .withArgs(sinon.match(expectedQuery));
 
         dml.runUpdate(SQL);
 
@@ -929,13 +948,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: [
-            'deleteRows',
-            'insert',
-            'replace',
-            'update',
-            'upsert',
-          ],
+          exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Transaction, expectedOptions);
@@ -1016,9 +1029,10 @@ describe('Transaction', () => {
         const fakeTimestamp = {};
         const formattedTimestamp = new Date();
 
-        sandbox.stub(codec, 'convertProtoTimestampToDate')
-            .withArgs(fakeTimestamp)
-            .returns(formattedTimestamp);
+        sandbox
+          .stub(codec, 'convertProtoTimestampToDate')
+          .withArgs(fakeTimestamp)
+          .returns(formattedTimestamp);
 
         transaction.commit(() => {});
 
@@ -1055,7 +1069,7 @@ describe('Transaction', () => {
             return {
               values: [{stringValue: key}],
             };
-          })
+          }),
         };
 
         const stub = sandbox.stub(transaction, 'request');
@@ -1080,11 +1094,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1109,11 +1125,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1137,8 +1155,9 @@ describe('Transaction', () => {
       });
 
       it('should return an error if the `id` is not set', done => {
-        const expectedError =
-            new Error('Transaction ID is unknown, nothing to rollback.');
+        const expectedError = new Error(
+          'Transaction ID is unknown, nothing to rollback.'
+        );
 
         delete transaction.id;
 
@@ -1199,11 +1218,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1228,11 +1249,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1253,10 +1276,7 @@ describe('Transaction', () => {
         const stub = sandbox.stub(transaction, 'request');
 
         const fakeTable = 'my-table-123';
-        const rows = [
-          {name: 'dave', id: '1'},
-          {name: 'stephen', id: '2'},
-        ];
+        const rows = [{name: 'dave', id: '1'}, {name: 'stephen', id: '2'}];
 
         const expectedColumns = Object.keys(rows[0]).sort();
         const expectedValues = rows.map(row => {
@@ -1279,13 +1299,9 @@ describe('Transaction', () => {
 
       it('should throw an error if missing columns', () => {
         const table = 'my-table-123';
-        const rows = [
-          {name: 'dave', id: '1'},
-          {name: 'stephen'},
-        ];
+        const rows = [{name: 'dave', id: '1'}, {name: 'stephen'}];
 
-        const errorRegExp =
-            /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns\: \[\"id\"\]/;
+        const errorRegExp = /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns\: \[\"id\"\]/;
 
         assert.throws(() => transaction.insert(table, rows), errorRegExp);
       });

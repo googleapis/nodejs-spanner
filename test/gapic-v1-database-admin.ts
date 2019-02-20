@@ -45,11 +45,14 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.listDatabases =
-          (actualRequest, options, callback) => {
-            assert.deepStrictEqual(actualRequest, request);
-            callback(null, expectedResponse.databases);
-          };
+      client._innerApiCalls.listDatabases = (
+        actualRequest,
+        options,
+        callback
+      ) => {
+        assert.deepStrictEqual(actualRequest, request);
+        callback(null, expectedResponse.databases);
+      };
 
       client.listDatabases(request, (err, response) => {
         assert.ifError(err);
@@ -71,8 +74,11 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.listDatabases =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.listDatabases = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.listDatabases(request, (err, response) => {
         assert(err instanceof Error);
@@ -105,21 +111,24 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.createDatabase =
-          mockLongRunningGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.createDatabase = mockLongRunningGrpcMethod(
+        request,
+        expectedResponse
+      );
 
-      client.createDatabase(request)
-          .then(responses => {
-            const operation = responses[0];
-            return operation.promise();
-          })
-          .then(responses => {
-            assert.deepStrictEqual(responses[0], expectedResponse);
-            done();
-          })
-          .catch(err => {
-            done(err);
-          });
+      client
+        .createDatabase(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(responses => {
+          assert.deepStrictEqual(responses[0], expectedResponse);
+          done();
+        })
+        .catch(err => {
+          done(err);
+        });
     });
 
     it('invokes createDatabase with error', done => {
@@ -137,22 +146,26 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.createDatabase =
-          mockLongRunningGrpcMethod(request, null, error);
+      client._innerApiCalls.createDatabase = mockLongRunningGrpcMethod(
+        request,
+        null,
+        error
+      );
 
-      client.createDatabase(request)
-          .then(responses => {
-            const operation = responses[0];
-            return operation.promise();
-          })
-          .then(() => {
-            assert.fail();
-          })
-          .catch(err => {
-            assert(err instanceof Error);
-            assert.strictEqual(err.code, FAKE_STATUS_CODE);
-            done();
-          });
+      client
+        .createDatabase(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(() => {
+          assert.fail();
+        })
+        .catch(err => {
+          assert(err instanceof Error);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
+          done();
+        });
     });
 
     it('has longrunning decoder functions', () => {
@@ -161,13 +174,13 @@ describe('DatabaseAdminClient', () => {
         projectId: 'bogus',
       });
       assert(
-          client._descriptors.longrunning.createDatabase
-              .responseDecoder instanceof
-          Function);
+        client._descriptors.longrunning.createDatabase
+          .responseDecoder instanceof Function
+      );
       assert(
-          client._descriptors.longrunning.createDatabase
-              .metadataDecoder instanceof
-          Function);
+        client._descriptors.longrunning.createDatabase
+          .metadataDecoder instanceof Function
+      );
     });
   });
 
@@ -179,8 +192,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedName =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedName = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         name: formattedName,
       };
@@ -192,8 +208,10 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabase =
-          mockSimpleGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.getDatabase = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
 
       client.getDatabase(request, (err, response) => {
         assert.ifError(err);
@@ -209,15 +227,21 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedName =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedName = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         name: formattedName,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabase =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.getDatabase = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.getDatabase(request, (err, response) => {
         assert(err instanceof Error);
@@ -236,8 +260,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedDatabase =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedDatabase = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const statements = [];
       const request = {
         database: formattedDatabase,
@@ -248,21 +275,24 @@ describe('DatabaseAdminClient', () => {
       const expectedResponse = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.updateDatabaseDdl =
-          mockLongRunningGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.updateDatabaseDdl = mockLongRunningGrpcMethod(
+        request,
+        expectedResponse
+      );
 
-      client.updateDatabaseDdl(request)
-          .then(responses => {
-            const operation = responses[0];
-            return operation.promise();
-          })
-          .then(responses => {
-            assert.deepStrictEqual(responses[0], expectedResponse);
-            done();
-          })
-          .catch(err => {
-            done(err);
-          });
+      client
+        .updateDatabaseDdl(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(responses => {
+          assert.deepStrictEqual(responses[0], expectedResponse);
+          done();
+        })
+        .catch(err => {
+          done(err);
+        });
     });
 
     it('invokes updateDatabaseDdl with error', done => {
@@ -272,8 +302,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedDatabase =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedDatabase = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const statements = [];
       const request = {
         database: formattedDatabase,
@@ -281,22 +314,26 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.updateDatabaseDdl =
-          mockLongRunningGrpcMethod(request, null, error);
+      client._innerApiCalls.updateDatabaseDdl = mockLongRunningGrpcMethod(
+        request,
+        null,
+        error
+      );
 
-      client.updateDatabaseDdl(request)
-          .then(responses => {
-            const operation = responses[0];
-            return operation.promise();
-          })
-          .then(() => {
-            assert.fail();
-          })
-          .catch(err => {
-            assert(err instanceof Error);
-            assert.strictEqual(err.code, FAKE_STATUS_CODE);
-            done();
-          });
+      client
+        .updateDatabaseDdl(request)
+        .then(responses => {
+          const operation = responses[0];
+          return operation.promise();
+        })
+        .then(() => {
+          assert.fail();
+        })
+        .catch(err => {
+          assert(err instanceof Error);
+          assert.strictEqual(err.code, FAKE_STATUS_CODE);
+          done();
+        });
     });
 
     it('has longrunning decoder functions', () => {
@@ -305,13 +342,13 @@ describe('DatabaseAdminClient', () => {
         projectId: 'bogus',
       });
       assert(
-          client._descriptors.longrunning.updateDatabaseDdl
-              .responseDecoder instanceof
-          Function);
+        client._descriptors.longrunning.updateDatabaseDdl
+          .responseDecoder instanceof Function
+      );
       assert(
-          client._descriptors.longrunning.updateDatabaseDdl
-              .metadataDecoder instanceof
-          Function);
+        client._descriptors.longrunning.updateDatabaseDdl
+          .metadataDecoder instanceof Function
+      );
     });
   });
 
@@ -323,8 +360,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedDatabase =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedDatabase = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         database: formattedDatabase,
       };
@@ -345,15 +385,21 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedDatabase =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedDatabase = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         database: formattedDatabase,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.dropDatabase =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.dropDatabase = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.dropDatabase(request, err => {
         assert(err instanceof Error);
@@ -371,8 +417,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedDatabase =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedDatabase = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         database: formattedDatabase,
       };
@@ -381,8 +430,10 @@ describe('DatabaseAdminClient', () => {
       const expectedResponse = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabaseDdl =
-          mockSimpleGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.getDatabaseDdl = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
 
       client.getDatabaseDdl(request, (err, response) => {
         assert.ifError(err);
@@ -398,15 +449,21 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedDatabase =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedDatabase = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         database: formattedDatabase,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getDatabaseDdl =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.getDatabaseDdl = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.getDatabaseDdl(request, (err, response) => {
         assert(err instanceof Error);
@@ -425,8 +482,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedResource = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const policy = {};
       const request = {
         resource: formattedResource,
@@ -442,8 +502,10 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.setIamPolicy =
-          mockSimpleGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.setIamPolicy = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
 
       client.setIamPolicy(request, (err, response) => {
         assert.ifError(err);
@@ -459,8 +521,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedResource = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const policy = {};
       const request = {
         resource: formattedResource,
@@ -468,8 +533,11 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.setIamPolicy =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.setIamPolicy = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.setIamPolicy(request, (err, response) => {
         assert(err instanceof Error);
@@ -488,8 +556,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedResource = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         resource: formattedResource,
       };
@@ -503,8 +574,10 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getIamPolicy =
-          mockSimpleGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.getIamPolicy = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
 
       client.getIamPolicy(request, (err, response) => {
         assert.ifError(err);
@@ -520,15 +593,21 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedResource = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const request = {
         resource: formattedResource,
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.getIamPolicy =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.getIamPolicy = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.getIamPolicy(request, (err, response) => {
         assert(err instanceof Error);
@@ -547,8 +626,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedResource = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const permissions = [];
       const request = {
         resource: formattedResource,
@@ -559,8 +641,10 @@ describe('DatabaseAdminClient', () => {
       const expectedResponse = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.testIamPermissions =
-          mockSimpleGrpcMethod(request, expectedResponse);
+      client._innerApiCalls.testIamPermissions = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
 
       client.testIamPermissions(request, (err, response) => {
         assert.ifError(err);
@@ -576,8 +660,11 @@ describe('DatabaseAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource =
-          client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+      const formattedResource = client.databasePath(
+        '[PROJECT]',
+        '[INSTANCE]',
+        '[DATABASE]'
+      );
       const permissions = [];
       const request = {
         resource: formattedResource,
@@ -585,8 +672,11 @@ describe('DatabaseAdminClient', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.testIamPermissions =
-          mockSimpleGrpcMethod(request, null, error);
+      client._innerApiCalls.testIamPermissions = mockSimpleGrpcMethod(
+        request,
+        null,
+        error
+      );
 
       client.testIamPermissions(request, (err, response) => {
         assert(err instanceof Error);

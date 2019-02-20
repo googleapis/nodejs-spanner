@@ -186,7 +186,7 @@ export class SessionLeakError extends Error {
  */
 const enum errors {
   Closed = 'Database is closed.',
-  Timeout = 'Timeout occurred while acquiring session.'
+  Timeout = 'Timeout occurred while acquiring session.',
 }
 
 interface SessionInventory {
@@ -268,9 +268,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   get reads(): number {
     const available = this._inventory[types.ReadOnly].length;
-    const borrowed = [...this._inventory.borrowed]
-                         .filter(session => session.type === types.ReadOnly)
-                         .length;
+    const borrowed = [...this._inventory.borrowed].filter(
+      session => session.type === types.ReadOnly
+    ).length;
 
     return available + borrowed;
   }
@@ -289,9 +289,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   get writes(): number {
     const available = this._inventory[types.ReadWrite].length;
-    const borrowed = [...this._inventory.borrowed]
-                         .filter(session => session.type === types.ReadWrite)
-                         .length;
+    const borrowed = [...this._inventory.borrowed].filter(
+      session => session.type === types.ReadWrite
+    ).length;
 
     return available + borrowed;
   }
@@ -312,7 +312,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     if (writes! < 0 || writes! > 1) {
       throw new TypeError(
-          'Write percentage should be represented as a float between 0.0 and 1.0.');
+        'Write percentage should be represented as a float between 0.0 and 1.0.'
+      );
     }
 
     this._inventory = {
@@ -340,8 +341,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   close(callback: SessionPoolCloseCallback): void {
     const sessions: Session[] = [
-      ...this._inventory[types.ReadOnly], ...this._inventory[types.ReadWrite],
-      ...this._inventory.borrowed
+      ...this._inventory[types.ReadOnly],
+      ...this._inventory[types.ReadWrite],
+      ...this._inventory.borrowed,
     ];
 
     this.isOpen = false;
@@ -373,8 +375,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetReadSessionCallback} callback The callback function.
    */
   getReadSession(callback: GetReadSessionCallback): void {
-    this._acquire(types.ReadOnly)
-        .then(session => callback(null, session), callback);
+    this._acquire(types.ReadOnly).then(
+      session => callback(null, session),
+      callback
+    );
   }
 
   /**
@@ -383,8 +387,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetWriteSessionCallback} callback The callback function.
    */
   getWriteSession(callback: GetWriteSessionCallback): void {
-    this._acquire(types.ReadWrite)
-        .then(session => callback(null, session, session.txn!), callback);
+    this._acquire(types.ReadWrite).then(
+      session => callback(null, session, session.txn!),
+      callback
+    );
   }
 
   /**
@@ -427,8 +433,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     this._prepareTransaction(session)
-        .catch(() => (session.type = types.ReadOnly))
-        .then(() => this._release(session));
+      .catch(() => (session.type = types.ReadOnly))
+      .then(() => this._release(session));
   }
 
   /**
@@ -449,7 +455,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     // wrapping this logic in a function to call recursively if the session
     // we end up with is already dead
-    const getSession = async(): Promise<Session> => {
+    const getSession = async (): Promise<Session> => {
       const elapsed = Date.now() - startTime;
 
       if (elapsed >= timeout!) {
@@ -548,7 +554,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this._inventory.borrowed.add(session);
 
-    const createSession = async(): Promise<void> => {
+    const createSession = async (): Promise<void> => {
       await session.create({labels});
 
       if (type === types.ReadWrite) {
@@ -673,7 +679,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _getIdleSessions(): Session[] {
     const idlesAfter = this.options.idlesAfter! * 60000;
     const sessions: Session[] = [
-      ...this._inventory[types.ReadOnly], ...this._inventory[types.ReadWrite]
+      ...this._inventory[types.ReadOnly],
+      ...this._inventory[types.ReadWrite],
     ];
 
     return sessions.filter(session => {
@@ -727,16 +734,20 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       const elapsed = Date.now() - startTime!;
       const remaining = timeout! - elapsed;
 
-      promises.push(new Promise((_, reject) => {
-        const error = new Error(errors.Timeout);
-        setTimeout(reject.bind(null, error), remaining);
-      }));
+      promises.push(
+        new Promise((_, reject) => {
+          const error = new Error(errors.Timeout);
+          setTimeout(reject.bind(null, error), remaining);
+        })
+      );
     }
 
     if (!this.isFull) {
-      promises.push(new Promise((resolve, reject) => {
-        this._createSession(type).then(() => this.emit('available'), reject);
-      }));
+      promises.push(
+        new Promise((resolve, reject) => {
+          this._createSession(type).then(() => this.emit('available'), reject);
+        })
+      );
     }
 
     try {

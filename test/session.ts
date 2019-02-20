@@ -71,16 +71,16 @@ describe('Session', () => {
 
   before(() => {
     Session = proxyquire('../src/session.js', {
-                '@google-cloud/common-grpc': {
-                  ServiceObject: FakeGrpcServiceObject,
-                },
-                '@google-cloud/promisify': fakePfy,
-                './transaction.js': {
-                  Snapshot: FakeSnapshot,
-                  Transaction: FakeTransaction,
-                  PartitionedDml: FakePartitionedDml,
-                },
-              }).Session;
+      '@google-cloud/common-grpc': {
+        ServiceObject: FakeGrpcServiceObject,
+      },
+      '@google-cloud/promisify': fakePfy,
+      './transaction.js': {
+        Snapshot: FakeSnapshot,
+        Transaction: FakeTransaction,
+        PartitionedDml: FakePartitionedDml,
+      },
+    }).Session;
   });
 
   beforeEach(() => {
@@ -150,17 +150,20 @@ describe('Session', () => {
         assert(session instanceof FakeGrpcServiceObject);
 
         session.calledWith_[0].createMethod(
-            null, options, (err, sess, resp) => {
-              assert.ifError(err);
+          null,
+          options,
+          (err, sess, resp) => {
+            assert.ifError(err);
 
-              assert.strictEqual(sess, session);
+            assert.strictEqual(sess, session);
 
-              assert.strictEqual(session.uniqueProperty, true);
+            assert.strictEqual(session.uniqueProperty, true);
 
-              assert.strictEqual(resp, apiResponse);
+            assert.strictEqual(resp, apiResponse);
 
-              done();
-            });
+            done();
+          }
+        );
       });
 
       it('should check for options', done => {
@@ -210,7 +213,9 @@ describe('Session', () => {
 
     it('should return the name if already formatted', () => {
       assert.strictEqual(
-          Session.formatName_(DATABASE.formattedName_, PATH), PATH);
+        Session.formatName_(DATABASE.formattedName_, PATH),
+        PATH
+      );
     });
 
     it('should format the name', () => {

@@ -119,13 +119,14 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.types;
 
     this.createPartitions_(
-        {
-          client: 'SpannerClient',
-          method: 'partitionQuery',
-          reqOpts,
-          gaxOpts: query.gaxOptions,
-        },
-        callback);
+      {
+        client: 'SpannerClient',
+        method: 'partitionQuery',
+        reqOpts,
+        gaxOpts: query.gaxOptions,
+      },
+      callback
+    );
   }
   /**
    * Generic create partition method. Handles common parameters used in both
@@ -206,13 +207,14 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.ranges;
 
     this.createPartitions_(
-        {
-          client: 'SpannerClient',
-          method: 'partitionRead',
-          reqOpts,
-          gaxOpts: options.gaxOptions,
-        },
-        callback);
+      {
+        client: 'SpannerClient',
+        method: 'partitionRead',
+        reqOpts,
+        gaxOpts: options.gaxOptions,
+      },
+      callback
+    );
   }
   /**
    * Executes partition.
