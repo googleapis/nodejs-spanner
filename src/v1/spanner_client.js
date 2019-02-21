@@ -160,6 +160,7 @@ class SpannerClient {
       'deleteSession',
       'executeSql',
       'executeStreamingSql',
+      'executeBatchDml',
       'read',
       'streamingRead',
       'beginTransaction',
@@ -514,7 +515,9 @@ class SpannerClient {
   }
 
   /**
-   * Ends a session, releasing server resources associated with it.
+   * Ends a session, releasing server resources associated with it. This will
+   * asynchronously trigger cancellation of any operations that are running with
+   * this session.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -797,6 +800,99 @@ class SpannerClient {
     options = options || {};
 
     return this._innerApiCalls.executeStreamingSql(request, options);
+  }
+
+  /**
+   * Executes a batch of SQL DML statements. This method allows many statements
+   * to be run with lower latency than submitting them sequentially with
+   * ExecuteSql.
+   *
+   * Statements are executed in order, sequentially.
+   * ExecuteBatchDmlResponse will contain a
+   * ResultSet for each DML statement that has successfully executed. If a
+   * statement fails, its error status will be returned as part of the
+   * ExecuteBatchDmlResponse. Execution will
+   * stop at the first failed statement; the remaining statements will not run.
+   *
+   * ExecuteBatchDml is expected to return an OK status with a response even if
+   * there was an error while processing one of the DML statements. Clients must
+   * inspect response.status to determine if there were any errors while
+   * processing the request.
+   *
+   * See more details in
+   * ExecuteBatchDmlRequest and
+   * ExecuteBatchDmlResponse.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the DML statements should be performed.
+   * @param {Object} request.transaction
+   *   The transaction to use. A ReadWrite transaction is required. Single-use
+   *   transactions are not supported (to avoid replay).  The caller must either
+   *   supply an existing transaction ID or begin a new transaction.
+   *
+   *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
+   * @param {Object[]} request.statements
+   *   The list of statements to execute in this batch. Statements are executed
+   *   serially, such that the effects of statement i are visible to statement
+   *   i+1. Each statement must be a DML statement. Execution will stop at the
+   *   first failed statement; the remaining statements will not run.
+   *
+   *   REQUIRES: statements_size() > 0.
+   *
+   *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
+   * @param {number} request.seqno
+   *   A per-transaction sequence number used to identify this request. This is
+   *   used in the same space as the seqno in
+   *   ExecuteSqlRequest. See more details
+   *   in ExecuteSqlRequest.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.SpannerClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const transaction = {};
+   * const statements = [];
+   * const seqno = 0;
+   * const request = {
+   *   session: formattedSession,
+   *   transaction: transaction,
+   *   statements: statements,
+   *   seqno: seqno,
+   * };
+   * client.executeBatchDml(request)
+   *   .then(responses => {
+   *     const response = responses[0];
+   *     // doThingsWith(response)
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  executeBatchDml(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    options = options || {};
+
+    return this._innerApiCalls.executeBatchDml(request, options, callback);
   }
 
   /**
