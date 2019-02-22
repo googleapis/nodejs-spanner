@@ -15,9 +15,9 @@
  */
 import {Service} from '@google-cloud/common-grpc';
 import * as arrify from 'arrify';
-import {CallOptions} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
+import {google as spanner_client} from '../proto/spanner';
 
 import {SpannerClient as s} from './v1';
 
@@ -468,7 +468,7 @@ function convertToListValue<T>(value: T): p.IListValue {
  * @param {number} ms The milliseconds to convert.
  * @returns {object}
  */
-function convertMsToProtoTimestamp(ms: number): p.ITimestamp {
+function convertMsToProtoTimestamp(ms: number): spanner_client.protobuf.ITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
   const nanos = Math.round((rawSeconds - seconds) * 1e9);
@@ -483,9 +483,9 @@ function convertMsToProtoTimestamp(ms: number): p.ITimestamp {
  * @param {object} timestamp The protobuf timestamp.
  * @returns {Date}
  */
-function convertProtoTimestampToDate({nanos = 0, seconds = 0}: p.ITimestamp):
+function convertProtoTimestampToDate({nanos = 0, seconds = 0}: spanner_client.protobuf.ITimestamp):
     Date {
-  const ms = Math.floor(nanos) / 1e6;
+  const ms = Math.floor(nanos!) / 1e6;
   const s = Math.floor(seconds as number);
   return new Date(s * 1000 + ms);
 }

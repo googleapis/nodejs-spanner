@@ -23,6 +23,8 @@ import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
 
+import {google as spanner_client} from '../proto/spanner';
+
 import {codec, Json, JSONOptions, Type, Value} from './codec';
 import {PartialResultStream, partialResultStream, ResumeToken, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -75,7 +77,7 @@ export interface ReadRequest extends RequestOptions {
 }
 
 export type BeginPromise = Promise<[s.Transaction]>;
-export type CommitPromise = Promise<[s.CommitResponse]>;
+export type CommitPromise = Promise<[spanner_client.spanner.v1.CommitResponse]>;
 export type ReadPromise = Promise<[Rows]>;
 export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
 export type RunUpdatePromise = Promise<[number]>;
@@ -90,6 +92,19 @@ export interface RunCallback {
 
 export interface RunUpdateCallback {
   (err: null|ServiceError, rowCount: number): void;
+}
+
+export interface CommitRequest {
+  session: string;
+  transactionId?: Uint8Array|string|null;
+  singleUseTransaction?: spanner_client.spanner.v1.ITransactionOptions;
+  mutations: spanner_client.spanner.v1.IMutation[];
+}
+
+export interface TransactionSelector {
+  singleUse?: spanner_client.spanner.v1.ITransactionOptions;
+  id?: Uint8Array|string|null;
+  begin?: spanner_client.spanner.v1.ITransactionOptions|null;
 }
 
 /**
@@ -145,12 +160,12 @@ export interface RunUpdateCallback {
  * });
  */
 export class Snapshot extends EventEmitter {
-  protected _options!: s.TransactionOptions;
+  protected _options!: spanner_client.spanner.v1.ITransactionOptions;
   id?: string|Uint8Array;
   ended: boolean;
-  metadata?: s.Transaction;
+  metadata?: spanner_client.spanner.v1.ITransaction;
   readTimestamp?: Date;
-  readTimestampProto?: p.ITimestamp;
+  readTimestampProto?: spanner_client.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -209,7 +224,7 @@ export class Snapshot extends EventEmitter {
   }
 
   begin(): BeginPromise;
-  begin(callback: s.BeginTransactionCallback): void;
+  begin(callback: spanner_client.spanner.v1.Spanner.BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -248,10 +263,10 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: s.BeginTransactionCallback): void|BeginPromise {
+  begin(callback?: spanner_client.spanner.v1.Spanner.BeginTransactionCallback): void|BeginPromise {
     const session = this.session.formattedName_!;
-    const options = this._options;
-    const reqOpts: s.BeginTransactionRequest = {session, options};
+    const options: spanner_client.spanner.v1.ITransactionOptions = this._options;
+    const reqOpts: spanner_client.spanner.v1.IBeginTransactionRequest = {session, options};
 
     this.request(
         {
@@ -259,7 +274,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
         },
-        (err: null|ServiceError, resp: s.Transaction) => {
+      (err: null | ServiceError, resp: spanner_client.spanner.v1.Transaction) => {
           if (err) {
             callback!(err, resp);
             return;
@@ -424,7 +439,7 @@ export class Snapshot extends EventEmitter {
       PartialResultStream {
     const {gaxOptions, json, jsonOptions} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    const transaction: s.TransactionSelector = {};
+    const transaction: TransactionSelector = {};
 
     if (this.id) {
       transaction.id = this.id;
@@ -440,7 +455,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
 
-    const reqOpts: s.ReadRequest = Object.assign(request, {
+    const reqOpts: ReadRequest = Object.assign(request, {
       session: this.session.formattedName_!,
       transaction,
       table,
@@ -811,7 +826,7 @@ export class Snapshot extends EventEmitter {
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
-    const transaction: s.TransactionSelector = {};
+    const transaction: TransactionSelector = {};
 
     if (this.id) {
       transaction.id = this.id;
@@ -824,7 +839,7 @@ export class Snapshot extends EventEmitter {
     delete query.jsonOptions;
     delete query.types;
 
-    const reqOpts: s.ExecuteSqlRequest = Object.assign(query, {
+    const reqOpts: ExecuteSqlRequest = Object.assign(query, {
       session: this.session.formattedName_!,
       transaction,
       params,
@@ -887,9 +902,9 @@ export class Snapshot extends EventEmitter {
    * @param {TimestampBounds} options The user supplied options.
    * @returns {object}
    */
-  static encodeTimestampBounds(options: TimestampBounds): s.ReadOnly {
+  static encodeTimestampBounds(options: TimestampBounds): spanner_client.spanner.v1.TransactionOptions.IReadOnly {
     const {returnReadTimestamp = true} = options;
-    const readOnly: s.ReadOnly = {};
+    const readOnly: spanner_client.spanner.v1.TransactionOptions.IReadOnly = {};
 
     if (is.date(options.minReadTimestamp)) {
       const timestamp = (options.minReadTimestamp as Date).getTime();
@@ -1080,7 +1095,7 @@ promisifyAll(Dml);
  */
 export class Transaction extends Dml {
   commitTimestamp?: Date;
-  commitTimestampProto?: p.ITimestamp;
+  commitTimestampProto?: spanner_client.protobuf.ITimestamp;
   private _queuedMutations: s.Mutation[];
 
   /**
@@ -1129,7 +1144,7 @@ export class Transaction extends Dml {
   }
 
   commit(): CommitPromise;
-  commit(callback: s.CommitCallback): void;
+  commit(callback: spanner_client.spanner.v1.Spanner.CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1176,10 +1191,10 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: s.CommitCallback): void|CommitPromise {
+  commit(callback?: spanner_client.spanner.v1.Spanner.CommitCallback): void | CommitPromise {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
-    const reqOpts: s.CommitRequest = {mutations, session};
+    const reqOpts: CommitRequest = {mutations, session};
 
     if (this.id) {
       reqOpts.transactionId = this.id;
@@ -1193,7 +1208,7 @@ export class Transaction extends Dml {
           method: 'commit',
           reqOpts,
         },
-        (err: null|Error, resp: s.CommitResponse) => {
+        (err: null|Error, resp: spanner_client.spanner.v1.CommitResponse) => {
           this.end();
 
           if (resp && resp.commitTimestamp) {

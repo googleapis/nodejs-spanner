@@ -15,3 +15,9 @@ export interface CreateSessionOptions {
 export type GetTimestamp = {
   nanos: number; seconds: number;
 };
+
+export type Schema = string | SchemaObject;
+export type SchemaObject = {statements: string[], operationId?: string};
+
+//tslint:disable-next-line no-any
+export type Any = any;
