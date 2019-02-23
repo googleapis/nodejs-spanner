@@ -728,7 +728,7 @@ class Table {
    *   Name: 'Joe West'
    * };
    *
-   * table.update(row, function(err, apiResponse) {
+   * table.upsert(row, function(err, apiResponse) {
    *   if (err) {
    *     // Error handling omitted.
    *   }
@@ -739,7 +739,7 @@ class Table {
    * //-
    * // If the callback is omitted, we'll return a Promise.
    * //-
-   * table.update(row)
+   * table.upsert(row)
    *   .then(function(data) {
    *     const apiResponse = data[0];
    *   });
