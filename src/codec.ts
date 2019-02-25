@@ -72,7 +72,11 @@ export class SpannerDate extends Date {
   constructor(...dateFields: Array<string|number|undefined>) {
     const yearOrDateString = dateFields[0];
 
-    // JavaScript Date objects will interpret ISO strings as Zulu time,
+    if (!yearOrDateString) {
+      dateFields[0] = new Date().toDateString();
+    }
+
+    // JavaScript Date objects will interpret ISO date strings as Zulu time,
     // but by formatting it, we can infer local time.
     if (/^\d{4}-\d{1,2}-\d{1,2}/.test(yearOrDateString as string)) {
       const [year, month, date] = (yearOrDateString as string).split(/-|T/);

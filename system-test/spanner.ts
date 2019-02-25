@@ -603,10 +603,8 @@ describe('Spanner', () => {
 
         insert({DateArray: values}, (err, row) => {
           assert.ifError(err);
-
-          const returnedValues = row.toJSON().DateArray.map(Spanner.date);
-          assert.deepStrictEqual(returnedValues, values);
-
+          const {DateArray} = row.toJSON();
+          assert.deepStrictEqual(DateArray, values);
           done();
         });
       });

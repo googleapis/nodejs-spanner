@@ -51,6 +51,17 @@ describe('codec', () => {
         assert.strictEqual(json, '1986-03-22');
       });
 
+      it('should default to the current local date', () => {
+        const date = new codec.SpannerDate();
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const day = today.getDate();
+        const expected = new codec.SpannerDate(year, month, day);
+
+        assert.deepStrictEqual(date, expected);
+      });
+
       it('should interpret ISO date strings as local time', () => {
         const date = new codec.SpannerDate('1986-03-22');
         const json = date.toJSON();
