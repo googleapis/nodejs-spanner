@@ -80,6 +80,16 @@ class FakeSession {
   }
 }
 
+interface ReadSessionCallback {
+  (err: Error, session?: null): void;
+  (err: null, session: FakeSession): void;
+}
+
+interface WriteSessionCallback {
+  (err: Error, session?: null, transaction?: null): void;
+  (err: null, session: FakeSession, transaction: FakeTransaction): void;
+}
+
 class FakeSessionPool extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
@@ -87,8 +97,8 @@ class FakeSessionPool extends EventEmitter {
     this.calledWith_ = arguments;
   }
   open() {}
-  getReadSession(callback: Function) {}
-  getWriteSession(callback: Function) {}
+  getReadSession(callback: ReadSessionCallback) {}
+  getWriteSession(callback: WriteSessionCallback) {}
   release(session: FakeSession) {}
 }
 
@@ -1752,7 +1762,7 @@ describe('Database', () => {
 
       getReadSessionStub =
           sandbox.stub(fakePool, 'getReadSession').callsFake(callback => {
-            callback(null, fakeSession, fakePartitionedDml);
+            callback(null, fakeSession);
           });
 
       partitionedDmlStub = sandbox.stub(fakeSession, 'partitionedDml')
@@ -1831,14 +1841,41 @@ describe('Database', () => {
   });
 
   describe('runTransaction', () => {
+    const SESSION = new FakeSession();
+    const TRANSACTION = new FakeTransaction();
+
+    let pool: FakeSessionPool;
+
+    beforeEach(() => {
+      pool = database.pool_;
+
+      sandbox.stub(pool, 'getWriteSession').callsFake(callback => {
+        callback(null, SESSION, TRANSACTION);
+      });
+    });
+
+    it('should return any errors getting a session', done => {
+      const fakeErr = new Error('err');
+
+      (pool.getWriteSession as sinon.SinonStub)
+          .callsFake(callback => callback(fakeErr));
+
+      database.runTransaction(err => {
+        assert.strictEqual(err, fakeErr);
+        done();
+      });
+    });
+
     it('should create a `TransactionRunner`', () => {
       const fakeRunFn = sandbox.spy();
 
       database.runTransaction(fakeRunFn);
 
-      const [db, runFn, options] = fakeTransactionRunner.calledWith_;
+      const [session, transaction, runFn, options] =
+          fakeTransactionRunner.calledWith_;
 
-      assert.strictEqual(db, database);
+      assert.strictEqual(session, SESSION);
+      assert.strictEqual(transaction, TRANSACTION);
       assert.strictEqual(runFn, fakeRunFn);
       assert.deepStrictEqual(options, {});
     });
@@ -1848,55 +1885,91 @@ describe('Database', () => {
 
       database.runTransaction(fakeOptions, assert.ifError);
 
-      const options = fakeTransactionRunner.calledWith_[2];
+      const options = fakeTransactionRunner.calledWith_[3];
 
       assert.strictEqual(options, fakeOptions);
     });
 
+    it('should release the session when finished', done => {
+      const releaseStub = sandbox.stub(pool, 'release').withArgs(SESSION);
+
+      sandbox.stub(FakeTransactionRunner.prototype, 'run').resolves();
+
+      database.runTransaction(assert.ifError);
+
+      setImmediate(() => {
+        assert.strictEqual(releaseStub.callCount, 1);
+        done();
+      });
+    });
+
     it('should catch any run errors and return them', done => {
+      const releaseStub = sandbox.stub(pool, 'release').withArgs(SESSION);
       const fakeError = new Error('err');
 
       sandbox.stub(FakeTransactionRunner.prototype, 'run').rejects(fakeError);
 
       database.runTransaction(err => {
         assert.strictEqual(err, fakeError);
+        assert.strictEqual(releaseStub.callCount, 1);
         done();
       });
     });
   });
 
   describe('runTransactionAsync', () => {
-    it('should create an `AsyncTransactionRunner`', () => {
+    const SESSION = new FakeSession();
+    const TRANSACTION = new FakeTransaction();
+
+    let pool: FakeSessionPool;
+
+    beforeEach(() => {
+      pool = database.pool_;
+
+      sandbox.stub(pool, 'getWriteSession').callsFake(callback => {
+        callback(null, SESSION, TRANSACTION);
+      });
+    });
+
+    it('should create an `AsyncTransactionRunner`', async () => {
       const fakeRunFn = sandbox.spy();
 
-      database.runTransactionAsync(fakeRunFn);
+      await database.runTransactionAsync(fakeRunFn);
 
-      const [db, runFn, options] = fakeAsyncTransactionRunner.calledWith_;
-
-      assert.strictEqual(db, database);
+      const [session, transaction, runFn, options] =
+          fakeAsyncTransactionRunner.calledWith_;
+      assert.strictEqual(session, SESSION);
+      assert.strictEqual(transaction, TRANSACTION);
       assert.strictEqual(runFn, fakeRunFn);
       assert.deepStrictEqual(options, {});
     });
 
-    it('should optionally accept runner `options`', () => {
+    it('should optionally accept runner `options`', async () => {
       const fakeOptions = {timeout: 1};
 
-      database.runTransactionAsync(fakeOptions, assert.ifError);
+      await database.runTransactionAsync(fakeOptions, assert.ifError);
 
-      const options = fakeAsyncTransactionRunner.calledWith_[2];
-
+      const options = fakeAsyncTransactionRunner.calledWith_[3];
       assert.strictEqual(options, fakeOptions);
     });
 
-    it('should return the runner promise', () => {
-      const fakePromise = Promise.resolve();
+    it('should return the runners resolved value', async () => {
+      const fakeValue = {};
 
       sandbox.stub(FakeAsyncTransactionRunner.prototype, 'run')
-          .returns(fakePromise);
+          .resolves(fakeValue);
 
-      const promise = database.runTransactionAsync(assert.ifError);
+      const value = await database.runTransactionAsync(assert.ifError);
+      assert.strictEqual(value, fakeValue);
+    });
 
-      assert.strictEqual(promise, fakePromise);
+    it('should release the session when finished', async () => {
+      const releaseStub = sandbox.stub(pool, 'release').withArgs(SESSION);
+
+      sandbox.stub(FakeAsyncTransactionRunner.prototype, 'run').resolves();
+
+      await database.runTransactionAsync(assert.ifError);
+      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 

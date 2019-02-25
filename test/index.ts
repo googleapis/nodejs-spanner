@@ -28,6 +28,8 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 
+const apiConfig = require('../src/spanner_grpc_config.json');
+
 function getFake(obj: {}) {
   return obj as {
     calledWith_: IArguments;
@@ -189,6 +191,7 @@ describe('Spanner', () => {
         libName: 'gccl',
         libVersion: require('../../package.json').version,
         scopes: [],
+        'grpc_gcp.apiConfig': apiConfig,
       });
 
       assert.deepStrictEqual(
@@ -207,6 +210,7 @@ describe('Spanner', () => {
         libName: 'gccl',
         libVersion: require('../../package.json').version,
         scopes: expectedScopes,
+        'grpc_gcp.apiConfig': apiConfig,
       });
 
       assert.deepStrictEqual(
@@ -237,6 +241,7 @@ describe('Spanner', () => {
             libName: 'gccl',
             libVersion: require('../../package.json').version,
             scopes: [],
+            'grpc_gcp.apiConfig': apiConfig,
           }));
     });
 
