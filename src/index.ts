@@ -18,12 +18,14 @@
 
 import {Service, Operation} from '@google-cloud/common-grpc';
 import {paginator} from '@google-cloud/paginator';
+import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as is from 'is';
 import * as path from 'path';
+import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
@@ -770,29 +772,76 @@ class Spanner extends Service {
     return stream;
   }
 
+  static date(dateString?: string);
+  static date(year: number, month: number, date: number);
   /**
    * Helper function to get a Cloud Spanner Date object.
    *
-   * @method Spanner.date
-   * @param {string|date} value The date as a string or Date object.
-   * @returns {object}
-   * @see {@link Spanner#date}
+   * DATE types represent a logical calendar date, independent of time zone.
+   * DATE values do not represent a specific 24-hour period. Rather, a given
+   * DATE value represents a different 24-hour period when interpreted in a
+   * different time zone. Because of this, all values passed to
+   * {@link Spanner.date} will be interpreted as local time.
+   *
+   * To represent an absolute point in time, use {@link Spanner.timestamp}.
+   *
+   * @param {string|number} [date] String representing the date or number
+   *     representing the year.
+   * @param {number} [month] Number representing the month.
+   * @param {number} [date] Number representing the date.
+   * @returns {SpannerDate}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
    */
-  static date(value?) {
-    return new codec.SpannerDate(value);
+  // tslint:disable-next-line no-any
+  static date(...dateFields: any[]) {
+    return new codec.SpannerDate(...dateFields);
+  }
+
+  /**
+   * Date object with nanosecond precision. Supports all standard Date arguments
+   * in addition to several custom types.
+   * @external PreciseDate
+   * @see {@link https://github.com/googleapis/nodejs-precise-date|PreciseDate}
+   */
+  /**
+   * Helper function to get a Cloud Spanner Timestamp object.
+   *
+   * String timestamps should have a canonical format of
+   * `YYYY-[M]M-[D]D[( |T)[H]H:[M]M:[S]S[.DDDDDDDDD]]Z`
+   *
+   * **Timestamp values must be expressed in Zulu time and cannot include a UTC
+   * offset.**
+   *
+   * @see https://cloud.google.com/spanner/docs/data-types#timestamp-type
+   *
+   * @param {string|number|google.protobuf.Timestamp} [timestamp] Either a
+   *      RFC 3339 timestamp formatted string or
+   *      {@link google.protobuf.Timestamp} object.
+   * @returns {external:PreciseDate}
+   *
+   * @example
+   * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
+   *
+   * @example <caption>With a `google.protobuf.Timestamp` object</caption>
+   * const [seconds, nanos] = process.hrtime();
+   * const timestamp = Spanner.timestamp({seconds, nanos});
+   *
+   * @example <caption>With a Date timestamp</caption>
+   * const timestamp = Spanner.timestamp(Date.now());
+   */
+  static timestamp(value?: string|number|p.ITimestamp): PreciseDate {
+    value = value || Date.now();
+    return new PreciseDate(value as number);
   }
 
   /**
    * Helper function to get a Cloud Spanner Float64 object.
    *
-   * @method Spanner.float
    * @param {string|number} value The float as a number or string.
    * @returns {object}
-   * @see {@link Spanner#float}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -805,10 +854,8 @@ class Spanner extends Service {
   /**
    * Helper function to get a Cloud Spanner Int64 object.
    *
-   * @method Spanner.int
    * @param {string|number} value The int as a number or string.
    * @returns {object}
-   * @see {@link Spanner#int}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -853,6 +900,7 @@ promisifyAll(Spanner, {
     'instance',
     'int',
     'operation',
+    'timestamp',
   ],
 });
 
