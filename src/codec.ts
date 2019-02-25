@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {Service} from '@google-cloud/common-grpc';
+import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import * as arrify from 'arrify';
 import {CallOptions} from 'google-gax';
 import * as is from 'is';
@@ -38,25 +39,75 @@ export interface JSONOptions {
   wrapStructs?: boolean;
 }
 
+// https://github.com/Microsoft/TypeScript/issues/27920
+type DateFields = [number, number, number];
+
 /**
- * @typedef SpannerDate
+ * Date-like object used to represent Cloud Spanner Dates. DATE types represent
+ * a logical calendar date, independent of time zone. DATE values do not
+ * represent a specific 24-hour period. Rather, a given DATE value represents a
+ * different 24-hour period when interpreted in a different time zone. Because
+ * of this, all values passed to {@link Spanner.date} will be interpreted as
+ * local time.
+ *
+ * To represent an absolute point in time, use {@link Spanner.timestamp}.
+ *
  * @see Spanner.date
+ * @see https://cloud.google.com/spanner/docs/data-types#date-type
+ *
+ * @class
+ * @extends Date
+ *
+ * @param {string|number} [date] String representing the date or number
+ *     representing the year.
+ * @param {number} [month] Number representing the month.
+ * @param {number} [date] Number representing the date.
+ *
+ * @example
+ * Spanner.date('3-3-1933');
  */
-export class SpannerDate {
-  value: string;
-  constructor(value?: string|number|Date) {
-    if (arguments.length > 1) {
-      throw new TypeError([
-        'The spanner.date function accepts a Date object or a',
-        'single argument parseable by Date\'s constructor.',
-      ].join(' '));
+export class SpannerDate extends Date {
+  constructor(dateString?: string);
+  constructor(year: number, month: number, date: number);
+  constructor(...dateFields: Array<string|number|undefined>) {
+    const yearOrDateString = dateFields[0];
+
+    if (!yearOrDateString) {
+      dateFields[0] = new Date().toDateString();
     }
-    if (is.undefined(value)) {
-      value = new Date();
+
+    // JavaScript Date objects will interpret ISO date strings as Zulu time,
+    // but by formatting it, we can infer local time.
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(yearOrDateString as string)) {
+      const [year, month, date] = (yearOrDateString as string).split(/-|T/);
+      dateFields = [`${month}-${date}-${year}`];
     }
-    this.value = new Date(value!).toJSON().replace(/T.+/, '');
+
+    super(...dateFields.slice(0, 3) as DateFields);
+  }
+  /**
+   * Returns the date in ISO date format.
+   * `YYYY-[M]M-[D]D`
+   *
+   * @returns {string}
+   */
+  toJSON(): string {
+    const year = this.getFullYear();
+    let month = (this.getMonth() + 1).toString();
+    let date = this.getDate().toString();
+
+    if (month.length === 1) {
+      month = `0${month}`;
+    }
+
+    if (date.length === 1) {
+      date = `0${date}`;
+    }
+
+    return `${year}-${month}-${date}`;
   }
 }
+
 
 /**
  * Using an abstract class to simplify checking for wrapped numbers.
@@ -245,9 +296,11 @@ function decode(value: Value, type: s.Type): Value {
     case s.TypeCode.INT64:
       decoded = new Int(decoded);
       break;
-    case s.TypeCode.TIMESTAMP:  // falls through
+    case s.TypeCode.TIMESTAMP:
+      decoded = new PreciseDate(decoded);
+      break;
     case s.TypeCode.DATE:
-      decoded = new Date(decoded);
+      decoded = new SpannerDate(decoded);
       break;
     case s.TypeCode.ARRAY:
       decoded = decoded.map(value => {
@@ -299,7 +352,7 @@ function encodeValue(value: Value): Value {
     return value.toJSON();
   }
 
-  if (value instanceof WrappedNumber || value instanceof SpannerDate) {
+  if (value instanceof WrappedNumber) {
     return value.value;
   }
 
@@ -410,12 +463,12 @@ function getType(value: Value): Type {
     return {type: 'bytes'};
   }
 
-  if (is.date(value)) {
-    return {type: 'timestamp'};
-  }
-
   if (value instanceof SpannerDate) {
     return {type: 'date'};
+  }
+
+  if (is.date(value)) {
+    return {type: 'timestamp'};
   }
 
   if (value instanceof Struct) {

@@ -22,6 +22,7 @@ import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as through from 'through2';
 import {util} from '@google-cloud/common-grpc';
+import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
@@ -68,6 +69,7 @@ const fakePfy = extend({}, pfy, {
       'instance',
       'int',
       'operation',
+      'timestamp',
     ]);
   },
 });
@@ -255,7 +257,7 @@ describe('Spanner', () => {
 
   describe('date', () => {
     it('should create a SpannerDate instance', () => {
-      const value = {};
+      const value = '1999-1-1';
       const customValue = {};
 
       fakeCodec.SpannerDate = class {
@@ -267,6 +269,13 @@ describe('Spanner', () => {
 
       const date = Spanner.date(value);
       assert.strictEqual(date, customValue);
+    });
+  });
+
+  describe('timestamp', () => {
+    it('should create a PreciseDate instance', () => {
+      const date = Spanner.timestamp();
+      assert(date instanceof PreciseDate);
     });
   });
 

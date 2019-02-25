@@ -19,6 +19,7 @@
 import * as assert from 'assert';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
+import {PreciseDate} from '@google-cloud/precise-date';
 import {Service} from '@google-cloud/common-grpc';
 
 import {SpannerClient as s} from '../src/v1';
@@ -42,26 +43,73 @@ describe('codec', () => {
   afterEach(() => sandbox.restore());
 
   describe('SpannerDate', () => {
-    it('should choke on multiple arguments', () => {
-      const expectedErrorMessage = [
-        'The spanner.date function accepts a Date object or a',
-        'single argument parseable by Date\'s constructor.',
-      ].join(' ');
+    describe('instantiation', () => {
+      it('should accept date strings', () => {
+        const date = new codec.SpannerDate('3-22-1986');
+        const json = date.toJSON();
 
-      assert.throws(() => {
-        const x = new codec.SpannerDate(2012, 3, 21);
-      }, new RegExp(expectedErrorMessage));
+        assert.strictEqual(json, '1986-03-22');
+      });
+
+      it('should default to the current local date', () => {
+        const date = new codec.SpannerDate();
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const day = today.getDate();
+        const expected = new codec.SpannerDate(year, month, day);
+
+        assert.deepStrictEqual(date, expected);
+      });
+
+      it('should interpret ISO date strings as local time', () => {
+        const date = new codec.SpannerDate('1986-03-22');
+        const json = date.toJSON();
+
+        assert.strictEqual(json, '1986-03-22');
+      });
+
+      it('should accept y/m/d number values', () => {
+        const date = new codec.SpannerDate(1986, 2, 22);
+        const json = date.toJSON();
+
+        assert.strictEqual(json, '1986-03-22');
+      });
+
+      it('should truncate additional date fields', () => {
+        const truncated = new codec.SpannerDate(1986, 2, 22, 4, 8, 10);
+        const expected = new codec.SpannerDate(1986, 2, 22);
+
+        assert.deepStrictEqual(truncated, expected);
+      });
     });
 
-    it('should create an instance from a string', () => {
-      const spannerDate = new codec.SpannerDate('08-20-1969');
-      assert.strictEqual(spannerDate.value, '1969-08-20');
-    });
+    describe('toJSON', () => {
+      let date: Date;
 
-    it('should create an instance from a Date object', () => {
-      const date = new Date();
-      const spannerDate = new codec.SpannerDate(date);
-      assert.strictEqual(spannerDate.value, date.toJSON().replace(/T.+/, ''));
+      beforeEach(() => {
+        date = new codec.SpannerDate();
+        sandbox.stub(date, 'getFullYear').returns(1999);
+        sandbox.stub(date, 'getMonth').returns(11);
+        sandbox.stub(date, 'getDate').returns(31);
+      });
+
+      it('should return the spanner date string', () => {
+        const json = date.toJSON();
+        assert.strictEqual(json, '1999-12-31');
+      });
+
+      it('should pad single digit months', () => {
+        (date.getMonth as sinon.SinonStub).returns(8);
+        const json = date.toJSON();
+        assert.strictEqual(json, '1999-09-31');
+      });
+
+      it('should pad single digit dates', () => {
+        (date.getDate as sinon.SinonStub).returns(3);
+        const json = date.toJSON();
+        assert.strictEqual(json, '1999-12-03');
+      });
     });
   });
 
@@ -360,22 +408,22 @@ describe('codec', () => {
 
     it('should decode TIMESTAMP', () => {
       const value = new Date();
-
+      const expected = new PreciseDate(value.getTime());
       const decoded = codec.decode(value.toJSON(), {
         code: s.TypeCode.TIMESTAMP,
       });
 
-      assert.deepStrictEqual(decoded, value);
+      assert.deepStrictEqual(decoded, expected);
     });
 
     it('should decode DATE', () => {
       const value = new Date();
-
+      const expected = new codec.SpannerDate(value.toISOString());
       const decoded = codec.decode(value.toJSON(), {
         code: s.TypeCode.DATE,
       });
 
-      assert.deepStrictEqual(decoded, value);
+      assert.deepStrictEqual(decoded, expected);
     });
 
     it('should decode ARRAY and inner members', () => {
@@ -488,7 +536,7 @@ describe('codec', () => {
     });
 
     it('should encode TIMESTAMP', () => {
-      const value = new Date();
+      const value = new PreciseDate();
 
       const encoded = codec.encode(value);
 
@@ -500,7 +548,7 @@ describe('codec', () => {
 
       const encoded = codec.encode(value);
 
-      assert.strictEqual(encoded, value.value);
+      assert.strictEqual(encoded, value.toJSON());
     });
 
     it('should encode INT64', () => {
@@ -548,13 +596,18 @@ describe('codec', () => {
           codec.getType(Buffer.from('abc')), {type: 'bytes'});
     });
 
-    it('should determine if the value is a timestamp', () => {
-      assert.deepStrictEqual(codec.getType(new Date()), {type: 'timestamp'});
-    });
-
     it('should determine if the value is a date', () => {
       assert.deepStrictEqual(
           codec.getType(new codec.SpannerDate()), {type: 'date'});
+    });
+
+    it('should determine if the value is a timestamp', () => {
+      assert.deepStrictEqual(
+          codec.getType(new PreciseDate()), {type: 'timestamp'});
+    });
+
+    it('should accept a plain date object as a timestamp', () => {
+      assert.deepStrictEqual(codec.getType(new Date()), {type: 'timestamp'});
     });
 
     it('should determine if the value is a struct', () => {
