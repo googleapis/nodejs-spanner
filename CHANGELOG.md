@@ -4,6 +4,227 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## v3.0.0
+
+02-25-2019 12:38 PST
+
+### Breaking Changes
+- breaking: refactor(transaction): split logic into new classes ([#506](https://github.com/googleapis/nodejs-spanner/pull/506))
+- breaking: feat(timestamp): create new date/timestamp classes ([#517](https://github.com/googleapis/nodejs-spanner/pull/517))
+- fix: run generator to bring in streaming retry configs ([#448](https://github.com/googleapis/nodejs-spanner/pull/448))
+
+#### Read-only Transactions (Snapshots) are no longer runnable via `Database#runTransaction` ([#506](https://github.com/googleapis/nodejs-spanner/pull/506))
+
+`Database#runTransaction` is useful if want to replay a Transaction in its entirety in case you run into an `ABORTED` error. This should never happen with Snapshots, so it felt like it was time to create a new method just for them. *This change also means that `runTransaction` will only ever return read-write transactions.*
+
+Before
+
+```js
+const bounds = {
+  readOnly: true,
+  strong: true,
+};
+
+database.runTransaction(bounds, (err, transaction) => {
+  // ...
+});
+```
+
+After
+
+```js
+const bounds = {
+  strong: true,
+};
+
+database.getSnapshot(bounds, (err, snapshot) => {
+  // ...
+});
+```
+
+#### Timestamp bounds now offer nanosecond precision ([#506](https://github.com/googleapis/nodejs-spanner/pull/506))
+
+This change allows you to specify a Snapshot read timestamp with more precision. Previously one could only specify in seconds, but now we support both milliseconds and nanoseconds.
+
+Before
+
+```js
+const bounds = {
+  exactStaleness: 5
+};
+
+const bounds = {
+  readTimestamp: Date.now()
+};
+```
+
+After
+
+```js
+const bounds = {
+  // millisecond precision for staleness
+  exactStaleness: 5000,
+
+  // or if you need nano/micro precision for staleness
+  exactStaleness: {seconds: 5, nanos: 321} // => 5000000321 nanoseconds
+};
+
+const bounds = {
+  readTimestamp: Spanner.timestamp('2019-01-12T00:30:35.381101032Z')
+};
+```
+
+#### Transaction#end changes. ([#506](https://github.com/googleapis/nodejs-spanner/pull/506))
+
+Transactions saw a sizeable refactor with this version, previously `end()` performed a number of asynchronous tasks when called, however this is no longer true. Because of this, there isn't much of a need to track when end is finished, so we've dropped the callback parameter.
+
+Additionally, `end()` will now be called automatically for failed calls to `Transaction#commit()` and `Transaction#rollback()`. If your code calls end after a failed commit/rollback, it will simply no-op.
+
+Before
+
+```js
+transaction.end(callback);
+```
+
+After
+
+```js
+transaction.end();
+callback();
+```
+
+#### Session#beginTransaction was removed ([#506](https://github.com/googleapis/nodejs-spanner/pull/506))
+
+Spanner supports 4 different types of Transactions:
+
+* ReadWrite
+* ReadOnly
+* PartitionedDml
+* Batch
+
+Using one method for all types became cumbersome when trying to manage the various options available to each, now each type has its own method.
+
+Before
+
+```js
+const transaction = await session.beginTransaction({readWrite: true});
+const snapshot = await session.beginTransaction({readOnly: true});
+```
+
+After
+
+```js
+const transaction = session.transaction();
+await transaction.begin();
+
+const snapshot = session.snapshot({strong: true});
+await snapshot.begin();
+```
+
+#### Timestamps now represented by [`@google-cloud/precise-time`](https://github.com/googleapis/nodejs-precise-date) ([#517](https://github.com/googleapis/nodejs-spanner/pull/517))
+
+While Spanner supports timestamps with nanosecond precision, JavaScript Dates do not. So we created the `PreciseDate` object which extends the native Date and adds both microsecond and nanosecond support.
+
+Before
+
+```js
+const timestamp = Spanner.timestamp('2019-01-12T00:30:35.381101032Z');
+// => {value: '2019-01-12T00:30:35.381Z'}
+```
+
+After
+
+```js
+// PreciseDate object
+const timestamp = Spanner.timestamp('2019-01-12T00:30:35.381101032Z');
+timestamp.toJSON(); // => '2019-01-12T00:30:35.381101032Z'
+timestamp.toFullTimeString(); // => '1547253035381101032' (nanoseconds)
+```
+
+#### SpannerDate now extends the native Date object. ([#517](https://github.com/googleapis/nodejs-spanner/pull/517))
+
+Since Timestamps saw an update, it made sense to give Spanner Date objects a similar update. The `Spanner.date()` method now returns a native Date object.
+
+Before
+
+```js
+const date = Spanner.date('3-22-2018');
+// => {value: '2018-3-22'}
+```
+
+After
+
+```js
+// Date object
+const date = Spanner.date('3-22-2018');
+date.toJSON(); // => '2018-3-22'
+```
+
+### New Features
+- refactor(types): enable noImplicitAny in session-pool.ts ([#508](https://github.com/googleapis/nodejs-spanner/pull/508))
+- refactor(table): improve typescript defs ([#495](https://github.com/googleapis/nodejs-spanner/pull/495))
+- refactor(ts): partial-result-stream types/refactor ([#488](https://github.com/googleapis/nodejs-spanner/pull/488))
+- refactor(codec): improve typescript defs ([#490](https://github.com/googleapis/nodejs-spanner/pull/490))
+- chore(SessionPool): improve typescript types ([#479](https://github.com/googleapis/nodejs-spanner/pull/479))
+- chore(typescript): add types for spanner gapic ([#487](https://github.com/googleapis/nodejs-spanner/pull/487))
+- refactor(ts): enable noImplicitAny on src/session.ts ([#457](https://github.com/googleapis/nodejs-spanner/pull/457))
+
+### Bug Fixes
+- fix: throw on invalid credentials ([#522](https://github.com/googleapis/nodejs-spanner/pull/522))
+- fix(transaction): re-use session in transaction runners ([#540](https://github.com/googleapis/nodejs-spanner/pull/540))
+
+### Dependencies
+- chore(deps): update dependency mocha to v6 ([#532](https://github.com/googleapis/nodejs-spanner/pull/532))
+- fix(deps): update dependency @google-cloud/promisify to ^0.4.0 ([#524](https://github.com/googleapis/nodejs-spanner/pull/524))
+- chore(deps): update dependency @types/p-retry to v3 ([#521](https://github.com/googleapis/nodejs-spanner/pull/521))
+- fix(deps): update dependency yargs to v13 ([#520](https://github.com/googleapis/nodejs-spanner/pull/520))
+- fix(deps): update dependency @google-cloud/common-grpc to ^0.10.0 ([#504](https://github.com/googleapis/nodejs-spanner/pull/504))
+- fix(deps): update dependency google-gax to ^0.25.0 ([#505](https://github.com/googleapis/nodejs-spanner/pull/505))
+- chore(deps): update dependency eslint-config-prettier to v4 ([#502](https://github.com/googleapis/nodejs-spanner/pull/502))
+- fix(deps): update dependency google-gax to ^0.24.0 ([#501](https://github.com/googleapis/nodejs-spanner/pull/501))
+- fix(deps): update dependency google-auth-library to v3 ([#498](https://github.com/googleapis/nodejs-spanner/pull/498))
+- fix(deps): update dependency google-gax to ^0.23.0 ([#496](https://github.com/googleapis/nodejs-spanner/pull/496))
+- chore(deps): update dependency concat-stream to v2 ([#489](https://github.com/googleapis/nodejs-spanner/pull/489))
+- refactor: removed async from dependency list ([#449](https://github.com/googleapis/nodejs-spanner/pull/449))
+- chore(deps): update dependency @types/sinon to v7 ([#480](https://github.com/googleapis/nodejs-spanner/pull/480))
+- fix(deps): update dependency p-retry to v3 ([#481](https://github.com/googleapis/nodejs-spanner/pull/481))
+- chore(deps): update dependency typescript to ~3.2.0 ([#459](https://github.com/googleapis/nodejs-spanner/pull/459))
+
+### Documentation
+- docs: fixed example for table.upsert() ([#533](https://github.com/googleapis/nodejs-spanner/pull/533))
+- docs: update links in contrib guide ([#525](https://github.com/googleapis/nodejs-spanner/pull/525))
+- docs: update contributing path in README ([#515](https://github.com/googleapis/nodejs-spanner/pull/515))
+- docs: add lint/fix example to contributing guide ([#512](https://github.com/googleapis/nodejs-spanner/pull/512))
+- docs: fix example comments ([#511](https://github.com/googleapis/nodejs-spanner/pull/511))
+- chore: update proto licenses
+- build: check broken links in generated docs ([#491](https://github.com/googleapis/nodejs-spanner/pull/491))
+- fix(docs): remove unused long running operations and IAM types
+- refactor: modernize sample tests ([#484](https://github.com/googleapis/nodejs-spanner/pull/484))
+- docs: fix links in docstrings ([#467](https://github.com/googleapis/nodejs-spanner/pull/467))
+- docs: fix typo ([#465](https://github.com/googleapis/nodejs-spanner/pull/465))
+- chore: update license file ([#464](https://github.com/googleapis/nodejs-spanner/pull/464))
+- docs: update readme badges ([#462](https://github.com/googleapis/nodejs-spanner/pull/462))
+- docs(samples): Add sample to delete using a mutation. ([#458](https://github.com/googleapis/nodejs-spanner/pull/458))
+
+### Internal / Testing Changes
+- chore: add spanner_grpc_config.json and enable grpc-gcp support for spanner ([#503](https://github.com/googleapis/nodejs-spanner/pull/503))
+- build: use linkinator for docs test ([#523](https://github.com/googleapis/nodejs-spanner/pull/523))
+- build: create docs test npm scripts ([#519](https://github.com/googleapis/nodejs-spanner/pull/519))
+- build: test using @grpc/grpc-js in CI ([#516](https://github.com/googleapis/nodejs-spanner/pull/516))
+- chore: move CONTRIBUTING.md to root ([#514](https://github.com/googleapis/nodejs-spanner/pull/514))
+- refactor: improve generated code style. ([#510](https://github.com/googleapis/nodejs-spanner/pull/510))
+- build: ignore googleapis.com in doc link check ([#500](https://github.com/googleapis/nodejs-spanner/pull/500))
+- fix: fix the sample tests ([#486](https://github.com/googleapis/nodejs-spanner/pull/486))
+- chore(build): inject yoshi automation key ([#478](https://github.com/googleapis/nodejs-spanner/pull/478))
+- chore: update nyc and eslint configs ([#477](https://github.com/googleapis/nodejs-spanner/pull/477))
+- chore: fix publish.sh permission +x ([#475](https://github.com/googleapis/nodejs-spanner/pull/475))
+- fix(build): fix Kokoro release script ([#474](https://github.com/googleapis/nodejs-spanner/pull/474))
+- build: add Kokoro configs for autorelease ([#473](https://github.com/googleapis/nodejs-spanner/pull/473))
+- chore: always nyc report before calling codecov ([#469](https://github.com/googleapis/nodejs-spanner/pull/469))
+- chore: nyc ignore build/test by default ([#468](https://github.com/googleapis/nodejs-spanner/pull/468))
+- fix(build): fix system key decryption ([#460](https://github.com/googleapis/nodejs-spanner/pull/460))
+- chore: temporarily disable gts ([#534](https://github.com/googleapis/nodejs-spanner/pull/534))
+
 ## v2.2.1
 
 11-28-2018 10:43 PST
