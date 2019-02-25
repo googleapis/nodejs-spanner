@@ -518,7 +518,7 @@ describe('Spanner', () => {
 
     describe('timestamps', () => {
       it('should write timestamp values', done => {
-        const date = new Date();
+        const date = Spanner.timestamp();
 
         insert({TimestampValue: date}, (err, row) => {
           assert.ifError(err);
@@ -553,7 +553,7 @@ describe('Spanner', () => {
       });
 
       it('should write timestamp array values', done => {
-        const values = [new Date(), new Date('3-3-1933')];
+        const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
 
         insert({TimestampArray: values}, (err, row) => {
           assert.ifError(err);
@@ -603,10 +603,8 @@ describe('Spanner', () => {
 
         insert({DateArray: values}, (err, row) => {
           assert.ifError(err);
-
-          const returnedValues = row.toJSON().DateArray.map(Spanner.date);
-          assert.deepStrictEqual(returnedValues, values);
-
+          const {DateArray} = row.toJSON();
+          assert.deepStrictEqual(DateArray, values);
           done();
         });
       });
@@ -616,11 +614,10 @@ describe('Spanner', () => {
       it('should accept the commit timestamp placeholder', done => {
         const data = {CommitTimestamp: Spanner.COMMIT_TIMESTAMP};
 
-        insert(data, (err, row, commitResponse) => {
+        insert(data, (err, row, {commitTimestamp}) => {
           assert.ifError(err);
 
-          const timestampFromCommit =
-              fromProtoToDate(commitResponse.commitTimestamp);
+          const timestampFromCommit = Spanner.timestamp(commitTimestamp);
           const timestampFromRead = row.toJSON().CommitTimestamp;
 
           assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
@@ -1311,15 +1308,13 @@ describe('Spanner', () => {
     });
 
     describe('insert & query', () => {
-      const DATE = new Date('1969-08-20');
-
       const ID = generateName('id');
       const NAME = generateName('name');
       const FLOAT = 8.2;
       const INT = 2;
       const INFO = Buffer.from(generateName('info'));
-      const CREATED = new Date();
-      const DOB = Spanner.date(DATE);
+      const CREATED = Spanner.timestamp();
+      const DOB = Spanner.date('1969-08-20');
       const ACCENTS = ['jamaican'];
       const PHONE_NUMBERS = [123123123, 234234234];
       const HAS_GEAR = true;
@@ -1338,10 +1333,6 @@ describe('Spanner', () => {
       };
 
       const EXPECTED_ROW = extend(true, {}, INSERT_ROW);
-      EXPECTED_ROW.DOB = DATE;
-      EXPECTED_ROW.Float = FLOAT;
-      EXPECTED_ROW.Int = INT;
-      EXPECTED_ROW.PhoneNumbers = PHONE_NUMBERS;
 
       before(() => {
         return table.insert(INSERT_ROW);
@@ -2022,7 +2013,7 @@ describe('Spanner', () => {
 
         describe('timestamp', () => {
           it('should bind the value', done => {
-            const timestamp = new Date();
+            const timestamp = Spanner.timestamp();
 
             const query = {
               sql: 'SELECT @v',
@@ -2057,7 +2048,8 @@ describe('Spanner', () => {
           });
 
           it('should bind arrays', done => {
-            const values = [new Date(), new Date('3-3-1999'), null];
+            const values =
+                [Spanner.timestamp(), Spanner.timestamp('3-3-1999'), null];
 
             const query = {
               sql: 'SELECT @v',
@@ -2160,7 +2152,7 @@ describe('Spanner', () => {
           it('should bind arrays', done => {
             const values = [
               Spanner.date(),
-              Spanner.date(new Date('3-3-1999')),
+              Spanner.date('3-3-1999'),
               null,
             ];
 

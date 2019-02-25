@@ -24,7 +24,7 @@ import * as through from 'through2';
 const concat = require('concat-stream');
 
 class FakeTransaction extends EventEmitter {
-  end() {}
+  async begin(): Promise<void> {}
   request(config, callback) {}
   requestStream(config) {}
 }
@@ -42,8 +42,8 @@ describe('TransactionRunner', () => {
   const LOOKUP = sandbox.stub().withArgs(RETRY_KEY).returns(RETRY_INFO);
   const LOAD_SYNC = sandbox.stub().returns({lookup: LOOKUP});
 
-  const DATABASE = {
-    getTransaction: sandbox.stub(),
+  const SESSION = {
+    transaction: () => fakeTransaction,
   };
 
   // tslint:disable-next-line no-any variable-name
@@ -67,10 +67,9 @@ describe('TransactionRunner', () => {
 
   beforeEach(() => {
     fakeTransaction = new FakeTransaction();
-    sandbox.stub(fakeTransaction, 'end');
+    sandbox.stub(fakeTransaction, 'begin').resolves();
     sandbox.stub(fakeTransaction, 'request');
     sandbox.stub(fakeTransaction, 'requestStream');
-    DATABASE.getTransaction.resolves([fakeTransaction]);
   });
 
   afterEach(() => sandbox.restore());
@@ -91,7 +90,7 @@ describe('TransactionRunner', () => {
         }
       };
 
-      runner = new ExtendedRunner(DATABASE);
+      runner = new ExtendedRunner(SESSION, fakeTransaction);
     });
 
     describe('initialization', () => {
@@ -99,8 +98,12 @@ describe('TransactionRunner', () => {
         assert.strictEqual(runner.attempts, 0);
       });
 
-      it('should localize the `database`', () => {
-        assert.strictEqual(runner.database, DATABASE);
+      it('should localize the `session`', () => {
+        assert.strictEqual(runner.session, SESSION);
+      });
+
+      it('should localize the `transaction`', () => {
+        assert.strictEqual(runner.transaction, fakeTransaction);
       });
 
       it('should set default `options`', () => {
@@ -111,7 +114,7 @@ describe('TransactionRunner', () => {
 
       it('should accept user `options`', () => {
         const options = {timeout: 1000};
-        const r = new ExtendedRunner(DATABASE, options);
+        const r = new ExtendedRunner(SESSION, fakeTransaction, options);
 
         assert.deepStrictEqual(r.options, options);
         assert.notStrictEqual(r.options, options);
@@ -169,7 +172,37 @@ describe('TransactionRunner', () => {
       });
     });
 
+    describe('getTransaction', () => {
+      it('should return and forget the prepared transaction', async () => {
+        sandbox.stub(SESSION, 'transaction').throws(
+            new Error('Should not be called'));
+
+        const cachedTransaction = runner.transaction;
+        const transaction = await runner.getTransaction();
+
+        assert.strictEqual(transaction, cachedTransaction);
+        assert.strictEqual(runner.transaction, undefined);
+      });
+
+      it('should create a new transaction if need be', async () => {
+        const expectedTransaction = new FakeTransaction();
+        const beginStub = sandbox.stub(expectedTransaction, 'begin').resolves();
+
+        sandbox.stub(SESSION, 'transaction').returns(expectedTransaction);
+        delete runner.transaction;
+
+        const transaction = await runner.getTransaction();
+
+        assert.strictEqual(transaction, expectedTransaction);
+        assert.strictEqual(beginStub.callCount, 1);
+      });
+    });
+
     describe('run', () => {
+      beforeEach(() => {
+        sandbox.stub(runner, 'getTransaction').resolves(fakeTransaction);
+      });
+
       it('should run a transaction', async () => {
         await runner.run();
 
@@ -177,12 +210,6 @@ describe('TransactionRunner', () => {
 
         assert.strictEqual(transaction, fakeTransaction);
         assert.strictEqual(runFn.callCount, 1);
-      });
-
-      it('should end the transaction', async () => {
-        await runner.run();
-
-        assert.strictEqual(fakeTransaction.end.callCount, 1);
       });
 
       it('should return the transaction results', async () => {
@@ -266,18 +293,23 @@ describe('TransactionRunner', () => {
 
     beforeEach(() => {
       runFn = sandbox.stub();
-      runner = new TransactionRunner(DATABASE, runFn);
+      runner = new TransactionRunner(SESSION, fakeTransaction, runFn);
       sandbox.stub(runner, 'getNextDelay').returns(0);
     });
 
     describe('initialization', () => {
-      it('should pass the `database` to `Runner`', () => {
-        assert.strictEqual(runner.database, DATABASE);
+      it('should pass the `session` to `Runner`', () => {
+        assert.strictEqual(runner.session, SESSION);
+      });
+
+      it('should pass the `transaction` to `Runner`', () => {
+        assert.strictEqual(runner.transaction, fakeTransaction);
       });
 
       it('should pass `options` to `Runner`', () => {
         const options = {timeout: 1};
-        const r = new TransactionRunner(DATABASE, runFn, options);
+        const r =
+            new TransactionRunner(SESSION, fakeTransaction, runFn, options);
 
         assert.deepStrictEqual(r.options, options);
       });
@@ -495,18 +527,23 @@ describe('TransactionRunner', () => {
 
     beforeEach(() => {
       runFn = sandbox.stub();
-      runner = new AsyncTransactionRunner(DATABASE, runFn);
+      runner = new AsyncTransactionRunner(SESSION, fakeTransaction, runFn);
       sandbox.stub(runner, 'getNextDelay').returns(0);
     });
 
     describe('initialization', () => {
-      it('should pass the `database` to `Runner`', () => {
-        assert.strictEqual(runner.database, DATABASE);
+      it('should pass the `session` to `Runner`', () => {
+        assert.strictEqual(runner.session, SESSION);
+      });
+
+      it('should pass the `transaction` to `Runner`', () => {
+        assert.strictEqual(runner.transaction, fakeTransaction);
       });
 
       it('should pass `options` to `Runner`', () => {
         const options = {timeout: 1};
-        const r = new AsyncTransactionRunner(DATABASE, runFn, options);
+        const r = new AsyncTransactionRunner(
+            SESSION, fakeTransaction, runFn, options);
 
         assert.deepStrictEqual(r.options, options);
       });

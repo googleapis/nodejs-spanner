@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
@@ -169,18 +170,15 @@ describe('Transaction', () => {
       });
 
       it('should localize `readTimestamp` if present', done => {
-        const convertedTimestamp = new Date();
-        const readTimestamp = {};
+        const expectedTimestamp = new PreciseDate(0);
+        const readTimestamp = {seconds: 0, nanos: 0};
         const response = Object.assign({readTimestamp}, BEGIN_RESPONSE);
 
         REQUEST.callsFake((_, callback) => callback(null, response));
-        sandbox.stub(codec, 'convertProtoTimestampToDate')
-            .withArgs(readTimestamp)
-            .returns(convertedTimestamp);
 
         snapshot.begin(err => {
           assert.ifError(err);
-          assert.strictEqual(snapshot.readTimestamp, convertedTimestamp);
+          assert.deepStrictEqual(snapshot.readTimestamp, expectedTimestamp);
           assert.strictEqual(snapshot.readTimestampProto, readTimestamp);
           done();
         });
@@ -697,31 +695,25 @@ describe('Transaction', () => {
       });
 
       it('should convert `minReadTimestamp` Date to proto', () => {
-        const fakeTimestamp = Date.now();
-        const fakeDate = new Date();
+        const fakeTimestamp = new PreciseDate();
 
-        sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox.stub(fakeTimestamp, 'toStruct').returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({minReadTimestamp: fakeDate});
+        const options = Snapshot.encodeTimestampBounds({
+          minReadTimestamp: fakeTimestamp,
+        });
 
         assert.strictEqual(options.minReadTimestamp, PROTO_TIMESTAMP);
       });
 
       it('should convert `readTimestamp` Date to proto', () => {
-        const fakeTimestamp = Date.now();
-        const fakeDate = new Date();
+        const fakeTimestamp = new PreciseDate();
 
-        sandbox.stub(fakeDate, 'getTime').returns(fakeTimestamp);
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox.stub(fakeTimestamp, 'toStruct').returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({readTimestamp: fakeDate});
+        const options = Snapshot.encodeTimestampBounds({
+          readTimestamp: fakeTimestamp,
+        });
 
         assert.strictEqual(options.readTimestamp, PROTO_TIMESTAMP);
       });
@@ -1013,19 +1005,15 @@ describe('Transaction', () => {
       it('should set the `commitTimestamp` if in response', () => {
         const requestStub = sandbox.stub(transaction, 'request');
 
-        const fakeTimestamp = {};
-        const formattedTimestamp = new Date();
-
-        sandbox.stub(codec, 'convertProtoTimestampToDate')
-            .withArgs(fakeTimestamp)
-            .returns(formattedTimestamp);
+        const expectedTimestamp = new PreciseDate(0);
+        const fakeTimestamp = {seconds: 0, nanos: 0};
 
         transaction.commit(() => {});
 
         const requestCallback = requestStub.lastCall.args[1];
         requestCallback(null, {commitTimestamp: fakeTimestamp});
 
-        assert.strictEqual(transaction.commitTimestamp, formattedTimestamp);
+        assert.deepStrictEqual(transaction.commitTimestamp, expectedTimestamp);
         assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
       });
 

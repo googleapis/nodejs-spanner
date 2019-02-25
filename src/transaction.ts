@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as arrify from 'arrify';
 import {EventEmitter} from 'events';
@@ -101,12 +102,12 @@ export interface TypeMap {
  * @typedef {object} TimestampBounds
  * @property {boolean} [strong=true] Read at a timestamp where all previously
  *     committed transactions are visible.
- * @property {Date|google.protobuf.Timestamp} [minReadTimestamp] Executes all
- *     reads at a `timestamp >= minReadTimestamp`.
+ * @property {external:PreciseDate|google.protobuf.Timestamp} [minReadTimestamp]
+ *     Executes all reads at a `timestamp >= minReadTimestamp`.
  * @property {number|google.protobuf.Timestamp} [maxStaleness] Read data at a
  *     `timestamp >= NOW - maxStaleness` (milliseconds).
- * @property {Date|google.protobuf.Timestamp} [readTimestamp] Executes all
- *     reads at the given timestamp.
+ * @property {external:PreciseDate|google.protobuf.Timestamp} [readTimestamp]
+ *     Executes all reads at the given timestamp.
  * @property {number|google.protobuf.Timestamp} [exactStaleness] Executes all
  *     reads at a timestamp that is `exactStaleness` (milliseconds) old.
  * @property {boolean} [returnReadTimestamp=true] When true,
@@ -154,7 +155,7 @@ export class Snapshot extends EventEmitter {
   id?: string|Uint8Array|null;
   ended: boolean;
   metadata?: spanner_client.spanner.v1.Transaction;
-  readTimestamp?: Date;
+  readTimestamp?: PreciseDate;
   readTimestampProto?: spanner_client.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
@@ -185,7 +186,7 @@ export class Snapshot extends EventEmitter {
    * The timestamp at which all reads will be performed.
    *
    * @name Snapshot#readTimestamp
-   * @type {?Date}
+   * @type {?external:PreciseDate}
    */
   /**
    * **Snapshot only**
@@ -277,7 +278,7 @@ export class Snapshot extends EventEmitter {
 
           if (readTimestamp) {
             this.readTimestampProto = readTimestamp;
-            this.readTimestamp = codec.convertProtoTimestampToDate(readTimestamp);
+            this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
           }
 
           callback!(null, resp);
@@ -881,17 +882,17 @@ export class Snapshot extends EventEmitter {
    * @returns {object}
    */
   static encodeTimestampBounds(options: TimestampBounds): spanner_client.spanner.v1.TransactionOptions.IReadOnly {
-    const {returnReadTimestamp = true} = options;
     const readOnly: spanner_client.spanner.v1.TransactionOptions.IReadOnly = {};
+    const {returnReadTimestamp = true} = options;
 
-    if (is.date(options.minReadTimestamp)) {
-      const timestamp = (options.minReadTimestamp as Date).getTime();
-      readOnly.minReadTimestamp = codec.convertMsToProtoTimestamp(timestamp);
+    if (options.minReadTimestamp instanceof PreciseDate) {
+      readOnly.minReadTimestamp =
+          (options.minReadTimestamp as PreciseDate).toStruct();
     }
 
-    if (is.date(options.readTimestamp)) {
-      const timestamp = (options.readTimestamp as Date).getTime();
-      readOnly.readTimestamp = codec.convertMsToProtoTimestamp(timestamp);
+    if (options.readTimestamp instanceof PreciseDate) {
+      readOnly.readTimestamp =
+          (options.readTimestamp as PreciseDate).toStruct();
     }
 
     if (is.number(options.maxStaleness)) {
@@ -1072,7 +1073,7 @@ promisifyAll(Dml);
  * });
  */
 export class Transaction extends Dml {
-  commitTimestamp?: Date;
+  commitTimestamp?: PreciseDate;
   commitTimestampProto?: spanner_client.protobuf.ITimestamp;
   private _queuedMutations: spanner_client.spanner.v1.IMutation[];
 
@@ -1081,7 +1082,7 @@ export class Transaction extends Dml {
    * {@link Transaction#commit} is called.
    *
    * @name Transaction#commitTimestamp
-   * @type {?Date}
+   * @type {?external:PreciseDate}
    */
   /**
    * The protobuf version of {@link Transaction#commitTimestamp}. This is useful
@@ -1192,7 +1193,7 @@ export class Transaction extends Dml {
           if (resp && resp.commitTimestamp) {
             this.commitTimestampProto = resp.commitTimestamp;
             this.commitTimestamp =
-                codec.convertProtoTimestampToDate(resp.commitTimestamp);
+                new PreciseDate(resp.commitTimestamp as DateStruct);
           }
 
           callback!(err, resp);

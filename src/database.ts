@@ -16,7 +16,7 @@
 
 import {ApiError, DeleteCallback, ExistsCallback, Metadata, MetadataCallback, ServiceObjectConfig} from '@google-cloud/common';
 import {ServiceObject} from '@google-cloud/common-grpc';
-import {promisifyAll} from '@google-cloud/promisify';
+import {promisify, promisifyAll} from '@google-cloud/promisify';
 import * as arrify from 'arrify';
 import * as extend from 'extend';
 import * as is from 'is';
@@ -1481,8 +1481,21 @@ class Database extends ServiceObject {
         runFn = fn!;
       }
 
-      const runner = new TransactionRunner(this, runFn, options);
-      runner.run().catch(runFn);
+      this.pool_.getWriteSession((err, session, transaction) => {
+        if (err) {
+          runFn(err);
+          return;
+        }
+
+        const release = this.pool_.release.bind(this.pool_, session);
+        const runner =
+            new TransactionRunner(session, transaction, runFn, options);
+
+        runner.run().then(release, err => {
+          setImmediate(runFn, err);
+          release();
+        });
+      });
   }
 
   runTransactionAsync<T = {}>(runFn: AsyncRunTransactionCallback<T>): Promise<T>;
@@ -1539,7 +1552,7 @@ class Database extends ServiceObject {
    *   return data;
    * });
    */
-  runTransactionAsync<T = {}>(optionsOrRunFn: RunTransactionOptions|AsyncRunTransactionCallback<T>, fn?: AsyncRunTransactionCallback<T>): Promise<T> {
+  async runTransactionAsync<T = {}>(optionsOrRunFn: RunTransactionOptions|AsyncRunTransactionCallback<T>, fn?: AsyncRunTransactionCallback<T>): Promise<T> {
       let options: RunTransactionOptions;
       let runFn: AsyncRunTransactionCallback<T>;
 
@@ -1551,8 +1564,16 @@ class Database extends ServiceObject {
         runFn = fn!;
       }
 
-      const runner = new AsyncTransactionRunner<T>(this, runFn, options);
-      return runner.run();
+      const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
+      const [session, transaction] = await promisify(getWriteSession)();
+      const runner =
+          new AsyncTransactionRunner<T>(session, transaction, runFn, options);
+
+      try {
+        return await runner.run();
+      } finally {
+        this.pool_.release(session);
+      }
   }
   /**
    * Create a Session object.
