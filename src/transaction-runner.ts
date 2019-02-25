@@ -21,7 +21,7 @@ import {join} from 'path';
 import {common as p, loadSync} from 'protobufjs';
 import * as through from 'through2';
 
-import {Database} from './database';
+import {Session} from './session';
 import {Transaction} from './transaction';
 
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
@@ -109,11 +109,15 @@ export class DeadlineError extends Error implements ServiceError {
 export abstract class Runner<T> {
   abstract runFn: Function;
   attempts: number;
-  database: Database;
+  session: Session;
+  transaction?: Transaction;
   options: RunTransactionOptions;
-  constructor(database: Database, options?: RunTransactionOptions) {
+  constructor(
+      session: Session, transaction: Transaction,
+      options?: RunTransactionOptions) {
     this.attempts = 0;
-    this.database = database;
+    this.session = session;
+    this.transaction = transaction;
 
     const defaults = {timeout: 3600000};
 
@@ -159,6 +163,24 @@ export abstract class Runner<T> {
     return Math.pow(2, this.attempts) * 1000 + Math.floor(Math.random() * 1000);
   }
   /**
+   * Retrieves a transaction to run against.
+   *
+   * @private
+   *
+   * @returns Promise<Transaction>
+   */
+  async getTransaction(): Promise<Transaction> {
+    if (this.transaction) {
+      const transaction = this.transaction;
+      delete this.transaction;
+      return transaction;
+    }
+
+    const transaction = this.session.transaction();
+    await transaction.begin();
+    return transaction;
+  }
+  /**
    * This function is responsible for getting transactions, running them and
    * handling any errors, retrying if necessary.
    *
@@ -173,14 +195,12 @@ export abstract class Runner<T> {
     let lastError: ServiceError;
 
     while (Date.now() - start < timeout) {
-      const [transaction] = await this.database.getTransaction();
+      const transaction = await this.getTransaction();
 
       try {
         return await this._run(transaction);
       } catch (e) {
         lastError = e;
-      } finally {
-        transaction.end();
       }
 
       if (!RETRYABLE.includes(lastError.code!)) {
@@ -210,9 +230,9 @@ export abstract class Runner<T> {
 export class TransactionRunner extends Runner<void> {
   runFn: RunTransactionCallback;
   constructor(
-      database: Database, runFn: RunTransactionCallback,
+      session: Session, transaction: Transaction, runFn: RunTransactionCallback,
       options?: RunTransactionOptions) {
-    super(database, options);
+    super(session, transaction, options);
     this.runFn = runFn;
   }
   /**
@@ -293,9 +313,9 @@ export class TransactionRunner extends Runner<void> {
 export class AsyncTransactionRunner<T> extends Runner<T> {
   runFn: AsyncRunTransactionCallback<T>;
   constructor(
-      database: Database, runFn: AsyncRunTransactionCallback<T>,
-      options?: RunTransactionOptions) {
-    super(database, options);
+      session: Session, transaction: Transaction,
+      runFn: AsyncRunTransactionCallback<T>, options?: RunTransactionOptions) {
+    super(session, transaction, options);
     this.runFn = runFn;
   }
   /**
