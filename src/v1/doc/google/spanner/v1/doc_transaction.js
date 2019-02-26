@@ -172,7 +172,8 @@
  * reads should be executed within a transaction or at an exact read
  * timestamp.
  *
- * See TransactionOptions.ReadOnly.strong.
+ * See
+ * TransactionOptions.ReadOnly.strong.
  *
  * ### Exact Staleness
  *
@@ -193,7 +194,9 @@
  * equivalent boundedly stale concurrency modes. On the other hand,
  * boundedly stale reads usually return fresher results.
  *
- * See TransactionOptions.ReadOnly.read_timestamp and
+ * See
+ * TransactionOptions.ReadOnly.read_timestamp
+ * and
  * TransactionOptions.ReadOnly.exact_staleness.
  *
  * ### Bounded Staleness
@@ -223,7 +226,9 @@
  * which rows will be read, it can only be used with single-use
  * read-only transactions.
  *
- * See TransactionOptions.ReadOnly.max_staleness and
+ * See
+ * TransactionOptions.ReadOnly.max_staleness
+ * and
  * TransactionOptions.ReadOnly.min_read_timestamp.
  *
  * ### Old Read Timestamps and Garbage Collection
@@ -419,7 +424,8 @@ const TransactionOptions = {
    *
    * @property {boolean} returnReadTimestamp
    *   If true, the Cloud Spanner-selected read timestamp is included in
-   *   the Transaction message that describes the transaction.
+   *   the Transaction message that describes
+   *   the transaction.
    *
    * @typedef ReadOnly
    * @memberof google.spanner.v1
@@ -466,7 +472,8 @@ const Transaction = {
  * Read or
  * ExecuteSql call runs.
  *
- * See TransactionOptions for more information about transactions.
+ * See TransactionOptions for more
+ * information about transactions.
  *
  * @property {Object} singleUse
  *   Execute the read or SQL query in a temporary transaction.
@@ -481,7 +488,8 @@ const Transaction = {
  * @property {Object} begin
  *   Begin a new transaction and execute this read or SQL query in
  *   it. The transaction ID of the new transaction is returned in
- *   ResultSetMetadata.transaction, which is a Transaction.
+ *   ResultSetMetadata.transaction,
+ *   which is a Transaction.
  *
  *   This object should have the same structure as [TransactionOptions]{@link google.spanner.v1.TransactionOptions}
  *
