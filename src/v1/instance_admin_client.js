@@ -876,9 +876,9 @@ class InstanceAdminClient {
    * Until completion of the returned operation:
    *
    *   * Cancelling the operation sets its metadata's
-   *     cancel_time, and begins
-   *     restoring resources to their pre-request values. The operation
-   *     is guaranteed to succeed at undoing all resource changes,
+   *     cancel_time,
+   *     and begins restoring resources to their pre-request values. The
+   *     operation is guaranteed to succeed at undoing all resource changes,
    *     after which point it terminates with a `CANCELLED` status.
    *   * All other attempts to modify the instance are rejected.
    *   * Reading the instance via the API continues to give the pre-request
@@ -907,14 +907,18 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {Object} request.instance
    *   Required. The instance to update, which must always include the instance
-   *   name.  Otherwise, only fields mentioned in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be included.
+   *   name.  Otherwise, only fields mentioned in
+   *   [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need
+   *   be included.
    *
    *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
    * @param {Object} request.fieldMask
-   *   Required. A mask specifying which fields in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should be updated.
-   *   The field mask must always be specified; this prevents any future fields in
-   *   [][google.spanner.admin.instance.v1.Instance] from being erased accidentally by clients that do not know
-   *   about them.
+   *   Required. A mask specifying which fields in
+   *   [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should
+   *   be updated. The field mask must always be specified; this prevents any
+   *   future fields in
+   *   [][google.spanner.admin.instance.v1.Instance] from being erased
+   *   accidentally by clients that do not know about them.
    *
    *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
    * @param {Object} [options]

@@ -23,7 +23,8 @@
  *
  * Keys are represented by lists, where the ith value in the list
  * corresponds to the ith component of the table or index primary key.
- * Individual values are encoded as described here.
+ * Individual values are encoded as described
+ * here.
  *
  * For example, consider the following table definition:
  *
@@ -154,8 +155,8 @@ const KeyRange = {
  *   This object should have the same structure as [ListValue]{@link google.protobuf.ListValue}
  *
  * @property {Object[]} ranges
- *   A list of key ranges. See KeyRange for more information about
- *   key range specifications.
+ *   A list of key ranges. See KeyRange for more
+ *   information about key range specifications.
  *
  *   This object should have the same structure as [KeyRange]{@link google.spanner.v1.KeyRange}
  *
