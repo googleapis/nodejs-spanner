@@ -417,8 +417,8 @@ class DatabaseAdminClient {
    * have a name of the format `<database_name>/operations/<operation_id>` and
    * can be used to track preparation of the database. The
    * metadata field type is
-   * CreateDatabaseMetadata. The
-   * response field type is
+   * CreateDatabaseMetadata.
+   * The response field type is
    * Database, if successful.
    *
    * @param {Object} request
@@ -577,7 +577,8 @@ class DatabaseAdminClient {
    * the format `<database_name>/operations/<operation_id>` and can be used to
    * track execution of the schema change(s). The
    * metadata field type is
-   * UpdateDatabaseDdlMetadata.  The operation has no response.
+   * UpdateDatabaseDdlMetadata.
+   * The operation has no response.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -593,18 +594,20 @@ class DatabaseAdminClient {
    *
    *   Specifying an explicit operation ID simplifies determining
    *   whether the statements were executed in the event that the
-   *   UpdateDatabaseDdl call is replayed,
-   *   or the return value is otherwise lost: the database and
-   *   `operation_id` fields can be combined to form the
+   *   UpdateDatabaseDdl
+   *   call is replayed, or the return value is otherwise lost: the
+   *   database
+   *   and `operation_id` fields can be combined to form the
    *   name of the resulting
-   *   longrunning.Operation: `<database>/operations/<operation_id>`.
+   *   longrunning.Operation:
+   *   `<database>/operations/<operation_id>`.
    *
    *   `operation_id` should be unique within the database, and must be
    *   a valid identifier: `[a-z][a-z0-9_]*`. Note that
    *   automatically-generated operation IDs always begin with an
    *   underscore. If the named operation already exists,
-   *   UpdateDatabaseDdl returns
-   *   `ALREADY_EXISTS`.
+   *   UpdateDatabaseDdl
+   *   returns `ALREADY_EXISTS`.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
