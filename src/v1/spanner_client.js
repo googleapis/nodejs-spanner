@@ -559,10 +559,12 @@ class SpannerClient {
    *
    * Operations inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See Transaction for more details.
+   * the beginning. See Transaction for more
+   * details.
    *
    * Larger result sets can be fetched in streaming fashion by calling
-   * ExecuteStreamingSql instead.
+   * ExecuteStreamingSql
+   * instead.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -606,7 +608,8 @@ class SpannerClient {
    * @param {Object.<string, Object>} [request.paramTypes]
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in params as JSON strings.
+   *   of type `STRING` both appear in
+   *   params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -615,14 +618,17 @@ class SpannerClient {
    * @param {string} [request.resumeToken]
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the interruption. Doing this
-   *   enables the new SQL statement execution to resume where the last one left
-   *   off. The rest of the request parameters must exactly match the
-   *   request that yielded this token.
+   *   PartialResultSet yielded before the
+   *   interruption. Doing this enables the new SQL statement execution to resume
+   *   where the last one left off. The rest of the request parameters must
+   *   exactly match the request that yielded this token.
    * @param {number} [request.queryMode]
    *   Used to control the amount of debugging information returned in
-   *   ResultSetStats. If partition_token is set, query_mode can only
-   *   be set to QueryMode.NORMAL.
+   *   ResultSetStats. If
+   *   partition_token is
+   *   set, query_mode can only
+   *   be set to
+   *   QueryMode.NORMAL.
    *
    *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
    * @param {string} [request.partitionToken]
@@ -686,11 +692,11 @@ class SpannerClient {
   }
 
   /**
-   * Like ExecuteSql, except returns the result
-   * set as a stream. Unlike ExecuteSql, there
-   * is no limit on the size of the returned result set. However, no
-   * individual row in the result set can exceed 100 MiB, and no
-   * column value can exceed 10 MiB.
+   * Like ExecuteSql, except returns the
+   * result set as a stream. Unlike
+   * ExecuteSql, there is no limit on
+   * the size of the returned result set. However, no individual row in the
+   * result set can exceed 100 MiB, and no column value can exceed 10 MiB.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -734,7 +740,8 @@ class SpannerClient {
    * @param {Object.<string, Object>} [request.paramTypes]
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in params as JSON strings.
+   *   of type `STRING` both appear in
+   *   params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -743,14 +750,17 @@ class SpannerClient {
    * @param {string} [request.resumeToken]
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the interruption. Doing this
-   *   enables the new SQL statement execution to resume where the last one left
-   *   off. The rest of the request parameters must exactly match the
-   *   request that yielded this token.
+   *   PartialResultSet yielded before the
+   *   interruption. Doing this enables the new SQL statement execution to resume
+   *   where the last one left off. The rest of the request parameters must
+   *   exactly match the request that yielded this token.
    * @param {number} [request.queryMode]
    *   Used to control the amount of debugging information returned in
-   *   ResultSetStats. If partition_token is set, query_mode can only
-   *   be set to QueryMode.NORMAL.
+   *   ResultSetStats. If
+   *   partition_token is
+   *   set, query_mode can only
+   *   be set to
+   *   QueryMode.NORMAL.
    *
    *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
    * @param {string} [request.partitionToken]
@@ -802,14 +812,15 @@ class SpannerClient {
   /**
    * Reads rows from the database using key lookups and scans, as a
    * simple key/value style alternative to
-   * ExecuteSql.  This method cannot be used to
-   * return a result set larger than 10 MiB; if the read matches more
+   * ExecuteSql.  This method cannot be
+   * used to return a result set larger than 10 MiB; if the read matches more
    * data than that, the read fails with a `FAILED_PRECONDITION`
    * error.
    *
    * Reads inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See Transaction for more details.
+   * the beginning. See Transaction for more
+   * details.
    *
    * Larger result sets can be yielded in streaming fashion by calling
    * StreamingRead instead.
@@ -821,18 +832,22 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned for each row matching
-   *   this request.
+   *   The columns of table to be returned
+   *   for each row matching this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in table to be yielded, unless index
-   *   is present. If index is present, then key_set instead names
-   *   index keys in index.
+   *   primary keys of the rows in table to
+   *   be yielded, unless index is present.
+   *   If index is present, then
+   *   key_set instead names index keys
+   *   in index.
    *
-   *   If the partition_token field is empty, rows are yielded
-   *   in table primary key order (if index is empty) or index key order
-   *   (if index is non-empty).  If the partition_token field is not
-   *   empty, rows will be yielded in an unspecified order.
+   *   If the partition_token
+   *   field is empty, rows are yielded in table primary key order (if
+   *   index is empty) or index key order
+   *   (if index is non-empty).  If the
+   *   partition_token field is
+   *   not empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -844,9 +859,12 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {string} [request.index]
-   *   If non-empty, the name of an index on table. This index is
-   *   used instead of the table primary key when interpreting key_set
-   *   and sorting result rows. See key_set for further information.
+   *   If non-empty, the name of an index on
+   *   table. This index is used instead of
+   *   the table primary key when interpreting
+   *   key_set and sorting result rows.
+   *   See key_set for further
+   *   information.
    * @param {number} [request.limit]
    *   If greater than zero, only the first `limit` rows are yielded. If `limit`
    *   is zero, the default is no limit. A limit cannot be specified if
@@ -854,9 +872,9 @@ class SpannerClient {
    * @param {string} [request.resumeToken]
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the interruption. Doing this
-   *   enables the new read to resume where the last read left off. The
-   *   rest of the request parameters must exactly match the request
+   *   PartialResultSet yielded before the
+   *   interruption. Doing this enables the new read to resume where the last read
+   *   left off. The rest of the request parameters must exactly match the request
    *   that yielded this token.
    * @param {string} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
@@ -912,9 +930,9 @@ class SpannerClient {
   }
 
   /**
-   * Like Read, except returns the result set as a
-   * stream. Unlike Read, there is no limit on the
-   * size of the returned result set. However, no individual row in
+   * Like Read, except returns the result set
+   * as a stream. Unlike Read, there is no
+   * limit on the size of the returned result set. However, no individual row in
    * the result set can exceed 100 MiB, and no column value can exceed
    * 10 MiB.
    *
@@ -925,18 +943,22 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned for each row matching
-   *   this request.
+   *   The columns of table to be returned
+   *   for each row matching this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in table to be yielded, unless index
-   *   is present. If index is present, then key_set instead names
-   *   index keys in index.
+   *   primary keys of the rows in table to
+   *   be yielded, unless index is present.
+   *   If index is present, then
+   *   key_set instead names index keys
+   *   in index.
    *
-   *   If the partition_token field is empty, rows are yielded
-   *   in table primary key order (if index is empty) or index key order
-   *   (if index is non-empty).  If the partition_token field is not
-   *   empty, rows will be yielded in an unspecified order.
+   *   If the partition_token
+   *   field is empty, rows are yielded in table primary key order (if
+   *   index is empty) or index key order
+   *   (if index is non-empty).  If the
+   *   partition_token field is
+   *   not empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -948,9 +970,12 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {string} [request.index]
-   *   If non-empty, the name of an index on table. This index is
-   *   used instead of the table primary key when interpreting key_set
-   *   and sorting result rows. See key_set for further information.
+   *   If non-empty, the name of an index on
+   *   table. This index is used instead of
+   *   the table primary key when interpreting
+   *   key_set and sorting result rows.
+   *   See key_set for further
+   *   information.
    * @param {number} [request.limit]
    *   If greater than zero, only the first `limit` rows are yielded. If `limit`
    *   is zero, the default is no limit. A limit cannot be specified if
@@ -958,9 +983,9 @@ class SpannerClient {
    * @param {string} [request.resumeToken]
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the interruption. Doing this
-   *   enables the new read to resume where the last read left off. The
-   *   rest of the request parameters must exactly match the request
+   *   PartialResultSet yielded before the
+   *   interruption. Doing this enables the new read to resume where the last read
+   *   left off. The rest of the request parameters must exactly match the request
    *   that yielded this token.
    * @param {string} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
@@ -1003,7 +1028,8 @@ class SpannerClient {
 
   /**
    * Begins a new transaction. This step can often be skipped:
-   * Read, ExecuteSql and
+   * Read,
+   * ExecuteSql and
    * Commit can begin a new transaction as a
    * side-effect.
    *
@@ -1140,8 +1166,9 @@ class SpannerClient {
   /**
    * Rolls back a transaction, releasing any locks it holds. It is a good
    * idea to call this for any transaction that includes one or more
-   * Read or ExecuteSql requests and
-   * ultimately decides not to commit.
+   * Read or
+   * ExecuteSql requests and ultimately
+   * decides not to commit.
    *
    * `Rollback` returns `OK` if it successfully aborts the transaction, the
    * transaction was already aborted, or the transaction is not
@@ -1192,10 +1219,11 @@ class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a query
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by ExecuteStreamingSql to specify a subset
-   * of the query result to read.  The same session and read-only transaction
-   * must be used by the PartitionQueryRequest used to create the
-   * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+   * by ExecuteStreamingSql to
+   * specify a subset of the query result to read.  The same session and
+   * read-only transaction must be used by the PartitionQueryRequest used to
+   * create the partition tokens and the ExecuteSqlRequests that use the
+   * partition tokens.
    *
    * Partition tokens become invalid when the session used to create them
    * is deleted, is idle for too long, begins a new transaction, or becomes too
@@ -1215,7 +1243,8 @@ class SpannerClient {
    *   then unions all results.
    *
    *   This must not contain DML commands, such as INSERT, UPDATE, or
-   *   DELETE. Use ExecuteStreamingSql with a
+   *   DELETE. Use
+   *   ExecuteStreamingSql with a
    *   PartitionedDml transaction for large, partition-friendly DML operations.
    * @param {Object} [request.transaction]
    *   Read only snapshot transactions are supported, read/write and single use
@@ -1242,7 +1271,8 @@ class SpannerClient {
    * @param {Object.<string, Object>} [request.paramTypes]
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in params as JSON strings.
+   *   of type `STRING` both appear in
+   *   params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL query parameters. See the
@@ -1299,12 +1329,13 @@ class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a read
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by StreamingRead to specify a subset of the read
-   * result to read.  The same session and read-only transaction must be used by
-   * the PartitionReadRequest used to create the partition tokens and the
-   * ReadRequests that use the partition tokens.  There are no ordering
-   * guarantees on rows returned among the returned partition tokens, or even
-   * within each individual StreamingRead call issued with a partition_token.
+   * by StreamingRead to specify a
+   * subset of the read result to read.  The same session and read-only
+   * transaction must be used by the PartitionReadRequest used to create the
+   * partition tokens and the ReadRequests that use the partition tokens.  There
+   * are no ordering guarantees on rows returned among the returned partition
+   * tokens, or even within each individual StreamingRead call issued with a
+   * partition_token.
    *
    * Partition tokens become invalid when the session used to create them
    * is deleted, is idle for too long, begins a new transaction, or becomes too
@@ -1319,8 +1350,11 @@ class SpannerClient {
    *   Required. The name of the table in the database to be read.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in table to be yielded, unless index
-   *   is present. If index is present, then key_set instead names
+   *   primary keys of the rows in
+   *   table to be yielded, unless
+   *   index is present. If
+   *   index is present, then
+   *   key_set instead names
    *   index keys in index.
    *
    *   It is not an error for the `key_set` to name rows that do not
@@ -1333,12 +1367,15 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {string} [request.index]
-   *   If non-empty, the name of an index on table. This index is
-   *   used instead of the table primary key when interpreting key_set
-   *   and sorting result rows. See key_set for further information.
+   *   If non-empty, the name of an index on
+   *   table. This index is used
+   *   instead of the table primary key when interpreting
+   *   key_set and sorting
+   *   result rows. See key_set
+   *   for further information.
    * @param {string[]} [request.columns]
-   *   The columns of table to be returned for each row matching
-   *   this request.
+   *   The columns of table to be
+   *   returned for each row matching this request.
    * @param {Object} [request.partitionOptions]
    *   Additional options that affect how many partitions are created.
    *
