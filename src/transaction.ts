@@ -141,7 +141,7 @@ export interface RunUpdateCallback {
  *     // Error handling omitted.
  *   }
  *
- *   // It is called when the snapshot finishes.
+ *   // It should be called when the snapshot finishes.
  *   transaction.end();
  * });
  */
