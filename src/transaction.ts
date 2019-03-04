@@ -115,7 +115,7 @@ export interface RunUpdateCallback {
  * to read at timestamps in the past.
  *
  * When finished with the Snapshot, call {@link Snapshot#end} to
- * release the underlying {@link Session}. Failure to do so, can result in a
+ * release the underlying {@link Session}. Failure to do so can result in a
  * Session leak.
  *
  * **This object is created and returned from {@link Database#getSnapshot}.**
@@ -393,7 +393,7 @@ export class Snapshot extends EventEmitter {
    *   });
    *
    * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * performs automatically.</caption>
+   * will perform automatically.</caption>
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name'],
@@ -605,7 +605,7 @@ export class Snapshot extends EventEmitter {
    * });
    *
    * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * performs automatically.</caption>
+   * will perform automatically.</caption>
    * query.json = true;
    *
    * transaction.read('Singers', query, function(err, rows) {
