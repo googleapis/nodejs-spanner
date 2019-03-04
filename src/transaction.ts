@@ -651,8 +651,8 @@ export class Snapshot extends EventEmitter {
    * **Performance Considerations:**
    *
    * This method wraps the streaming method,
-   * {@link Snapshot#run} for your convenience. All rows are stored in memory before being released to your callback. If you intend
-   * on receiving a lot of results from your query, consider using the streaming
+   * {@link Snapshot#run} for your convenience. All rows are stored in memory before being released to your callback. 
+   * If you intend on receiving a lot of results from your query, consider using the streaming
    * method, so you can free each result from memory after consuming it.
    *
    * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
@@ -680,7 +680,7 @@ export class Snapshot extends EventEmitter {
    *   // ]
    * });
    *
-   * @example <caption>The SQL query string contains parameter placeholders.
+   * @example <caption>The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
    * </caption>
    * const query = {
@@ -779,7 +779,7 @@ export class Snapshot extends EventEmitter {
    *     // All results retrieved.
    *   });
    *
-   * @example <caption>The SQL query string contains parameter placeholders.
+   * @example <caption>The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
    * </caption>
    * const query = {
