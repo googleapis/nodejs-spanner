@@ -163,8 +163,8 @@ export class Snapshot extends EventEmitter {
    * @type {?(string|Buffer)}
    */
   /**
-   * Whether or not the transaction has ended. If true, no further requests
-   * are made and the transaction is discarded.
+   * Whether or not the transaction has ended. If true, make no further 
+   * requests, and discard the transaction.
    *
    * @name Snapshot#ended
    * @type {boolean}
@@ -651,9 +651,10 @@ export class Snapshot extends EventEmitter {
    * **Performance Considerations:**
    *
    * This method wraps the streaming method,
-   * {@link Snapshot#run} for your convenience. All rows are stored in memory before being released to your callback. 
-   * If you intend on receiving a lot of results from your query, consider using the streaming
-   * method, so you can free each result from memory after consuming it.
+   * {@link Snapshot#run} for your convenience. All rows are stored in memory 
+   * before releasing to your callback. If you intend to receive a lot of 
+   * results from your query, consider using the streaming method, 
+   * so you can free each result from memory after consuming it.
    *
    * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
    *
