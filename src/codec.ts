@@ -18,7 +18,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import * as arrify from 'arrify';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-import {google as spanner_client} from '../proto/spanner';
+import {ProtoITimestamp} from '../src/common';
 
 import {SpannerClient as s} from './v1';
 
@@ -521,7 +521,7 @@ function convertToListValue<T>(value: T): p.IListValue {
  * @param {number} ms The milliseconds to convert.
  * @returns {object}
  */
-function convertMsToProtoTimestamp(ms: number): spanner_client.protobuf.ITimestamp {
+function convertMsToProtoTimestamp(ms: number): ProtoITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
   const nanos = Math.round((rawSeconds - seconds) * 1e9);
@@ -536,7 +536,7 @@ function convertMsToProtoTimestamp(ms: number): spanner_client.protobuf.ITimesta
  * @param {object} timestamp The protobuf timestamp.
  * @returns {Date}
  */
-function convertProtoTimestampToDate({nanos = 0, seconds = 0}: spanner_client.protobuf.ITimestamp):
+function convertProtoTimestampToDate({nanos = 0, seconds = 0}: ProtoITimestamp):
     Date {
   const ms = Math.floor(nanos!) / 1e6;
   const s = Math.floor(seconds as number);
