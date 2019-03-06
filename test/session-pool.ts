@@ -17,21 +17,22 @@
 import * as assert from 'assert';
 import * as events from 'events';
 import * as extend from 'extend';
-import * as PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as stackTrace from 'stack-trace';
 import * as timeSpan from 'time-span';
+import * as PQueue from 'p-queue';
 
 import {Database} from '../src/database';
 import {Session, types} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
+import { Any } from '../src/common';
 
 let pQueueOverride: typeof PQueue|null = null;
 
 function FakePQueue(options) {
-  return new (pQueueOverride || PQueue)(options);
+  return new (pQueueOverride as Any || PQueue)(options);
 }
 
 class FakeTransaction {
@@ -276,7 +277,7 @@ describe('SessionPool', () => {
                          constructor(options) {
                            return options;
                          }
-                       }) as typeof PQueue;
+                       }) as Any;
 
       sessionPool = new SessionPool(DATABASE, poolOptions);
       assert.deepStrictEqual(sessionPool._requests, {
@@ -289,7 +290,7 @@ describe('SessionPool', () => {
                          constructor(options) {
                            return options;
                          }
-                       }) as typeof PQueue;
+                       }) as Any;
 
       sessionPool = new SessionPool(DATABASE);
       assert.deepStrictEqual(sessionPool._acquires, {

@@ -1810,7 +1810,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** CommitRequest transactionId */
-                transactionId?: (Uint8Array|string|null);
+                transactionId?: (Uint8Array|null);
 
                 /** CommitRequest singleUseTransaction */
                 singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -1832,7 +1832,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId: (Uint8Array|string);
+                public transactionId: Uint8Array;
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -2011,7 +2011,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** RollbackRequest transactionId */
-                transactionId?: (Uint8Array|string|null);
+                transactionId?: (Uint8Array|null);
             }
 
             /** Represents a RollbackRequest. */
@@ -3983,7 +3983,7 @@ export namespace google {
                 singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id */
-                id?: (Uint8Array|string|null);
+                id?: (Uint8Array|null);
 
                 /** TransactionSelector begin */
                 begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -4274,6 +4274,7 @@ export namespace google {
             }
 
             namespace StructType {
+
                 /** Properties of a Field. */
                 interface IField {
 

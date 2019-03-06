@@ -16,12 +16,13 @@
 
 import {EventEmitter} from 'events';
 import * as is from 'is';
-import * as PQueue from 'p-queue';
+import PQueue from 'p-queue';
 import * as trace from 'stack-trace';
 
 import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
+import { Any } from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -208,12 +209,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   database: Database;
   isOpen: boolean;
   options: SessionPoolOptions;
-  _acquires: PQueue;
+  _acquires: Any;
   _evictHandle!: NodeJS.Timer;
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
   _pingHandle!: NodeJS.Timer;
-  _requests: PQueue;
+  _requests: Any;
   _traces: Map<string, trace.StackFrame[]>;
 
   /**
