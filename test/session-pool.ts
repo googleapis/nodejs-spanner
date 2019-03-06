@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as events from 'events';
 import * as extend from 'extend';
-import * as PQueue from 'p-queue';
+import PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as stackTrace from 'stack-trace';
@@ -33,6 +33,8 @@ let pQueueOverride: typeof PQueue|null = null;
 function FakePQueue(options) {
   return new (pQueueOverride || PQueue)(options);
 }
+
+FakePQueue.default = FakePQueue;
 
 class FakeTransaction {
   options;
