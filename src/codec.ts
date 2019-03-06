@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Service} from '@google-cloud/common-grpc';
-import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
+import {PreciseDate} from '@google-cloud/precise-date';
 import * as arrify from 'arrify';
 import * as is from 'is';
 import {common as p} from 'protobufjs';

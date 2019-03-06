@@ -22,26 +22,23 @@ import { ServiceError } from 'grpc';
 import * as through from 'through2';
 import { Operation as GaxOperation } from 'google-gax/build/src/longrunning';
 
-import { google as spanner_client } from '../proto/spanner';
-import { google as database_admin_client } from '../proto/spanner_database_admin';
-
 import { Json } from './codec';
 import { Database } from './database';
 import { PartialResultStream, Row } from './partial-result-stream';
 import { ReadRequest, TimestampBounds, Transaction, Snapshot } from './transaction';
-import { Schema } from './common';
+import { Schema, ProtoLongrunningIOperation, RequestCallback, ProtoICommitResponse } from './common';
 
 export type Key = string | string[];
+export type CreateTableResponse = [Table, GaxOperation, ProtoLongrunningIOperation];
+export type CommitCallback = RequestCallback<ProtoICommitResponse>;
+export type CommitResponse = [ProtoICommitResponse];
+export type DeleteResponse = [GaxOperation, ProtoLongrunningIOperation];
 
 export interface CreateTableCallback {
   (err: ServiceError, table?: null, operation?: null, apiResponse?: null): void;
   (err: null, table: Table, operation: GaxOperation,
     apiResponse: DeleteResponse): void;
 }
-export type CreateTableResponse = [Table, GaxOperation, database_admin_client.longrunning.Operation];
-export type CommitResponse = [spanner_client.spanner.v1.CommitResponse];
-export type CommitCallback = spanner_client.spanner.v1.Spanner.CommitCallback;
-export type DeleteResponse = [GaxOperation, database_admin_client.longrunning.Operation];
 export interface DropTableCallback {
   (err: ServiceError, operation?: null, apiResponse?: null): void;
   (err: null, operation: GaxOperation, apiResponse: DeleteResponse): void;

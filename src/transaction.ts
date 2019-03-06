@@ -31,25 +31,23 @@ import {PartialResultStream, partialResultStream, ResumeToken, Row} from './part
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
-import { Any } from './common';
+import { RequestCallback, ProtoITransactionOptions, ProtoITransaction, ProtoTransaction, ProtoITimestamp, ProtoIReadOnly, ProtoICommitResponse, ProtoIMutation } from './common';
 
 export type Rows = Array<Row|Json>;
+export type BeginResponse = [s.Transaction];
+export type CommitPromise = Promise<[ProtoICommitResponse]>;
+export type ReadResponse = [Rows];
+export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
+export type RunUpdatePromise = Promise<[number]>;
+export type BeginTransactionCallback = RequestCallback<ProtoTransaction>;
+export type CommitCallback = RequestCallback<ProtoICommitResponse>;
 
-export interface TimestampBounds {
-  strong?: boolean;
-  minReadTimestamp?: PreciseDate|p.ITimestamp;
-  maxStaleness?: number|p.IDuration;
-  readTimestamp?: PreciseDate|p.ITimestamp;
-  exactStaleness?: number|p.IDuration;
-  returnReadTimestamp?: boolean;
+export interface CommitRequest {
+  session: string;
+  transactionId?: Uint8Array | string | null;
+  singleUseTransaction?: ProtoITransactionOptions;
+  mutations: ProtoIMutation[];
 }
-
-export interface RequestOptions {
-  json?: boolean;
-  jsonOptions?: JSONOptions;
-  gaxOptions?: CallOptions;
-}
-
 export interface ExecuteSqlRequest extends RequestOptions {
   sql: string;
   params?: {[param: string]: string};
@@ -59,14 +57,15 @@ export interface ExecuteSqlRequest extends RequestOptions {
   partitionToken?: Uint8Array|string;
   seqno?: number;
 }
-
 export interface KeyRange {
   startClosed?: Value[];
   startOpen?: Value[];
   endClosed?: Value[];
   endOpen?: Value[];
 }
-
+export interface ReadCallback {
+  (err: null|ServiceError, rows: Rows): void;
+}
 export interface ReadRequest extends RequestOptions {
   keySet?: s.KeySet;
   keys?: string[];
@@ -75,19 +74,13 @@ export interface ReadRequest extends RequestOptions {
   columns?: string[];
   limit?: number;
   resumeToken?: ResumeToken;
-  partitionToken?: Uint8Array|string;
+  partitionToken?: Uint8Array | string;
 }
-
-export type BeginPromise = Promise<[s.Transaction]>;
-export type CommitPromise = Promise<[spanner_client.spanner.v1.CommitResponse]>;
-export type ReadPromise = Promise<[Rows]>;
-export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
-export type RunUpdatePromise = Promise<[number]>;
-
-export interface ReadCallback {
-  (err: null|ServiceError, rows: Rows): void;
+export interface RequestOptions {
+  json?: boolean;
+  jsonOptions?: JSONOptions;
+  gaxOptions?: CallOptions;
 }
-
 export interface RunCallback {
   (err: null|ServiceError, rows: Rows, stats: s.ResultSetStats): void;
 }
@@ -95,30 +88,19 @@ export interface RunCallback {
 export interface RunUpdateCallback {
   (err: null|ServiceError, rowCount: number): void;
 }
-
-export interface CommitRequest {
-  session: string;
-  transactionId?: Uint8Array|string|null;
-  singleUseTransaction?: ProtoITransactionOptions;
-  mutations: ProtoIMutation[];
+export interface TimestampBounds {
+  strong?: boolean;
+  minReadTimestamp?: PreciseDate | p.ITimestamp;
+  maxStaleness?: number | p.IDuration;
+  readTimestamp?: PreciseDate | p.ITimestamp;
+  exactStaleness?: number | p.IDuration;
+  returnReadTimestamp?: boolean;
 }
-
 export interface TransactionSelector {
   singleUse?: ProtoITransactionOptions;
   id?: Uint8Array|string|null;
   begin?: ProtoITransactionOptions|null;
 }
-
-export type ProtoITransactionOptions = spanner_client.spanner.v1.ITransactionOptions;
-export type ProtoITransaction = spanner_client.spanner.v1.ITransaction;
-export type ProtoTransaction = spanner_client.spanner.v1.Transaction;
-export type ProtoITimestamp = spanner_client.protobuf.ITimestamp;
-export type ProtoBeginTransactionCallback = spanner_client.spanner.v1.Spanner.BeginTransactionCallback;
-export type ProtoIBeginTransactionRequest = spanner_client.spanner.v1.IBeginTransactionRequest;
-export type ProtoIReadOnly = spanner_client.spanner.v1.TransactionOptions.IReadOnly;
-export type ProtoCommitCallback = spanner_client.spanner.v1.Spanner.CommitCallback;
-export type ProtoCommitResponse = spanner_client.spanner.v1.CommitResponse;
-export type ProtoIMutation = spanner_client.spanner.v1.IMutation;
 
 /**
  * @typedef {object} TimestampBounds
@@ -236,8 +218,8 @@ export class Snapshot extends EventEmitter {
     this._options = {readOnly};
   }
 
-  begin(): BeginPromise;
-  begin(callback: ProtoBeginTransactionCallback): void;
+  begin(): Promise<BeginResponse>;
+  begin(callback: BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -276,10 +258,10 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: ProtoBeginTransactionCallback): void|BeginPromise {
+  begin(callback?: BeginTransactionCallback): void|Promise<BeginResponse> {
     const session = this.session.formattedName_!;
-    const options: ProtoITransactionOptions = this._options;
-    const reqOpts: ProtoIBeginTransactionRequest = {session, options};
+    const options = this._options;
+    const reqOpts = {session, options};
 
     this.request(
         {
@@ -287,7 +269,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
         },
-      (err: null|ServiceError, resp: ProtoTransaction) => {
+      (err: ServiceError|null, resp: ProtoTransaction) => {
           if (err) {
             callback!(err, resp);
             return;
@@ -536,7 +518,7 @@ export class Snapshot extends EventEmitter {
     process.nextTick(() => this.emit('end'));
   }
 
-  read(table: string, request: ReadRequest): ReadPromise;
+  read(table: string, request: ReadRequest): Promise<ReadResponse>;
   read(table: string, callback: ReadCallback): void;
   read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
@@ -650,7 +632,7 @@ export class Snapshot extends EventEmitter {
    */
   read(
       table: string, requestOrCallback: ReadRequest|ReadCallback,
-      cb?: ReadCallback): void|ReadPromise {
+      cb?: ReadCallback): void|Promise<ReadResponse> {
     const rows: Rows = [];
 
     let request: ReadRequest;
@@ -748,7 +730,7 @@ export class Snapshot extends EventEmitter {
   run(query: string|ExecuteSqlRequest,
       callback?: RunCallback): void|RunPromise {
     const rows: Rows = [];
-    let stats: Any;
+    let stats;
 
     this.runStream(query)
         .on('error', callback!)
@@ -1156,7 +1138,7 @@ export class Transaction extends Dml {
   }
 
   commit(): CommitPromise;
-  commit(callback: ProtoCommitCallback): void;
+  commit(callback: CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1203,7 +1185,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: ProtoCommitCallback): void|CommitPromise {
+  commit(callback?: CommitCallback): void|CommitPromise {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
@@ -1220,7 +1202,7 @@ export class Transaction extends Dml {
           method: 'commit',
           reqOpts,
         },
-        (err: null|Error, resp: ProtoCommitResponse) => {
+        (err: null|Error, resp: ProtoICommitResponse) => {
           this.end();
 
           if (resp && resp.commitTimestamp) {
