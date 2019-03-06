@@ -38,7 +38,7 @@ export interface CreateTableCallback {
   (err: null, table: Table, operation: GaxOperation,
     apiResponse: DeleteResponse): void;
 }
-export type CreateTableResponse = [Table, GaxOperation, database_admin_client.longrunning.Operation]
+export type CreateTableResponse = [Table, GaxOperation, database_admin_client.longrunning.Operation];
 export type CommitResponse = [spanner_client.spanner.v1.CommitResponse];
 export type CommitCallback = spanner_client.spanner.v1.Spanner.CommitCallback;
 export type DeleteResponse = [GaxOperation, database_admin_client.longrunning.Operation];
