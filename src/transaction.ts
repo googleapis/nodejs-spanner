@@ -31,6 +31,7 @@ import {PartialResultStream, partialResultStream, ResumeToken, Row} from './part
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
+import { Any } from './common';
 
 export type Rows = Array<Row|Json>;
 
@@ -98,15 +99,26 @@ export interface RunUpdateCallback {
 export interface CommitRequest {
   session: string;
   transactionId?: Uint8Array|string|null;
-  singleUseTransaction?: spanner_client.spanner.v1.ITransactionOptions;
-  mutations: spanner_client.spanner.v1.IMutation[];
+  singleUseTransaction?: ProtoITransactionOptions;
+  mutations: ProtoIMutation[];
 }
 
 export interface TransactionSelector {
-  singleUse?: spanner_client.spanner.v1.ITransactionOptions;
+  singleUse?: ProtoITransactionOptions;
   id?: Uint8Array|string|null;
-  begin?: spanner_client.spanner.v1.ITransactionOptions|null;
+  begin?: ProtoITransactionOptions|null;
 }
+
+export type ProtoITransactionOptions = spanner_client.spanner.v1.ITransactionOptions;
+export type ProtoITransaction = spanner_client.spanner.v1.ITransaction;
+export type ProtoTransaction = spanner_client.spanner.v1.Transaction;
+export type ProtoITimestamp = spanner_client.protobuf.ITimestamp;
+export type ProtoBeginTransactionCallback = spanner_client.spanner.v1.Spanner.BeginTransactionCallback;
+export type ProtoIBeginTransactionRequest = spanner_client.spanner.v1.IBeginTransactionRequest;
+export type ProtoIReadOnly = spanner_client.spanner.v1.TransactionOptions.IReadOnly;
+export type ProtoCommitCallback = spanner_client.spanner.v1.Spanner.CommitCallback;
+export type ProtoCommitResponse = spanner_client.spanner.v1.CommitResponse;
+export type ProtoIMutation = spanner_client.spanner.v1.IMutation;
 
 /**
  * @typedef {object} TimestampBounds
@@ -161,12 +173,12 @@ export interface TransactionSelector {
  * });
  */
 export class Snapshot extends EventEmitter {
-  protected _options!: spanner_client.spanner.v1.ITransactionOptions;
+  protected _options!: ProtoITransactionOptions;
   id?: string|Uint8Array;
   ended: boolean;
-  metadata?: spanner_client.spanner.v1.ITransaction;
+  metadata?: ProtoITransaction;
   readTimestamp?: PreciseDate;
-  readTimestampProto?: spanner_client.protobuf.ITimestamp;
+  readTimestampProto?: ProtoITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -225,7 +237,7 @@ export class Snapshot extends EventEmitter {
   }
 
   begin(): BeginPromise;
-  begin(callback: spanner_client.spanner.v1.Spanner.BeginTransactionCallback): void;
+  begin(callback: ProtoBeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -264,10 +276,10 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: spanner_client.spanner.v1.Spanner.BeginTransactionCallback): void|BeginPromise {
+  begin(callback?: ProtoBeginTransactionCallback): void|BeginPromise {
     const session = this.session.formattedName_!;
-    const options: spanner_client.spanner.v1.ITransactionOptions = this._options;
-    const reqOpts: spanner_client.spanner.v1.IBeginTransactionRequest = {session, options};
+    const options: ProtoITransactionOptions = this._options;
+    const reqOpts: ProtoIBeginTransactionRequest = {session, options};
 
     this.request(
         {
@@ -275,7 +287,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
         },
-      (err: null | ServiceError, resp: spanner_client.spanner.v1.Transaction) => {
+      (err: null|ServiceError, resp: ProtoTransaction) => {
           if (err) {
             callback!(err, resp);
             return;
@@ -736,7 +748,7 @@ export class Snapshot extends EventEmitter {
   run(query: string|ExecuteSqlRequest,
       callback?: RunCallback): void|RunPromise {
     const rows: Rows = [];
-    let stats;
+    let stats: Any;
 
     this.runStream(query)
         .on('error', callback!)
@@ -902,8 +914,8 @@ export class Snapshot extends EventEmitter {
    * @param {TimestampBounds} options The user supplied options.
    * @returns {object}
    */
-  static encodeTimestampBounds(options: TimestampBounds): spanner_client.spanner.v1.TransactionOptions.IReadOnly {
-    const readOnly: spanner_client.spanner.v1.TransactionOptions.IReadOnly = {};
+  static encodeTimestampBounds(options: TimestampBounds): ProtoIReadOnly {
+    const readOnly: ProtoIReadOnly = {};
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
@@ -1144,7 +1156,7 @@ export class Transaction extends Dml {
   }
 
   commit(): CommitPromise;
-  commit(callback: spanner_client.spanner.v1.Spanner.CommitCallback): void;
+  commit(callback: ProtoCommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1191,7 +1203,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: spanner_client.spanner.v1.Spanner.CommitCallback): void | CommitPromise {
+  commit(callback?: ProtoCommitCallback): void|CommitPromise {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
@@ -1208,7 +1220,7 @@ export class Transaction extends Dml {
           method: 'commit',
           reqOpts,
         },
-        (err: null|Error, resp: spanner_client.spanner.v1.CommitResponse) => {
+        (err: null|Error, resp: ProtoCommitResponse) => {
           this.end();
 
           if (resp && resp.commitTimestamp) {
