@@ -17,7 +17,7 @@
 'use strict';
 
 import * as assert from 'assert';
-import pLimit = require('p-limit');
+import pLimit from 'p-limit';
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
 import * as extend from 'extend';
