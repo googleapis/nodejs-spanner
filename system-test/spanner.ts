@@ -3822,7 +3822,7 @@ describe('Spanner', () => {
           let err;
 
           try {
-            await txn.batchUpdate();
+            await txn.batchUpdate(null);
           } catch (e) {
             err = e;
           }
