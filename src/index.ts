@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import {Service, Operation} from '@google-cloud/common-grpc';
 import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -36,6 +34,8 @@ import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
+import { GrpcClientOptions } from 'google-gax';
+import { ChannelCredentials } from 'grpc';
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -43,6 +43,12 @@ const gapic = Object.freeze({
 });
 
 const gcpApiConfig = require('./spanner_grpc_config.json');
+
+export interface SpannerOptions extends GrpcClientOptions {
+  servicePath?: string;
+  port?: number;
+  sslCreds?: ChannelCredentials;
+}
 
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
@@ -176,7 +182,7 @@ class Spanner extends Service {
   options: GoogleAuthOptions;
   auth: GoogleAuth;
   clients_: Map<string, {}>;
-  instances_: Map<string, {}>;
+  instances_: Map<string, Instance>;
   getInstancesStream: Function;
 
   /**
@@ -188,7 +194,7 @@ class Spanner extends Service {
    */
   static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
 
-  constructor(options) {
+  constructor(options?: SpannerOptions) {
     const scopes: Array<{}> = [];
     const clientClasses = [
       gapic.v1.DatabaseAdminClient,
@@ -468,7 +474,8 @@ class Spanner extends Service {
    *   const instances = data[0];
    * });
    */
-  getInstances(query, callback?) {
+  // tslint:disable-next-line no-any
+  getInstances(query?, callback?): any {
     const self = this;
     if (is.fn(query)) {
       callback = query;
@@ -571,7 +578,8 @@ class Spanner extends Service {
    *   const instanceConfigs = data[0];
    * });
    */
-  getInstanceConfigs(query, callback?) {
+  // tslint:disable-next-line no-any
+  getInstanceConfigs(query?, callback?): any {
     if (is.fn(query)) {
       callback = query;
       query = {};
@@ -622,7 +630,7 @@ class Spanner extends Service {
    *     this.end();
    *   });
    */
-  getInstanceConfigsStream(query) {
+  getInstanceConfigsStream(query?) {
     const reqOpts = extend({}, query, {
       parent: 'projects/' + this.projectId,
     });
@@ -655,7 +663,7 @@ class Spanner extends Service {
     if (!this.instances_.has(key)) {
       this.instances_.set(key, new Instance(this, name));
     }
-    return this.instances_.get(key);
+    return this.instances_.get(key)!;
   }
 
   /**
@@ -878,7 +886,7 @@ class Spanner extends Service {
    *   age: 32
    * });
    */
-  static struct(value) {
+  static struct(value?) {
     if (Array.isArray(value)) {
       return codec.Struct.fromArray(value);
     }

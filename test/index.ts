@@ -470,7 +470,7 @@ describe('Spanner', () => {
       it('should create an Instance and return an Operation', done => {
         const formattedName = 'formatted-name';
         sandbox.stub(FakeInstance, 'formatName_').returns(formattedName);
-        const fakeInstanceInstance = {};
+        const fakeInstanceInstance = {} as spnr.Instance;
         const instanceStub =
             sandbox.stub(spanner, 'instance').returns(fakeInstanceInstance);
 
@@ -565,7 +565,7 @@ describe('Spanner', () => {
       });
 
       it('should create and return Instance objects', done => {
-        const fakeInstanceInstance = {};
+        const fakeInstanceInstance = {} as spnr.Instance;
 
         spanner.instance = (name) => {
           assert.strictEqual(name, INSTANCES[0].name);
@@ -686,7 +686,7 @@ describe('Spanner', () => {
 
     it('should re-use cached objects', () => {
       const cache = spanner.instances_;
-      const fakeInstance = {};
+      const fakeInstance = {} as spnr.Instance;
       cache.set(NAME, fakeInstance);
 
       const instance = spanner.instance(NAME);
