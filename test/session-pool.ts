@@ -17,11 +17,11 @@
 import * as assert from 'assert';
 import * as events from 'events';
 import * as extend from 'extend';
+import PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as stackTrace from 'stack-trace';
 import * as timeSpan from 'time-span';
-import * as PQueue from 'p-queue';
 
 import {Database} from '../src/database';
 import {Session, types} from '../src/session';
@@ -34,6 +34,8 @@ let pQueueOverride: typeof PQueue|null = null;
 function FakePQueue(options) {
   return new (pQueueOverride as Any || PQueue)(options);
 }
+
+FakePQueue.default = FakePQueue;
 
 class FakeTransaction {
   options;
