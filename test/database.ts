@@ -28,6 +28,7 @@ import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 import * as db from '../src/database';
 import {Instance} from '../src';
+import {TimestampBounds} from '../src/transaction';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -1256,9 +1257,9 @@ describe('Database', () => {
     let fakeSnapshot: FakeTransaction;
     let fakeStream: Transform;
 
-    let getReadSessionStub: sinon.SinonStub;
-    let snapshotStub: sinon.SinonStub;
-    let runStreamStub: sinon.SinonStub;
+    let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
+    let snapshotStub: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
+    let runStreamStub: sinon.SinonStub<[string|{}], Transform>;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1521,9 +1522,9 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakeSnapshot: FakeTransaction;
 
-    let beginSnapshotStub: sinon.SinonStub;
-    let getReadSessionStub: sinon.SinonStub;
-    let snapshotStub: sinon.SinonStub;
+    let beginSnapshotStub: sinon.SinonStub<[Function], void>;
+    let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
+    let snapshotStub: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1618,7 +1619,7 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakeTransaction: FakeTransaction;
 
-    let getWriteSessionStub: sinon.SinonStub;
+    let getWriteSessionStub: sinon.SinonStub<[WriteSessionCallback], void>;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1750,10 +1751,10 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakePartitionedDml: FakeTransaction;
 
-    let getReadSessionStub: sinon.SinonStub;
-    let partitionedDmlStub: sinon.SinonStub;
-    let beginStub: sinon.SinonStub;
-    let runUpdateStub: sinon.SinonStub;
+    let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
+    let partitionedDmlStub: sinon.SinonStub<[], FakeTransaction>;
+    let beginStub: sinon.SinonStub<[Function], void>;
+    let runUpdateStub: sinon.SinonStub<[string|{}, Function], void>;
 
     beforeEach(() => {
       fakePool = database.pool_;

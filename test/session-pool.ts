@@ -442,7 +442,7 @@ describe('SessionPool', () => {
   });
 
   describe('open', () => {
-    let fillStub: sinon.SinonStub;
+    let fillStub: sinon.SinonStub<[], Promise<void>>;
 
     beforeEach(() => {
       sessionPool._stopHouseKeeping = sandbox.stub();
@@ -479,7 +479,7 @@ describe('SessionPool', () => {
   });
 
   describe('release', () => {
-    let prepStub: sinon.SinonStub;
+    let prepStub: sinon.SinonStub<[Session], Promise<void>>;
 
     beforeEach(() => {
       prepStub = sandbox.stub(sessionPool, '_prepareTransaction').resolves();
@@ -880,7 +880,7 @@ describe('SessionPool', () => {
   });
 
   describe('_evictIdleSessions', () => {
-    let destroyStub: sinon.SinonStub;
+    let destroyStub: sinon.SinonStub<[Session], Promise<void>>;
     let fakeSessions;
 
     beforeEach(() => {
@@ -939,8 +939,8 @@ describe('SessionPool', () => {
   });
 
   describe('_fill', () => {
-    let readonly: sinon.SinonStub;
-    let readwrite: sinon.SinonStub;
+    let readonly: sinon.SinonStub<[types], Promise<void>>;
+    let readwrite: sinon.SinonStub<[types], Promise<void>>;
 
     beforeEach(() => {
       const stub = sandbox.stub(sessionPool, '_createSessionInBackground');
@@ -983,7 +983,7 @@ describe('SessionPool', () => {
       const end = timeSpan();
 
       const delayedResolve = () =>
-          new Promise(resolve => setTimeout(resolve, delay));
+          new Promise<void>(resolve => setTimeout(resolve, delay));
 
       readonly.callsFake(delayedResolve);
       readwrite.callsFake(delayedResolve);
