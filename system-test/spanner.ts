@@ -3787,6 +3787,125 @@ describe('Spanner', () => {
       });
     });
 
+    describe('batch dml', () => {
+      const key = 'k1234';
+      const str = 'abcd';
+      const num = 11;
+
+      const insert = {
+        sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+        params: {key, str},
+      };
+
+      const update = {
+        sql: 'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+        params: {key, num},
+      };
+
+      // this should fail since we're not binding params
+      const borked = {
+        sql: 'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+      };
+
+      it('should execute a single statement', async () => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
+          const [rowCounts] = await txn.batchUpdate([insert]);
+          await txn.rollback();
+          return rowCounts;
+        });
+
+        assert.deepStrictEqual(rowCounts, [1]);
+      });
+
+      it('should return an error when no statements are supplied', async () => {
+        const err = await database.runTransactionAsync(async txn => {
+          let err;
+
+          try {
+            await txn.batchUpdate(null);
+          } catch (e) {
+            err = e;
+          }
+
+          txn.end();
+          return err;
+        });
+
+        assert.strictEqual(
+            err.message, 'batchUpdate requires at least 1 DML statement.');
+        assert.strictEqual(err.code, 3);
+      });
+
+      it('should run multiple statements that depend on each other',
+         async () => {
+           const rowCounts = await database.runTransactionAsync(async txn => {
+             const [rowCounts] = await txn.batchUpdate([insert, update]);
+             await txn.rollback();
+             return rowCounts;
+           });
+
+           assert.deepStrictEqual(rowCounts, [1, 1]);
+         });
+
+      it('should run after a runUpdate call', async () => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
+          await txn.runUpdate(insert);
+          const [rowCounts] = await txn.batchUpdate([update]);
+          await txn.rollback();
+          return rowCounts;
+        });
+
+        assert.deepStrictEqual(rowCounts, [1]);
+      });
+
+      it('should run before a runUpdate call', async () => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
+          const [rowCounts] = await txn.batchUpdate([insert]);
+          await txn.runUpdate(update);
+          await txn.rollback();
+          return rowCounts;
+        });
+
+        assert.deepStrictEqual(rowCounts, [1]);
+      });
+
+      it('should stop executing statements if an error occurs', async () => {
+        const err = await database.runTransactionAsync(async txn => {
+          let err;
+
+          try {
+            await txn.batchUpdate([insert, borked, update]);
+          } catch (e) {
+            err = e;
+          }
+
+          await txn.rollback();
+          return err;
+        });
+
+        assert.strictEqual(err.code, 3);
+        assert.deepStrictEqual(err.rowCounts, [1]);
+      });
+
+      it('should ignore any additional statement errors', async () => {
+        const err = await database.runTransactionAsync(async txn => {
+          let err;
+
+          try {
+            await txn.batchUpdate([insert, borked, borked]);
+          } catch (e) {
+            err = e;
+          }
+
+          await txn.rollback();
+          return err;
+        });
+
+        assert.strictEqual(err.code, 3);
+        assert.deepStrictEqual(err.rowCounts, [1]);
+      });
+    });
+
     describe('read/write', () => {
       it('should throw an error for mismatched columns', done => {
         database.runTransaction((err, transaction) => {

@@ -15,7 +15,7 @@
  */
 
 import {CallOptions, GrpcClientOptions} from 'google-gax';
-import {ClientReadableStream, ServiceError} from 'grpc';
+import {ClientReadableStream, ServiceError, StatusObject} from 'grpc';
 import {common as protobuf} from 'protobufjs';
 
 declare class SpannerClient {
@@ -44,6 +44,10 @@ declare class SpannerClient {
   deleteSession(request: SpannerClient.DeleteSessionRequest, options?: CallOptions): SpannerClient.CancelablePromise<protobuf.IEmpty>;
   deleteSession(request: SpannerClient.DeleteSessionRequest, callback: SpannerClient.DeleteSessionCallback): void;
   deleteSession(request: SpannerClient.DeleteSessionRequest, options: CallOptions, callback: SpannerClient.DeleteSessionCallback): void;
+
+  executeBatchDml(request: SpannerClient.ExecuteBatchDmlRequest, options?: CallOptions): SpannerClient.CancelablePromise<[SpannerClient.ExecuteBatchDmlResponse]>;
+  executeBatchDml(request: SpannerClient.ExecuteBatchDmlRequest, callback: SpannerClient.ExecuteBatchDmlCallback): void;
+  executeBatchDml(request: SpannerClient.ExecuteBatchDmlRequest, options: CallOptions, callback: SpannerClient.ExecuteBatchDmlCallback): void;
 
   executeSql(request: SpannerClient.ExecuteSqlRequest, options?: CallOptions): SpannerClient.CancelablePromise<[SpannerClient.ResultSet]>;
   executeSql(request: SpannerClient.ExecuteSqlRequest, callback: SpannerClient.ExecuteSqlCallback): void;
@@ -154,6 +158,28 @@ declare namespace SpannerClient {
 
   interface DeleteSessionCallback {
     (error: null | ServiceError): void;
+  }
+
+  interface Statement {
+    sql: string;
+    params?: protobuf.IStruct;
+    paramTypes?: {[field: string]: Type};
+  }
+
+  interface ExecuteBatchDmlRequest {
+    session: string;
+    transaction: TransactionSelector;
+    statements: Statement[];
+    seqno: number;
+  }
+
+  interface ExecuteBatchDmlResponse {
+    resultSets: ResultSet[];
+    status: StatusObject;
+  }
+
+  interface ExecuteBatchDmlCallback {
+    (error: null | ServiceError, response: ExecuteBatchDmlResponse): void;
   }
 
   enum QueryMode {
