@@ -126,8 +126,8 @@ export interface RunUpdateCallback {
  * but does not allow writes. Snapshot read-only transactions can be configured
  * to read at timestamps in the past.
  *
- * When finished with the Snapshot, you should call {@link Snapshot#end} to
- * release the underlying {@link Session}. Failure to do can result in a
+ * When finished with the Snapshot, call {@link Snapshot#end} to
+ * release the underlying {@link Session}. Failure to do so can result in a
  * Session leak.
  *
  * **This object is created and returned from {@link Database#getSnapshot}.**
@@ -153,7 +153,7 @@ export interface RunUpdateCallback {
  *     // Error handling omitted.
  *   }
  *
- *   // should be called when finished with the snapshot
+ *   // It should be called when the snapshot finishes.
  *   transaction.end();
  * });
  */
@@ -175,22 +175,22 @@ export class Snapshot extends EventEmitter {
    * @type {?(string|Buffer)}
    */
   /**
-   * Whether or not the transaction has been ended. If true, no further requests
-   * should be made and the transaction should be discarded.
+   * Whether or not the transaction has ended. If true, make no further 
+   * requests, and discard the transaction.
    *
    * @name Snapshot#ended
    * @type {boolean}
    */
   /**
-   * The raw transaction response object. Will be populated after
-   * {@link Snapshot#begin} has been called.
+   * The raw transaction response object. It is populated after
+   * {@link Snapshot#begin} is called.
    *
    * @name Snapshot#metadata
    * @type {?TransactionResponse}
    */
   /**
    * **Snapshot only**
-   * The timestamp at which all reads will be performed.
+   * The timestamp at which all reads are performed.
    *
    * @name Snapshot#readTimestamp
    * @type {?external:PreciseDate}
@@ -239,7 +239,7 @@ export class Snapshot extends EventEmitter {
    * @param {TransactionResponse} apiResponse The raw transaction object.
    */
   /**
-   * Begin a new transaction. Typically you shouldn't need to call this unless
+   * Begin a new transaction. Typically, you need not call this unless
    * manually creating transactions via {@link Session} objects.
    *
    * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
@@ -254,7 +254,7 @@ export class Snapshot extends EventEmitter {
    *   }
    * });
    *
-   * @example <caption>If the callback is omitted, we'll return a Promise
+   * @example <caption>If the callback is omitted, the function returns a Promise
    * </caption>
    * transaction.begin()
    *   .then(function(data) {
@@ -322,7 +322,7 @@ export class Snapshot extends EventEmitter {
    * @property {string[]} [keys] The primary keys of the rows in this table to be
    *     yielded. If using a composite key, provide an array within this array.
    *     See the example below.
-   * @property {KeyRange[]} [ranges] An alternative to the keys property, this can
+   * @property {KeyRange[]} [ranges] An alternative to the keys property; this can
    *       be used to define a range of keys to be yielded.
    * @property {boolean} [json=false] Receive the rows as serialized objects. This
    *     is the equivalent of calling `toJSON()` on each row.
@@ -405,7 +405,7 @@ export class Snapshot extends EventEmitter {
    *   });
    *
    * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * will be performed automatically.</caption>
+   * will perform automatically.</caption>
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name'],
@@ -502,9 +502,9 @@ export class Snapshot extends EventEmitter {
    *
    *   transaction.runUpdate(query, err => {
    *     if (err) {
-   *       // In the event of an error here there would be nothing to rollback,
+   *       // In the event of an error, there would be nothing to rollback,
    * so
-   *       // instead of continuing, we might want to just discard the
+   *       // instead of continuing, discard the
    * transaction. transaction.end(); return;
    *     }
    *
@@ -530,7 +530,7 @@ export class Snapshot extends EventEmitter {
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
    *     specifying `wrapNumbers: true` to protect large integer values outside
-   * of the range of JavaScript Number. If set, FLOAT64 values will be returned
+   * of the range of JavaScript Number. If set, FLOAT64 values are returned
    *     as {@link Spanner.Float} objects and INT64 values as {@link
    * Spanner.Int}.
    */
@@ -541,7 +541,7 @@ export class Snapshot extends EventEmitter {
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
    *     specifying `wrapNumbers: true` to protect large integer values outside
-   * of the range of JavaScript Number. If set, FLOAT64 values will be returned
+   * of the range of JavaScript Number. If set, FLOAT64 values are returned
    *     as {@link Spanner.Float} objects and INT64 values as {@link
    * Spanner.Int}.
    */
@@ -617,7 +617,7 @@ export class Snapshot extends EventEmitter {
    * });
    *
    * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * will be performed automatically.</caption>
+   * will perform automatically.</caption>
    * query.json = true;
    *
    * transaction.read('Singers', query, function(err, rows) {
@@ -663,10 +663,10 @@ export class Snapshot extends EventEmitter {
    * **Performance Considerations:**
    *
    * This method wraps the streaming method,
-   * {@link Snapshot#run} for your convenience. All rows will
-   * be stored in memory before being released to your callback. If you intend
-   * on receiving a lot of results from your query, consider using the streaming
-   * method, so you can free each result from memory after consuming it.
+   * {@link Snapshot#run} for your convenience. All rows are stored in memory 
+   * before releasing to your callback. If you intend to receive a lot of 
+   * results from your query, consider using the streaming method, 
+   * so you can free each result from memory after consuming it.
    *
    * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
    *
@@ -923,7 +923,7 @@ export class Snapshot extends EventEmitter {
           codec.convertMsToProtoTimestamp(options.exactStaleness as number);
     }
 
-    // if we didn't detect a convenience format, we'll just assume that maybe
+    // If we didn't detect a convenience format, we'll just assume that 
     // they passed in a protobuf timestamp.
     if (is.empty(readOnly)) {
       Object.assign(readOnly, options);
@@ -939,7 +939,7 @@ export class Snapshot extends EventEmitter {
    * @private
    * @static
    *
-   * @param {ExecuteSqlRequest} request The sql request.
+   * @param {ExecuteSqlRequest} request The SQL request.
    * @returns {object}
    */
   static encodeParams(request: ExecuteSqlRequest) {
@@ -976,7 +976,7 @@ export class Snapshot extends EventEmitter {
 
 /*! Developer Documentation
  *
- * All async methods (except for streams) will return a Promise in the event
+ * All async methods (except for streams) return a Promise in the event
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
@@ -984,7 +984,7 @@ promisifyAll(Snapshot, {
 });
 
 /**
- * Dml class should never be used directly. Instead it should be extended upon
+ * Never use DML class directly. Instead, it should be extended upon
  * if a class requires DML capabilities.
  *
  * @private
@@ -1005,7 +1005,7 @@ export class Dml extends Snapshot {
    * @param {number} rowCount Affected row count.
    */
   /**
-   * Execute a DML statements and get the affected row count.
+   * Execute a DML statement and get the affected row count.
    *
    * @private
    *
@@ -1044,7 +1044,7 @@ export class Dml extends Snapshot {
 
 /*! Developer Documentation
  *
- * All async methods (except for streams) will return a Promise in the event
+ * All async methods (except for streams) return a Promise in the event
  * that a callback is omitted.
  */
 promisifyAll(Dml);
@@ -1058,14 +1058,14 @@ promisifyAll(Dml);
  * Calling either {@link Transaction#commit} or {@link Transaction#rollback}
  * signals that the transaction is finished and no further requests will be
  * made. If for some reason you decide not to call one of the aformentioned
- * methods, you should call {@link Transaction#end} to release the underlying
+ * methods, call {@link Transaction#end} to release the underlying
  * {@link Session}.
  *
  * Running a transaction via {@link Database#runTransaction} or
- * {@link Database#runTransactionAsync} will automatically re-run the
+ * {@link Database#runTransactionAsync} automatically re-runs the
  * transaction on `ABORTED` errors.
  *
- * {@link Database#getTransaction} will return a plain {@link Transaction}
+ * {@link Database#getTransaction} returns a plain {@link Transaction}
  * object, requiring the user to retry manually.
  *
  * @class
@@ -1110,7 +1110,7 @@ export class Transaction extends Dml {
    * @type {?google.protobuf.Timestamp}
    */
   /**
-   * Execute a DML statements and get the affected row count.
+   * Execute a DML statement and get the affected row count.
    *
    * @name Transaction#runUpdate
    *
@@ -1662,7 +1662,7 @@ export class Transaction extends Dml {
 
 /*! Developer Documentation
  *
- * All async methods (except for streams) will return a Promise in the event
+ * All async methods (except for streams) return a Promise in the event
  * that a callback is omitted.
  */
 promisifyAll(Transaction, {
@@ -1681,7 +1681,7 @@ promisifyAll(Transaction, {
  * statement over each partition in parallel using separate, internal
  * transactions that commit independently.
  *
- * Chances are you'll never need to create a partitioned dml transaction
+ * Chances are, you'll never need to create a partitioned DML transaction
  * directly, instead you'll want to use {@link Database#runPartitionedUpdate}.
  *
  * @class
@@ -1698,7 +1698,7 @@ export class PartitionedDml extends Dml {
   runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
   runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
   /**
-   * Execute a DML statements and get the affected row count. Unlike
+   * Execute a DML statement and get the affected row count. Unlike
    * {@link Transaction#runUpdate} after using this method you should
    * immediately discard this transaction, internally it will invoke
    * {@link PartitionedDml#end}.
@@ -1731,7 +1731,7 @@ export class PartitionedDml extends Dml {
 
 /*! Developer Documentation
  *
- * All async methods (except for streams) will return a Promise in the event
+ * All async methods (except for streams) return a Promise in the event
  * that a callback is omitted.
  */
 promisifyAll(PartitionedDml);
