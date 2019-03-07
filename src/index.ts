@@ -34,6 +34,8 @@ import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
+import { GrpcClientOptions } from 'google-gax';
+import { ChannelCredentials } from 'grpc';
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -42,8 +44,10 @@ const gapic = Object.freeze({
 
 const gcpApiConfig = require('./spanner_grpc_config.json');
 
-export interface SpannerOptions extends GoogleAuthOptions {
+export interface SpannerOptions extends GrpcClientOptions {
   servicePath?: string;
+  port?: number;
+  sslCreds?: ChannelCredentials;
 }
 
 /*!
