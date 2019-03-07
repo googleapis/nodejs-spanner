@@ -12,6 +12,7 @@
 - feat(transaction): batch dml ([#550](https://github.com/googleapis/nodejs-spanner/pull/550))
 
 ### Dependencies
+- chore(deps): update dependency @types/sinon to v7.0.9 ([#553](https://github.com/googleapis/nodejs-spanner/pull/553))
 - chore(deps): fix broken dep types ([#549](https://github.com/googleapis/nodejs-spanner/pull/549))
 
 ### Documentation
