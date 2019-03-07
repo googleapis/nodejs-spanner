@@ -35,10 +35,11 @@ import { RequestCallback, ProtoITransactionOptions, ProtoITransaction, ProtoTran
 
 export type Rows = Array<Row|Json>;
 export type BeginResponse = [s.Transaction];
-export type CommitPromise = Promise<[ProtoICommitResponse]>;
+export type CommitResponse = [ProtoICommitResponse];
 export type ReadResponse = [Rows];
-export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
-export type RunUpdatePromise = Promise<[number]>;
+export type RunResponse = [Rows, s.ResultSetStats];
+export type RunUpdateResponse = [number];
+
 export type BeginTransactionCallback = RequestCallback<ProtoTransaction>;
 export type CommitCallback = RequestCallback<ProtoICommitResponse>;
 
@@ -652,7 +653,7 @@ export class Snapshot extends EventEmitter {
         .on('end', () => callback!(null, rows));
   }
 
-  run(query: string|ExecuteSqlRequest): RunPromise;
+  run(query: string|ExecuteSqlRequest): Promise<RunResponse>;
   run(query: string|ExecuteSqlRequest, callback: RunCallback): void;
   /**
    * Execute a SQL statement on this database inside of a transaction.
@@ -728,7 +729,7 @@ export class Snapshot extends EventEmitter {
    * });
    */
   run(query: string|ExecuteSqlRequest,
-      callback?: RunCallback): void|RunPromise {
+      callback?: RunCallback): void|Promise<RunResponse> {
     const rows: Rows = [];
     let stats;
 
@@ -990,7 +991,7 @@ promisifyAll(Snapshot, {
 export class Dml extends Snapshot {
   protected _seqno = 1;
 
-  runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(query: string|ExecuteSqlRequest): Promise<RunUpdateResponse>;
   runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
   /**
    * @typedef {array} RunUpdateResponse
@@ -1017,7 +1018,7 @@ export class Dml extends Snapshot {
    * @returns {Promise<RunUpdateResponse>}
    */
   runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
-      void|RunUpdatePromise {
+      void|Promise<RunUpdateResponse> {
     if (is.string(query)) {
       query = {sql: query} as ExecuteSqlRequest;
     }
@@ -1137,7 +1138,7 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
   }
 
-  commit(): CommitPromise;
+  commit(): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
@@ -1185,7 +1186,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: CommitCallback): void|CommitPromise {
+  commit(callback?: CommitCallback): void|Promise<CommitResponse> {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
@@ -1575,7 +1576,7 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
 
-  runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(query: string|ExecuteSqlRequest): Promise<RunUpdateResponse>;
   runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
   /**
    * Execute a DML statements and get the affected row count. Unlike
@@ -1601,7 +1602,7 @@ export class PartitionedDml extends Dml {
    * });
    */
   runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
-      void|RunUpdatePromise {
+      void|Promise<RunUpdateResponse>{
     super.runUpdate(query, (err, count) => {
       this.end();
       callback!(err, count);
