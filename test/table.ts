@@ -24,6 +24,8 @@ import {split} from 'split-array-stream';
 import {Transform} from 'stream';
 import * as through from 'through2';
 
+import {TimestampBounds} from '../src/transaction';
+
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -35,6 +37,26 @@ const fakePfy = extend({}, pfy, {
   },
 });
 
+class FakeTransaction {
+  commit(callback) {
+    callback(null, {});
+  }
+  createReadStream() {
+    return through.obj();
+  }
+  deleteRows(name, keys) {}
+  end() {}
+  insert(table, row) {}
+  replace(table, row) {}
+  upsert(table, row) {}
+  update(table, row) {}
+}
+
+interface GetSnapshotCallback {
+  (err: Error, snapshot?: null): void;
+  (err: null, snapshot: FakeTransaction): void;
+}
+
 describe('Table', () => {
   const sandbox = sinon.createSandbox();
 
@@ -43,21 +65,11 @@ describe('Table', () => {
   // tslint:disable-next-line no-any variable-name
   let TableCached: any;
   let table;
+  let transaction: FakeTransaction;
 
   const DATABASE = {
-    runTransaction: callback => callback(null, TRANSACTION),
-    getSnapshot: (options, callback) => callback(null, TRANSACTION),
-  };
-
-  const TRANSACTION = {
-    commit: callback => callback(),
-    createReadStream: () => through.obj(),
-    deleteRows: (name, keys) => {},
-    end: () => {},
-    insert: (table, row) => {},
-    replace: (table, row) => {},
-    upsert: (table, row) => {},
-    update: (table, row) => {},
+    runTransaction: callback => callback(null, transaction),
+    getSnapshot: (options, callback) => callback(null, transaction),
   };
 
   const NAME = 'table-name';
@@ -72,6 +84,7 @@ describe('Table', () => {
   beforeEach(() => {
     extend(Table, TableCached);
     table = new Table(DATABASE, NAME);
+    transaction = new FakeTransaction();
   });
 
   afterEach(() => sandbox.restore());
@@ -107,16 +120,16 @@ describe('Table', () => {
 
   describe('createReadStream', () => {
     let fakeReadStream: Transform;
-    let getSnapshotStub: sinon.SinonStub;
+    let getSnapshotStub: sinon.SinonStub<[TimestampBounds, GetSnapshotCallback], void>;
 
     const REQUEST = {keys: ['key']};
 
     beforeEach(() => {
       fakeReadStream = through.obj();
-      sandbox.stub(TRANSACTION, 'createReadStream').returns(fakeReadStream);
+      sandbox.stub(transaction, 'createReadStream').returns(fakeReadStream);
       getSnapshotStub =
           sandbox.stub(DATABASE, 'getSnapshot')
-              .callsFake((_, callback) => callback(null, TRANSACTION));
+              .callsFake((_, callback) => callback(null, transaction));
     });
 
     it('should destroy the user stream if unable to get a snapshot', done => {
@@ -141,7 +154,7 @@ describe('Table', () => {
     });
 
     it('should destroy the user stream and end the txn on error', done => {
-      const endStub = sandbox.stub(TRANSACTION, 'end');
+      const endStub = sandbox.stub(transaction, 'end');
       const fakeError = new Error('err');
 
       table.createReadStream(REQUEST).on('error', err => {
@@ -170,7 +183,7 @@ describe('Table', () => {
     });
 
     it('should end the transaction on stream end', done => {
-      sandbox.stub(TRANSACTION, 'end').callsFake(done);
+      sandbox.stub(transaction, 'end').callsFake(done);
       table.createReadStream(REQUEST).on('error', done);
       fakeReadStream.end();
     });
@@ -219,9 +232,9 @@ describe('Table', () => {
 
     it('should delete the rows via transaction', done => {
       const stub =
-          sandbox.stub(TRANSACTION, 'deleteRows').withArgs(table.name, KEYS);
+          sandbox.stub(transaction, 'deleteRows').withArgs(table.name, KEYS);
 
-      sandbox.stub(TRANSACTION, 'commit').callsFake(callback => callback());
+      sandbox.stub(transaction, 'commit').callsFake(callback => callback());
 
       table.deleteRows(KEYS, err => {
         assert.ifError(err);
@@ -263,7 +276,7 @@ describe('Table', () => {
 
     it('should insert via transaction', done => {
       const stub =
-          sandbox.stub(TRANSACTION, 'insert').withArgs(table.name, ROW);
+          sandbox.stub(transaction, 'insert').withArgs(table.name, ROW);
 
       table.insert(ROW, err => {
         assert.ifError(err);
@@ -354,7 +367,7 @@ describe('Table', () => {
 
     it('should replace via transaction', done => {
       const stub =
-          sandbox.stub(TRANSACTION, 'replace').withArgs(table.name, ROW);
+          sandbox.stub(transaction, 'replace').withArgs(table.name, ROW);
 
       table.replace(ROW, err => {
         assert.ifError(err);
@@ -381,7 +394,7 @@ describe('Table', () => {
 
     it('should update via transaction', done => {
       const stub =
-          sandbox.stub(TRANSACTION, 'update').withArgs(table.name, ROW);
+          sandbox.stub(transaction, 'update').withArgs(table.name, ROW);
 
       table.update(ROW, err => {
         assert.ifError(err);
@@ -408,7 +421,7 @@ describe('Table', () => {
 
     it('should upsert via transaction', done => {
       const stub =
-          sandbox.stub(TRANSACTION, 'upsert').withArgs(table.name, ROW);
+          sandbox.stub(transaction, 'upsert').withArgs(table.name, ROW);
 
       table.upsert(ROW, err => {
         assert.ifError(err);
