@@ -291,7 +291,7 @@ describe('SessionPool', () => {
                          constructor(options) {
                            return options;
                          }
-      }) as typeof PQueue;
+                       }) as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE);
       assert.deepStrictEqual(sessionPool._acquires, {
