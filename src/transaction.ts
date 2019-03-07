@@ -47,10 +47,13 @@ export interface RequestOptions {
   gaxOptions?: CallOptions;
 }
 
-export interface ExecuteSqlRequest extends RequestOptions {
+export interface Statement {
   sql: string;
-  params?: {[param: string]: string};
+  params?: {[param: string]: Value};
   types?: {[param: string]: string};
+}
+
+export interface ExecuteSqlRequest extends Statement, RequestOptions {
   resumeToken?: ResumeToken;
   queryMode?: s.QueryMode;
   partitionToken?: Uint8Array|string;
@@ -75,11 +78,20 @@ export interface ReadRequest extends RequestOptions {
   partitionToken?: Uint8Array|string;
 }
 
+export interface BatchUpdateError extends ServiceError {
+  rowCounts: number[];
+}
+
+export type BatchUpdatePromise = Promise<[number[], s.ExecuteBatchDmlResponse]>;
 export type BeginPromise = Promise<[s.Transaction]>;
 export type CommitPromise = Promise<[s.CommitResponse]>;
 export type ReadPromise = Promise<[Rows]>;
 export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
 export type RunUpdatePromise = Promise<[number]>;
+
+export interface BatchUpdateCallback {
+  (err: null|BatchUpdateError, rowCounts: number[], response?: s.ExecuteBatchDmlResponse): void;
+}
 
 export interface ReadCallback {
   (err: null|ServiceError, rows: Rows): void;
@@ -1126,6 +1138,123 @@ export class Transaction extends Dml {
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
+  }
+
+  batchUpdate(queries: Array<string|Statement>): BatchUpdatePromise;
+  batchUpdate(queries: Array<string|Statement>, callback: BatchUpdateCallback): void;
+  /**
+   * @typedef {error} BatchUpdateError
+   * @property {number} code gRPC status code.
+   * @property {?object} metadata gRPC metadata.
+   * @property {number[]} rowCounts The affected row counts for any DML
+   *     statements that were executed successfully before this error occurred.
+   */
+  /**
+   * @typedef {array} BatchUpdateResponse
+   * @property {number[]} 0 Affected row counts.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback BatchUpdateCallback
+   * @param {?BatchUpdateError} err Request error, if any.
+   * @param {number[]} rowCounts Affected row counts.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Execute a series of DML statements and get the affected row counts.
+   *
+   * If any of the DML statements fail, the returned error will contain a list
+   * of results for all successfully executed statements.
+   *
+   * @param {string[]|object[]} query A DML statement or
+   *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
+   *     object.
+   * @param {object} [query.params] A map of parameter name to values.
+   * @param {object} [query.types] A map of parameter types.
+   * @param {RunUpdateCallback} [callback] Callback function.
+   * @returns {Promise<RunUpdateResponse>}
+   *
+   * @example
+   * const queries = [
+   *   {
+   *     sql: 'INSERT INTO MyTable (Key, Value) VALUES (@key, @value)',
+   *     params: {key: 'my-key', value: 'my-value'},
+   *   },
+   *   {
+   *     sql: 'UPDATE MyTable t SET t.Value = @value WHERE t.KEY = @key',
+   *     params: {key: 'my-other-key', value: 'my-other-value'}
+   *   }
+   * ];
+   *
+   * transaction.batchUpdate(queries, (err, rowCounts, apiResponse) => {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   * });
+   *
+   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * const [rowCounts, apiResponse] = await transaction.batchUpdate(queries);
+   */
+  batchUpdate(queries: Array<string|Statement>, callback?: BatchUpdateCallback): BatchUpdatePromise|void {
+    if (!Array.isArray(queries) || !queries.length) {
+      const rowCounts: number[] = [];
+      const error = new Error('batchUpdate requires at least 1 DML statement.');
+      const batchError: BatchUpdateError = Object.assign(error, {
+        code: 3, // invalid argument
+        rowCounts
+      })
+      callback!(batchError, rowCounts);
+      return;
+    }
+
+    const statements: s.Statement[] = queries.map(query => {
+      if (typeof query === 'string') {
+        return {sql: query};
+      }
+      const {sql} = query;
+      const {params, paramTypes} = Snapshot.encodeParams(query);
+      return {sql, params, paramTypes};
+    });
+
+    const reqOpts: s.ExecuteBatchDmlRequest = {
+      session: this.session.formattedName_!,
+      transaction: {id: this.id},
+      seqno: this._seqno++,
+      statements,
+    };
+
+    this.request(
+        {
+          client: 'SpannerClient',
+          method: 'executeBatchDml',
+          reqOpts
+        },
+        (err: null|ServiceError, resp: s.ExecuteBatchDmlResponse) => {
+          let batchUpdateError: BatchUpdateError;
+
+          if (err) {
+            const rowCounts: number[] = [];
+            batchUpdateError = Object.assign(err, {rowCounts});
+            callback!(batchUpdateError, rowCounts, resp);
+            return;
+          }
+
+          const {resultSets, status} = resp;
+          const rowCounts: number[] = resultSets.map(({stats}) => {
+            return stats && Number(stats[stats.rowCount]) || 0;
+          });
+
+          if (status && status.code !== 0) {
+            const error = new Error(status.details);
+            batchUpdateError = Object.assign(error, {
+              code: status.code,
+              metadata: status.metadata,
+              rowCounts,
+            });
+          }
+
+          callback!(batchUpdateError!, rowCounts, resp);
+        });
   }
 
   commit(): CommitPromise;

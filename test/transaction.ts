@@ -940,6 +940,176 @@ describe('Transaction', () => {
       });
     });
 
+    describe('batchUpdate', () => {
+      const STRING_STATEMENTS = [
+        `INSERT INTO Table (Key, Str) VALUES('a', 'b')`,
+        `UPDATE Table t SET t.Str = 'c' WHERE t.Key = 'a'`
+      ];
+
+      const OBJ_STATEMENTS = [
+        {
+          sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+          params: {
+            key: 'k999',
+            str: 'abc',
+          }
+        },
+        {
+          sql: 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+          params: {
+            key: 'k999',
+            str: 'abcd',
+          },
+        }
+      ];
+
+      const FORMATTED_STATEMENTS = [
+        {
+          sql: OBJ_STATEMENTS[0].sql,
+          params: {
+            fields: {
+              key: {stringValue: OBJ_STATEMENTS[0].params.key},
+              str: {stringValue: OBJ_STATEMENTS[0].params.str},
+            }
+          },
+          paramTypes: {
+            key: {code: 'STRING'},
+            str: {code: 'STRING'},
+          }
+        },
+        {
+          sql: OBJ_STATEMENTS[1].sql,
+          params: {
+            fields: {
+              key: {stringValue: OBJ_STATEMENTS[1].params.key},
+              str: {stringValue: OBJ_STATEMENTS[1].params.str},
+            }
+          },
+          paramTypes: {
+            key: {code: 'STRING'},
+            str: {code: 'STRING'},
+          }
+        }
+      ];
+
+      it('should return an error if statements are missing', done => {
+        transaction.batchUpdate(null, err => {
+          assert.strictEqual(
+              err.message, 'batchUpdate requires at least 1 DML statement.');
+          assert.strictEqual(err.code, 3);
+          assert.deepStrictEqual(err.rowCounts, []);
+          done();
+        });
+      });
+
+      it('should return an error if statements are empty', done => {
+        transaction.batchUpdate([], err => {
+          assert.strictEqual(
+              err.message, 'batchUpdate requires at least 1 DML statement.');
+          assert.strictEqual(err.code, 3);
+          assert.deepStrictEqual(err.rowCounts, []);
+          done();
+        });
+      });
+
+      it('should make the correct request', () => {
+        const stub = sandbox.stub(transaction, 'request');
+        const fakeId = 'transaction-id-123';
+
+        transaction.id = fakeId;
+        transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
+
+        const {client, method, reqOpts} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'executeBatchDml');
+        assert.strictEqual(reqOpts.session, SESSION_NAME);
+        assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
+        assert.strictEqual(reqOpts.seqno, 1);
+      });
+
+      it('should encode sql string statements', () => {
+        const stub = sandbox.stub(transaction, 'request');
+        const expectedStatements = STRING_STATEMENTS.map(sql => ({sql}));
+
+        transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
+
+        const {reqOpts} = stub.lastCall.args[0];
+        assert.deepStrictEqual(reqOpts.statements, expectedStatements);
+      });
+
+      it('should encode DML object statements', () => {
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.batchUpdate(OBJ_STATEMENTS, assert.ifError);
+
+        const {reqOpts} = stub.lastCall.args[0];
+        assert.deepStrictEqual(reqOpts.statements, FORMATTED_STATEMENTS);
+      });
+
+      it('should wrap and return any request errors', done => {
+        const stub = sandbox.stub(transaction, 'request');
+        const fakeError = new Error('err');
+        const fakeResponse = {};
+
+        transaction.batchUpdate(OBJ_STATEMENTS, (err, rowCounts, apiResponse) => {
+          assert.strictEqual(err, fakeError);
+          assert.deepStrictEqual(err.rowCounts, []);
+          assert.deepStrictEqual(rowCounts, []);
+          assert.strictEqual(apiResponse, fakeResponse);
+          done();
+        });
+
+        const requestCallback = stub.lastCall.args[1];
+        setImmediate(requestCallback, fakeError, fakeResponse);
+      });
+
+      it('should return a list of row counts upon success', done => {
+        const stub = sandbox.stub(transaction, 'request');
+        const expectedRowCounts = [5, 7];
+        const fakeResponse = {
+          resultSets: [
+            {stats: {rowCount: 'a', a: '5'}},
+            {stats: {rowCount: 'b', b: '7'}},
+          ]
+        };
+
+        transaction.batchUpdate(OBJ_STATEMENTS, (err, rowCounts, apiResponse) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(rowCounts, expectedRowCounts);
+          assert.strictEqual(apiResponse, fakeResponse);
+          done();
+        });
+
+        const requestCallback = stub.lastCall.args[1];
+        setImmediate(requestCallback, null, fakeResponse);
+      });
+
+      it('should return both error and row counts for partial failures', done => {
+        const stub = sandbox.stub(transaction, 'request');
+        const expectedRowCounts = [6, 8];
+        const fakeResponse = {
+          resultSets: [
+            {stats: {rowCount: 'a', a: '6'}},
+            {stats: {rowCount: 'b', b: '8'}},
+          ],
+          status: {code: 3, details: 'Err'}
+        };
+
+        transaction.batchUpdate(OBJ_STATEMENTS, (err, rowCounts, apiResponse) => {
+          assert(err instanceof Error);
+          assert.strictEqual(err.code, fakeResponse.status.code);
+          assert.strictEqual(err.message, fakeResponse.status.details);
+          assert.deepStrictEqual(err.rowCounts, expectedRowCounts);
+          assert.deepStrictEqual(rowCounts, expectedRowCounts);
+          assert.deepStrictEqual(apiResponse, fakeResponse);
+          done();
+        });
+
+        const requestCallback = stub.lastCall.args[1];
+        setImmediate(requestCallback, null, fakeResponse);
+      });
+    });
+
     describe('begin', () => {
       it('should send the correct options', () => {
         const stub = sandbox.stub(transaction, 'request');
