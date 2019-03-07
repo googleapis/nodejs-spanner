@@ -27,12 +27,11 @@ import {Database} from '../src/database';
 import {Session, types} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
-import { Any } from '../src/common';
 
 let pQueueOverride: typeof PQueue|null = null;
 
 function FakePQueue(options) {
-  return new (pQueueOverride as Any || PQueue)(options);
+  return new (pQueueOverride || PQueue)(options);
 }
 
 FakePQueue.default = FakePQueue;
@@ -279,7 +278,7 @@ describe('SessionPool', () => {
                          constructor(options) {
                            return options;
                          }
-                       }) as Any;
+                       }) as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE, poolOptions);
       assert.deepStrictEqual(sessionPool._requests, {
@@ -292,7 +291,7 @@ describe('SessionPool', () => {
                          constructor(options) {
                            return options;
                          }
-                       }) as Any;
+      }) as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE);
       assert.deepStrictEqual(sessionPool._acquires, {

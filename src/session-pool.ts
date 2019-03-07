@@ -209,12 +209,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   database: Database;
   isOpen: boolean;
   options: SessionPoolOptions;
-  _acquires: Any;
+  _acquires: PQueue;
   _evictHandle!: NodeJS.Timer;
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
   _pingHandle!: NodeJS.Timer;
-  _requests: Any;
+  _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
 
   /**

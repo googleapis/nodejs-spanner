@@ -19,16 +19,27 @@ export interface CreateSessionOptions {
 export type GetTimestamp = {
   nanos: number; seconds: number;
 };
-
-export type Schema = string | SchemaObject;
-export type SchemaObject = ProtoIUpdateDatabaseDdlRequest;
-
 export interface RequestCallback<T> {
   (err: ServiceError | null, response?: T | null): void;
 }
 
 //tslint:disable-next-line no-any
 export type Any = any;
+export type Schema = string | SchemaObject;
+export type SchemaObject = ProtoIUpdateDatabaseDdlRequest;
+
+export interface ProtoResultSetStats extends spannerClient.spanner.v1.ResultSetStats {
+  [k: string]: Any;
+}
+export interface ProtoKeyRange {
+  [k: string]: ProtoIListValue | null | string | undefined;
+  startClosed?: ProtoIListValue | null;
+  startOpen?: ProtoIListValue | null;
+  endClosed?: ProtoIListValue | null;
+  endOpen?: ProtoIListValue | null;
+  startKeyType?: "startClosed" | "startOpen";
+  endKeyType?: "endClosed" | "endOpen";
+}
 
 export type ProtoIUpdateDatabaseDdlRequest = dbAdminClient.spanner.admin.database.v1.IUpdateDatabaseDdlRequest;
 export type ProtoITransactionOptions = spannerClient.spanner.v1.ITransactionOptions;
@@ -48,11 +59,12 @@ export type ProtoType = spannerClient.spanner.v1.Type;
 export type ProtoTimestamp = spannerClient.protobuf.Timestamp;
 export type ProtoDuration = spannerClient.protobuf.Duration;
 export type ProtoBeginTransactionCallback = spannerClient.spanner.v1.Spanner.BeginTransactionCallback;
-export type ProtoResultSetStats = spannerClient.spanner.v1.ResultSetStats;
-export type ProtoIKeySet = spannerClient.spanner.v1.IKeySet;
 export type ProtoReadWrite = spannerClient.spanner.v1.TransactionOptions.ReadWrite;
-export type ProtoKeyRange = spannerClient.spanner.v1.KeyRange;
 export type ProtoCommitResponse = spannerClient.spanner.v1.CommitResponse;
 export type ProtoPartitionedDml = spannerClient.spanner.v1.TransactionOptions.PartitionedDml;
-export type ProtoIKeyRange = spannerClient.spanner.v1.IKeyRange;
 export type ProtoListValue = spannerClient.protobuf.ListValue;
+export type ProtoIKeyRange = spannerClient.spanner.v1.IKeyRange;
+export type ProtoIKeySet = spannerClient.spanner.v1.IKeySet;
+export type ProtoIType = spannerClient.spanner.v1.IType;
+
+

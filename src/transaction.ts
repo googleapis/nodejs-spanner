@@ -23,13 +23,13 @@ import {ServiceError} from 'grpc';
 import * as is from 'is';
 import {Readable} from 'stream';
 
-import { SpannerClient as s } from './v1';
+import {SpannerClient as s} from './v1';
 import {codec, JSONOptions, Type, Value} from './codec';
 import {PartialResultStream, partialResultStream, ResumeToken} from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
 
-import { RequestCallback, ProtoIStruct, ProtoQueryMode, ProtoIValue, ProtoType, ProtoITransactionOptions, ProtoTransaction, ProtoITimestamp, ProtoTimestamp, ProtoDuration, ProtoBeginTransactionCallback, ProtoResultSetStats, ProtoIKeySet, ProtoIReadOnly, ProtoReadWrite, ProtoIMutation, ProtoCommitResponse, ProtoPartitionedDml, ProtoICommitResponse, ProtoEmpty, ProtoIKeyRange, ProtoKeyRange, ProtoListValue} from './common';
+import { RequestCallback, ProtoIStruct, ProtoQueryMode, ProtoIValue, ProtoType, ProtoIType, ProtoITransactionOptions, ProtoTransaction, ProtoIKeySet, ProtoITimestamp, ProtoTimestamp, ProtoDuration, ProtoBeginTransactionCallback, ProtoResultSetStats, ProtoIReadOnly, ProtoReadWrite, ProtoIMutation, ProtoCommitResponse, ProtoPartitionedDml, ProtoICommitResponse, ProtoEmpty, ProtoIKeyRange, ProtoKeyRange, ProtoListValue, ProtoIListValue} from './common';
 
 export type CommitCallback = RequestCallback<ProtoICommitResponse>;
 export type RollbackCallback = RequestCallback<ProtoEmpty>;
@@ -49,7 +49,7 @@ export interface CommitRequest {
 export interface EncodeParamsResponse {
   params: ProtoIStruct;
   paramTypes: {
-    [field: string]: ProtoType;
+    [field: string]: s.Type;
   };
 }
 export interface Statement {
@@ -892,7 +892,7 @@ export class Snapshot extends EventEmitter {
 
     if (request.ranges) {
       keySet.ranges = arrify(request.ranges).map((range) => {
-        const encodedRange = {};
+        const encodedRange: {[k: string]: ProtoIListValue} = {};
 
         Object.keys(range).forEach(bound => {
           encodedRange[bound] = codec.convertToListValue(range[bound]);
@@ -965,10 +965,10 @@ export class Snapshot extends EventEmitter {
     const typeMap: TypeMap = request.types || {};
 
     const params: ProtoIStruct = {};
-    const paramTypes = {};
+    const paramTypes: {[k: string]: s.Type} = {};
 
     if (request.params) {
-      const fields = {};
+      const fields: {[k: string]: Value} = {};
 
       Object.keys(request.params).forEach((param) => {
         const value = request.params![param];
@@ -1673,7 +1673,7 @@ export class Transaction extends Dml {
    */
   static getUniqueKeys(rows: KeyValObject): string[] {
     const allKeys: string[] = [];
-    rows.forEach(row => allKeys.push(...Object.keys(row)));
+    rows.forEach((row: Value) => allKeys.push(...Object.keys(row)));
     const unique: Set<string> = new Set(allKeys);
     return Array.from(unique).sort();
   }
@@ -1717,11 +1717,7 @@ export class PartitionedDml extends Dml {
   runUpdate(query: string|ExecuteSqlRequest): Promise<RunUpdateResponse>;
   runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
   /**
-<<<<<<< HEAD
-   * Execute DML statements and get the affected row count. Unlike
-=======
    * Execute a DML statement and get the affected row count. Unlike
->>>>>>> 1cf52d7ea0ae0f22955b43c1bc8b0bbc1b5feb3c
    * {@link Transaction#runUpdate} after using this method you should
    * immediately discard this transaction, internally it will invoke
    * {@link PartitionedDml#end}.
