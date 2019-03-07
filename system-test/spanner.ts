@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import pLimit from 'p-limit';
 import concat = require('concat-stream');
@@ -23,8 +21,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-
-const {Spanner} = require('../src');
+import {Spanner} from '../src';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = uuid.v1().split('-').shift();  // get a short uuid
