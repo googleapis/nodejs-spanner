@@ -22,7 +22,6 @@ import * as trace from 'stack-trace';
 import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
-import { Any } from './common';
 
 /**
  * @callback SessionPoolCloseCallback
