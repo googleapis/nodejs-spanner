@@ -20,7 +20,7 @@ import * as extend from 'extend';
 import PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import * as stackTrace from 'stack-trace';
+import stackTrace = require('stack-trace');
 import * as timeSpan from 'time-span';
 
 import {Database} from '../src/database';
