@@ -21,7 +21,7 @@ import PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import stackTrace = require('stack-trace');
-import * as timeSpan from 'time-span';
+import timeSpan from 'time-span';
 
 import {Database} from '../src/database';
 import {Session, types} from '../src/session';
