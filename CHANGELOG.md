@@ -4,6 +4,26 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## v3.1.0
+
+03-06-2019 20:13 PST
+
+### New Features
+- feat(transaction): batch dml ([#550](https://github.com/googleapis/nodejs-spanner/pull/550))
+
+### Dependencies
+- chore(deps): update dependency @types/sinon to v7.0.9 ([#553](https://github.com/googleapis/nodejs-spanner/pull/553))
+- chore(deps): fix broken dep types ([#549](https://github.com/googleapis/nodejs-spanner/pull/549))
+
+### Documentation
+- docs: Update grammar ([#544](https://github.com/googleapis/nodejs-spanner/pull/544))
+
+### Internal / Testing Changes
+- chore: update proto docs and code style
+- chore(deps): use bundled p-queue types ([#547](https://github.com/googleapis/nodejs-spanner/pull/547))
+- build: update release configuration ([#545](https://github.com/googleapis/nodejs-spanner/pull/545))
+- build: use node10 to run samples-test, system-test etc ([#551](https://github.com/googleapis/nodejs-spanner/pull/551))
+
 ## v3.0.0
 
 02-25-2019 12:38 PST

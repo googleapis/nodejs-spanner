@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as arrify from 'arrify';
 const common = require('@google-cloud/common-grpc');
 import {ServiceObjectConfig} from '@google-cloud/common';
@@ -508,7 +506,8 @@ class Instance extends common.ServiceObject {
    *   const databases = data[0];
    * });
    */
-  getDatabases(query, callback?) {
+  // tslint:disable-next-line no-any
+  getDatabases(query?, callback?): any {
       const self = this;
       if (is.fn(query)) {
         callback = query;
