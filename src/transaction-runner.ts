@@ -16,13 +16,14 @@
 
 import {promisify} from '@google-cloud/promisify';
 import {GoogleProtoFilesRoot} from 'google-gax';
-import {Metadata, ServiceError, status} from 'grpc';
+import {status} from 'grpc';
 import {join} from 'path';
-import {common as p, loadSync} from 'protobufjs';
+import {loadSync} from 'protobufjs';
 import * as through from 'through2';
 
 import {Session} from './session';
 import {Transaction} from './transaction';
+import {ServiceError} from '../src/common';
 
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 

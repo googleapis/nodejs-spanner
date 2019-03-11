@@ -19,7 +19,6 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as arrify from 'arrify';
 import {EventEmitter} from 'events';
 import {CallOptions} from 'google-gax';
-import {ServiceError} from 'grpc';
 import * as is from 'is';
 import {Readable} from 'stream';
 
@@ -29,7 +28,7 @@ import {PartialResultStream, partialResultStream, ResumeToken} from './partial-r
 import {Session} from './session';
 import {Key} from './table';
 
-import { RequestCallback, ProtoIStruct, ProtoQueryMode, ProtoIValue, ProtoType, ProtoIType, ProtoITransactionOptions, ProtoTransaction, ProtoIKeySet, ProtoITimestamp, ProtoTimestamp, ProtoDuration, ProtoBeginTransactionCallback, ProtoResultSetStats, ProtoIReadOnly, ProtoReadWrite, ProtoIMutation, ProtoCommitResponse, ProtoPartitionedDml, ProtoICommitResponse, ProtoEmpty, ProtoIKeyRange, ProtoKeyRange, ProtoListValue, ProtoIListValue} from './common';
+import { RequestCallback, ServiceError, ProtoIStruct, ProtoQueryMode, ProtoIValue, ProtoType, ProtoIType, ProtoITransactionOptions, ProtoTransaction, ProtoIKeySet, ProtoITimestamp, ProtoTimestamp, ProtoDuration, ProtoBeginTransactionCallback, ProtoResultSetStats, ProtoIReadOnly, ProtoReadWrite, ProtoIMutation, ProtoCommitResponse, ProtoPartitionedDml, ProtoICommitResponse, ProtoEmpty, ProtoIKeyRange, ProtoKeyRange, ProtoListValue, ProtoIListValue} from './common';
 
 export type CommitCallback = RequestCallback<ProtoICommitResponse>;
 export type RollbackCallback = RequestCallback<ProtoEmpty>;

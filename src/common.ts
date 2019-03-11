@@ -1,7 +1,19 @@
 import { google as dbAdminClient } from '../proto/spanner_database_admin';
 import { google as spannerClient } from '../proto/spanner';
-import { ServiceError } from 'grpc';
+import { status, Metadata } from 'grpc';
 
+/**
+ * Replacement to solve for rowCounts property issues. 
+ * Describes how a request has failed. The member `message` will be the same as
+ * `details` in `StatusObject`, and `code` and `metadata` are the
+ * same as in that object.
+ */
+export interface ServiceError extends Error {
+  rowCounts?: number[] | ((rowCounts: Any, arg1: never[]) => Any);
+  code?: status;
+  metadata?: Metadata;
+  details?: string;
+}
 export interface TransactionOptions {
   readOnly?: boolean;
   timeout?: number;
@@ -20,7 +32,7 @@ export type GetTimestamp = {
   nanos: number; seconds: number;
 };
 export interface RequestCallback<T> {
-  (err: ServiceError | null, response?: T | null): void;
+  (err: ServiceError | Error | null, response?: T | null): void;
 }
 
 //tslint:disable-next-line no-any
