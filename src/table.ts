@@ -26,13 +26,13 @@ import { Json } from './codec';
 import { Database } from './database';
 import { PartialResultStream, Row } from './partial-result-stream';
 import { ReadRequest, TimestampBounds, Transaction, Snapshot } from './transaction';
-import { Schema, ProtoLongrunningIOperation, RequestCallback, ProtoICommitResponse } from './common';
+import { Schema, LongrunningIOperation, RequestCallback, ICommitResponse } from './common';
 
 export type Key = string | string[];
-export type CreateTableResponse = [Table, GaxOperation, ProtoLongrunningIOperation];
-export type CommitCallback = RequestCallback<ProtoICommitResponse>;
-export type CommitResponse = [ProtoICommitResponse];
-export type DeleteResponse = [GaxOperation, ProtoLongrunningIOperation];
+export type CreateTableResponse = [Table, GaxOperation, LongrunningIOperation];
+export type CommitCallback = RequestCallback<ICommitResponse>;
+export type CommitResponse = [ICommitResponse];
+export type DeleteResponse = [GaxOperation, LongrunningIOperation];
 
 export interface CreateTableCallback {
   (err: ServiceError, table?: null, operation?: null, apiResponse?: null): void;
@@ -770,7 +770,7 @@ class Table {
    */
   private _mutate(
       method: string, rows: object|object[], callback: CommitCallback): void {
-    this.database.runTransaction((err: Error|null, transaction?: Transaction|null) => {
+    this.database.runTransaction((err: ServiceError|null, transaction?: Transaction|null) => {
       if (err) {
         callback(err);
         return;

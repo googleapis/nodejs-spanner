@@ -24,30 +24,28 @@ import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
 
-import {google as spanner_client} from '../proto/spanner';
-
 import {codec, Json, JSONOptions, Type, Value} from './codec';
 import {PartialResultStream, partialResultStream, ResumeToken, Row} from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
-import { RequestCallback, ProtoITransactionOptions, ProtoITransaction, ProtoTransaction, ProtoITimestamp, ProtoIReadOnly, ProtoICommitResponse, ProtoIMutation } from './common';
+import {RequestCallback, RowCountsServiceError, ITransactionOptions, ITransaction, GeneratedTransaction, ITimestamp, IReadOnly, ICommitResponse, IMutation} from './common';
 
 export type Rows = Array<Row|Json>;
 export type BeginResponse = [s.Transaction];
-export type CommitResponse = [ProtoICommitResponse];
+export type CommitResponse = [ICommitResponse];
 export type ReadResponse = [Rows];
 export type RunResponse = [Rows, s.ResultSetStats];
 export type RunUpdateResponse = [number];
 
-export type BeginTransactionCallback = RequestCallback<ProtoTransaction>;
-export type CommitCallback = RequestCallback<ProtoICommitResponse>;
+export type BeginTransactionCallback = RequestCallback<GeneratedTransaction>;
+export type CommitCallback = RequestCallback<ICommitResponse>;
 
 export interface CommitRequest {
   session: string;
   transactionId?: Uint8Array | string | null;
-  singleUseTransaction?: ProtoITransactionOptions;
-  mutations: ProtoIMutation[];
+  singleUseTransaction?: ITransactionOptions;
+  mutations: IMutation[];
 }
 export interface Statement {
   sql: string;
@@ -85,7 +83,7 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
 }
-export interface BatchUpdateError extends ServiceError {
+export interface BatchUpdateError extends RowCountsServiceError {
   rowCounts: number[];
 }
 
@@ -118,9 +116,13 @@ export interface TimestampBounds {
   returnReadTimestamp?: boolean;
 }
 export interface TransactionSelector {
-  singleUse?: ProtoITransactionOptions;
+  singleUse?: ITransactionOptions;
   id?: Uint8Array|string|null;
-  begin?: ProtoITransactionOptions|null;
+  begin?: ITransactionOptions|null;
+}
+
+export interface RollbackCallback {
+  (error: null | ServiceError | Error): void;
 }
 
 /**
@@ -176,12 +178,12 @@ export interface TransactionSelector {
  * });
  */
 export class Snapshot extends EventEmitter {
-  protected _options!: ProtoITransactionOptions;
+  protected _options!: ITransactionOptions;
   id?: string|Uint8Array;
   ended: boolean;
-  metadata?: ProtoITransaction;
+  metadata?: ITransaction;
   readTimestamp?: PreciseDate;
-  readTimestampProto?: ProtoITimestamp;
+  readTimestampProto?: ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -290,7 +292,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
         },
-      (err: ServiceError|null, resp: ProtoTransaction) => {
+      (err: ServiceError|null, resp: GeneratedTransaction) => {
           if (err) {
             callback!(err, resp);
             return;
@@ -917,8 +919,8 @@ export class Snapshot extends EventEmitter {
    * @param {TimestampBounds} options The user supplied options.
    * @returns {object}
    */
-  static encodeTimestampBounds(options: TimestampBounds): ProtoIReadOnly {
-    const readOnly: ProtoIReadOnly = {};
+  static encodeTimestampBounds(options: TimestampBounds): IReadOnly {
+    const readOnly: IReadOnly = {};
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
@@ -1110,7 +1112,7 @@ promisifyAll(Dml);
  */
 export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
-  commitTimestampProto?: spanner_client.protobuf.ITimestamp;
+  commitTimestampProto?: ITimestamp;
   private _queuedMutations: s.Mutation[];
 
   /**
@@ -1340,7 +1342,7 @@ export class Transaction extends Dml {
           method: 'commit',
           reqOpts,
         },
-        (err: null|Error, resp: ProtoICommitResponse) => {
+        (err: null|ServiceError, resp: ICommitResponse) => {
           this.end();
 
           if (resp && resp.commitTimestamp) {
@@ -1502,7 +1504,7 @@ export class Transaction extends Dml {
   }
 
   rollback(): Promise<void>;
-  rollback(callback: s.RollbackCallback): void;
+  rollback(callback: RollbackCallback): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -1529,7 +1531,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: s.RollbackCallback): void|Promise<void> {
+  rollback(callback?: RollbackCallback): void|Promise<void> {
     if (!this.id) {
       callback!(new Error('Transaction ID is unknown, nothing to rollback.'));
       return;

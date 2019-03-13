@@ -18,7 +18,6 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {codec} from './codec';
 import {Snapshot} from './transaction';
 
 /**
