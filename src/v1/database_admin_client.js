@@ -14,7 +14,7 @@
 
 'use strict';
 
-const gapicConfig = require('./database_admin_client_config');
+const gapicConfig = require('./database_admin_client_config.json');
 const gax = require('google-gax');
 const merge = require('lodash.merge');
 const path = require('path');
@@ -512,6 +512,18 @@ class DatabaseAdminClient {
    *   .catch(err => {
    *     console.error(err);
    *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const createStatement = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   createStatement: createStatement,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.createDatabase(request);
+   *
+   * const [response] = await operation.promise();
    */
   createDatabase(request, options, callback) {
     if (options instanceof Function && callback === undefined) {
@@ -683,6 +695,18 @@ class DatabaseAdminClient {
    *   .catch(err => {
    *     console.error(err);
    *   });
+   *
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const statements = [];
+   * const request = {
+   *   database: formattedDatabase,
+   *   statements: statements,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.updateDatabaseDdl(request);
+   *
+   * const [response] = await operation.promise();
    */
   updateDatabaseDdl(request, options, callback) {
     if (options instanceof Function && callback === undefined) {

@@ -14,7 +14,7 @@
 
 'use strict';
 
-const gapicConfig = require('./instance_admin_client_config');
+const gapicConfig = require('./instance_admin_client_config.json');
 const gax = require('google-gax');
 const merge = require('lodash.merge');
 const path = require('path');
@@ -850,6 +850,20 @@ class InstanceAdminClient {
    *   .catch(err => {
    *     console.error(err);
    *   });
+   *
+   * const formattedParent = client.projectPath('[PROJECT]');
+   * const instanceId = '';
+   * const instance = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   instanceId: instanceId,
+   *   instance: instance,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.createInstance(request);
+   *
+   * const [response] = await operation.promise();
    */
   createInstance(request, options, callback) {
     if (options instanceof Function && callback === undefined) {
@@ -996,6 +1010,18 @@ class InstanceAdminClient {
    *   .catch(err => {
    *     console.error(err);
    *   });
+   *
+   * const instance = {};
+   * const fieldMask = {};
+   * const request = {
+   *   instance: instance,
+   *   fieldMask: fieldMask,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.updateInstance(request);
+   *
+   * const [response] = await operation.promise();
    */
   updateInstance(request, options, callback) {
     if (options instanceof Function && callback === undefined) {
