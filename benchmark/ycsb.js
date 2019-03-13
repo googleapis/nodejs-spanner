@@ -84,7 +84,7 @@ function printMetrics(workload) {
   );
 
   workload.operations.forEach(operation => {
-    const lats = workload.latencies[operation].sort();
+    const lats = workload.latencies[operation].sort((a, b) => a - b);
     const ops = lats.length;
     const opName = `[${operation.toUpperCase()}]`;
 
