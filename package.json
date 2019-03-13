@@ -47,9 +47,9 @@
     "pretest": "npm run compile",
     "presystem-test": "npm run compile",
     "proto": "npm run proto:spanner && npm run proto:spanner_instance_admin && npm run proto:spanner_database_admin",
-    "proto:spanner": "mkdir -p proto && pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/v1/spanner.proto | pbts -i Long -o proto/spanner.d.ts -",
-    "proto:spanner_instance_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/instance/v1/spanner_instance_admin.proto | pbts -i Long -o proto/spanner_instance_admin.d.ts -",
-    "proto:spanner_database_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/database/v1/spanner_database_admin.proto | pbts -i Long -o proto/spanner_database_admin.d.ts -",
+    "proto:spanner": "mkdir -p proto && pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/v1/spanner.proto | pbts -i long -o proto/spanner.d.ts -",
+    "proto:spanner_instance_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/instance/v1/spanner_instance_admin.proto | pbts -i long -o proto/spanner_instance_admin.d.ts -",
+    "proto:spanner_database_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/database/v1/spanner_database_admin.proto | pbts -i long -o proto/spanner_database_admin.d.ts -",
     "docs-test": "linkinator docs -r --skip www.googleapis.com",
     "predocs-test": "npm run docs"
   },
