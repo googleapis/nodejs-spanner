@@ -42,7 +42,7 @@
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",
     "fix": "eslint --fix '**/*.js'",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp -r src/v1 build/src && cp -r protos build && cp test/*.js build/test",
+    "compile": "tsc -p . && cp -r src/v1 build/src && cp -r protos build && cp -r proto build && cp test/*.js build/test",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "presystem-test": "npm run compile",
