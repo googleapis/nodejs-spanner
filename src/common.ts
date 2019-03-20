@@ -1,4 +1,4 @@
-import {google as dbAdminClient} from '../proto/spanner_database_admin';
+import {google as dbAdminClient} from '../proto/spanner';
 import {google as spClient} from '../proto/spanner';
 import {status, Metadata, ServiceError} from 'grpc';
 
