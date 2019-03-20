@@ -4387,6 +4387,2845 @@ export namespace google {
                 STRUCT = 9
             }
         }
+
+        /** Namespace admin. */
+        namespace admin {
+
+            /** Namespace instance. */
+            namespace instance {
+
+                /** Namespace v1. */
+                namespace v1 {
+
+                    /** Represents an InstanceAdmin */
+                    class InstanceAdmin extends $protobuf.rpc.Service {
+
+                        /**
+                         * Constructs a new InstanceAdmin service.
+                         * @param rpcImpl RPC implementation
+                         * @param [requestDelimited=false] Whether requests are length-delimited
+                         * @param [responseDelimited=false] Whether responses are length-delimited
+                         */
+                        constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                        /**
+                         * Creates new InstanceAdmin service using the specified rpc implementation.
+                         * @param rpcImpl RPC implementation
+                         * @param [requestDelimited=false] Whether requests are length-delimited
+                         * @param [responseDelimited=false] Whether responses are length-delimited
+                         * @returns RPC service. Useful where requests and/or responses are streamed.
+                         */
+                        public static create(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean): InstanceAdmin;
+
+                        /**
+                         * Calls ListInstanceConfigs.
+                         * @param request ListInstanceConfigsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListInstanceConfigsResponse
+                         */
+                        public listInstanceConfigs(request: google.spanner.admin.instance.v1.IListInstanceConfigsRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigsCallback): void;
+
+                        /**
+                         * Calls ListInstanceConfigs.
+                         * @param request ListInstanceConfigsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listInstanceConfigs(request: google.spanner.admin.instance.v1.IListInstanceConfigsRequest): Promise<google.spanner.admin.instance.v1.ListInstanceConfigsResponse>;
+
+                        /**
+                         * Calls GetInstanceConfig.
+                         * @param request GetInstanceConfigRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and InstanceConfig
+                         */
+                        public getInstanceConfig(request: google.spanner.admin.instance.v1.IGetInstanceConfigRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.GetInstanceConfigCallback): void;
+
+                        /**
+                         * Calls GetInstanceConfig.
+                         * @param request GetInstanceConfigRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getInstanceConfig(request: google.spanner.admin.instance.v1.IGetInstanceConfigRequest): Promise<google.spanner.admin.instance.v1.InstanceConfig>;
+
+                        /**
+                         * Calls ListInstances.
+                         * @param request ListInstancesRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListInstancesResponse
+                         */
+                        public listInstances(request: google.spanner.admin.instance.v1.IListInstancesRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.ListInstancesCallback): void;
+
+                        /**
+                         * Calls ListInstances.
+                         * @param request ListInstancesRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listInstances(request: google.spanner.admin.instance.v1.IListInstancesRequest): Promise<google.spanner.admin.instance.v1.ListInstancesResponse>;
+
+                        /**
+                         * Calls GetInstance.
+                         * @param request GetInstanceRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Instance
+                         */
+                        public getInstance(request: google.spanner.admin.instance.v1.IGetInstanceRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.GetInstanceCallback): void;
+
+                        /**
+                         * Calls GetInstance.
+                         * @param request GetInstanceRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getInstance(request: google.spanner.admin.instance.v1.IGetInstanceRequest): Promise<google.spanner.admin.instance.v1.Instance>;
+
+                        /**
+                         * Calls CreateInstance.
+                         * @param request CreateInstanceRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public createInstance(request: google.spanner.admin.instance.v1.ICreateInstanceRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceCallback): void;
+
+                        /**
+                         * Calls CreateInstance.
+                         * @param request CreateInstanceRequest message or plain object
+                         * @returns Promise
+                         */
+                        public createInstance(request: google.spanner.admin.instance.v1.ICreateInstanceRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls UpdateInstance.
+                         * @param request UpdateInstanceRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public updateInstance(request: google.spanner.admin.instance.v1.IUpdateInstanceRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceCallback): void;
+
+                        /**
+                         * Calls UpdateInstance.
+                         * @param request UpdateInstanceRequest message or plain object
+                         * @returns Promise
+                         */
+                        public updateInstance(request: google.spanner.admin.instance.v1.IUpdateInstanceRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls DeleteInstance.
+                         * @param request DeleteInstanceRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Empty
+                         */
+                        public deleteInstance(request: google.spanner.admin.instance.v1.IDeleteInstanceRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceCallback): void;
+
+                        /**
+                         * Calls DeleteInstance.
+                         * @param request DeleteInstanceRequest message or plain object
+                         * @returns Promise
+                         */
+                        public deleteInstance(request: google.spanner.admin.instance.v1.IDeleteInstanceRequest): Promise<google.protobuf.Empty>;
+
+                        /**
+                         * Calls SetIamPolicy.
+                         * @param request SetIamPolicyRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Policy
+                         */
+                        public setIamPolicy(request: google.iam.v1.ISetIamPolicyRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.SetIamPolicyCallback): void;
+
+                        /**
+                         * Calls SetIamPolicy.
+                         * @param request SetIamPolicyRequest message or plain object
+                         * @returns Promise
+                         */
+                        public setIamPolicy(request: google.iam.v1.ISetIamPolicyRequest): Promise<google.iam.v1.Policy>;
+
+                        /**
+                         * Calls GetIamPolicy.
+                         * @param request GetIamPolicyRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Policy
+                         */
+                        public getIamPolicy(request: google.iam.v1.IGetIamPolicyRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.GetIamPolicyCallback): void;
+
+                        /**
+                         * Calls GetIamPolicy.
+                         * @param request GetIamPolicyRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getIamPolicy(request: google.iam.v1.IGetIamPolicyRequest): Promise<google.iam.v1.Policy>;
+
+                        /**
+                         * Calls TestIamPermissions.
+                         * @param request TestIamPermissionsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and TestIamPermissionsResponse
+                         */
+                        public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.TestIamPermissionsCallback): void;
+
+                        /**
+                         * Calls TestIamPermissions.
+                         * @param request TestIamPermissionsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest): Promise<google.iam.v1.TestIamPermissionsResponse>;
+                    }
+
+                    namespace InstanceAdmin {
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstanceConfigs}.
+                         * @param error Error, if any
+                         * @param [response] ListInstanceConfigsResponse
+                         */
+                        type ListInstanceConfigsCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstanceConfigsResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstanceConfig}.
+                         * @param error Error, if any
+                         * @param [response] InstanceConfig
+                         */
+                        type GetInstanceConfigCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.InstanceConfig) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstances}.
+                         * @param error Error, if any
+                         * @param [response] ListInstancesResponse
+                         */
+                        type ListInstancesCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstancesResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstance}.
+                         * @param error Error, if any
+                         * @param [response] Instance
+                         */
+                        type GetInstanceCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.Instance) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#createInstance}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type CreateInstanceCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#updateInstance}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type UpdateInstanceCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#deleteInstance}.
+                         * @param error Error, if any
+                         * @param [response] Empty
+                         */
+                        type DeleteInstanceCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#setIamPolicy}.
+                         * @param error Error, if any
+                         * @param [response] Policy
+                         */
+                        type SetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getIamPolicy}.
+                         * @param error Error, if any
+                         * @param [response] Policy
+                         */
+                        type GetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#testIamPermissions}.
+                         * @param error Error, if any
+                         * @param [response] TestIamPermissionsResponse
+                         */
+                        type TestIamPermissionsCallback = (error: (Error|null), response?: google.iam.v1.TestIamPermissionsResponse) => void;
+                    }
+
+                    /** Properties of an InstanceConfig. */
+                    interface IInstanceConfig {
+
+                        /** InstanceConfig name */
+                        name?: (string|null);
+
+                        /** InstanceConfig displayName */
+                        displayName?: (string|null);
+                    }
+
+                    /** Represents an InstanceConfig. */
+                    class InstanceConfig implements IInstanceConfig {
+
+                        /**
+                         * Constructs a new InstanceConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IInstanceConfig);
+
+                        /** InstanceConfig name. */
+                        public name: string;
+
+                        /** InstanceConfig displayName. */
+                        public displayName: string;
+
+                        /**
+                         * Creates a new InstanceConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns InstanceConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IInstanceConfig): google.spanner.admin.instance.v1.InstanceConfig;
+
+                        /**
+                         * Encodes the specified InstanceConfig message. Does not implicitly {@link google.spanner.admin.instance.v1.InstanceConfig.verify|verify} messages.
+                         * @param message InstanceConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IInstanceConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified InstanceConfig message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.InstanceConfig.verify|verify} messages.
+                         * @param message InstanceConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IInstanceConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an InstanceConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns InstanceConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.InstanceConfig;
+
+                        /**
+                         * Decodes an InstanceConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns InstanceConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.InstanceConfig;
+
+                        /**
+                         * Verifies an InstanceConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an InstanceConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns InstanceConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.InstanceConfig;
+
+                        /**
+                         * Creates a plain object from an InstanceConfig message. Also converts values to other types if specified.
+                         * @param message InstanceConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.InstanceConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this InstanceConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an Instance. */
+                    interface IInstance {
+
+                        /** Instance name */
+                        name?: (string|null);
+
+                        /** Instance config */
+                        config?: (string|null);
+
+                        /** Instance displayName */
+                        displayName?: (string|null);
+
+                        /** Instance nodeCount */
+                        nodeCount?: (number|null);
+
+                        /** Instance state */
+                        state?: (google.spanner.admin.instance.v1.Instance.State|null);
+
+                        /** Instance labels */
+                        labels?: ({ [k: string]: string }|null);
+                    }
+
+                    /** Represents an Instance. */
+                    class Instance implements IInstance {
+
+                        /**
+                         * Constructs a new Instance.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IInstance);
+
+                        /** Instance name. */
+                        public name: string;
+
+                        /** Instance config. */
+                        public config: string;
+
+                        /** Instance displayName. */
+                        public displayName: string;
+
+                        /** Instance nodeCount. */
+                        public nodeCount: number;
+
+                        /** Instance state. */
+                        public state: google.spanner.admin.instance.v1.Instance.State;
+
+                        /** Instance labels. */
+                        public labels: { [k: string]: string };
+
+                        /**
+                         * Creates a new Instance instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns Instance instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IInstance): google.spanner.admin.instance.v1.Instance;
+
+                        /**
+                         * Encodes the specified Instance message. Does not implicitly {@link google.spanner.admin.instance.v1.Instance.verify|verify} messages.
+                         * @param message Instance message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IInstance, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified Instance message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.Instance.verify|verify} messages.
+                         * @param message Instance message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IInstance, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an Instance message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns Instance
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.Instance;
+
+                        /**
+                         * Decodes an Instance message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns Instance
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.Instance;
+
+                        /**
+                         * Verifies an Instance message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an Instance message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns Instance
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.Instance;
+
+                        /**
+                         * Creates a plain object from an Instance message. Also converts values to other types if specified.
+                         * @param message Instance
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.Instance, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this Instance to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace Instance {
+
+                        /** State enum. */
+                        enum State {
+                            STATE_UNSPECIFIED = 0,
+                            CREATING = 1,
+                            READY = 2
+                        }
+                    }
+
+                    /** Properties of a ListInstanceConfigsRequest. */
+                    interface IListInstanceConfigsRequest {
+
+                        /** ListInstanceConfigsRequest parent */
+                        parent?: (string|null);
+
+                        /** ListInstanceConfigsRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListInstanceConfigsRequest pageToken */
+                        pageToken?: (string|null);
+                    }
+
+                    /** Represents a ListInstanceConfigsRequest. */
+                    class ListInstanceConfigsRequest implements IListInstanceConfigsRequest {
+
+                        /**
+                         * Constructs a new ListInstanceConfigsRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstanceConfigsRequest);
+
+                        /** ListInstanceConfigsRequest parent. */
+                        public parent: string;
+
+                        /** ListInstanceConfigsRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListInstanceConfigsRequest pageToken. */
+                        public pageToken: string;
+
+                        /**
+                         * Creates a new ListInstanceConfigsRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstanceConfigsRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstanceConfigsRequest): google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsRequest.verify|verify} messages.
+                         * @param message ListInstanceConfigsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstanceConfigsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsRequest.verify|verify} messages.
+                         * @param message ListInstanceConfigsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstanceConfigsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstanceConfigsRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstanceConfigsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
+
+                        /**
+                         * Decodes a ListInstanceConfigsRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstanceConfigsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
+
+                        /**
+                         * Verifies a ListInstanceConfigsRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstanceConfigsRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstanceConfigsRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
+
+                        /**
+                         * Creates a plain object from a ListInstanceConfigsRequest message. Also converts values to other types if specified.
+                         * @param message ListInstanceConfigsRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstanceConfigsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstanceConfigsRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListInstanceConfigsResponse. */
+                    interface IListInstanceConfigsResponse {
+
+                        /** ListInstanceConfigsResponse instanceConfigs */
+                        instanceConfigs?: (google.spanner.admin.instance.v1.IInstanceConfig[]|null);
+
+                        /** ListInstanceConfigsResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListInstanceConfigsResponse. */
+                    class ListInstanceConfigsResponse implements IListInstanceConfigsResponse {
+
+                        /**
+                         * Constructs a new ListInstanceConfigsResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstanceConfigsResponse);
+
+                        /** ListInstanceConfigsResponse instanceConfigs. */
+                        public instanceConfigs: google.spanner.admin.instance.v1.IInstanceConfig[];
+
+                        /** ListInstanceConfigsResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListInstanceConfigsResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstanceConfigsResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstanceConfigsResponse): google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.verify|verify} messages.
+                         * @param message ListInstanceConfigsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstanceConfigsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.verify|verify} messages.
+                         * @param message ListInstanceConfigsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstanceConfigsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstanceConfigsResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstanceConfigsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+
+                        /**
+                         * Decodes a ListInstanceConfigsResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstanceConfigsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+
+                        /**
+                         * Verifies a ListInstanceConfigsResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstanceConfigsResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstanceConfigsResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+
+                        /**
+                         * Creates a plain object from a ListInstanceConfigsResponse message. Also converts values to other types if specified.
+                         * @param message ListInstanceConfigsResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstanceConfigsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstanceConfigsResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a GetInstanceConfigRequest. */
+                    interface IGetInstanceConfigRequest {
+
+                        /** GetInstanceConfigRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a GetInstanceConfigRequest. */
+                    class GetInstanceConfigRequest implements IGetInstanceConfigRequest {
+
+                        /**
+                         * Constructs a new GetInstanceConfigRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IGetInstanceConfigRequest);
+
+                        /** GetInstanceConfigRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new GetInstanceConfigRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetInstanceConfigRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IGetInstanceConfigRequest): google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+
+                        /**
+                         * Encodes the specified GetInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceConfigRequest.verify|verify} messages.
+                         * @param message GetInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IGetInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceConfigRequest.verify|verify} messages.
+                         * @param message GetInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IGetInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetInstanceConfigRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+
+                        /**
+                         * Decodes a GetInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+
+                        /**
+                         * Verifies a GetInstanceConfigRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetInstanceConfigRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+
+                        /**
+                         * Creates a plain object from a GetInstanceConfigRequest message. Also converts values to other types if specified.
+                         * @param message GetInstanceConfigRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.GetInstanceConfigRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetInstanceConfigRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a GetInstanceRequest. */
+                    interface IGetInstanceRequest {
+
+                        /** GetInstanceRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a GetInstanceRequest. */
+                    class GetInstanceRequest implements IGetInstanceRequest {
+
+                        /**
+                         * Constructs a new GetInstanceRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IGetInstanceRequest);
+
+                        /** GetInstanceRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new GetInstanceRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetInstanceRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IGetInstanceRequest): google.spanner.admin.instance.v1.GetInstanceRequest;
+
+                        /**
+                         * Encodes the specified GetInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceRequest.verify|verify} messages.
+                         * @param message GetInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IGetInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceRequest.verify|verify} messages.
+                         * @param message GetInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IGetInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetInstanceRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.GetInstanceRequest;
+
+                        /**
+                         * Decodes a GetInstanceRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.GetInstanceRequest;
+
+                        /**
+                         * Verifies a GetInstanceRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetInstanceRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetInstanceRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.GetInstanceRequest;
+
+                        /**
+                         * Creates a plain object from a GetInstanceRequest message. Also converts values to other types if specified.
+                         * @param message GetInstanceRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.GetInstanceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetInstanceRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a CreateInstanceRequest. */
+                    interface ICreateInstanceRequest {
+
+                        /** CreateInstanceRequest parent */
+                        parent?: (string|null);
+
+                        /** CreateInstanceRequest instanceId */
+                        instanceId?: (string|null);
+
+                        /** CreateInstanceRequest instance */
+                        instance?: (google.spanner.admin.instance.v1.IInstance|null);
+                    }
+
+                    /** Represents a CreateInstanceRequest. */
+                    class CreateInstanceRequest implements ICreateInstanceRequest {
+
+                        /**
+                         * Constructs a new CreateInstanceRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.ICreateInstanceRequest);
+
+                        /** CreateInstanceRequest parent. */
+                        public parent: string;
+
+                        /** CreateInstanceRequest instanceId. */
+                        public instanceId: string;
+
+                        /** CreateInstanceRequest instance. */
+                        public instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /**
+                         * Creates a new CreateInstanceRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateInstanceRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.ICreateInstanceRequest): google.spanner.admin.instance.v1.CreateInstanceRequest;
+
+                        /**
+                         * Encodes the specified CreateInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceRequest.verify|verify} messages.
+                         * @param message CreateInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.ICreateInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceRequest.verify|verify} messages.
+                         * @param message CreateInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.ICreateInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateInstanceRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.CreateInstanceRequest;
+
+                        /**
+                         * Decodes a CreateInstanceRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.CreateInstanceRequest;
+
+                        /**
+                         * Verifies a CreateInstanceRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateInstanceRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateInstanceRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.CreateInstanceRequest;
+
+                        /**
+                         * Creates a plain object from a CreateInstanceRequest message. Also converts values to other types if specified.
+                         * @param message CreateInstanceRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.CreateInstanceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateInstanceRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListInstancesRequest. */
+                    interface IListInstancesRequest {
+
+                        /** ListInstancesRequest parent */
+                        parent?: (string|null);
+
+                        /** ListInstancesRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListInstancesRequest pageToken */
+                        pageToken?: (string|null);
+
+                        /** ListInstancesRequest filter */
+                        filter?: (string|null);
+                    }
+
+                    /** Represents a ListInstancesRequest. */
+                    class ListInstancesRequest implements IListInstancesRequest {
+
+                        /**
+                         * Constructs a new ListInstancesRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstancesRequest);
+
+                        /** ListInstancesRequest parent. */
+                        public parent: string;
+
+                        /** ListInstancesRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListInstancesRequest pageToken. */
+                        public pageToken: string;
+
+                        /** ListInstancesRequest filter. */
+                        public filter: string;
+
+                        /**
+                         * Creates a new ListInstancesRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstancesRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstancesRequest): google.spanner.admin.instance.v1.ListInstancesRequest;
+
+                        /**
+                         * Encodes the specified ListInstancesRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesRequest.verify|verify} messages.
+                         * @param message ListInstancesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstancesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstancesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesRequest.verify|verify} messages.
+                         * @param message ListInstancesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstancesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstancesRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstancesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstancesRequest;
+
+                        /**
+                         * Decodes a ListInstancesRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstancesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstancesRequest;
+
+                        /**
+                         * Verifies a ListInstancesRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstancesRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstancesRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstancesRequest;
+
+                        /**
+                         * Creates a plain object from a ListInstancesRequest message. Also converts values to other types if specified.
+                         * @param message ListInstancesRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstancesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstancesRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListInstancesResponse. */
+                    interface IListInstancesResponse {
+
+                        /** ListInstancesResponse instances */
+                        instances?: (google.spanner.admin.instance.v1.IInstance[]|null);
+
+                        /** ListInstancesResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListInstancesResponse. */
+                    class ListInstancesResponse implements IListInstancesResponse {
+
+                        /**
+                         * Constructs a new ListInstancesResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstancesResponse);
+
+                        /** ListInstancesResponse instances. */
+                        public instances: google.spanner.admin.instance.v1.IInstance[];
+
+                        /** ListInstancesResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListInstancesResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstancesResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstancesResponse): google.spanner.admin.instance.v1.ListInstancesResponse;
+
+                        /**
+                         * Encodes the specified ListInstancesResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesResponse.verify|verify} messages.
+                         * @param message ListInstancesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstancesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstancesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesResponse.verify|verify} messages.
+                         * @param message ListInstancesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstancesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstancesResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstancesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstancesResponse;
+
+                        /**
+                         * Decodes a ListInstancesResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstancesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstancesResponse;
+
+                        /**
+                         * Verifies a ListInstancesResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstancesResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstancesResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstancesResponse;
+
+                        /**
+                         * Creates a plain object from a ListInstancesResponse message. Also converts values to other types if specified.
+                         * @param message ListInstancesResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstancesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstancesResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an UpdateInstanceRequest. */
+                    interface IUpdateInstanceRequest {
+
+                        /** UpdateInstanceRequest instance */
+                        instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /** UpdateInstanceRequest fieldMask */
+                        fieldMask?: (google.protobuf.IFieldMask|null);
+                    }
+
+                    /** Represents an UpdateInstanceRequest. */
+                    class UpdateInstanceRequest implements IUpdateInstanceRequest {
+
+                        /**
+                         * Constructs a new UpdateInstanceRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IUpdateInstanceRequest);
+
+                        /** UpdateInstanceRequest instance. */
+                        public instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /** UpdateInstanceRequest fieldMask. */
+                        public fieldMask?: (google.protobuf.IFieldMask|null);
+
+                        /**
+                         * Creates a new UpdateInstanceRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateInstanceRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IUpdateInstanceRequest): google.spanner.admin.instance.v1.UpdateInstanceRequest;
+
+                        /**
+                         * Encodes the specified UpdateInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceRequest.verify|verify} messages.
+                         * @param message UpdateInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IUpdateInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceRequest.verify|verify} messages.
+                         * @param message UpdateInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IUpdateInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateInstanceRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.UpdateInstanceRequest;
+
+                        /**
+                         * Decodes an UpdateInstanceRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.UpdateInstanceRequest;
+
+                        /**
+                         * Verifies an UpdateInstanceRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateInstanceRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateInstanceRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.UpdateInstanceRequest;
+
+                        /**
+                         * Creates a plain object from an UpdateInstanceRequest message. Also converts values to other types if specified.
+                         * @param message UpdateInstanceRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.UpdateInstanceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateInstanceRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a DeleteInstanceRequest. */
+                    interface IDeleteInstanceRequest {
+
+                        /** DeleteInstanceRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a DeleteInstanceRequest. */
+                    class DeleteInstanceRequest implements IDeleteInstanceRequest {
+
+                        /**
+                         * Constructs a new DeleteInstanceRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IDeleteInstanceRequest);
+
+                        /** DeleteInstanceRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new DeleteInstanceRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DeleteInstanceRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IDeleteInstanceRequest): google.spanner.admin.instance.v1.DeleteInstanceRequest;
+
+                        /**
+                         * Encodes the specified DeleteInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceRequest.verify|verify} messages.
+                         * @param message DeleteInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IDeleteInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DeleteInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceRequest.verify|verify} messages.
+                         * @param message DeleteInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IDeleteInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DeleteInstanceRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DeleteInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.DeleteInstanceRequest;
+
+                        /**
+                         * Decodes a DeleteInstanceRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DeleteInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.DeleteInstanceRequest;
+
+                        /**
+                         * Verifies a DeleteInstanceRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DeleteInstanceRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DeleteInstanceRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.DeleteInstanceRequest;
+
+                        /**
+                         * Creates a plain object from a DeleteInstanceRequest message. Also converts values to other types if specified.
+                         * @param message DeleteInstanceRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.DeleteInstanceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DeleteInstanceRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a CreateInstanceMetadata. */
+                    interface ICreateInstanceMetadata {
+
+                        /** CreateInstanceMetadata instance */
+                        instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /** CreateInstanceMetadata startTime */
+                        startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata endTime */
+                        endTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a CreateInstanceMetadata. */
+                    class CreateInstanceMetadata implements ICreateInstanceMetadata {
+
+                        /**
+                         * Constructs a new CreateInstanceMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.ICreateInstanceMetadata);
+
+                        /** CreateInstanceMetadata instance. */
+                        public instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /** CreateInstanceMetadata startTime. */
+                        public startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata endTime. */
+                        public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new CreateInstanceMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateInstanceMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.ICreateInstanceMetadata): google.spanner.admin.instance.v1.CreateInstanceMetadata;
+
+                        /**
+                         * Encodes the specified CreateInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceMetadata.verify|verify} messages.
+                         * @param message CreateInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.ICreateInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceMetadata.verify|verify} messages.
+                         * @param message CreateInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.ICreateInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateInstanceMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.CreateInstanceMetadata;
+
+                        /**
+                         * Decodes a CreateInstanceMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.CreateInstanceMetadata;
+
+                        /**
+                         * Verifies a CreateInstanceMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateInstanceMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateInstanceMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.CreateInstanceMetadata;
+
+                        /**
+                         * Creates a plain object from a CreateInstanceMetadata message. Also converts values to other types if specified.
+                         * @param message CreateInstanceMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.CreateInstanceMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateInstanceMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an UpdateInstanceMetadata. */
+                    interface IUpdateInstanceMetadata {
+
+                        /** UpdateInstanceMetadata instance */
+                        instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /** UpdateInstanceMetadata startTime */
+                        startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata endTime */
+                        endTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents an UpdateInstanceMetadata. */
+                    class UpdateInstanceMetadata implements IUpdateInstanceMetadata {
+
+                        /**
+                         * Constructs a new UpdateInstanceMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IUpdateInstanceMetadata);
+
+                        /** UpdateInstanceMetadata instance. */
+                        public instance?: (google.spanner.admin.instance.v1.IInstance|null);
+
+                        /** UpdateInstanceMetadata startTime. */
+                        public startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata endTime. */
+                        public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new UpdateInstanceMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateInstanceMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IUpdateInstanceMetadata): google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+
+                        /**
+                         * Encodes the specified UpdateInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceMetadata.verify|verify} messages.
+                         * @param message UpdateInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IUpdateInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceMetadata.verify|verify} messages.
+                         * @param message UpdateInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IUpdateInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateInstanceMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+
+                        /**
+                         * Decodes an UpdateInstanceMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+
+                        /**
+                         * Verifies an UpdateInstanceMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateInstanceMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateInstanceMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+
+                        /**
+                         * Creates a plain object from an UpdateInstanceMetadata message. Also converts values to other types if specified.
+                         * @param message UpdateInstanceMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.UpdateInstanceMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateInstanceMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+                }
+            }
+
+            /** Namespace database. */
+            namespace database {
+
+                /** Namespace v1. */
+                namespace v1 {
+
+                    /** Represents a DatabaseAdmin */
+                    class DatabaseAdmin extends $protobuf.rpc.Service {
+
+                        /**
+                         * Constructs a new DatabaseAdmin service.
+                         * @param rpcImpl RPC implementation
+                         * @param [requestDelimited=false] Whether requests are length-delimited
+                         * @param [responseDelimited=false] Whether responses are length-delimited
+                         */
+                        constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                        /**
+                         * Creates new DatabaseAdmin service using the specified rpc implementation.
+                         * @param rpcImpl RPC implementation
+                         * @param [requestDelimited=false] Whether requests are length-delimited
+                         * @param [responseDelimited=false] Whether responses are length-delimited
+                         * @returns RPC service. Useful where requests and/or responses are streamed.
+                         */
+                        public static create(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean): DatabaseAdmin;
+
+                        /**
+                         * Calls ListDatabases.
+                         * @param request ListDatabasesRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListDatabasesResponse
+                         */
+                        public listDatabases(request: google.spanner.admin.database.v1.IListDatabasesRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.ListDatabasesCallback): void;
+
+                        /**
+                         * Calls ListDatabases.
+                         * @param request ListDatabasesRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listDatabases(request: google.spanner.admin.database.v1.IListDatabasesRequest): Promise<google.spanner.admin.database.v1.ListDatabasesResponse>;
+
+                        /**
+                         * Calls CreateDatabase.
+                         * @param request CreateDatabaseRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public createDatabase(request: google.spanner.admin.database.v1.ICreateDatabaseRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabaseCallback): void;
+
+                        /**
+                         * Calls CreateDatabase.
+                         * @param request CreateDatabaseRequest message or plain object
+                         * @returns Promise
+                         */
+                        public createDatabase(request: google.spanner.admin.database.v1.ICreateDatabaseRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls GetDatabase.
+                         * @param request GetDatabaseRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Database
+                         */
+                        public getDatabase(request: google.spanner.admin.database.v1.IGetDatabaseRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseCallback): void;
+
+                        /**
+                         * Calls GetDatabase.
+                         * @param request GetDatabaseRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getDatabase(request: google.spanner.admin.database.v1.IGetDatabaseRequest): Promise<google.spanner.admin.database.v1.Database>;
+
+                        /**
+                         * Calls UpdateDatabaseDdl.
+                         * @param request UpdateDatabaseDdlRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public updateDatabaseDdl(request: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdlCallback): void;
+
+                        /**
+                         * Calls UpdateDatabaseDdl.
+                         * @param request UpdateDatabaseDdlRequest message or plain object
+                         * @returns Promise
+                         */
+                        public updateDatabaseDdl(request: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls DropDatabase.
+                         * @param request DropDatabaseRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Empty
+                         */
+                        public dropDatabase(request: google.spanner.admin.database.v1.IDropDatabaseRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.DropDatabaseCallback): void;
+
+                        /**
+                         * Calls DropDatabase.
+                         * @param request DropDatabaseRequest message or plain object
+                         * @returns Promise
+                         */
+                        public dropDatabase(request: google.spanner.admin.database.v1.IDropDatabaseRequest): Promise<google.protobuf.Empty>;
+
+                        /**
+                         * Calls GetDatabaseDdl.
+                         * @param request GetDatabaseDdlRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and GetDatabaseDdlResponse
+                         */
+                        public getDatabaseDdl(request: google.spanner.admin.database.v1.IGetDatabaseDdlRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdlCallback): void;
+
+                        /**
+                         * Calls GetDatabaseDdl.
+                         * @param request GetDatabaseDdlRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getDatabaseDdl(request: google.spanner.admin.database.v1.IGetDatabaseDdlRequest): Promise<google.spanner.admin.database.v1.GetDatabaseDdlResponse>;
+
+                        /**
+                         * Calls SetIamPolicy.
+                         * @param request SetIamPolicyRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Policy
+                         */
+                        public setIamPolicy(request: google.iam.v1.ISetIamPolicyRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.SetIamPolicyCallback): void;
+
+                        /**
+                         * Calls SetIamPolicy.
+                         * @param request SetIamPolicyRequest message or plain object
+                         * @returns Promise
+                         */
+                        public setIamPolicy(request: google.iam.v1.ISetIamPolicyRequest): Promise<google.iam.v1.Policy>;
+
+                        /**
+                         * Calls GetIamPolicy.
+                         * @param request GetIamPolicyRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Policy
+                         */
+                        public getIamPolicy(request: google.iam.v1.IGetIamPolicyRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.GetIamPolicyCallback): void;
+
+                        /**
+                         * Calls GetIamPolicy.
+                         * @param request GetIamPolicyRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getIamPolicy(request: google.iam.v1.IGetIamPolicyRequest): Promise<google.iam.v1.Policy>;
+
+                        /**
+                         * Calls TestIamPermissions.
+                         * @param request TestIamPermissionsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and TestIamPermissionsResponse
+                         */
+                        public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.TestIamPermissionsCallback): void;
+
+                        /**
+                         * Calls TestIamPermissions.
+                         * @param request TestIamPermissionsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest): Promise<google.iam.v1.TestIamPermissionsResponse>;
+                    }
+
+                    namespace DatabaseAdmin {
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabases}.
+                         * @param error Error, if any
+                         * @param [response] ListDatabasesResponse
+                         */
+                        type ListDatabasesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabasesResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createDatabase}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type CreateDatabaseCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabase}.
+                         * @param error Error, if any
+                         * @param [response] Database
+                         */
+                        type GetDatabaseCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.Database) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateDatabaseDdl}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type UpdateDatabaseDdlCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#dropDatabase}.
+                         * @param error Error, if any
+                         * @param [response] Empty
+                         */
+                        type DropDatabaseCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabaseDdl}.
+                         * @param error Error, if any
+                         * @param [response] GetDatabaseDdlResponse
+                         */
+                        type GetDatabaseDdlCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.GetDatabaseDdlResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#setIamPolicy}.
+                         * @param error Error, if any
+                         * @param [response] Policy
+                         */
+                        type SetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getIamPolicy}.
+                         * @param error Error, if any
+                         * @param [response] Policy
+                         */
+                        type GetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#testIamPermissions}.
+                         * @param error Error, if any
+                         * @param [response] TestIamPermissionsResponse
+                         */
+                        type TestIamPermissionsCallback = (error: (Error|null), response?: google.iam.v1.TestIamPermissionsResponse) => void;
+                    }
+
+                    /** Properties of a Database. */
+                    interface IDatabase {
+
+                        /** Database name */
+                        name?: (string|null);
+
+                        /** Database state */
+                        state?: (google.spanner.admin.database.v1.Database.State|null);
+                    }
+
+                    /** Represents a Database. */
+                    class Database implements IDatabase {
+
+                        /**
+                         * Constructs a new Database.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IDatabase);
+
+                        /** Database name. */
+                        public name: string;
+
+                        /** Database state. */
+                        public state: google.spanner.admin.database.v1.Database.State;
+
+                        /**
+                         * Creates a new Database instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns Database instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IDatabase): google.spanner.admin.database.v1.Database;
+
+                        /**
+                         * Encodes the specified Database message. Does not implicitly {@link google.spanner.admin.database.v1.Database.verify|verify} messages.
+                         * @param message Database message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IDatabase, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified Database message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.Database.verify|verify} messages.
+                         * @param message Database message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IDatabase, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a Database message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns Database
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.Database;
+
+                        /**
+                         * Decodes a Database message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns Database
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.Database;
+
+                        /**
+                         * Verifies a Database message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a Database message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns Database
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.Database;
+
+                        /**
+                         * Creates a plain object from a Database message. Also converts values to other types if specified.
+                         * @param message Database
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.Database, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this Database to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace Database {
+
+                        /** State enum. */
+                        enum State {
+                            STATE_UNSPECIFIED = 0,
+                            CREATING = 1,
+                            READY = 2
+                        }
+                    }
+
+                    /** Properties of a ListDatabasesRequest. */
+                    interface IListDatabasesRequest {
+
+                        /** ListDatabasesRequest parent */
+                        parent?: (string|null);
+
+                        /** ListDatabasesRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListDatabasesRequest pageToken */
+                        pageToken?: (string|null);
+                    }
+
+                    /** Represents a ListDatabasesRequest. */
+                    class ListDatabasesRequest implements IListDatabasesRequest {
+
+                        /**
+                         * Constructs a new ListDatabasesRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListDatabasesRequest);
+
+                        /** ListDatabasesRequest parent. */
+                        public parent: string;
+
+                        /** ListDatabasesRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListDatabasesRequest pageToken. */
+                        public pageToken: string;
+
+                        /**
+                         * Creates a new ListDatabasesRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListDatabasesRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListDatabasesRequest): google.spanner.admin.database.v1.ListDatabasesRequest;
+
+                        /**
+                         * Encodes the specified ListDatabasesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesRequest.verify|verify} messages.
+                         * @param message ListDatabasesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListDatabasesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListDatabasesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesRequest.verify|verify} messages.
+                         * @param message ListDatabasesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListDatabasesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListDatabasesRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListDatabasesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListDatabasesRequest;
+
+                        /**
+                         * Decodes a ListDatabasesRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListDatabasesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListDatabasesRequest;
+
+                        /**
+                         * Verifies a ListDatabasesRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListDatabasesRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListDatabasesRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListDatabasesRequest;
+
+                        /**
+                         * Creates a plain object from a ListDatabasesRequest message. Also converts values to other types if specified.
+                         * @param message ListDatabasesRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListDatabasesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListDatabasesRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListDatabasesResponse. */
+                    interface IListDatabasesResponse {
+
+                        /** ListDatabasesResponse databases */
+                        databases?: (google.spanner.admin.database.v1.IDatabase[]|null);
+
+                        /** ListDatabasesResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListDatabasesResponse. */
+                    class ListDatabasesResponse implements IListDatabasesResponse {
+
+                        /**
+                         * Constructs a new ListDatabasesResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListDatabasesResponse);
+
+                        /** ListDatabasesResponse databases. */
+                        public databases: google.spanner.admin.database.v1.IDatabase[];
+
+                        /** ListDatabasesResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListDatabasesResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListDatabasesResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListDatabasesResponse): google.spanner.admin.database.v1.ListDatabasesResponse;
+
+                        /**
+                         * Encodes the specified ListDatabasesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesResponse.verify|verify} messages.
+                         * @param message ListDatabasesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListDatabasesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListDatabasesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesResponse.verify|verify} messages.
+                         * @param message ListDatabasesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListDatabasesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListDatabasesResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListDatabasesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListDatabasesResponse;
+
+                        /**
+                         * Decodes a ListDatabasesResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListDatabasesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListDatabasesResponse;
+
+                        /**
+                         * Verifies a ListDatabasesResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListDatabasesResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListDatabasesResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListDatabasesResponse;
+
+                        /**
+                         * Creates a plain object from a ListDatabasesResponse message. Also converts values to other types if specified.
+                         * @param message ListDatabasesResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListDatabasesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListDatabasesResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a CreateDatabaseRequest. */
+                    interface ICreateDatabaseRequest {
+
+                        /** CreateDatabaseRequest parent */
+                        parent?: (string|null);
+
+                        /** CreateDatabaseRequest createStatement */
+                        createStatement?: (string|null);
+
+                        /** CreateDatabaseRequest extraStatements */
+                        extraStatements?: (string[]|null);
+                    }
+
+                    /** Represents a CreateDatabaseRequest. */
+                    class CreateDatabaseRequest implements ICreateDatabaseRequest {
+
+                        /**
+                         * Constructs a new CreateDatabaseRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICreateDatabaseRequest);
+
+                        /** CreateDatabaseRequest parent. */
+                        public parent: string;
+
+                        /** CreateDatabaseRequest createStatement. */
+                        public createStatement: string;
+
+                        /** CreateDatabaseRequest extraStatements. */
+                        public extraStatements: string[];
+
+                        /**
+                         * Creates a new CreateDatabaseRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateDatabaseRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICreateDatabaseRequest): google.spanner.admin.database.v1.CreateDatabaseRequest;
+
+                        /**
+                         * Encodes the specified CreateDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseRequest.verify|verify} messages.
+                         * @param message CreateDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICreateDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseRequest.verify|verify} messages.
+                         * @param message CreateDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICreateDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateDatabaseRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CreateDatabaseRequest;
+
+                        /**
+                         * Decodes a CreateDatabaseRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CreateDatabaseRequest;
+
+                        /**
+                         * Verifies a CreateDatabaseRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateDatabaseRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateDatabaseRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CreateDatabaseRequest;
+
+                        /**
+                         * Creates a plain object from a CreateDatabaseRequest message. Also converts values to other types if specified.
+                         * @param message CreateDatabaseRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CreateDatabaseRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateDatabaseRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a CreateDatabaseMetadata. */
+                    interface ICreateDatabaseMetadata {
+
+                        /** CreateDatabaseMetadata database */
+                        database?: (string|null);
+                    }
+
+                    /** Represents a CreateDatabaseMetadata. */
+                    class CreateDatabaseMetadata implements ICreateDatabaseMetadata {
+
+                        /**
+                         * Constructs a new CreateDatabaseMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICreateDatabaseMetadata);
+
+                        /** CreateDatabaseMetadata database. */
+                        public database: string;
+
+                        /**
+                         * Creates a new CreateDatabaseMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateDatabaseMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICreateDatabaseMetadata): google.spanner.admin.database.v1.CreateDatabaseMetadata;
+
+                        /**
+                         * Encodes the specified CreateDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseMetadata.verify|verify} messages.
+                         * @param message CreateDatabaseMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICreateDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseMetadata.verify|verify} messages.
+                         * @param message CreateDatabaseMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICreateDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateDatabaseMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateDatabaseMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CreateDatabaseMetadata;
+
+                        /**
+                         * Decodes a CreateDatabaseMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateDatabaseMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CreateDatabaseMetadata;
+
+                        /**
+                         * Verifies a CreateDatabaseMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateDatabaseMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CreateDatabaseMetadata;
+
+                        /**
+                         * Creates a plain object from a CreateDatabaseMetadata message. Also converts values to other types if specified.
+                         * @param message CreateDatabaseMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CreateDatabaseMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateDatabaseMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a GetDatabaseRequest. */
+                    interface IGetDatabaseRequest {
+
+                        /** GetDatabaseRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a GetDatabaseRequest. */
+                    class GetDatabaseRequest implements IGetDatabaseRequest {
+
+                        /**
+                         * Constructs a new GetDatabaseRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IGetDatabaseRequest);
+
+                        /** GetDatabaseRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new GetDatabaseRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetDatabaseRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IGetDatabaseRequest): google.spanner.admin.database.v1.GetDatabaseRequest;
+
+                        /**
+                         * Encodes the specified GetDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseRequest.verify|verify} messages.
+                         * @param message GetDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IGetDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseRequest.verify|verify} messages.
+                         * @param message GetDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IGetDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetDatabaseRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.GetDatabaseRequest;
+
+                        /**
+                         * Decodes a GetDatabaseRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.GetDatabaseRequest;
+
+                        /**
+                         * Verifies a GetDatabaseRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetDatabaseRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetDatabaseRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.GetDatabaseRequest;
+
+                        /**
+                         * Creates a plain object from a GetDatabaseRequest message. Also converts values to other types if specified.
+                         * @param message GetDatabaseRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.GetDatabaseRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetDatabaseRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an UpdateDatabaseDdlRequest. */
+                    interface IUpdateDatabaseDdlRequest {
+
+                        /** UpdateDatabaseDdlRequest database */
+                        database?: (string|null);
+
+                        /** UpdateDatabaseDdlRequest statements */
+                        statements?: (string[]|null);
+
+                        /** UpdateDatabaseDdlRequest operationId */
+                        operationId?: (string|null);
+                    }
+
+                    /** Represents an UpdateDatabaseDdlRequest. */
+                    class UpdateDatabaseDdlRequest implements IUpdateDatabaseDdlRequest {
+
+                        /**
+                         * Constructs a new UpdateDatabaseDdlRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest);
+
+                        /** UpdateDatabaseDdlRequest database. */
+                        public database: string;
+
+                        /** UpdateDatabaseDdlRequest statements. */
+                        public statements: string[];
+
+                        /** UpdateDatabaseDdlRequest operationId. */
+                        public operationId: string;
+
+                        /**
+                         * Creates a new UpdateDatabaseDdlRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateDatabaseDdlRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest): google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseDdlRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.verify|verify} messages.
+                         * @param message UpdateDatabaseDdlRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseDdlRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.verify|verify} messages.
+                         * @param message UpdateDatabaseDdlRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateDatabaseDdlRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateDatabaseDdlRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+
+                        /**
+                         * Decodes an UpdateDatabaseDdlRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateDatabaseDdlRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+
+                        /**
+                         * Verifies an UpdateDatabaseDdlRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateDatabaseDdlRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateDatabaseDdlRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+
+                        /**
+                         * Creates a plain object from an UpdateDatabaseDdlRequest message. Also converts values to other types if specified.
+                         * @param message UpdateDatabaseDdlRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.UpdateDatabaseDdlRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateDatabaseDdlRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an UpdateDatabaseDdlMetadata. */
+                    interface IUpdateDatabaseDdlMetadata {
+
+                        /** UpdateDatabaseDdlMetadata database */
+                        database?: (string|null);
+
+                        /** UpdateDatabaseDdlMetadata statements */
+                        statements?: (string[]|null);
+
+                        /** UpdateDatabaseDdlMetadata commitTimestamps */
+                        commitTimestamps?: (google.protobuf.ITimestamp[]|null);
+                    }
+
+                    /** Represents an UpdateDatabaseDdlMetadata. */
+                    class UpdateDatabaseDdlMetadata implements IUpdateDatabaseDdlMetadata {
+
+                        /**
+                         * Constructs a new UpdateDatabaseDdlMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata);
+
+                        /** UpdateDatabaseDdlMetadata database. */
+                        public database: string;
+
+                        /** UpdateDatabaseDdlMetadata statements. */
+                        public statements: string[];
+
+                        /** UpdateDatabaseDdlMetadata commitTimestamps. */
+                        public commitTimestamps: google.protobuf.ITimestamp[];
+
+                        /**
+                         * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateDatabaseDdlMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata): google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseDdlMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.verify|verify} messages.
+                         * @param message UpdateDatabaseDdlMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseDdlMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.verify|verify} messages.
+                         * @param message UpdateDatabaseDdlMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateDatabaseDdlMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateDatabaseDdlMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
+                        /**
+                         * Decodes an UpdateDatabaseDdlMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateDatabaseDdlMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
+                        /**
+                         * Verifies an UpdateDatabaseDdlMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateDatabaseDdlMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateDatabaseDdlMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+
+                        /**
+                         * Creates a plain object from an UpdateDatabaseDdlMetadata message. Also converts values to other types if specified.
+                         * @param message UpdateDatabaseDdlMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateDatabaseDdlMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a DropDatabaseRequest. */
+                    interface IDropDatabaseRequest {
+
+                        /** DropDatabaseRequest database */
+                        database?: (string|null);
+                    }
+
+                    /** Represents a DropDatabaseRequest. */
+                    class DropDatabaseRequest implements IDropDatabaseRequest {
+
+                        /**
+                         * Constructs a new DropDatabaseRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IDropDatabaseRequest);
+
+                        /** DropDatabaseRequest database. */
+                        public database: string;
+
+                        /**
+                         * Creates a new DropDatabaseRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DropDatabaseRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IDropDatabaseRequest): google.spanner.admin.database.v1.DropDatabaseRequest;
+
+                        /**
+                         * Encodes the specified DropDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.DropDatabaseRequest.verify|verify} messages.
+                         * @param message DropDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IDropDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DropDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DropDatabaseRequest.verify|verify} messages.
+                         * @param message DropDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IDropDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DropDatabaseRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DropDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.DropDatabaseRequest;
+
+                        /**
+                         * Decodes a DropDatabaseRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DropDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.DropDatabaseRequest;
+
+                        /**
+                         * Verifies a DropDatabaseRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DropDatabaseRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DropDatabaseRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.DropDatabaseRequest;
+
+                        /**
+                         * Creates a plain object from a DropDatabaseRequest message. Also converts values to other types if specified.
+                         * @param message DropDatabaseRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.DropDatabaseRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DropDatabaseRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a GetDatabaseDdlRequest. */
+                    interface IGetDatabaseDdlRequest {
+
+                        /** GetDatabaseDdlRequest database */
+                        database?: (string|null);
+                    }
+
+                    /** Represents a GetDatabaseDdlRequest. */
+                    class GetDatabaseDdlRequest implements IGetDatabaseDdlRequest {
+
+                        /**
+                         * Constructs a new GetDatabaseDdlRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IGetDatabaseDdlRequest);
+
+                        /** GetDatabaseDdlRequest database. */
+                        public database: string;
+
+                        /**
+                         * Creates a new GetDatabaseDdlRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetDatabaseDdlRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IGetDatabaseDdlRequest): google.spanner.admin.database.v1.GetDatabaseDdlRequest;
+
+                        /**
+                         * Encodes the specified GetDatabaseDdlRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlRequest.verify|verify} messages.
+                         * @param message GetDatabaseDdlRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IGetDatabaseDdlRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetDatabaseDdlRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlRequest.verify|verify} messages.
+                         * @param message GetDatabaseDdlRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IGetDatabaseDdlRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetDatabaseDdlRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetDatabaseDdlRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.GetDatabaseDdlRequest;
+
+                        /**
+                         * Decodes a GetDatabaseDdlRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetDatabaseDdlRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.GetDatabaseDdlRequest;
+
+                        /**
+                         * Verifies a GetDatabaseDdlRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetDatabaseDdlRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetDatabaseDdlRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.GetDatabaseDdlRequest;
+
+                        /**
+                         * Creates a plain object from a GetDatabaseDdlRequest message. Also converts values to other types if specified.
+                         * @param message GetDatabaseDdlRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.GetDatabaseDdlRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetDatabaseDdlRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a GetDatabaseDdlResponse. */
+                    interface IGetDatabaseDdlResponse {
+
+                        /** GetDatabaseDdlResponse statements */
+                        statements?: (string[]|null);
+                    }
+
+                    /** Represents a GetDatabaseDdlResponse. */
+                    class GetDatabaseDdlResponse implements IGetDatabaseDdlResponse {
+
+                        /**
+                         * Constructs a new GetDatabaseDdlResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IGetDatabaseDdlResponse);
+
+                        /** GetDatabaseDdlResponse statements. */
+                        public statements: string[];
+
+                        /**
+                         * Creates a new GetDatabaseDdlResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetDatabaseDdlResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IGetDatabaseDdlResponse): google.spanner.admin.database.v1.GetDatabaseDdlResponse;
+
+                        /**
+                         * Encodes the specified GetDatabaseDdlResponse message. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlResponse.verify|verify} messages.
+                         * @param message GetDatabaseDdlResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IGetDatabaseDdlResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetDatabaseDdlResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlResponse.verify|verify} messages.
+                         * @param message GetDatabaseDdlResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IGetDatabaseDdlResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetDatabaseDdlResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetDatabaseDdlResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.GetDatabaseDdlResponse;
+
+                        /**
+                         * Decodes a GetDatabaseDdlResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetDatabaseDdlResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.GetDatabaseDdlResponse;
+
+                        /**
+                         * Verifies a GetDatabaseDdlResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetDatabaseDdlResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetDatabaseDdlResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.GetDatabaseDdlResponse;
+
+                        /**
+                         * Creates a plain object from a GetDatabaseDdlResponse message. Also converts values to other types if specified.
+                         * @param message GetDatabaseDdlResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.GetDatabaseDdlResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetDatabaseDdlResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+                }
+            }
+        }
     }
 
     /** Namespace api. */
@@ -8413,6 +11252,1868 @@ export namespace google {
 
             /**
              * Converts this Duration to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of an Any. */
+        interface IAny {
+
+            /** Any type_url */
+            type_url?: (string|null);
+
+            /** Any value */
+            value?: (Uint8Array|null);
+        }
+
+        /** Represents an Any. */
+        class Any implements IAny {
+
+            /**
+             * Constructs a new Any.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.protobuf.IAny);
+
+            /** Any type_url. */
+            public type_url: string;
+
+            /** Any value. */
+            public value: Uint8Array;
+
+            /**
+             * Creates a new Any instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns Any instance
+             */
+            public static create(properties?: google.protobuf.IAny): google.protobuf.Any;
+
+            /**
+             * Encodes the specified Any message. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
+             * @param message Any message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Any message, length delimited. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
+             * @param message Any message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an Any message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Any
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.Any;
+
+            /**
+             * Decodes an Any message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Any
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.Any;
+
+            /**
+             * Verifies an Any message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates an Any message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Any
+             */
+            public static fromObject(object: { [k: string]: any }): google.protobuf.Any;
+
+            /**
+             * Creates a plain object from an Any message. Also converts values to other types if specified.
+             * @param message Any
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.protobuf.Any, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Any to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a FieldMask. */
+        interface IFieldMask {
+
+            /** FieldMask paths */
+            paths?: (string[]|null);
+        }
+
+        /** Represents a FieldMask. */
+        class FieldMask implements IFieldMask {
+
+            /**
+             * Constructs a new FieldMask.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.protobuf.IFieldMask);
+
+            /** FieldMask paths. */
+            public paths: string[];
+
+            /**
+             * Creates a new FieldMask instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns FieldMask instance
+             */
+            public static create(properties?: google.protobuf.IFieldMask): google.protobuf.FieldMask;
+
+            /**
+             * Encodes the specified FieldMask message. Does not implicitly {@link google.protobuf.FieldMask.verify|verify} messages.
+             * @param message FieldMask message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.protobuf.IFieldMask, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified FieldMask message, length delimited. Does not implicitly {@link google.protobuf.FieldMask.verify|verify} messages.
+             * @param message FieldMask message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.protobuf.IFieldMask, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a FieldMask message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns FieldMask
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.FieldMask;
+
+            /**
+             * Decodes a FieldMask message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns FieldMask
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.FieldMask;
+
+            /**
+             * Verifies a FieldMask message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a FieldMask message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns FieldMask
+             */
+            public static fromObject(object: { [k: string]: any }): google.protobuf.FieldMask;
+
+            /**
+             * Creates a plain object from a FieldMask message. Also converts values to other types if specified.
+             * @param message FieldMask
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.protobuf.FieldMask, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this FieldMask to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace iam. */
+    namespace iam {
+
+        /** Namespace v1. */
+        namespace v1 {
+
+            /** Represents a IAMPolicy */
+            class IAMPolicy extends $protobuf.rpc.Service {
+
+                /**
+                 * Constructs a new IAMPolicy service.
+                 * @param rpcImpl RPC implementation
+                 * @param [requestDelimited=false] Whether requests are length-delimited
+                 * @param [responseDelimited=false] Whether responses are length-delimited
+                 */
+                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                /**
+                 * Creates new IAMPolicy service using the specified rpc implementation.
+                 * @param rpcImpl RPC implementation
+                 * @param [requestDelimited=false] Whether requests are length-delimited
+                 * @param [responseDelimited=false] Whether responses are length-delimited
+                 * @returns RPC service. Useful where requests and/or responses are streamed.
+                 */
+                public static create(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean): IAMPolicy;
+
+                /**
+                 * Calls SetIamPolicy.
+                 * @param request SetIamPolicyRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and Policy
+                 */
+                public setIamPolicy(request: google.iam.v1.ISetIamPolicyRequest, callback: google.iam.v1.IAMPolicy.SetIamPolicyCallback): void;
+
+                /**
+                 * Calls SetIamPolicy.
+                 * @param request SetIamPolicyRequest message or plain object
+                 * @returns Promise
+                 */
+                public setIamPolicy(request: google.iam.v1.ISetIamPolicyRequest): Promise<google.iam.v1.Policy>;
+
+                /**
+                 * Calls GetIamPolicy.
+                 * @param request GetIamPolicyRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and Policy
+                 */
+                public getIamPolicy(request: google.iam.v1.IGetIamPolicyRequest, callback: google.iam.v1.IAMPolicy.GetIamPolicyCallback): void;
+
+                /**
+                 * Calls GetIamPolicy.
+                 * @param request GetIamPolicyRequest message or plain object
+                 * @returns Promise
+                 */
+                public getIamPolicy(request: google.iam.v1.IGetIamPolicyRequest): Promise<google.iam.v1.Policy>;
+
+                /**
+                 * Calls TestIamPermissions.
+                 * @param request TestIamPermissionsRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and TestIamPermissionsResponse
+                 */
+                public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest, callback: google.iam.v1.IAMPolicy.TestIamPermissionsCallback): void;
+
+                /**
+                 * Calls TestIamPermissions.
+                 * @param request TestIamPermissionsRequest message or plain object
+                 * @returns Promise
+                 */
+                public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest): Promise<google.iam.v1.TestIamPermissionsResponse>;
+            }
+
+            namespace IAMPolicy {
+
+                /**
+                 * Callback as used by {@link google.iam.v1.IAMPolicy#setIamPolicy}.
+                 * @param error Error, if any
+                 * @param [response] Policy
+                 */
+                type SetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
+
+                /**
+                 * Callback as used by {@link google.iam.v1.IAMPolicy#getIamPolicy}.
+                 * @param error Error, if any
+                 * @param [response] Policy
+                 */
+                type GetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
+
+                /**
+                 * Callback as used by {@link google.iam.v1.IAMPolicy#testIamPermissions}.
+                 * @param error Error, if any
+                 * @param [response] TestIamPermissionsResponse
+                 */
+                type TestIamPermissionsCallback = (error: (Error|null), response?: google.iam.v1.TestIamPermissionsResponse) => void;
+            }
+
+            /** Properties of a SetIamPolicyRequest. */
+            interface ISetIamPolicyRequest {
+
+                /** SetIamPolicyRequest resource */
+                resource?: (string|null);
+
+                /** SetIamPolicyRequest policy */
+                policy?: (google.iam.v1.IPolicy|null);
+            }
+
+            /** Represents a SetIamPolicyRequest. */
+            class SetIamPolicyRequest implements ISetIamPolicyRequest {
+
+                /**
+                 * Constructs a new SetIamPolicyRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.ISetIamPolicyRequest);
+
+                /** SetIamPolicyRequest resource. */
+                public resource: string;
+
+                /** SetIamPolicyRequest policy. */
+                public policy?: (google.iam.v1.IPolicy|null);
+
+                /**
+                 * Creates a new SetIamPolicyRequest instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns SetIamPolicyRequest instance
+                 */
+                public static create(properties?: google.iam.v1.ISetIamPolicyRequest): google.iam.v1.SetIamPolicyRequest;
+
+                /**
+                 * Encodes the specified SetIamPolicyRequest message. Does not implicitly {@link google.iam.v1.SetIamPolicyRequest.verify|verify} messages.
+                 * @param message SetIamPolicyRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.ISetIamPolicyRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified SetIamPolicyRequest message, length delimited. Does not implicitly {@link google.iam.v1.SetIamPolicyRequest.verify|verify} messages.
+                 * @param message SetIamPolicyRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.ISetIamPolicyRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a SetIamPolicyRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns SetIamPolicyRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.SetIamPolicyRequest;
+
+                /**
+                 * Decodes a SetIamPolicyRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns SetIamPolicyRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.SetIamPolicyRequest;
+
+                /**
+                 * Verifies a SetIamPolicyRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a SetIamPolicyRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns SetIamPolicyRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.SetIamPolicyRequest;
+
+                /**
+                 * Creates a plain object from a SetIamPolicyRequest message. Also converts values to other types if specified.
+                 * @param message SetIamPolicyRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.SetIamPolicyRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this SetIamPolicyRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a GetIamPolicyRequest. */
+            interface IGetIamPolicyRequest {
+
+                /** GetIamPolicyRequest resource */
+                resource?: (string|null);
+            }
+
+            /** Represents a GetIamPolicyRequest. */
+            class GetIamPolicyRequest implements IGetIamPolicyRequest {
+
+                /**
+                 * Constructs a new GetIamPolicyRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IGetIamPolicyRequest);
+
+                /** GetIamPolicyRequest resource. */
+                public resource: string;
+
+                /**
+                 * Creates a new GetIamPolicyRequest instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns GetIamPolicyRequest instance
+                 */
+                public static create(properties?: google.iam.v1.IGetIamPolicyRequest): google.iam.v1.GetIamPolicyRequest;
+
+                /**
+                 * Encodes the specified GetIamPolicyRequest message. Does not implicitly {@link google.iam.v1.GetIamPolicyRequest.verify|verify} messages.
+                 * @param message GetIamPolicyRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IGetIamPolicyRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified GetIamPolicyRequest message, length delimited. Does not implicitly {@link google.iam.v1.GetIamPolicyRequest.verify|verify} messages.
+                 * @param message GetIamPolicyRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IGetIamPolicyRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a GetIamPolicyRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns GetIamPolicyRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.GetIamPolicyRequest;
+
+                /**
+                 * Decodes a GetIamPolicyRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns GetIamPolicyRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.GetIamPolicyRequest;
+
+                /**
+                 * Verifies a GetIamPolicyRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a GetIamPolicyRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns GetIamPolicyRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.GetIamPolicyRequest;
+
+                /**
+                 * Creates a plain object from a GetIamPolicyRequest message. Also converts values to other types if specified.
+                 * @param message GetIamPolicyRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.GetIamPolicyRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this GetIamPolicyRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a TestIamPermissionsRequest. */
+            interface ITestIamPermissionsRequest {
+
+                /** TestIamPermissionsRequest resource */
+                resource?: (string|null);
+
+                /** TestIamPermissionsRequest permissions */
+                permissions?: (string[]|null);
+            }
+
+            /** Represents a TestIamPermissionsRequest. */
+            class TestIamPermissionsRequest implements ITestIamPermissionsRequest {
+
+                /**
+                 * Constructs a new TestIamPermissionsRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.ITestIamPermissionsRequest);
+
+                /** TestIamPermissionsRequest resource. */
+                public resource: string;
+
+                /** TestIamPermissionsRequest permissions. */
+                public permissions: string[];
+
+                /**
+                 * Creates a new TestIamPermissionsRequest instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns TestIamPermissionsRequest instance
+                 */
+                public static create(properties?: google.iam.v1.ITestIamPermissionsRequest): google.iam.v1.TestIamPermissionsRequest;
+
+                /**
+                 * Encodes the specified TestIamPermissionsRequest message. Does not implicitly {@link google.iam.v1.TestIamPermissionsRequest.verify|verify} messages.
+                 * @param message TestIamPermissionsRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.ITestIamPermissionsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified TestIamPermissionsRequest message, length delimited. Does not implicitly {@link google.iam.v1.TestIamPermissionsRequest.verify|verify} messages.
+                 * @param message TestIamPermissionsRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.ITestIamPermissionsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a TestIamPermissionsRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns TestIamPermissionsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.TestIamPermissionsRequest;
+
+                /**
+                 * Decodes a TestIamPermissionsRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns TestIamPermissionsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.TestIamPermissionsRequest;
+
+                /**
+                 * Verifies a TestIamPermissionsRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a TestIamPermissionsRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns TestIamPermissionsRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.TestIamPermissionsRequest;
+
+                /**
+                 * Creates a plain object from a TestIamPermissionsRequest message. Also converts values to other types if specified.
+                 * @param message TestIamPermissionsRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.TestIamPermissionsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this TestIamPermissionsRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a TestIamPermissionsResponse. */
+            interface ITestIamPermissionsResponse {
+
+                /** TestIamPermissionsResponse permissions */
+                permissions?: (string[]|null);
+            }
+
+            /** Represents a TestIamPermissionsResponse. */
+            class TestIamPermissionsResponse implements ITestIamPermissionsResponse {
+
+                /**
+                 * Constructs a new TestIamPermissionsResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.ITestIamPermissionsResponse);
+
+                /** TestIamPermissionsResponse permissions. */
+                public permissions: string[];
+
+                /**
+                 * Creates a new TestIamPermissionsResponse instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns TestIamPermissionsResponse instance
+                 */
+                public static create(properties?: google.iam.v1.ITestIamPermissionsResponse): google.iam.v1.TestIamPermissionsResponse;
+
+                /**
+                 * Encodes the specified TestIamPermissionsResponse message. Does not implicitly {@link google.iam.v1.TestIamPermissionsResponse.verify|verify} messages.
+                 * @param message TestIamPermissionsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.ITestIamPermissionsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified TestIamPermissionsResponse message, length delimited. Does not implicitly {@link google.iam.v1.TestIamPermissionsResponse.verify|verify} messages.
+                 * @param message TestIamPermissionsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.ITestIamPermissionsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a TestIamPermissionsResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns TestIamPermissionsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.TestIamPermissionsResponse;
+
+                /**
+                 * Decodes a TestIamPermissionsResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns TestIamPermissionsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.TestIamPermissionsResponse;
+
+                /**
+                 * Verifies a TestIamPermissionsResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a TestIamPermissionsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns TestIamPermissionsResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.TestIamPermissionsResponse;
+
+                /**
+                 * Creates a plain object from a TestIamPermissionsResponse message. Also converts values to other types if specified.
+                 * @param message TestIamPermissionsResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.TestIamPermissionsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this TestIamPermissionsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Policy. */
+            interface IPolicy {
+
+                /** Policy version */
+                version?: (number|null);
+
+                /** Policy bindings */
+                bindings?: (google.iam.v1.IBinding[]|null);
+
+                /** Policy etag */
+                etag?: (Uint8Array|null);
+            }
+
+            /** Represents a Policy. */
+            class Policy implements IPolicy {
+
+                /**
+                 * Constructs a new Policy.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IPolicy);
+
+                /** Policy version. */
+                public version: number;
+
+                /** Policy bindings. */
+                public bindings: google.iam.v1.IBinding[];
+
+                /** Policy etag. */
+                public etag: Uint8Array;
+
+                /**
+                 * Creates a new Policy instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns Policy instance
+                 */
+                public static create(properties?: google.iam.v1.IPolicy): google.iam.v1.Policy;
+
+                /**
+                 * Encodes the specified Policy message. Does not implicitly {@link google.iam.v1.Policy.verify|verify} messages.
+                 * @param message Policy message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IPolicy, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Policy message, length delimited. Does not implicitly {@link google.iam.v1.Policy.verify|verify} messages.
+                 * @param message Policy message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IPolicy, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Policy message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Policy
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.Policy;
+
+                /**
+                 * Decodes a Policy message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Policy
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.Policy;
+
+                /**
+                 * Verifies a Policy message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Policy message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Policy
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.Policy;
+
+                /**
+                 * Creates a plain object from a Policy message. Also converts values to other types if specified.
+                 * @param message Policy
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.Policy, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Policy to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Binding. */
+            interface IBinding {
+
+                /** Binding role */
+                role?: (string|null);
+
+                /** Binding members */
+                members?: (string[]|null);
+            }
+
+            /** Represents a Binding. */
+            class Binding implements IBinding {
+
+                /**
+                 * Constructs a new Binding.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IBinding);
+
+                /** Binding role. */
+                public role: string;
+
+                /** Binding members. */
+                public members: string[];
+
+                /**
+                 * Creates a new Binding instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns Binding instance
+                 */
+                public static create(properties?: google.iam.v1.IBinding): google.iam.v1.Binding;
+
+                /**
+                 * Encodes the specified Binding message. Does not implicitly {@link google.iam.v1.Binding.verify|verify} messages.
+                 * @param message Binding message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IBinding, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Binding message, length delimited. Does not implicitly {@link google.iam.v1.Binding.verify|verify} messages.
+                 * @param message Binding message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IBinding, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Binding message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Binding
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.Binding;
+
+                /**
+                 * Decodes a Binding message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Binding
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.Binding;
+
+                /**
+                 * Verifies a Binding message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Binding message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Binding
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.Binding;
+
+                /**
+                 * Creates a plain object from a Binding message. Also converts values to other types if specified.
+                 * @param message Binding
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.Binding, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Binding to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a PolicyDelta. */
+            interface IPolicyDelta {
+
+                /** PolicyDelta bindingDeltas */
+                bindingDeltas?: (google.iam.v1.IBindingDelta[]|null);
+            }
+
+            /** Represents a PolicyDelta. */
+            class PolicyDelta implements IPolicyDelta {
+
+                /**
+                 * Constructs a new PolicyDelta.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IPolicyDelta);
+
+                /** PolicyDelta bindingDeltas. */
+                public bindingDeltas: google.iam.v1.IBindingDelta[];
+
+                /**
+                 * Creates a new PolicyDelta instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns PolicyDelta instance
+                 */
+                public static create(properties?: google.iam.v1.IPolicyDelta): google.iam.v1.PolicyDelta;
+
+                /**
+                 * Encodes the specified PolicyDelta message. Does not implicitly {@link google.iam.v1.PolicyDelta.verify|verify} messages.
+                 * @param message PolicyDelta message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IPolicyDelta, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified PolicyDelta message, length delimited. Does not implicitly {@link google.iam.v1.PolicyDelta.verify|verify} messages.
+                 * @param message PolicyDelta message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IPolicyDelta, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a PolicyDelta message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns PolicyDelta
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.PolicyDelta;
+
+                /**
+                 * Decodes a PolicyDelta message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns PolicyDelta
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.PolicyDelta;
+
+                /**
+                 * Verifies a PolicyDelta message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a PolicyDelta message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns PolicyDelta
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.PolicyDelta;
+
+                /**
+                 * Creates a plain object from a PolicyDelta message. Also converts values to other types if specified.
+                 * @param message PolicyDelta
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.PolicyDelta, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this PolicyDelta to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a BindingDelta. */
+            interface IBindingDelta {
+
+                /** BindingDelta action */
+                action?: (google.iam.v1.BindingDelta.Action|null);
+
+                /** BindingDelta role */
+                role?: (string|null);
+
+                /** BindingDelta member */
+                member?: (string|null);
+            }
+
+            /** Represents a BindingDelta. */
+            class BindingDelta implements IBindingDelta {
+
+                /**
+                 * Constructs a new BindingDelta.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IBindingDelta);
+
+                /** BindingDelta action. */
+                public action: google.iam.v1.BindingDelta.Action;
+
+                /** BindingDelta role. */
+                public role: string;
+
+                /** BindingDelta member. */
+                public member: string;
+
+                /**
+                 * Creates a new BindingDelta instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BindingDelta instance
+                 */
+                public static create(properties?: google.iam.v1.IBindingDelta): google.iam.v1.BindingDelta;
+
+                /**
+                 * Encodes the specified BindingDelta message. Does not implicitly {@link google.iam.v1.BindingDelta.verify|verify} messages.
+                 * @param message BindingDelta message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IBindingDelta, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BindingDelta message, length delimited. Does not implicitly {@link google.iam.v1.BindingDelta.verify|verify} messages.
+                 * @param message BindingDelta message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IBindingDelta, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BindingDelta message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BindingDelta
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.BindingDelta;
+
+                /**
+                 * Decodes a BindingDelta message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BindingDelta
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.BindingDelta;
+
+                /**
+                 * Verifies a BindingDelta message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BindingDelta message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BindingDelta
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.BindingDelta;
+
+                /**
+                 * Creates a plain object from a BindingDelta message. Also converts values to other types if specified.
+                 * @param message BindingDelta
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.BindingDelta, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BindingDelta to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            namespace BindingDelta {
+
+                /** Action enum. */
+                enum Action {
+                    ACTION_UNSPECIFIED = 0,
+                    ADD = 1,
+                    REMOVE = 2
+                }
+            }
+        }
+    }
+
+    /** Namespace longrunning. */
+    namespace longrunning {
+
+        /** Represents an Operations */
+        class Operations extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Operations service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Creates new Operations service using the specified rpc implementation.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             * @returns RPC service. Useful where requests and/or responses are streamed.
+             */
+            public static create(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean): Operations;
+
+            /**
+             * Calls ListOperations.
+             * @param request ListOperationsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and ListOperationsResponse
+             */
+            public listOperations(request: google.longrunning.IListOperationsRequest, callback: google.longrunning.Operations.ListOperationsCallback): void;
+
+            /**
+             * Calls ListOperations.
+             * @param request ListOperationsRequest message or plain object
+             * @returns Promise
+             */
+            public listOperations(request: google.longrunning.IListOperationsRequest): Promise<google.longrunning.ListOperationsResponse>;
+
+            /**
+             * Calls GetOperation.
+             * @param request GetOperationRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and Operation
+             */
+            public getOperation(request: google.longrunning.IGetOperationRequest, callback: google.longrunning.Operations.GetOperationCallback): void;
+
+            /**
+             * Calls GetOperation.
+             * @param request GetOperationRequest message or plain object
+             * @returns Promise
+             */
+            public getOperation(request: google.longrunning.IGetOperationRequest): Promise<google.longrunning.Operation>;
+
+            /**
+             * Calls DeleteOperation.
+             * @param request DeleteOperationRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and Empty
+             */
+            public deleteOperation(request: google.longrunning.IDeleteOperationRequest, callback: google.longrunning.Operations.DeleteOperationCallback): void;
+
+            /**
+             * Calls DeleteOperation.
+             * @param request DeleteOperationRequest message or plain object
+             * @returns Promise
+             */
+            public deleteOperation(request: google.longrunning.IDeleteOperationRequest): Promise<google.protobuf.Empty>;
+
+            /**
+             * Calls CancelOperation.
+             * @param request CancelOperationRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and Empty
+             */
+            public cancelOperation(request: google.longrunning.ICancelOperationRequest, callback: google.longrunning.Operations.CancelOperationCallback): void;
+
+            /**
+             * Calls CancelOperation.
+             * @param request CancelOperationRequest message or plain object
+             * @returns Promise
+             */
+            public cancelOperation(request: google.longrunning.ICancelOperationRequest): Promise<google.protobuf.Empty>;
+        }
+
+        namespace Operations {
+
+            /**
+             * Callback as used by {@link google.longrunning.Operations#listOperations}.
+             * @param error Error, if any
+             * @param [response] ListOperationsResponse
+             */
+            type ListOperationsCallback = (error: (Error|null), response?: google.longrunning.ListOperationsResponse) => void;
+
+            /**
+             * Callback as used by {@link google.longrunning.Operations#getOperation}.
+             * @param error Error, if any
+             * @param [response] Operation
+             */
+            type GetOperationCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+            /**
+             * Callback as used by {@link google.longrunning.Operations#deleteOperation}.
+             * @param error Error, if any
+             * @param [response] Empty
+             */
+            type DeleteOperationCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+
+            /**
+             * Callback as used by {@link google.longrunning.Operations#cancelOperation}.
+             * @param error Error, if any
+             * @param [response] Empty
+             */
+            type CancelOperationCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+        }
+
+        /** Properties of an Operation. */
+        interface IOperation {
+
+            /** Operation name */
+            name?: (string|null);
+
+            /** Operation metadata */
+            metadata?: (google.protobuf.IAny|null);
+
+            /** Operation done */
+            done?: (boolean|null);
+
+            /** Operation error */
+            error?: (google.rpc.IStatus|null);
+
+            /** Operation response */
+            response?: (google.protobuf.IAny|null);
+        }
+
+        /** Represents an Operation. */
+        class Operation implements IOperation {
+
+            /**
+             * Constructs a new Operation.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.longrunning.IOperation);
+
+            /** Operation name. */
+            public name: string;
+
+            /** Operation metadata. */
+            public metadata?: (google.protobuf.IAny|null);
+
+            /** Operation done. */
+            public done: boolean;
+
+            /** Operation error. */
+            public error?: (google.rpc.IStatus|null);
+
+            /** Operation response. */
+            public response?: (google.protobuf.IAny|null);
+
+            /** Operation result. */
+            public result?: ("error"|"response");
+
+            /**
+             * Creates a new Operation instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns Operation instance
+             */
+            public static create(properties?: google.longrunning.IOperation): google.longrunning.Operation;
+
+            /**
+             * Encodes the specified Operation message. Does not implicitly {@link google.longrunning.Operation.verify|verify} messages.
+             * @param message Operation message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.longrunning.IOperation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Operation message, length delimited. Does not implicitly {@link google.longrunning.Operation.verify|verify} messages.
+             * @param message Operation message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.longrunning.IOperation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an Operation message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Operation
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.longrunning.Operation;
+
+            /**
+             * Decodes an Operation message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Operation
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.longrunning.Operation;
+
+            /**
+             * Verifies an Operation message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates an Operation message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Operation
+             */
+            public static fromObject(object: { [k: string]: any }): google.longrunning.Operation;
+
+            /**
+             * Creates a plain object from an Operation message. Also converts values to other types if specified.
+             * @param message Operation
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.longrunning.Operation, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Operation to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GetOperationRequest. */
+        interface IGetOperationRequest {
+
+            /** GetOperationRequest name */
+            name?: (string|null);
+        }
+
+        /** Represents a GetOperationRequest. */
+        class GetOperationRequest implements IGetOperationRequest {
+
+            /**
+             * Constructs a new GetOperationRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.longrunning.IGetOperationRequest);
+
+            /** GetOperationRequest name. */
+            public name: string;
+
+            /**
+             * Creates a new GetOperationRequest instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns GetOperationRequest instance
+             */
+            public static create(properties?: google.longrunning.IGetOperationRequest): google.longrunning.GetOperationRequest;
+
+            /**
+             * Encodes the specified GetOperationRequest message. Does not implicitly {@link google.longrunning.GetOperationRequest.verify|verify} messages.
+             * @param message GetOperationRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.longrunning.IGetOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GetOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.GetOperationRequest.verify|verify} messages.
+             * @param message GetOperationRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.longrunning.IGetOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GetOperationRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GetOperationRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.longrunning.GetOperationRequest;
+
+            /**
+             * Decodes a GetOperationRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GetOperationRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.longrunning.GetOperationRequest;
+
+            /**
+             * Verifies a GetOperationRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GetOperationRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GetOperationRequest
+             */
+            public static fromObject(object: { [k: string]: any }): google.longrunning.GetOperationRequest;
+
+            /**
+             * Creates a plain object from a GetOperationRequest message. Also converts values to other types if specified.
+             * @param message GetOperationRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.longrunning.GetOperationRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GetOperationRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a ListOperationsRequest. */
+        interface IListOperationsRequest {
+
+            /** ListOperationsRequest name */
+            name?: (string|null);
+
+            /** ListOperationsRequest filter */
+            filter?: (string|null);
+
+            /** ListOperationsRequest pageSize */
+            pageSize?: (number|null);
+
+            /** ListOperationsRequest pageToken */
+            pageToken?: (string|null);
+        }
+
+        /** Represents a ListOperationsRequest. */
+        class ListOperationsRequest implements IListOperationsRequest {
+
+            /**
+             * Constructs a new ListOperationsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.longrunning.IListOperationsRequest);
+
+            /** ListOperationsRequest name. */
+            public name: string;
+
+            /** ListOperationsRequest filter. */
+            public filter: string;
+
+            /** ListOperationsRequest pageSize. */
+            public pageSize: number;
+
+            /** ListOperationsRequest pageToken. */
+            public pageToken: string;
+
+            /**
+             * Creates a new ListOperationsRequest instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns ListOperationsRequest instance
+             */
+            public static create(properties?: google.longrunning.IListOperationsRequest): google.longrunning.ListOperationsRequest;
+
+            /**
+             * Encodes the specified ListOperationsRequest message. Does not implicitly {@link google.longrunning.ListOperationsRequest.verify|verify} messages.
+             * @param message ListOperationsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.longrunning.IListOperationsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified ListOperationsRequest message, length delimited. Does not implicitly {@link google.longrunning.ListOperationsRequest.verify|verify} messages.
+             * @param message ListOperationsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.longrunning.IListOperationsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a ListOperationsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ListOperationsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.longrunning.ListOperationsRequest;
+
+            /**
+             * Decodes a ListOperationsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns ListOperationsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.longrunning.ListOperationsRequest;
+
+            /**
+             * Verifies a ListOperationsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a ListOperationsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns ListOperationsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): google.longrunning.ListOperationsRequest;
+
+            /**
+             * Creates a plain object from a ListOperationsRequest message. Also converts values to other types if specified.
+             * @param message ListOperationsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.longrunning.ListOperationsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this ListOperationsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a ListOperationsResponse. */
+        interface IListOperationsResponse {
+
+            /** ListOperationsResponse operations */
+            operations?: (google.longrunning.IOperation[]|null);
+
+            /** ListOperationsResponse nextPageToken */
+            nextPageToken?: (string|null);
+        }
+
+        /** Represents a ListOperationsResponse. */
+        class ListOperationsResponse implements IListOperationsResponse {
+
+            /**
+             * Constructs a new ListOperationsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.longrunning.IListOperationsResponse);
+
+            /** ListOperationsResponse operations. */
+            public operations: google.longrunning.IOperation[];
+
+            /** ListOperationsResponse nextPageToken. */
+            public nextPageToken: string;
+
+            /**
+             * Creates a new ListOperationsResponse instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns ListOperationsResponse instance
+             */
+            public static create(properties?: google.longrunning.IListOperationsResponse): google.longrunning.ListOperationsResponse;
+
+            /**
+             * Encodes the specified ListOperationsResponse message. Does not implicitly {@link google.longrunning.ListOperationsResponse.verify|verify} messages.
+             * @param message ListOperationsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.longrunning.IListOperationsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified ListOperationsResponse message, length delimited. Does not implicitly {@link google.longrunning.ListOperationsResponse.verify|verify} messages.
+             * @param message ListOperationsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.longrunning.IListOperationsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a ListOperationsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ListOperationsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.longrunning.ListOperationsResponse;
+
+            /**
+             * Decodes a ListOperationsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns ListOperationsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.longrunning.ListOperationsResponse;
+
+            /**
+             * Verifies a ListOperationsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a ListOperationsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns ListOperationsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): google.longrunning.ListOperationsResponse;
+
+            /**
+             * Creates a plain object from a ListOperationsResponse message. Also converts values to other types if specified.
+             * @param message ListOperationsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.longrunning.ListOperationsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this ListOperationsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a CancelOperationRequest. */
+        interface ICancelOperationRequest {
+
+            /** CancelOperationRequest name */
+            name?: (string|null);
+        }
+
+        /** Represents a CancelOperationRequest. */
+        class CancelOperationRequest implements ICancelOperationRequest {
+
+            /**
+             * Constructs a new CancelOperationRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.longrunning.ICancelOperationRequest);
+
+            /** CancelOperationRequest name. */
+            public name: string;
+
+            /**
+             * Creates a new CancelOperationRequest instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns CancelOperationRequest instance
+             */
+            public static create(properties?: google.longrunning.ICancelOperationRequest): google.longrunning.CancelOperationRequest;
+
+            /**
+             * Encodes the specified CancelOperationRequest message. Does not implicitly {@link google.longrunning.CancelOperationRequest.verify|verify} messages.
+             * @param message CancelOperationRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.longrunning.ICancelOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified CancelOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.CancelOperationRequest.verify|verify} messages.
+             * @param message CancelOperationRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.longrunning.ICancelOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a CancelOperationRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns CancelOperationRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.longrunning.CancelOperationRequest;
+
+            /**
+             * Decodes a CancelOperationRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns CancelOperationRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.longrunning.CancelOperationRequest;
+
+            /**
+             * Verifies a CancelOperationRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a CancelOperationRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns CancelOperationRequest
+             */
+            public static fromObject(object: { [k: string]: any }): google.longrunning.CancelOperationRequest;
+
+            /**
+             * Creates a plain object from a CancelOperationRequest message. Also converts values to other types if specified.
+             * @param message CancelOperationRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.longrunning.CancelOperationRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this CancelOperationRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a DeleteOperationRequest. */
+        interface IDeleteOperationRequest {
+
+            /** DeleteOperationRequest name */
+            name?: (string|null);
+        }
+
+        /** Represents a DeleteOperationRequest. */
+        class DeleteOperationRequest implements IDeleteOperationRequest {
+
+            /**
+             * Constructs a new DeleteOperationRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.longrunning.IDeleteOperationRequest);
+
+            /** DeleteOperationRequest name. */
+            public name: string;
+
+            /**
+             * Creates a new DeleteOperationRequest instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns DeleteOperationRequest instance
+             */
+            public static create(properties?: google.longrunning.IDeleteOperationRequest): google.longrunning.DeleteOperationRequest;
+
+            /**
+             * Encodes the specified DeleteOperationRequest message. Does not implicitly {@link google.longrunning.DeleteOperationRequest.verify|verify} messages.
+             * @param message DeleteOperationRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.longrunning.IDeleteOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified DeleteOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.DeleteOperationRequest.verify|verify} messages.
+             * @param message DeleteOperationRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.longrunning.IDeleteOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a DeleteOperationRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns DeleteOperationRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.longrunning.DeleteOperationRequest;
+
+            /**
+             * Decodes a DeleteOperationRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns DeleteOperationRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.longrunning.DeleteOperationRequest;
+
+            /**
+             * Verifies a DeleteOperationRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a DeleteOperationRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns DeleteOperationRequest
+             */
+            public static fromObject(object: { [k: string]: any }): google.longrunning.DeleteOperationRequest;
+
+            /**
+             * Creates a plain object from a DeleteOperationRequest message. Also converts values to other types if specified.
+             * @param message DeleteOperationRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.longrunning.DeleteOperationRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this DeleteOperationRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace rpc. */
+    namespace rpc {
+
+        /** Properties of a Status. */
+        interface IStatus {
+
+            /** Status code */
+            code?: (number|null);
+
+            /** Status message */
+            message?: (string|null);
+
+            /** Status details */
+            details?: (google.protobuf.IAny[]|null);
+        }
+
+        /** Represents a Status. */
+        class Status implements IStatus {
+
+            /**
+             * Constructs a new Status.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.rpc.IStatus);
+
+            /** Status code. */
+            public code: number;
+
+            /** Status message. */
+            public message: string;
+
+            /** Status details. */
+            public details: google.protobuf.IAny[];
+
+            /**
+             * Creates a new Status instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns Status instance
+             */
+            public static create(properties?: google.rpc.IStatus): google.rpc.Status;
+
+            /**
+             * Encodes the specified Status message. Does not implicitly {@link google.rpc.Status.verify|verify} messages.
+             * @param message Status message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.rpc.IStatus, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Status message, length delimited. Does not implicitly {@link google.rpc.Status.verify|verify} messages.
+             * @param message Status message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.rpc.IStatus, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Status message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Status
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.rpc.Status;
+
+            /**
+             * Decodes a Status message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Status
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.rpc.Status;
+
+            /**
+             * Verifies a Status message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Status message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Status
+             */
+            public static fromObject(object: { [k: string]: any }): google.rpc.Status;
+
+            /**
+             * Creates a plain object from a Status message. Also converts values to other types if specified.
+             * @param message Status
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.rpc.Status, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Status to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
