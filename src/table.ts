@@ -25,27 +25,18 @@ import { Operation as GaxOperation } from 'google-gax/build/src/longrunning';
 import { Json } from './codec';
 import { Database } from './database';
 import { PartialResultStream, Row } from './partial-result-stream';
-import { ReadRequest, TimestampBounds, Transaction, Snapshot } from './transaction';
-import { Schema, LongrunningIOperation, RequestCallback, ICommitResponse } from './common';
+import { ReadRequest, TimestampBounds, Transaction, Snapshot, CommitCallback, Rows } from './transaction';
+import { Schema, IOperation, BasicCallback, LongrunningOperationCallback, BasicResponse, LongRunningOperationResponse, TransactionOptions, GenericCallback } from './common';
 
 export type Key = string | string[];
-export type CreateTableResponse = [Table, GaxOperation, LongrunningIOperation];
-export type CommitCallback = RequestCallback<ICommitResponse>;
-export type CommitResponse = [ICommitResponse];
-export type DeleteResponse = [GaxOperation, LongrunningIOperation];
+export type CreateTableResponse = [Table, GaxOperation, IOperation];
+export type ReadResponse = [Array<Row|Json>];
+export type ReadCallback = GenericCallback<Array<Row|Json>>;
 
 export interface CreateTableCallback {
   (err: ServiceError, table?: null, operation?: null, apiResponse?: null): void;
   (err: null, table: Table, operation: GaxOperation,
-    apiResponse: DeleteResponse): void;
-}
-export interface DropTableCallback {
-  (err: ServiceError, operation?: null, apiResponse?: null): void;
-  (err: null, operation: GaxOperation, apiResponse: DeleteResponse): void;
-}
-export interface ReadCallback {
-  (err: ServiceError, rows?: null): void;
-  (err: null, rows: Array<Row|Json>): void;
+    apiResponse: IOperation): void;
 }
 
 /**
@@ -226,8 +217,8 @@ class Table {
     return proxyStream as PartialResultStream;
   }
 
-  delete(): Promise<DeleteResponse>;
-  delete(callback: DropTableCallback): void;
+  delete(): Promise<LongRunningOperationResponse>;
+  delete(callback: LongrunningOperationCallback): void;
   /**
    * Delete the table. Not to be confused with {@link Table#deleteRows}.
    *
@@ -271,7 +262,7 @@ class Table {
    *     // Table deleted successfully.
    *   });
    */
-  delete(callback?: DropTableCallback): Promise<DeleteResponse>|void {
+  delete(callback?: LongrunningOperationCallback): Promise<LongRunningOperationResponse>|void {
     if (callback && !is.fn(callback)) {
       throw new TypeError(
           'Unexpected argument, please see Table#deleteRows to delete rows.');
@@ -281,8 +272,8 @@ class Table {
         'DROP TABLE `' + this.name + '`', callback!);
   }
 
-  deleteRows(keys: Key[]): Promise<CommitResponse>;
-  deleteRows(keys: Key[], callback: CommitCallback): void;
+  deleteRows(keys: Key[]): Promise<BasicResponse>;
+  deleteRows(keys: Key[], callback: BasicCallback): void;
   /**
    * Delete rows from this table.
    *
@@ -328,12 +319,12 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  deleteRows(keys: Key[], callback?: CommitCallback): Promise<CommitResponse>|void {
+  deleteRows(keys: Key[], callback?: BasicCallback): Promise<BasicResponse>|void {
     return this._mutate('deleteRows', keys, callback!);
   }
 
-  drop(): Promise<DeleteResponse>;
-  drop(callback: DropTableCallback): void;
+  drop(): Promise<LongRunningOperationResponse>;
+  drop(callback: LongrunningOperationCallback): void;
   /**
    * Drop the table.
    *
@@ -375,12 +366,12 @@ class Table {
    *     // Table dropped successfully.
    *   });
    */
-  drop(callback?: DropTableCallback): Promise<DeleteResponse>|void {
+  drop(callback?: LongrunningOperationCallback): Promise<LongRunningOperationResponse>|void {
     return this.delete(callback!);
   }
 
-  insert(rows: object | object[]): Promise<CommitResponse>;
-  insert(rows: object | object[], callback: CommitCallback): void;
+  insert(rows: object | object[]): Promise<BasicResponse>;
+  insert(rows: object | object[], callback: BasicCallback): void;
   /**
    * Insert rows of data into this table.
    *
@@ -437,13 +428,13 @@ class Table {
    * region_tag:spanner_insert_data
    * Full example:
    */
-  insert(rows: object | object[], callback?: CommitCallback): Promise<CommitResponse>|void {
+  insert(rows: object | object[], callback?: BasicCallback): Promise<BasicResponse>|void {
     this._mutate('insert', rows, callback!);
   }
 
-  read(request: ReadRequest, options?: TimestampBounds): Promise<[Array<Row | Json>]>;
+  read(request: ReadRequest, options?: TransactionOptions): Promise<ReadResponse>;
   read(request: ReadRequest, callback: ReadCallback): void;
-  read(request: ReadRequest, options: TimestampBounds, callback: ReadCallback):
+  read(request: ReadRequest, options: TransactionOptions, callback: ReadCallback):
     void;
   /**
    * Configuration object, describing what to read from the table.
@@ -598,14 +589,11 @@ class Table {
    * Reading data using a storing index:
    */
   read(
-      request: ReadRequest, options?: TimestampBounds|ReadCallback,
-      callback?: ReadCallback): Promise<[Array<Row|Json>]>|void {
-    const rows: Array<Row|Json> = [];
-
-    if (is.fn(options)) {
-      callback = options as ReadCallback;
-      options = {} as TimestampBounds;
-    }
+      request: ReadRequest, optionsOrCallback?: TransactionOptions|ReadCallback,
+      cb?: ReadCallback): Promise<ReadResponse>|void {
+    const rows: Rows = [];
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as ReadCallback: cb!;
+    const options = typeof optionsOrCallback === 'object' ? optionsOrCallback : {} as TimestampBounds;
 
     this.createReadStream(request, options as TimestampBounds)
         .on('error', callback!)
@@ -613,8 +601,8 @@ class Table {
         .on('end', () => callback!(null, rows));
   }
 
-  replace(rows: object | object[]): Promise<CommitResponse>;
-  replace(rows: object | object[], callback: CommitCallback): void;
+  replace(rows: object | object[]): Promise<BasicResponse>;
+  replace(rows: object | object[], callback: BasicCallback): void;
   /**
    * Replace rows of data within this table.
    *
@@ -654,13 +642,13 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  replace(rows: object | object[], callback?: CommitCallback): Promise<CommitResponse>|
+  replace(rows: object | object[], callback?: BasicCallback): Promise<BasicResponse>|
       void {
     this._mutate('replace', rows, callback!);
   }
 
-  update(rows: object | object[]): Promise<CommitResponse>;
-  update(rows: object | object[], callback: CommitCallback): void;
+  update(rows: object | object[]): Promise<BasicResponse>;
+  update(rows: object | object[], callback: BasicCallback): void;
   /**
    * Update rows of data within this table.
    *
@@ -704,13 +692,13 @@ class Table {
    * region_tag:spanner_update_data
    * Full example:
    */
-  update(rows: object | object[], callback?: CommitCallback): Promise<CommitResponse>|
+  update(rows: object | object[], callback?: BasicCallback): Promise<BasicResponse>|
       void {
     this._mutate('update', rows, callback!);
   }
 
-  upsert(rows: object | object[]): Promise<CommitResponse>;
-  upsert(rows: object | object[], callback: CommitCallback): void;
+  upsert(rows: object | object[]): Promise<BasicResponse>;
+  upsert(rows: object | object[], callback: BasicCallback): void;
   /**
    * Insert or update rows of data within this table.
    *
@@ -750,7 +738,7 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  upsert(rows: object | object[], callback?: CommitCallback): Promise<CommitResponse>|
+  upsert(rows: object | object[], callback?: BasicCallback): Promise<BasicResponse>|
       void {
     this._mutate('upsert', rows, callback!);
   }
@@ -769,7 +757,7 @@ class Table {
    * @param {function} callback The callback function.
    */
   private _mutate(
-      method: string, rows: object|object[], callback: CommitCallback): void {
+      method: string, rows: object|object[], callback: BasicCallback): void {
     this.database.runTransaction((err: ServiceError|null, transaction?: Transaction|null) => {
       if (err) {
         callback(err);
@@ -777,7 +765,7 @@ class Table {
       }
 
       transaction![method](this.name, rows);
-      transaction!.commit(callback);
+      transaction!.commit(callback as CommitCallback);
     });
   }
 }

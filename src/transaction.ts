@@ -29,7 +29,12 @@ import {PartialResultStream, partialResultStream, ResumeToken, Row} from './part
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
-import {RequestCallback, RowCountsServiceError, ITransactionOptions, ITransaction, GeneratedTransaction, ITimestamp, IReadOnly, ICommitResponse, IMutation} from './common';
+import {GenericCallback, BasicCallback, RowCountsServiceError, ITransactionOptions, ITransaction, ITimestamp, IReadOnly, ICommitResponse, ICommitRequest} from './common';
+
+export type BeginTransactionCallback = GenericCallback<ITransaction>;
+export type CommitCallback = GenericCallback<ICommitResponse>;
+export type ReadCallback = GenericCallback<Rows>;
+export type RunUpdateCallback = GenericCallback<number>;
 
 export type Rows = Array<Row|Json>;
 export type BeginResponse = [s.Transaction];
@@ -38,21 +43,19 @@ export type ReadResponse = [Rows];
 export type RunResponse = [Rows, s.ResultSetStats];
 export type RunUpdateResponse = [number];
 
-export type BeginTransactionCallback = RequestCallback<GeneratedTransaction>;
-export type CommitCallback = RequestCallback<ICommitResponse>;
+export type BatchUpdatePromise = Promise<[number[], s.ExecuteBatchDmlResponse]>;
+export type BeginPromise = Promise<[s.Transaction]>;
+export type CommitPromise = Promise<[s.CommitResponse]>;
+export type ReadPromise = Promise<[Rows]>;
+export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
+export type RunUpdatePromise = Promise<[number]>;
 
-export interface CommitRequest {
-  session: string;
-  transactionId?: Uint8Array | string | null;
-  singleUseTransaction?: ITransactionOptions;
-  mutations: IMutation[];
+export interface BatchUpdateError extends RowCountsServiceError {
+  rowCounts: number[];
 }
-export interface Statement {
-  sql: string;
-  params?: {[param: string]: Value};
-  types?: {[param: string]: string};
+export interface BatchUpdateCallback {
+  (err: null|BatchUpdateError, rowCounts: number[], response?: s.ExecuteBatchDmlResponse): void;
 }
-
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
   resumeToken?: ResumeToken;
   queryMode?: s.QueryMode;
@@ -64,9 +67,6 @@ export interface KeyRange {
   startOpen?: Value[];
   endClosed?: Value[];
   endOpen?: Value[];
-}
-export interface ReadCallback {
-  (err: null|ServiceError, rows: Rows): void;
 }
 export interface ReadRequest extends RequestOptions {
   keySet?: s.KeySet;
@@ -83,29 +83,13 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
 }
-export interface BatchUpdateError extends RowCountsServiceError {
-  rowCounts: number[];
-}
-
-export type BatchUpdatePromise = Promise<[number[], s.ExecuteBatchDmlResponse]>;
-export type BeginPromise = Promise<[s.Transaction]>;
-export type CommitPromise = Promise<[s.CommitResponse]>;
-export type ReadPromise = Promise<[Rows]>;
-export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
-export type RunUpdatePromise = Promise<[number]>;
-
-export interface BatchUpdateCallback {
-  (err: null|BatchUpdateError, rowCounts: number[], response?: s.ExecuteBatchDmlResponse): void;
-}
-export interface ReadCallback {
-  (err: null|ServiceError, rows: Rows): void;
-}
 export interface RunCallback {
   (err: null|ServiceError, rows: Rows, stats: s.ResultSetStats): void;
 }
-
-export interface RunUpdateCallback {
-  (err: null|ServiceError, rowCount: number): void;
+export interface Statement {
+  sql: string;
+  params?: {[param: string]: Value};
+  types?: {[param: string]: string};
 }
 export interface TimestampBounds {
   strong?: boolean;
@@ -119,10 +103,6 @@ export interface TransactionSelector {
   singleUse?: ITransactionOptions;
   id?: Uint8Array|string|null;
   begin?: ITransactionOptions|null;
-}
-
-export interface RollbackCallback {
-  (error: null | ServiceError | Error): void;
 }
 
 /**
@@ -292,7 +272,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
         },
-      (err: ServiceError|null, resp: GeneratedTransaction) => {
+      (err: ServiceError|null, resp: ITransaction) => {
           if (err) {
             callback!(err, resp);
             return;
@@ -300,7 +280,7 @@ export class Snapshot extends EventEmitter {
 
           const {id, readTimestamp} = resp;
 
-          this.id = id;
+          this.id = id!;
           this.metadata = resp;
 
           if (readTimestamp) {
@@ -1328,10 +1308,10 @@ export class Transaction extends Dml {
   commit(callback?: CommitCallback): void|Promise<CommitResponse> {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
-    const reqOpts: CommitRequest = {mutations, session};
+    const reqOpts: ICommitRequest = {mutations, session};
 
     if (this.id) {
-      reqOpts.transactionId = this.id;
+      reqOpts.transactionId = this.id as Uint8Array;
     } else {
       reqOpts.singleUseTransaction = this._options;
     }
@@ -1504,7 +1484,7 @@ export class Transaction extends Dml {
   }
 
   rollback(): Promise<void>;
-  rollback(callback: RollbackCallback): void;
+  rollback(callback: BasicCallback): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -1531,9 +1511,9 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: RollbackCallback): void|Promise<void> {
+  rollback(callback?: BasicCallback): void|Promise<void> {
     if (!this.id) {
-      callback!(new Error('Transaction ID is unknown, nothing to rollback.'));
+      callback!(new Error('Transaction ID is unknown, nothing to rollback.') as ServiceError);
       return;
     }
 
