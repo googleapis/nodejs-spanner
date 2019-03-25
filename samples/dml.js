@@ -571,8 +571,7 @@ function updateUsingBatchDml(instanceId, databaseId, projectId) {
       const rowCounts = await transaction.batchUpdate(dmlStatements);
 
       console.log(
-        `Successfully executed ${rowCounts.length} SQL statements
-        using Batch DML.`
+        `Successfully executed ${rowCounts.length} SQL statements using Batch DML.`
       );
       await transaction.commit();
     } catch (err) {
@@ -678,11 +677,7 @@ require(`yargs`)
     `Insert and Update records using Batch DML.`,
     {},
     opts =>
-      updateUsingBatchDml(
-        opts.instanceName,
-        opts.databaseName,
-        opts.projectId
-      )
+      updateUsingBatchDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .example(`node $0 insertUsingDml "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 updateUsingDml "my-instance" "my-database" "my-project-id"`)

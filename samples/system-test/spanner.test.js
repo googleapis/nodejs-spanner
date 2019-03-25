@@ -528,6 +528,9 @@ describe('Spanner', () => {
     const output = await exec(
       `${dmlCmd} updateUsingBatchDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully executed 2 SQL statements using Batch DML/);
+    assert.match(
+      output,
+      /Successfully executed 2 SQL statements using Batch DML/
+    );
   });
 });
