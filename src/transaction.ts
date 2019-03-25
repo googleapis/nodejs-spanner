@@ -29,7 +29,7 @@ import {PartialResultStream, partialResultStream, ResumeToken, Row} from './part
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
-import {GenericCallback, BasicCallback, RowCountsServiceError, ITransactionOptions, ITransaction, ITimestamp, IReadOnly, ICommitResponse, ICommitRequest} from './common';
+import {GenericCallback, BasicCallback, ITransactionOptions, ITransaction, ITimestamp, IReadOnly, ICommitResponse, ICommitRequest} from './common';
 
 export type BeginTransactionCallback = GenericCallback<ITransaction>;
 export type CommitCallback = GenericCallback<ICommitResponse>;
@@ -50,7 +50,7 @@ export type ReadPromise = Promise<[Rows]>;
 export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
 export type RunUpdatePromise = Promise<[number]>;
 
-export interface BatchUpdateError extends RowCountsServiceError {
+export interface BatchUpdateError extends ServiceError {
   rowCounts: number[];
 }
 export interface BatchUpdateCallback {

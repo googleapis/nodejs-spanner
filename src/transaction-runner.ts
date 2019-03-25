@@ -23,7 +23,6 @@ import * as through from 'through2';
 
 import {Session} from './session';
 import {Transaction} from './transaction';
-import {RowCountsServiceError} from './common';
 
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
@@ -82,7 +81,7 @@ interface ErrorCallback {
  *
  * @param {Error} [err] The last known retryable Error.
  */
-export class DeadlineError extends Error implements RowCountsServiceError {
+export class DeadlineError extends Error implements ServiceError {
   code: status;
   errors: ServiceError[];
   constructor(error?: ServiceError) {

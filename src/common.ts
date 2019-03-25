@@ -1,6 +1,6 @@
 import {google as spTypes} from '../proto/spanner';
 import {Operation as GaxOperation} from 'google-gax/build/src/longrunning';
-import {status, Metadata, ServiceError} from 'grpc';
+import {ServiceError} from 'grpc';
 
 //tslint:disable-next-line no-any
 export type Any = any;
@@ -40,12 +40,6 @@ export interface CreateSessionOptions {
 }
 export type GetTimestamp = {
   nanos: number; seconds: number;
-}
-export interface RowCountsServiceError {
-  rowCounts?: number[] | ((rowCounts: Any, arg1: never[]) => Any);
-  code?: status;
-  metadata?: Metadata;
-  details?: string;
 }
 export interface TransactionOptions {
   timeout?: number;
