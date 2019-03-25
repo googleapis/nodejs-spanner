@@ -529,6 +529,62 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_partitioned_delete]
 }
 
+function updateUsingBatchDml(instanceId, databaseId, projectId) {
+  // [START spanner_dml_batch_update]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  const insert = {
+    sql: `INSERT INTO Albums (SingerId, AlbumId, AlbumTitle, MarketingBudget)
+      VALUES (1, 3, "Test Album Title", 10000)`,
+  };
+
+  const update = {
+    sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
+      WHERE SingerId = 1 and AlbumId = 3`,
+  };
+
+  const dmlStatements = [insert, update];
+
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const rowCounts = await transaction.batchUpdate(dmlStatements);
+
+      console.log(
+        `Successfully executed ${rowCounts.length} SQL statements
+        using Batch DML.`
+      );
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
+  // [END spanner_dml_batch_update]
+}
+
 require(`yargs`)
   .demand(1)
   .command(
@@ -617,6 +673,17 @@ require(`yargs`)
         opts.projectId
       )
   )
+  .command(
+    `updateUsingBatchDml <instanceName> <databaseName> <projectId>`,
+    `Insert and Update records using Batch DML.`,
+    {},
+    opts =>
+      updateUsingBatchDml(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
   .example(`node $0 insertUsingDml "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 updateUsingDml "my-instance" "my-database" "my-project-id"`)
   .example(`node $0 deleteUsingDml "my-instance" "my-database" "my-project-id"`)
@@ -638,6 +705,9 @@ require(`yargs`)
   )
   .example(
     `node $0 deleteUsingPartitionedDml "my-instance" "my-database" "my-project-id"`
+  )
+  .example(
+    `node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"`
   )
   .wrap(120)
   .recommendCommands()
