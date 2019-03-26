@@ -529,7 +529,7 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_partitioned_delete]
 }
 
-function updateUsingBatchDml(instanceId, databaseId, projectId) {
+async function updateUsingBatchDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_batch_update]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -562,25 +562,21 @@ function updateUsingBatchDml(instanceId, databaseId, projectId) {
 
   const dmlStatements = [insert, update];
 
-  database.runTransaction(async (err, transaction) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    try {
-      const rowCounts = await transaction.batchUpdate(dmlStatements);
-
+  try {
+    await database.runTransactionAsync(async transaction => {
+      const [rowCounts] = await transaction.batchUpdate(dmlStatements);
+      await transaction.commit();
       console.log(
         `Successfully executed ${rowCounts.length} SQL statements using Batch DML.`
       );
-      await transaction.commit();
-    } catch (err) {
-      console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      database.close();
-    }
-  });
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+    throw(err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
   // [END spanner_dml_batch_update]
 }
 
