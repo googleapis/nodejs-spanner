@@ -522,4 +522,15 @@ describe('Spanner', () => {
     );
     assert.match(output, /Successfully deleted 5 records/);
   });
+
+  //  dml_batch_update
+  it(`should insert and update records using Batch DML`, async () => {
+    const output = await exec(
+      `${dmlCmd} updateUsingBatchDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully executed 2 SQL statements using Batch DML/
+    );
+  });
 });
