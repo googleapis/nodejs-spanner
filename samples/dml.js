@@ -567,12 +567,14 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
       const [rowCounts] = await transaction.batchUpdate(dmlStatements);
       await transaction.commit();
       console.log(
-        `Successfully executed ${rowCounts.length} SQL statements using Batch DML.`
+        `Successfully executed ${
+          rowCounts.length
+        } SQL statements using Batch DML.`
       );
     });
   } catch (err) {
     console.error('ERROR:', err);
-    throw(err);
+    throw err;
   } finally {
     // Close the database when finished.
     database.close();
