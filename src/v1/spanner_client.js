@@ -291,6 +291,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      database: request.database,
+    });
 
     return this._innerApiCalls.createSession(request, options, callback);
   }
@@ -339,6 +346,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      name: request.name,
+    });
 
     return this._innerApiCalls.getSession(request, options, callback);
   }
@@ -444,6 +458,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      database: request.database,
+    });
 
     return this._innerApiCalls.listSessions(request, options, callback);
   }
@@ -550,6 +571,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      name: request.name,
+    });
 
     return this._innerApiCalls.deleteSession(request, options, callback);
   }
@@ -690,6 +718,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.executeSql(request, options, callback);
   }
@@ -808,6 +843,13 @@ class SpannerClient {
    */
   executeStreamingSql(request, options) {
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.executeStreamingSql(request, options);
   }
@@ -901,6 +943,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.executeBatchDml(request, options, callback);
   }
@@ -1021,6 +1070,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.read(request, options, callback);
   }
@@ -1118,6 +1174,13 @@ class SpannerClient {
    */
   streamingRead(request, options) {
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.streamingRead(request, options);
   }
@@ -1177,6 +1240,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.beginTransaction(request, options, callback);
   }
@@ -1255,6 +1325,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.commit(request, options, callback);
   }
@@ -1308,6 +1385,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.rollback(request, options, callback);
   }
@@ -1418,6 +1502,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.partitionQuery(request, options, callback);
   }
@@ -1518,6 +1609,13 @@ class SpannerClient {
       options = {};
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.partitionRead(request, options, callback);
   }
