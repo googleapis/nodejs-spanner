@@ -17,7 +17,7 @@
 
 const {Spanner} = require(`@google-cloud/spanner`);
 const {assert} = require('chai');
-const execa = require('execa');
+const {execSync} = require('child_process');
 
 const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
@@ -28,7 +28,6 @@ const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
 const dmlCmd = `node dml.js`;
 
-const exec = async cmd => (await execa.shell(cmd)).stdout;
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
 const INSTANCE_ID = `test-instance-${date}`;
@@ -100,7 +99,7 @@ describe('Spanner', () => {
 
   // create_database
   it(`should create an example database`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
     assert.match(
@@ -117,7 +116,7 @@ describe('Spanner', () => {
     // Running the quickstart test in here since there's already a spanner
     // instance and database set up at this point.
     it('should query a table', async () => {
-      const output = await exec(
+      const output = execSync(
         `node quickstart ${PROJECT_ID} ${INSTANCE_ID} ${DATABASE_ID}`
       );
       assert.match(output, /Query: \d+ found./);
@@ -126,7 +125,7 @@ describe('Spanner', () => {
 
   // insert_data
   it(`should insert rows into an example table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Inserted data\./);
@@ -134,11 +133,11 @@ describe('Spanner', () => {
 
   // delete_data
   it(`should delete and then insert rows in the example tables`, async () => {
-    let output = await exec(
+    let output = execSync(
       `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Deleted data\./);
-    output = await exec(
+    output = execSync(
       `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Inserted data\./);
@@ -146,7 +145,7 @@ describe('Spanner', () => {
 
   // query_data
   it(`should query an example table and return matching rows`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
@@ -154,7 +153,7 @@ describe('Spanner', () => {
 
   // read_data
   it(`should read an example table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
@@ -162,7 +161,7 @@ describe('Spanner', () => {
 
   // add_column
   it(`should add a column to a table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
@@ -171,7 +170,7 @@ describe('Spanner', () => {
 
   // update_data
   it(`should update existing rows in an example table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Updated data\./);
@@ -182,7 +181,7 @@ describe('Spanner', () => {
     // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
     // 15 seconds have elapsed since the update_data test.
     await new Promise(r => setTimeout(r, 16000));
-    const output = await exec(
+    const output = execSync(
       `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
@@ -197,7 +196,7 @@ describe('Spanner', () => {
 
   // query_data_with_new_column
   it(`should query an example table with an additional column and return matching rows`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
@@ -206,7 +205,7 @@ describe('Spanner', () => {
 
   // create_index
   it(`should create an index in an example table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
@@ -215,7 +214,7 @@ describe('Spanner', () => {
 
   // create_storing_index
   it(`should create a storing index in an example table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
@@ -224,7 +223,7 @@ describe('Spanner', () => {
 
   // query_data_with_index
   it(`should query an example table with an index and return matching rows`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
@@ -238,7 +237,7 @@ describe('Spanner', () => {
   });
 
   it(`should respect query boundaries when querying an example table with an index`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`
     );
     assert.match(
@@ -253,7 +252,7 @@ describe('Spanner', () => {
 
   // read_data_with_index
   it(`should read an example table with an index`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
@@ -261,7 +260,7 @@ describe('Spanner', () => {
 
   // read_data_with_storing_index
   it(`should read an example table with a storing index`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
@@ -269,7 +268,7 @@ describe('Spanner', () => {
 
   // read_only_transaction
   it(`should read an example table using transactions`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
@@ -278,7 +277,7 @@ describe('Spanner', () => {
 
   // read_write_transaction
   it(`should read from and write to an example table using transactions`, async () => {
-    let output = await exec(
+    let output = execSync(
       `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /The first album's marketing budget: 100000/);
@@ -287,7 +286,7 @@ describe('Spanner', () => {
       output,
       /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
     );
-    output = await exec(
+    output = execSync(
       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
@@ -301,7 +300,7 @@ describe('Spanner', () => {
     const [transaction] = await database.createBatchTransaction();
     const identifier = JSON.stringify(transaction.identifier());
 
-    const output = await exec(
+    const output = execSync(
       `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`
     );
     assert.match(output, /Successfully created \d query partitions\./);
@@ -319,7 +318,7 @@ describe('Spanner', () => {
     const [partitions] = await transaction.createQueryPartitions(query);
     const partition = JSON.stringify(partitions[0]);
 
-    const output = await exec(
+    const output = execSync(
       `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`
     );
     assert.match(output, /Successfully received \d from executed partition\./);
@@ -328,7 +327,7 @@ describe('Spanner', () => {
 
   // add_timestamp_column
   it(`should add a timestamp column to a table`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
@@ -340,7 +339,7 @@ describe('Spanner', () => {
 
   // update_data_with_timestamp_column
   it(`should update existing rows in an example table with commit timestamp column`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Updated data\./);
@@ -348,7 +347,7 @@ describe('Spanner', () => {
 
   // query_data_with_timestamp_column
   it(`should query an example table with an additional timestamp column and return matching rows`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
@@ -363,7 +362,7 @@ describe('Spanner', () => {
 
   // create_table_with_timestamp_column
   it(`should create an example table with a timestamp column`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
 
@@ -379,7 +378,7 @@ describe('Spanner', () => {
 
   // insert_data_with_timestamp
   it(`should insert rows into an example table with timestamp column`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Inserted data\./);
@@ -387,7 +386,7 @@ describe('Spanner', () => {
 
   // query_new_table_with_timestamp
   it(`should query an example table with a non-null timestamp column and return matching rows`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, VenueId: 4, EventDate:/);
@@ -396,7 +395,7 @@ describe('Spanner', () => {
 
   // write_data_for_struct_queries
   it(`should insert rows into an example table for use with struct query examples`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Inserted data\./);
@@ -404,7 +403,7 @@ describe('Spanner', () => {
 
   // query_with_struct_param
   it(`should query an example table with a STRUCT param`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 6/);
@@ -412,7 +411,7 @@ describe('Spanner', () => {
 
   // query_with_array_of_struct_param
   it(`should query an example table with an array of STRUCT param`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 6\nSingerId: 7/);
@@ -420,7 +419,7 @@ describe('Spanner', () => {
 
   // query_with_struct_field_param
   it(`should query an example table with a STRUCT field param`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 6/);
@@ -428,7 +427,7 @@ describe('Spanner', () => {
 
   // query_with_nested_struct_param
   it(`should query an example table with a nested STRUCT param`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
@@ -439,7 +438,7 @@ describe('Spanner', () => {
 
   // dml_standard_insert
   it(`should insert rows into an example table using a DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
@@ -450,7 +449,7 @@ describe('Spanner', () => {
 
   // dml_standard_update
   it(`should update a row in an example table using a DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully updated 1 record/);
@@ -458,7 +457,7 @@ describe('Spanner', () => {
 
   // dml_standard_delete
   it(`should delete a row from an example table using a DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully deleted 1 record\./);
@@ -466,7 +465,7 @@ describe('Spanner', () => {
 
   // dml_standard_update_with_timestamp
   it(`should update the timestamp of multiple records in an example table using a DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully updated 2 records/);
@@ -474,7 +473,7 @@ describe('Spanner', () => {
 
   // dml_write_then_read
   it(`should insert a record in an example table using a DML statement and then query the record`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Timothy Campbell/);
@@ -482,7 +481,7 @@ describe('Spanner', () => {
 
   // dml_structs
   it(`should update a record in an example table using a DML statement along with a struct value`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully updated 1 record/);
@@ -490,7 +489,7 @@ describe('Spanner', () => {
 
   // dml_getting_started_insert
   it(`should insert multiple records into an example table using a DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /4 records inserted/);
@@ -498,7 +497,7 @@ describe('Spanner', () => {
 
   // dml_getting_started_update
   it(`should transfer value from one record to another using DML statements within a transaction`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
@@ -509,7 +508,7 @@ describe('Spanner', () => {
 
   //  dml_partitioned_update
   it(`should update multiple records using a partitioned DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully updated 3 records/);
@@ -517,7 +516,7 @@ describe('Spanner', () => {
 
   //  dml_partitioned_delete
   it(`should delete multiple records using a partitioned DML statement`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully deleted 5 records/);
@@ -525,7 +524,7 @@ describe('Spanner', () => {
 
   //  dml_batch_update
   it(`should insert and update records using Batch DML`, async () => {
-    const output = await exec(
+    const output = execSync(
       `${dmlCmd} updateUsingBatchDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
