@@ -21,6 +21,8 @@ const cp = require('child_process');
 
 const execSync = (cmd) => cp.execSync(cmd, {encoding: 'utf-8'});
 
+const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
+
 const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
 const schemaCmd = `node schema.js`;
