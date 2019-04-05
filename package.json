@@ -59,7 +59,7 @@
     "@google-cloud/projectify": "^0.3.0",
     "@google-cloud/promisify": "^0.4.0",
     "@types/stack-trace": "0.0.29",
-    "arrify": "^1.0.1",
+    "arrify": "^2.0.0",
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.1",
