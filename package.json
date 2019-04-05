@@ -78,7 +78,6 @@
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^3.0.0",
-    "@types/arrify": "^1.0.4",
     "@types/async": "^2.0.50",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
