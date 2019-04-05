@@ -17,7 +17,9 @@
 
 const {Spanner} = require(`@google-cloud/spanner`);
 const {assert} = require('chai');
-const {execSync} = require('child_process');
+const cp = require('child_process');
+
+const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
 const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
