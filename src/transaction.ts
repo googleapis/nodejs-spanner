@@ -16,7 +16,7 @@
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
-import * as arrify from 'arrify';
+import arrify = require('arrify');
 import {EventEmitter} from 'events';
 import {CallOptions} from 'google-gax';
 import {ServiceError} from 'grpc';

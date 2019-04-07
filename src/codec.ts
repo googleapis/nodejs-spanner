@@ -15,7 +15,7 @@
  */
 import {Service} from '@google-cloud/common-grpc';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import * as arrify from 'arrify';
+import arrify = require('arrify');
 import {CallOptions} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
@@ -570,7 +570,7 @@ function createTypeObject(friendlyType?: string|Type): s.Type {
 
   if (code === s.TypeCode.STRUCT) {
     type.structType = {
-      fields: arrify(config.fields).map(field => {
+      fields: arrify(config.fields!).map(field => {
         return {name: field.name, type: codec.createTypeObject(field)};
       })
     };

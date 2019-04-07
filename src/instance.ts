@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as arrify from 'arrify';
+import arrify = require('arrify');
 const common = require('@google-cloud/common-grpc');
 import {ServiceObjectConfig} from '@google-cloud/common';
 import {paginator} from '@google-cloud/paginator';

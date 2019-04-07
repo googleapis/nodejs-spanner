@@ -17,7 +17,7 @@
 import {ApiError, DeleteCallback, ExistsCallback, Metadata, MetadataCallback, ServiceObjectConfig} from '@google-cloud/common';
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisify, promisifyAll} from '@google-cloud/promisify';
-import * as arrify from 'arrify';
+import arrify = require('arrify');
 import * as extend from 'extend';
 import * as is from 'is';
 import * as r from 'request';

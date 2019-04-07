@@ -59,7 +59,7 @@
     "@google-cloud/projectify": "^0.3.0",
     "@google-cloud/promisify": "^0.4.0",
     "@types/stack-trace": "0.0.29",
-    "arrify": "^1.0.1",
+    "arrify": "^2.0.0",
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.1",
@@ -78,7 +78,6 @@
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^3.0.0",
-    "@types/arrify": "^1.0.4",
     "@types/async": "^2.0.50",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
