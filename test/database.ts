@@ -1259,7 +1259,7 @@ describe('Database', () => {
 
     let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
     let snapshotStub: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
-    let runStreamStub: sinon.SinonStub<[string|{}], Transform>;
+    let runStreamStub: sinon.SinonStub<[string | {}], Transform>;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1659,6 +1659,21 @@ describe('Database', () => {
       });
     });
 
+    it('should propagate an error', done => {
+      const error = new Error('resource');
+      sandbox.stub(fakePool, 'release').withArgs(fakeSession).throws(error);
+
+      database.on('error', err => {
+        assert.deepStrictEqual(err, error);
+        done();
+      });
+
+      database.getTransaction((err, transaction) => {
+        assert.ifError(err);
+        transaction.emit('end');
+      });
+    });
+
     it('should release the session on transaction end', done => {
       const releaseStub =
           sandbox.stub(fakePool, 'release').withArgs(fakeSession);
@@ -1754,7 +1769,7 @@ describe('Database', () => {
     let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
     let partitionedDmlStub: sinon.SinonStub<[], FakeTransaction>;
     let beginStub: sinon.SinonStub<[Function], void>;
-    let runUpdateStub: sinon.SinonStub<[string|{}, Function], void>;
+    let runUpdateStub: sinon.SinonStub<[string | {}, Function], void>;
 
     beforeEach(() => {
       fakePool = database.pool_;

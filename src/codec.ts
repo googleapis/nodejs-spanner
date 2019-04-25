@@ -509,7 +509,7 @@ function getType(value: Value): Type {
  * @returns {object}
  */
 function convertToListValue<T>(value: T): p.IListValue {
-  const values = arrify(value).map(codec.encode);
+  const values = (arrify(value) as T[]).map(codec.encode);
   return {values};
 }
 

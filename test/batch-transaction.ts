@@ -153,6 +153,25 @@ describe('BatchTransaction', () => {
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, GAX_OPTS);
     });
+
+    it('should accept query as string', () => {
+      const query = 'SELECT * FROM Singers';
+
+      const expectedQuery = Object.assign({}, {sql: query});
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
+
+      sandbox.stub(FakeTransaction, 'encodeParams')
+          .withArgs({sql: query})
+          .returns({sql: query});
+
+      batchTransaction.createQueryPartitions(query, assert.ifError);
+
+      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionQuery');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, undefined);
+    });
   });
 
   describe('createPartitions_', () => {
