@@ -27,6 +27,7 @@ import {Database} from '../src/database';
 import {Session, types} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
+import {util} from '@google-cloud/common-grpc';
 
 let pQueueOverride: typeof PQueue|null = null;
 
@@ -664,6 +665,21 @@ describe('SessionPool', () => {
       assert.strictEqual(session, fakeSession);
       assert.strictEqual(prepStub.callCount, 1);
     });
+
+    it('should propagate error from `_prepareTransaction`', done => {
+      const fakeSession = createSession('id', {id: types.ReadOnly});
+      const fakeError = new Error('err');
+
+      sandbox.stub(sessionPool, '_getSession').resolves(fakeSession);
+      sandbox.stub(sessionPool, '_prepareTransaction')
+          .withArgs(fakeSession)
+          .rejects(fakeError);
+
+      sessionPool._acquire(types.ReadWrite).then(util.noop, err => {
+        assert.deepStrictEqual(err, fakeError);
+        done();
+      });
+    });
   });
 
   describe('_borrow', () => {
@@ -935,6 +951,18 @@ describe('SessionPool', () => {
         const destroyed = destroyStub.getCall(i).args[0];
         assert.strictEqual(destroyed, session);
       });
+    });
+
+    it('should not evict if the session is not there', () => {
+      sandbox.restore();
+      fakeSessions[1] = undefined;
+      sandbox.stub(sessionPool, '_getIdleSessions')
+          .returns(fakeSessions.slice());
+      destroyStub = sandbox.stub(sessionPool, '_destroy').resolves();
+
+      sessionPool._evictIdleSessions();
+
+      assert.strictEqual(destroyStub.callCount, fakeSessions.length - 1);
     });
   });
 
