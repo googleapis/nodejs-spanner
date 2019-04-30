@@ -1,18 +1,12 @@
-export interface TransactionOptions {
-  readOnly?: boolean;
-  timeout?: number;
-  exactStaleness?: number;
-  readTimestamp?: Date;
-  returnTimestamp?: boolean;
-  strong?: boolean;
+import { google as spanner_client } from '../proto/spanner';
+
+export interface GaxOptions { [key: string]: spanner_client.protobuf.Value; }
+
+export type Schema = string | string[] | SchemaObject;
+export interface SchemaObject {
+  statements: string[];
+  operationId?: string;
 }
-export interface CreateSessionOptions {
-  name: string;
-  labels: {[key: string]: string};
-  createTime: GetTimestamp;
-  approximateLastUseTime: GetTimestamp;
-}
-export interface GetTimestamp {
-  nanos: number;
-  seconds: number;
-}
+
+// tslint:disable-next-line no-any
+export type Any = any;

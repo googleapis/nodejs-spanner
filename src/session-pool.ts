@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import * as is from 'is';
 import * as PQueue from 'p-queue';
 import trace = require('stack-trace');
 
-import {Database} from './database';
-import {Session, types} from './session';
-import {Transaction} from './transaction';
+import { Database } from './database';
+import { Session, types } from './session';
+import { Transaction } from './transaction';
+import { Any } from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -37,8 +38,7 @@ export interface SessionPoolCloseCallback {
  * @param {Session} session The read-only session.
  */
 export interface GetReadSessionCallback {
-  (err: Error, session?: null): void;
-  (err: null, session: Session): void;
+  (err: Error | null, session?: Session | null): void;
 }
 
 /**
@@ -48,9 +48,10 @@ export interface GetReadSessionCallback {
  * @param {Transaction} transaction The transaction object.
  */
 export interface GetWriteSessionCallback {
-  (err: Error, session?: null, transaction?: null): void;
   (err: null, session: Session, transaction: Transaction): void;
+  (err: Error, session: null, transaction: Transaction | null): void;
 }
+
 
 /**
  * Interface for implementing custom session pooling logic, it should extend the
@@ -135,7 +136,7 @@ export interface SessionPoolOptions {
   fail?: boolean;
   idlesAfter?: number;
   keepAlive?: number;
-  labels?: {[label: string]: string};
+  labels?: { [label: string]: string };
   max?: number;
   maxIdle?: number;
   min?: number;
@@ -308,7 +309,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
 
-    const {writes} = this.options;
+    const { writes } = this.options;
 
     if (writes! < 0 || writes! > 1) {
       throw new TypeError(
@@ -387,10 +388,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetWriteSessionCallback} callback The callback function.
    */
   getWriteSession(callback: GetWriteSessionCallback): void {
-    this._acquire(types.ReadWrite).then(
-      session => callback(null, session, session.txn!),
-      callback
-    );
+    this._acquire(types.ReadWrite)
+      .then(
+        (session: Session) => callback(null, session, session.txn!),
+        callback as Any);
   }
 
   /**
@@ -555,7 +556,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._inventory.borrowed.add(session);
 
     const createSession = async (): Promise<void> => {
-      await session.create({labels});
+      await session.create({ labels });
 
       if (type === types.ReadWrite) {
         try {
@@ -623,7 +624,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    */
   _evictIdleSessions(): void {
-    const {maxIdle, min} = this.options;
+    const { maxIdle, min } = this.options;
     const size = this.size;
     const idle = this._getIdleSessions();
 

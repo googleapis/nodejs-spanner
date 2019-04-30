@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Service} from '@google-cloud/common-grpc';
-import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
+import { Service } from '@google-cloud/common-grpc';
+import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import arrify = require('arrify');
-import {CallOptions} from 'google-gax';
+import { CallOptions } from 'google-gax';
 import * as is from 'is';
-import {common as p} from 'protobufjs';
-
-import {SpannerClient as s} from './v1';
+import { common as p } from 'protobufjs';
+import { google as spanner_client } from '../proto/spanner';
+import { SpannerClient as s } from './v1';
 
 // tslint:disable-next-line no-any
 export type Value = any;
@@ -188,7 +188,7 @@ export class Struct extends Array<Field> {
   static fromJSON(json: Json): Struct {
     const fields = Object.keys(json || {}).map(name => {
       const value = json[name];
-      return {name, value};
+      return { name, value };
     });
     return Struct.fromArray(fields);
   }
@@ -214,11 +214,11 @@ export class Struct extends Array<Field> {
 function convertFieldsToJson(fields: Field[], options?: JSONOptions): Json {
   const json: Json = {};
 
-  const defaultOptions = {wrapNumbers: false, wrapStructs: false};
+  const defaultOptions = { wrapNumbers: false, wrapStructs: false };
 
   options = Object.assign(defaultOptions, options);
 
-  for (const {name, value} of fields) {
+  for (const { name, value } of fields) {
     if (!name) {
       continue;
     }
@@ -256,9 +256,9 @@ function convertValueToJson(value: Value, options: JSONOptions): Value {
       return value.toJSON(options);
     }
 
-    return value.map(({name, value}) => {
+    return value.map(({ name, value }) => {
       value = convertValueToJson(value, options);
-      return {name, value};
+      return { name, value };
     });
   }
 
@@ -307,9 +307,9 @@ function decode(value: Value, type: s.Type): Value {
       });
       break;
     case s.TypeCode.STRUCT:
-      const fields = type.structType!.fields.map(({name, type}, index) => {
+      const fields = type.structType!.fields.map(({ name, type }, index) => {
         const value = decode(decoded[name] || decoded[index], type!);
-        return {name, value};
+        return { name, value };
       });
       decoded = Struct.fromArray(fields);
       break;
@@ -443,38 +443,38 @@ function getType(value: Value): Type {
     is.infinite(value) || (is.number(value) && isNaN(value));
 
   if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
-    return {type: 'float64'};
+    return { type: 'float64' };
   }
 
   if (is.number(value) || value instanceof Int) {
-    return {type: 'int64'};
+    return { type: 'int64' };
   }
 
   if (is.boolean(value)) {
-    return {type: 'bool'};
+    return { type: 'bool' };
   }
 
   if (is.string(value)) {
-    return {type: 'string'};
+    return { type: 'string' };
   }
 
   if (Buffer.isBuffer(value)) {
-    return {type: 'bytes'};
+    return { type: 'bytes' };
   }
 
   if (value instanceof SpannerDate) {
-    return {type: 'date'};
+    return { type: 'date' };
   }
 
   if (is.date(value)) {
-    return {type: 'timestamp'};
+    return { type: 'timestamp' };
   }
 
   if (value instanceof Struct) {
     return {
       type: 'struct',
-      fields: Array.from(value).map(({name, value}) => {
-        return Object.assign({name}, getType(value));
+      fields: Array.from(value).map(({ name, value }) => {
+        return Object.assign({ name }, getType(value));
       }),
     };
   }
@@ -496,7 +496,7 @@ function getType(value: Value): Type {
     };
   }
 
-  return {type: 'unspecified'};
+  return { type: 'unspecified' };
 }
 
 /**
@@ -509,7 +509,7 @@ function getType(value: Value): Type {
  */
 function convertToListValue<T>(value: T): p.IListValue {
   const values = (arrify(value) as T[]).map(codec.encode);
-  return {values};
+  return { values };
 }
 
 /**
@@ -520,11 +520,11 @@ function convertToListValue<T>(value: T): p.IListValue {
  * @param {number} ms The milliseconds to convert.
  * @returns {object}
  */
-function convertMsToProtoTimestamp(ms: number): p.ITimestamp {
+function convertMsToProtoTimestamp(ms: number): spanner_client.protobuf.ITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
   const nanos = Math.round((rawSeconds - seconds) * 1e9);
-  return {seconds, nanos};
+  return { seconds, nanos };
 }
 
 /**
@@ -558,12 +558,12 @@ function createTypeObject(friendlyType?: string | Type): s.Type {
   }
 
   if (is.string(friendlyType)) {
-    friendlyType = {type: friendlyType} as Type;
+    friendlyType = { type: friendlyType } as Type;
   }
 
   const config: Type = friendlyType as Type;
   const code: s.TypeCode = TypeCode[config.type] || TypeCode.unspecified;
-  const type: s.Type = {code};
+  const type: s.Type = { code };
 
   if (code === s.TypeCode.ARRAY) {
     type.arrayElementType = codec.createTypeObject(config.child);
@@ -572,7 +572,7 @@ function createTypeObject(friendlyType?: string | Type): s.Type {
   if (code === s.TypeCode.STRUCT) {
     type.structType = {
       fields: arrify(config.fields!).map(field => {
-        return {name: field.name, type: codec.createTypeObject(field)};
+        return { name: field.name, type: codec.createTypeObject(field) };
       }),
     };
   }

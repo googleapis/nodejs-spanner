@@ -21,9 +21,11 @@ import {
   Metadata,
   MetadataCallback,
   ServiceObjectConfig,
+  GetConfig
 } from '@google-cloud/common';
-import {ServiceObject} from '@google-cloud/common-grpc';
-import {promisify, promisifyAll} from '@google-cloud/promisify';
+import { ServiceObject } from '@google-cloud/common-grpc';
+import { promisify, promisifyAll } from '@google-cloud/promisify';
+import { Operation as GaxOperation } from 'google-gax/build/src/longrunning';
 import arrify = require('arrify');
 import * as extend from 'extend';
 import * as is from 'is';
@@ -31,29 +33,50 @@ import * as r from 'request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 
-import {BatchTransaction} from './batch-transaction';
-import {codec} from './codec';
-import {Instance} from './instance';
+import { BatchTransaction, TransactionIdentifier } from './batch-transaction';
+import { google as database_admin_client } from '../proto/spanner_database_admin';
+import { Instance } from './instance';
+import { PartialResultStream } from './partial-result-stream';
 import {
-  partialResultStream,
-  PartialResultStream,
-} from './partial-result-stream';
-import {Session} from './session';
-import {SessionPool} from './session-pool';
-import {Table} from './table';
+  Session,
+  CreateSessionCallback,
+  CreateSessionOptions
+} from './session';
 import {
-  PartitionedDml,
+  SessionPool,
+  SessionPoolOptions,
+  SessionPoolCloseCallback
+} from './session-pool';
+import {
+  Table,
+  CreateTableCallback,
+  CreateTablePromise
+} from './table';
+import {
   Snapshot,
   TimestampBounds,
   Transaction,
+  ExecuteSqlRequest,
+  RunUpdateCallback
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
   AsyncTransactionRunner,
   RunTransactionCallback,
   RunTransactionOptions,
-  TransactionRunner,
+  TransactionRunner
 } from './transaction-runner';
+
+import { google as spanner_client } from '../proto/spanner';
+import { Any, Schema, SchemaObject, GaxOptions } from './common';
+import { CallOptions, ServiceError } from 'grpc';
+import { Stats } from 'fs';
+import { Readable, Transform } from 'stream';
+import { StreamProxy } from 'google-gax/build/src/streamingCalls/streaming';
+
+export interface CreateBatchTransactionCallback {
+  (err?: Error | null, transaction?: BatchTransaction | null, apiResponse?: spanner_client.spanner.v1.Transaction | spanner_client.spanner.v1.Session): void;
+}
 
 export interface GetDatabaseOptions {
   autoCreate?: boolean;
@@ -69,8 +92,35 @@ export interface GetSnapshotCallback {
 }
 
 export interface GetTransactionCallback {
-  (err: Error, transaction?: null): void;
-  (err: null, transaction: Transaction): void;
+  (err?: Error | null, transaction?: Transaction | null): void;
+}
+
+export interface SessionPoolCtor {
+  (arg0: Database, arg1: SessionPoolOptions | null): void;
+}
+
+export interface UpdateSchemaCallback {
+  (err: Error | null, operation: GaxOperation, resp: database_admin_client.longrunning.Operations): void;
+}
+
+export interface MakePooledConfig {
+  reqOpts: {
+    [key: string]: Any
+    session?: string;
+  };
+  client?: string;
+  method?: string;
+}
+export interface MakePooledRequestCallback {
+  (err: Error | null, args: IArguments | null): void; //IArguments to represent arguments object used
+}
+
+export interface RunCallback {
+  (err: Error | null, rows: Array<{}>): Stats;
+}
+
+export interface GetSessionsRequest extends spanner_client.spanner.v1.IListSessionsRequest {
+  gaxOptions?: { [key: string]: string } | CallOptions;
 }
 
 /**
@@ -91,7 +141,9 @@ export interface GetTransactionCallback {
 class Database extends ServiceObject {
   formattedName_: string;
   pool_: SessionPool;
-  constructor(instance: Instance, name: string, poolOptions?) {
+  constructor(instance: Instance,
+    name: string,
+    poolOptions?: SessionPoolCtor | SessionPoolOptions) {
     const methods = {
       /**
        * Create a database.
@@ -142,21 +194,16 @@ class Database extends ServiceObject {
       parent: instance,
       id: name,
       methods,
-      createMethod: (_, options, callback) => {
+      createMethod: (_: {}, options: spanner_client.spanner.v1.ISession |
+        CreateSessionCallback, callback: CreateSessionCallback) => {
         return instance.createDatabase(formattedName_, options, callback);
       },
     } as {}) as ServiceObjectConfig);
 
+    this.pool_ = typeof poolOptions === 'function' ? new SessionPool(this) : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
     this.request = instance.request;
     this.requestStream = instance.requestStream;
-    // tslint:disable-next-line variable-name
-    let PoolCtor = SessionPool;
-    if (is.fn(poolOptions)) {
-      PoolCtor = poolOptions;
-      poolOptions = null;
-    }
-    this.pool_ = new PoolCtor(this, poolOptions);
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
   }
@@ -182,13 +229,10 @@ class Database extends ServiceObject {
    *   readTimestamp: 1518464696657
    * });
    */
-  batchTransaction(identifier, options?) {
-    let session = identifier.session;
+  batchTransaction(identifier: TransactionIdentifier, options?: TimestampBounds): BatchTransaction {
+    const session = typeof identifier.session === 'string' ? this.session(identifier.session) : identifier.session;
     const id = identifier.transaction;
-    if (is.string(session)) {
-      session = this.session(session);
-    }
-    const transaction = new BatchTransaction(session, options);
+    const transaction: BatchTransaction = new BatchTransaction(session, options);
     transaction.id = id;
     transaction.readTimestamp = identifier.readTimestamp;
     return transaction;
@@ -228,12 +272,17 @@ class Database extends ServiceObject {
    *   }
    * });
    */
-  close(callback) {
+  close(callback: SessionPoolCloseCallback): void {
     const key = this.id!.split('/').pop();
     // tslint:disable-next-line no-any
     (this.parent as any).databases_.delete(key);
     this.pool_.close(callback);
   }
+
+  createBatchTransaction(options?: TimestampBounds): Promise<[BatchTransaction, r.Response]>;
+  createBatchTransaction(callback: CreateBatchTransactionCallback): void;
+  createBatchTransaction(options: TimestampBounds, callback: CreateBatchTransactionCallback): void;
+
   /**
    * @typedef {array} CreateTransactionResponse
    * @property {BatchTransaction} 0 The {@link BatchTransaction}.
@@ -252,18 +301,19 @@ class Database extends ServiceObject {
    * @param {CreateTransactionCallback} [callback] Callback function.
    * @returns {Promise<CreateTransactionResponse>}
    */
-  createBatchTransaction(options, callback) {
-    if (is.fn(options)) {
-      callback = options;
-      options = null;
-    }
-    this.createSession((err, session, resp) => {
-      if (err) {
+  createBatchTransaction(
+    optionsOrCallback?: TimestampBounds | CreateBatchTransactionCallback,
+    cb?: CreateBatchTransactionCallback): void | Promise<[BatchTransaction, r.Response]> {
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as CreateBatchTransactionCallback : cb!;
+    const options = typeof optionsOrCallback === 'object' ? optionsOrCallback as TimestampBounds : {};
+
+    this.createSession((err: Error | null | undefined, session: Session | null, resp: spanner_client.spanner.v1.Session) => {
+      if (err || session === null) {
         callback(err, null, resp);
         return;
       }
-      const transaction = this.batchTransaction({session}, options);
-      transaction.begin((err, resp) => {
+      const transaction = this.batchTransaction({ session }, options);
+      transaction.begin((err: Error | null, resp?: spanner_client.spanner.v1.Transaction) => {
         if (err) {
           callback(err, null, resp);
           return;
@@ -272,6 +322,11 @@ class Database extends ServiceObject {
       });
     });
   }
+
+  createSession(options: CreateSessionOptions): Promise<[spanner_client.spanner.v1.Session, r.Response]>;
+  createSession(callback: CreateSessionCallback): void;
+  createSession(options: CreateSessionOptions, callback: CreateSessionCallback): void;
+
   /**
    * @typedef {array} CreateSessionResponse
    * @property {Session} 0 The newly created session.
@@ -328,20 +383,18 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  createSession(options, callback?) {
-    if (is.function(options)) {
-      callback = options;
-      options = {};
-    }
+  createSession(
+    optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
+    cb?: CreateSessionCallback): void | Promise<[spanner_client.spanner.v1.Session, r.Response]> {
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as CreateSessionCallback : cb!;
+    const gaxOpts = typeof optionsOrCallback === 'object' && optionsOrCallback ? optionsOrCallback as CreateSessionOptions : {} as CreateSessionOptions;
 
-    const gaxOpts = extend({}, options);
-    // tslint:disable-next-line no-any
-    const reqOpts: any = {
+    const reqOpts: spanner_client.spanner.v1.ICreateSessionRequest = {
       database: this.formattedName_,
     };
 
     if (gaxOpts.labels) {
-      reqOpts.session = {labels: gaxOpts.labels};
+      reqOpts.session = { labels: gaxOpts.labels };
       delete gaxOpts.labels;
     }
 
@@ -352,7 +405,7 @@ class Database extends ServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, resp) => {
+      (err: ServiceError, resp: spanner_client.spanner.v1.Session) => {
         if (err) {
           callback(err, null, resp);
           return;
@@ -360,9 +413,12 @@ class Database extends ServiceObject {
         const session = this.session(resp.name);
         session.metadata = resp;
         callback(null, session, resp);
-      }
-    );
+      });
   }
+
+  createTable(schema: Schema): CreateTablePromise;
+  createTable(schema: Schema, callback?: CreateTableCallback): void;
+
   /**
    * @typedef {array} CreateTableResponse
    * @property {Table} 0 The new {@link Table}.
@@ -430,15 +486,15 @@ class Database extends ServiceObject {
    *     // Table created successfully.
    *   });
    */
-  createTable(schema, callback) {
-    this.updateSchema(schema, (err, operation, resp) => {
+  createTable(schema: Schema, callback?: CreateTableCallback): void | CreateTablePromise {
+    this.updateSchema(schema, (err: ServiceError | null, operation: GaxOperation, resp: database_admin_client.longrunning.Operations) => {
       if (err) {
-        callback(err, null, null, resp);
+        callback!(err, null, null, resp);
         return;
       }
-      const tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
-      const table = this.table(tableName);
-      callback(null, table, operation, resp);
+      const tableName = typeof schema === 'string' ? schema.match(/CREATE TABLE `*([^\s`(]+)/)![1] : null;
+      const table = this.table(tableName!);
+      callback!(null, table, operation, resp);
     });
   }
   /**
@@ -451,7 +507,7 @@ class Database extends ServiceObject {
    * @param {Transaction} transaction The transaction to observe.
    * @returns {Transaction}
    */
-  private _releaseOnEnd(session, transaction) {
+  private _releaseOnEnd(session: Session, transaction: Transaction | Snapshot) {
     transaction.once('end', () => {
       try {
         this.pool_.release(session);
@@ -460,6 +516,9 @@ class Database extends ServiceObject {
       }
     });
   }
+
+  delete(): Promise<[r.Response]>;
+  delete(callback: DeleteCallback): void;
   /**
    * Delete the database.
    *
@@ -492,10 +551,9 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(): Promise<[r.Response]>;
-  delete(callback: DeleteCallback): void;
+
   delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
-    const reqOpts = {
+    const reqOpts: database_admin_client.spanner.admin.database.v1.IDropDatabaseRequest = {
       database: this.formattedName_,
     };
     this.close(() => {
@@ -505,10 +563,12 @@ class Database extends ServiceObject {
           method: 'dropDatabase',
           reqOpts,
         },
-        callback!
-      );
+        callback!);
     });
   }
+
+  exists(): Promise<[boolean]>;
+  exists(callback: ExistsCallback): void;
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
@@ -541,12 +601,11 @@ class Database extends ServiceObject {
    *   const exists = data[0];
    * });
    */
-  exists(): Promise<[boolean]>;
-  exists(callback: ExistsCallback): void;
+
   exists(callback?: ExistsCallback): void | Promise<[boolean]> {
     const NOT_FOUND = 5;
 
-    this.getMetadata(err => {
+    this.getMetadata((err: Error | null) => {
       if (err && (err as ApiError).code !== NOT_FOUND) {
         callback!(err);
         return;
@@ -555,6 +614,10 @@ class Database extends ServiceObject {
       callback!(null, exists);
     });
   }
+
+  get(options?: GetConfig): Promise<[database_admin_client.spanner.admin.database.v1.Database, r.Response]>;
+  get(callback: DatabaseCallback): void;
+  get(options: GetConfig, callback: DatabaseCallback): void;
   /**
    * @typedef {array} GetDatabaseResponse
    * @property {Database} 0 The {@link Database}.
@@ -599,38 +662,37 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  get(options?: GetDatabaseOptions): Promise<DatabaseResponse>;
-  get(options: GetDatabaseOptions, callback: DatabaseCallback): void;
-  get(callback: DatabaseCallback): void;
-  get(
-    optionsOrCallback?: GetDatabaseOptions | DatabaseCallback,
-    cb?: DatabaseCallback
-  ): void | Promise<DatabaseResponse> {
+  get(optionsOrCallback?: GetConfig | DatabaseCallback, cb?: DatabaseCallback):
+    void | Promise<[database_admin_client.spanner.admin.database.v1.Database, r.Response]> {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
-    this.getMetadata((err, metadata) => {
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    this.getMetadata((err: Error | null, metadata: Metadata) => {
       if (err) {
         if (options.autoCreate && (err as ApiError).code === 5) {
-          this.create(options, (err, database, operation) => {
+          this.create(options, (err: ApiError | null, database: database_admin_client.spanner.admin.database.v1.Database,
+            operation: database_admin_client.longrunning.Operations) => {
             if (err) {
               callback!(err);
               return;
             }
-            operation!.on('error', callback!).on('complete', metadata => {
+            operation.on('error', callback).on('complete', (metadata: Metadata) => {
               this.metadata = metadata;
-              callback!(null, this, metadata);
+              callback(null, this, metadata);
             });
           });
           return;
         }
-        callback!(err);
+        callback(err);
         return;
       }
-      callback!(null, this, metadata);
+      callback(null, this, metadata);
     });
   }
+
+  getMetadata(): Promise<[database_admin_client.spanner.admin.database.v1.Database, r.Response]>;
+  getMetadata(callback: MetadataCallback): void;
   /**
    * @typedef {array} GetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -676,10 +738,8 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(): Promise<Metadata>;
-  getMetadata(callback: MetadataCallback): void;
-  getMetadata(callback?: MetadataCallback): void | Promise<Metadata> {
-    const reqOpts = {
+  getMetadata(callback?: MetadataCallback): void | Promise<[database_admin_client.spanner.admin.database.v1.Database, r.Response]> {
+    const reqOpts: database_admin_client.spanner.admin.database.v1.IGetDatabaseRequest = {
       name: this.formattedName_,
     };
     return this.request(
@@ -688,9 +748,11 @@ class Database extends ServiceObject {
         method: 'getDatabase',
         reqOpts,
       },
-      callback!
-    );
+      callback!);
   }
+
+  getSchema(): Promise<[string[], r.Response]>;
+  getSchema(callback: database_admin_client.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdlCallback): void;
   /**
    * @typedef {array} GetSchemaResponse
    * @property {string[]} 0 An array of database DDL statements.
@@ -731,8 +793,9 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getSchema(callback) {
-    const reqOpts = {
+  getSchema(callback?: database_admin_client.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdlCallback):
+    void | Promise<[string[], r.Response]> {
+    const reqOpts: database_admin_client.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
     this.request(
@@ -742,13 +805,12 @@ class Database extends ServiceObject {
         reqOpts,
       },
       // tslint:disable-next-line only-arrow-functions
-      function(err, statements) {
+      function (err: ServiceError, statements: SchemaObject) {
         if (statements) {
           arguments[1] = statements.statements;
         }
-        callback.apply(null, arguments);
-      }
-    );
+        callback!.apply(null, arguments as Any);
+      });
   }
   /**
    * Options object for listing sessions.
@@ -776,6 +838,10 @@ class Database extends ServiceObject {
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
    */
+
+  getSessions(options?: CallOptions): Promise<[spanner_client.spanner.v1.Session, r.Response]>;
+  getSessions(callback: spanner_client.spanner.v1.Spanner.GetSessionCallback): void;
+  getSessions(options: CallOptions, callback: spanner_client.spanner.v1.Spanner.GetSessionCallback): void;
   /**
    * @typedef {array} GetSessionsResponse
    * @property {Session[]} 0 Array of {@link Session} instances.
@@ -832,14 +898,15 @@ class Database extends ServiceObject {
    *   const sessions = data[0];
    * });
    */
-  getSessions(options, callback) {
+  getSessions(optionsOrCallback?: CallOptions | spanner_client.spanner.v1.Spanner.GetSessionCallback,
+    cb?: spanner_client.spanner.v1.Spanner.GetSessionCallback):
+    void | Promise<[spanner_client.spanner.v1.Session, r.Response]> {
     const self = this;
-    if (is.fn(options)) {
-      callback = options;
-      options = {};
-    }
-    const gaxOpts = options.gaxOptions;
-    const reqOpts = extend({}, options, {database: this.formattedName_});
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as spanner_client.spanner.v1.Spanner.GetSessionCallback : cb!;
+    const options = typeof optionsOrCallback === 'object' ? optionsOrCallback as CallOptions : { gaxOptions: {} };
+    const gaxOpts: GaxOptions = options.gaxOptions;
+    const reqOpts: GetSessionsRequest = extend({}, options, { database: this.formattedName_ });
+
     delete reqOpts.gaxOptions;
     this.request(
       {
@@ -849,7 +916,7 @@ class Database extends ServiceObject {
         gaxOpts,
       },
       // tslint:disable-next-line only-arrow-functions
-      function(err, sessions) {
+      function (err: ServiceError | null, sessions: spanner_client.spanner.v1.Session[]) {
         if (sessions) {
           arguments[1] = sessions.map(metadata => {
             const session = self.session(metadata.name);
@@ -857,9 +924,8 @@ class Database extends ServiceObject {
             return session;
           });
         }
-        callback.apply(null, arguments);
-      }
-    );
+        callback.apply(null, arguments as Any);
+      });
   }
 
   getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
@@ -919,34 +985,26 @@ class Database extends ServiceObject {
     optionsOrCallback?: TimestampBounds | GetSnapshotCallback,
     cb?: GetSnapshotCallback
   ): void | Promise<[Snapshot]> {
-    let options: TimestampBounds;
-    let callback: GetSnapshotCallback;
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as GetSnapshotCallback : cb!;
+    const options = typeof optionsOrCallback === 'object' ? optionsOrCallback as TimestampBounds : {};
 
-    if (is.fn(optionsOrCallback)) {
-      callback = optionsOrCallback! as GetSnapshotCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as TimestampBounds;
-      callback = cb!;
-    }
-
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession((err: ServiceError | null, session?: Session | null) => {
       if (err) {
         callback(err);
         return;
       }
 
-      const snapshot = session.snapshot(options);
+      const snapshot = session!.snapshot(options);
 
       snapshot.begin(
         (err: null | Error): void => {
           if (err) {
-            this.pool_.release(session);
+            this.pool_.release(session!);
             callback(err);
             return;
           }
 
-          this._releaseOnEnd(session, snapshot);
+          this._releaseOnEnd(session!, snapshot);
           callback(err, snapshot);
         }
       );
@@ -998,13 +1056,17 @@ class Database extends ServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getWriteSession((err, session, transaction) => {
+    this.pool_.getWriteSession((err: Error | null, session: Session | null, transaction: Transaction | null) => {
       if (!err) {
-        this._releaseOnEnd(session, transaction);
+        this._releaseOnEnd(session!, transaction!);
       }
       callback!(err, transaction);
     });
   }
+
+  makePooledRequest_(config?: MakePooledConfig): Promise<Session>;
+  makePooledRequest_(callback?: MakePooledRequestCallback): void;
+  makePooledRequest_(config: MakePooledConfig, callback: MakePooledRequestCallback): void;
   /**
    * Make an API request, first assuring an active session is used.
    *
@@ -1013,21 +1075,27 @@ class Database extends ServiceObject {
    * @param {object} config Request config
    * @param {function} callback Callback function
    */
-  makePooledRequest_(config, callback) {
+  makePooledRequest_(configOrCallback?: MakePooledConfig | MakePooledRequestCallback,
+    cb?: MakePooledRequestCallback
+  ):
+    void | Promise<Session> {
     const pool = this.pool_;
-    pool.getReadSession((err, session) => {
+    const callback = typeof configOrCallback === 'function' ? configOrCallback as MakePooledRequestCallback : cb!;
+    const config = typeof configOrCallback === 'object' ? configOrCallback as MakePooledConfig : {} as MakePooledConfig;
+    pool.getReadSession((err: Error | null, session?: Session | null) => {
       if (err) {
         callback(err, null);
         return;
       }
       config.reqOpts.session = session!.formattedName_;
       // tslint:disable-next-line only-arrow-functions
-      this.request(config, function() {
+      this.request(config, function () {
         pool.release(session!);
-        callback.apply(null, arguments);
+        callback.apply(null, arguments as Any);
       });
     });
   }
+
   /**
    * Make an API request as a stream, first assuring an active session is used.
    *
@@ -1036,20 +1104,19 @@ class Database extends ServiceObject {
    * @param {object} config Request config
    * @returns {Stream}
    */
-  makePooledStreamingRequest_(config) {
+  makePooledStreamingRequest_(config: MakePooledConfig): Readable {
     const self = this;
     const pool = this.pool_;
-    let requestStream;
-    let session;
+    let requestStream: StreamProxy;
+    let session: Session | null;
     const waitForSessionStream = streamEvents(through.obj());
-    // tslint:disable-next-line no-any
-    (waitForSessionStream as any).abort = () => {
+    (waitForSessionStream as Any).abort = () => {
       releaseSession();
       if (requestStream) {
         requestStream.cancel();
       }
     };
-    function destroyStream(err) {
+    function destroyStream(err: ServiceError) {
       waitForSessionStream.destroy(err);
     }
     function releaseSession() {
@@ -1059,16 +1126,15 @@ class Database extends ServiceObject {
       }
     }
     waitForSessionStream.on('reading', () => {
-      pool.getReadSession((err, session_) => {
+      pool.getReadSession((err, session_?: Session | null) => {
         if (err) {
           destroyStream(err);
           return;
         }
-        session = session_;
+        session = session_!;
         config.reqOpts.session = session.formattedName_;
         requestStream = self.requestStream(config);
-        requestStream
-          .on('error', releaseSession)
+        requestStream.on('error', releaseSession)
           .on('error', destroyStream)
           .on('end', releaseSession)
           .pipe(waitForSessionStream);
@@ -1076,6 +1142,11 @@ class Database extends ServiceObject {
     });
     return waitForSessionStream;
   }
+
+  run(query: string | ExecuteSqlRequest): Promise<[{}]>;
+  run(query: string | ExecuteSqlRequest, options?: TimestampBounds): Promise<[{}]>;
+  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
+  run(query: string | ExecuteSqlRequest, options: TimestampBounds, callback: RunCallback): void;
   /**
    * Transaction options.
    *
@@ -1224,21 +1295,27 @@ class Database extends ServiceObject {
    * region_tag:spanner_query_data_with_index
    * Querying data with an index:
    */
-  run(query, options, callback) {
+  run(
+    query: string | ExecuteSqlRequest,
+    optionsOrCallback?: TimestampBounds | RunCallback,
+    cb?: RunCallback
+  ):
+    void | Promise<[{}]> {
     const rows: Array<{}> = [];
-    if (is.fn(options)) {
-      callback = options;
-      options = null;
-    }
+    const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as RunCallback : cb!;
+    const options = typeof optionsOrCallback === 'object' ? optionsOrCallback as TimestampBounds : {};
+
     this.runStream(query, options)
       .on('error', callback)
-      .on('data', row => {
-        rows.push(row);
-      })
+      .on('data',
+        row => {
+          rows.push(row);
+        })
       .on('end', () => {
         callback(null, rows);
       });
   }
+
   /**
    * Partitioned DML transactions are used to execute DML statements with a
    * different execution strategy that provides different, and often better,
@@ -1256,23 +1333,26 @@ class Database extends ServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runPartitionedUpdate(query, callback) {
-    this.pool_.getReadSession((err, session) => {
+  runPartitionedUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void | Promise<[]> {
+    this.pool_.getReadSession((err, session?: Session | null) => {
       if (err) {
         callback(err, 0);
         return;
       }
 
-      const transaction = session.partitionedDml();
+      const transaction = session!.partitionedDml();
 
       transaction.begin((err: null | Error) => {
         if (err) {
-          this.pool_.release(session);
+          this.pool_.release(session!);
           callback(err, 0);
           return;
         }
 
-        this._releaseOnEnd(session, transaction);
+        this._releaseOnEnd(session!, transaction);
         transaction.runUpdate(query, callback);
       });
     });
@@ -1400,18 +1480,18 @@ class Database extends ServiceObject {
    *     this.end();
    *   });
    */
-  runStream(query, options = {}): PartialResultStream {
-    const proxyStream = through.obj();
+  runStream(query: string | ExecuteSqlRequest, options?: TimestampBounds): PartialResultStream {
+    const proxyStream: Transform = through.obj();
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession((err: Error | null, session?: Session | null) => {
       if (err) {
         proxyStream.destroy(err);
         return;
       }
 
-      const snapshot = session.snapshot(options);
+      const snapshot = session!.snapshot(options);
 
-      this._releaseOnEnd(session, snapshot);
+      this._releaseOnEnd(session!, snapshot);
 
       snapshot
         .runStream(query)
@@ -1511,30 +1591,18 @@ class Database extends ServiceObject {
     optionsOrRunFn: RunTransactionOptions | RunTransactionCallback,
     fn?: RunTransactionCallback
   ): void {
-    let options: RunTransactionOptions;
-    let runFn: RunTransactionCallback;
+    const runFn = typeof optionsOrRunFn === 'function' ? optionsOrRunFn as RunTransactionCallback : fn!;
+    const options = typeof optionsOrRunFn === 'object' && optionsOrRunFn ? optionsOrRunFn as RunTransactionOptions : {};
 
-    if (is.fn(optionsOrRunFn)) {
-      runFn = optionsOrRunFn as RunTransactionCallback;
-      options = {};
-    } else {
-      options = optionsOrRunFn as RunTransactionOptions;
-      runFn = fn!;
-    }
-
-    this.pool_.getWriteSession((err, session, transaction) => {
+    this.pool_.getWriteSession((err: Error | null, session: Session | null, transaction: Transaction | null) => {
       if (err) {
         runFn(err);
         return;
       }
 
-      const release = this.pool_.release.bind(this.pool_, session);
-      const runner = new TransactionRunner(
-        session,
-        transaction,
-        runFn,
-        options
-      );
+      const release = this.pool_.release.bind(this.pool_, session!);
+      const runner =
+        new TransactionRunner(session!, transaction!, runFn, options);
 
       runner.run().then(release, err => {
         setImmediate(runFn, err);
@@ -1606,16 +1674,8 @@ class Database extends ServiceObject {
     optionsOrRunFn: RunTransactionOptions | AsyncRunTransactionCallback<T>,
     fn?: AsyncRunTransactionCallback<T>
   ): Promise<T> {
-    let options: RunTransactionOptions;
-    let runFn: AsyncRunTransactionCallback<T>;
-
-    if (is.fn(optionsOrRunFn)) {
-      runFn = optionsOrRunFn as AsyncRunTransactionCallback<T>;
-      options = {};
-    } else {
-      options = optionsOrRunFn as RunTransactionOptions;
-      runFn = fn!;
-    }
+    const runFn = typeof optionsOrRunFn === 'function' ? optionsOrRunFn as AsyncRunTransactionCallback<T> : fn!;
+    const options = typeof optionsOrRunFn === 'object' ? optionsOrRunFn as RunTransactionOptions : {};
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
     const [session, transaction] = await promisify(getWriteSession)();
@@ -1645,7 +1705,7 @@ class Database extends ServiceObject {
    * @example
    * var session = database.session('session-name');
    */
-  session(name?: string) {
+  session(name?: string): Session {
     return new Session(this, name);
   }
   /**
@@ -1665,7 +1725,7 @@ class Database extends ServiceObject {
    *
    * const table = database.table('Singers');
    */
-  table(name) {
+  table(name: string): Table {
     if (!name) {
       throw new Error('A name is required to access a Table object.');
     }
@@ -1744,26 +1804,27 @@ class Database extends ServiceObject {
    * region_tag:spanner_create_storing_index
    * Creating a storing index:
    */
-  updateSchema(statements, callback) {
+  updateSchema(
+    statements: Schema,
+    callback: UpdateSchemaCallback
+  ): Promise<[database_admin_client.longrunning.Operations, GaxOperation]> {
     if (!is.object(statements)) {
       statements = {
         statements: arrify(statements),
-      };
+      } as Schema;
     }
-    const reqOpts = extend(
+    const reqOpts: database_admin_client.spanner.admin.database.v1.IUpdateDatabaseDdlRequest = extend(
       {
         database: this.formattedName_,
       },
-      statements
-    );
+      statements);
     return this.request(
       {
         client: 'DatabaseAdminClient',
         method: 'updateDatabaseDdl',
         reqOpts,
       },
-      callback
-    );
+      callback);
   }
   /**
    * Format the database name to include the instance name.
@@ -1781,7 +1842,7 @@ class Database extends ServiceObject {
    * );
    * // 'projects/grape-spaceship-123/instances/my-instance/tables/my-database'
    */
-  static formatName_(instanceName, name) {
+  static formatName_(instanceName: string, name: string) {
     if (name.indexOf('/') > -1) {
       return name;
     }
@@ -1811,4 +1872,4 @@ promisifyAll(Database, {
  * @name module:@google-cloud/spanner.Database
  * @see Database
  */
-export {Database};
+export { Database };

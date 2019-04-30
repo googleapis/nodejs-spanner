@@ -16,44 +16,41 @@
 
 'use strict';
 
-import {promisifyAll} from '@google-cloud/promisify';
+import { promisifyAll } from '@google-cloud/promisify';
 import * as is from 'is';
-import {ServiceError} from 'grpc';
+import { ServiceError } from 'grpc';
 import * as through from 'through2';
 
-import {Json} from './codec';
-import {Database} from './database';
-import {DatabaseAdminClient as d, SpannerClient as s} from './v1';
-import {PartialResultStream, Row} from './partial-result-stream';
+import { Json } from './codec';
+import { Database } from './database';
+import { SpannerClient as s } from './v1';
+import { PartialResultStream, Row } from './partial-result-stream';
 import {
-  Snapshot,
   ReadRequest,
-  Transaction,
   TimestampBounds,
 } from './transaction';
+import { Operation as GaxOperation } from 'google-gax/build/src/longrunning';
+import { google as database_admin_client } from '../proto/spanner_database_admin';
 
 export type Key = string | string[];
 
-type Schema = string | string[] | {statements: string[]; operationId?: string};
+type Schema = string | string[] | { statements: string[]; operationId?: string };
 
 type CommitPromise = Promise<[s.CommitResponse]>;
-type CreateTablePromise = Promise<[Table, d.Operation, d.GrpcOperation]>;
-type DropTablePromise = Promise<[d.Operation, d.GrpcOperation]>;
+export type CreateTablePromise = Promise<[Table, database_admin_client.longrunning.Operations, GaxOperation]>;
+type DropTablePromise = Promise<[database_admin_client.longrunning.Operations, GaxOperation]>;
 type ReadPromise = Promise<[Array<Row | Json>]>;
 
-interface CreateTableCallback {
-  (err: ServiceError, table?: null, operation?: null, apiResponse?: null): void;
-  (
-    err: null,
-    table: Table,
-    operation: d.Operation,
-    apiResponse: d.GrpcOperation
+export interface CreateTableCallback {
+  (err: ServiceError | null,
+    table: Table | null,
+    operation: GaxOperation | null,
+    apiResponse: database_admin_client.longrunning.Operations | null
   ): void;
 }
 
 interface DropTableCallback {
-  (err: ServiceError, operation?: null, apiResponse?: null): void;
-  (err: null, operation: d.Operation, apiResponse: d.GrpcOperation): void;
+  (err: Error | null, operation: GaxOperation | null, apiResponse: database_admin_client.longrunning.Operations | null): void;
 }
 
 interface ReadCallback {
@@ -823,4 +820,4 @@ promisifyAll(Table, {
  * @name module:@google-cloud/spanner.Table
  * @see Table
  */
-export {Table};
+export { Table };

@@ -23,6 +23,15 @@ import * as extend from 'extend';
 import * as is from 'is';
 import snakeCase = require('lodash.snakecase');
 import {Database} from './database';
+import { Any } from './common';
+
+export interface CreateDatabaseOptions {
+  [key: string]: Any;
+  poolOptions?: {};
+  schema?: string;
+  extraStatements?: string[]|null;
+  poolCtor?: {};
+}
 
 /**
  * The {@link Instance} class represents a [Cloud Spanner
