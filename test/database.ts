@@ -1206,7 +1206,7 @@ describe('Database', () => {
     it('should correctly call runStream', done => {
       database.runStream = (query, options) => {
         assert.strictEqual(query, QUERY);
-        assert.strictEqual(options, null);
+        assert.deepStrictEqual(options, {});
         setImmediate(done);
         return QUERY_STREAM;
       };

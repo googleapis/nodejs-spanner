@@ -69,9 +69,9 @@ import {
 
 import { google as spanner_client } from '../proto/spanner';
 import { Any, Schema, SchemaObject, GaxOptions } from './common';
-import { CallOptions, ServiceError } from 'grpc';
-import { Stats } from 'fs';
+import { ServiceError, CallOptions } from 'grpc';
 import { Readable, Transform } from 'stream';
+import { Stats } from 'fs';
 import { StreamProxy } from 'google-gax/build/src/streamingCalls/streaming';
 
 export interface CreateBatchTransactionCallback {
@@ -117,6 +117,10 @@ export interface MakePooledRequestCallback {
 
 export interface RunCallback {
   (err: Error | null, rows: Array<{}>): Stats;
+}
+
+export interface GetSessionsRequest extends spanner_client.spanner.v1.IListSessionsRequest {
+  gaxOptions?: { [key: string]: string } | CallOptions;
 }
 
 export interface GetSessionsRequest extends spanner_client.spanner.v1.IListSessionsRequest {
@@ -200,7 +204,7 @@ class Database extends ServiceObject {
       },
     } as {}) as ServiceObjectConfig);
 
-    this.pool_ = typeof poolOptions === 'function' ? new SessionPool(this) : new SessionPool(this, poolOptions);
+    this.pool_ = typeof poolOptions === 'function' ? new poolOptions(this, null) : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
     this.request = instance.request;
     this.requestStream = instance.requestStream;
@@ -330,7 +334,7 @@ class Database extends ServiceObject {
   /**
    * @typedef {array} CreateSessionResponse
    * @property {Session} 0 The newly created session.
-   * @property {object} 2 The full API response.
+   * @property {object} 1 The full API response.
    */
   /**
    * @callback CreateSessionCallback
@@ -898,9 +902,10 @@ class Database extends ServiceObject {
    *   const sessions = data[0];
    * });
    */
-  getSessions(optionsOrCallback?: CallOptions | spanner_client.spanner.v1.Spanner.GetSessionCallback,
-    cb?: spanner_client.spanner.v1.Spanner.GetSessionCallback):
-    void | Promise<[spanner_client.spanner.v1.Session, r.Response]> {
+  getSessions(
+    optionsOrCallback?: CallOptions | spanner_client.spanner.v1.Spanner.GetSessionCallback,
+    cb?: spanner_client.spanner.v1.Spanner.GetSessionCallback
+  ): void | Promise<[spanner_client.spanner.v1.Session, r.Response]> {
     const self = this;
     const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback as spanner_client.spanner.v1.Spanner.GetSessionCallback : cb!;
     const options = typeof optionsOrCallback === 'object' ? optionsOrCallback as CallOptions : { gaxOptions: {} };
