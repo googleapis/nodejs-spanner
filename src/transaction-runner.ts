@@ -26,17 +26,13 @@ import {Transaction} from './transaction';
 
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
-const RETRYABLE: status[] = [
-  status.ABORTED,
-  status.UNKNOWN,
-];
+const RETRYABLE: status[] = [status.ABORTED, status.UNKNOWN];
 
 // tslint:disable-next-line variable-name
-const RetryInfo =
-    loadSync(
-        join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
-        new GoogleProtoFilesRoot())
-        .lookup('google.rpc.RetryInfo');
+const RetryInfo = loadSync(
+  join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
+  new GoogleProtoFilesRoot()
+).lookup('google.rpc.RetryInfo');
 
 /**
  * @typedef {object} RunTransactionOptions
@@ -113,8 +109,10 @@ export abstract class Runner<T> {
   transaction?: Transaction;
   options: RunTransactionOptions;
   constructor(
-      session: Session, transaction: Transaction,
-      options?: RunTransactionOptions) {
+    session: Session,
+    transaction: Transaction,
+    options?: RunTransactionOptions
+  ) {
     this.attempts = 0;
     this.session = session;
     this.transaction = transaction;
@@ -230,8 +228,11 @@ export abstract class Runner<T> {
 export class TransactionRunner extends Runner<void> {
   runFn: RunTransactionCallback;
   constructor(
-      session: Session, transaction: Transaction, runFn: RunTransactionCallback,
-      options?: RunTransactionOptions) {
+    session: Session,
+    transaction: Transaction,
+    runFn: RunTransactionCallback,
+    options?: RunTransactionOptions
+  ) {
     super(session, transaction, options);
     this.runFn = runFn;
   }
@@ -245,12 +246,14 @@ export class TransactionRunner extends Runner<void> {
    * @param {Transaction} transaction The transaction to intercept errors for.
    * @param {Function} reject Function to call when a retryable error is found.
    */
-  private _interceptErrors(transaction: Transaction, reject: ErrorCallback):
-      void {
+  private _interceptErrors(
+    transaction: Transaction,
+    reject: ErrorCallback
+  ): void {
     const request = transaction.request;
 
     transaction.request = promisify((config: object, callback: Function) => {
-      request(config, (err: null|ServiceError, resp: object) => {
+      request(config, (err: null | ServiceError, resp: object) => {
         if (!err || !RETRYABLE.includes(err.code!)) {
           callback(err, resp);
           return;
@@ -267,17 +270,16 @@ export class TransactionRunner extends Runner<void> {
       const stream = requestStream(config);
 
       stream
-          .on('error',
-              (err: ServiceError) => {
-                if (!RETRYABLE.includes(err.code!)) {
-                  proxyStream.destroy(err);
-                  return;
-                }
+        .on('error', (err: ServiceError) => {
+          if (!RETRYABLE.includes(err.code!)) {
+            proxyStream.destroy(err);
+            return;
+          }
 
-                stream.unpipe(proxyStream);
-                reject(err);
-              })
-          .pipe(proxyStream);
+          stream.unpipe(proxyStream);
+          reject(err);
+        })
+        .pipe(proxyStream);
 
       return proxyStream as typeof stream;
     };
@@ -313,8 +315,11 @@ export class TransactionRunner extends Runner<void> {
 export class AsyncTransactionRunner<T> extends Runner<T> {
   runFn: AsyncRunTransactionCallback<T>;
   constructor(
-      session: Session, transaction: Transaction,
-      runFn: AsyncRunTransactionCallback<T>, options?: RunTransactionOptions) {
+    session: Session,
+    transaction: Transaction,
+    runFn: AsyncRunTransactionCallback<T>,
+    options?: RunTransactionOptions
+  ) {
     super(session, transaction, options);
     this.runFn = runFn;
   }

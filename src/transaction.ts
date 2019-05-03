@@ -25,19 +25,24 @@ import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
 
 import {codec, Json, JSONOptions, Type, Value} from './codec';
-import {PartialResultStream, partialResultStream, ResumeToken, Row} from './partial-result-stream';
+import {
+  PartialResultStream,
+  partialResultStream,
+  ResumeToken,
+  Row,
+} from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
 
-export type Rows = Array<Row|Json>;
+export type Rows = Array<Row | Json>;
 
 export interface TimestampBounds {
   strong?: boolean;
-  minReadTimestamp?: PreciseDate|p.ITimestamp;
-  maxStaleness?: number|p.IDuration;
-  readTimestamp?: PreciseDate|p.ITimestamp;
-  exactStaleness?: number|p.IDuration;
+  minReadTimestamp?: PreciseDate | p.ITimestamp;
+  maxStaleness?: number | p.IDuration;
+  readTimestamp?: PreciseDate | p.ITimestamp;
+  exactStaleness?: number | p.IDuration;
   returnReadTimestamp?: boolean;
 }
 
@@ -56,7 +61,7 @@ export interface Statement {
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
   resumeToken?: ResumeToken;
   queryMode?: s.QueryMode;
-  partitionToken?: Uint8Array|string;
+  partitionToken?: Uint8Array | string;
   seqno?: number;
 }
 
@@ -75,7 +80,7 @@ export interface ReadRequest extends RequestOptions {
   columns?: string[];
   limit?: number;
   resumeToken?: ResumeToken;
-  partitionToken?: Uint8Array|string;
+  partitionToken?: Uint8Array | string;
 }
 
 export interface BatchUpdateError extends ServiceError {
@@ -90,19 +95,23 @@ export type RunPromise = Promise<[Rows, s.ResultSetStats]>;
 export type RunUpdatePromise = Promise<[number]>;
 
 export interface BatchUpdateCallback {
-  (err: null|BatchUpdateError, rowCounts: number[], response?: s.ExecuteBatchDmlResponse): void;
+  (
+    err: null | BatchUpdateError,
+    rowCounts: number[],
+    response?: s.ExecuteBatchDmlResponse
+  ): void;
 }
 
 export interface ReadCallback {
-  (err: null|ServiceError, rows: Rows): void;
+  (err: null | ServiceError, rows: Rows): void;
 }
 
 export interface RunCallback {
-  (err: null|ServiceError, rows: Rows, stats: s.ResultSetStats): void;
+  (err: null | ServiceError, rows: Rows, stats: s.ResultSetStats): void;
 }
 
 export interface RunUpdateCallback {
-  (err: null|ServiceError, rowCount: number): void;
+  (err: null | ServiceError, rowCount: number): void;
 }
 
 /**
@@ -159,7 +168,7 @@ export interface RunUpdateCallback {
  */
 export class Snapshot extends EventEmitter {
   protected _options!: s.TransactionOptions;
-  id?: string|Uint8Array;
+  id?: string | Uint8Array;
   ended: boolean;
   metadata?: s.Transaction;
   readTimestamp?: PreciseDate;
@@ -175,7 +184,7 @@ export class Snapshot extends EventEmitter {
    * @type {?(string|Buffer)}
    */
   /**
-   * Whether or not the transaction has ended. If true, make no further 
+   * Whether or not the transaction has ended. If true, make no further
    * requests, and discard the transaction.
    *
    * @name Snapshot#ended
@@ -261,35 +270,36 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: s.BeginTransactionCallback): void|BeginPromise {
+  begin(callback?: s.BeginTransactionCallback): void | BeginPromise {
     const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: s.BeginTransactionRequest = {session, options};
 
     this.request(
-        {
-          client: 'SpannerClient',
-          method: 'beginTransaction',
-          reqOpts,
-        },
-        (err: null|ServiceError, resp: s.Transaction) => {
-          if (err) {
-            callback!(err, resp);
-            return;
-          }
+      {
+        client: 'SpannerClient',
+        method: 'beginTransaction',
+        reqOpts,
+      },
+      (err: null | ServiceError, resp: s.Transaction) => {
+        if (err) {
+          callback!(err, resp);
+          return;
+        }
 
-          const {id, readTimestamp} = resp;
+        const {id, readTimestamp} = resp;
 
-          this.id = id;
-          this.metadata = resp;
+        this.id = id;
+        this.metadata = resp;
 
-          if (readTimestamp) {
-            this.readTimestampProto = readTimestamp;
-            this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
-          }
+        if (readTimestamp) {
+          this.readTimestampProto = readTimestamp;
+          this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
+        }
 
-          callback!(null, resp);
-        });
+        callback!(null, resp);
+      }
+    );
   }
 
   /**
@@ -432,8 +442,10 @@ export class Snapshot extends EventEmitter {
    *     this.end();
    *   });
    */
-  createReadStream(table: string, request = {} as ReadRequest):
-      PartialResultStream {
+  createReadStream(
+    table: string,
+    request = {} as ReadRequest
+  ): PartialResultStream {
     const {gaxOptions, json, jsonOptions} = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: s.TransactionSelector = {};
@@ -634,8 +646,10 @@ export class Snapshot extends EventEmitter {
    * });
    */
   read(
-      table: string, requestOrCallback: ReadRequest|ReadCallback,
-      cb?: ReadCallback): void|ReadPromise {
+    table: string,
+    requestOrCallback: ReadRequest | ReadCallback,
+    cb?: ReadCallback
+  ): void | ReadPromise {
     const rows: Rows = [];
 
     let request: ReadRequest;
@@ -650,22 +664,22 @@ export class Snapshot extends EventEmitter {
     }
 
     this.createReadStream(table, request)
-        .on('error', callback!)
-        .on('data', row => rows.push(row))
-        .on('end', () => callback!(null, rows));
+      .on('error', callback!)
+      .on('data', row => rows.push(row))
+      .on('end', () => callback!(null, rows));
   }
 
-  run(query: string|ExecuteSqlRequest): RunPromise;
-  run(query: string|ExecuteSqlRequest, callback: RunCallback): void;
+  run(query: string | ExecuteSqlRequest): RunPromise;
+  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   /**
    * Execute a SQL statement on this database inside of a transaction.
    *
    * **Performance Considerations:**
    *
    * This method wraps the streaming method,
-   * {@link Snapshot#run} for your convenience. All rows are stored in memory 
-   * before releasing to your callback. If you intend to receive a lot of 
-   * results from your query, consider using the streaming method, 
+   * {@link Snapshot#run} for your convenience. All rows are stored in memory
+   * before releasing to your callback. If you intend to receive a lot of
+   * results from your query, consider using the streaming method,
    * so you can free each result from memory after consuming it.
    *
    * Wrapper around {@link v1.SpannerClient#executeStreamingSql}.
@@ -730,16 +744,18 @@ export class Snapshot extends EventEmitter {
    *   }
    * });
    */
-  run(query: string|ExecuteSqlRequest,
-      callback?: RunCallback): void|RunPromise {
+  run(
+    query: string | ExecuteSqlRequest,
+    callback?: RunCallback
+  ): void | RunPromise {
     const rows: Rows = [];
     let stats;
 
     this.runStream(query)
-        .on('error', callback!)
-        .on('data', row => rows.push(row))
-        .on('stats', _stats => stats = _stats)
-        .on('end', () => callback!(null, rows, stats));
+      .on('error', callback!)
+      .on('data', row => rows.push(row))
+      .on('stats', _stats => (stats = _stats))
+      .on('end', () => callback!(null, rows, stats));
   }
 
   /**
@@ -814,7 +830,7 @@ export class Snapshot extends EventEmitter {
    *     this.end();
    *   });
    */
-  runStream(query: string|ExecuteSqlRequest): PartialResultStream {
+  runStream(query: string | ExecuteSqlRequest): PartialResultStream {
     if (is.string(query)) {
       query = {sql: query} as ExecuteSqlRequest;
     }
@@ -904,26 +920,26 @@ export class Snapshot extends EventEmitter {
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
-      readOnly.minReadTimestamp =
-          (options.minReadTimestamp as PreciseDate).toStruct();
+      readOnly.minReadTimestamp = (options.minReadTimestamp as PreciseDate).toStruct();
     }
 
     if (options.readTimestamp instanceof PreciseDate) {
-      readOnly.readTimestamp =
-          (options.readTimestamp as PreciseDate).toStruct();
+      readOnly.readTimestamp = (options.readTimestamp as PreciseDate).toStruct();
     }
 
     if (is.number(options.maxStaleness)) {
-      readOnly.maxStaleness =
-          codec.convertMsToProtoTimestamp(options.maxStaleness as number);
+      readOnly.maxStaleness = codec.convertMsToProtoTimestamp(
+        options.maxStaleness as number
+      );
     }
 
     if (is.number(options.exactStaleness)) {
-      readOnly.exactStaleness =
-          codec.convertMsToProtoTimestamp(options.exactStaleness as number);
+      readOnly.exactStaleness = codec.convertMsToProtoTimestamp(
+        options.exactStaleness as number
+      );
     }
 
-    // If we didn't detect a convenience format, we'll just assume that 
+    // If we didn't detect a convenience format, we'll just assume that
     // they passed in a protobuf timestamp.
     if (is.empty(readOnly)) {
       Object.assign(readOnly, options);
@@ -943,7 +959,7 @@ export class Snapshot extends EventEmitter {
    * @returns {object}
    */
   static encodeParams(request: ExecuteSqlRequest) {
-    const typeMap: {[field: string]: string|Type} = request.types || {};
+    const typeMap: {[field: string]: string | Type} = request.types || {};
 
     const params: p.IStruct = {};
     const paramTypes: {[field: string]: s.Type} = {};
@@ -993,8 +1009,11 @@ promisifyAll(Snapshot, {
 export class Dml extends Snapshot {
   protected _seqno = 1;
 
-  runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
-  runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
+  runUpdate(query: string | ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void;
   /**
    * @typedef {array} RunUpdateResponse
    * @property {number} 0 Affected row count.
@@ -1019,8 +1038,10 @@ export class Dml extends Snapshot {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
-      void|RunUpdatePromise {
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback?: RunUpdateCallback
+  ): void | RunUpdatePromise {
     if (is.string(query)) {
       query = {sql: query} as ExecuteSqlRequest;
     }
@@ -1029,16 +1050,17 @@ export class Dml extends Snapshot {
     const reqOpts = Object.assign({seqno}, query);
 
     this.run(
-        reqOpts,
-        (err: null|ServiceError, rows: Rows, stats: s.ResultSetStats) => {
-          let rowCount = 0;
+      reqOpts,
+      (err: null | ServiceError, rows: Rows, stats: s.ResultSetStats) => {
+        let rowCount = 0;
 
-          if (stats && stats.rowCount) {
-            rowCount = Math.floor(stats[stats.rowCount]);
-          }
+        if (stats && stats.rowCount) {
+          rowCount = Math.floor(stats[stats.rowCount]);
+        }
 
-          callback!(err, rowCount);
-        });
+        callback!(err, rowCount);
+      }
+    );
   }
 }
 
@@ -1140,8 +1162,11 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
   }
 
-  batchUpdate(queries: Array<string|Statement>): BatchUpdatePromise;
-  batchUpdate(queries: Array<string|Statement>, callback: BatchUpdateCallback): void;
+  batchUpdate(queries: Array<string | Statement>): BatchUpdatePromise;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    callback: BatchUpdateCallback
+  ): void;
   /**
    * @typedef {error} BatchUpdateError
    * @property {number} code gRPC status code.
@@ -1195,14 +1220,17 @@ export class Transaction extends Dml {
    * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
    * const [rowCounts, apiResponse] = await transaction.batchUpdate(queries);
    */
-  batchUpdate(queries: Array<string|Statement>, callback?: BatchUpdateCallback): BatchUpdatePromise|void {
+  batchUpdate(
+    queries: Array<string | Statement>,
+    callback?: BatchUpdateCallback
+  ): BatchUpdatePromise | void {
     if (!Array.isArray(queries) || !queries.length) {
       const rowCounts: number[] = [];
       const error = new Error('batchUpdate requires at least 1 DML statement.');
       const batchError: BatchUpdateError = Object.assign(error, {
         code: 3, // invalid argument
-        rowCounts
-      })
+        rowCounts,
+      });
       callback!(batchError, rowCounts);
       return;
     }
@@ -1224,37 +1252,38 @@ export class Transaction extends Dml {
     };
 
     this.request(
-        {
-          client: 'SpannerClient',
-          method: 'executeBatchDml',
-          reqOpts
-        },
-        (err: null|ServiceError, resp: s.ExecuteBatchDmlResponse) => {
-          let batchUpdateError: BatchUpdateError;
+      {
+        client: 'SpannerClient',
+        method: 'executeBatchDml',
+        reqOpts,
+      },
+      (err: null | ServiceError, resp: s.ExecuteBatchDmlResponse) => {
+        let batchUpdateError: BatchUpdateError;
 
-          if (err) {
-            const rowCounts: number[] = [];
-            batchUpdateError = Object.assign(err, {rowCounts});
-            callback!(batchUpdateError, rowCounts, resp);
-            return;
-          }
+        if (err) {
+          const rowCounts: number[] = [];
+          batchUpdateError = Object.assign(err, {rowCounts});
+          callback!(batchUpdateError, rowCounts, resp);
+          return;
+        }
 
-          const {resultSets, status} = resp;
-          const rowCounts: number[] = resultSets.map(({stats}) => {
-            return stats && Number(stats[stats.rowCount]) || 0;
-          });
-
-          if (status && status.code !== 0) {
-            const error = new Error(status.details);
-            batchUpdateError = Object.assign(error, {
-              code: status.code,
-              metadata: status.metadata,
-              rowCounts,
-            });
-          }
-
-          callback!(batchUpdateError!, rowCounts, resp);
+        const {resultSets, status} = resp;
+        const rowCounts: number[] = resultSets.map(({stats}) => {
+          return (stats && Number(stats[stats.rowCount])) || 0;
         });
+
+        if (status && status.code !== 0) {
+          const error = new Error(status.details);
+          batchUpdateError = Object.assign(error, {
+            code: status.code,
+            metadata: status.metadata,
+            rowCounts,
+          });
+        }
+
+        callback!(batchUpdateError!, rowCounts, resp);
+      }
+    );
   }
 
   commit(): CommitPromise;
@@ -1305,7 +1334,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: s.CommitCallback): void|CommitPromise {
+  commit(callback?: s.CommitCallback): void | CommitPromise {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: s.CommitRequest = {mutations, session};
@@ -1317,22 +1346,24 @@ export class Transaction extends Dml {
     }
 
     this.request(
-        {
-          client: 'SpannerClient',
-          method: 'commit',
-          reqOpts,
-        },
-        (err: null|Error, resp: s.CommitResponse) => {
-          this.end();
+      {
+        client: 'SpannerClient',
+        method: 'commit',
+        reqOpts,
+      },
+      (err: null | Error, resp: s.CommitResponse) => {
+        this.end();
 
-          if (resp && resp.commitTimestamp) {
-            this.commitTimestampProto = resp.commitTimestamp;
-            this.commitTimestamp =
-                new PreciseDate(resp.commitTimestamp as DateStruct);
-          }
+        if (resp && resp.commitTimestamp) {
+          this.commitTimestampProto = resp.commitTimestamp;
+          this.commitTimestamp = new PreciseDate(
+            resp.commitTimestamp as DateStruct
+          );
+        }
 
-          callback!(err, resp);
-        });
+        callback!(err, resp);
+      }
+    );
   }
 
   /**
@@ -1443,7 +1474,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  insert(table: string, rows: object|object[]): void {
+  insert(table: string, rows: object | object[]): void {
     this._mutate('insert', table, rows);
   }
 
@@ -1479,7 +1510,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  replace(table: string, rows: object|object[]): void {
+  replace(table: string, rows: object | object[]): void {
     this._mutate('replace', table, rows);
   }
 
@@ -1511,7 +1542,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: s.RollbackCallback): void|Promise<void> {
+  rollback(callback?: s.RollbackCallback): void | Promise<void> {
     if (!this.id) {
       callback!(new Error('Transaction ID is unknown, nothing to rollback.'));
       return;
@@ -1522,15 +1553,16 @@ export class Transaction extends Dml {
     const reqOpts: s.RollbackRequest = {session, transactionId};
 
     this.request(
-        {
-          client: 'SpannerClient',
-          method: 'rollback',
-          reqOpts,
-        },
-        (err: null|ServiceError) => {
-          this.end();
-          callback!(err);
-        });
+      {
+        client: 'SpannerClient',
+        method: 'rollback',
+        reqOpts,
+      },
+      (err: null | ServiceError) => {
+        this.end();
+        callback!(err);
+      }
+    );
   }
 
   /**
@@ -1565,7 +1597,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  update(table: string, rows: object|object[]): void {
+  update(table: string, rows: object | object[]): void {
     this._mutate('update', table, rows);
   }
 
@@ -1601,7 +1633,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  upsert(table: string, rows: object|object[]): void {
+  upsert(table: string, rows: object | object[]): void {
     this._mutate('insertOrUpdate', table, rows);
   }
 
@@ -1616,8 +1648,11 @@ export class Transaction extends Dml {
    * @param {string} table Table to perform mutations in.
    * @param {object} rows Hash of key value pairs.
    */
-  private _mutate(method: string, table: string, keyVals: object|object[]):
-      void {
+  private _mutate(
+    method: string,
+    table: string,
+    keyVals: object | object[]
+  ): void {
     const rows: object[] = arrify(keyVals);
     const columns = Transaction.getUniqueKeys(rows);
 
@@ -1626,11 +1661,12 @@ export class Transaction extends Dml {
       const missingColumns = columns.filter(column => !keys.includes(column));
 
       if (missingColumns.length > 0) {
-        throw new Error([
-          `Row at index ${
-              index} does not contain the correct number of columns.`,
-          `Missing columns: ${JSON.stringify(missingColumns)}`,
-        ].join('\n\n'));
+        throw new Error(
+          [
+            `Row at index ${index} does not contain the correct number of columns.`,
+            `Missing columns: ${JSON.stringify(missingColumns)}`,
+          ].join('\n\n')
+        );
       }
 
       const values = columns.map(column => row[column]);
@@ -1666,13 +1702,7 @@ export class Transaction extends Dml {
  * that a callback is omitted.
  */
 promisifyAll(Transaction, {
-  exclude: [
-    'deleteRows',
-    'insert',
-    'replace',
-    'update',
-    'upsert',
-  ]
+  exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
 });
 
 /**
@@ -1695,8 +1725,11 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
 
-  runUpdate(query: string|ExecuteSqlRequest): RunUpdatePromise;
-  runUpdate(query: string|ExecuteSqlRequest, callback: RunUpdateCallback): void;
+  runUpdate(query: string | ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void;
   /**
    * Execute a DML statement and get the affected row count. Unlike
    * {@link Transaction#runUpdate} after using this method you should
@@ -1720,8 +1753,10 @@ export class PartitionedDml extends Dml {
    *   }
    * });
    */
-  runUpdate(query: string|ExecuteSqlRequest, callback?: RunUpdateCallback):
-      void|RunUpdatePromise {
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback?: RunUpdateCallback
+  ): void | RunUpdatePromise {
     super.runUpdate(query, (err, count) => {
       this.end();
       callback!(err, count);

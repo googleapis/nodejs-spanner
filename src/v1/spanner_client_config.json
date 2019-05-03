@@ -2,14 +2,9 @@
   "interfaces": {
     "google.spanner.v1.Spanner": {
       "retry_codes": {
-        "idempotent": [
-          "DEADLINE_EXCEEDED",
-          "UNAVAILABLE"
-        ],
+        "idempotent": ["DEADLINE_EXCEEDED", "UNAVAILABLE"],
         "non_idempotent": [],
-        "long_running": [
-          "UNAVAILABLE"
-        ]
+        "long_running": ["UNAVAILABLE"]
       },
       "retry_params": {
         "default": {

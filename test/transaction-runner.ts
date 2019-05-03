@@ -39,7 +39,10 @@ describe('TransactionRunner', () => {
     decode: DECODE,
   };
 
-  const LOOKUP = sandbox.stub().withArgs(RETRY_KEY).returns(RETRY_INFO);
+  const LOOKUP = sandbox
+    .stub()
+    .withArgs(RETRY_KEY)
+    .returns(RETRY_INFO);
   const LOAD_SYNC = sandbox.stub().returns({lookup: LOOKUP});
 
   const SESSION = {
@@ -174,8 +177,9 @@ describe('TransactionRunner', () => {
 
     describe('getTransaction', () => {
       it('should return and forget the prepared transaction', async () => {
-        sandbox.stub(SESSION, 'transaction').throws(
-            new Error('Should not be called'));
+        sandbox
+          .stub(SESSION, 'transaction')
+          .throws(new Error('Should not be called'));
 
         const cachedTransaction = runner.transaction;
         const transaction = await runner.getTransaction();
@@ -242,8 +246,10 @@ describe('TransactionRunner', () => {
         runFn.onCall(0).rejects(fakeError);
         runFn.onCall(1).resolves(fakeReturnValue);
 
-        const delayStub =
-            sandbox.stub(runner, 'getNextDelay').withArgs(fakeError).returns(0);
+        const delayStub = sandbox
+          .stub(runner, 'getNextDelay')
+          .withArgs(fakeError)
+          .returns(0);
 
         const returnValue = await runner.run();
 
@@ -260,8 +266,10 @@ describe('TransactionRunner', () => {
         runFn.onCall(0).rejects(fakeError);
         runFn.onCall(1).resolves(fakeReturnValue);
 
-        const delayStub =
-            sandbox.stub(runner, 'getNextDelay').withArgs(fakeError).returns(0);
+        const delayStub = sandbox
+          .stub(runner, 'getNextDelay')
+          .withArgs(fakeError)
+          .returns(0);
 
         const returnValue = await runner.run();
 
@@ -308,8 +316,12 @@ describe('TransactionRunner', () => {
 
       it('should pass `options` to `Runner`', () => {
         const options = {timeout: 1};
-        const r =
-            new TransactionRunner(SESSION, fakeTransaction, runFn, options);
+        const r = new TransactionRunner(
+          SESSION,
+          fakeTransaction,
+          runFn,
+          options
+        );
 
         assert.deepStrictEqual(r.options, options);
       });
@@ -382,8 +394,9 @@ describe('TransactionRunner', () => {
           const fakeError: ServiceError = new Error('err');
           fakeError.code = status.ABORTED;
 
-          fakeTransaction.request.onCall(0).callsFake(
-              (_, callback) => callback(fakeError));
+          fakeTransaction.request
+            .onCall(0)
+            .callsFake((_, callback) => callback(fakeError));
 
           fakeTransaction.request.onCall(1).callsFake((_, callback) => {
             callback(null);
@@ -400,8 +413,9 @@ describe('TransactionRunner', () => {
           const fakeError: ServiceError = new Error('err');
           fakeError.code = status.UNKNOWN;
 
-          fakeTransaction.request.onCall(0).callsFake(
-              (_, callback) => callback(fakeError));
+          fakeTransaction.request
+            .onCall(0)
+            .callsFake((_, callback) => callback(fakeError));
 
           fakeTransaction.request.onCall(1).callsFake((_, callback) => {
             callback(null);
@@ -429,10 +443,12 @@ describe('TransactionRunner', () => {
           runFn.callsFake((err, transaction) => {
             assert.ifError(err);
 
-            transaction.requestStream(CONFIG).pipe(concat(data => {
-              assert.deepStrictEqual(data, fakeData);
-              done();
-            }));
+            transaction.requestStream(CONFIG).pipe(
+              concat(data => {
+                assert.deepStrictEqual(data, fakeData);
+                done();
+              })
+            );
           });
 
           runner.run().catch(done);
@@ -475,13 +491,16 @@ describe('TransactionRunner', () => {
           runFn.callsFake((err, transaction) => {
             assert.ifError(err);
 
-            transaction.requestStream(CONFIG)
-                .on('error', done)
-                .pipe(concat(data => {
+            transaction
+              .requestStream(CONFIG)
+              .on('error', done)
+              .pipe(
+                concat(data => {
                   assert.deepStrictEqual(data, fakeData);
                   assert.strictEqual(runFn.callCount, 2);
                   done();
-                }));
+                })
+              );
           });
 
           runner.run().catch(done);
@@ -505,13 +524,16 @@ describe('TransactionRunner', () => {
           runFn.callsFake((err, transaction) => {
             assert.ifError(err);
 
-            transaction.requestStream(CONFIG)
-                .on('error', done)
-                .pipe(concat(data => {
+            transaction
+              .requestStream(CONFIG)
+              .on('error', done)
+              .pipe(
+                concat(data => {
                   assert.deepStrictEqual(data, fakeData);
                   assert.strictEqual(runFn.callCount, 2);
                   done();
-                }));
+                })
+              );
           });
 
           runner.run().catch(done);
@@ -543,7 +565,11 @@ describe('TransactionRunner', () => {
       it('should pass `options` to `Runner`', () => {
         const options = {timeout: 1};
         const r = new AsyncTransactionRunner(
-            SESSION, fakeTransaction, runFn, options);
+          SESSION,
+          fakeTransaction,
+          runFn,
+          options
+        );
 
         assert.deepStrictEqual(r.options, options);
       });

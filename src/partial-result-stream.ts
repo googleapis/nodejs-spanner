@@ -28,7 +28,7 @@ import * as streamEvents from 'stream-events';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {SpannerClient as s} from './v1';
 
-export type ResumeToken = string|Uint8Array;
+export type ResumeToken = string | Uint8Array;
 
 /**
  * @callback RequestFunction
@@ -77,7 +77,7 @@ export interface Row extends Array<Field> {
  * @param {Row|object} row The row data.
  */
 interface RowCallback {
-  (row: Row|Json): void;
+  (row: Row | Json): void;
 }
 
 /**
@@ -101,7 +101,7 @@ interface ResultEvents {
   addListener(event: 'stats', listener: StatsCallback): this;
   addListener(event: 'response', listener: ResponseCallback): this;
 
-  emit(event: 'data', data: Row|Json): boolean;
+  emit(event: 'data', data: Row | Json): boolean;
   emit(event: 'stats', data: s.ResultSetStats): boolean;
   emit(event: 'response', data: s.PartialResultSet): boolean;
 
@@ -204,7 +204,10 @@ export class PartialResultStream extends Transform implements ResultEvents {
       const currentField = this._values.length % this._fields.length;
       const field = this._fields[currentField];
       const merged = PartialResultStream.merge(
-          field.type!, this._pendingValue, values.shift());
+        field.type!,
+        this._pendingValue,
+        values.shift()
+      );
 
       values.unshift(...merged);
       delete this._pendingValue;
@@ -263,7 +266,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
     Object.defineProperty(fields, 'toJSON', {
       value: (options?: JSONOptions): Json => {
         return codec.convertFieldsToJson(fields, options);
-      }
+      },
     });
 
     return fields as Row;
@@ -311,8 +314,11 @@ export class PartialResultStream extends Transform implements ResultEvents {
       listType = type.structType!.fields[head.length - 1].type!;
     }
 
-    const merged =
-        PartialResultStream.merge(listType, head.pop(), tail.shift());
+    const merged = PartialResultStream.merge(
+      listType,
+      head.pop(),
+      tail.shift()
+    );
 
     return [...head, ...merged, ...tail];
   }
@@ -335,7 +341,9 @@ export class PartialResultStream extends Transform implements ResultEvents {
  * @returns {PartialResultStream}
  */
 export function partialResultStream(
-    requestFn: RequestFunction, options?: RowOptions): PartialResultStream {
+  requestFn: RequestFunction,
+  options?: RowOptions
+): PartialResultStream {
   let lastResumeToken: ResumeToken;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
@@ -346,7 +354,7 @@ export function partialResultStream(
     maxQueued: 10,
     isCheckpointFn: (row: s.PartialResultSet): boolean => {
       return is.defined(row.resumeToken);
-    }
+    },
   });
 
   const makeRequest = (): void => {
@@ -375,15 +383,16 @@ export function partialResultStream(
   // tslint:disable-next-line no-any
   (requestsStream as any).intercept('error', retry);
 
-  return requestsStream
+  return (
+    requestsStream
       .pipe(batchAndSplitOnTokenStream)
       // If we get this error, the checkpoint stream has flushed any rows
       // it had queued. We can now destroy the user's stream, as our retry
       // attempts are over.
       .on('error', (err: Error) => userStream.destroy(err))
-      .on('checkpoint',
-          (row: s.PartialResultSet) => {
-            lastResumeToken = row.resumeToken;
-          })
-      .pipe(userStream);
+      .on('checkpoint', (row: s.PartialResultSet) => {
+        lastResumeToken = row.resumeToken;
+      })
+      .pipe(userStream)
+  );
 }

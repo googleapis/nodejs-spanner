@@ -25,15 +25,25 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as r from 'request';
-import {Snapshot, Transaction, PartitionedDml, TimestampBounds} from './transaction';
+import {
+  Snapshot,
+  Transaction,
+  PartitionedDml,
+  TimestampBounds,
+} from './transaction';
 import {Database} from './database';
-import {ServiceObjectConfig, DeleteCallback, Metadata, MetadataCallback} from '@google-cloud/common';
+import {
+  ServiceObjectConfig,
+  DeleteCallback,
+  Metadata,
+  MetadataCallback,
+} from '@google-cloud/common';
 import {CreateSessionOptions} from './common';
 
 export type GetSessionResponse = [Session, r.Response];
 
 export interface CreateSessionCallback {
-  (err: Error|null, session?: Session|null, apiResponse?: r.Response): void;
+  (err: Error | null, session?: Session | null, apiResponse?: r.Response): void;
 }
 
 /**
@@ -41,7 +51,7 @@ export interface CreateSessionCallback {
  */
 export const enum types {
   ReadOnly = 'readonly',
-  ReadWrite = 'readwrite'
+  ReadWrite = 'readwrite',
 }
 
 /**
@@ -187,7 +197,7 @@ export class Session extends ServiceObject {
        */
       get: true,
     };
-    super({
+    super(({
       parent: database,
       /**
        * @name Session#id
@@ -195,27 +205,31 @@ export class Session extends ServiceObject {
        */
       id: name,
       methods,
-      createMethod:
-          (_: {}, optionsOrCallback: CreateSessionOptions|CreateSessionCallback,
-           callback: CreateSessionCallback) => {
-            const options =
-                typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-            callback = typeof optionsOrCallback === 'function' ?
-                optionsOrCallback as CreateSessionCallback :
-                callback;
-            return database.createSession(
-                options,
-                (err: Error, session: Session, apiResponse: r.Response) => {
-                  if (err) {
-                    callback(err, null, apiResponse);
-                    return;
-                  }
+      createMethod: (
+        _: {},
+        optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
+        callback: CreateSessionCallback
+      ) => {
+        const options =
+          typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+        callback =
+          typeof optionsOrCallback === 'function'
+            ? (optionsOrCallback as CreateSessionCallback)
+            : callback;
+        return database.createSession(
+          options,
+          (err: Error, session: Session, apiResponse: r.Response) => {
+            if (err) {
+              callback(err, null, apiResponse);
+              return;
+            }
 
-                  extend(this, session);
-                  callback(null, this, apiResponse);
-                });
-          },
-    } as {} as ServiceObjectConfig);
+            extend(this, session);
+            callback(null, this, apiResponse);
+          }
+        );
+      },
+    } as {}) as ServiceObjectConfig);
 
     this.request = database.request;
     this.requestStream = database.requestStream;
@@ -253,17 +267,18 @@ export class Session extends ServiceObject {
    */
   delete(): Promise<[r.Response]>;
   delete(callback: DeleteCallback): void;
-  delete(callback?: DeleteCallback): void|Promise<[r.Response]> {
+  delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
     const reqOpts = {
       name: this.formattedName_,
     };
     return this.request(
-        {
-          client: 'SpannerClient',
-          method: 'deleteSession',
-          reqOpts,
-        },
-        callback!);
+      {
+        client: 'SpannerClient',
+        method: 'deleteSession',
+        reqOpts,
+      },
+      callback!
+    );
   }
   /**
    * @typedef {array} GetSessionMetadataResponse
@@ -300,17 +315,18 @@ export class Session extends ServiceObject {
    */
   getMetadata(): Promise<[Metadata]>;
   getMetadata(callback: MetadataCallback): void;
-  getMetadata(callback?: MetadataCallback): void|Promise<[Metadata]> {
+  getMetadata(callback?: MetadataCallback): void | Promise<[Metadata]> {
     const reqOpts = {
       name: this.formattedName_,
     };
     return this.request(
-        {
-          client: 'SpannerClient',
-          method: 'getSession',
-          reqOpts,
-        },
-        callback!);
+      {
+        client: 'SpannerClient',
+        method: 'getSession',
+        reqOpts,
+      },
+      callback!
+    );
   }
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
@@ -325,18 +341,19 @@ export class Session extends ServiceObject {
    *   }
    * });
    */
-  keepAlive(callback?): void|Promise<void> {
+  keepAlive(callback?): void | Promise<void> {
     const reqOpts = {
       session: this.formattedName_,
       sql: 'SELECT 1',
     };
     return this.request(
-        {
-          client: 'SpannerClient',
-          method: 'executeSql',
-          reqOpts,
-        },
-        callback!);
+      {
+        client: 'SpannerClient',
+        method: 'executeSql',
+        reqOpts,
+      },
+      callback!
+    );
   }
   /**
    * Create a PartitionedDml transaction.
@@ -401,6 +418,11 @@ export class Session extends ServiceObject {
  * that a callback is omitted.
  */
 promisifyAll(Session, {
-  exclude:
-      ['delete', 'getMetadata', 'partitionedDml', 'snapshot', 'transaction'],
+  exclude: [
+    'delete',
+    'getMetadata',
+    'partitionedDml',
+    'snapshot',
+    'transaction',
+  ],
 });
