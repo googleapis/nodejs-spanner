@@ -29,7 +29,7 @@ import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {util} from '@google-cloud/common-grpc';
 
-let pQueueOverride: typeof PQueue|null = null;
+let pQueueOverride: typeof PQueue | null = null;
 
 function FakePQueue(options) {
   return new (pQueueOverride || PQueue)(options);
@@ -82,15 +82,15 @@ describe('SessionPool', () => {
       getLineNumber: sandbox.stub().returns('99'),
       getColumnNumber: sandbox.stub().returns('13'),
       getTypeName: sandbox.stub().returns('type'),
-      isNative: sandbox.stub().returns(false)
+      isNative: sandbox.stub().returns(false),
     };
   };
 
   before(() => {
     SessionPool = proxyquire('../src/session-pool.js', {
-                    'p-queue': FakePQueue,
-                    'stack-trace': fakeStackTrace
-                  }).SessionPool;
+      'p-queue': FakePQueue,
+      'stack-trace': fakeStackTrace,
+    }).SessionPool;
   });
 
   beforeEach(() => {
@@ -112,15 +112,13 @@ describe('SessionPool', () => {
     beforeEach(() => {
       stackFrame = createStackFrame();
       fakeTrace = [stackFrame];
-      file = `${stackFrame.getFileName()}:${stackFrame.getLineNumber()}:${
-          stackFrame.getColumnNumber()}`;
+      file = `${stackFrame.getFileName()}:${stackFrame.getLineNumber()}:${stackFrame.getColumnNumber()}`;
     });
 
     it('should return a trace with the method name', () => {
       (stackFrame.getFunctionName as sinon.SinonStub).returns(undefined);
 
-      const expected = `Session leak detected!\n    at ${
-          stackFrame.getMethodName()} (${file})`;
+      const expected = `Session leak detected!\n    at ${stackFrame.getMethodName()} (${file})`;
       const actual = SessionPool.formatTrace(fakeTrace);
 
       assert.strictEqual(expected, actual);
@@ -129,8 +127,7 @@ describe('SessionPool', () => {
     it('should return a trace with the function name', () => {
       (stackFrame.getMethodName as sinon.SinonStub).returns(undefined);
 
-      const expected = `Session leak detected!\n    at ${
-          stackFrame.getFunctionName()} (${file})`;
+      const expected = `Session leak detected!\n    at ${stackFrame.getFunctionName()} (${file})`;
       const actual = SessionPool.formatTrace(fakeTrace);
 
       assert.strictEqual(expected, actual);
@@ -168,8 +165,11 @@ describe('SessionPool', () => {
     beforeEach(() => {
       sessionPool.options.min = 3;
 
-      inventory[types.ReadOnly] =
-          [createSession(), createSession(), createSession()];
+      inventory[types.ReadOnly] = [
+        createSession(),
+        createSession(),
+        createSession(),
+      ];
     });
 
     it('should get the total number of read sessions', () => {
@@ -197,8 +197,11 @@ describe('SessionPool', () => {
 
   describe('writes', () => {
     beforeEach(() => {
-      inventory[types.ReadWrite] =
-          [createSession(), createSession(), createSession()];
+      inventory[types.ReadWrite] = [
+        createSession(),
+        createSession(),
+        createSession(),
+      ];
     });
 
     it('should get the total number of read/write sessions', () => {
@@ -241,8 +244,7 @@ describe('SessionPool', () => {
       });
 
       describe('writes', () => {
-        const writeErrReg =
-            /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
+        const writeErrReg = /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
 
         it('should throw when writes is less than 0', () => {
           assert.throws(() => {
@@ -275,11 +277,11 @@ describe('SessionPool', () => {
         concurrency: 11,
       };
 
-      pQueueOverride = (class {
-                         constructor(options) {
-                           return options;
-                         }
-                       }) as typeof PQueue;
+      pQueueOverride = class {
+        constructor(options) {
+          return options;
+        }
+      } as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE, poolOptions);
       assert.deepStrictEqual(sessionPool._requests, {
@@ -288,11 +290,11 @@ describe('SessionPool', () => {
     });
 
     it('should create an acquire queue', () => {
-      pQueueOverride = (class {
-                         constructor(options) {
-                           return options;
-                         }
-                       }) as typeof PQueue;
+      pQueueOverride = class {
+        constructor(options) {
+          return options;
+        }
+      } as typeof PQueue;
 
       sessionPool = new SessionPool(DATABASE);
       assert.deepStrictEqual(sessionPool._acquires, {
@@ -343,13 +345,14 @@ describe('SessionPool', () => {
 
     it('should destroy all the sessions', done => {
       const sessions = [
-        ...inventory[types.ReadOnly], ...inventory[types.ReadWrite],
-        ...inventory.borrowed
+        ...inventory[types.ReadOnly],
+        ...inventory[types.ReadWrite],
+        ...inventory.borrowed,
       ];
 
       let destroyed = 0;
 
-      sessionPool._destroy = async (session) => {
+      sessionPool._destroy = async session => {
         assert.strictEqual(session, sessions[destroyed++]);
       };
 
@@ -377,7 +380,9 @@ describe('SessionPool', () => {
 
       sessionPool.close((err?: sp.SessionLeakError) => {
         assert.strictEqual(
-            err!.message, `${fakeLeaks.length} session leak(s) detected.`);
+          err!.message,
+          `${fakeLeaks.length} session leak(s) detected.`
+        );
         assert.strictEqual(err!.messages, fakeLeaks);
         done();
       });
@@ -388,9 +393,10 @@ describe('SessionPool', () => {
     it('should acquire a read session', done => {
       const fakeSession = createSession();
 
-      sandbox.stub(sessionPool, '_acquire')
-          .withArgs(types.ReadOnly)
-          .resolves(fakeSession);
+      sandbox
+        .stub(sessionPool, '_acquire')
+        .withArgs(types.ReadOnly)
+        .resolves(fakeSession);
 
       sessionPool.getReadSession((err, session) => {
         assert.ifError(err);
@@ -413,14 +419,15 @@ describe('SessionPool', () => {
 
   describe('getWriteSession', () => {
     it('should pass back the session and txn', done => {
-      const fakeTxn = new FakeTransaction() as unknown as Transaction;
+      const fakeTxn = (new FakeTransaction() as unknown) as Transaction;
       const fakeSession = createSession();
 
       fakeSession.txn = fakeTxn;
 
-      sandbox.stub(sessionPool, '_acquire')
-          .withArgs(types.ReadWrite)
-          .resolves(fakeSession);
+      sandbox
+        .stub(sessionPool, '_acquire')
+        .withArgs(types.ReadWrite)
+        .resolves(fakeSession);
 
       sessionPool.getWriteSession((err, session, txn) => {
         assert.ifError(err);
@@ -525,9 +532,10 @@ describe('SessionPool', () => {
         const fakeSession = createSession('id', {type: types.ReadOnly});
 
         prepStub.rejects();
-        sandbox.stub(sessionPool, '_release')
-            .withArgs(fakeSession)
-            .callsFake(() => done());
+        sandbox
+          .stub(sessionPool, '_release')
+          .withArgs(fakeSession)
+          .callsFake(() => done());
 
         inventory.borrowed.add(fakeSession);
         sessionPool.release(fakeSession);
@@ -551,9 +559,10 @@ describe('SessionPool', () => {
 
       it('should release the read/write session', done => {
         prepStub.resolves();
-        sandbox.stub(sessionPool, '_release')
-            .withArgs(fakeSession)
-            .callsFake(() => done());
+        sandbox
+          .stub(sessionPool, '_release')
+          .withArgs(fakeSession)
+          .callsFake(() => done());
 
         sessionPool.release(fakeSession);
       });
@@ -592,7 +601,7 @@ describe('SessionPool', () => {
     it('should return a timeout error if a timeout happens', async () => {
       sessionPool.options.acquireTimeout = 1;
 
-      sessionPool._acquires.add = (fn) => {
+      sessionPool._acquires.add = fn => {
         return new Promise(r => setTimeout(r, 2)).then(fn);
       };
 
@@ -601,7 +610,9 @@ describe('SessionPool', () => {
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(
-            e.message, 'Timeout occurred while acquiring session.');
+          e.message,
+          'Timeout occurred while acquiring session.'
+        );
       }
     });
 
@@ -609,8 +620,9 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
       const now = Date.now();
 
-      const stub =
-          sandbox.stub(sessionPool, '_getSession').resolves(fakeSession);
+      const stub = sandbox
+        .stub(sessionPool, '_getSession')
+        .resolves(fakeSession);
       const session = await sessionPool._acquire(types.ReadOnly);
       const [type, startTime] = stub.getCall(0).args;
 
@@ -623,7 +635,7 @@ describe('SessionPool', () => {
       const badSession = createSession();
       const goodSession = createSession();
 
-      sessionPool._isValidSession = (session) => session === goodSession;
+      sessionPool._isValidSession = session => session === goodSession;
       inventory.borrowed.add(badSession);
       inventory.borrowed.add(goodSession);
 
@@ -657,8 +669,9 @@ describe('SessionPool', () => {
       const fakeSession = createSession('id', {id: types.ReadOnly});
 
       sandbox.stub(sessionPool, '_getSession').resolves(fakeSession);
-      const prepStub = sandbox.stub(sessionPool, '_prepareTransaction')
-                           .withArgs(fakeSession);
+      const prepStub = sandbox
+        .stub(sessionPool, '_prepareTransaction')
+        .withArgs(fakeSession);
 
       const session = await sessionPool._acquire(types.ReadWrite);
 
@@ -671,9 +684,10 @@ describe('SessionPool', () => {
       const fakeError = new Error('err');
 
       sandbox.stub(sessionPool, '_getSession').resolves(fakeSession);
-      sandbox.stub(sessionPool, '_prepareTransaction')
-          .withArgs(fakeSession)
-          .rejects(fakeError);
+      sandbox
+        .stub(sessionPool, '_prepareTransaction')
+        .withArgs(fakeSession)
+        .rejects(fakeError);
 
       sessionPool._acquire(types.ReadWrite).then(util.noop, err => {
         assert.deepStrictEqual(err, fakeError);
@@ -714,9 +728,10 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
 
       inventory[types.ReadOnly].push(fakeSession);
-      sandbox.stub(sessionPool, '_borrowFrom')
-          .withArgs(types.ReadOnly)
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowFrom')
+        .withArgs(types.ReadOnly)
+        .returns(fakeSession);
 
       const session = sessionPool._borrowNextAvailableSession(types.ReadOnly);
 
@@ -727,9 +742,10 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
 
       inventory[types.ReadWrite].push(fakeSession);
-      sandbox.stub(sessionPool, '_borrowFrom')
-          .withArgs(types.ReadWrite)
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowFrom')
+        .withArgs(types.ReadWrite)
+        .returns(fakeSession);
 
       const session = sessionPool._borrowNextAvailableSession(types.ReadWrite);
 
@@ -740,9 +756,10 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
 
       inventory[types.ReadWrite].push(fakeSession);
-      sandbox.stub(sessionPool, '_borrowFrom')
-          .withArgs(types.ReadWrite)
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowFrom')
+        .withArgs(types.ReadWrite)
+        .returns(fakeSession);
 
       const session = sessionPool._borrowNextAvailableSession(types.ReadOnly);
 
@@ -753,9 +770,10 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
 
       inventory[types.ReadOnly].push(fakeSession);
-      sandbox.stub(sessionPool, '_borrowFrom')
-          .withArgs(types.ReadOnly)
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowFrom')
+        .withArgs(types.ReadOnly)
+        .returns(fakeSession);
 
       const session = sessionPool._borrowNextAvailableSession(types.ReadWrite);
 
@@ -815,9 +833,10 @@ describe('SessionPool', () => {
 
       sandbox.stub(DATABASE, 'session').returns(session);
 
-      const stub = sandbox.stub(sessionPool, '_prepareTransaction')
-                       .withArgs(session)
-                       .resolves();
+      const stub = sandbox
+        .stub(sessionPool, '_prepareTransaction')
+        .withArgs(session)
+        .resolves();
 
       await sessionPool._createSession(types.ReadWrite);
 
@@ -849,9 +868,10 @@ describe('SessionPool', () => {
 
   describe('_createSessionInBackground', () => {
     it('should emit available on success', done => {
-      sandbox.stub(sessionPool, '_createSession')
-          .withArgs(types.ReadOnly)
-          .resolves();
+      sandbox
+        .stub(sessionPool, '_createSession')
+        .withArgs(types.ReadOnly)
+        .resolves();
 
       sessionPool.on('available', done);
       sessionPool._createSessionInBackground(types.ReadOnly);
@@ -903,7 +923,7 @@ describe('SessionPool', () => {
       const reads = [createSession('id', {type: types.ReadOnly})];
       const writes = [
         createSession('id', {type: types.ReadWrite}),
-        createSession('id', {type: types.ReadWrite})
+        createSession('id', {type: types.ReadWrite}),
       ];
 
       inventory[types.ReadOnly] = reads;
@@ -914,8 +934,9 @@ describe('SessionPool', () => {
 
       fakeSessions = [...reads, ...writes];
 
-      sandbox.stub(sessionPool, '_getIdleSessions')
-          .returns(fakeSessions.slice());
+      sandbox
+        .stub(sessionPool, '_getIdleSessions')
+        .returns(fakeSessions.slice());
 
       fakeSessions.reverse();
       destroyStub = sandbox.stub(sessionPool, '_destroy').resolves();
@@ -956,8 +977,9 @@ describe('SessionPool', () => {
     it('should not evict if the session is not there', () => {
       sandbox.restore();
       fakeSessions[1] = undefined;
-      sandbox.stub(sessionPool, '_getIdleSessions')
-          .returns(fakeSessions.slice());
+      sandbox
+        .stub(sessionPool, '_getIdleSessions')
+        .returns(fakeSessions.slice());
       destroyStub = sandbox.stub(sessionPool, '_destroy').resolves();
 
       sessionPool._evictIdleSessions();
@@ -1011,7 +1033,7 @@ describe('SessionPool', () => {
       const end = timeSpan();
 
       const delayedResolve = () =>
-          new Promise<void>(resolve => setTimeout(resolve, delay));
+        new Promise<void>(resolve => setTimeout(resolve, delay));
 
       readonly.callsFake(delayedResolve);
       readwrite.callsFake(delayedResolve);
@@ -1024,7 +1046,7 @@ describe('SessionPool', () => {
 
   describe('_getIdleSessions', () => {
     it('should return a list of idle sessions', () => {
-      const idlesAfter = (sessionPool.options.idlesAfter = 1);  // 1 minute
+      const idlesAfter = (sessionPool.options.idlesAfter = 1); // 1 minute
       const idleTimestamp = Date.now() - idlesAfter * 60000;
 
       const fakeReads = (inventory[types.ReadOnly] = [
@@ -1081,9 +1103,10 @@ describe('SessionPool', () => {
 
       inventory[types.ReadOnly] = [fakeSession];
 
-      sandbox.stub(sessionPool, '_borrowNextAvailableSession')
-          .withArgs(types.ReadOnly)
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .withArgs(types.ReadOnly)
+        .returns(fakeSession);
 
       const session = await sessionPool._getSession(types.ReadOnly, startTime);
       assert.strictEqual(session, fakeSession);
@@ -1114,9 +1137,10 @@ describe('SessionPool', () => {
     it('should return a session when it becomes available', async () => {
       const fakeSession = createSession();
 
-      sandbox.stub(sessionPool, '_borrowNextAvailableSession')
-          .withArgs(types.ReadOnly)
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .withArgs(types.ReadOnly)
+        .returns(fakeSession);
       setTimeout(() => sessionPool.emit('available'), 100);
 
       const session = await sessionPool._getSession(types.ReadOnly, startTime);
@@ -1133,19 +1157,23 @@ describe('SessionPool', () => {
       } catch (e) {
         assert(isAround(timeout, end()));
         assert.strictEqual(
-            e.message, 'Timeout occurred while acquiring session.');
+          e.message,
+          'Timeout occurred while acquiring session.'
+        );
       }
     });
 
     it('should create a session if the pool is not full', async () => {
       const fakeSession = createSession();
-      const stub = sandbox.stub(sessionPool, '_createSession')
-                       .withArgs(types.ReadOnly)
-                       .resolves();
+      const stub = sandbox
+        .stub(sessionPool, '_createSession')
+        .withArgs(types.ReadOnly)
+        .resolves();
 
       sessionPool.options.max = 1;
-      sandbox.stub(sessionPool, '_borrowNextAvailableSession')
-          .returns(fakeSession);
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .returns(fakeSession);
 
       const session = await sessionPool._getSession(types.ReadOnly, startTime);
 
@@ -1192,8 +1220,9 @@ describe('SessionPool', () => {
     });
 
     it('should return true if the session has gone bad', () => {
-      const fakeSession =
-          createSession('id', {lastUsed: Date.now() - 61 * 60000});
+      const fakeSession = createSession('id', {
+        lastUsed: Date.now() - 61 * 60000,
+      });
       const isValid = sessionPool._isValidSession(fakeSession);
 
       assert.strictEqual(isValid, false);
@@ -1233,8 +1262,9 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
       const keepAliveStub = fakeSession.keepAlive as sinon.SinonStub;
 
-      const releaseStub =
-          sandbox.stub(sessionPool, 'release').withArgs(fakeSession);
+      const releaseStub = sandbox
+        .stub(sessionPool, 'release')
+        .withArgs(fakeSession);
       sandbox.stub(sessionPool, '_isValidSession').returns(true);
 
       await sessionPool._ping(fakeSession);
@@ -1250,9 +1280,10 @@ describe('SessionPool', () => {
       keepAliveStub.rejects();
       sandbox.stub(sessionPool, '_isValidSession').returns(true);
 
-      const destroyStub = sandbox.stub(sessionPool, '_destroy')
-                              .withArgs(fakeSession)
-                              .resolves();
+      const destroyStub = sandbox
+        .stub(sessionPool, '_destroy')
+        .withArgs(fakeSession)
+        .resolves();
 
       await sessionPool._ping(fakeSession);
 
@@ -1350,8 +1381,9 @@ describe('SessionPool', () => {
       const expectedInterval = sessionPool.options.keepAlive! * 60000;
       const clock = sandbox.useFakeTimers();
 
-      sandbox.stub(sessionPool, '_pingIdleSessions')
-          .callsFake(async () => done());
+      sandbox
+        .stub(sessionPool, '_pingIdleSessions')
+        .callsFake(async () => done());
 
       sessionPool._startHouseKeeping();
       clock.tick(expectedInterval);

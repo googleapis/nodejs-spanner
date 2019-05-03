@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {ApiError, DeleteCallback, ExistsCallback, Metadata, MetadataCallback, ServiceObjectConfig} from '@google-cloud/common';
+import {
+  ApiError,
+  DeleteCallback,
+  ExistsCallback,
+  Metadata,
+  MetadataCallback,
+  ServiceObjectConfig,
+} from '@google-cloud/common';
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisify, promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
@@ -27,19 +34,33 @@ import * as through from 'through2';
 import {BatchTransaction} from './batch-transaction';
 import {codec} from './codec';
 import {Instance} from './instance';
-import {partialResultStream, PartialResultStream} from './partial-result-stream';
+import {
+  partialResultStream,
+  PartialResultStream,
+} from './partial-result-stream';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {PartitionedDml, Snapshot, TimestampBounds, Transaction} from './transaction';
-import {AsyncRunTransactionCallback, AsyncTransactionRunner, RunTransactionCallback, RunTransactionOptions, TransactionRunner} from './transaction-runner';
+import {
+  PartitionedDml,
+  Snapshot,
+  TimestampBounds,
+  Transaction,
+} from './transaction';
+import {
+  AsyncRunTransactionCallback,
+  AsyncTransactionRunner,
+  RunTransactionCallback,
+  RunTransactionOptions,
+  TransactionRunner,
+} from './transaction-runner';
 
 export interface GetDatabaseOptions {
   autoCreate?: boolean;
 }
 export type DatabaseResponse = [Database, r.Response];
 export interface DatabaseCallback {
-  (err: Error|null, database?: Database, apiResponse?: r.Response): void;
+  (err: Error | null, database?: Database, apiResponse?: r.Response): void;
 }
 
 export interface GetSnapshotCallback {
@@ -117,14 +138,14 @@ class Database extends ServiceObject {
 
     const formattedName_ = Database.formatName_(instance.formattedName_, name);
 
-    super({
+    super(({
       parent: instance,
       id: name,
       methods,
       createMethod: (_, options, callback) => {
         return instance.createDatabase(formattedName_, options, callback);
       },
-    } as {} as ServiceObjectConfig);
+    } as {}) as ServiceObjectConfig);
 
     this.formattedName_ = formattedName_;
     this.request = instance.request;
@@ -308,39 +329,39 @@ class Database extends ServiceObject {
    * });
    */
   createSession(options, callback?) {
-    if (is.function(options))
+    if (is.function(options)) {
+      callback = options;
+      options = {};
+    }
+
+    const gaxOpts = extend({}, options);
+    // tslint:disable-next-line no-any
+    const reqOpts: any = {
+      database: this.formattedName_,
+    };
+
+    if (gaxOpts.labels) {
+      reqOpts.session = {labels: gaxOpts.labels};
+      delete gaxOpts.labels;
+    }
+
+    this.request(
       {
-        callback = options;
-        options = {};
+        client: 'SpannerClient',
+        method: 'createSession',
+        reqOpts,
+        gaxOpts,
+      },
+      (err, resp) => {
+        if (err) {
+          callback(err, null, resp);
+          return;
+        }
+        const session = this.session(resp.name);
+        session.metadata = resp;
+        callback(null, session, resp);
       }
-
-      const gaxOpts = extend({}, options);
-      // tslint:disable-next-line no-any
-      const reqOpts: any = {
-        database: this.formattedName_,
-      };
-
-      if (gaxOpts.labels) {
-        reqOpts.session = {labels: gaxOpts.labels};
-        delete gaxOpts.labels;
-      }
-
-      this.request(
-          {
-            client: 'SpannerClient',
-            method: 'createSession',
-            reqOpts,
-            gaxOpts,
-          },
-          (err, resp) => {
-            if (err) {
-              callback(err, null, resp);
-              return;
-            }
-            const session = this.session(resp.name);
-            session.metadata = resp;
-            callback(null, session, resp);
-          });
+    );
   }
   /**
    * @typedef {array} CreateTableResponse
@@ -410,15 +431,15 @@ class Database extends ServiceObject {
    *   });
    */
   createTable(schema, callback) {
-      this.updateSchema(schema, (err, operation, resp) => {
-        if (err) {
-          callback(err, null, null, resp);
-          return;
-        }
-        const tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
-        const table = this.table(tableName);
-        callback(null, table, operation, resp);
-      });
+    this.updateSchema(schema, (err, operation, resp) => {
+      if (err) {
+        callback(err, null, null, resp);
+        return;
+      }
+      const tableName = schema.match(/CREATE TABLE `*([^\s`(]+)/)[1];
+      const table = this.table(tableName);
+      callback(null, table, operation, resp);
+    });
   }
   /**
    * Decorates transaction so that when end() is called it will return the session
@@ -431,13 +452,13 @@ class Database extends ServiceObject {
    * @returns {Transaction}
    */
   private _releaseOnEnd(session, transaction) {
-      transaction.once('end', () => {
-        try {
-          this.pool_.release(session);
-        } catch (e) {
-          this.emit('error', e);
-        }
-      });
+    transaction.once('end', () => {
+      try {
+        this.pool_.release(session);
+      } catch (e) {
+        this.emit('error', e);
+      }
+    });
   }
   /**
    * Delete the database.
@@ -473,19 +494,20 @@ class Database extends ServiceObject {
    */
   delete(): Promise<[r.Response]>;
   delete(callback: DeleteCallback): void;
-  delete(callback?: DeleteCallback): void|Promise<[r.Response]> {
-      const reqOpts = {
-        database: this.formattedName_,
-      };
-      this.close(() => {
-        this.request(
-            {
-              client: 'DatabaseAdminClient',
-              method: 'dropDatabase',
-              reqOpts,
-            },
-            callback!);
-      });
+  delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
+    const reqOpts = {
+      database: this.formattedName_,
+    };
+    this.close(() => {
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'dropDatabase',
+          reqOpts,
+        },
+        callback!
+      );
+    });
   }
   /**
    * @typedef {array} DatabaseExistsResponse
@@ -521,17 +543,17 @@ class Database extends ServiceObject {
    */
   exists(): Promise<[boolean]>;
   exists(callback: ExistsCallback): void;
-  exists(callback?: ExistsCallback): void|Promise<[boolean]> {
-      const NOT_FOUND = 5;
+  exists(callback?: ExistsCallback): void | Promise<[boolean]> {
+    const NOT_FOUND = 5;
 
-      this.getMetadata(err => {
-        if (err && (err as ApiError).code !== NOT_FOUND) {
-          callback!(err);
-          return;
-        }
-        const exists = !err || (err as ApiError).code !== NOT_FOUND;
-        callback!(null, exists);
-      });
+    this.getMetadata(err => {
+      if (err && (err as ApiError).code !== NOT_FOUND) {
+        callback!(err);
+        return;
+      }
+      const exists = !err || (err as ApiError).code !== NOT_FOUND;
+      callback!(null, exists);
+    });
   }
   /**
    * @typedef {array} GetDatabaseResponse
@@ -580,31 +602,34 @@ class Database extends ServiceObject {
   get(options?: GetDatabaseOptions): Promise<DatabaseResponse>;
   get(options: GetDatabaseOptions, callback: DatabaseCallback): void;
   get(callback: DatabaseCallback): void;
-  get(optionsOrCallback?: GetDatabaseOptions|DatabaseCallback, cb?: DatabaseCallback): void|Promise<DatabaseResponse> {
-      const options =
-          typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-      const callback =
-          typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
-      this.getMetadata((err, metadata) => {
-        if (err) {
-          if (options.autoCreate && (err as ApiError).code === 5) {
-            this.create(options, (err, database, operation) => {
-              if (err) {
-                callback!(err);
-                return;
-              }
-              operation!.on('error', callback!).on('complete', metadata => {
-                this.metadata = metadata;
-                callback!(null, this, metadata);
-              });
+  get(
+    optionsOrCallback?: GetDatabaseOptions | DatabaseCallback,
+    cb?: DatabaseCallback
+  ): void | Promise<DatabaseResponse> {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
+    this.getMetadata((err, metadata) => {
+      if (err) {
+        if (options.autoCreate && (err as ApiError).code === 5) {
+          this.create(options, (err, database, operation) => {
+            if (err) {
+              callback!(err);
+              return;
+            }
+            operation!.on('error', callback!).on('complete', metadata => {
+              this.metadata = metadata;
+              callback!(null, this, metadata);
             });
-            return;
-          }
-          callback!(err);
+          });
           return;
         }
-        callback!(null, this, metadata);
-      });
+        callback!(err);
+        return;
+      }
+      callback!(null, this, metadata);
+    });
   }
   /**
    * @typedef {array} GetDatabaseMetadataResponse
@@ -653,17 +678,18 @@ class Database extends ServiceObject {
    */
   getMetadata(): Promise<Metadata>;
   getMetadata(callback: MetadataCallback): void;
-  getMetadata(callback?: MetadataCallback): void|Promise<Metadata> {
-      const reqOpts = {
-        name: this.formattedName_,
-      };
-      return this.request(
-          {
-            client: 'DatabaseAdminClient',
-            method: 'getDatabase',
-            reqOpts,
-          },
-          callback!);
+  getMetadata(callback?: MetadataCallback): void | Promise<Metadata> {
+    const reqOpts = {
+      name: this.formattedName_,
+    };
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'getDatabase',
+        reqOpts,
+      },
+      callback!
+    );
   }
   /**
    * @typedef {array} GetSchemaResponse
@@ -706,22 +732,23 @@ class Database extends ServiceObject {
    * });
    */
   getSchema(callback) {
-      const reqOpts = {
-        database: this.formattedName_,
-      };
-      this.request(
-          {
-            client: 'DatabaseAdminClient',
-            method: 'getDatabaseDdl',
-            reqOpts,
-          },
-          // tslint:disable-next-line only-arrow-functions
-          function(err, statements) {
-            if (statements) {
-              arguments[1] = statements.statements;
-            }
-            callback.apply(null, arguments);
-          });
+    const reqOpts = {
+      database: this.formattedName_,
+    };
+    this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'getDatabaseDdl',
+        reqOpts,
+      },
+      // tslint:disable-next-line only-arrow-functions
+      function(err, statements) {
+        if (statements) {
+          arguments[1] = statements.statements;
+        }
+        callback.apply(null, arguments);
+      }
+    );
   }
   /**
    * Options object for listing sessions.
@@ -806,32 +833,33 @@ class Database extends ServiceObject {
    * });
    */
   getSessions(options, callback) {
-      const self = this;
-      if (is.fn(options)) {
-        callback = options;
-        options = {};
-      }
-      const gaxOpts = options.gaxOptions;
-      const reqOpts = extend({}, options, {database: this.formattedName_});
-      delete reqOpts.gaxOptions;
-      this.request(
-          {
-            client: 'SpannerClient',
-            method: 'listSessions',
-            reqOpts,
-            gaxOpts,
-          },
-          // tslint:disable-next-line only-arrow-functions
-          function(err, sessions) {
-            if (sessions) {
-              arguments[1] = sessions.map(metadata => {
-                const session = self.session(metadata.name);
-                session.metadata = metadata;
-                return session;
-              });
-            }
-            callback.apply(null, arguments);
+    const self = this;
+    if (is.fn(options)) {
+      callback = options;
+      options = {};
+    }
+    const gaxOpts = options.gaxOptions;
+    const reqOpts = extend({}, options, {database: this.formattedName_});
+    delete reqOpts.gaxOptions;
+    this.request(
+      {
+        client: 'SpannerClient',
+        method: 'listSessions',
+        reqOpts,
+        gaxOpts,
+      },
+      // tslint:disable-next-line only-arrow-functions
+      function(err, sessions) {
+        if (sessions) {
+          arguments[1] = sessions.map(metadata => {
+            const session = self.session(metadata.name);
+            session.metadata = metadata;
+            return session;
           });
+        }
+        callback.apply(null, arguments);
+      }
+    );
   }
 
   getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
@@ -887,27 +915,31 @@ class Database extends ServiceObject {
    * region_tag:spanner_read_only_transaction
    * Read-only transaction:
    */
-  getSnapshot(optionsOrCallback?: TimestampBounds|GetSnapshotCallback, cb?: GetSnapshotCallback): void|Promise<[Snapshot]> {
-      let options: TimestampBounds;
-      let callback: GetSnapshotCallback;
+  getSnapshot(
+    optionsOrCallback?: TimestampBounds | GetSnapshotCallback,
+    cb?: GetSnapshotCallback
+  ): void | Promise<[Snapshot]> {
+    let options: TimestampBounds;
+    let callback: GetSnapshotCallback;
 
-      if (is.fn(optionsOrCallback)) {
-        callback = optionsOrCallback! as GetSnapshotCallback;
-        options = {};
-      } else {
-        options = optionsOrCallback as TimestampBounds;
-        callback = cb!;
+    if (is.fn(optionsOrCallback)) {
+      callback = optionsOrCallback! as GetSnapshotCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as TimestampBounds;
+      callback = cb!;
+    }
+
+    this.pool_.getReadSession((err, session) => {
+      if (err) {
+        callback(err);
+        return;
       }
 
-      this.pool_.getReadSession((err, session) => {
-        if (err) {
-          callback(err);
-          return;
-        }
+      const snapshot = session.snapshot(options);
 
-        const snapshot = session.snapshot(options);
-
-        snapshot.begin((err: null|Error): void => {
+      snapshot.begin(
+        (err: null | Error): void => {
           if (err) {
             this.pool_.release(session);
             callback(err);
@@ -916,8 +948,9 @@ class Database extends ServiceObject {
 
           this._releaseOnEnd(session, snapshot);
           callback(err, snapshot);
-        });
-      });
+        }
+      );
+    });
   }
 
   getTransaction(): Promise<[Transaction]>;
@@ -962,13 +995,15 @@ class Database extends ServiceObject {
    *   const transaction = data[0];
    * });
    */
-  getTransaction(callback?: GetTransactionCallback): void|Promise<[Transaction]> {
-      this.pool_.getWriteSession((err, session, transaction) => {
-        if (!err) {
-          this._releaseOnEnd(session, transaction);
-        }
-        callback!(err, transaction);
-      });
+  getTransaction(
+    callback?: GetTransactionCallback
+  ): void | Promise<[Transaction]> {
+    this.pool_.getWriteSession((err, session, transaction) => {
+      if (!err) {
+        this._releaseOnEnd(session, transaction);
+      }
+      callback!(err, transaction);
+    });
   }
   /**
    * Make an API request, first assuring an active session is used.
@@ -979,19 +1014,19 @@ class Database extends ServiceObject {
    * @param {function} callback Callback function
    */
   makePooledRequest_(config, callback) {
-      const pool = this.pool_;
-      pool.getReadSession((err, session) => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        config.reqOpts.session = session!.formattedName_;
-        // tslint:disable-next-line only-arrow-functions
-        this.request(config, function() {
-          pool.release(session!);
-          callback.apply(null, arguments);
-        });
+    const pool = this.pool_;
+    pool.getReadSession((err, session) => {
+      if (err) {
+        callback(err, null);
+        return;
+      }
+      config.reqOpts.session = session!.formattedName_;
+      // tslint:disable-next-line only-arrow-functions
+      this.request(config, function() {
+        pool.release(session!);
+        callback.apply(null, arguments);
       });
+    });
   }
   /**
    * Make an API request as a stream, first assuring an active session is used.
@@ -1002,43 +1037,44 @@ class Database extends ServiceObject {
    * @returns {Stream}
    */
   makePooledStreamingRequest_(config) {
-      const self = this;
-      const pool = this.pool_;
-      let requestStream;
-      let session;
-      const waitForSessionStream = streamEvents(through.obj());
-      // tslint:disable-next-line no-any
-      (waitForSessionStream as any).abort = () => {
-        releaseSession();
-        if (requestStream) {
-          requestStream.cancel();
-        }
-      };
-      function destroyStream(err) {
-        waitForSessionStream.destroy(err);
+    const self = this;
+    const pool = this.pool_;
+    let requestStream;
+    let session;
+    const waitForSessionStream = streamEvents(through.obj());
+    // tslint:disable-next-line no-any
+    (waitForSessionStream as any).abort = () => {
+      releaseSession();
+      if (requestStream) {
+        requestStream.cancel();
       }
-      function releaseSession() {
-        if (session) {
-          pool.release(session);
-          session = null;
-        }
+    };
+    function destroyStream(err) {
+      waitForSessionStream.destroy(err);
+    }
+    function releaseSession() {
+      if (session) {
+        pool.release(session);
+        session = null;
       }
-      waitForSessionStream.on('reading', () => {
-        pool.getReadSession((err, session_) => {
-          if (err) {
-            destroyStream(err);
-            return;
-          }
-          session = session_;
-          config.reqOpts.session = session.formattedName_;
-          requestStream = self.requestStream(config);
-          requestStream.on('error', releaseSession)
-              .on('error', destroyStream)
-              .on('end', releaseSession)
-              .pipe(waitForSessionStream);
-        });
+    }
+    waitForSessionStream.on('reading', () => {
+      pool.getReadSession((err, session_) => {
+        if (err) {
+          destroyStream(err);
+          return;
+        }
+        session = session_;
+        config.reqOpts.session = session.formattedName_;
+        requestStream = self.requestStream(config);
+        requestStream
+          .on('error', releaseSession)
+          .on('error', destroyStream)
+          .on('end', releaseSession)
+          .pipe(waitForSessionStream);
       });
-      return waitForSessionStream;
+    });
+    return waitForSessionStream;
   }
   /**
    * Transaction options.
@@ -1189,20 +1225,19 @@ class Database extends ServiceObject {
    * Querying data with an index:
    */
   run(query, options, callback) {
-      const rows: Array<{}> = [];
-      if (is.fn(options)) {
-        callback = options;
-        options = null;
-      }
-      this.runStream(query, options)
-          .on('error', callback)
-          .on('data',
-              row => {
-                rows.push(row);
-              })
-          .on('end', () => {
-            callback(null, rows);
-          });
+    const rows: Array<{}> = [];
+    if (is.fn(options)) {
+      callback = options;
+      options = null;
+    }
+    this.runStream(query, options)
+      .on('error', callback)
+      .on('data', row => {
+        rows.push(row);
+      })
+      .on('end', () => {
+        callback(null, rows);
+      });
   }
   /**
    * Partitioned DML transactions are used to execute DML statements with a
@@ -1222,25 +1257,25 @@ class Database extends ServiceObject {
    * @returns {Promise<RunUpdateResponse>}
    */
   runPartitionedUpdate(query, callback) {
-      this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession((err, session) => {
+      if (err) {
+        callback(err, 0);
+        return;
+      }
+
+      const transaction = session.partitionedDml();
+
+      transaction.begin((err: null | Error) => {
         if (err) {
+          this.pool_.release(session);
           callback(err, 0);
           return;
         }
 
-        const transaction = session.partitionedDml();
-
-        transaction.begin((err: null|Error) => {
-          if (err) {
-            this.pool_.release(session);
-            callback(err, 0);
-            return;
-          }
-
-          this._releaseOnEnd(session, transaction);
-          transaction.runUpdate(query, callback);
-        });
+        this._releaseOnEnd(session, transaction);
+        transaction.runUpdate(query, callback);
       });
+    });
   }
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1366,34 +1401,36 @@ class Database extends ServiceObject {
    *   });
    */
   runStream(query, options = {}): PartialResultStream {
-      const proxyStream = through.obj();
+    const proxyStream = through.obj();
 
-      this.pool_.getReadSession((err, session) => {
-        if (err) {
+    this.pool_.getReadSession((err, session) => {
+      if (err) {
+        proxyStream.destroy(err);
+        return;
+      }
+
+      const snapshot = session.snapshot(options);
+
+      this._releaseOnEnd(session, snapshot);
+
+      snapshot
+        .runStream(query)
+        .once('error', err => {
           proxyStream.destroy(err);
-          return;
-        }
+          snapshot.end();
+        })
+        .once('end', () => snapshot.end())
+        .pipe(proxyStream);
+    });
 
-        const snapshot = session.snapshot(options);
-
-        this._releaseOnEnd(session, snapshot);
-
-        snapshot.runStream(query)
-            .once(
-                'error',
-                err => {
-                  proxyStream.destroy(err);
-                  snapshot.end();
-                })
-            .once('end', () => snapshot.end())
-            .pipe(proxyStream);
-      });
-
-      return proxyStream as PartialResultStream;
+    return proxyStream as PartialResultStream;
   }
 
   runTransaction(runFn: RunTransactionCallback): void;
-  runTransaction(options: RunTransactionOptions, runFn: RunTransactionCallback): void;
+  runTransaction(
+    options: RunTransactionOptions,
+    runFn: RunTransactionCallback
+  ): void;
   /**
    * A transaction in Cloud Spanner is a set of reads and writes that execute
    * atomically at a single logical point in time across columns, rows, and tables
@@ -1470,37 +1507,49 @@ class Database extends ServiceObject {
    * region_tag:spanner_read_write_transaction
    * Read-write transaction:
    */
-  runTransaction(optionsOrRunFn: RunTransactionOptions|RunTransactionCallback, fn?: RunTransactionCallback): void {
-      let options: RunTransactionOptions;
-      let runFn: RunTransactionCallback;
+  runTransaction(
+    optionsOrRunFn: RunTransactionOptions | RunTransactionCallback,
+    fn?: RunTransactionCallback
+  ): void {
+    let options: RunTransactionOptions;
+    let runFn: RunTransactionCallback;
 
-      if (is.fn(optionsOrRunFn)) {
-        runFn = optionsOrRunFn as RunTransactionCallback;
-        options = {};
-      } else {
-        options = optionsOrRunFn as RunTransactionOptions;
-        runFn = fn!;
+    if (is.fn(optionsOrRunFn)) {
+      runFn = optionsOrRunFn as RunTransactionCallback;
+      options = {};
+    } else {
+      options = optionsOrRunFn as RunTransactionOptions;
+      runFn = fn!;
+    }
+
+    this.pool_.getWriteSession((err, session, transaction) => {
+      if (err) {
+        runFn(err);
+        return;
       }
 
-      this.pool_.getWriteSession((err, session, transaction) => {
-        if (err) {
-          runFn(err);
-          return;
-        }
+      const release = this.pool_.release.bind(this.pool_, session);
+      const runner = new TransactionRunner(
+        session,
+        transaction,
+        runFn,
+        options
+      );
 
-        const release = this.pool_.release.bind(this.pool_, session);
-        const runner =
-            new TransactionRunner(session, transaction, runFn, options);
-
-        runner.run().then(release, err => {
-          setImmediate(runFn, err);
-          release();
-        });
+      runner.run().then(release, err => {
+        setImmediate(runFn, err);
+        release();
       });
+    });
   }
 
-  runTransactionAsync<T = {}>(runFn: AsyncRunTransactionCallback<T>): Promise<T>;
-  runTransactionAsync<T = {}>(options: RunTransactionOptions, runFn: AsyncRunTransactionCallback<T>): Promise<T>;
+  runTransactionAsync<T = {}>(
+    runFn: AsyncRunTransactionCallback<T>
+  ): Promise<T>;
+  runTransactionAsync<T = {}>(
+    options: RunTransactionOptions,
+    runFn: AsyncRunTransactionCallback<T>
+  ): Promise<T>;
   /**
    * A transaction in Cloud Spanner is a set of reads and writes that execute
    * atomically at a single logical point in time across columns, rows, and tables
@@ -1553,28 +1602,35 @@ class Database extends ServiceObject {
    *   return data;
    * });
    */
-  async runTransactionAsync<T = {}>(optionsOrRunFn: RunTransactionOptions|AsyncRunTransactionCallback<T>, fn?: AsyncRunTransactionCallback<T>): Promise<T> {
-      let options: RunTransactionOptions;
-      let runFn: AsyncRunTransactionCallback<T>;
+  async runTransactionAsync<T = {}>(
+    optionsOrRunFn: RunTransactionOptions | AsyncRunTransactionCallback<T>,
+    fn?: AsyncRunTransactionCallback<T>
+  ): Promise<T> {
+    let options: RunTransactionOptions;
+    let runFn: AsyncRunTransactionCallback<T>;
 
-      if (is.fn(optionsOrRunFn)) {
-        runFn = optionsOrRunFn as AsyncRunTransactionCallback<T>;
-        options = {};
-      } else {
-        options = optionsOrRunFn as RunTransactionOptions;
-        runFn = fn!;
-      }
+    if (is.fn(optionsOrRunFn)) {
+      runFn = optionsOrRunFn as AsyncRunTransactionCallback<T>;
+      options = {};
+    } else {
+      options = optionsOrRunFn as RunTransactionOptions;
+      runFn = fn!;
+    }
 
-      const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
-      const [session, transaction] = await promisify(getWriteSession)();
-      const runner =
-          new AsyncTransactionRunner<T>(session, transaction, runFn, options);
+    const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
+    const [session, transaction] = await promisify(getWriteSession)();
+    const runner = new AsyncTransactionRunner<T>(
+      session,
+      transaction,
+      runFn,
+      options
+    );
 
-      try {
-        return await runner.run();
-      } finally {
-        this.pool_.release(session);
-      }
+    try {
+      return await runner.run();
+    } finally {
+      this.pool_.release(session);
+    }
   }
   /**
    * Create a Session object.
@@ -1590,7 +1646,7 @@ class Database extends ServiceObject {
    * var session = database.session('session-name');
    */
   session(name?: string) {
-      return new Session(this, name);
+    return new Session(this, name);
   }
   /**
    * Get a reference to a Table object.
@@ -1610,10 +1666,10 @@ class Database extends ServiceObject {
    * const table = database.table('Singers');
    */
   table(name) {
-      if (!name) {
-        throw new Error('A name is required to access a Table object.');
-      }
-      return new Table(this, name);
+    if (!name) {
+      throw new Error('A name is required to access a Table object.');
+    }
+    return new Table(this, name);
   }
   /**
    * Update the schema of the database by creating/altering/dropping tables,
@@ -1689,23 +1745,25 @@ class Database extends ServiceObject {
    * Creating a storing index:
    */
   updateSchema(statements, callback) {
-      if (!is.object(statements)) {
-        statements = {
-          statements: arrify(statements),
-        };
-      }
-      const reqOpts = extend(
-          {
-            database: this.formattedName_,
-          },
-          statements);
-      return this.request(
-          {
-            client: 'DatabaseAdminClient',
-            method: 'updateDatabaseDdl',
-            reqOpts,
-          },
-          callback);
+    if (!is.object(statements)) {
+      statements = {
+        statements: arrify(statements),
+      };
+    }
+    const reqOpts = extend(
+      {
+        database: this.formattedName_,
+      },
+      statements
+    );
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'updateDatabaseDdl',
+        reqOpts,
+      },
+      callback
+    );
   }
   /**
    * Format the database name to include the instance name.
@@ -1724,33 +1782,33 @@ class Database extends ServiceObject {
    * // 'projects/grape-spaceship-123/instances/my-instance/tables/my-database'
    */
   static formatName_(instanceName, name) {
-      if (name.indexOf('/') > -1) {
-        return name;
-      }
-      const databaseName = name.split('/').pop();
-      return instanceName + '/databases/' + databaseName;
+    if (name.indexOf('/') > -1) {
+      return name;
+    }
+    const databaseName = name.split('/').pop();
+    return instanceName + '/databases/' + databaseName;
   }
-  }
+}
 
-  /*! Developer Documentation
-   *
-   * All async methods (except for streams) will return a Promise in the event
-   * that a callback is omitted.
-   */
-  promisifyAll(Database, {
-    exclude: [
-      'batchTransaction',
-      'getMetadata',
-      'runTransaction',
-      'table',
-      'updateSchema',
-      'session',
-    ],
-  });
+/*! Developer Documentation
+ *
+ * All async methods (except for streams) will return a Promise in the event
+ * that a callback is omitted.
+ */
+promisifyAll(Database, {
+  exclude: [
+    'batchTransaction',
+    'getMetadata',
+    'runTransaction',
+    'table',
+    'updateSchema',
+    'session',
+  ],
+});
 
-  /**
-   * Reference to the {@link Database} class.
-   * @name module:@google-cloud/spanner.Database
-   * @see Database
-   */
-  export {Database};
+/**
+ * Reference to the {@link Database} class.
+ * @name module:@google-cloud/spanner.Database
+ * @see Database
+ */
+export {Database};
