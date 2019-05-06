@@ -25,7 +25,6 @@ import {
 } from '@google-cloud/common';
 import { ServiceObject } from '@google-cloud/common-grpc';
 import { promisify, promisifyAll } from '@google-cloud/promisify';
-import { Operation as GaxOperation } from 'google-gax/build/src/longrunning';
 import arrify = require('arrify');
 import * as extend from 'extend';
 import * as is from 'is';
@@ -100,7 +99,7 @@ export interface SessionPoolCtor {
 }
 
 export interface UpdateSchemaCallback {
-  (err: Error | null, operation: GaxOperation, resp: database_admin_client.longrunning.Operations): void;
+  (err: Error | null, operation: database_admin_client.longrunning.IOperation, resp: database_admin_client.longrunning.Operations): void;
 }
 
 export interface MakePooledConfig {
@@ -491,7 +490,7 @@ class Database extends ServiceObject {
    *   });
    */
   createTable(schema: Schema, callback?: CreateTableCallback): void | CreateTablePromise {
-    this.updateSchema(schema, (err: ServiceError | null, operation: GaxOperation, resp: database_admin_client.longrunning.Operations) => {
+    this.updateSchema(schema, (err: ServiceError | null, operation: database_admin_client.longrunning.IOperation, resp: database_admin_client.longrunning.Operations) => {
       if (err) {
         callback!(err, null, null, resp);
         return;
@@ -1061,12 +1060,15 @@ class Database extends ServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getWriteSession((err: Error | null, session: Session | null, transaction: Transaction | null) => {
-      if (!err) {
-        this._releaseOnEnd(session!, transaction!);
-      }
-      callback!(err, transaction);
-    });
+    this.pool_.getWriteSession(
+      (err: Error | null,
+        session?: Session | null,
+        transaction?: Transaction | null) => {
+        if (!err) {
+          this._releaseOnEnd(session!, transaction!);
+        }
+        callback!(err, transaction);
+      });
   }
 
   makePooledRequest_(config?: MakePooledConfig): Promise<Session>;
@@ -1599,21 +1601,24 @@ class Database extends ServiceObject {
     const runFn = typeof optionsOrRunFn === 'function' ? optionsOrRunFn as RunTransactionCallback : fn!;
     const options = typeof optionsOrRunFn === 'object' && optionsOrRunFn ? optionsOrRunFn as RunTransactionOptions : {};
 
-    this.pool_.getWriteSession((err: Error | null, session: Session | null, transaction: Transaction | null) => {
-      if (err) {
-        runFn(err);
-        return;
-      }
+    this.pool_.getWriteSession(
+      (err: Error | null,
+        session?: Session | null,
+        transaction?: Transaction | null) => {
+        if (err) {
+          runFn(err);
+          return;
+        }
 
-      const release = this.pool_.release.bind(this.pool_, session!);
-      const runner =
-        new TransactionRunner(session!, transaction!, runFn, options);
+        const release = this.pool_.release.bind(this.pool_, session!);
+        const runner =
+          new TransactionRunner(session!, transaction!, runFn, options);
 
-      runner.run().then(release, err => {
-        setImmediate(runFn, err);
-        release();
+        runner.run().then(release, err => {
+          setImmediate(runFn, err);
+          release();
+        });
       });
-    });
   }
 
   runTransactionAsync<T = {}>(
@@ -1812,7 +1817,7 @@ class Database extends ServiceObject {
   updateSchema(
     statements: Schema,
     callback: UpdateSchemaCallback
-  ): Promise<[database_admin_client.longrunning.Operations, GaxOperation]> {
+  ): Promise<[database_admin_client.longrunning.Operations, database_admin_client.longrunning.IOperation]> {
     if (!is.object(statements)) {
       statements = {
         statements: arrify(statements),

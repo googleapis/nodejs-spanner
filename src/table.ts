@@ -29,7 +29,6 @@ import {
   ReadRequest,
   TimestampBounds,
 } from './transaction';
-import { Operation as GaxOperation } from 'google-gax/build/src/longrunning';
 import { google as database_admin_client } from '../proto/spanner_database_admin';
 
 export type Key = string | string[];
@@ -37,20 +36,20 @@ export type Key = string | string[];
 type Schema = string | string[] | { statements: string[]; operationId?: string };
 
 type CommitPromise = Promise<[s.CommitResponse]>;
-export type CreateTablePromise = Promise<[Table, database_admin_client.longrunning.Operations, GaxOperation]>;
-type DropTablePromise = Promise<[database_admin_client.longrunning.Operations, GaxOperation]>;
+export type CreateTablePromise = Promise<[Table, database_admin_client.longrunning.Operations, database_admin_client.longrunning.IOperation]>;
+type DropTablePromise = Promise<[database_admin_client.longrunning.Operations, database_admin_client.longrunning.IOperation]>;
 type ReadPromise = Promise<[Array<Row | Json>]>;
 
 export interface CreateTableCallback {
   (err: ServiceError | null,
     table: Table | null,
-    operation: GaxOperation | null,
+    operation: database_admin_client.longrunning.IOperation | null,
     apiResponse: database_admin_client.longrunning.Operations | null
   ): void;
 }
 
 interface DropTableCallback {
-  (err: Error | null, operation: GaxOperation | null, apiResponse: database_admin_client.longrunning.Operations | null): void;
+  (err: Error | null, operation: database_admin_client.longrunning.IOperation | null, apiResponse: database_admin_client.longrunning.Operations | null): void;
 }
 
 interface ReadCallback {
