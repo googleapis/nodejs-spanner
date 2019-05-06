@@ -20,7 +20,7 @@ import { promisifyAll } from '@google-cloud/promisify';
 import * as is from 'is';
 import { ServiceError } from 'grpc';
 import * as through from 'through2';
-
+import { Operation as GaxOperation } from 'google-gax/build/src/longRunningCalls/longrunning';
 import { Json } from './codec';
 import { Database } from './database';
 import { SpannerClient as s } from './v1';
@@ -36,20 +36,20 @@ export type Key = string | string[];
 type Schema = string | string[] | { statements: string[]; operationId?: string };
 
 type CommitPromise = Promise<[s.CommitResponse]>;
-export type CreateTablePromise = Promise<[Table, database_admin_client.longrunning.Operations, database_admin_client.longrunning.IOperation]>;
-type DropTablePromise = Promise<[database_admin_client.longrunning.Operations, database_admin_client.longrunning.IOperation]>;
+export type CreateTablePromise = Promise<[Table, database_admin_client.longrunning.Operations, GaxOperation]>;
+type DropTablePromise = Promise<[database_admin_client.longrunning.Operations, GaxOperation]>;
 type ReadPromise = Promise<[Array<Row | Json>]>;
 
 export interface CreateTableCallback {
   (err: ServiceError | null,
     table: Table | null,
-    operation: database_admin_client.longrunning.IOperation | null,
+    operation: GaxOperation | null,
     apiResponse: database_admin_client.longrunning.Operations | null
   ): void;
 }
 
 interface DropTableCallback {
-  (err: Error | null, operation: database_admin_client.longrunning.IOperation | null, apiResponse: database_admin_client.longrunning.Operations | null): void;
+  (err: Error | null, operation: GaxOperation | null, apiResponse: database_admin_client.longrunning.Operations | null): void;
 }
 
 interface ReadCallback {

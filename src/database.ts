@@ -31,7 +31,7 @@ import * as is from 'is';
 import * as r from 'request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-
+import { Operation as GaxOperation } from 'google-gax/build/src/longRunningCalls/longrunning';
 import { BatchTransaction, TransactionIdentifier } from './batch-transaction';
 import { google as database_admin_client } from '../proto/spanner_database_admin';
 import { Instance } from './instance';
@@ -99,7 +99,7 @@ export interface SessionPoolCtor {
 }
 
 export interface UpdateSchemaCallback {
-  (err: Error | null, operation: database_admin_client.longrunning.IOperation, resp: database_admin_client.longrunning.Operations): void;
+  (err: Error | null, operation: GaxOperation, resp: database_admin_client.longrunning.Operations): void;
 }
 
 export interface MakePooledConfig {
@@ -490,7 +490,7 @@ class Database extends ServiceObject {
    *   });
    */
   createTable(schema: Schema, callback?: CreateTableCallback): void | CreateTablePromise {
-    this.updateSchema(schema, (err: ServiceError | null, operation: database_admin_client.longrunning.IOperation, resp: database_admin_client.longrunning.Operations) => {
+    this.updateSchema(schema, (err: ServiceError | null, operation: GaxOperation, resp: database_admin_client.longrunning.Operations) => {
       if (err) {
         callback!(err, null, null, resp);
         return;
@@ -1817,7 +1817,7 @@ class Database extends ServiceObject {
   updateSchema(
     statements: Schema,
     callback: UpdateSchemaCallback
-  ): Promise<[database_admin_client.longrunning.Operations, database_admin_client.longrunning.IOperation]> {
+  ): Promise<[database_admin_client.longrunning.Operations, GaxOperation]> {
     if (!is.object(statements)) {
       statements = {
         statements: arrify(statements),
