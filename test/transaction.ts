@@ -128,8 +128,9 @@ describe('Transaction', () => {
         const fakeEncodedOptions = {c: 'd'};
         const expectedOptions = {readOnly: fakeEncodedOptions};
 
-        Snapshot.encodeTimestampBounds.withArgs(fakeOptions)
-            .returns(fakeEncodedOptions);
+        Snapshot.encodeTimestampBounds
+          .withArgs(fakeOptions)
+          .returns(fakeEncodedOptions);
 
         new Snapshot(SESSION, fakeOptions).begin();
 
@@ -254,9 +255,10 @@ describe('Transaction', () => {
           columns: ['name'],
         };
 
-        sandbox.stub(Snapshot, 'encodeKeySet')
-            .withArgs(fakeRequest)
-            .returns(fakeKeySet);
+        sandbox
+          .stub(Snapshot, 'encodeKeySet')
+          .withArgs(fakeRequest)
+          .returns(fakeKeySet);
 
         snapshot.id = id;
         snapshot.createReadStream(TABLE, fakeRequest);
@@ -520,10 +522,13 @@ describe('Transaction', () => {
           resumeToken: undefined,
         };
 
-        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
-          params: fakeParams,
-          paramTypes: fakeParamTypes
-        });
+        sandbox
+          .stub(Snapshot, 'encodeParams')
+          .withArgs(fakeQuery)
+          .returns({
+            params: fakeParams,
+            paramTypes: fakeParamTypes,
+          });
 
         snapshot.id = id;
         snapshot.runStream(fakeQuery);
@@ -688,8 +693,9 @@ describe('Transaction', () => {
       });
 
       it('should accept `returnReadTimestamp` user value', () => {
-        const options =
-            Snapshot.encodeTimestampBounds({returnReadTimestamp: false});
+        const options = Snapshot.encodeTimestampBounds({
+          returnReadTimestamp: false,
+        });
 
         assert.strictEqual(options.returnReadTimestamp, false);
       });
@@ -721,12 +727,14 @@ describe('Transaction', () => {
       it('should convert `maxStaleness` ms to proto', () => {
         const fakeTimestamp = Date.now();
 
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox
+          .stub(codec, 'convertMsToProtoTimestamp')
+          .withArgs(fakeTimestamp)
+          .returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({maxStaleness: fakeTimestamp});
+        const options = Snapshot.encodeTimestampBounds({
+          maxStaleness: fakeTimestamp,
+        });
 
         assert.strictEqual(options.maxStaleness, PROTO_TIMESTAMP);
       });
@@ -734,12 +742,14 @@ describe('Transaction', () => {
       it('should convert `exactStaleness` ms to proto', () => {
         const fakeTimestamp = Date.now();
 
-        sandbox.stub(codec, 'convertMsToProtoTimestamp')
-            .withArgs(fakeTimestamp)
-            .returns(PROTO_TIMESTAMP);
+        sandbox
+          .stub(codec, 'convertMsToProtoTimestamp')
+          .withArgs(fakeTimestamp)
+          .returns(PROTO_TIMESTAMP);
 
-        const options =
-            Snapshot.encodeTimestampBounds({exactStaleness: fakeTimestamp});
+        const options = Snapshot.encodeTimestampBounds({
+          exactStaleness: fakeTimestamp,
+        });
 
         assert.strictEqual(options.exactStaleness, PROTO_TIMESTAMP);
       });
@@ -802,13 +812,15 @@ describe('Transaction', () => {
         const fakeMissingType = {type: 'string'};
         const expectedType = {code: s.TypeCode.STRING};
 
-        sandbox.stub(codec, 'getType')
-            .withArgs(fakeParams.a)
-            .returns(fakeMissingType);
+        sandbox
+          .stub(codec, 'getType')
+          .withArgs(fakeParams.a)
+          .returns(fakeMissingType);
 
-        sandbox.stub(codec, 'createTypeObject')
-            .withArgs(fakeMissingType)
-            .returns(expectedType);
+        sandbox
+          .stub(codec, 'createTypeObject')
+          .withArgs(fakeMissingType)
+          .returns(expectedType);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
@@ -846,8 +858,9 @@ describe('Transaction', () => {
         const fakeQuery = {sql: SQL};
         const expectedQuery = Object.assign({seqno: 1}, fakeQuery);
 
-        const stub =
-            sandbox.stub(dml, 'run').withArgs(sinon.match(expectedQuery));
+        const stub = sandbox
+          .stub(dml, 'run')
+          .withArgs(sinon.match(expectedQuery));
 
         dml.runUpdate(fakeQuery);
 
@@ -857,8 +870,9 @@ describe('Transaction', () => {
       it('should accept a sql string', () => {
         const expectedQuery = {sql: SQL, seqno: 1};
 
-        const stub =
-            sandbox.stub(dml, 'run').withArgs(sinon.match(expectedQuery));
+        const stub = sandbox
+          .stub(dml, 'run')
+          .withArgs(sinon.match(expectedQuery));
 
         dml.runUpdate(SQL);
 
@@ -891,8 +905,21 @@ describe('Transaction', () => {
         assert.strictEqual(callback.callCount, 1);
       });
 
-      it('should return the `rowCount`', () => {
-        const fakeRowCount = 5;
+      it('should return 0 for `rowCount`', () => {
+        const stub = sandbox.stub(dml, 'run');
+        const callback = sandbox.stub().withArgs(null, 0);
+
+        dml.runUpdate(SQL, callback);
+
+        const runCallback = stub.lastCall.args[1];
+        runCallback(null);
+
+        assert.strictEqual(callback.callCount, 1);
+        assert.strictEqual(callback.args[0][1], 0);
+      });
+
+      it('should return the `rowCountExact`', () => {
+        const fakeRowCount = 5.5;
         const fakeStats = {
           rowCount: 'rowCountExact',
           rowCountExact: fakeRowCount,
@@ -904,9 +931,10 @@ describe('Transaction', () => {
         dml.runUpdate(SQL, callback);
 
         const runCallback = stub.lastCall.args[1];
-        runCallback(null, fakeStats);
+        runCallback(null, undefined, fakeStats);
 
         assert.strictEqual(callback.callCount, 1);
+        assert.strictEqual(callback.args[0][1], Math.floor(fakeRowCount));
       });
     });
   });
@@ -921,13 +949,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: [
-            'deleteRows',
-            'insert',
-            'replace',
-            'update',
-            'upsert',
-          ],
+          exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Transaction, expectedOptions);
@@ -943,7 +965,7 @@ describe('Transaction', () => {
     describe('batchUpdate', () => {
       const STRING_STATEMENTS = [
         `INSERT INTO Table (Key, Str) VALUES('a', 'b')`,
-        `UPDATE Table t SET t.Str = 'c' WHERE t.Key = 'a'`
+        `UPDATE Table t SET t.Str = 'c' WHERE t.Key = 'a'`,
       ];
 
       const OBJ_STATEMENTS = [
@@ -952,7 +974,7 @@ describe('Transaction', () => {
           params: {
             key: 'k999',
             str: 'abc',
-          }
+          },
         },
         {
           sql: 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
@@ -960,7 +982,7 @@ describe('Transaction', () => {
             key: 'k999',
             str: 'abcd',
           },
-        }
+        },
       ];
 
       const FORMATTED_STATEMENTS = [
@@ -970,12 +992,12 @@ describe('Transaction', () => {
             fields: {
               key: {stringValue: OBJ_STATEMENTS[0].params.key},
               str: {stringValue: OBJ_STATEMENTS[0].params.str},
-            }
+            },
           },
           paramTypes: {
             key: {code: 'STRING'},
             str: {code: 'STRING'},
-          }
+          },
         },
         {
           sql: OBJ_STATEMENTS[1].sql,
@@ -983,19 +1005,21 @@ describe('Transaction', () => {
             fields: {
               key: {stringValue: OBJ_STATEMENTS[1].params.key},
               str: {stringValue: OBJ_STATEMENTS[1].params.str},
-            }
+            },
           },
           paramTypes: {
             key: {code: 'STRING'},
             str: {code: 'STRING'},
-          }
-        }
+          },
+        },
       ];
 
       it('should return an error if statements are missing', done => {
         transaction.batchUpdate(null, err => {
           assert.strictEqual(
-              err.message, 'batchUpdate requires at least 1 DML statement.');
+            err.message,
+            'batchUpdate requires at least 1 DML statement.'
+          );
           assert.strictEqual(err.code, 3);
           assert.deepStrictEqual(err.rowCounts, []);
           done();
@@ -1005,7 +1029,9 @@ describe('Transaction', () => {
       it('should return an error if statements are empty', done => {
         transaction.batchUpdate([], err => {
           assert.strictEqual(
-              err.message, 'batchUpdate requires at least 1 DML statement.');
+            err.message,
+            'batchUpdate requires at least 1 DML statement.'
+          );
           assert.strictEqual(err.code, 3);
           assert.deepStrictEqual(err.rowCounts, []);
           done();
@@ -1051,13 +1077,16 @@ describe('Transaction', () => {
         const fakeError = new Error('err');
         const fakeResponse = {};
 
-        transaction.batchUpdate(OBJ_STATEMENTS, (err, rowCounts, apiResponse) => {
-          assert.strictEqual(err, fakeError);
-          assert.deepStrictEqual(err.rowCounts, []);
-          assert.deepStrictEqual(rowCounts, []);
-          assert.strictEqual(apiResponse, fakeResponse);
-          done();
-        });
+        transaction.batchUpdate(
+          OBJ_STATEMENTS,
+          (err, rowCounts, apiResponse) => {
+            assert.strictEqual(err, fakeError);
+            assert.deepStrictEqual(err.rowCounts, []);
+            assert.deepStrictEqual(rowCounts, []);
+            assert.strictEqual(apiResponse, fakeResponse);
+            done();
+          }
+        );
 
         const requestCallback = stub.lastCall.args[1];
         setImmediate(requestCallback, fakeError, fakeResponse);
@@ -1070,15 +1099,39 @@ describe('Transaction', () => {
           resultSets: [
             {stats: {rowCount: 'a', a: '5'}},
             {stats: {rowCount: 'b', b: '7'}},
-          ]
+          ],
         };
 
-        transaction.batchUpdate(OBJ_STATEMENTS, (err, rowCounts, apiResponse) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(rowCounts, expectedRowCounts);
-          assert.strictEqual(apiResponse, fakeResponse);
-          done();
-        });
+        transaction.batchUpdate(
+          OBJ_STATEMENTS,
+          (err, rowCounts, apiResponse) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(rowCounts, expectedRowCounts);
+            assert.strictEqual(apiResponse, fakeResponse);
+            done();
+          }
+        );
+
+        const requestCallback = stub.lastCall.args[1];
+        setImmediate(requestCallback, null, fakeResponse);
+      });
+
+      it('should return list of 0s for row counts when stats or rowCount value is empty', done => {
+        const stub = sandbox.stub(transaction, 'request');
+        const expectedRowCounts = [0, 0];
+        const fakeResponse = {
+          resultSets: [{stats: {rowCount: 'a'}}, {stats: undefined}],
+        };
+
+        transaction.batchUpdate(
+          OBJ_STATEMENTS,
+          (err, rowCounts, apiResponse) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(rowCounts, expectedRowCounts);
+            assert.strictEqual(apiResponse, fakeResponse);
+            done();
+          }
+        );
 
         const requestCallback = stub.lastCall.args[1];
         setImmediate(requestCallback, null, fakeResponse);
@@ -1092,18 +1145,21 @@ describe('Transaction', () => {
             {stats: {rowCount: 'a', a: '6'}},
             {stats: {rowCount: 'b', b: '8'}},
           ],
-          status: {code: 3, details: 'Err'}
+          status: {code: 3, details: 'Err'},
         };
 
-        transaction.batchUpdate(OBJ_STATEMENTS, (err, rowCounts, apiResponse) => {
-          assert(err instanceof Error);
-          assert.strictEqual(err.code, fakeResponse.status.code);
-          assert.strictEqual(err.message, fakeResponse.status.details);
-          assert.deepStrictEqual(err.rowCounts, expectedRowCounts);
-          assert.deepStrictEqual(rowCounts, expectedRowCounts);
-          assert.deepStrictEqual(apiResponse, fakeResponse);
-          done();
-        });
+        transaction.batchUpdate(
+          OBJ_STATEMENTS,
+          (err, rowCounts, apiResponse) => {
+            assert(err instanceof Error);
+            assert.strictEqual(err.code, fakeResponse.status.code);
+            assert.strictEqual(err.message, fakeResponse.status.details);
+            assert.deepStrictEqual(err.rowCounts, expectedRowCounts);
+            assert.deepStrictEqual(rowCounts, expectedRowCounts);
+            assert.deepStrictEqual(apiResponse, fakeResponse);
+            done();
+          }
+        );
 
         const requestCallback = stub.lastCall.args[1];
         setImmediate(requestCallback, null, fakeResponse);
@@ -1213,7 +1269,7 @@ describe('Transaction', () => {
             return {
               values: [{stringValue: key}],
             };
-          })
+          }),
         };
 
         const stub = sandbox.stub(transaction, 'request');
@@ -1238,11 +1294,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1267,11 +1325,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1295,8 +1355,9 @@ describe('Transaction', () => {
       });
 
       it('should return an error if the `id` is not set', done => {
-        const expectedError =
-            new Error('Transaction ID is unknown, nothing to rollback.');
+        const expectedError = new Error(
+          'Transaction ID is unknown, nothing to rollback.'
+        );
 
         delete transaction.id;
 
@@ -1357,11 +1418,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1386,11 +1449,13 @@ describe('Transaction', () => {
         };
 
         const expectedColumns = Object.keys(fakeKeyVals).sort();
-        const expectedValues = [{
-          values: expectedColumns.map(column => {
-            return {stringValue: fakeKeyVals[column]};
-          }),
-        }];
+        const expectedValues = [
+          {
+            values: expectedColumns.map(column => {
+              return {stringValue: fakeKeyVals[column]};
+            }),
+          },
+        ];
 
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1411,10 +1476,7 @@ describe('Transaction', () => {
         const stub = sandbox.stub(transaction, 'request');
 
         const fakeTable = 'my-table-123';
-        const rows = [
-          {name: 'dave', id: '1'},
-          {name: 'stephen', id: '2'},
-        ];
+        const rows = [{name: 'dave', id: '1'}, {name: 'stephen', id: '2'}];
 
         const expectedColumns = Object.keys(rows[0]).sort();
         const expectedValues = rows.map(row => {
@@ -1437,13 +1499,9 @@ describe('Transaction', () => {
 
       it('should throw an error if missing columns', () => {
         const table = 'my-table-123';
-        const rows = [
-          {name: 'dave', id: '1'},
-          {name: 'stephen'},
-        ];
+        const rows = [{name: 'dave', id: '1'}, {name: 'stephen'}];
 
-        const errorRegExp =
-            /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns\: \[\"id\"\]/;
+        const errorRegExp = /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns\: \[\"id\"\]/;
 
         assert.throws(() => transaction.insert(table, rows), errorRegExp);
       });
