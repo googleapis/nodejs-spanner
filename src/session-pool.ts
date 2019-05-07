@@ -16,7 +16,7 @@
 
 import {EventEmitter} from 'events';
 import * as is from 'is';
-import PQueue from 'p-queue';
+import * as PQueue from 'p-queue';
 import trace = require('stack-trace');
 
 import {Database} from './database';

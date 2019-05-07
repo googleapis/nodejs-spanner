@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as events from 'events';
 import * as extend from 'extend';
-import PQueue from 'p-queue';
+import * as PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import stackTrace = require('stack-trace');
