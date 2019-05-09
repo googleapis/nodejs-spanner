@@ -121,13 +121,13 @@ class InstanceAdminClient {
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
     this._pathTemplates = {
-      projectPathTemplate: new gax.PathTemplate('projects/{project}'),
-      instanceConfigPathTemplate: new gax.PathTemplate(
-        'projects/{project}/instanceConfigs/{instance_config}'
-      ),
       instancePathTemplate: new gax.PathTemplate(
         'projects/{project}/instances/{instance}'
       ),
+      instanceConfigPathTemplate: new gax.PathTemplate(
+        'projects/{project}/instanceConfigs/{instance_config}'
+      ),
+      projectPathTemplate: new gax.PathTemplate('projects/{project}'),
     };
 
     // Some of the methods on this service return "paged" results,
@@ -1142,8 +1142,7 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being specified.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {Object} request.policy
    *   REQUIRED: The complete policy to be applied to the `resource`. The size of
    *   the policy is limited to a few 10s of KB. An empty policy is a
@@ -1213,8 +1212,7 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being requested.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
@@ -1273,8 +1271,7 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy detail is being requested.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {string[]} request.permissions
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
@@ -1336,14 +1333,16 @@ class InstanceAdminClient {
   // --------------------
 
   /**
-   * Return a fully-qualified project resource name string.
+   * Return a fully-qualified instance resource name string.
    *
    * @param {String} project
+   * @param {String} instance
    * @returns {String}
    */
-  projectPath(project) {
-    return this._pathTemplates.projectPathTemplate.render({
+  instancePath(project, instance) {
+    return this._pathTemplates.instancePathTemplate.render({
       project: project,
+      instance: instance,
     });
   }
 
@@ -1362,28 +1361,38 @@ class InstanceAdminClient {
   }
 
   /**
-   * Return a fully-qualified instance resource name string.
+   * Return a fully-qualified project resource name string.
    *
    * @param {String} project
-   * @param {String} instance
    * @returns {String}
    */
-  instancePath(project, instance) {
-    return this._pathTemplates.instancePathTemplate.render({
+  projectPath(project) {
+    return this._pathTemplates.projectPathTemplate.render({
       project: project,
-      instance: instance,
     });
   }
 
   /**
-   * Parse the projectName from a project resource.
+   * Parse the instanceName from a instance resource.
    *
-   * @param {String} projectName
-   *   A fully-qualified path representing a project resources.
+   * @param {String} instanceName
+   *   A fully-qualified path representing a instance resources.
    * @returns {String} - A string representing the project.
    */
-  matchProjectFromProjectName(projectName) {
-    return this._pathTemplates.projectPathTemplate.match(projectName).project;
+  matchProjectFromInstanceName(instanceName) {
+    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
+  }
+
+  /**
+   * Parse the instanceName from a instance resource.
+   *
+   * @param {String} instanceName
+   *   A fully-qualified path representing a instance resources.
+   * @returns {String} - A string representing the instance.
+   */
+  matchInstanceFromInstanceName(instanceName) {
+    return this._pathTemplates.instancePathTemplate.match(instanceName)
+      .instance;
   }
 
   /**
@@ -1413,26 +1422,14 @@ class InstanceAdminClient {
   }
 
   /**
-   * Parse the instanceName from a instance resource.
+   * Parse the projectName from a project resource.
    *
-   * @param {String} instanceName
-   *   A fully-qualified path representing a instance resources.
+   * @param {String} projectName
+   *   A fully-qualified path representing a project resources.
    * @returns {String} - A string representing the project.
    */
-  matchProjectFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
-  }
-
-  /**
-   * Parse the instanceName from a instance resource.
-   *
-   * @param {String} instanceName
-   *   A fully-qualified path representing a instance resources.
-   * @returns {String} - A string representing the instance.
-   */
-  matchInstanceFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName)
-      .instance;
+  matchProjectFromProjectName(projectName) {
+    return this._pathTemplates.projectPathTemplate.match(projectName).project;
   }
 }
 
