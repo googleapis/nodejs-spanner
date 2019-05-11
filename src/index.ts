@@ -63,6 +63,9 @@ export interface SpannerOptions extends GrpcClientOptions {
  * @namespace google.iam.v1
  */
 /**
+ * @namespace google.type
+ */
+/**
  * @namespace google.protobuf
  */
 /**
