@@ -348,11 +348,7 @@ function writeUsingDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_getting_started_insert]
 }
 
-async function queryDataWithParameter(
-  instanceId,
-  databaseId,
-  projectId
-) {
+async function queryDataWithParameter(instanceId, databaseId, projectId) {
   // [START spanner_query_with_parameter]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -695,11 +691,12 @@ require(`yargs`)
     `queryWithParameter <instanceName> <databaseName> <projectId>`,
     `Query record inserted using DML with a query parameter.`,
     {},
-    opts => queryDataWithParameter(
-      opts.instanceName,
-      opts.databaseName,
-      opts.projectId
-    )
+    opts => 
+      queryDataWithParameter(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
   )
   .command(
     `writeWithTransactionUsingDml <instanceName> <databaseName> <projectId>`,
