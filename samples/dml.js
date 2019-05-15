@@ -691,7 +691,7 @@ require(`yargs`)
     `queryWithParameter <instanceName> <databaseName> <projectId>`,
     `Query record inserted using DML with a query parameter.`,
     {},
-    opts => 
+    opts =>
       queryDataWithParameter(
         opts.instanceName,
         opts.databaseName,
