@@ -348,6 +348,56 @@ function writeUsingDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_getting_started_insert]
 }
 
+async function queryDataWithParameter(instanceId, databaseId, projectId) {
+  // [START spanner_query_with_parameter]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  const query = {
+    sql: `SELECT SingerId, FirstName, LastName
+          FROM Singers WHERE LastName = @lastName`,
+    params: {
+      lastName: 'Garcia',
+    },
+  };
+
+  // Queries rows from the Albums table
+  try {
+    const [rows] = await database.run(query);
+
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${
+          json.LastName
+        }`
+      );
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
+  // [END spanner_query_with_parameter]
+}
+
 function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_getting_started_update]
   // This sample transfers 200,000 from the MarketingBudget field
@@ -638,6 +688,17 @@ require(`yargs`)
     opts => writeUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
+    `queryWithParameter <instanceName> <databaseName> <projectId>`,
+    `Query record inserted using DML with a query parameter.`,
+    {},
+    opts =>
+      queryDataWithParameter(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
+  .command(
     `writeWithTransactionUsingDml <instanceName> <databaseName> <projectId>`,
     `Execute a read-write transaction using DML.`,
     {},
@@ -690,6 +751,9 @@ require(`yargs`)
     `node $0 updateUsingDmlWithStruct "my-instance" "my-database" "my-project-id"`
   )
   .example(`node $0 writeUsingDml "my-instance" "my-database" "my-project-id"`)
+  .example(
+    `node $0 queryWithParameter "my-instance" "my-database" "my-project-id"`
+  )
   .example(
     `node $0 writeWithTransactionUsingDml "my-instance" "my-database" "my-project-id"`
   )

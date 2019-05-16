@@ -71,7 +71,7 @@ const {Spanner} = require('@google-cloud/spanner');
 const projectId = 'YOUR_PROJECT_ID';
 
 // Creates a client
-const spanner = Spanner({
+const spanner = new Spanner({
   projectId: projectId,
 });
 

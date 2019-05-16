@@ -53,9 +53,9 @@
     "predocs-test": "npm run docs"
   },
   "dependencies": {
-    "@google-cloud/common-grpc": "^0.10.0",
+    "@google-cloud/common-grpc": "^1.0.0",
     "@google-cloud/paginator": "^1.0.0",
-    "@google-cloud/precise-date": "^0.1.0",
+    "@google-cloud/precise-date": "^1.0.0",
     "@google-cloud/projectify": "^1.0.0",
     "@google-cloud/promisify": "^1.0.0",
     "@types/stack-trace": "0.0.29",
