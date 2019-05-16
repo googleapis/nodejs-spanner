@@ -416,7 +416,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /SingerId: 6\nSingerId: 7/);
+    assert.match(output, /SingerId: 8\nSingerId: 7\nSingerId: 6/);
   });
 
   // query_with_struct_field_param
@@ -495,6 +495,14 @@ describe('Spanner', () => {
       `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /4 records inserted/);
+  });
+
+  // dml_query_with_parameter
+  it(`should use a parameter query to query record that was inserted using a DML statement`, async () => {
+    const output = execSync(
+      `${dmlCmd} queryWithParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /SingerId: 12, FirstName: Melissa, LastName: Garcia/);
   });
 
   // dml_getting_started_update
