@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { PreciseDate } from '@google-cloud/precise-date';
-import { promisifyAll } from '@google-cloud/promisify';
+import {PreciseDate} from '@google-cloud/precise-date';
+import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import { Snapshot } from './transaction';
-import { Session } from '.';
+import {Snapshot} from './transaction';
+import {Session} from '.';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -149,7 +149,7 @@ class BatchTransaction extends Snapshot {
   createPartitions_(config, callback) {
     const query = extend({}, config.reqOpts, {
       session: this.session.formattedName_,
-      transaction: { id: this.id },
+      transaction: {id: this.id},
     });
     config.reqOpts = extend({}, query);
     delete query.partitionOptions;
@@ -164,7 +164,7 @@ class BatchTransaction extends Snapshot {
       });
 
       if (resp.transaction) {
-        const { id, readTimestamp } = resp.transaction;
+        const {id, readTimestamp} = resp.transaction;
 
         this.id = id;
 
@@ -340,4 +340,4 @@ promisifyAll(BatchTransaction, {
   exclude: ['identifier'],
 });
 
-export { BatchTransaction };
+export {BatchTransaction};

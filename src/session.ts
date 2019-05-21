@@ -20,8 +20,8 @@
 
 'use strict';
 
-import { ServiceObject } from '@google-cloud/common-grpc';
-import { promisifyAll } from '@google-cloud/promisify';
+import {ServiceObject} from '@google-cloud/common-grpc';
+import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as r from 'request';
 import {
@@ -30,26 +30,28 @@ import {
   PartitionedDml,
   TimestampBounds,
 } from './transaction';
-import { Database } from './database';
+import {Database} from './database';
 import {
   ServiceObjectConfig,
   DeleteCallback,
   Metadata,
   MetadataCallback,
 } from '@google-cloud/common';
-import { google as spanner_client } from '../proto/spanner';
+import {google as spanner_client} from '../proto/spanner';
 
 export type GetSessionResponse = [Session, r.Response];
 
 export interface CreateSessionCallback {
-  (err: Error | null | undefined,
+  (
+    err: Error | null | undefined,
     session: Session | null,
-    apiResponse: spanner_client.spanner.v1.Session): void;
+    apiResponse: spanner_client.spanner.v1.Session
+  ): void;
 }
 
 export interface CreateSessionOptions {
   name?: string | null;
-  labels?: ({ [k: string]: string } | null);
+  labels?: {[k: string]: string} | null;
 }
 
 /**
@@ -224,7 +226,11 @@ export class Session extends ServiceObject {
             : callback;
         return database.createSession(
           options,
-          (err: Error | null | undefined, session: Session | null, apiResponse: spanner_client.spanner.v1.Session) => {
+          (
+            err: Error | null | undefined,
+            session: Session | null,
+            apiResponse: spanner_client.spanner.v1.Session
+          ) => {
             if (err) {
               callback(err, null, apiResponse);
               return;
