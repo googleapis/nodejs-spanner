@@ -400,7 +400,7 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
 
 function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_getting_started_update]
-  // This sample transfers 200,000 from the MarketingBudget field
+  // This sample transfers 100,000 from the MarketingBudget field
   // of the first Album to the second Album. Make sure to run the
   // addColumn and updateData samples first (in that order).
 
@@ -423,8 +423,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const transferAmount = 200000;
-  const minimumAmountToTransfer = 300000;
+  const transferAmount = 100000;
 
   database.runTransaction((err, transaction) => {
     if (err) {
@@ -447,9 +446,9 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
         console.log(`The first album's marketing budget: ${firstBudget}`);
 
         // Makes sure the first album's budget is sufficient
-        if (firstBudget < minimumAmountToTransfer) {
+        if (firstBudget < transferAmount) {
           throw new Error(
-            `The first album's budget (${firstBudget}) is less than the minimum required amount to transfer.`
+            `The first album's budget (${firstBudget}) is less than the transfer amount (${transferAmount}).`
           );
         }
       }),
@@ -463,14 +462,14 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
       }),
     ])
       .then(() => {
-        // Transfer the budgets between the albums
+        // Transfers the budgets between the albums
         console.log(firstBudget, secondBudget);
         secondBudget += transferAmount;
         firstBudget -= transferAmount;
 
         console.log(firstBudget, secondBudget);
 
-        // Update the database
+        // Updates the database
         // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
         // must be converted (back) to strings before being inserted as INT64s.
 
@@ -502,7 +501,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
         console.error('ERROR:', err);
       })
       .then(() => {
-        // Close the database when finished.
+        // Closes the database when finished
         database.close();
       });
   });

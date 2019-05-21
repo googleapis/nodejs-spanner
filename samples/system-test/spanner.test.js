@@ -286,13 +286,13 @@ describe('Spanner', () => {
     assert.match(output, /The second album's marketing budget: 500000/);
     assert.match(
       output,
-      /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
+      /Successfully executed read-write transaction to transfer 100000 from Album 1 to Album 2./
     );
     output = execSync(
       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
-    assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
+    assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: null/);
+    assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 600000/);
   });
 
   // create_query_partitions
@@ -512,7 +512,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
+      /Successfully executed read-write transaction using DML to transfer 100000 from Album 1 to Album 2/
     );
   });
 

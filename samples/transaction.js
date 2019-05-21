@@ -90,9 +90,10 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
 
 function readWriteTransaction(instanceId, databaseId, projectId) {
   // [START spanner_read_write_transaction]
-  // This sample transfers 200,000 from the MarketingBudget field
-  // of the second Album to the first Album. Make sure to run the
-  // addColumn and updateData samples first (in that order).
+  // This sample transfers 100,000 from the MarketingBudget field
+  // of the first Album to the second Album, as long as the second
+  // Album already has the minimum required amount. Make sure to
+  // run the addColumn and updateData samples first (in that order).
 
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -113,7 +114,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const transferAmount = 200000;
+  const transferAmount = 100000;
   const minimumAmountToTransfer = 300000;
 
   database.runTransaction(async (err, transaction) => {
@@ -140,10 +141,10 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
         secondBudget = rows[0].MarketingBudget;
         console.log(`The second album's marketing budget: ${secondBudget}`);
 
-        // Makes sure the second album's budget is sufficient
+        // Makes sure the second album's budget meets the required minimum
         if (secondBudget < minimumAmountToTransfer) {
           throw new Error(
-            `The second album's budget (${secondBudget}) is less than the minimum required amount to transfer.`
+            `The second album's budget (${secondBudget}) is less than the required minimum (${minimumAmountToTransfer}).`
           );
         }
       }),
@@ -157,14 +158,22 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
       }),
     ])
       .then(() => {
-        // Transfer the budgets between the albums
         console.log(firstBudget, secondBudget);
-        firstBudget += transferAmount;
-        secondBudget -= transferAmount;
+
+        // Makes sure the first album's budget is sufficient
+        if (firstBudget < transferAmount) {
+          throw new Error(
+            `The first album's budget (${firstBudget}) is less than the transfer amount (${transferAmount}).`
+          );
+        }
+
+        // Transfers the budgets between the albums
+        firstBudget -= transferAmount;
+        secondBudget += transferAmount;
 
         console.log(firstBudget, secondBudget);
 
-        // Update the database
+        // Updates the database
         // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
         // must be converted (back) to strings before being inserted as INT64s.
         transaction.update('Albums', [
@@ -186,14 +195,14 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
+          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 1 to Album 2.`
         );
       })
       .catch(err => {
         console.error('ERROR:', err);
       })
       .then(() => {
-        // Close the database when finished.
+        // Closes the database when finished
         return database.close();
       });
   });
