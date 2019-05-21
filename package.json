@@ -66,7 +66,6 @@
     "google-auth-library": "^4.0.0",
     "google-gax": "^0.26.0",
     "is": "^3.2.1",
-    "lodash.merge": "^4.6.1",
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^1.0.1",
     "p-queue": "^5.0.0",
