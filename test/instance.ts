@@ -23,6 +23,9 @@ import * as proxyquire from 'proxyquire';
 import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 import * as inst from '../src/instance';
+import {Spanner, Database} from '../src';
+import {ServiceError} from 'grpc';
+import * as sinon from 'sinon';
 
 const fakePaginator = {
   paginator: {
@@ -61,13 +64,14 @@ describe('Instance', () => {
   // tslint:disable-next-line variable-name
   let Instance: typeof inst.Instance;
   let instance: inst.Instance;
+  const sandbox = sinon.createSandbox();
 
-  const SPANNER = {
+  const SPANNER = ({
     request: util.noop,
     requestStream: util.noop,
     projectId: 'project-id',
     instances_: new Map(),
-  };
+  } as {}) as Spanner;
 
   const NAME = 'instance-name';
 
@@ -256,6 +260,7 @@ describe('Instance', () => {
         instance.database = (name, poolOptions_) => {
           assert.strictEqual(poolOptions_, poolOptions);
           done();
+          return {} as Database;
         };
 
         instance.createDatabase(PATH, options, assert.ifError);
@@ -315,7 +320,7 @@ describe('Instance', () => {
 
         instance.database = name => {
           assert.strictEqual(name, NAME);
-          return fakeDatabaseInstance;
+          return fakeDatabaseInstance as Database;
         };
 
         instance.createDatabase(NAME, OPTIONS, (err, db, op, resp) => {
@@ -347,9 +352,18 @@ describe('Instance', () => {
       const database = instance.database(NAME, poolOptions);
 
       assert(database instanceof FakeDatabase);
-      assert.strictEqual(database.calledWith_[0], instance);
-      assert.strictEqual(database.calledWith_[1], NAME);
-      assert.strictEqual(database.calledWith_[2], poolOptions);
+      assert.strictEqual(
+        ((database as {}) as FakeDatabase).calledWith_[0],
+        instance
+      );
+      assert.strictEqual(
+        ((database as {}) as FakeDatabase).calledWith_[1],
+        NAME
+      );
+      assert.strictEqual(
+        ((database as {}) as FakeDatabase).calledWith_[2],
+        poolOptions
+      );
       assert.strictEqual(database, cache.get(NAME));
     });
 
@@ -438,9 +452,7 @@ describe('Instance', () => {
     it('should return any non-404 like errors', done => {
       const error = {code: 3};
 
-      instance.getMetadata = callback => {
-        callback(error);
-      };
+      sandbox.stub(instance, 'getMetadata').yields(error);
 
       instance.exists((err, exists) => {
         assert.strictEqual(err, error);
@@ -450,9 +462,7 @@ describe('Instance', () => {
     });
 
     it('should return true if error is absent', done => {
-      instance.getMetadata = callback => {
-        callback(null);
-      };
+      sandbox.stub(instance, 'getMetadata').yields(null);
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -464,9 +474,9 @@ describe('Instance', () => {
     it('should return false if not found error if present', done => {
       const error = {code: 5};
 
-      instance.getMetadata = callback => {
-        callback(error);
-      };
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(callback => callback(error as ServiceError));
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -480,23 +490,19 @@ describe('Instance', () => {
     it('should call getMetadata', done => {
       const options = {};
 
-      instance.getMetadata = () => {
-        done();
-      };
+      sandbox.stub(instance, 'getMetadata').callsFake(() => done());
 
       instance.get(options, assert.ifError);
     });
 
     it('should not require an options object', done => {
-      instance.getMetadata = () => {
-        done();
-      };
+      sandbox.stub(instance, 'getMetadata').callsFake(() => done());
 
       instance.get(assert.ifError);
     });
 
     describe('autoCreate', () => {
-      const error = new ApiError('Error.');
+      const error = new ApiError('Error.') as ServiceError;
       error.code = 5;
 
       const OPTIONS = {
@@ -514,9 +520,9 @@ describe('Instance', () => {
       beforeEach(() => {
         OPERATION.listeners = {};
 
-        instance.getMetadata = callback => {
-          callback(error);
-        };
+        sandbox
+          .stub(instance, 'getMetadata')
+          .callsFake(callback => callback(error));
 
         instance.create = (options, callback) => {
           callback(null, null, OPERATION);
@@ -576,7 +582,7 @@ describe('Instance', () => {
     });
 
     it('should not auto create without error code 5', done => {
-      const error = new Error('Error.');
+      const error = new Error('Error.') as ServiceError;
       // tslint:disable-next-line no-any
       (error as any).code = 'NOT-5';
 
@@ -584,9 +590,9 @@ describe('Instance', () => {
         autoCreate: true,
       };
 
-      instance.getMetadata = callback => {
-        callback(error);
-      };
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(callback => callback(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -599,12 +605,12 @@ describe('Instance', () => {
     });
 
     it('should not auto create unless requested', done => {
-      const error = new ApiError('Error.');
+      const error = new ApiError('Error.') as ServiceError;
       error.code = 5;
 
-      instance.getMetadata = callback => {
-        callback(error);
-      };
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(callback => callback(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -617,11 +623,11 @@ describe('Instance', () => {
     });
 
     it('should return an error from getMetadata', done => {
-      const error = new Error('Error.');
+      const error = new Error('Error.') as ServiceError;
 
-      instance.getMetadata = callback => {
-        callback(error);
-      };
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(callback => callback(error));
 
       instance.get(err => {
         assert.strictEqual(err, error);
@@ -632,9 +638,9 @@ describe('Instance', () => {
     it('should return self and API response', done => {
       const apiResponse = {};
 
-      instance.getMetadata = callback => {
-        callback(null, apiResponse);
-      };
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(callback => callback(null, apiResponse));
 
       instance.get((err, instance_, apiResponse_) => {
         assert.ifError(err);
@@ -724,15 +730,15 @@ describe('Instance', () => {
 
         instance.database = name => {
           assert.strictEqual(name, DATABASES[0].name);
-          return fakeDatabaseInstance;
+          return fakeDatabaseInstance as Database;
         };
 
         instance.getDatabases(QUERY, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
-          const database = args[1].pop();
+          const database = args[1]!.pop();
           assert.strictEqual(database, fakeDatabaseInstance);
-          assert.strictEqual(database.metadata, REQUEST_RESPONSE_ARGS[1][0]);
+          assert.strictEqual(database!.metadata, REQUEST_RESPONSE_ARGS[1][0]);
           assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
           done();
         });

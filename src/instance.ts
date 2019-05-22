@@ -16,13 +16,110 @@
 
 import arrify = require('arrify');
 const common = require('@google-cloud/common-grpc');
-import {ServiceObjectConfig} from '@google-cloud/common';
+import {ServiceObjectConfig, GetConfig, Metadata} from '@google-cloud/common';
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import * as is from 'is';
 import snakeCase = require('lodash.snakecase');
 import {Database} from './database';
+import {google as dbInstanceAdminClient} from '../proto/spanner_instance_admin';
+import {google as dbDatabaseAdminClient} from '../proto/spanner_database_admin';
+import {Operation as GaxOperation} from 'google-gax/build/src/longRunningCalls/longrunning';
+import {SessionPoolOptions, SessionPoolInterface} from './session-pool';
+import {SessionPool, Spanner} from '.';
+import {ServiceError} from 'grpc';
+
+export type IDatabase = dbDatabaseAdminClient.spanner.admin.database.v1.IDatabase;
+export type IInstance = dbInstanceAdminClient.spanner.admin.instance.v1.IInstance;
+export type LongrunningIOperation = dbInstanceAdminClient.longrunning.IOperation;
+
+export type CreateInstanceResponse = [
+  Instance,
+  GaxOperation,
+  LongrunningIOperation
+];
+export type CreateDatabaseResponse = [
+  Database,
+  GaxOperation,
+  LongrunningIOperation
+];
+export type DeleteInstanceResponse = [dbInstanceAdminClient.protobuf.IEmpty];
+export type ExistsInstanceResponse = [boolean];
+export type GetInstanceResponse = [Instance, IInstance];
+export type GetDatabasesResponse = [Database[], LongrunningIOperation];
+export type LongrunningOperationResponse = [
+  GaxOperation,
+  LongrunningIOperation
+];
+
+export interface CreateDatabaseOptions {
+  [k: string]: string | string[] | SessionPoolOptions | SessionPool | undefined;
+  poolOptions?: SessionPoolOptions;
+  poolCtor?: SessionPool;
+  schema?: string;
+  extraStatements?: string[];
+}
+export interface CreateInstanceRequest {
+  config: string;
+  nodes: number;
+}
+export interface GetDatabasesRequest {
+  autoPaginate?: boolean;
+  maxApiCalls?: number;
+  maxResults?: number;
+  pageSize?: number;
+  pageToken?: string;
+}
+export interface QueryObject {
+  [k: string]: string;
+}
+
+export interface CreateInstanceCallback {
+  (
+    err: Error | null,
+    instance: Instance | null,
+    operation: GaxOperation | null,
+    apiResponse: LongrunningIOperation
+  ): void;
+}
+export interface CreateDatabaseCallback {
+  (
+    err: Error | null,
+    database?: Database | null,
+    operation?: GaxOperation | null,
+    apiResponse?: LongrunningIOperation
+  ): void;
+}
+export interface DeleteInstanceCallback {
+  (err: Error | null, apiResponse: dbInstanceAdminClient.protobuf.IEmpty): void;
+}
+export interface ExistsInstanceCallback {
+  (err: Error | null, exists: boolean | null): void;
+}
+export interface GetDatabasesCallback {
+  (
+    err: Error | null,
+    databases?: Database[],
+    apiResponse?: LongrunningIOperation
+  ): void;
+}
+export interface GetInstanceCallback {
+  (err: Error | null, instance?: Instance, apiResponse?: IInstance): void;
+}
+export interface GetInstanceMetadataCallback {
+  (
+    err: ServiceError | null,
+    metadata?: IInstance,
+    apiResponse?: LongrunningIOperation
+  ): void;
+}
+export interface LongRunningOperationCallback {
+  (
+    err: Error | null,
+    operation: GaxOperation,
+    apiResponse: LongrunningIOperation
+  ): void;
+}
 
 /**
  * The {@link Instance} class represents a [Cloud Spanner
@@ -41,7 +138,7 @@ import {Database} from './database';
  * const instance = spanner.instance('my-instance');
  */
 class Instance extends common.ServiceObject {
-  constructor(spanner, name) {
+  constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
       /**
@@ -99,7 +196,11 @@ class Instance extends common.ServiceObject {
        */
       id: name,
       methods,
-      createMethod(_, options, callback) {
+      createMethod(
+        _: {},
+        options: CreateInstanceRequest,
+        callback: CreateInstanceCallback
+      ): void {
         spanner.createInstance(formattedName_, options, callback);
       },
     } as {}) as ServiceObjectConfig);
@@ -108,6 +209,18 @@ class Instance extends common.ServiceObject {
     this.requestStream = spanner.requestStream.bind(spanner);
     this.databases_ = new Map();
   }
+
+  createDatabase(name: string): Promise<CreateDatabaseResponse>;
+  createDatabase(
+    name: string,
+    options: CreateDatabaseOptions
+  ): Promise<CreateDatabaseResponse>;
+  createDatabase(name: string, callback: CreateDatabaseCallback): void;
+  createDatabase(
+    name: string,
+    options: CreateDatabaseOptions,
+    callback: CreateDatabaseCallback
+  ): void;
   /**
    * Config for the new database.
    *
@@ -192,15 +305,21 @@ class Instance extends common.ServiceObject {
    * region_tag:spanner_create_database
    * Full example:
    */
-  createDatabase(name, options?, callback?) {
+  createDatabase(
+    name: string,
+    optionsOrCallback?: CreateDatabaseOptions | CreateDatabaseCallback,
+    cb?: CreateDatabaseCallback
+  ): void | Promise<CreateDatabaseResponse> {
     if (!name) {
       throw new Error('A name is required to create a database.');
     }
-    if (is.function(options)) {
-      callback = options;
-      options = {};
-    }
-    options = options || {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as CreateDatabaseOptions);
+
     const poolOptions = options.poolOptions;
     delete options.poolOptions;
     const poolCtor = options.poolCtor;
@@ -222,7 +341,7 @@ class Instance extends common.ServiceObject {
         method: 'createDatabase',
         reqOpts,
       },
-      (err, operation, resp) => {
+      (err: Error, operation: GaxOperation, resp: LongrunningIOperation) => {
         if (err) {
           callback(err, null, null, resp);
           return;
@@ -232,6 +351,7 @@ class Instance extends common.ServiceObject {
       }
     );
   }
+
   /**
    * Get a reference to a Database object.
    *
@@ -249,7 +369,10 @@ class Instance extends common.ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    */
-  database(name, poolOptions?) {
+  database(
+    name: string,
+    poolOptions?: SessionPoolOptions | SessionPoolInterface
+  ): Database {
     if (!name) {
       throw new Error('A name is required to access a Database object.');
     }
@@ -259,6 +382,9 @@ class Instance extends common.ServiceObject {
     }
     return this.databases_.get(key);
   }
+
+  delete(): Promise<DeleteInstanceResponse>;
+  delete(callback: DeleteInstanceCallback): void;
   /**
    * @typedef {array} DeleteInstanceResponse
    * @property {object} 0 The full API response.
@@ -300,7 +426,9 @@ class Instance extends common.ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback) {
+  delete(
+    callback?: DeleteInstanceCallback
+  ): void | Promise<DeleteInstanceResponse> {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -319,15 +447,18 @@ class Instance extends common.ServiceObject {
             method: 'deleteInstance',
             reqOpts,
           },
-          (err, resp) => {
+          (err: Error, resp: LongrunningIOperation) => {
             if (!err) {
               this.parent.instances_.delete(this.id);
             }
-            callback(err, resp);
+            callback!(err, resp);
           }
         );
       });
   }
+
+  exists(): Promise<ExistsInstanceResponse>;
+  exists(callback: ExistsInstanceCallback): void;
   /**
    * @typedef {array} InstanceExistsResponse
    * @property {boolean} 0 Whether the {@link Instance} exists.
@@ -359,19 +490,25 @@ class Instance extends common.ServiceObject {
    *   const exists = data[0];
    * });
    */
-  exists(callback) {
+  exists(
+    callback?: ExistsInstanceCallback
+  ): void | Promise<ExistsInstanceResponse> {
     const NOT_FOUND = 5;
 
     this.getMetadata(err => {
       if (err && err.code !== NOT_FOUND) {
-        callback(err, null);
+        callback!(err, null);
         return;
       }
 
       const exists = !err || err.code !== NOT_FOUND;
-      callback(null, exists);
+      callback!(null, exists);
     });
   }
+
+  get(options?: GetConfig): Promise<GetInstanceResponse>;
+  get(callback: GetInstanceCallback): void;
+  get(options: GetConfig, callback: GetInstanceCallback): void;
   /**
    * @typedef {array} GetInstanceResponse
    * @property {Instance} 0 The {@link Instance}.
@@ -415,24 +552,39 @@ class Instance extends common.ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  get(options, callback?) {
-    if (is.fn(options)) {
-      callback = options;
-      options = {};
-    }
+  get(
+    optionsOrCallback?: GetConfig | GetInstanceCallback,
+    cb?: GetInstanceCallback
+  ): void | Promise<GetInstanceResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as GetConfig);
+
     this.getMetadata((err, metadata) => {
       if (err) {
         if (err.code === 5 && options.autoCreate) {
-          this.create(options, (err, database, operation) => {
-            if (err) {
-              callback(err);
-              return;
+          this.create(
+            options,
+            (
+              err: ServiceError | null,
+              instance?: Instance,
+              operation?: GaxOperation | null
+            ) => {
+              if (err) {
+                callback(err);
+                return;
+              }
+              operation!
+                .on('error', callback)
+                .on('complete', (metadata: IInstance) => {
+                  this.metadata = metadata;
+                  callback(null, this, metadata);
+                });
             }
-            operation.on('error', callback).on('complete', metadata => {
-              this.metadata = metadata;
-              callback(null, this, metadata);
-            });
-          });
+          );
           return;
         }
         callback(err);
@@ -441,6 +593,16 @@ class Instance extends common.ServiceObject {
       callback(null, this, metadata);
     });
   }
+
+  getDatabases(): Promise<GetDatabasesResponse>;
+  getDatabases(
+    query: GetDatabasesRequest | QueryObject
+  ): Promise<GetDatabasesResponse>;
+  getDatabases(callback: GetDatabasesCallback): void;
+  getDatabases(
+    query: GetDatabasesRequest | QueryObject,
+    callback: GetDatabasesCallback
+  ): void;
   /**
    * Query object for listing databases.
    *
@@ -508,13 +670,18 @@ class Instance extends common.ServiceObject {
    *   const databases = data[0];
    * });
    */
-  // tslint:disable-next-line no-any
-  getDatabases(query?, callback?): any {
+  getDatabases(
+    queryOrCallback?: GetDatabasesRequest | QueryObject | GetDatabasesCallback,
+    cb?: GetDatabasesCallback
+  ): void | Promise<GetDatabasesResponse> {
     const self = this;
-    if (is.fn(query)) {
-      callback = query;
-      query = {};
-    }
+    const callback =
+      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? queryOrCallback
+        : ({} as GetDatabasesRequest);
+
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
     });
@@ -526,18 +693,20 @@ class Instance extends common.ServiceObject {
         gaxOpts: query,
       },
       // tslint:disable-next-line only-arrow-functions
-      function(err, databases) {
+      function(err: Error, databases: IDatabase[]) {
         if (databases) {
           arguments[1] = databases.map(database => {
-            const databaseInstance = self.database(database.name);
+            const databaseInstance = self.database(database.name!);
             databaseInstance.metadata = database;
             return databaseInstance;
           });
         }
-        callback.apply(null, arguments);
+        // tslint:disable-next-line no-any
+        callback.apply(null, arguments as any);
       }
     );
   }
+
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -576,7 +745,7 @@ class Instance extends common.ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(callback) {
+  getMetadata(callback: GetInstanceMetadataCallback): Metadata {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -589,6 +758,9 @@ class Instance extends common.ServiceObject {
       callback
     );
   }
+
+  setMetadata(metadata: Metadata): Promise<LongrunningOperationResponse>;
+  setMetadata(metadata: Metadata, callback: LongRunningOperationCallback): void;
   /**
    * Update the metadata for this instance. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
@@ -632,7 +804,10 @@ class Instance extends common.ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  setMetadata(metadata, callback?) {
+  setMetadata(
+    metadata: Metadata,
+    callback?: LongRunningOperationCallback
+  ): void | Promise<LongrunningOperationResponse> {
     const reqOpts = {
       instance: extend(
         {

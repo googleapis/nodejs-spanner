@@ -127,7 +127,7 @@ describe('TransactionRunner', () => {
     describe('getNextDelay', () => {
       const FAKE_RETRY_INFO = Buffer.from('fake-retry-info');
 
-      const FAKE_ERROR: ServiceError = new Error('err');
+      const FAKE_ERROR = new Error('err') as ServiceError;
       FAKE_ERROR.metadata = new Metadata();
       FAKE_ERROR.metadata.set(RETRY_KEY, FAKE_RETRY_INFO);
 
@@ -165,7 +165,7 @@ describe('TransactionRunner', () => {
         runner.attempts = 5;
         sandbox.stub(global.Math, 'random').returns(random);
 
-        const badError: ServiceError = new Error('err');
+        const badError = new Error('err') as ServiceError;
         badError.metadata = new Metadata();
 
         const expectedDelay = Math.pow(2, 5) * 1000 + Math.floor(random * 1000);
@@ -227,7 +227,7 @@ describe('TransactionRunner', () => {
       });
 
       it('should reject for non-retryable errors', done => {
-        const fakeError: ServiceError = new Error('err');
+        const fakeError = new Error('err') as ServiceError;
         fakeError.code = status.DEADLINE_EXCEEDED;
 
         runFn.rejects(fakeError);
@@ -240,7 +240,7 @@ describe('TransactionRunner', () => {
 
       it('should retry on ABORTED errors', async () => {
         const fakeReturnValue = 11;
-        const fakeError: ServiceError = new Error('err');
+        const fakeError = new Error('err') as ServiceError;
         fakeError.code = status.ABORTED;
 
         runFn.onCall(0).rejects(fakeError);
@@ -260,7 +260,7 @@ describe('TransactionRunner', () => {
 
       it('should retry on UNKNOWN errors', async () => {
         const fakeReturnValue = 12;
-        const fakeError: ServiceError = new Error('err');
+        const fakeError = new Error('err') as ServiceError;
         fakeError.code = status.UNKNOWN;
 
         runFn.onCall(0).rejects(fakeError);
@@ -279,7 +279,7 @@ describe('TransactionRunner', () => {
       });
 
       it('should throw a DeadlineError if the timeout is exceeded', done => {
-        const fakeError: ServiceError = new Error('err');
+        const fakeError = new Error('err') as ServiceError;
         fakeError.code = status.ABORTED;
 
         runFn.onCall(0).rejects(fakeError);
@@ -373,7 +373,7 @@ describe('TransactionRunner', () => {
         });
 
         it('should return non-retryable request errors', async () => {
-          const fakeError: ServiceError = new Error('err');
+          const fakeError = new Error('err') as ServiceError;
           fakeError.code = status.DEADLINE_EXCEEDED;
 
           fakeTransaction.request.withArgs(CONFIG).callsFake((_, callback) => {
@@ -391,7 +391,7 @@ describe('TransactionRunner', () => {
         });
 
         it('should intercept ABORTED request errors', async () => {
-          const fakeError: ServiceError = new Error('err');
+          const fakeError = new Error('err') as ServiceError;
           fakeError.code = status.ABORTED;
 
           fakeTransaction.request
@@ -410,7 +410,7 @@ describe('TransactionRunner', () => {
         });
 
         it('should intercept UNKNOWN request errors', async () => {
-          const fakeError: ServiceError = new Error('err');
+          const fakeError = new Error('err') as ServiceError;
           fakeError.code = status.UNKNOWN;
 
           fakeTransaction.request
@@ -458,7 +458,7 @@ describe('TransactionRunner', () => {
           const fakeStream = through.obj();
           fakeTransaction.requestStream.withArgs(CONFIG).returns(fakeStream);
 
-          const fakeError: ServiceError = new Error('err');
+          const fakeError = new Error('err') as ServiceError;
           fakeError.code = status.DEADLINE_EXCEEDED;
 
           runFn.callsFake((err, transaction) => {
@@ -478,7 +478,7 @@ describe('TransactionRunner', () => {
           const badStream = through.obj();
           const goodStream = through.obj();
 
-          const fakeError: ServiceError = new Error('err');
+          const fakeError = new Error('err') as ServiceError;
           fakeError.code = status.ABORTED;
 
           const fakeData = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
@@ -511,7 +511,7 @@ describe('TransactionRunner', () => {
           const badStream = through.obj();
           const goodStream = through.obj();
 
-          const fakeError: ServiceError = new Error('err');
+          const fakeError = new Error('err') as ServiceError;
           fakeError.code = status.UNKNOWN;
 
           const fakeData = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
