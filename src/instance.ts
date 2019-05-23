@@ -24,6 +24,8 @@ import * as is from 'is';
 import snakeCase = require('lodash.snakecase');
 import {Database} from './database';
 import {SessionPoolOptions, SessionPool} from './session-pool';
+import {Operation as GaxOperation} from 'google-gax/build/src/longRunningCalls/longrunning';
+import {google as database_admin_client} from '../proto/spanner_database_admin';
 
 export interface CreateDatabaseOptions {
   [k: string]: string | string[] | SessionPoolOptions | SessionPool | undefined;
@@ -31,6 +33,15 @@ export interface CreateDatabaseOptions {
   poolCtor?: SessionPool;
   schema?: string;
   extraStatements?: string[];
+}
+
+export interface CreateDatabaseCallback {
+  (
+    err: Error | null,
+    database?: Database | null,
+    operation?: GaxOperation | null,
+    apiResponse?: database_admin_client.longrunning.Operations
+  ): void;
 }
 
 /**

@@ -224,22 +224,15 @@ export class Session extends ServiceObject {
           typeof optionsOrCallback === 'function'
             ? (optionsOrCallback as CreateSessionCallback)
             : callback;
-        return database.createSession(
-          options,
-          (
-            err: Error | null | undefined,
-            session: Session | null,
-            apiResponse: spanner_client.spanner.v1.ISession
-          ) => {
-            if (err) {
-              callback(err, null, apiResponse);
-              return;
-            }
-
-            extend(this, session);
-            callback(null, this, apiResponse);
+        return database.createSession(options, (err, session, apiResponse) => {
+          if (err) {
+            callback(err, null, apiResponse);
+            return;
           }
-        );
+
+          extend(this, session);
+          callback(null, this, apiResponse);
+        });
       },
     } as {}) as ServiceObjectConfig);
 

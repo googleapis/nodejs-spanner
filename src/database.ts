@@ -33,7 +33,11 @@ import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax/build/src/longRunningCalls/longrunning';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as database_admin_client} from '../proto/spanner_database_admin';
-import {Instance} from './instance';
+import {
+  Instance,
+  CreateDatabaseOptions,
+  CreateDatabaseCallback,
+} from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session, CreateSessionCallback, CreateSessionOptions} from './session';
 import {
@@ -221,8 +225,8 @@ class Database extends ServiceObject {
       methods,
       createMethod: (
         _: {},
-        options: spanner_client.spanner.v1.ISession | CreateSessionCallback,
-        callback: CreateSessionCallback
+        options: CreateDatabaseOptions,
+        callback: CreateDatabaseCallback
       ) => {
         return instance.createDatabase(formattedName_, options, callback);
       },
@@ -364,10 +368,7 @@ class Database extends ServiceObject {
         callback!(err, null, resp);
         return;
       }
-      const transaction = this.batchTransaction(
-        {session} as TransactionIdentifier,
-        options
-      );
+      const transaction = this.batchTransaction({session: session!}, options);
       transaction.begin((err, resp) => {
         if (err) {
           callback!(err, null, resp as spanner_client.spanner.v1.ISession);
@@ -457,7 +458,7 @@ class Database extends ServiceObject {
         : cb!;
     const gaxOpts =
       typeof optionsOrCallback === 'object' && optionsOrCallback
-        ? (optionsOrCallback as CreateSessionOptions)
+        ? extend({}, optionsOrCallback)
         : ({} as CreateSessionOptions);
 
     const reqOpts: spanner_client.spanner.v1.ICreateSessionRequest = {
@@ -476,7 +477,7 @@ class Database extends ServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err: ServiceError, resp: spanner_client.spanner.v1.ISession) => {
+      (err: Error, resp: spanner_client.spanner.v1.ISession) => {
         if (err) {
           callback(err, null, resp);
           return;
@@ -1165,18 +1166,12 @@ class Database extends ServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getWriteSession(
-      (
-        err: Error | null,
-        session?: Session | null,
-        transaction?: Transaction | null
-      ) => {
-        if (!err) {
-          this._releaseOnEnd(session!, transaction!);
-        }
-        callback!(err, transaction);
+    this.pool_.getWriteSession((err, session, transaction) => {
+      if (!err) {
+        this._releaseOnEnd(session!, transaction!);
       }
-    );
+      callback!(err, transaction);
+    });
   }
 
   makePooledRequest_(config?: MakePooledConfig): Promise<Session>;

@@ -109,7 +109,9 @@ export type BeginPromise = Promise<[spanner_client.spanner.v1.ITransaction]>;
 export interface BeginTransactionCallback {
   (
     err: Error | null,
-    transaction: spanner_client.spanner.v1.ITransaction
+    transaction:
+      | spanner_client.spanner.v1.ITransaction
+      | spanner_client.spanner.v1.ISession
   ): void;
 }
 export type CommitPromise = Promise<[spanner_client.spanner.v1.CommitResponse]>;
