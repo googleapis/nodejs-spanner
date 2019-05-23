@@ -48,8 +48,11 @@ export interface GetReadSessionCallback {
  * @param {Transaction} transaction The transaction object.
  */
 export interface GetWriteSessionCallback {
-  (err: null, session?: Session, transaction?: Transaction): void;
-  (err: Error, session: null, transaction: Transaction | null): void;
+  (
+    err: Error | null,
+    session?: Session | null,
+    transaction?: Transaction | null
+  ): void;
 }
 
 /**

@@ -105,7 +105,13 @@ export interface CommitRequest {
 }
 
 export type BatchUpdatePromise = Promise<[number[], s.ExecuteBatchDmlResponse]>;
-export type BeginPromise = Promise<[spanner_client.spanner.v1.Transaction]>;
+export type BeginPromise = Promise<[spanner_client.spanner.v1.ITransaction]>;
+export interface BeginTransactionCallback {
+  (
+    err: Error | null,
+    transaction: spanner_client.spanner.v1.ITransaction
+  ): void;
+}
 export type CommitPromise = Promise<[spanner_client.spanner.v1.CommitResponse]>;
 export type ReadPromise = Promise<[Rows]>;
 export type RunPromise = Promise<
@@ -250,9 +256,7 @@ export class Snapshot extends EventEmitter {
   }
 
   begin(): BeginPromise;
-  begin(
-    callback: spanner_client.spanner.v1.Spanner.BeginTransactionCallback
-  ): void;
+  begin(callback: BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -291,9 +295,7 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(
-    callback?: spanner_client.spanner.v1.Spanner.BeginTransactionCallback
-  ): void | BeginPromise {
+  begin(callback?: BeginTransactionCallback): void | BeginPromise {
     const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: spanner_client.spanner.v1.IBeginTransactionRequest = {

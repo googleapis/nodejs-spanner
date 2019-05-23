@@ -23,14 +23,14 @@ import * as extend from 'extend';
 import * as is from 'is';
 import snakeCase = require('lodash.snakecase');
 import {Database} from './database';
-import {Any} from './common';
+import {SessionPoolOptions, SessionPool} from './session-pool';
 
 export interface CreateDatabaseOptions {
-  [key: string]: Any;
-  poolOptions?: {};
+  [k: string]: string | string[] | SessionPoolOptions | SessionPool | undefined;
+  poolOptions?: SessionPoolOptions;
+  poolCtor?: SessionPool;
   schema?: string;
-  extraStatements?: string[] | null;
-  poolCtor?: {};
+  extraStatements?: string[];
 }
 
 /**

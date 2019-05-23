@@ -24,7 +24,6 @@ import {Session} from '.';
 export interface TransactionIdentifier {
   session: string | Session;
   transaction?: string;
-  timestamp?: PreciseDate;
   readTimestamp?: PreciseDate;
 }
 

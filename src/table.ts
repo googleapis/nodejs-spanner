@@ -27,17 +27,16 @@ import {SpannerClient as s} from './v1';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {ReadRequest, TimestampBounds} from './transaction';
 import {google as database_admin_client} from '../proto/spanner_database_admin';
+import {Schema} from './common';
 
 export type Key = string | string[];
 
-type Schema = string | string[] | {statements: string[]; operationId?: string};
-
 type CommitPromise = Promise<[s.CommitResponse]>;
 export type CreateTablePromise = Promise<
-  [Table, database_admin_client.longrunning.Operations, GaxOperation]
+  [Table, GaxOperation, database_admin_client.longrunning.IOperation]
 >;
 type DropTablePromise = Promise<
-  [database_admin_client.longrunning.Operations, GaxOperation]
+  [GaxOperation, database_admin_client.longrunning.IOperation]
 >;
 type ReadPromise = Promise<[Array<Row | Json>]>;
 
@@ -46,7 +45,7 @@ export interface CreateTableCallback {
     err: ServiceError | null,
     table: Table | null,
     operation: GaxOperation | null,
-    apiResponse: database_admin_client.longrunning.Operations | null
+    apiResponse: database_admin_client.longrunning.IOperation | null
   ): void;
 }
 
@@ -54,7 +53,7 @@ interface DropTableCallback {
   (
     err: Error | null,
     operation: GaxOperation | null,
-    apiResponse: database_admin_client.longrunning.Operations | null
+    apiResponse: database_admin_client.longrunning.IOperation | null
   ): void;
 }
 

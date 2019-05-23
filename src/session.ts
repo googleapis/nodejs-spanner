@@ -45,7 +45,7 @@ export interface CreateSessionCallback {
   (
     err: Error | null | undefined,
     session: Session | null,
-    apiResponse: spanner_client.spanner.v1.Session
+    apiResponse: spanner_client.spanner.v1.ISession
   ): void;
 }
 
@@ -229,7 +229,7 @@ export class Session extends ServiceObject {
           (
             err: Error | null | undefined,
             session: Session | null,
-            apiResponse: spanner_client.spanner.v1.Session
+            apiResponse: spanner_client.spanner.v1.ISession
           ) => {
             if (err) {
               callback(err, null, apiResponse);
