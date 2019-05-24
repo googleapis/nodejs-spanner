@@ -322,16 +322,6 @@ class Database extends ServiceObject {
     (this.parent as any).databases_.delete(key);
     this.pool_.close(callback);
   }
-
-  createBatchTransaction(
-    options?: TimestampBounds
-  ): Promise<[BatchTransaction, r.Response]>;
-  createBatchTransaction(callback: CreateBatchTransactionCallback): void;
-  createBatchTransaction(
-    options: TimestampBounds,
-    callback: CreateBatchTransactionCallback
-  ): void;
-
   /**
    * @typedef {array} CreateTransactionResponse
    * @property {BatchTransaction} 0 The {@link BatchTransaction}.
@@ -350,6 +340,14 @@ class Database extends ServiceObject {
    * @param {CreateTransactionCallback} [callback] Callback function.
    * @returns {Promise<CreateTransactionResponse>}
    */
+  createBatchTransaction(
+    options?: TimestampBounds
+  ): Promise<[BatchTransaction, r.Response]>;
+  createBatchTransaction(callback: CreateBatchTransactionCallback): void;
+  createBatchTransaction(
+    options: TimestampBounds,
+    callback: CreateBatchTransactionCallback
+  ): void;
   createBatchTransaction(
     optionsOrCallback?: TimestampBounds | CreateBatchTransactionCallback,
     cb?: CreateBatchTransactionCallback
@@ -382,16 +380,6 @@ class Database extends ServiceObject {
       });
     });
   }
-
-  createSession(
-    options: CreateSessionOptions
-  ): Promise<[spanner_client.spanner.v1.Session, r.Response]>;
-  createSession(callback: CreateSessionCallback): void;
-  createSession(
-    options: CreateSessionOptions,
-    callback: CreateSessionCallback
-  ): void;
-
   /**
    * @typedef {array} CreateSessionResponse
    * @property {Session} 0 The newly created session.
@@ -449,6 +437,14 @@ class Database extends ServiceObject {
    * });
    */
   createSession(
+    options: CreateSessionOptions
+  ): Promise<[spanner_client.spanner.v1.Session, r.Response]>;
+  createSession(callback: CreateSessionCallback): void;
+  createSession(
+    options: CreateSessionOptions,
+    callback: CreateSessionCallback
+  ): void;
+  createSession(
     optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
     cb?: CreateSessionCallback
   ): void | Promise<[spanner_client.spanner.v1.Session, r.Response]> {
@@ -488,10 +484,6 @@ class Database extends ServiceObject {
       }
     );
   }
-
-  createTable(schema: Schema): CreateTablePromise;
-  createTable(schema: Schema, callback?: CreateTableCallback): void;
-
   /**
    * @typedef {array} CreateTableResponse
    * @property {Table} 0 The new {@link Table}.
@@ -559,6 +551,8 @@ class Database extends ServiceObject {
    *     // Table created successfully.
    *   });
    */
+  createTable(schema: Schema): CreateTablePromise;
+  createTable(schema: Schema, callback?: CreateTableCallback): void;
   createTable(
     schema: Schema,
     callback?: CreateTableCallback
@@ -594,9 +588,6 @@ class Database extends ServiceObject {
       }
     });
   }
-
-  delete(): Promise<[r.Response]>;
-  delete(callback: DeleteCallback): void;
   /**
    * Delete the database.
    *
@@ -629,7 +620,8 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-
+  delete(): Promise<[r.Response]>;
+  delete(callback: DeleteCallback): void;
   delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
     const reqOpts: database_admin_client.spanner.admin.database.v1.IDropDatabaseRequest = {
       database: this.formattedName_,
@@ -645,9 +637,6 @@ class Database extends ServiceObject {
       );
     });
   }
-
-  exists(): Promise<[boolean]>;
-  exists(callback: ExistsCallback): void;
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
@@ -680,7 +669,8 @@ class Database extends ServiceObject {
    *   const exists = data[0];
    * });
    */
-
+  exists(): Promise<[boolean]>;
+  exists(callback: ExistsCallback): void;
   exists(callback?: ExistsCallback): void | Promise<[boolean]> {
     const NOT_FOUND = 5;
 
@@ -693,10 +683,6 @@ class Database extends ServiceObject {
       callback!(null, exists);
     });
   }
-
-  get(options?: GetConfig): Promise<DatabaseResponse>;
-  get(callback: DatabaseCallback): void;
-  get(options: GetConfig, callback: DatabaseCallback): void;
   /**
    * @typedef {array} GetDatabaseResponse
    * @property {Database} 0 The {@link Database}.
@@ -741,6 +727,9 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
+  get(options?: GetConfig): Promise<DatabaseResponse>;
+  get(callback: DatabaseCallback): void;
+  get(options: GetConfig, callback: DatabaseCallback): void;
   get(
     optionsOrCallback?: GetConfig | DatabaseCallback,
     cb?: DatabaseCallback
@@ -775,9 +764,6 @@ class Database extends ServiceObject {
       callback!(null, this, metadata as r.Response);
     });
   }
-
-  getMetadata(): Promise<GetMetadataResponse>;
-  getMetadata(callback: GetMetadataCallback): void;
   /**
    * @typedef {array} GetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -823,6 +809,8 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
+  getMetadata(): Promise<GetMetadataResponse>;
+  getMetadata(callback: GetMetadataCallback): void;
   getMetadata(
     callback?: GetMetadataCallback
   ): void | Promise<GetMetadataResponse> {
@@ -838,9 +826,6 @@ class Database extends ServiceObject {
       callback!
     );
   }
-
-  getSchema(): Promise<[string[], r.Response]>;
-  getSchema(callback: GetSchemaCallback): void;
   /**
    * @typedef {array} GetSchemaResponse
    * @property {string[]} 0 An array of database DDL statements.
@@ -881,6 +866,8 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
+  getSchema(): Promise<[string[], r.Response]>;
+  getSchema(callback: GetSchemaCallback): void;
   getSchema(
     callback?: GetSchemaCallback
   ): void | Promise<[string[], r.Response]> {
@@ -931,10 +918,6 @@ class Database extends ServiceObject {
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
    */
-
-  getSessions(options?: GetSessionsOptions): Promise<GetSessionsResponse>;
-  getSessions(callback: GetSessionsCallback): void;
-  getSessions(options: GetSessionsOptions, callback: GetSessionsCallback): void;
   /**
    * @typedef {array} GetSessionsResponse
    * @property {Session[]} 0 Array of {@link Session} instances.
@@ -991,6 +974,9 @@ class Database extends ServiceObject {
    *   const sessions = data[0];
    * });
    */
+  getSessions(options?: GetSessionsOptions): Promise<GetSessionsResponse>;
+  getSessions(callback: GetSessionsCallback): void;
+  getSessions(options: GetSessionsOptions, callback: GetSessionsCallback): void;
   getSessions(
     optionsOrCallback?: GetSessionsOptions | GetSessionsCallback,
     cb?: GetSessionsCallback
@@ -1033,10 +1019,6 @@ class Database extends ServiceObject {
       }
     );
   }
-
-  getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
-  getSnapshot(callback: GetSnapshotCallback): void;
-  getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
   /**
    * @typedef {array} GetSnapshotResponse
    * @property {Snapshot} 0 The snapshot object.
@@ -1087,6 +1069,9 @@ class Database extends ServiceObject {
    * region_tag:spanner_read_only_transaction
    * Read-only transaction:
    */
+  getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
+  getSnapshot(callback: GetSnapshotCallback): void;
+  getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
   getSnapshot(
     optionsOrCallback?: TimestampBounds | GetSnapshotCallback,
     cb?: GetSnapshotCallback
@@ -1120,9 +1105,6 @@ class Database extends ServiceObject {
       });
     });
   }
-
-  getTransaction(): Promise<[Transaction]>;
-  getTransaction(callback: GetTransactionCallback): void;
   /**
    * @typedef {array} GetTransactionResponse
    * @property {Transaction} 0 The transaction object.
@@ -1163,6 +1145,8 @@ class Database extends ServiceObject {
    *   const transaction = data[0];
    * });
    */
+  getTransaction(): Promise<[Transaction]>;
+  getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
@@ -1173,13 +1157,6 @@ class Database extends ServiceObject {
       callback!(err, transaction);
     });
   }
-
-  makePooledRequest_(config?: MakePooledConfig): Promise<Session>;
-  makePooledRequest_(callback?: MakePooledRequestCallback): void;
-  makePooledRequest_(
-    config: MakePooledConfig,
-    callback: MakePooledRequestCallback
-  ): void;
   /**
    * Make an API request, first assuring an active session is used.
    *
@@ -1188,6 +1165,12 @@ class Database extends ServiceObject {
    * @param {object} config Request config
    * @param {function} callback Callback function
    */
+  makePooledRequest_(config?: MakePooledConfig): Promise<Session>;
+  makePooledRequest_(callback?: MakePooledRequestCallback): void;
+  makePooledRequest_(
+    config: MakePooledConfig,
+    callback: MakePooledRequestCallback
+  ): void;
   makePooledRequest_(
     configOrCallback?: MakePooledConfig | MakePooledRequestCallback,
     cb?: MakePooledRequestCallback
@@ -1251,7 +1234,7 @@ class Database extends ServiceObject {
           return;
         }
         session = session_!;
-        config.reqOpts.session = session.formattedName_;
+        config.reqOpts.session = session!.formattedName_;
         requestStream = self.requestStream(config);
         requestStream
           .on('error', releaseSession)
@@ -1262,18 +1245,6 @@ class Database extends ServiceObject {
     });
     return waitForSessionStream;
   }
-
-  run(query: string | ExecuteSqlRequest): Promise<Row[]>;
-  run(
-    query: string | ExecuteSqlRequest,
-    options?: TimestampBounds
-  ): Promise<Row[]>;
-  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
-  run(
-    query: string | ExecuteSqlRequest,
-    options: TimestampBounds,
-    callback: RunCallback
-  ): void;
   /**
    * Transaction options.
    *
@@ -1422,6 +1393,17 @@ class Database extends ServiceObject {
    * region_tag:spanner_query_data_with_index
    * Querying data with an index:
    */
+  run(query: string | ExecuteSqlRequest): Promise<Row[]>;
+  run(
+    query: string | ExecuteSqlRequest,
+    options?: TimestampBounds
+  ): Promise<Row[]>;
+  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
+  run(
+    query: string | ExecuteSqlRequest,
+    options: TimestampBounds,
+    callback: RunCallback
+  ): void;
   run(
     query: string | ExecuteSqlRequest,
     optionsOrCallback?: TimestampBounds | RunCallback,
