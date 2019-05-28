@@ -43,7 +43,7 @@ export type GetSessionResponse = [Session, r.Response];
 
 export interface CreateSessionCallback {
   (
-    err: Error | null | undefined,
+    err: Error | null,
     session: Session | null,
     apiResponse: spanner_client.spanner.v1.ISession
   ): void;

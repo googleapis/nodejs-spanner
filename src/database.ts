@@ -129,14 +129,12 @@ type GetSessionsOptions = spanner_client.spanner.v1.IListSessionsRequest &
   CallOptions;
 
 type GetMetadataResponse = [
-  database_admin_client.spanner.admin.database.v1.IDatabase,
-  r.Response
+  database_admin_client.spanner.admin.database.v1.IDatabase
 ];
 interface GetMetadataCallback {
   (
     err: Error | null,
-    metadata?: database_admin_client.spanner.admin.database.v1.IDatabase,
-    resp?: r.Response
+    metadata?: database_admin_client.spanner.admin.database.v1.IDatabase
   ): void;
 }
 
@@ -145,10 +143,19 @@ interface GetSchemaCallback {
 }
 
 interface GetSessionsCallback {
-  (err: Error | null, sessions: Session[], res: r.Response): void;
+  (
+    err: Error | null,
+    sessions?: Session[],
+    nextQuery?: spanner_client.spanner.v1.IListSessionsRequest,
+    apiResponse?: spanner_client.spanner.v1.IListSessionsResponse
+  ): void;
 }
 
-type GetSessionsResponse = [Session[], r.Response];
+type GetSessionsResponse = [
+  Session[],
+  spanner_client.spanner.v1.IListSessionsRequest,
+  spanner_client.spanner.v1.IListSessionsResponse
+];
 
 /**
  * Create a Database object to interact with a Cloud Spanner database.
@@ -752,7 +759,7 @@ class Database extends ServiceObject {
                 .on('error', callback!)
                 .on('complete', (metadata: Metadata) => {
                   this.metadata = metadata;
-                  callback!(null, this, metadata);
+                  callback!(null, this, metadata as r.Response);
                 });
             }
           );
@@ -793,7 +800,7 @@ class Database extends ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    *
-   * database.getMetadata(function(err, metadata, apiResponse) {
+   * database.getMetadata(function(err, metadata) {
    *   if (err) {
    *     // Error handling omitted.
    *   }
@@ -1937,12 +1944,10 @@ class Database extends ServiceObject {
    * Creating a storing index:
    */
   updateSchema(
-    statements:
-      | Schema
-      | database_admin_client.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    statements: Schema,
     callback: UpdateSchemaCallback
   ): Promise<[GaxOperation, database_admin_client.longrunning.IOperation]> {
-    if (!is.object(statements)) {
+    if (typeof statements === 'string' || Array.isArray(statements)) {
       statements = {
         statements: arrify(statements) as string[],
       };
