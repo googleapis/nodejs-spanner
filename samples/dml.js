@@ -400,8 +400,9 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
 
 function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_getting_started_update]
-  // This sample transfers 100,000 from the MarketingBudget field
-  // of the first Album to the second Album. Make sure to run the
+  // This sample transfers 200,000 from the MarketingBudget field
+  // of the second Album to the first Album, as long as the second
+  // Album has enough money in its budget. Make sure to run the
   // addColumn and updateData samples first (in that order).
 
   // Imports the Google Cloud client library
@@ -423,7 +424,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const transferAmount = 100000;
+  const transferAmount = 200000;
 
   database.runTransaction((err, transaction) => {
     if (err) {
@@ -432,40 +433,40 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
     }
     let firstBudget, secondBudget;
     const queryOne = `SELECT MarketingBudget FROM Albums
-      WHERE SingerId = 1 AND AlbumId = 1`;
+      WHERE SingerId = 2 AND AlbumId = 2`;
 
     const queryTwo = `SELECT MarketingBudget FROM Albums
-    WHERE SingerId = 2 AND AlbumId = 2`;
+    WHERE SingerId = 1 AND AlbumId = 1`;
 
     Promise.all([
-      // Reads the first album's budget
-      transaction.run(queryOne).then(results => {
-        // Gets first album's budget
-        const rows = results[0].map(row => row.toJSON());
-        firstBudget = rows[0].MarketingBudget;
-        console.log(`The first album's marketing budget: ${firstBudget}`);
-
-        // Makes sure the first album's budget is sufficient
-        if (firstBudget < transferAmount) {
-          throw new Error(
-            `The first album's budget (${firstBudget}) is less than the transfer amount (${transferAmount}).`
-          );
-        }
-      }),
-
       // Reads the second album's budget
-      transaction.run(queryTwo).then(results => {
+      transaction.run(queryOne).then(results => {
         // Gets second album's budget
         const rows = results[0].map(row => row.toJSON());
         secondBudget = rows[0].MarketingBudget;
         console.log(`The second album's marketing budget: ${secondBudget}`);
+
+        // Makes sure the second album's budget is large enough
+        if (secondBudget < transferAmount) {
+          throw new Error(
+            `The second album's budget (${secondBudget}) is less than the transfer amount (${transferAmount}).`
+          );
+        }
+      }),
+
+      // Reads the first album's budget
+      transaction.run(queryTwo).then(results => {
+        // Gets first album's budget
+        const rows = results[0].map(row => row.toJSON());
+        firstBudget = rows[0].MarketingBudget;
+        console.log(`The first album's marketing budget: ${firstBudget}`);
       }),
     ])
       .then(() => {
         // Transfers the budgets between the albums
         console.log(firstBudget, secondBudget);
-        secondBudget += transferAmount;
-        firstBudget -= transferAmount;
+        firstBudget += transferAmount;
+        secondBudget -= transferAmount;
 
         console.log(firstBudget, secondBudget);
 
@@ -494,7 +495,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 1 to Album 2.`
+          `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 2 to Album 1.`
         );
       })
       .catch(err => {

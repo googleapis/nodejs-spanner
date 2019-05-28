@@ -90,10 +90,10 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
 
 function readWriteTransaction(instanceId, databaseId, projectId) {
   // [START spanner_read_write_transaction]
-  // This sample transfers 100,000 from the MarketingBudget field
-  // of the first Album to the second Album, as long as the second
-  // Album already has the minimum required amount. Make sure to
-  // run the addColumn and updateData samples first (in that order).
+  // This sample transfers 200,000 from the MarketingBudget field
+  // of the second Album to the first Album, as long as the second
+  // Album has enough money in its budget. Make sure to run the
+  // addColumn and updateData samples first (in that order).
 
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -114,8 +114,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const transferAmount = 100000;
-  const minimumAmountToTransfer = 300000;
+  const transferAmount = 200000;
 
   database.runTransaction(async (err, transaction) => {
     if (err) {
@@ -141,10 +140,10 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
         secondBudget = rows[0].MarketingBudget;
         console.log(`The second album's marketing budget: ${secondBudget}`);
 
-        // Makes sure the second album's budget meets the required minimum
-        if (secondBudget < minimumAmountToTransfer) {
+        // Makes sure the second album's budget is large enough
+        if (secondBudget < transferAmount) {
           throw new Error(
-            `The second album's budget (${secondBudget}) is less than the required minimum (${minimumAmountToTransfer}).`
+            `The second album's budget (${secondBudget}) is less than the transfer amount (${transferAmount}).`
           );
         }
       }),
@@ -159,17 +158,9 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
     ])
       .then(() => {
         console.log(firstBudget, secondBudget);
-
-        // Makes sure the first album's budget is sufficient
-        if (firstBudget < transferAmount) {
-          throw new Error(
-            `The first album's budget (${firstBudget}) is less than the transfer amount (${transferAmount}).`
-          );
-        }
-
         // Transfers the budgets between the albums
-        firstBudget -= transferAmount;
-        secondBudget += transferAmount;
+        firstBudget += transferAmount;
+        secondBudget -= transferAmount;
 
         console.log(firstBudget, secondBudget);
 
@@ -195,7 +186,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 1 to Album 2.`
+          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
         );
       })
       .catch(err => {
