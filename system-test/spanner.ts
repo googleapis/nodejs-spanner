@@ -46,7 +46,7 @@ describe('Spanner', () => {
   };
 
   before(async () => {
-    await deleteTestInstances();
+    await deleteOldTestInstances();
     const [, operation] = await instance.create(INSTANCE_CONFIG);
     await operation.promise();
   });
@@ -4396,6 +4396,31 @@ async function deleteTestInstances() {
   const limit = pLimit(5);
   return Promise.all(
     instances.map(instance =>
+      limit(() =>
+        setTimeout(() => {
+          instance.delete();
+        }, 500)
+      )
+    )
+  );
+}
+
+async function deleteOldTestInstances() {
+  const [instances] = await spanner.getInstances();
+  // Leave only instances that contain PREFIX in their name
+  // and where created more that an hour ago.
+  const toDelete = instances.filter(
+    instance =>
+      instance.id.includes(PREFIX) &&
+      (Math.round(Date.now() / 1000) -
+        Number(instance.metadata.labels.created)) /
+        (60 * 60) >
+        1
+  );
+
+  const limit = pLimit(5);
+  return Promise.all(
+    toDelete.map(instance =>
       limit(() =>
         setTimeout(() => {
           instance.delete();
