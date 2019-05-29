@@ -26,7 +26,6 @@ import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisify, promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import * as extend from 'extend';
-import * as is from 'is';
 import * as r from 'request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
@@ -1172,35 +1171,21 @@ class Database extends ServiceObject {
    * @param {object} config Request config
    * @param {function} callback Callback function
    */
-  makePooledRequest_(config?: MakePooledConfig): Promise<Session>;
-  makePooledRequest_(callback?: MakePooledRequestCallback): void;
   makePooledRequest_(
     config: MakePooledConfig,
     callback: MakePooledRequestCallback
-  ): void;
-  makePooledRequest_(
-    configOrCallback?: MakePooledConfig | MakePooledRequestCallback,
-    cb?: MakePooledRequestCallback
-  ): void | Promise<Session> {
+  ) {
     const pool = this.pool_;
-    const callback =
-      typeof configOrCallback === 'function'
-        ? (configOrCallback as MakePooledRequestCallback)
-        : cb;
-    const config =
-      typeof configOrCallback === 'object'
-        ? (configOrCallback as MakePooledConfig)
-        : ({} as MakePooledConfig);
     pool.getReadSession((err, session) => {
       if (err) {
-        callback!(err, null);
+        callback(err, null);
         return;
       }
       config.reqOpts.session = session!.formattedName_;
       // tslint:disable-next-line only-arrow-functions
       this.request(config, function() {
         pool.release(session!);
-        callback!.apply(null, arguments as Any);
+        callback.apply(null, arguments as Any);
       });
     });
   }
