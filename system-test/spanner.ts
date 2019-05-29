@@ -4358,12 +4358,7 @@ function shortUUID() {
 }
 
 function generateName(resourceType) {
-  return (
-    PREFIX +
-    resourceType +
-    '-' +
-    shortUUID()
-  );
+  return PREFIX + resourceType + '-' + shortUUID();
 }
 
 function onPromiseOperationComplete(data) {
