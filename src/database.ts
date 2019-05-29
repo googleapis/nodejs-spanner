@@ -1171,21 +1171,26 @@ class Database extends ServiceObject {
    * @param {object} config Request config
    * @param {function} callback Callback function
    */
+  makePooledRequest_(config: MakePooledConfig): Promise<Session>;
   makePooledRequest_(
     config: MakePooledConfig,
     callback: MakePooledRequestCallback
-  ) {
+  ): void;
+  makePooledRequest_(
+    config: MakePooledConfig,
+    callback?: MakePooledRequestCallback
+  ): void | Promise<Session> {
     const pool = this.pool_;
     pool.getReadSession((err, session) => {
       if (err) {
-        callback(err, null);
+        callback!(err, null);
         return;
       }
       config.reqOpts.session = session!.formattedName_;
       // tslint:disable-next-line only-arrow-functions
       this.request(config, function() {
         pool.release(session!);
-        callback.apply(null, arguments as Any);
+        callback!.apply(null, arguments as Any);
       });
     });
   }
