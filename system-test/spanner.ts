@@ -1233,10 +1233,10 @@ describe('Spanner', () => {
     });
 
     it('should insert and query multiple rows', done => {
-      const id1 = generateName('id');
+      const id1 = generateName('id1');
       const name1 = generateName('name');
 
-      const id2 = generateName('id');
+      const id2 = generateName('id2');
       const name2 = generateName('name');
 
       table.insert(
@@ -1346,7 +1346,7 @@ describe('Spanner', () => {
       });
     });
 
-    describe('insert & query', () => {
+    describe.skip('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
       const FLOAT = 8.2;
@@ -2750,7 +2750,7 @@ describe('Spanner', () => {
       });
     });
 
-    describe('upsert', () => {
+    describe.skip('upsert', () => {
       const ROW = {
         SingerId: generateName('id'),
         Name: generateName('name'),
@@ -2802,7 +2802,7 @@ describe('Spanner', () => {
       });
     });
 
-    describe('read', () => {
+    describe.skip('read', () => {
       const table = database.table('ReadTestTable');
 
       const ALL_COLUMNS = ['Key', 'StringValue'];
@@ -3193,10 +3193,10 @@ describe('Spanner', () => {
     });
 
     it('should insert and query multiple rows', done => {
-      const id1 = generateName('id');
+      const id1 = generateName('id1');
       const name1 = generateName('name');
 
-      const id2 = generateName('id');
+      const id2 = generateName('id2');
       const name2 = generateName('name');
 
       table.insert(
