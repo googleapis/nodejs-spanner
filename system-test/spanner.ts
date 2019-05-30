@@ -1346,7 +1346,7 @@ describe('Spanner', () => {
       });
     });
 
-    describe.skip('insert & query', () => {
+    describe('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
       const FLOAT = 8.2;
@@ -2750,7 +2750,7 @@ describe('Spanner', () => {
       });
     });
 
-    describe.skip('upsert', () => {
+    describe('upsert', () => {
       const ROW = {
         SingerId: generateName('id'),
         Name: generateName('name'),
@@ -2802,7 +2802,7 @@ describe('Spanner', () => {
       });
     });
 
-    describe.skip('read', () => {
+    describe('read', () => {
       const table = database.table('ReadTestTable');
 
       const ALL_COLUMNS = ['Key', 'StringValue'];
