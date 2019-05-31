@@ -1,175 +1,190 @@
 [//]: # "This README.md file is auto-generated, all changes to this file will be lost."
-[//]: # "To regenerate it, use `npm run generate-scaffolding`."
+[//]: # "To regenerate it, use `python -m synthtool`."
 <img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-# Cloud Spanner: Node.js Samples
+# [Cloud Spanner: Node.js Samples](https://github.com/googleapis/nodejs-spanner)
 
 [![Open in Cloud Shell][shell_img]][shell_link]
 
-[Cloud Spanner](https://cloud.google.com/spanner/docs/) is a fully managed, mission-critical, relational database service that offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication for high availability.
+[Cloud Spanner](https://cloud.google.com/spanner/docs/) is a fully managed, mission-critical, relational database service that
+offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with extensions),
+and automatic, synchronous replication for high availability.
 
 ## Table of Contents
 
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
-  * [Schema](#schema)
+  * [Batch](#batch)
   * [CRUD](#crud)
+  * [DML](#dml)
   * [Indexing](#indexing)
-  * [Transactions](#transactions)
+  * [Quickstart](#quickstart)
+  * [Schema](#schema)
+  * [Struct](#struct)
+  * [Timestamp](#timestamp)
+  * [Transaction](#transaction)
 
 ## Before you begin
 
-Before running the samples, make sure you've followed the steps in the
-[Before you begin section](../README.md#before-you-begin) of the client
-library's README.
+Before running the samples, make sure you've followed the steps outlined in
+[Using the client library](https://github.com/googleapis/nodejs-spanner#using-the-client-library).
 
 ## Samples
 
-### Schema
 
-View the [source code][schema_0_code].
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/schema.js,samples/README.md)
+### Batch
 
-__Usage:__ `node schema.js --help`
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/batch.js).
 
-```
-schema.js <command>
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/batch.js,samples/README.md)
 
-Commands:
-  schema.js createDatabase <instanceName> <databaseName>        Creates an example database with two tables in a Cloud
-  <projectId>                                                   Spanner instance.
-  schema.js addColumn <instanceName> <databaseName>             Adds an example MarketingBudget column to an example
-  <projectId>                                                   Cloud Spanner table.
-  schema.js queryNewColumn <instanceName> <databaseName>        Executes a read-only SQL query against an example Cloud
-  <projectId>                                                   Spanner table with an additional column
-                                                                (MarketingBudget) added by addColumn.
+__Usage:__
 
-Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
 
-Examples:
-  node schema.js createDatabase "my-instance" "my-database" "my-project-id"
-  node schema.js addColumn "my-instance" "my-database" "my-project-id"
-  node schema.js queryNewColumn "my-instance" "my-database" "my-project-id"
+`node batch.js`
 
-For more information, see https://cloud.google.com/spanner/docs
-```
 
-[schema_0_docs]: https://cloud.google.com/spanner/docs
-[schema_0_code]: schema.js
+-----
+
+
+
 
 ### CRUD
 
-View the [source code][crud_1_code].
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/crud.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/crud.js,samples/README.md)
 
-__Usage:__ `node crud.js --help`
+__Usage:__
 
-```
-crud.js <command>
 
-Commands:
-  crud.js update <instanceName> <databaseName> <projectId>      Modifies existing rows of data in an example Cloud
-                                                                Spanner table.
-  crud.js query <instanceName> <databaseName> <projectId>       Executes a read-only SQL query against an example Cloud
-                                                                Spanner table.
-  crud.js insert <instanceName> <databaseName> <projectId>      Inserts new rows of data into an example Cloud Spanner
-                                                                table.
-  crud.js read <instanceName> <databaseName> <projectId>        Reads data in an example Cloud Spanner table.
-  crud.js read-stale <instanceName> <databaseName> <projectId>  Reads stale data in an example Cloud Spanner table.
+`node crud.js`
 
-Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
 
-Examples:
-  node crud.js update "my-instance" "my-database" "my-project-id"
-  node crud.js query "my-instance" "my-database" "my-project-id"
-  node crud.js insert "my-instance" "my-database" "my-project-id"
-  node crud.js read "my-instance" "my-database" "my-project-id"
-  node crud.js read-stale "my-instance" "my-database" "my-project-id"
+-----
 
-For more information, see https://cloud.google.com/spanner/docs
-```
 
-[crud_1_docs]: https://cloud.google.com/spanner/docs
-[crud_1_code]: crud.js
+
+
+### DML
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/dml.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml.js`
+
+
+-----
+
+
+
 
 ### Indexing
 
-View the [source code][indexing_2_code].
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/indexing.js,samples/README.md)
 
-__Usage:__ `node indexing.js --help`
+__Usage:__
 
-```
-indexing.js <command>
 
-Commands:
-  indexing.js createIndex <instanceName> <databaseName>         Creates a new index in an example Cloud Spanner table.
-  <projectId>
-  indexing.js createStoringIndex <instanceName> <databaseName>  Creates a new value-storing index in an example Cloud
-  <projectId>                                                   Spanner table.
-  indexing.js queryIndex <instanceName> <databaseName>          Executes a read-only SQL query against an example Cloud
-  <projectId>                                                   Spanner table using an existing index.
-                                                                Returns results with titles between a start title
-                                                                (default: 'Ardvark') and an end title (default: 'Goo').
-  indexing.js readIndex <instanceName> <databaseName>           Reads data from an example Cloud Spanner table using an
-  <projectId>                                                   existing index.
-  indexing.js readStoringIndex <instanceName> <databaseName>    Reads data from an example Cloud Spanner table using an
-  <projectId>                                                   existing storing index.
+`node indexing.js`
 
-Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
 
-Examples:
-  node indexing.js createIndex "my-instance" "my-database" "my-project-id"
-  node indexing.js createStoringIndex "my-instance" "my-database" "my-project-id"
-  node indexing.js queryIndex "my-instance" "my-database" "my-project-id"
-  node indexing.js readIndex "my-instance" "my-database" "my-project-id"
-  node indexing.js readStoringIndex "my-instance" "my-database" "my-project-id"
+-----
 
-For more information, see https://cloud.google.com/spanner/docs
-```
 
-[indexing_2_docs]: https://cloud.google.com/spanner/docs
-[indexing_2_code]: indexing.js
 
-### Transactions
 
-View the [source code][transaction_3_code].
+### Quickstart
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/quickstart.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/quickstart.js,samples/README.md)
+
+__Usage:__
+
+
+`node quickstart.js`
+
+
+-----
+
+
+
+
+### Schema
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/schema.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/schema.js,samples/README.md)
+
+__Usage:__
+
+
+`node schema.js`
+
+
+-----
+
+
+
+
+### Struct
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/struct.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/struct.js,samples/README.md)
+
+__Usage:__
+
+
+`node struct.js`
+
+
+-----
+
+
+
+
+### Timestamp
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/timestamp.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/timestamp.js,samples/README.md)
+
+__Usage:__
+
+
+`node timestamp.js`
+
+
+-----
+
+
+
+
+### Transaction
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction.js,samples/README.md)
 
-__Usage:__ `node transaction.js --help`
+__Usage:__
 
-```
-transaction.js <command>
 
-Commands:
-  transaction.js readOnly <instanceName> <databaseName>         Execute a read-only transaction on an example Cloud
-  <projectId>                                                   Spanner table.
-  transaction.js readWrite <instanceName> <databaseName>        Execute a read-write transaction on an example Cloud
-  <projectId>                                                   Spanner table.
+`node transaction.js`
 
-Options:
-  --version  Show version number                                                                               [boolean]
-  --help     Show help                                                                                         [boolean]
 
-Examples:
-  node transaction.js readOnly "my-instance" "my-database" "my-project-id"
-  node transaction.js readWrite "my-instance" "my-database" "my-project-id"
 
-For more information, see https://cloud.google.com/spanner/docs
-```
 
-[transaction_3_docs]: https://cloud.google.com/spanner/docs
-[transaction_3_code]: transaction.js
+
 
 [shell_img]: https://gstatic.com/cloudssh/images/open-btn.png
 [shell_link]: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/README.md
+[product-docs]: https://cloud.google.com/spanner/docs/
