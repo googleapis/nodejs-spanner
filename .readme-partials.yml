@@ -1,0 +1,4 @@
+introduction: |-
+        [Cloud Spanner](https://cloud.google.com/spanner/docs/) is a fully managed, mission-critical, relational database service that
+        offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with extensions),
+        and automatic, synchronous replication for high availability.

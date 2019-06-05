@@ -45,6 +45,7 @@ const gapic = Object.freeze({
 const gcpApiConfig = require('./spanner_grpc_config.json');
 
 export interface SpannerOptions extends GrpcClientOptions {
+  apiEndpoint?: string;
   servicePath?: string;
   port?: number;
   sslCreds?: ChannelCredentials;
@@ -224,7 +225,10 @@ class Spanner extends Service {
     options = Object.assign({'grpc_gcp.apiConfig': gcpApiConfig}, options);
 
     const config = ({
-      baseUrl: options.servicePath || gapic.v1.SpannerClient.servicePath,
+      baseUrl:
+        options.apiEndpoint ||
+        options.servicePath ||
+        gapic.v1.SpannerClient.servicePath,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
