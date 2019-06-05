@@ -15,6 +15,9 @@
 
 'use strict';
 
+// sample-metadata:
+//  title: CRUD
+
 async function updateData(instanceId, databaseId, projectId) {
   // [START spanner_update_data]
   // Imports the Google Cloud client library

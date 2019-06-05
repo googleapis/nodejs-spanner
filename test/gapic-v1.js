@@ -23,6 +23,27 @@ const error = new Error();
 error.code = FAKE_STATUS_CODE;
 
 describe('InstanceAdminClient', () => {
+  it('has servicePath', () => {
+    const servicePath = spannerModule.v1.InstanceAdminClient.servicePath;
+    assert(servicePath);
+  });
+
+  it('has apiEndpoint', () => {
+    const apiEndpoint = spannerModule.v1.InstanceAdminClient.apiEndpoint;
+    assert(apiEndpoint);
+  });
+
+  it('has port', () => {
+    const port = spannerModule.v1.InstanceAdminClient.port;
+    assert(port);
+    assert(typeof port === 'number');
+  });
+
+  it('should create a client with no options', () => {
+    const client = new spannerModule.v1.InstanceAdminClient();
+    assert(client);
+  });
+
   describe('listInstanceConfigs', () => {
     it('invokes listInstanceConfigs without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
