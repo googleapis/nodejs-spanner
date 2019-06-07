@@ -15,6 +15,9 @@
 
 'use strict';
 
+// sample-metadata:
+//  title: DML
+
 function insertUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_insert]
   // Imports the Google Cloud client library
