@@ -24,10 +24,7 @@ import * as uuid from 'uuid';
 import {Spanner} from '../src';
 
 const PREFIX = 'gcloud-tests-';
-const RUN_ID = uuid
-  .v1()
-  .split('-')
-  .shift(); // get a short uuid
+const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
@@ -1236,10 +1233,10 @@ describe('Spanner', () => {
     });
 
     it('should insert and query multiple rows', done => {
-      const id1 = generateName('id');
+      const id1 = generateName('id1');
       const name1 = generateName('name');
 
-      const id2 = generateName('id');
+      const id2 = generateName('id2');
       const name2 = generateName('name');
 
       table.insert(
@@ -3196,10 +3193,10 @@ describe('Spanner', () => {
     });
 
     it('should insert and query multiple rows', done => {
-      const id1 = generateName('id');
+      const id1 = generateName('id1');
       const name1 = generateName('name');
 
-      const id2 = generateName('id');
+      const id2 = generateName('id2');
       const name2 = generateName('name');
 
       table.insert(
@@ -4353,16 +4350,15 @@ describe('Spanner', () => {
   });
 });
 
+function shortUUID() {
+  return uuid
+    .v4()
+    .split('-')
+    .shift();
+}
+
 function generateName(resourceType) {
-  return (
-    PREFIX +
-    resourceType +
-    '-' +
-    uuid
-      .v1()
-      .split('-')
-      .shift()
-  );
+  return PREFIX + resourceType + '-' + shortUUID();
 }
 
 function onPromiseOperationComplete(data) {
