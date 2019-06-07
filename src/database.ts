@@ -938,18 +938,16 @@ class Database extends ServiceObject {
 
       const snapshot = session.snapshot(options);
 
-      snapshot.begin(
-        (err: null | Error): void => {
-          if (err) {
-            this.pool_.release(session);
-            callback(err);
-            return;
-          }
-
-          this._releaseOnEnd(session, snapshot);
-          callback(err, snapshot);
+      snapshot.begin((err: null | Error): void => {
+        if (err) {
+          this.pool_.release(session);
+          callback(err);
+          return;
         }
-      );
+
+        this._releaseOnEnd(session, snapshot);
+        callback(err, snapshot);
+      });
     });
   }
 
