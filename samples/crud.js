@@ -183,9 +183,7 @@ async function queryData(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
-          json.AlbumTitle
-        }`
+        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
       );
     });
   } catch (err) {
@@ -234,9 +232,7 @@ async function readData(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
-          json.AlbumTitle
-        }`
+        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
       );
     });
   } catch (err) {
