@@ -151,9 +151,7 @@ async function queryDataWithIndex(
         ? json.MarketingBudget
         : null; // This value is nullable
       console.log(
-        `AlbumId: ${json.AlbumId}, AlbumTitle: ${
-          json.AlbumTitle
-        }, MarketingBudget: ${marketingBudget}`
+        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
       );
     });
   } catch (err) {
