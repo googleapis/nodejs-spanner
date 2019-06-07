@@ -512,7 +512,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /Successfully executed read-write transaction using DML to transfer 200000 from Album 1 to Album 2/
+      /Successfully executed read-write transaction using DML to transfer 200000 from Album 2 to Album 1/
     );
   });
 
