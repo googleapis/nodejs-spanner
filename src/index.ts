@@ -36,6 +36,13 @@ import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import {GrpcClientOptions} from 'google-gax';
 import {ChannelCredentials} from 'grpc';
+import {
+  createGcpApiConfig,
+  gcpChannelFactoryOverride,
+  gcpCallInvocationTransformer,
+} from 'grpc-gcp';
+
+const grpc = require('grpc');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -222,7 +229,15 @@ class Spanner extends Service {
     );
 
     // Enable grpc-gcp support
-    options = Object.assign({'grpc_gcp.apiConfig': gcpApiConfig}, options);
+    options = Object.assign(
+      {
+        'grpc.channelFactoryOverride': gcpChannelFactoryOverride,
+        'grpc.callInvocationTransformer': gcpCallInvocationTransformer,
+        'grpc.gcpApiConfig': createGcpApiConfig(gcpApiConfig),
+        grpc,
+      },
+      options
+    );
 
     const config = ({
       baseUrl:
