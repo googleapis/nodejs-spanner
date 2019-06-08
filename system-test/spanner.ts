@@ -43,7 +43,7 @@ describe('Spanner', () => {
   };
 
   before(async () => {
-    await deleteTestInstances();
+    await deleteOldTestInstances();
     const [, operation] = await instance.create(INSTANCE_CONFIG);
     await operation.promise();
   });
@@ -4389,13 +4389,40 @@ async function deleteTestInstances() {
     filter: `labels.${LABEL}:true`,
   });
 
+  return deleteInstanceArray(instances);
+}
+
+async function deleteOldTestInstances() {
+  const [instances] = await spanner.getInstances();
+  const currentTimestampSeconds = Math.round(Date.now() / 1000);
+  // Leave only instances that contain PREFIX in their name
+  // and where created more that an hour ago.
+  function isHourOld(timestampCreated: number) {
+    return (currentTimestampSeconds - timestampCreated) / (60 * 60) > 1;
+  }
+  const toDelete = instances.filter(
+    instance =>
+      instance.id.includes(PREFIX) &&
+      isHourOld(Number(instance.metadata.labels.created))
+  );
+
+  return deleteInstanceArray(toDelete);
+}
+
+function deleteInstanceArray(instanceArray) {
+  /**
+   * Delay to allow instance and its databases to fully clear.
+   * Refer to "Soon afterwards"
+   *  @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+   */
+  const delay = 500;
   const limit = pLimit(5);
   return Promise.all(
-    instances.map(instance =>
+    instanceArray.map(instance =>
       limit(() =>
         setTimeout(() => {
           instance.delete();
-        }, 500)
+        }, delay)
       )
     )
   );
