@@ -24,10 +24,7 @@ import * as uuid from 'uuid';
 import {Spanner} from '../src';
 
 const PREFIX = 'gcloud-tests-';
-const RUN_ID = uuid
-  .v1()
-  .split('-')
-  .shift(); // get a short uuid
+const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
@@ -46,7 +43,7 @@ describe('Spanner', () => {
   };
 
   before(async () => {
-    await deleteTestInstances();
+    await deleteOldTestInstances();
     const [, operation] = await instance.create(INSTANCE_CONFIG);
     await operation.promise();
   });
@@ -1238,10 +1235,10 @@ describe('Spanner', () => {
     });
 
     it('should insert and query multiple rows', done => {
-      const id1 = generateName('id');
+      const id1 = generateName('id1');
       const name1 = generateName('name');
 
-      const id2 = generateName('id');
+      const id2 = generateName('id2');
       const name2 = generateName('name');
 
       table.insert(
@@ -3200,10 +3197,10 @@ describe('Spanner', () => {
     });
 
     it('should insert and query multiple rows', done => {
-      const id1 = generateName('id');
+      const id1 = generateName('id1');
       const name1 = generateName('name');
 
-      const id2 = generateName('id');
+      const id2 = generateName('id2');
       const name2 = generateName('name');
 
       table.insert(
@@ -4358,16 +4355,15 @@ describe('Spanner', () => {
   });
 });
 
+function shortUUID() {
+  return uuid
+    .v4()
+    .split('-')
+    .shift();
+}
+
 function generateName(resourceType) {
-  return (
-    PREFIX +
-    resourceType +
-    '-' +
-    uuid
-      .v1()
-      .split('-')
-      .shift()
-  );
+  return PREFIX + resourceType + '-' + shortUUID();
 }
 
 function onPromiseOperationComplete(data) {
@@ -4398,13 +4394,40 @@ async function deleteTestInstances() {
     filter: `labels.${LABEL}:true`,
   });
 
+  return deleteInstanceArray(instances);
+}
+
+async function deleteOldTestInstances() {
+  const [instances] = await spanner.getInstances();
+  const currentTimestampSeconds = Math.round(Date.now() / 1000);
+  // Leave only instances that contain PREFIX in their name
+  // and where created more that an hour ago.
+  function isHourOld(timestampCreated: number) {
+    return (currentTimestampSeconds - timestampCreated) / (60 * 60) > 1;
+  }
+  const toDelete = instances.filter(
+    instance =>
+      instance.id.includes(PREFIX) &&
+      isHourOld(Number(instance.metadata.labels.created))
+  );
+
+  return deleteInstanceArray(toDelete);
+}
+
+function deleteInstanceArray(instanceArray) {
+  /**
+   * Delay to allow instance and its databases to fully clear.
+   * Refer to "Soon afterwards"
+   *  @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+   */
+  const delay = 500;
   const limit = pLimit(5);
   return Promise.all(
-    instances.map(instance =>
+    instanceArray.map(instance =>
       limit(() =>
         setTimeout(() => {
           instance.delete();
-        }, 500)
+        }, delay)
       )
     )
   );
