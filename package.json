@@ -68,7 +68,7 @@
     "is": "^3.2.1",
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^2.0.0",
-    "p-queue": "^5.0.0",
+    "p-queue": "^6.0.2",
     "protobufjs": "^6.8.6",
     "split-array-stream": "^2.0.0",
     "stack-trace": "0.0.10",
@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^3.0.0",
-    "@types/async": "^2.0.50",
+    "@types/async": "^3.0.0",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.21",
