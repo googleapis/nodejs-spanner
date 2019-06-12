@@ -18,7 +18,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-import {google as spanner_client} from '../proto/spanner';
+import {google as spannerClient} from '../proto/spanner';
 import {SpannerClient as s} from './v1';
 
 // tslint:disable-next-line no-any
@@ -521,7 +521,7 @@ function convertToListValue<T>(value: T): p.IListValue {
  */
 function convertMsToProtoTimestamp(
   ms: number
-): spanner_client.protobuf.ITimestamp {
+): spannerClient.protobuf.ITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
   const nanos = Math.round((rawSeconds - seconds) * 1e9);

@@ -26,17 +26,19 @@ import {Database} from './database';
 import {SpannerClient as s} from './v1';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {ReadRequest, TimestampBounds} from './transaction';
-import {google as database_admin_client} from '../proto/spanner_database_admin';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {Schema} from './common';
 
 export type Key = string | string[];
 
 type CommitPromise = Promise<[s.CommitResponse]>;
-export type CreateTablePromise = Promise<
-  [Table, GaxOperation, database_admin_client.longrunning.IOperation]
->;
+export type CreateTableResponse = [
+  Table,
+  GaxOperation,
+  databaseAdmin.longrunning.IOperation
+];
 type DropTablePromise = Promise<
-  [GaxOperation, database_admin_client.longrunning.IOperation]
+  [GaxOperation, databaseAdmin.longrunning.IOperation]
 >;
 type ReadPromise = Promise<[Array<Row | Json>]>;
 
@@ -45,7 +47,7 @@ export interface CreateTableCallback {
     err: ServiceError | null,
     table: Table | null,
     operation: GaxOperation | null,
-    apiResponse: database_admin_client.longrunning.IOperation | null
+    apiResponse: databaseAdmin.longrunning.IOperation | null
   ): void;
 }
 
@@ -53,7 +55,7 @@ interface DropTableCallback {
   (
     err: Error | null,
     operation: GaxOperation | null,
-    apiResponse: database_admin_client.longrunning.IOperation | null
+    apiResponse: databaseAdmin.longrunning.IOperation | null
   ): void;
 }
 
@@ -145,12 +147,12 @@ class Table {
    *     // Table created successfully.
    *   });
    */
-  create(schema: Schema): CreateTablePromise;
+  create(schema: Schema): Promise<CreateTableResponse>;
   create(schema: Schema, callback: CreateTableCallback): void;
   create(
     schema: Schema,
     callback?: CreateTableCallback
-  ): CreateTablePromise | void {
+  ): Promise<CreateTableResponse> | void {
     this.database.createTable(schema, callback!);
   }
   /**

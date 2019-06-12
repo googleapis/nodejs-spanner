@@ -34,16 +34,16 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
-import {google as spanner_client} from '../proto/spanner';
+import {google as spannerClient} from '../proto/spanner';
 
 export type Rows = Array<Row | Json>;
 
 export interface TimestampBounds {
   strong?: boolean;
-  minReadTimestamp?: PreciseDate | spanner_client.protobuf.ITimestamp;
-  maxStaleness?: number | spanner_client.protobuf.IDuration;
-  readTimestamp?: PreciseDate | spanner_client.protobuf.ITimestamp;
-  exactStaleness?: number | spanner_client.protobuf.IDuration;
+  minReadTimestamp?: PreciseDate | spannerClient.protobuf.ITimestamp;
+  maxStaleness?: number | spannerClient.protobuf.IDuration;
+  readTimestamp?: PreciseDate | spannerClient.protobuf.ITimestamp;
+  exactStaleness?: number | spannerClient.protobuf.IDuration;
   returnReadTimestamp?: boolean;
 }
 
@@ -80,42 +80,34 @@ export interface ReadRequest extends RequestOptions {
   index?: string | null;
   columns?: string[] | null;
   keys?: string[];
-  ranges?: spanner_client.spanner.v1.IKeyRange[];
-  keySet?: spanner_client.spanner.v1.IKeySet | null;
+  ranges?: spannerClient.spanner.v1.IKeyRange[];
+  keySet?: spannerClient.spanner.v1.IKeySet | null;
   limit?: number | Long | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
 }
 
 export interface TransactionSelector {
-  singleUse?: spanner_client.spanner.v1.ITransactionOptions | null;
+  singleUse?: spannerClient.spanner.v1.ITransactionOptions | null;
   id?: Uint8Array | string | null;
-  begin?: spanner_client.spanner.v1.ITransactionOptions | null;
+  begin?: spannerClient.spanner.v1.ITransactionOptions | null;
 }
 
 export interface BatchUpdateError extends ServiceError {
   rowCounts: number[];
 }
 
-export interface CommitRequest {
-  session?: string | null;
-  transactionId?: Uint8Array | string | null;
-  singleUseTransaction?: spanner_client.spanner.v1.ITransactionOptions | null;
-  mutations?: spanner_client.spanner.v1.IMutation[] | null;
-}
+export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
 export type BatchUpdatePromise = Promise<[number[], s.ExecuteBatchDmlResponse]>;
-export type BeginPromise = Promise<[spanner_client.spanner.v1.ITransaction]>;
+export type BeginPromise = Promise<[spannerClient.spanner.v1.ITransaction]>;
 export interface BeginTransactionCallback {
-  (
-    err: Error | null,
-    transaction: spanner_client.spanner.v1.ITransaction
-  ): void;
+  (err: Error | null, transaction: spannerClient.spanner.v1.ITransaction): void;
 }
-export type CommitPromise = Promise<[spanner_client.spanner.v1.CommitResponse]>;
+export type CommitPromise = Promise<[spannerClient.spanner.v1.CommitResponse]>;
 export type ReadPromise = Promise<[Rows]>;
 export type RunPromise = Promise<
-  [Rows, spanner_client.spanner.v1.ResultSetStats]
+  [Rows, spannerClient.spanner.v1.ResultSetStats]
 >;
 export type RunUpdatePromise = Promise<[number]>;
 
@@ -192,12 +184,12 @@ export interface RunUpdateCallback {
  * });
  */
 export class Snapshot extends EventEmitter {
-  protected _options!: spanner_client.spanner.v1.ITransactionOptions;
+  protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   id?: string | Uint8Array | null;
   ended: boolean;
-  metadata?: spanner_client.spanner.v1.Transaction;
+  metadata?: spannerClient.spanner.v1.Transaction;
   readTimestamp?: PreciseDate;
-  readTimestampProto?: spanner_client.protobuf.ITimestamp;
+  readTimestampProto?: spannerClient.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -298,7 +290,7 @@ export class Snapshot extends EventEmitter {
   begin(callback?: BeginTransactionCallback): void | BeginPromise {
     const session = this.session.formattedName_!;
     const options = this._options;
-    const reqOpts: spanner_client.spanner.v1.IBeginTransactionRequest = {
+    const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
     };
@@ -311,7 +303,7 @@ export class Snapshot extends EventEmitter {
       },
       (
         err: null | ServiceError,
-        resp: spanner_client.spanner.v1.Transaction
+        resp: spannerClient.spanner.v1.Transaction
       ) => {
         if (err) {
           callback!(err, resp);
@@ -911,8 +903,8 @@ export class Snapshot extends EventEmitter {
    * @param {ReadRequest} request The read request.
    * @returns {object}
    */
-  static encodeKeySet(request: ReadRequest): spanner_client.spanner.v1.IKeySet {
-    const keySet: spanner_client.spanner.v1.IKeySet = request.keySet || {};
+  static encodeKeySet(request: ReadRequest): spannerClient.spanner.v1.IKeySet {
+    const keySet: spannerClient.spanner.v1.IKeySet = request.keySet || {};
 
     if (request.keys) {
       keySet.keys = arrify(request.keys).map(codec.convertToListValue);
@@ -920,7 +912,7 @@ export class Snapshot extends EventEmitter {
 
     if (request.ranges) {
       keySet.ranges = arrify(request.ranges).map(range => {
-        const encodedRange: spanner_client.spanner.v1.IKeyRange = {};
+        const encodedRange: spannerClient.spanner.v1.IKeyRange = {};
 
         Object.keys(range).forEach(bound => {
           encodedRange[bound] = codec.convertToListValue(range[bound]);
@@ -948,8 +940,8 @@ export class Snapshot extends EventEmitter {
    */
   static encodeTimestampBounds(
     options: TimestampBounds
-  ): spanner_client.spanner.v1.TransactionOptions.IReadOnly {
-    const readOnly: spanner_client.spanner.v1.TransactionOptions.IReadOnly = {};
+  ): spannerClient.spanner.v1.TransactionOptions.IReadOnly {
+    const readOnly: spannerClient.spanner.v1.TransactionOptions.IReadOnly = {};
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
@@ -1147,7 +1139,7 @@ promisifyAll(Dml);
  */
 export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
-  commitTimestampProto?: spanner_client.protobuf.ITimestamp;
+  commitTimestampProto?: spannerClient.protobuf.ITimestamp;
   private _queuedMutations: s.Mutation[];
 
   /**
@@ -1320,7 +1312,7 @@ export class Transaction extends Dml {
   }
 
   commit(): CommitPromise;
-  commit(callback: spanner_client.spanner.v1.Spanner.CommitCallback): void;
+  commit(callback: spannerClient.spanner.v1.Spanner.CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1368,14 +1360,14 @@ export class Transaction extends Dml {
    * });
    */
   commit(
-    callback?: spanner_client.spanner.v1.Spanner.CommitCallback
+    callback?: spannerClient.spanner.v1.Spanner.CommitCallback
   ): void | CommitPromise {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
 
     if (this.id) {
-      reqOpts.transactionId = this.id;
+      reqOpts.transactionId = this.id as Uint8Array;
     } else {
       reqOpts.singleUseTransaction = this._options;
     }
@@ -1386,7 +1378,7 @@ export class Transaction extends Dml {
         method: 'commit',
         reqOpts,
       },
-      (err: null | Error, resp: spanner_client.spanner.v1.CommitResponse) => {
+      (err: null | Error, resp: spannerClient.spanner.v1.CommitResponse) => {
         this.end();
 
         if (resp && resp.commitTimestamp) {

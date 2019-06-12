@@ -22,7 +22,6 @@ import trace = require('stack-trace');
 import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
-import {Any} from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -392,7 +391,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   getWriteSession(callback: GetWriteSessionCallback): void {
     this._acquire(types.ReadWrite).then(
       session => callback(null, session, session.txn!),
-      callback as Any
+      // tslint:disable-next-line: no-any
+      callback as any
     );
   }
 

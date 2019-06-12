@@ -37,7 +37,7 @@ import {
   Metadata,
   MetadataCallback,
 } from '@google-cloud/common';
-import {google as spanner_client} from '../proto/spanner';
+import {google as spannerClient} from '../proto/spanner';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -45,9 +45,13 @@ export interface CreateSessionCallback {
   (
     err: Error | null,
     session: Session | null,
-    apiResponse: spanner_client.spanner.v1.ISession
+    apiResponse: spannerClient.spanner.v1.ISession
   ): void;
 }
+export type CreateSessionResponse = [
+  spannerClient.spanner.v1.Session,
+  spannerClient.spanner.v1.ISession
+];
 
 export interface CreateSessionOptions {
   name?: string | null;
