@@ -212,7 +212,7 @@ const DeleteSessionRequest = {
  *   definition of Type for more information
  *   about SQL types.
  *
- * @property {string} resumeToken
+ * @property {Buffer} resumeToken
  *   If this request is resuming a previously interrupted SQL statement
  *   execution, `resume_token` should be copied from the last
  *   PartialResultSet yielded before the
@@ -230,7 +230,7 @@ const DeleteSessionRequest = {
  *
  *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
  *
- * @property {string} partitionToken
+ * @property {Buffer} partitionToken
  *   If present, results will be restricted to the specified partition
  *   previously created using PartitionQuery().  There must be an exact
  *   match for the values of fields common to this message and the
@@ -562,7 +562,7 @@ const PartitionReadRequest = {
  * Information returned for each partition returned in a
  * PartitionResponse.
  *
- * @property {string} partitionToken
+ * @property {Buffer} partitionToken
  *   This token can be passed to Read, StreamingRead, ExecuteSql, or
  *   ExecuteStreamingSql requests to restrict the results to those identified by
  *   this partition token.
@@ -650,7 +650,7 @@ const PartitionResponse = {
  *   is zero, the default is no limit. A limit cannot be specified if
  *   `partition_token` is set.
  *
- * @property {string} resumeToken
+ * @property {Buffer} resumeToken
  *   If this request is resuming a previously interrupted read,
  *   `resume_token` should be copied from the last
  *   PartialResultSet yielded before the
@@ -658,7 +658,7 @@ const PartitionResponse = {
  *   left off. The rest of the request parameters must exactly match the request
  *   that yielded this token.
  *
- * @property {string} partitionToken
+ * @property {Buffer} partitionToken
  *   If present, results will be restricted to the specified partition
  *   previously created using PartitionRead().    There must be an exact
  *   match for the values of fields common to this message and the
@@ -698,7 +698,7 @@ const BeginTransactionRequest = {
  * @property {string} session
  *   Required. The session in which the transaction to be committed is running.
  *
- * @property {string} transactionId
+ * @property {Buffer} transactionId
  *   Commit a previously-started transaction.
  *
  * @property {Object} singleUseTransaction
@@ -751,7 +751,7 @@ const CommitResponse = {
  * @property {string} session
  *   Required. The session in which the transaction to roll back is running.
  *
- * @property {string} transactionId
+ * @property {Buffer} transactionId
  *   Required. The transaction to roll back.
  *
  * @typedef RollbackRequest
