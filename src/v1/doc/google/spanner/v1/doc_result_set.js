@@ -149,7 +149,7 @@ const ResultSet = {
  *   combined with more values from subsequent `PartialResultSet`s to obtain a
  *   complete field value.
  *
- * @property {string} resumeToken
+ * @property {Buffer} resumeToken
  *   Streaming calls might be interrupted for a variety of reasons, such
  *   as TCP connection loss. If this occurs, the stream of results can
  *   be resumed by re-sending the original request and including

@@ -654,7 +654,7 @@ class SpannerClient {
    *   SQL type for some or all of the SQL statement parameters. See the
    *   definition of Type for more information
    *   about SQL types.
-   * @param {string} [request.resumeToken]
+   * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
    *   PartialResultSet yielded before the
@@ -670,7 +670,7 @@ class SpannerClient {
    *   QueryMode.NORMAL.
    *
    *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
-   * @param {string} [request.partitionToken]
+   * @param {Buffer} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionQuery().  There must be an exact
    *   match for the values of fields common to this message and the
@@ -793,7 +793,7 @@ class SpannerClient {
    *   SQL type for some or all of the SQL statement parameters. See the
    *   definition of Type for more information
    *   about SQL types.
-   * @param {string} [request.resumeToken]
+   * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
    *   PartialResultSet yielded before the
@@ -809,7 +809,7 @@ class SpannerClient {
    *   QueryMode.NORMAL.
    *
    *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
-   * @param {string} [request.partitionToken]
+   * @param {Buffer} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionQuery().  There must be an exact
    *   match for the values of fields common to this message and the
@@ -1022,14 +1022,14 @@ class SpannerClient {
    *   If greater than zero, only the first `limit` rows are yielded. If `limit`
    *   is zero, the default is no limit. A limit cannot be specified if
    *   `partition_token` is set.
-   * @param {string} [request.resumeToken]
+   * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
    *   PartialResultSet yielded before the
    *   interruption. Doing this enables the new read to resume where the last read
    *   left off. The rest of the request parameters must exactly match the request
    *   that yielded this token.
-   * @param {string} [request.partitionToken]
+   * @param {Buffer} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionRead().    There must be an exact
    *   match for the values of fields common to this message and the
@@ -1140,14 +1140,14 @@ class SpannerClient {
    *   If greater than zero, only the first `limit` rows are yielded. If `limit`
    *   is zero, the default is no limit. A limit cannot be specified if
    *   `partition_token` is set.
-   * @param {string} [request.resumeToken]
+   * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
    *   PartialResultSet yielded before the
    *   interruption. Doing this enables the new read to resume where the last read
    *   left off. The rest of the request parameters must exactly match the request
    *   that yielded this token.
-   * @param {string} [request.partitionToken]
+   * @param {Buffer} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionRead().    There must be an exact
    *   match for the values of fields common to this message and the
@@ -1279,7 +1279,7 @@ class SpannerClient {
    *   this list.
    *
    *   This object should have the same structure as [Mutation]{@link google.spanner.v1.Mutation}
-   * @param {string} [request.transactionId]
+   * @param {Buffer} [request.transactionId]
    *   Commit a previously-started transaction.
    * @param {Object} [request.singleUseTransaction]
    *   Execute mutations in a temporary transaction. Note that unlike
@@ -1359,7 +1359,7 @@ class SpannerClient {
    *   The request object that will be sent.
    * @param {string} request.session
    *   Required. The session in which the transaction to roll back is running.
-   * @param {string} request.transactionId
+   * @param {Buffer} request.transactionId
    *   Required. The transaction to roll back.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
@@ -1378,7 +1378,7 @@ class SpannerClient {
    * });
    *
    * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * const transactionId = '';
+   * const transactionId = Buffer.from('');
    * const request = {
    *   session: formattedSession,
    *   transactionId: transactionId,

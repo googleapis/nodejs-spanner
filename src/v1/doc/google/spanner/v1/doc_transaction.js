@@ -439,7 +439,7 @@ const TransactionOptions = {
 /**
  * A transaction.
  *
- * @property {string} id
+ * @property {Buffer} id
  *   `id` may be used to identify the transaction in subsequent
  *   Read,
  *   ExecuteSql,
@@ -482,7 +482,7 @@ const Transaction = {
  *
  *   This object should have the same structure as [TransactionOptions]{@link google.spanner.v1.TransactionOptions}
  *
- * @property {string} id
+ * @property {Buffer} id
  *   Execute the read or SQL query in a previously-started transaction.
  *
  * @property {Object} begin
