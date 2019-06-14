@@ -49,7 +49,7 @@ export interface CreateSessionCallback {
   ): void;
 }
 export type CreateSessionResponse = [
-  spannerClient.spanner.v1.Session,
+  Session,
   spannerClient.spanner.v1.ISession
 ];
 

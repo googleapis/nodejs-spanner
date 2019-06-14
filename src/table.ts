@@ -20,7 +20,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as is from 'is';
 import {ServiceError} from 'grpc';
 import * as through from 'through2';
-import {Operation as GaxOperation} from 'google-gax/build/src/longRunningCalls/longrunning';
+import {Operation as GaxOperation} from 'google-gax';
 import {Json} from './codec';
 import {Database} from './database';
 import {SpannerClient as s} from './v1';
@@ -232,13 +232,13 @@ class Table {
         return;
       }
 
-      snapshot
+      snapshot!
         .createReadStream(this.name, request)
         .on('error', err => {
           proxyStream.destroy(err);
-          snapshot.end();
+          snapshot!.end();
         })
-        .on('end', () => snapshot.end())
+        .on('end', () => snapshot!.end())
         .pipe(proxyStream);
     });
 

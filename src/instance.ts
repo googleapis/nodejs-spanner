@@ -24,7 +24,7 @@ import * as is from 'is';
 import snakeCase = require('lodash.snakecase');
 import {Database} from './database';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {Operation as GaxOperation} from 'google-gax/build/src/longRunningCalls/longrunning';
+import {Operation as GaxOperation} from 'google-gax';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
 
 export interface CreateDatabaseOptions {
@@ -61,6 +61,15 @@ export interface CreateDatabaseCallback {
  * const instance = spanner.instance('my-instance');
  */
 class Instance extends common.ServiceObject {
+  // tslint:disable-next-line: no-any
+  metadata: any;
+  formattedName_: string;
+  // tslint:disable-next-line: no-any
+  request: any;
+  // tslint:disable-next-line: no-any
+  requestStream: any;
+  // tslint:disable-next-line: no-any
+  databases_: Map<any, any>;
   constructor(spanner, name) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {

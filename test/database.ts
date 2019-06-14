@@ -263,7 +263,11 @@ describe('Database', () => {
       FakePool.prototype.on = util.noop;
       FakePool.prototype.open = util.noop;
 
-      const database = new Database(INSTANCE, NAME, FakePool);
+      const database = new Database(
+        INSTANCE,
+        NAME,
+        (FakePool as {}) as db.SessionPoolConstructor
+      );
       assert(database.pool_ instanceof FakePool);
     });
 

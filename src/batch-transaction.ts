@@ -19,12 +19,13 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
+import {google} from '../proto/spanner';
 import {Session} from '.';
 
 export interface TransactionIdentifier {
   session: string | Session;
   transaction?: string;
-  readTimestamp?: PreciseDate;
+  readTimestamp?: string | google.protobuf.ITimestamp;
 }
 
 /**
