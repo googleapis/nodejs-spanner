@@ -29,6 +29,8 @@ const transactionCmd = `node transaction.js`;
 const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
 const dmlCmd = `node dml.js`;
+const datatypesCmd = `node datatypes.js`;
+
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -541,5 +543,99 @@ describe('Spanner', () => {
       output,
       /Successfully executed 2 SQL statements using Batch DML/
     );
+  });
+
+  // create_table_with_datatypes
+  it(`should create Venues example table with supported datatype columns`, async () => {
+    const output = execSync(
+      `${datatypesCmd} createVenuesTable "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp(`Created table Venues in database ${DATABASE_ID}.`)
+    );
+  });
+
+  // insert_datatypes_data
+  it(`should insert multiple records into Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} insertData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Inserted data./);
+  });
+
+  // query_with_array_parameter
+  it(`should use an ARRAY query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithArray ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 19, VenueName: Venue 19, AvailableDate: 2020-11-01/);
+    assert.match(output, /VenueId: 42, VenueName: Venue 42, AvailableDate: 2020-10-01/);
+  });
+
+  // query_with_bool_parameter
+  it(`should use a BOOL query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithBool ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 19, VenueName: Venue 19, OutdoorVenue: true/);
+  });
+
+  // query_with_bytes_parameter
+  it(`should use a BYTES query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithBytes ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 4, VenueName: Venue 4/);
+  });
+
+  // query_with_date_parameter
+  it(`should use a DATE query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithDate ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 4, VenueName: Venue 4, LastContactDate: 2018-09-02/);
+    assert.match(output, /VenueId: 42, VenueName: Venue 42, LastContactDate: 2018-10-01/);
+  });
+
+  // query_with_float_parameter
+  it(`should use a FLOAT64 query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithFloat ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 4, VenueName: Venue 4, PopularityScore: 0.8/);
+    assert.match(output, /VenueId: 19, VenueName: Venue 19, PopularityScore: 0.9/);
+  });
+
+  // query_with_int_parameter
+  it(`should use a INT64 query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithInt ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 19, VenueName: Venue 19, Capacity: 6300/);
+    assert.match(output, /VenueId: 42, VenueName: Venue 42, Capacity: 3000/);
+  });
+
+  // query_with_string_parameter
+  it(`should use a STRING query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithString ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 42, VenueName: Venue 42/);
+  });
+
+  // query_with_timestamp_parameter
+  it(`should use a TIMESTAMP query parameter to query record from the Venues example table`, async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 4, VenueName: Venue 4, LastUpdateTime:/);
+    assert.match(output, /VenueId: 19, VenueName: Venue 19, LastUpdateTime:/);
+    assert.match(output, /VenueId: 42, VenueName: Venue 42, LastUpdateTime:/);
   });
 });
