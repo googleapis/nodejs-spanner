@@ -125,7 +125,8 @@ describe('Instance', () => {
       };
 
       const instance = new Instance(spannerInstance, NAME);
-      instance.request();
+      // tslint:disable-next-line: no-any
+      (instance as any).request();
     });
 
     it('should localize the requestStream function', done => {
@@ -182,7 +183,7 @@ describe('Instance', () => {
 
     const OPTIONS = {
       a: 'b',
-    };
+    } as inst.CreateDatabaseOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
     it('should throw if a name is not provided', () => {
@@ -369,7 +370,7 @@ describe('Instance', () => {
 
     it('should re-use cached objects', () => {
       const cache = instance.databases_;
-      const fakeDatabase = {};
+      const fakeDatabase = {} as Database;
 
       cache.set(NAME, fakeDatabase);
 
@@ -392,7 +393,8 @@ describe('Instance', () => {
           closed = true;
           return Promise.resolve();
         },
-      });
+        // tslint:disable-next-line: no-any
+      } as any);
 
       instance.request = () => {
         assert.strictEqual(closed, true);
@@ -408,7 +410,8 @@ describe('Instance', () => {
         close() {
           return Promise.reject(new Error('err'));
         },
-      });
+        // tslint:disable-next-line: no-any
+      } as any);
 
       instance.request = () => {
         done();
@@ -476,7 +479,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback(error as ServiceError));
+        .callsFake(callback => callback!(error as ServiceError));
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -522,7 +525,7 @@ describe('Instance', () => {
 
         sandbox
           .stub(instance, 'getMetadata')
-          .callsFake(callback => callback(error));
+          .callsFake(callback => callback!(error));
 
         instance.create = (options, callback) => {
           callback(null, null, OPERATION);
@@ -592,7 +595,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback(error));
+        .callsFake(callback => callback!(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -610,7 +613,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback(error));
+        .callsFake(callback => callback!(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -627,7 +630,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback(error));
+        .callsFake(callback => callback!(error));
 
       instance.get(err => {
         assert.strictEqual(err, error);
@@ -636,11 +639,11 @@ describe('Instance', () => {
     });
 
     it('should return self and API response', done => {
-      const apiResponse = {};
+      const apiResponse = {} as inst.Instance;
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback(null, apiResponse));
+        .callsFake(callback => callback!(null, apiResponse));
 
       instance.get((err, instance_, apiResponse_) => {
         assert.ifError(err);
@@ -654,7 +657,7 @@ describe('Instance', () => {
   describe('getDatabases', () => {
     const QUERY = {
       a: 'b',
-    };
+    } as inst.GetDatabasesRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', done => {
@@ -733,7 +736,8 @@ describe('Instance', () => {
           return fakeDatabaseInstance as Database;
         };
 
-        instance.getDatabases(QUERY, (...args) => {
+        // tslint:disable-next-line: no-any
+        instance.getDatabases(QUERY, (...args: any) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const database = args[1]!.pop();
@@ -770,7 +774,7 @@ describe('Instance', () => {
   describe('setMetadata', () => {
     const METADATA = {
       needsToBeSnakeCased: true,
-    };
+    } as inst.IInstance;
     const ORIGINAL_METADATA = extend({}, METADATA);
 
     it('should make and return the request', () => {

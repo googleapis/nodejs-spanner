@@ -33,7 +33,7 @@ import * as through from 'through2';
 
 import {BatchTransaction} from './batch-transaction';
 import {Instance} from './instance';
-import {PartialResultStream} from './partial-result-stream';
+import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -929,16 +929,18 @@ class Database extends ServiceObject {
 
       const snapshot = session.snapshot(options);
 
-      snapshot.begin((err: null | Error): void => {
-        if (err) {
-          this.pool_.release(session);
-          callback(err);
-          return;
-        }
+      snapshot.begin(
+        (err: null | Error): void => {
+          if (err) {
+            this.pool_.release(session);
+            callback(err);
+            return;
+          }
 
-        this._releaseOnEnd(session, snapshot);
-        callback(err, snapshot);
-      });
+          this._releaseOnEnd(session, snapshot);
+          callback(err, snapshot);
+        }
+      );
     });
   }
 
@@ -1213,7 +1215,7 @@ class Database extends ServiceObject {
    * region_tag:spanner_query_data_with_index
    * Querying data with an index:
    */
-  run(query, options, callback) {
+  run(query, options?, callback?): void | Promise<Row[]> {
     const rows: Array<{}> = [];
     if (is.fn(options)) {
       callback = options;
@@ -1245,7 +1247,7 @@ class Database extends ServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runPartitionedUpdate(query, callback) {
+  runPartitionedUpdate(query, callback?): void | Promise<[number]> {
     this.pool_.getReadSession((err, session) => {
       if (err) {
         callback(err, 0);
@@ -1733,7 +1735,7 @@ class Database extends ServiceObject {
    * region_tag:spanner_create_storing_index
    * Creating a storing index:
    */
-  updateSchema(statements, callback) {
+  updateSchema(statements, callback?) {
     if (!is.object(statements)) {
       statements = {
         statements: arrify(statements),

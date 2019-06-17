@@ -22,6 +22,9 @@ import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
 import {Spanner} from '../src';
+import {Key} from '../src/table';
+import {ReadRequest} from '../src/transaction';
+import {Row} from '../src/partial-result-stream';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -51,8 +54,7 @@ describe('Spanner', () => {
   after(deleteTestInstances);
 
   describe('types', () => {
-    // tslint:disable-next-line: no-any
-    const database = instance.database(generateName('database')) as any;
+    const database = instance.database(generateName('database'));
     const table = database.table('TypeCheck');
 
     function insert(insertData, callback) {
@@ -926,8 +928,7 @@ describe('Spanner', () => {
   });
 
   describe('Tables', () => {
-    // tslint:disable-next-line: no-any
-    const database = instance.database(generateName('database')) as any;
+    const database = instance.database(generateName('database'));
     const table = database.table('Singers');
 
     before(() => {
@@ -969,7 +970,7 @@ describe('Spanner', () => {
           SingerId: generateName('id'),
         },
         err => {
-          assert.strictEqual(err.code, 5);
+          assert.strictEqual(err!.code, 5);
           done();
         }
       );
@@ -982,7 +983,7 @@ describe('Spanner', () => {
           Nope: 'abc',
         },
         err => {
-          assert.strictEqual(err.code, 5);
+          assert.strictEqual(err!.code, 5);
           done();
         }
       );
@@ -1185,7 +1186,9 @@ describe('Spanner', () => {
 
       const table = database.table('SingersComposite');
 
-      const keys = [[id1, name1], [id2, name2]];
+      const keys = ([[id1, name1], [id2, name2]] as {}) as Array<
+        string | number
+      >;
 
       return table
         .create(
@@ -1220,7 +1223,7 @@ describe('Spanner', () => {
 
           assert.strictEqual(rows.length, 2);
 
-          return table.deleteRows(keys);
+          return table.deleteRows(keys as Key[]);
         })
         .then(() => {
           return table.read({
@@ -1403,17 +1406,21 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        database
-          .run(
-            {
-              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-              params: {id: ID},
-            },
-            options
-          )
+        const runPromise = database.run(
+          {
+            sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+            params: {id: ID},
+          },
+          options
+        ) as Promise<Row[]>;
+        runPromise
           .then(data => {
             const rows = data[0];
-            assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
+            assert.deepStrictEqual(
+              // tslint:disable-next-line: no-any
+              (rows as any).shift().toJSON(),
+              EXPECTED_ROW
+            );
             done();
           })
           .catch(done);
@@ -3056,7 +3063,7 @@ describe('Spanner', () => {
       ].forEach(test => {
         // test normally
         it(test.test, done => {
-          table.read(test.query, (err, rows) => {
+          table.read(test.query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
           });
@@ -3098,8 +3105,7 @@ describe('Spanner', () => {
       });
 
       it('should read over invalid database fails', done => {
-        // tslint:disable-next-line: no-any
-        const database = instance.database(generateName('invalid')) as any;
+        const database = instance.database(generateName('invalid'));
         const table = database.table('ReadTestTable');
 
         const query = {
@@ -3157,8 +3163,7 @@ describe('Spanner', () => {
   });
 
   describe('SessionPool', () => {
-    // tslint:disable-next-line: no-any
-    const database = instance.database(generateName('database')) as any;
+    const database = instance.database(generateName('database'));
     const table = database.table('Singers');
 
     before(async () => {
@@ -3320,8 +3325,7 @@ describe('Spanner', () => {
   });
 
   describe('Transactions', () => {
-    // tslint:disable-next-line: no-any
-    const database = instance.database(generateName('database')) as any;
+    const database = instance.database(generateName('database'));
     const table = database.table('TxnTable');
 
     const schema = `
@@ -3843,7 +3847,8 @@ describe('Spanner', () => {
             return database.runPartitionedUpdate({
               sql: `UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'`,
               params: {str},
-            });
+              // tslint:disable-next-line: no-any
+            }) as any;
           })
           .then(([rowCount]) => {
             assert.strictEqual(rowCount, count);
@@ -3851,7 +3856,8 @@ describe('Spanner', () => {
             return database.run({
               sql: `SELECT Key FROM TxnTable WHERE StringValue = @str`,
               params: {str},
-            });
+              // tslint:disable-next-line: no-any
+            }) as any;
           })
           .then(([rows]) => {
             assert.strictEqual(rows.length, count);
@@ -3894,7 +3900,7 @@ describe('Spanner', () => {
           let err;
 
           try {
-            await txn.batchUpdate([]);
+            await txn.batchUpdate(null);
           } catch (e) {
             err = e;
           }

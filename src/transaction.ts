@@ -74,7 +74,7 @@ export interface KeyRange {
 
 export interface ReadRequest extends RequestOptions {
   keySet?: s.KeySet;
-  keys?: string[];
+  keys?: Array<string | number>;
   ranges?: KeyRange[];
   index?: string;
   columns?: string[];
@@ -1162,7 +1162,7 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
   }
 
-  batchUpdate(queries: Array<string | Statement>): BatchUpdatePromise;
+  batchUpdate(queries: Array<string | Statement> | null): BatchUpdatePromise;
   batchUpdate(
     queries: Array<string | Statement>,
     callback: BatchUpdateCallback
