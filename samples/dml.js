@@ -387,9 +387,7 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${
-          json.LastName
-        }`
+        `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${json.LastName}`
       );
     });
   } catch (err) {
@@ -620,9 +618,7 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
       const [rowCounts] = await transaction.batchUpdate(dmlStatements);
       await transaction.commit();
       console.log(
-        `Successfully executed ${
-          rowCounts.length
-        } SQL statements using Batch DML.`
+        `Successfully executed ${rowCounts.length} SQL statements using Batch DML.`
       );
     });
   } catch (err) {
