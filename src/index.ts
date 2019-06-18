@@ -384,7 +384,9 @@ class Spanner extends Service {
       delete reqOpts.instance.nodes;
     }
     if (config.config && config.config.indexOf('/') === -1) {
-      reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
+      reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${
+        config.config
+      }`;
     }
     this.request(
       {

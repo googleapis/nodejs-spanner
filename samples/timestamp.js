@@ -157,7 +157,9 @@ async function queryTableWithTimestamp(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, VenueId: ${json.VenueId}, EventDate: ${json.EventDate}, Revenue: ${json.Revenue}, LastUpdateTime: ${json.LastUpdateTime}`
+        `SingerId: ${json.SingerId}, VenueId: ${json.VenueId}, EventDate: ${
+          json.EventDate
+        }, Revenue: ${json.Revenue}, LastUpdateTime: ${json.LastUpdateTime}`
       );
     });
   } catch (err) {

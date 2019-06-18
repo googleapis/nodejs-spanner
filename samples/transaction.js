@@ -52,7 +52,9 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
       qOneRows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+            json.AlbumTitle
+          }`
         );
       });
 
@@ -68,7 +70,9 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
       qTwoRows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${
+            json.AlbumTitle
+          }`
         );
       });
 
