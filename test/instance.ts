@@ -455,7 +455,9 @@ describe('Instance', () => {
     it('should return any non-404 like errors', done => {
       const error = {code: 3};
 
-      sandbox.stub(instance, 'getMetadata').yields(error);
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(cb => cb(error as ServiceError));
 
       instance.exists((err, exists) => {
         assert.strictEqual(err, error);
@@ -465,7 +467,7 @@ describe('Instance', () => {
     });
 
     it('should return true if error is absent', done => {
-      sandbox.stub(instance, 'getMetadata').yields(null);
+      sandbox.stub(instance, 'getMetadata').callsFake(cb => cb(null));
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -639,7 +641,7 @@ describe('Instance', () => {
     });
 
     it('should return self and API response', done => {
-      const apiResponse = {} as inst.Instance;
+      const apiResponse = {} as inst.IInstance;
 
       sandbox
         .stub(instance, 'getMetadata')

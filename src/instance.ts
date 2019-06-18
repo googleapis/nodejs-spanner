@@ -46,6 +46,7 @@ export type CreateDatabaseResponse = [
 export type DeleteInstanceResponse = [instanceAdmin.protobuf.IEmpty];
 export type ExistsInstanceResponse = [boolean];
 export type GetInstanceResponse = [Instance, IInstance];
+export type GetMetadataResponse = [IInstance];
 export type GetDatabasesResponse = PagedResponse<
   Database,
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
@@ -102,6 +103,9 @@ export interface GetInstanceCallback {
     instance?: Instance,
     apiResponse?: IInstance
   ): void;
+}
+export interface GetMetadataCallback {
+  (err: ServiceError | null, metadata?: IInstance): void;
 }
 export interface LongRunningOperationCallback {
   (
@@ -700,8 +704,8 @@ class Instance extends common.ServiceObject {
       }
     );
   }
-  getMetadata(): Promise<GetInstanceResponse>;
-  getMetadata(callback?: GetInstanceCallback): void;
+  getMetadata(): Promise<GetMetadataResponse>;
+  getMetadata(callback: GetMetadataCallback): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -741,8 +745,8 @@ class Instance extends common.ServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetInstanceCallback
-  ): Promise<GetInstanceResponse> | void {
+    callback?: GetMetadataCallback
+  ): Promise<GetMetadataResponse> | void {
     const reqOpts = {
       name: this.formattedName_,
     };
