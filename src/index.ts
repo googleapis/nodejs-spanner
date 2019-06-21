@@ -219,26 +219,19 @@ class Spanner extends Service {
         }
       }
     }
-    options = extend(
+    options = (Object.assign(
       {
         libName: 'gccl',
         libVersion: require('../../package.json').version,
         scopes,
-      },
-      options || {}
-    );
-
-    // Enable grpc-gcp support
-    options = Object.assign(
-      {
+        // Enable grpc-gcp support
         'grpc.channelFactoryOverride': gcpChannelFactoryOverride,
         'grpc.callInvocationTransformer': gcpCallInvocationTransformer,
         'grpc.gcpApiConfig': createGcpApiConfig(gcpApiConfig),
         grpc,
       },
       options
-    );
-
+    ) as {}) as SpannerOptions;
     const config = ({
       baseUrl:
         options.apiEndpoint ||
