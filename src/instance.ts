@@ -51,10 +51,7 @@ export type GetDatabasesResponse = PagedResponse<
   Database,
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
 >;
-export type LongrunningOperationResponse = [
-  GaxOperation,
-  ILongrunningOperation
-];
+export type SetMetadataResponse = [GaxOperation, ILongrunningOperation];
 
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
@@ -107,7 +104,7 @@ export interface GetInstanceCallback {
 export interface GetMetadataCallback {
   (err: ServiceError | null, metadata?: IInstance): void;
 }
-export interface LongRunningOperationCallback {
+export interface SetMetadataCallback {
   (
     err: ServiceError | null,
     operation: GaxOperation,
@@ -760,11 +757,8 @@ class Instance extends common.ServiceObject {
     );
   }
 
-  setMetadata(metadata: IInstance): Promise<LongrunningOperationResponse>;
-  setMetadata(
-    metadata: IInstance,
-    callback: LongRunningOperationCallback
-  ): void;
+  setMetadata(metadata: IInstance): Promise<SetMetadataResponse>;
+  setMetadata(metadata: IInstance, callback: SetMetadataCallback): void;
   /**
    * Update the metadata for this instance. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
@@ -775,7 +769,7 @@ class Instance extends common.ServiceObject {
    * @see [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
    *
    * @param {object} metadata The metadata you wish to set.
-   * @param {LongRunningOperationCallback} [callback] Callback function.
+   * @param {SetMetadataCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
@@ -810,8 +804,8 @@ class Instance extends common.ServiceObject {
    */
   setMetadata(
     metadata: IInstance,
-    callback?: LongRunningOperationCallback
-  ): void | Promise<LongrunningOperationResponse> {
+    callback?: SetMetadataCallback
+  ): void | Promise<SetMetadataResponse> {
     const reqOpts = {
       instance: extend(
         {

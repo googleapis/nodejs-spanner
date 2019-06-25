@@ -452,6 +452,8 @@ describe('Instance', () => {
   });
 
   describe('exists', () => {
+    afterEach(() => sandbox.restore());
+
     it('should return any non-404 like errors', done => {
       const error = {code: 3};
 
