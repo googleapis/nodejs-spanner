@@ -31,7 +31,6 @@ const structCmd = `node struct.js`;
 const dmlCmd = `node dml.js`;
 const datatypesCmd = `node datatypes.js`;
 
-
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
 const INSTANCE_ID = `test-instance-${date}`;
@@ -574,8 +573,14 @@ describe('Spanner', () => {
     const output = execSync(
       `${datatypesCmd} queryWithArray ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /VenueId: 19, VenueName: Venue 19, AvailableDate: 2020-11-01/);
-    assert.match(output, /VenueId: 42, VenueName: Venue 42, AvailableDate: 2020-10-01/);
+    assert.match(
+      output,
+      /VenueId: 19, VenueName: Venue 19, AvailableDate: 2020-11-01/
+    );
+    assert.match(
+      output,
+      /VenueId: 42, VenueName: Venue 42, AvailableDate: 2020-10-01/
+    );
   });
 
   // query_with_bool_parameter
@@ -583,7 +588,10 @@ describe('Spanner', () => {
     const output = execSync(
       `${datatypesCmd} queryWithBool ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /VenueId: 19, VenueName: Venue 19, OutdoorVenue: true/);
+    assert.match(
+      output,
+      /VenueId: 19, VenueName: Venue 19, OutdoorVenue: true/
+    );
   });
 
   // query_with_bytes_parameter
@@ -599,8 +607,14 @@ describe('Spanner', () => {
     const output = execSync(
       `${datatypesCmd} queryWithDate ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /VenueId: 4, VenueName: Venue 4, LastContactDate: 2018-09-02/);
-    assert.match(output, /VenueId: 42, VenueName: Venue 42, LastContactDate: 2018-10-01/);
+    assert.match(
+      output,
+      /VenueId: 4, VenueName: Venue 4, LastContactDate: 2018-09-02/
+    );
+    assert.match(
+      output,
+      /VenueId: 42, VenueName: Venue 42, LastContactDate: 2018-10-01/
+    );
   });
 
   // query_with_float_parameter
@@ -608,8 +622,14 @@ describe('Spanner', () => {
     const output = execSync(
       `${datatypesCmd} queryWithFloat ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /VenueId: 4, VenueName: Venue 4, PopularityScore: 0.8/);
-    assert.match(output, /VenueId: 19, VenueName: Venue 19, PopularityScore: 0.9/);
+    assert.match(
+      output,
+      /VenueId: 4, VenueName: Venue 4, PopularityScore: 0.8/
+    );
+    assert.match(
+      output,
+      /VenueId: 19, VenueName: Venue 19, PopularityScore: 0.9/
+    );
   });
 
   // query_with_int_parameter

@@ -67,6 +67,7 @@ __Usage:__
 
 
 
+
 ### Datatypes
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/datatypes.js).
