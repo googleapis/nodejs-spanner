@@ -28,6 +28,8 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 
+const grpc = require('grpc');
+
 const apiConfig = require('../src/spanner_grpc_config.json');
 
 function getFake(obj: {}) {
@@ -48,6 +50,16 @@ function fakeReplaceProjectIdToken(...args) {
     args
   );
 }
+
+const fakeGrpcGcp = {
+  gcpChannelFactoryOverride: {},
+  gcpCallInvocationTransformer: {},
+  createGcpApiConfig: apiConfig => {
+    return {
+      calledWith_: apiConfig,
+    };
+  },
+};
 
 const fakePaginator = {
   paginator: {
@@ -146,6 +158,7 @@ describe('Spanner', () => {
       'google-auth-library': {
         GoogleAuth: fakeGoogleAuth,
       },
+      'grpc-gcp': fakeGrpcGcp,
       './codec.js': {codec: fakeCodec},
       './instance.js': {Instance: FakeInstance},
       './v1': fakeV1,
@@ -170,6 +183,19 @@ describe('Spanner', () => {
   afterEach(() => sandbox.restore());
 
   describe('instantiation', () => {
+    const EXPECTED_OPTIONS = extend({}, OPTIONS, {
+      libName: 'gccl',
+      libVersion: require('../../package.json').version,
+      scopes: [],
+      grpc,
+      'grpc.callInvocationTransformer':
+        fakeGrpcGcp.gcpCallInvocationTransformer,
+      'grpc.channelFactoryOverride': fakeGrpcGcp.gcpChannelFactoryOverride,
+      'grpc.gcpApiConfig': {
+        calledWith_: apiConfig,
+      },
+    });
+
     it('should localize a cached gapic client map', () => {
       assert(spanner.clients_ instanceof Map);
       assert.strictEqual(spanner.clients_.size, 0);
@@ -189,16 +215,9 @@ describe('Spanner', () => {
     });
 
     it('should create an auth instance from google-auth-library', () => {
-      const expectedOptions = extend({}, OPTIONS, {
-        libName: 'gccl',
-        libVersion: require('../../package.json').version,
-        scopes: [],
-        'grpc_gcp.apiConfig': apiConfig,
-      });
-
       assert.deepStrictEqual(
         getFake(spanner.auth).calledWith_[0],
-        expectedOptions
+        EXPECTED_OPTIONS
       );
     });
 
@@ -210,11 +229,8 @@ describe('Spanner', () => {
 
       const spanner = new Spanner(OPTIONS);
 
-      const expectedOptions = extend({}, OPTIONS, {
-        libName: 'gccl',
-        libVersion: require('../../package.json').version,
+      const expectedOptions = extend({}, EXPECTED_OPTIONS, {
         scopes: expectedScopes,
-        'grpc_gcp.apiConfig': apiConfig,
       });
 
       assert.deepStrictEqual(
@@ -242,15 +258,7 @@ describe('Spanner', () => {
         packageJson: require('../../package.json'),
       });
 
-      assert.deepStrictEqual(
-        options,
-        extend({}, OPTIONS, {
-          libName: 'gccl',
-          libVersion: require('../../package.json').version,
-          scopes: [],
-          'grpc_gcp.apiConfig': apiConfig,
-        })
-      );
+      assert.deepStrictEqual(options, EXPECTED_OPTIONS);
     });
 
     it('should optionally accept a servicePath', () => {
