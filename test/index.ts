@@ -188,7 +188,8 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
-      'grpc.callInvocationTransformer': fakeGrpcGcp.gcpCallInvocationTransformer,
+      'grpc.callInvocationTransformer':
+        fakeGrpcGcp.gcpCallInvocationTransformer,
       'grpc.channelFactoryOverride': fakeGrpcGcp.gcpChannelFactoryOverride,
       'grpc.gcpApiConfig': {
         calledWith_: apiConfig,
@@ -257,10 +258,7 @@ describe('Spanner', () => {
         packageJson: require('../../package.json'),
       });
 
-      assert.deepStrictEqual(
-        options,
-        EXPECTED_OPTIONS
-      );
+      assert.deepStrictEqual(options, EXPECTED_OPTIONS);
     });
 
     it('should optionally accept a servicePath', () => {
