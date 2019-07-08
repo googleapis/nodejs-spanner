@@ -38,8 +38,8 @@ import {GrpcClientOptions} from 'google-gax';
 import {ChannelCredentials} from 'grpc';
 import {
   createGcpApiConfig,
-  gcpChannelFactoryOverride,
   gcpCallInvocationTransformer,
+  gcpChannelFactoryOverride,
 } from 'grpc-gcp';
 
 const grpc = require('grpc');
@@ -225,12 +225,12 @@ class Spanner extends Service {
         libVersion: require('../../package.json').version,
         scopes,
         // Enable grpc-gcp support
-        'grpc.channelFactoryOverride': gcpChannelFactoryOverride,
         'grpc.callInvocationTransformer': gcpCallInvocationTransformer,
+        'grpc.channelFactoryOverride': gcpChannelFactoryOverride,
         'grpc.gcpApiConfig': createGcpApiConfig(gcpApiConfig),
         grpc,
       },
-      options || {},
+      options || {}
     ) as {}) as SpannerOptions;
     const config = ({
       baseUrl:
