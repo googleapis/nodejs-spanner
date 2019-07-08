@@ -230,7 +230,7 @@ class Spanner extends Service {
         'grpc.gcpApiConfig': createGcpApiConfig(gcpApiConfig),
         grpc,
       },
-      options
+      options || {},
     ) as {}) as SpannerOptions;
     const config = ({
       baseUrl:
