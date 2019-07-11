@@ -557,6 +557,17 @@ describe('Transaction', () => {
         assert.strictEqual(gaxOpts, fakeQuery.gaxOptions);
       });
 
+      it('should update the `seqno` for each call', () => {
+        snapshot.runStream(QUERY);
+        const call1 = REQUEST_STREAM.lastCall.args[0];
+
+        snapshot.runStream(QUERY);
+        const call2 = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(call1.reqOpts.seqno, 1);
+        assert.strictEqual(call2.reqOpts.seqno, 2);
+      });
+
       it('should pass a stream to `PartialResultStream`', () => {
         const fakeStream = new EventEmitter();
 
@@ -856,11 +867,8 @@ describe('Transaction', () => {
 
       it('should call through to `run`', () => {
         const fakeQuery = {sql: SQL};
-        const expectedQuery = Object.assign({seqno: 1}, fakeQuery);
 
-        const stub = sandbox
-          .stub(dml, 'run')
-          .withArgs(sinon.match(expectedQuery));
+        const stub = sandbox.stub(dml, 'run').withArgs(fakeQuery);
 
         dml.runUpdate(fakeQuery);
 
@@ -868,7 +876,7 @@ describe('Transaction', () => {
       });
 
       it('should accept a sql string', () => {
-        const expectedQuery = {sql: SQL, seqno: 1};
+        const expectedQuery = {sql: SQL};
 
         const stub = sandbox
           .stub(dml, 'run')
@@ -877,19 +885,6 @@ describe('Transaction', () => {
         dml.runUpdate(SQL);
 
         assert.strictEqual(stub.callCount, 1);
-      });
-
-      it('should update the `seqno` for each call', () => {
-        const stub = sandbox.stub(dml, 'run');
-
-        dml.runUpdate(SQL);
-        dml.runUpdate(SQL);
-
-        const call1 = stub.getCall(0).args[0];
-        const call2 = stub.getCall(1).args[0];
-
-        assert.strictEqual(call1.seqno, 1);
-        assert.strictEqual(call2.seqno, 2);
       });
 
       it('should return any request errors', () => {
