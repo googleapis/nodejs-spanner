@@ -185,6 +185,7 @@ export interface RunUpdateCallback {
  */
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
+  protected _seqno = 1;
   id?: string | Uint8Array | null;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.Transaction;
@@ -877,6 +878,7 @@ export class Snapshot extends EventEmitter {
 
     const reqOpts: ExecuteSqlRequest = Object.assign(query, {
       session: this.session.formattedName_!,
+      seqno: this._seqno++,
       transaction,
       params,
       paramTypes,
@@ -1032,8 +1034,6 @@ promisifyAll(Snapshot, {
  * @class
  */
 export class Dml extends Snapshot {
-  protected _seqno = 1;
-
   runUpdate(query: string | ExecuteSqlRequest): RunUpdatePromise;
   runUpdate(
     query: string | ExecuteSqlRequest,
@@ -1071,11 +1071,8 @@ export class Dml extends Snapshot {
       query = {sql: query} as ExecuteSqlRequest;
     }
 
-    const seqno = this._seqno++;
-    const reqOpts = Object.assign({seqno}, query);
-
     this.run(
-      reqOpts,
+      query,
       (err: null | ServiceError, rows: Rows, stats: s.ResultSetStats) => {
         let rowCount = 0;
 
