@@ -54,6 +54,56 @@
 
 * **deps:** update dependency gts to v1 ([#584](https://www.github.com/googleapis/nodejs-spanner/issues/584)) ([135ac6d](https://www.github.com/googleapis/nodejs-spanner/commit/135ac6d))
 
+## [4.0.0](https://www.github.com/googleapis/nodejs-spanner/compare/v3.1.0...v4.0.0) (2019-07-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** this will ship async/await in the generated code
+* upgrade engines field to >=8.10.0 (#587)
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/common-grpc to v1 ([#607](https://www.github.com/googleapis/nodejs-spanner/issues/607)) ([084dc8c](https://www.github.com/googleapis/nodejs-spanner/commit/084dc8c))
+* **deps:** update dependency @google-cloud/paginator to ^0.2.0 ([#560](https://www.github.com/googleapis/nodejs-spanner/issues/560)) ([8fe33a1](https://www.github.com/googleapis/nodejs-spanner/commit/8fe33a1))
+* **deps:** update dependency @google-cloud/paginator to v1 ([#593](https://www.github.com/googleapis/nodejs-spanner/issues/593)) ([bfb2255](https://www.github.com/googleapis/nodejs-spanner/commit/bfb2255))
+* **deps:** update dependency @google-cloud/precise-date to v1 ([#600](https://www.github.com/googleapis/nodejs-spanner/issues/600)) ([f52494f](https://www.github.com/googleapis/nodejs-spanner/commit/f52494f))
+* **deps:** update dependency @google-cloud/projectify to v1 ([#591](https://www.github.com/googleapis/nodejs-spanner/issues/591)) ([22713c1](https://www.github.com/googleapis/nodejs-spanner/commit/22713c1))
+* **deps:** update dependency @google-cloud/promisify to v1 ([#592](https://www.github.com/googleapis/nodejs-spanner/issues/592)) ([cb76922](https://www.github.com/googleapis/nodejs-spanner/commit/cb76922))
+* **deps:** update dependency arrify to v2 ([#577](https://www.github.com/googleapis/nodejs-spanner/issues/577)) ([6e0ddc8](https://www.github.com/googleapis/nodejs-spanner/commit/6e0ddc8))
+* **deps:** update dependency google-auth-library to v4 ([#599](https://www.github.com/googleapis/nodejs-spanner/issues/599)) ([21b9995](https://www.github.com/googleapis/nodejs-spanner/commit/21b9995))
+* **deps:** update dependency google-gax to ^0.26.0 ([#586](https://www.github.com/googleapis/nodejs-spanner/issues/586)) ([0f88be2](https://www.github.com/googleapis/nodejs-spanner/commit/0f88be2))
+* **deps:** update dependency merge-stream to v2 ([#624](https://www.github.com/googleapis/nodejs-spanner/issues/624)) ([3aa676d](https://www.github.com/googleapis/nodejs-spanner/commit/3aa676d))
+* **deps:** update dependency p-queue to v4 ([#558](https://www.github.com/googleapis/nodejs-spanner/issues/558)) ([7547e21](https://www.github.com/googleapis/nodejs-spanner/commit/7547e21))
+* **deps:** update dependency p-queue to v5 ([#578](https://www.github.com/googleapis/nodejs-spanner/issues/578)) ([7827fb4](https://www.github.com/googleapis/nodejs-spanner/commit/7827fb4))
+* **deps:** update dependency p-queue to v6.0.2 ([#643](https://www.github.com/googleapis/nodejs-spanner/issues/643)) ([ace1359](https://www.github.com/googleapis/nodejs-spanner/commit/ace1359))
+* **deps:** upgrade to google-gax 1.x ([#651](https://www.github.com/googleapis/nodejs-spanner/issues/651)) ([a32e838](https://www.github.com/googleapis/nodejs-spanner/commit/a32e838))
+* **docs:** add google.type namespace ([#605](https://www.github.com/googleapis/nodejs-spanner/issues/605)) ([5cc6dc1](https://www.github.com/googleapis/nodejs-spanner/commit/5cc6dc1))
+* **docs:** link to reference docs section on googleapis.dev ([#654](https://www.github.com/googleapis/nodejs-spanner/issues/654)) ([2379dc2](https://www.github.com/googleapis/nodejs-spanner/commit/2379dc2))
+* **docs:** move to new client docs URL ([#647](https://www.github.com/googleapis/nodejs-spanner/issues/647)) ([7dec1bd](https://www.github.com/googleapis/nodejs-spanner/commit/7dec1bd))
+* **transaction:** set/update seqno for all sql requests ([#661](https://www.github.com/googleapis/nodejs-spanner/issues/661)) ([102cae1](https://www.github.com/googleapis/nodejs-spanner/commit/102cae1))
+* DEADLINE_EXCEEDED is no longer retried ([#598](https://www.github.com/googleapis/nodejs-spanner/issues/598)) ([1cac4fc](https://www.github.com/googleapis/nodejs-spanner/commit/1cac4fc))
+* include 'x-goog-request-params' header in requests ([#573](https://www.github.com/googleapis/nodejs-spanner/issues/573)) ([e0cb9dc](https://www.github.com/googleapis/nodejs-spanner/commit/e0cb9dc))
+* treat deadline errors as idempotent ([#602](https://www.github.com/googleapis/nodejs-spanner/issues/602)) ([b3d494a](https://www.github.com/googleapis/nodejs-spanner/commit/b3d494a))
+* update retry config ([#650](https://www.github.com/googleapis/nodejs-spanner/issues/650)) ([f1e8104](https://www.github.com/googleapis/nodejs-spanner/commit/f1e8104))
+
+
+### Build System
+
+* upgrade engines field to >=8.10.0 ([#587](https://www.github.com/googleapis/nodejs-spanner/issues/587)) ([970d335](https://www.github.com/googleapis/nodejs-spanner/commit/970d335))
+
+
+### Features
+
+* add .repo-metadata.json and move to new README template ([#636](https://www.github.com/googleapis/nodejs-spanner/issues/636)) ([11007cf](https://www.github.com/googleapis/nodejs-spanner/commit/11007cf))
+* support apiEndpoint override ([#634](https://www.github.com/googleapis/nodejs-spanner/issues/634)) ([6a5eb36](https://www.github.com/googleapis/nodejs-spanner/commit/6a5eb36))
+* support apiEndpoint override in client constructor ([#639](https://www.github.com/googleapis/nodejs-spanner/issues/639)) ([f6ebb27](https://www.github.com/googleapis/nodejs-spanner/commit/f6ebb27))
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency gts to v1 ([#584](https://www.github.com/googleapis/nodejs-spanner/issues/584)) ([135ac6d](https://www.github.com/googleapis/nodejs-spanner/commit/135ac6d))
+
 ## v3.1.0
 
 03-06-2019 20:13 PST
