@@ -5,13 +5,13 @@ export type Schema =
   | string
   | string[]
   | databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest;
-export interface ResourceCallback<Resource, Response> {
-  (
-    err: ServiceError | null,
-    resource?: Resource | null,
-    response?: Response | null
-  ): void;
-}
+export type ResourceCallback<Resource, Response = void> = Response extends void
+  ? NormalCallback<Resource>
+  : (
+      err: ServiceError | null,
+      resource?: Resource | null,
+      response?: Response
+    ) => void;
 
 export type RequestCallback<T, R = void> = R extends void
   ? NormalCallback<T>
@@ -34,3 +34,7 @@ export type PagedRequest<P> = P & {
   maxApiCalls?: number;
   gaxOptions?: CallOptions;
 };
+
+export type PagedResponse<Item, Response> =
+  | [Item[]]
+  | [Item[], {} | null, Response];

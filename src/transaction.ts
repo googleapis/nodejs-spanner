@@ -35,6 +35,7 @@ import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
 import {google as spannerClient} from '../proto/spanner';
+import {NormalCallback} from './common';
 
 export type Rows = Array<Row | Json>;
 
@@ -73,24 +74,23 @@ export interface KeyRange {
   endOpen?: Value[];
 }
 
+export interface KeyRang {
+  startClosed?: spannerClient.protobuf.IListValue | null;
+  startOpen?: spannerClient.protobuf.IListValue | null;
+  endClosed?: spannerClient.protobuf.IListValue | null;
+  endOpen?: spannerClient.protobuf.IListValue | null;
+}
+
 export interface ReadRequest extends RequestOptions {
-  session?: string | null;
-  transaction?: TransactionSelector | null;
-  table?: string | null;
-  index?: string | null;
+  table?: string;
+  index?: string;
   columns?: string[] | null;
   keys?: string[];
-  ranges?: spannerClient.spanner.v1.IKeyRange[];
+  ranges?: KeyRang[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
   limit?: number | Long | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
-}
-
-export interface TransactionSelector {
-  singleUse?: spannerClient.spanner.v1.ITransactionOptions | null;
-  id?: Uint8Array | string | null;
-  begin?: spannerClient.spanner.v1.ITransactionOptions | null;
 }
 
 export interface BatchUpdateError extends ServiceError {
@@ -99,17 +99,17 @@ export interface BatchUpdateError extends ServiceError {
 
 export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
-export type BatchUpdatePromise = Promise<[number[], s.ExecuteBatchDmlResponse]>;
-export type BeginPromise = Promise<[spannerClient.spanner.v1.ITransaction]>;
-export interface BeginTransactionCallback {
-  (err: Error | null, transaction: spannerClient.spanner.v1.ITransaction): void;
-}
-export type CommitPromise = Promise<[spannerClient.spanner.v1.CommitResponse]>;
-export type ReadPromise = Promise<[Rows]>;
-export type RunPromise = Promise<
-  [Rows, spannerClient.spanner.v1.ResultSetStats]
+export type BatchUpdateResponse = [number[], s.ExecuteBatchDmlResponse];
+export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
+
+export type BeginTransactionCallback = NormalCallback<
+  spannerClient.spanner.v1.ITransaction
 >;
-export type RunUpdatePromise = Promise<[number]>;
+export type CommitResponse = [spannerClient.spanner.v1.CommitResponse];
+
+export type ReadResponse = [Rows];
+export type RunResponse = [Rows, spannerClient.spanner.v1.ResultSetStats];
+export type RunUpdateResponse = [number];
 
 export interface BatchUpdateCallback {
   (
@@ -129,6 +129,13 @@ export interface RunCallback {
 
 export interface RunUpdateCallback {
   (err: null | ServiceError, rowCount: number): void;
+}
+
+export interface CommitCallback {
+  (
+    error: Error | null,
+    response?: spannerClient.spanner.v1.CommitResponse
+  ): void;
 }
 
 /**
@@ -186,7 +193,7 @@ export interface RunUpdateCallback {
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
-  id?: string | Uint8Array | null;
+  id?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.Transaction;
   readTimestamp?: PreciseDate;
@@ -248,7 +255,7 @@ export class Snapshot extends EventEmitter {
     this._options = {readOnly};
   }
 
-  begin(): BeginPromise;
+  begin(): Promise<BeginResponse>;
   begin(callback: BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
@@ -288,7 +295,7 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: BeginTransactionCallback): void | BeginPromise {
+  begin(callback?: BeginTransactionCallback): void | Promise<BeginResponse> {
     const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
@@ -472,10 +479,10 @@ export class Snapshot extends EventEmitter {
   ): PartialResultStream {
     const {gaxOptions, json, jsonOptions} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    const transaction: TransactionSelector = {};
+    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
     if (this.id) {
-      transaction.id = this.id;
+      transaction.id = this.id as Uint8Array;
     } else {
       transaction.singleUse = this._options;
     }
@@ -557,7 +564,7 @@ export class Snapshot extends EventEmitter {
     process.nextTick(() => this.emit('end'));
   }
 
-  read(table: string, request: ReadRequest): ReadPromise;
+  read(table: string, request: ReadRequest): Promise<ReadResponse>;
   read(table: string, callback: ReadCallback): void;
   read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
@@ -673,7 +680,7 @@ export class Snapshot extends EventEmitter {
     table: string,
     requestOrCallback: ReadRequest | ReadCallback,
     cb?: ReadCallback
-  ): void | ReadPromise {
+  ): void | Promise<ReadResponse> {
     const rows: Rows = [];
 
     let request: ReadRequest;
@@ -693,7 +700,7 @@ export class Snapshot extends EventEmitter {
       .on('end', () => callback!(null, rows));
   }
 
-  run(query: string | ExecuteSqlRequest): RunPromise;
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
   run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   /**
    * Execute a SQL statement on this database inside of a transaction.
@@ -771,7 +778,7 @@ export class Snapshot extends EventEmitter {
   run(
     query: string | ExecuteSqlRequest,
     callback?: RunCallback
-  ): void | RunPromise {
+  ): void | Promise<RunResponse> {
     const rows: Rows = [];
     let stats;
 
@@ -863,10 +870,10 @@ export class Snapshot extends EventEmitter {
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
-    const transaction: TransactionSelector = {};
+    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
     if (this.id) {
-      transaction.id = this.id;
+      transaction.id = this.id as Uint8Array;
     } else {
       transaction.singleUse = this._options;
     }
@@ -1034,7 +1041,7 @@ promisifyAll(Snapshot, {
  * @class
  */
 export class Dml extends Snapshot {
-  runUpdate(query: string | ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback: RunUpdateCallback
@@ -1066,7 +1073,7 @@ export class Dml extends Snapshot {
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
-  ): void | RunUpdatePromise {
+  ): void | Promise<RunUpdateResponse> {
     if (typeof query === 'string') {
       query = {sql: query} as ExecuteSqlRequest;
     }
@@ -1184,7 +1191,7 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
   }
 
-  batchUpdate(queries: Array<string | Statement>): BatchUpdatePromise;
+  batchUpdate(queries: Array<string | Statement>): Promise<BatchUpdateResponse>;
   batchUpdate(
     queries: Array<string | Statement>,
     callback: BatchUpdateCallback
@@ -1245,7 +1252,7 @@ export class Transaction extends Dml {
   batchUpdate(
     queries: Array<string | Statement>,
     callback?: BatchUpdateCallback
-  ): BatchUpdatePromise | void {
+  ): Promise<BatchUpdateResponse> | void {
     if (!Array.isArray(queries) || !queries.length) {
       const rowCounts: number[] = [];
       const error = new Error('batchUpdate requires at least 1 DML statement.');
@@ -1308,8 +1315,8 @@ export class Transaction extends Dml {
     );
   }
 
-  commit(): CommitPromise;
-  commit(callback: spannerClient.spanner.v1.Spanner.CommitCallback): void;
+  commit(): Promise<CommitResponse>;
+  commit(callback: CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1356,9 +1363,7 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(
-    callback?: spannerClient.spanner.v1.Spanner.CommitCallback
-  ): void | CommitPromise {
+  commit(callback?: CommitCallback): void | Promise<CommitResponse> {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
@@ -1749,7 +1754,7 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
 
-  runUpdate(query: string | ExecuteSqlRequest): RunUpdatePromise;
+  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback: RunUpdateCallback
@@ -1780,7 +1785,7 @@ export class PartitionedDml extends Dml {
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
-  ): void | RunUpdatePromise {
+  ): void | Promise<RunUpdateResponse> {
     super.runUpdate(query, (err, count) => {
       this.end();
       callback!(err, count);

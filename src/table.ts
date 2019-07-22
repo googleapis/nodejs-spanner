@@ -27,7 +27,7 @@ import {SpannerClient as s} from './v1';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {ReadRequest, TimestampBounds} from './transaction';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
-import {Schema} from './common';
+import {Schema, ResourceCallback} from './common';
 
 export type Key = string | string[];
 
@@ -44,20 +44,17 @@ type ReadPromise = Promise<[Array<Row | Json>]>;
 
 export interface CreateTableCallback {
   (
-    err: ServiceError | null,
-    table: Table | null,
-    operation: GaxOperation | null,
-    apiResponse: databaseAdmin.longrunning.IOperation | null
+    err?: ServiceError | null,
+    table?: Table | null,
+    operation?: GaxOperation | null,
+    apiResponse?: databaseAdmin.longrunning.IOperation | null
   ): void;
 }
 
-interface DropTableCallback {
-  (
-    err: Error | null,
-    operation: GaxOperation | null,
-    apiResponse: databaseAdmin.longrunning.IOperation | null
-  ): void;
-}
+type DropTableCallback = ResourceCallback<
+  GaxOperation,
+  databaseAdmin.longrunning.IOperation
+>;
 
 interface ReadCallback {
   (err: ServiceError, rows?: null): void;

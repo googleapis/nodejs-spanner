@@ -342,7 +342,7 @@ describe('Database', () => {
       const identifier = {
         session: SESSION,
         transaction: ID,
-        readTimestamp: READ_TIMESTAMP,
+        timestamp: READ_TIMESTAMP,
       };
 
       const transaction = database.batchTransaction(identifier);
@@ -357,7 +357,7 @@ describe('Database', () => {
       const identifier = {
         session: SESSION.id,
         transaction: ID,
-        readTimestamp: READ_TIMESTAMP,
+        timestamp: READ_TIMESTAMP,
       };
 
       database.session = id => {

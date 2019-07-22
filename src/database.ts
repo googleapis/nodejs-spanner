@@ -38,12 +38,7 @@ import {
   CreateDatabaseCallback,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
-import {
-  Session,
-  CreateSessionCallback,
-  CreateSessionOptions,
-  CreateSessionResponse,
-} from './session';
+import {Session} from './session';
 import {
   SessionPool,
   SessionPoolOptions,
@@ -67,38 +62,33 @@ import {
 } from './transaction-runner';
 
 import {google} from '../proto/spanner';
-import {Schema, RequestCallback, PagedRequest} from './common';
-import {ServiceError, CallOptions} from 'grpc';
-import {Readable, Transform, Duplex} from 'stream';
+import {
+  Schema,
+  RequestCallback,
+  PagedRequest,
+  ResourceCallback,
+  PagedResponse,
+} from './common';
+import {ServiceError, CallOptions, ClientDuplexStream} from 'grpc';
+import {Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
+import {google as spannerClient} from '../proto/spanner';
 
-interface CreateBatchTransactionCallback {
-  (
-    err?: ServiceError | null,
-    transaction?: BatchTransaction | null,
-    apiResponse?: google.spanner.v1.ITransaction | google.spanner.v1.ISession
-  ): void;
-}
+type CreateBatchTransactionCallback = ResourceCallback<
+  BatchTransaction,
+  google.spanner.v1.ITransaction | google.spanner.v1.ISession
+>;
 
 type CreateBatchTransactionResponse = [
   BatchTransaction,
   google.spanner.v1.ITransaction | google.spanner.v1.ISession
 ];
-interface Cancellable {
-  cancel(): void;
-}
-type CancellableDuplex = Duplex & Cancellable;
 type DatabaseResponse = [Database, r.Response];
-interface DatabaseCallback {
-  (
-    err: ServiceError | null,
-    database?: Database,
-    apiResponse?: r.Response
-  ): void;
-}
-type GetSnapshotCallback = RequestCallback<Snapshot>;
+type DatabaseCallback = ResourceCallback<Database, r.Response>;
 
-type GetTransactionCallback = RequestCallback<Transaction>;
+type GetSnapshotCallback = ResourceCallback<Snapshot>;
+
+type GetTransactionCallback = ResourceCallback<Transaction>;
 
 export interface SessionPoolConstructor {
   new (
@@ -107,13 +97,10 @@ export interface SessionPoolConstructor {
   ): SessionPoolInterface;
 }
 
-interface UpdateSchemaCallback {
-  (
-    err: ServiceError | null,
-    operation: GaxOperation,
-    resp: databaseAdmin.longrunning.IOperation
-  ): void;
-}
+type UpdateSchemaCallback = ResourceCallback<
+  GaxOperation,
+  databaseAdmin.longrunning.IOperation
+>;
 
 type UpdateSchemaResponse = [
   GaxOperation,
@@ -158,17 +145,29 @@ type GetSessionsCallback = RequestCallback<
   google.spanner.v1.IListSessionsResponse
 >;
 
-type GetSessionsResponse =
-  | Session[]
-  | [
-      Session[],
-      PagedRequest<google.spanner.v1.IListSessionsRequest> | null,
-      google.spanner.v1.IListSessionsResponse
-    ];
+type GetSessionsResponse = PagedResponse<
+  Session,
+  google.spanner.v1.IListSessionsResponse
+>;
 
 type GetDatabaseConfig = GetConfig &
   databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest;
+type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
+export type CreateSessionResponse = [
+  Session,
+  spannerClient.spanner.v1.ISession
+];
+
+export interface CreateSessionOptions {
+  name?: string | null;
+  labels?: {[k: string]: string} | null;
+}
+
+export type CreateSessionCallback = ResourceCallback<
+  Session,
+  spannerClient.spanner.v1.ISession
+>;
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -292,16 +291,13 @@ class Database extends ServiceObject {
         ? this.session(identifier.session)
         : identifier.session;
     const id = identifier.transaction;
-    const transaction: BatchTransaction = new BatchTransaction(
-      session,
-      options
-    );
+    const transaction = new BatchTransaction(session, options);
     transaction.id = id;
-    transaction.readTimestamp = identifier.readTimestamp as PreciseDate;
+    transaction.readTimestamp = identifier.timestamp as PreciseDate;
     return transaction;
   }
   close(callback: SessionPoolCloseCallback): void;
-  close(): Promise<google.protobuf.IEmpty>;
+  close(): Promise<DatabaseCloseResponse>;
   /**
    * @callback CloseDatabaseCallback
    * @param {?Error} err Request error, if any.
@@ -392,10 +388,10 @@ class Database extends ServiceObject {
       const transaction = this.batchTransaction({session: session!}, options);
       transaction.begin((err, resp) => {
         if (err) {
-          callback!(err, null, resp);
+          callback!(err, null, resp!);
           return;
         }
-        callback!(null, transaction, resp);
+        callback!(null, transaction, resp!);
       });
     });
   }
@@ -576,14 +572,14 @@ class Database extends ServiceObject {
   ): void | Promise<CreateTableResponse> {
     this.updateSchema(schema, (err, operation, resp) => {
       if (err) {
-        callback!(err, null, null, resp);
+        callback!(err, null, null, resp!);
         return;
       }
       const tableName = (schema as string).match(
         /CREATE TABLE `*([^\s`(]+)/
       )![1];
       const table = this.table(tableName!);
-      callback!(null, table, operation!, resp);
+      callback!(null, table, operation!, resp!);
     });
   }
   /**
@@ -596,7 +592,7 @@ class Database extends ServiceObject {
    * @param {Transaction} transaction The transaction to observe.
    * @returns {Transaction}
    */
-  private _releaseOnEnd(session: Session, transaction: Transaction | Snapshot) {
+  private _releaseOnEnd(session: Session, transaction: Snapshot) {
     transaction.once('end', () => {
       try {
         this.pool_.release(session);
@@ -1219,7 +1215,7 @@ class Database extends ServiceObject {
   makePooledStreamingRequest_(config: PoolRequestConfig): Readable {
     const self = this;
     const pool = this.pool_;
-    let requestStream: CancellableDuplex;
+    let requestStream: ClientDuplexStream<PoolRequestConfig, Readable>;
     let session: Session | null;
     const waitForSessionStream = streamEvents(through.obj());
     // tslint:disable-next-line: no-any

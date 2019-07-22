@@ -30,33 +30,19 @@ import {
   PartitionedDml,
   TimestampBounds,
 } from './transaction';
-import {Database} from './database';
+import {
+  Database,
+  CreateSessionOptions,
+  CreateSessionCallback,
+} from './database';
 import {
   ServiceObjectConfig,
   DeleteCallback,
   Metadata,
   MetadataCallback,
 } from '@google-cloud/common';
-import {google as spannerClient} from '../proto/spanner';
 
 export type GetSessionResponse = [Session, r.Response];
-
-export interface CreateSessionCallback {
-  (
-    err: Error | null,
-    session: Session | null,
-    apiResponse: spannerClient.spanner.v1.ISession
-  ): void;
-}
-export type CreateSessionResponse = [
-  Session,
-  spannerClient.spanner.v1.ISession
-];
-
-export interface CreateSessionOptions {
-  name?: string | null;
-  labels?: {[k: string]: string} | null;
-}
 
 /**
  * enum to capture the possible session types

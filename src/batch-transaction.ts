@@ -25,7 +25,7 @@ import {Session} from '.';
 export interface TransactionIdentifier {
   session: string | Session;
   transaction?: string;
-  readTimestamp?: string | google.protobuf.ITimestamp;
+  timestamp?: google.protobuf.ITimestamp;
 }
 
 /**
@@ -322,7 +322,7 @@ class BatchTransaction extends Snapshot {
    *   const identifier = transaction.identifier();
    * });
    */
-  identifier() {
+  identifier(): TransactionIdentifier {
     return {
       transaction: (this.id! as Buffer).toString('base64'),
       session: this.session.id,
