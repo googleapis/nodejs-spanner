@@ -460,6 +460,8 @@ class Database extends ServiceObject {
       }
     });
   }
+  delete(): Promise<[r.Response]>;
+  delete(callback: DeleteCallback): void;
   /**
    * Delete the database.
    *
@@ -492,8 +494,6 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(): Promise<[r.Response]>;
-  delete(callback: DeleteCallback): void;
   delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
     const reqOpts = {
       database: this.formattedName_,
@@ -509,6 +509,8 @@ class Database extends ServiceObject {
       );
     });
   }
+  exists(): Promise<[boolean]>;
+  exists(callback: ExistsCallback): void;
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
@@ -541,8 +543,6 @@ class Database extends ServiceObject {
    *   const exists = data[0];
    * });
    */
-  exists(): Promise<[boolean]>;
-  exists(callback: ExistsCallback): void;
   exists(callback?: ExistsCallback): void | Promise<[boolean]> {
     const NOT_FOUND = 5;
 
@@ -555,6 +555,9 @@ class Database extends ServiceObject {
       callback!(null, exists);
     });
   }
+  get(options?: GetDatabaseOptions): Promise<DatabaseResponse>;
+  get(options: GetDatabaseOptions, callback: DatabaseCallback): void;
+  get(callback: DatabaseCallback): void;
   /**
    * @typedef {array} GetDatabaseResponse
    * @property {Database} 0 The {@link Database}.
@@ -599,9 +602,6 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  get(options?: GetDatabaseOptions): Promise<DatabaseResponse>;
-  get(options: GetDatabaseOptions, callback: DatabaseCallback): void;
-  get(callback: DatabaseCallback): void;
   get(
     optionsOrCallback?: GetDatabaseOptions | DatabaseCallback,
     cb?: DatabaseCallback
@@ -631,6 +631,8 @@ class Database extends ServiceObject {
       callback!(null, this, metadata);
     });
   }
+  getMetadata(): Promise<Metadata>;
+  getMetadata(callback: MetadataCallback): void;
   /**
    * @typedef {array} GetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -676,8 +678,6 @@ class Database extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(): Promise<Metadata>;
-  getMetadata(callback: MetadataCallback): void;
   getMetadata(callback?: MetadataCallback): void | Promise<Metadata> {
     const reqOpts = {
       name: this.formattedName_,
