@@ -25,7 +25,6 @@ import * as is from 'is';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
-import * as through from 'through2';
 import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
 import {codec} from './codec';
 import {Database} from './database';
@@ -41,6 +40,7 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
+import {PassThrough} from 'stream';
 
 const grpc = require('grpc');
 
@@ -783,7 +783,11 @@ class Spanner extends Service {
    */
   // tslint:disable-next-line no-any
   requestStream(config): any {
-    const stream = streamEvents(through.obj());
+    const stream = streamEvents(
+      new PassThrough({
+        objectMode: true,
+      })
+    );
     stream.once('reading', () => {
       this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {

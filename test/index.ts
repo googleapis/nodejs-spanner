@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
-import * as through from 'through2';
 import {util} from '@google-cloud/common-grpc';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
+import {PassThrough} from 'stream';
 
 const grpc = require('grpc');
 
@@ -975,7 +973,7 @@ describe('Spanner', () => {
     });
 
     it('should pipe the request stream to the user stream', done => {
-      const requestStream = through.obj();
+      const requestStream = new PassThrough({objectMode: true});
       const data = {};
 
       spanner.prepareGapicRequest_ = (config, callback) => {
@@ -998,7 +996,7 @@ describe('Spanner', () => {
     });
 
     it('should pass errors from the request stream', done => {
-      const requestStream = through.obj();
+      const requestStream = new PassThrough({objectMode: true});
       const error = new Error('Error.');
 
       spanner.prepareGapicRequest_ = (config, callback) => {

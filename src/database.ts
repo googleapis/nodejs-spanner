@@ -29,24 +29,14 @@ import * as extend from 'extend';
 import * as is from 'is';
 import * as r from 'request';
 import * as streamEvents from 'stream-events';
-import * as through from 'through2';
 
 import {BatchTransaction} from './batch-transaction';
-import {codec} from './codec';
 import {Instance} from './instance';
-import {
-  partialResultStream,
-  PartialResultStream,
-} from './partial-result-stream';
+import {PartialResultStream} from './partial-result-stream';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {
-  PartitionedDml,
-  Snapshot,
-  TimestampBounds,
-  Transaction,
-} from './transaction';
+import {Snapshot, TimestampBounds, Transaction} from './transaction';
 import {
   AsyncRunTransactionCallback,
   AsyncTransactionRunner,
@@ -54,6 +44,7 @@ import {
   RunTransactionOptions,
   TransactionRunner,
 } from './transaction-runner';
+import {PassThrough} from 'stream';
 
 export interface GetDatabaseOptions {
   autoCreate?: boolean;
@@ -1039,7 +1030,11 @@ class Database extends ServiceObject {
     const pool = this.pool_;
     let requestStream;
     let session;
-    const waitForSessionStream = streamEvents(through.obj());
+    const waitForSessionStream = streamEvents(
+      new PassThrough({
+        objectMode: true,
+      })
+    );
     // tslint:disable-next-line no-any
     (waitForSessionStream as any).abort = () => {
       releaseSession();
@@ -1399,8 +1394,7 @@ class Database extends ServiceObject {
    *   });
    */
   runStream(query, options = {}): PartialResultStream {
-    const proxyStream = through.obj();
-
+    const proxyStream = new PassThrough({objectMode: true});
     this.pool_.getReadSession((err, session) => {
       if (err) {
         proxyStream.destroy(err);

@@ -18,12 +18,9 @@
  * @module spanner/session
  */
 
-'use strict';
-
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import * as is from 'is';
 import * as r from 'request';
 import {
   Snapshot,

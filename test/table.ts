@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
-import {Transform} from 'stream';
-import * as through from 'through2';
+import {Transform, PassThrough} from 'stream';
 
 import {TimestampBounds} from '../src/transaction';
 
@@ -42,7 +40,7 @@ class FakeTransaction {
     callback(null, {});
   }
   createReadStream() {
-    return through.obj();
+    return new PassThrough({objectMode: true});
   }
   deleteRows(name, keys) {}
   end() {}
@@ -128,7 +126,7 @@ describe('Table', () => {
     const REQUEST = {keys: ['key']};
 
     beforeEach(() => {
-      fakeReadStream = through.obj();
+      fakeReadStream = new PassThrough({objectMode: true});
       sandbox.stub(transaction, 'createReadStream').returns(fakeReadStream);
       getSnapshotStub = sandbox
         .stub(DATABASE, 'getSnapshot')
@@ -303,7 +301,7 @@ describe('Table', () => {
         assert.strictEqual(keyVals_, keyVals);
         assert.deepStrictEqual(options, {});
 
-        const stream = through.obj();
+        const stream = new PassThrough({objectMode: true});
 
         setImmediate(() => {
           split(rows, stream).then(() => {
@@ -327,7 +325,7 @@ describe('Table', () => {
       table.createReadStream = (keyVals, options) => {
         assert.strictEqual(OPTIONS, options);
 
-        const stream = through.obj();
+        const stream = new PassThrough({objectMode: true});
 
         setImmediate(() => {
           stream.end();
@@ -343,7 +341,7 @@ describe('Table', () => {
       const error = new Error('Error.');
 
       table.createReadStream = () => {
-        const stream = through.obj();
+        const stream = new PassThrough({objectMode: true});
         setImmediate(() => {
           stream.destroy(error);
         });

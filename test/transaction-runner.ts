@@ -19,7 +19,7 @@ import {EventEmitter} from 'events';
 import {Metadata, ServiceError, status} from 'grpc';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import * as through from 'through2';
+import {PassThrough} from 'stream';
 
 const concat = require('concat-stream');
 
@@ -433,7 +433,7 @@ describe('TransactionRunner', () => {
         const CONFIG = {};
 
         it('should pipe the data through', done => {
-          const fakeStream = through.obj();
+          const fakeStream = new PassThrough({objectMode: true});
           fakeTransaction.requestStream.withArgs(CONFIG).returns(fakeStream);
 
           const fakeData = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
@@ -455,7 +455,7 @@ describe('TransactionRunner', () => {
         });
 
         it('should destroy on non-retryable streaming errors', done => {
-          const fakeStream = through.obj();
+          const fakeStream = new PassThrough({objectMode: true});
           fakeTransaction.requestStream.withArgs(CONFIG).returns(fakeStream);
 
           const fakeError: ServiceError = new Error('err');
@@ -475,8 +475,8 @@ describe('TransactionRunner', () => {
         });
 
         it('should intercept ABORTED streaming errors', done => {
-          const badStream = through.obj();
-          const goodStream = through.obj();
+          const badStream = new PassThrough({objectMode: true});
+          const goodStream = new PassThrough({objectMode: true});
 
           const fakeError: ServiceError = new Error('err');
           fakeError.code = status.ABORTED;
@@ -508,8 +508,8 @@ describe('TransactionRunner', () => {
         });
 
         it('should intercept UNKNOWN streaming errors', done => {
-          const badStream = through.obj();
-          const goodStream = through.obj();
+          const badStream = new PassThrough({objectMode: true});
+          const goodStream = new PassThrough({objectMode: true});
 
           const fakeError: ServiceError = new Error('err');
           fakeError.code = status.UNKNOWN;

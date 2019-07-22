@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Service} from '@google-cloud/common-grpc';
-import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
+import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
-import {CallOptions} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 

@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import {ApiError} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {Transform} from 'stream';
-import * as through from 'through2';
+import {Transform, PassThrough} from 'stream';
 import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 import * as db from '../src/database';
@@ -119,7 +116,7 @@ class FakeTransaction extends EventEmitter {
   begin(callback: Function) {}
   end() {}
   runStream(query: string | object): Transform {
-    return through.obj();
+    return new PassThrough({objectMode: true});
   }
   runUpdate(query: string | object, callback: Function) {}
 }
@@ -1003,7 +1000,7 @@ describe('Database', () => {
     const POOL: any = {};
 
     beforeEach(() => {
-      REQUEST_STREAM = through();
+      REQUEST_STREAM = new PassThrough();
 
       CONFIG = {
         reqOpts: {},
@@ -1061,7 +1058,7 @@ describe('Database', () => {
         database.requestStream = config => {
           assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
           setImmediate(done);
-          return through.obj();
+          return new PassThrough({objectMode: true});
         };
 
         database.makePooledStreamingRequest_(CONFIG).emit('reading');
@@ -1193,7 +1190,7 @@ describe('Database', () => {
     const ROW_3 = {};
 
     beforeEach(() => {
-      QUERY_STREAM = through.obj();
+      QUERY_STREAM = new PassThrough({objectMode: true});
       QUERY_STREAM.push(ROW_1);
       QUERY_STREAM.push(ROW_2);
       QUERY_STREAM.push(ROW_3);
@@ -1268,7 +1265,7 @@ describe('Database', () => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
       fakeSnapshot = new FakeTransaction();
-      fakeStream = through.obj();
+      fakeStream = new PassThrough({objectMode: true});
 
       getReadSessionStub = sandbox
         .stub(fakePool, 'getReadSession')

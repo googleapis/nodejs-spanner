@@ -19,18 +19,13 @@
 import {promisifyAll} from '@google-cloud/promisify';
 import * as is from 'is';
 import {ServiceError} from 'grpc';
-import * as through from 'through2';
 
 import {Json} from './codec';
 import {Database} from './database';
 import {DatabaseAdminClient as d, SpannerClient as s} from './v1';
 import {PartialResultStream, Row} from './partial-result-stream';
-import {
-  Snapshot,
-  ReadRequest,
-  Transaction,
-  TimestampBounds,
-} from './transaction';
+import {ReadRequest, TimestampBounds} from './transaction';
+import {PassThrough} from 'stream';
 
 export type Key = string | string[];
 
@@ -221,8 +216,7 @@ class Table {
     request: ReadRequest,
     options = {} as TimestampBounds
   ): PartialResultStream {
-    const proxyStream = through.obj();
-
+    const proxyStream = new PassThrough({objectMode: true});
     this.database.getSnapshot(options, (err, snapshot) => {
       if (err) {
         proxyStream.destroy(err);

@@ -16,13 +16,13 @@
 
 import {promisify} from '@google-cloud/promisify';
 import {GoogleProtoFilesRoot} from 'google-gax';
-import {Metadata, ServiceError, status} from 'grpc';
+import {ServiceError, status} from 'grpc';
 import {join} from 'path';
-import {common as p, loadSync} from 'protobufjs';
-import * as through from 'through2';
+import {loadSync} from 'protobufjs';
 
 import {Session} from './session';
 import {Transaction} from './transaction';
+import {PassThrough} from 'stream';
 
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
@@ -266,7 +266,7 @@ export class TransactionRunner extends Runner<void> {
     const requestStream = transaction.requestStream;
 
     transaction.requestStream = (config: object) => {
-      const proxyStream = through.obj();
+      const proxyStream = new PassThrough({objectMode: true});
       const stream = requestStream(config);
 
       stream

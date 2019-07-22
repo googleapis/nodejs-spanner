@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {Transform} from 'stream';
-import * as through from 'through2';
+import {Transform, PassThrough} from 'stream';
 
 import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
@@ -208,7 +205,7 @@ describe('PartialResultStream', () => {
     });
 
     beforeEach(() => {
-      fakeRequestStream = through.obj();
+      fakeRequestStream = new PassThrough({objectMode: true});
       stream = partialResultStream(() => fakeRequestStream);
     });
 
@@ -258,13 +255,13 @@ describe('PartialResultStream', () => {
       // - Error event (should retry)
       // - Two rows
       // - Confirm all rows were received.
-      const fakeCheckpointStream = through.obj();
+      const fakeCheckpointStream = new PassThrough({objectMode: true});
       // tslint:disable-next-line no-any
       const resetStub = ((fakeCheckpointStream as any).reset = () => {});
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
-      const firstFakeRequestStream = through.obj();
-      const secondFakeRequestStream = through.obj();
+      const firstFakeRequestStream = new PassThrough({objectMode: true});
+      const secondFakeRequestStream = new PassThrough({objectMode: true});
 
       const requestFnStub = sandbox.stub();
 
