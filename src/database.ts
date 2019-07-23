@@ -16,7 +16,6 @@
 
 import {
   ApiError,
-  DeleteCallback,
   ExistsCallback,
   Metadata,
   ServiceObjectConfig,
@@ -73,6 +72,7 @@ import {ServiceError, CallOptions, ClientDuplexStream} from 'grpc';
 import {Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../proto/spanner';
+import {RequestConfig} from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -107,20 +107,7 @@ type UpdateSchemaResponse = [
   databaseAdmin.longrunning.IOperation
 ];
 
-interface PoolRequestConfig {
-  reqOpts: {
-    // tslint:disable-next-line: no-any
-    [key: string]: any;
-    session?: string;
-  };
-  client?: string;
-  method?: string;
-  gaxOptions: CallOptions;
-}
-
-interface PoolRequestCallback {
-  (err: ServiceError | null, ...args: Array<{} | null>): void;
-}
+type PoolRequestCallback = RequestCallback<Session>;
 
 type RunCallback = RequestCallback<Row[]>;
 
@@ -168,6 +155,9 @@ export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
 >;
+export interface DatabaseDeleteCallback {
+  (err: Error | null, apiResponse?: r.Response | null): void;
+}
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -186,6 +176,10 @@ export type CreateSessionCallback = ResourceCallback<
 class Database extends ServiceObject {
   formattedName_: string;
   pool_: SessionPoolInterface;
+  request: <T, R = void>(
+    config: RequestConfig,
+    callback: RequestCallback<T, R>
+  ) => void;
   constructor(
     instance: Instance,
     name: string,
@@ -479,21 +473,21 @@ class Database extends ServiceObject {
       delete gaxOpts.labels;
     }
 
-    this.request(
+    this.request<google.spanner.v1.ISession>(
       {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts,
         gaxOpts,
       },
-      (err: Error, resp: google.spanner.v1.ISession) => {
+      (err, resp) => {
         if (err) {
-          callback(err, null, resp);
+          callback(err, null, resp!);
           return;
         }
-        const session = this.session(resp.name!);
+        const session = this.session(resp!.name!);
         session.metadata = resp;
-        callback(null, session, resp);
+        callback(null, session, resp!);
       }
     );
   }
@@ -602,7 +596,7 @@ class Database extends ServiceObject {
     });
   }
   delete(): Promise<[r.Response]>;
-  delete(callback: DeleteCallback): void;
+  delete(callback: DatabaseDeleteCallback): void;
   /**
    * Delete the database.
    *
@@ -635,12 +629,12 @@ class Database extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
+  delete(callback?: DatabaseDeleteCallback): void | Promise<[r.Response]> {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDropDatabaseRequest = {
       database: this.formattedName_,
     };
     this.close(() => {
-      this.request(
+      this.request<r.Response>(
         {
           client: 'DatabaseAdminClient',
           method: 'dropDatabase',
@@ -887,14 +881,13 @@ class Database extends ServiceObject {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
-    this.request(
+    this.request<string[] | null>(
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',
         reqOpts,
       },
-      // tslint:disable-next-line only-arrow-functions
-      function(err: ServiceError, ...args: Array<string[] | null>) {
+      (err, ...args) => {
         if (args[0]) {
           args[0] = (args[0] as databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse).statements!;
         }
@@ -1006,22 +999,14 @@ class Database extends ServiceObject {
     });
 
     delete reqOpts.gaxOptions;
-    this.request(
+    this.request<Session, google.spanner.v1.IListSessionsResponse>(
       {
         client: 'SpannerClient',
         method: 'listSessions',
         reqOpts,
         gaxOpts,
       },
-      // tslint:disable-next-line only-arrow-functions
-      function(
-        err: ServiceError | null,
-        ...args: [
-          Session[],
-          PagedRequest<google.spanner.v1.IListSessionsRequest>,
-          google.spanner.v1.IListSessionsResponse
-        ]
-      ) {
+      (err, ...args) => {
         if (args[0]) {
           args[0] = args[0].map(metadata => {
             const session = self.session(
@@ -1173,9 +1158,9 @@ class Database extends ServiceObject {
       callback!(err, transaction);
     });
   }
-  makePooledRequest_(config: PoolRequestConfig): Promise<Session>;
+  makePooledRequest_(config: RequestConfig): Promise<Session>;
   makePooledRequest_(
-    config: PoolRequestConfig,
+    config: RequestConfig,
     callback: PoolRequestCallback
   ): void;
   /**
@@ -1187,7 +1172,7 @@ class Database extends ServiceObject {
    * @param {function} callback Callback function
    */
   makePooledRequest_(
-    config: PoolRequestConfig,
+    config: RequestConfig,
     callback?: PoolRequestCallback
   ): void | Promise<Session> {
     const pool = this.pool_;
@@ -1197,7 +1182,7 @@ class Database extends ServiceObject {
         return;
       }
       config.reqOpts.session = session!.formattedName_;
-      this.request(config, (err: ServiceError, ...args: Array<{}>) => {
+      this.request<Session>(config, (err, ...args) => {
         pool.release(session!);
         callback!(err, ...args);
       });
@@ -1212,10 +1197,10 @@ class Database extends ServiceObject {
    * @param {object} config Request config
    * @returns {Stream}
    */
-  makePooledStreamingRequest_(config: PoolRequestConfig): Readable {
+  makePooledStreamingRequest_(config: RequestConfig): Readable {
     const self = this;
     const pool = this.pool_;
-    let requestStream: ClientDuplexStream<PoolRequestConfig, Readable>;
+    let requestStream: ClientDuplexStream<RequestConfig, Readable>;
     let session: Session | null;
     const waitForSessionStream = streamEvents(through.obj());
     // tslint:disable-next-line: no-any
