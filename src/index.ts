@@ -58,6 +58,21 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: ChannelCredentials;
 }
 
+export interface RequestConfig {
+  client: string;
+  method: string;
+  reqOpts: {
+    extraStatements?: string[];
+    schema?: string;
+    parent?: string;
+    name?: string;
+    instance?: {};
+    fieldMask?: {};
+    poolOptions?: {};
+  };
+  gaxOpts?: {};
+}
+
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
  */

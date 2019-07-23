@@ -140,7 +140,8 @@ class Database extends ServiceObject {
 
     this.formattedName_ = formattedName_;
     this.request = instance.request;
-    this.requestStream = instance.requestStream;
+    // tslint:disable-next-line: no-any
+    this.requestStream = instance.requestStream as any;
     // tslint:disable-next-line variable-name
     let PoolCtor = SessionPool;
     if (is.fn(poolOptions)) {

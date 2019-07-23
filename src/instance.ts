@@ -30,28 +30,24 @@ import {
   SessionPoolInterface,
   SessionPool,
 } from './session-pool';
-import {Spanner} from '.';
+import {Spanner, RequestConfig} from '.';
 import {ServiceError} from 'grpc';
-import {RequestCallback, PagedResponse} from './common';
-import {Stream} from 'stream';
+import {RequestCallback, PagedResponse, LongRunningCallback} from './common';
+import {Duplex} from 'stream';
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
-export type ILongrunningOperation = instanceAdmin.longrunning.IOperation;
-export type CreateDatabaseResponse = [
-  Database,
-  GaxOperation,
-  ILongrunningOperation
-];
+export type IOperation = instanceAdmin.longrunning.IOperation;
+export type CreateDatabaseResponse = [Database, GaxOperation, IOperation];
 export type DeleteInstanceResponse = [instanceAdmin.protobuf.IEmpty];
 export type ExistsInstanceResponse = [boolean];
 export type GetInstanceResponse = [Instance, IInstance];
-export type GetMetadataResponse = [IInstance];
+export type GetInstanceMetadataResponse = [IInstance];
 export type GetDatabasesResponse = PagedResponse<
   Database,
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
 >;
-export type SetMetadataResponse = [GaxOperation, ILongrunningOperation];
+export type SetInstanceMetadataResponse = [GaxOperation, IOperation];
 
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
@@ -68,22 +64,8 @@ export interface GetDatabasesRequest
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface CreateInstanceCallback {
-  (
-    err: ServiceError | null,
-    instance: Instance | null,
-    operation: GaxOperation | null,
-    apiResponse: ILongrunningOperation
-  ): void;
-}
-export interface CreateDatabaseCallback {
-  (
-    err: ServiceError | null,
-    database?: Database | null,
-    operation?: GaxOperation | null,
-    apiResponse?: ILongrunningOperation
-  ): void;
-}
+export type CreateInstanceCallback = LongRunningCallback<Instance>;
+export type CreateDatabaseCallback = LongRunningCallback<Database>;
 export interface DeleteInstanceCallback {
   (err: ServiceError | null, apiResponse: instanceAdmin.protobuf.IEmpty): void;
 }
@@ -101,17 +83,28 @@ export interface GetInstanceCallback {
     apiResponse?: IInstance
   ): void;
 }
-export interface GetMetadataCallback {
-  (err: ServiceError | null, metadata?: IInstance): void;
+export interface GetInstanceMetadataCalback {
+  (err: ServiceError | null, metadata?: IInstance | null): void;
 }
-export interface SetMetadataCallback {
+export interface SetInstanceMetadataCallback {
   (
     err: ServiceError | null,
-    operation: GaxOperation,
-    apiResponse: ILongrunningOperation
+    operation: GaxOperation | null,
+    apiResponse: IOperation
   ): void;
 }
 
+interface InstanceRequest {
+  (
+    config: RequestConfig,
+    callback: (
+      err: ServiceError | null,
+      operation: GaxOperation | null,
+      apiResponse: IOperation
+    ) => void
+  ): void;
+  <T>(config: RequestConfig, callback: RequestCallback<T>): void;
+}
 /**
  * The {@link Instance} class represents a [Cloud Spanner
  * instance](https://cloud.google.com/spanner/docs/instances).
@@ -130,11 +123,10 @@ export interface SetMetadataCallback {
  */
 class Instance extends common.ServiceObject {
   formattedName_: string;
-  // tslint:disable-next-line: no-any
-  request: (config: any, callback: Function) => void;
-  requestStream: (config?: {}) => Stream;
+  request: InstanceRequest;
+  requestStream: (config?: RequestConfig) => Duplex;
   databases_: Map<string, Database>;
-  metadata?: Instance;
+  metadata?: IInstance;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
@@ -207,10 +199,9 @@ class Instance extends common.ServiceObject {
     this.databases_ = new Map();
   }
 
-  createDatabase(name: string): Promise<CreateDatabaseResponse>;
   createDatabase(
     name: string,
-    options: CreateDatabaseOptions
+    options?: CreateDatabaseOptions
   ): Promise<CreateDatabaseResponse>;
   createDatabase(name: string, callback: CreateDatabaseCallback): void;
   createDatabase(
@@ -338,7 +329,7 @@ class Instance extends common.ServiceObject {
         method: 'createDatabase',
         reqOpts,
       },
-      (err: Error, operation: GaxOperation, resp: ILongrunningOperation) => {
+      (err, operation, resp) => {
         if (err) {
           callback(err, null, null, resp);
           return;
@@ -438,17 +429,17 @@ class Instance extends common.ServiceObject {
       .catch(common.util.noop)
       .then(() => {
         this.databases_.clear();
-        this.request(
+        this.request<instanceAdmin.protobuf.IEmpty>(
           {
             client: 'InstanceAdminClient',
             method: 'deleteInstance',
             reqOpts,
           },
-          (err: Error, resp: instanceAdmin.protobuf.IEmpty) => {
+          (err, resp) => {
             if (!err) {
               this.parent.instances_.delete(this.id);
             }
-            callback!(err, resp);
+            callback!(err, resp!);
           }
         );
       });
@@ -576,9 +567,9 @@ class Instance extends common.ServiceObject {
               }
               operation!
                 .on('error', callback)
-                .on('complete', (metadata: Instance) => {
+                .on('complete', (metadata: IInstance) => {
                   this.metadata = metadata;
-                  callback(null, this, metadata as IInstance);
+                  callback(null, this, metadata);
                 });
             }
           );
@@ -587,12 +578,11 @@ class Instance extends common.ServiceObject {
         callback(err);
         return;
       }
-      callback(null, this, metadata as IInstance);
+      callback(null, this, metadata!);
     });
   }
 
-  getDatabases(): Promise<GetDatabasesResponse>;
-  getDatabases(query: GetDatabasesRequest): Promise<GetDatabasesResponse>;
+  getDatabases(query?: GetDatabasesRequest): Promise<GetDatabasesResponse>;
   getDatabases(callback: GetDatabasesCallback): void;
   getDatabases(
     query: GetDatabasesRequest,
@@ -680,7 +670,7 @@ class Instance extends common.ServiceObject {
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
     });
-    this.request(
+    this.request<IDatabase[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabases',
@@ -688,7 +678,7 @@ class Instance extends common.ServiceObject {
         gaxOpts: query,
       },
       // tslint:disable-next-line: no-any
-      (err: Error, rowDatabases: IDatabase[], ...args: any[]) => {
+      (err, rowDatabases, ...args: any[]) => {
         let databases: Database[] | null = null;
         if (rowDatabases) {
           databases = rowDatabases.map(database => {
@@ -701,8 +691,8 @@ class Instance extends common.ServiceObject {
       }
     );
   }
-  getMetadata(): Promise<GetMetadataResponse>;
-  getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(): Promise<GetInstanceMetadataResponse>;
+  getMetadata(callback: GetInstanceMetadataCalback): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -742,12 +732,12 @@ class Instance extends common.ServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetMetadataCallback
-  ): Promise<GetMetadataResponse> | void {
+    callback?: GetInstanceMetadataCalback
+  ): Promise<GetInstanceMetadataResponse> | void {
     const reqOpts = {
       name: this.formattedName_,
     };
-    return this.request(
+    return this.request<IInstance>(
       {
         client: 'InstanceAdminClient',
         method: 'getInstance',
@@ -757,8 +747,8 @@ class Instance extends common.ServiceObject {
     );
   }
 
-  setMetadata(metadata: IInstance): Promise<SetMetadataResponse>;
-  setMetadata(metadata: IInstance, callback: SetMetadataCallback): void;
+  setMetadata(metadata: IInstance): Promise<SetInstanceMetadataResponse>;
+  setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
   /**
    * Update the metadata for this instance. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
@@ -769,7 +759,7 @@ class Instance extends common.ServiceObject {
    * @see [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
    *
    * @param {object} metadata The metadata you wish to set.
-   * @param {SetMetadataCallback} [callback] Callback function.
+   * @param {SetInstanceMetadataCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
@@ -804,8 +794,8 @@ class Instance extends common.ServiceObject {
    */
   setMetadata(
     metadata: IInstance,
-    callback?: SetMetadataCallback
-  ): void | Promise<SetMetadataResponse> {
+    callback?: SetInstanceMetadataCallback
+  ): void | Promise<SetInstanceMetadataResponse> {
     const reqOpts = {
       instance: extend(
         {

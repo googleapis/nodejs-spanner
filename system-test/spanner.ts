@@ -3900,7 +3900,7 @@ describe('Spanner', () => {
           let err;
 
           try {
-            await txn.batchUpdate(null);
+            await txn.batchUpdate((null as unknown) as []);
           } catch (e) {
             err = e;
           }

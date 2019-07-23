@@ -253,7 +253,7 @@ describe('Instance', () => {
           poolOptions,
         });
 
-        instance.request = (config, callback) => {
+        instance.request = (config, callback: Function) => {
           assert.strictEqual(config.reqOpts.poolOptions, undefined);
           callback();
         };
@@ -291,7 +291,7 @@ describe('Instance', () => {
       const API_RESPONSE = {};
 
       beforeEach(() => {
-        instance.request = (config, callback) => {
+        instance.request = (config, callback: Function) => {
           callback(ERROR, null, API_RESPONSE);
         };
       });
@@ -311,7 +311,7 @@ describe('Instance', () => {
       const API_RESPONSE = {};
 
       beforeEach(() => {
-        instance.request = (config, callback) => {
+        instance.request = (config, callback: Function) => {
           callback(null, OPERATION, API_RESPONSE);
         };
       });
@@ -421,7 +421,7 @@ describe('Instance', () => {
     });
 
     it('should make the correct request', done => {
-      instance.request = (config, callback) => {
+      instance.request = (config, callback: Function) => {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'deleteInstance');
         assert.deepStrictEqual(config.reqOpts, {
@@ -703,7 +703,7 @@ describe('Instance', () => {
       const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
 
       beforeEach(() => {
-        instance.request = (config, callback) => {
+        instance.request = (config, callback: Function) => {
           callback.apply(null, REQUEST_RESPONSE_ARGS);
         };
       });

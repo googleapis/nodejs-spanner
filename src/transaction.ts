@@ -1159,7 +1159,7 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
   }
 
-  batchUpdate(queries: Array<string | Statement> | null): BatchUpdatePromise;
+  batchUpdate(queries: Array<string | Statement>): BatchUpdatePromise;
   batchUpdate(
     queries: Array<string | Statement>,
     callback: BatchUpdateCallback
