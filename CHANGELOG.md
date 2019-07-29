@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.0.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.0.0...v4.0.1) (2019-07-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/paginator to v2 ([#668](https://www.github.com/googleapis/nodejs-spanner/issues/668)) ([86d3638](https://www.github.com/googleapis/nodejs-spanner/commit/86d3638))
+* **deps:** update dependency google-auth-library to v5 ([#669](https://www.github.com/googleapis/nodejs-spanner/issues/669)) ([c6d165e](https://www.github.com/googleapis/nodejs-spanner/commit/c6d165e))
+* **docs:** move docs under overloads to be picked up by JSDoc ([#666](https://www.github.com/googleapis/nodejs-spanner/issues/666)) ([be10eb1](https://www.github.com/googleapis/nodejs-spanner/commit/be10eb1))
+
 ## [4.0.0](https://www.github.com/googleapis/nodejs-spanner/compare/v3.1.0...v4.0.0) (2019-07-19)
 
 
