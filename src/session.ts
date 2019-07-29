@@ -233,6 +233,8 @@ export class Session extends ServiceObject {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
   }
+  delete(): Promise<[r.Response]>;
+  delete(callback: DeleteCallback): void;
   /**
    * Delete a session.
    *
@@ -260,8 +262,6 @@ export class Session extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(): Promise<[r.Response]>;
-  delete(callback: DeleteCallback): void;
   delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
     const reqOpts = {
       name: this.formattedName_,
@@ -275,6 +275,8 @@ export class Session extends ServiceObject {
       callback!
     );
   }
+  getMetadata(): Promise<[Metadata]>;
+  getMetadata(callback: MetadataCallback): void;
   /**
    * @typedef {array} GetSessionMetadataResponse
    * @property {object} 0 The session's metadata.
@@ -308,8 +310,6 @@ export class Session extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(): Promise<[Metadata]>;
-  getMetadata(callback: MetadataCallback): void;
   getMetadata(callback?: MetadataCallback): void | Promise<[Metadata]> {
     const reqOpts = {
       name: this.formattedName_,

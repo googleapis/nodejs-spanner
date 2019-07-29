@@ -241,6 +241,8 @@ class Table {
 
     return proxyStream as PartialResultStream;
   }
+  delete(): DropTablePromise;
+  delete(callback: DropTableCallback): void;
   /**
    * Delete the table. Not to be confused with {@link Table#deleteRows}.
    *
@@ -284,8 +286,6 @@ class Table {
    *     // Table deleted successfully.
    *   });
    */
-  delete(): DropTablePromise;
-  delete(callback: DropTableCallback): void;
   delete(callback?: DropTableCallback): DropTablePromise | void {
     if (callback && !is.fn(callback)) {
       throw new TypeError(
@@ -298,6 +298,8 @@ class Table {
       callback!
     );
   }
+  deleteRows(keys: Key[]): CommitPromise;
+  deleteRows(keys: Key[], callback: s.CommitCallback): void;
   /**
    * Delete rows from this table.
    *
@@ -343,11 +345,11 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  deleteRows(keys: Key[]): CommitPromise;
-  deleteRows(keys: Key[], callback: s.CommitCallback): void;
   deleteRows(keys: Key[], callback?: s.CommitCallback): CommitPromise | void {
     return this._mutate('deleteRows', keys, callback!);
   }
+  drop(): DropTablePromise;
+  drop(callback: DropTableCallback): void;
   /**
    * Drop the table.
    *
@@ -389,11 +391,11 @@ class Table {
    *     // Table dropped successfully.
    *   });
    */
-  drop(): DropTablePromise;
-  drop(callback: DropTableCallback): void;
   drop(callback?: DropTableCallback): DropTablePromise | void {
     return this.delete(callback!);
   }
+  insert(rows: object | object[]): CommitPromise;
+  insert(rows: object | object[], callback: s.CommitCallback): void;
   /**
    * Insert rows of data into this table.
    *
@@ -450,14 +452,19 @@ class Table {
    * region_tag:spanner_insert_data
    * Full example:
    */
-  insert(rows: object | object[]): CommitPromise;
-  insert(rows: object | object[], callback: s.CommitCallback): void;
   insert(
     rows: object | object[],
     callback?: s.CommitCallback
   ): CommitPromise | void {
     this._mutate('insert', rows, callback!);
   }
+  read(request: ReadRequest, options?: TimestampBounds): ReadPromise;
+  read(request: ReadRequest, callback: ReadCallback): void;
+  read(
+    request: ReadRequest,
+    options: TimestampBounds,
+    callback: ReadCallback
+  ): void;
   /**
    * Configuration object, describing what to read from the table.
    *
@@ -610,13 +617,6 @@ class Table {
    * region_tag:spanner_read_data_with_storing_index
    * Reading data using a storing index:
    */
-  read(request: ReadRequest, options?: TimestampBounds): ReadPromise;
-  read(request: ReadRequest, callback: ReadCallback): void;
-  read(
-    request: ReadRequest,
-    options: TimestampBounds,
-    callback: ReadCallback
-  ): void;
   read(
     request: ReadRequest,
     options?: TimestampBounds | ReadCallback,
@@ -634,6 +634,8 @@ class Table {
       .on('data', (row: Row | Json) => rows.push(row))
       .on('end', () => callback!(null, rows));
   }
+  replace(rows: object | object[]): CommitPromise;
+  replace(rows: object | object[], callback: s.CommitCallback): void;
   /**
    * Replace rows of data within this table.
    *
@@ -673,14 +675,14 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  replace(rows: object | object[]): CommitPromise;
-  replace(rows: object | object[], callback: s.CommitCallback): void;
   replace(
     rows: object | object[],
     callback?: s.CommitCallback
   ): CommitPromise | void {
     this._mutate('replace', rows, callback!);
   }
+  update(rows: object | object[]): CommitPromise;
+  update(rows: object | object[], callback: s.CommitCallback): void;
   /**
    * Update rows of data within this table.
    *
@@ -724,14 +726,14 @@ class Table {
    * region_tag:spanner_update_data
    * Full example:
    */
-  update(rows: object | object[]): CommitPromise;
-  update(rows: object | object[], callback: s.CommitCallback): void;
   update(
     rows: object | object[],
     callback?: s.CommitCallback
   ): CommitPromise | void {
     this._mutate('update', rows, callback!);
   }
+  upsert(rows: object | object[]): CommitPromise;
+  upsert(rows: object | object[], callback: s.CommitCallback): void;
   /**
    * Insert or update rows of data within this table.
    *
@@ -771,8 +773,6 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    */
-  upsert(rows: object | object[]): CommitPromise;
-  upsert(rows: object | object[], callback: s.CommitCallback): void;
   upsert(
     rows: object | object[],
     callback?: s.CommitCallback
