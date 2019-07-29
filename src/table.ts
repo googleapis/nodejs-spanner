@@ -95,6 +95,8 @@ class Table {
      */
     this.name = name;
   }
+  create(schema: Schema): Promise<CreateTableResponse>;
+  create(schema: Schema, callback: CreateTableCallback): void;
   /**
    * Create a table.
    *
@@ -144,8 +146,6 @@ class Table {
    *     // Table created successfully.
    *   });
    */
-  create(schema: Schema): Promise<CreateTableResponse>;
-  create(schema: Schema, callback: CreateTableCallback): void;
   create(
     schema: Schema,
     callback?: CreateTableCallback
