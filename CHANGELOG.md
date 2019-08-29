@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.0.3](https://www.github.com/googleapis/nodejs-spanner/compare/v4.0.2...v4.0.3) (2019-08-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency yargs to v14 ([#680](https://www.github.com/googleapis/nodejs-spanner/issues/680)) ([add2f05](https://www.github.com/googleapis/nodejs-spanner/commit/add2f05))
+* **types:** import request types from teeny-request ([#682](https://www.github.com/googleapis/nodejs-spanner/issues/682)) ([a1ecd80](https://www.github.com/googleapis/nodejs-spanner/commit/a1ecd80))
+* set proper version # for x-goog-api-client ([#681](https://www.github.com/googleapis/nodejs-spanner/issues/681)) ([f300fad](https://www.github.com/googleapis/nodejs-spanner/commit/f300fad))
+
 ### [4.0.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.0.1...v4.0.2) (2019-08-09)
 
 
