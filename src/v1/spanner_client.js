@@ -84,7 +84,7 @@ class SpannerClient {
 
     // Determine the client header string.
     const clientHeader = [
-      `gl-node/${process.version}`,
+      `gl-node/${process.versions.node}`,
       `grpc/${gaxGrpc.grpcVersion}`,
       `gax/${gax.version}`,
       `gapic/${VERSION}`,
@@ -155,6 +155,7 @@ class SpannerClient {
     // and create an API call method for each.
     const spannerStubMethods = [
       'createSession',
+      'batchCreateSessions',
       'getSession',
       'listSessions',
       'deleteSession',
@@ -309,6 +310,74 @@ class SpannerClient {
     });
 
     return this._innerApiCalls.createSession(request, options, callback);
+  }
+
+  /**
+   * Creates multiple new sessions.
+   *
+   * This API can be used to initialize a session cache on the clients.
+   * See https://goo.gl/TgSFN2 for best practices on session cache management.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database in which the new sessions are created.
+   * @param {Object} [request.sessionTemplate]
+   *   Parameters to be applied to each created session.
+   *
+   *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
+   * @param {number} [request.sessionCount]
+   *   Required. The number of sessions to be created in this batch call.
+   *   The API may return fewer than the requested number of sessions. If a
+   *   specific number of sessions are desired, the client can make additional
+   *   calls to BatchCreateSessions (adjusting
+   *   session_count
+   *   as necessary).
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing [BatchCreateSessionsResponse]{@link google.spanner.v1.BatchCreateSessionsResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [BatchCreateSessionsResponse]{@link google.spanner.v1.BatchCreateSessionsResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.SpannerClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * client.batchCreateSessions({database: formattedDatabase})
+   *   .then(responses => {
+   *     const response = responses[0];
+   *     // doThingsWith(response)
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  batchCreateSessions(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      database: request.database,
+    });
+
+    return this._innerApiCalls.batchCreateSessions(request, options, callback);
   }
 
   /**
@@ -616,9 +685,6 @@ class SpannerClient {
    * @param {string} request.sql
    *   Required. The SQL string.
    * @param {Object} [request.transaction]
-   *   The transaction to use. If none is provided, the default is a
-   *   temporary read-only transaction with strong concurrency.
-   *
    *   The transaction to use.
    *
    *   For queries, if none is provided, the default is a temporary read-only
@@ -756,9 +822,6 @@ class SpannerClient {
    * @param {string} request.sql
    *   Required. The SQL string.
    * @param {Object} [request.transaction]
-   *   The transaction to use. If none is provided, the default is a
-   *   temporary read-only transaction with strong concurrency.
-   *
    *   The transaction to use.
    *
    *   For queries, if none is provided, the default is a temporary read-only
@@ -875,8 +938,9 @@ class SpannerClient {
    *
    * Statements are executed in order, sequentially.
    * ExecuteBatchDmlResponse will contain a
-   * ResultSet for each DML statement that has successfully executed. If a
-   * statement fails, its error status will be returned as part of the
+   * ResultSet for each DML statement that has
+   * successfully executed. If a statement fails, its error status will be
+   * returned as part of the
    * ExecuteBatchDmlResponse. Execution will
    * stop at the first failed statement; the remaining statements will not run.
    *

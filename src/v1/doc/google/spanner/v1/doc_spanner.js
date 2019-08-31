@@ -35,6 +35,51 @@ const CreateSessionRequest = {
 };
 
 /**
+ * The request for
+ * BatchCreateSessions.
+ *
+ * @property {string} database
+ *   Required. The database in which the new sessions are created.
+ *
+ * @property {Object} sessionTemplate
+ *   Parameters to be applied to each created session.
+ *
+ *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
+ *
+ * @property {number} sessionCount
+ *   Required. The number of sessions to be created in this batch call.
+ *   The API may return fewer than the requested number of sessions. If a
+ *   specific number of sessions are desired, the client can make additional
+ *   calls to BatchCreateSessions (adjusting
+ *   session_count
+ *   as necessary).
+ *
+ * @typedef BatchCreateSessionsRequest
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.BatchCreateSessionsRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+const BatchCreateSessionsRequest = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
+ * The response for
+ * BatchCreateSessions.
+ *
+ * @property {Object[]} session
+ *   The freshly created sessions.
+ *
+ *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
+ *
+ * @typedef BatchCreateSessionsResponse
+ * @memberof google.spanner.v1
+ * @see [google.spanner.v1.BatchCreateSessionsResponse definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+ */
+const BatchCreateSessionsResponse = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+};
+
+/**
  * A session in the Cloud Spanner API.
  *
  * @property {string} name
@@ -164,9 +209,6 @@ const DeleteSessionRequest = {
  *   Required. The session in which the SQL query should be performed.
  *
  * @property {Object} transaction
- *   The transaction to use. If none is provided, the default is a
- *   temporary read-only transaction with strong concurrency.
- *
  *   The transaction to use.
  *
  *   For queries, if none is provided, the default is a temporary read-only
@@ -345,7 +387,9 @@ const ExecuteBatchDmlRequest = {
    * @property {Object.<string, Object>} paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in params as JSON strings.
+   *   of type `STRING` both appear in
+   *   params as
+   *   JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -362,11 +406,13 @@ const ExecuteBatchDmlRequest = {
 };
 
 /**
- * The response for ExecuteBatchDml. Contains a list
- * of ResultSet, one for each DML statement that has successfully executed.
- * If a statement fails, the error is returned as part of the response payload.
- * Clients can determine whether all DML statements have run successfully, or if
- * a statement failed, using one of the following approaches:
+ * The response for
+ * ExecuteBatchDml. Contains a list
+ * of ResultSet, one for each DML statement that
+ * has successfully executed. If a statement fails, the error is returned as
+ * part of the response payload. Clients can determine whether all DML
+ * statements have run successfully, or if a statement failed, using one of the
+ * following approaches:
  *
  *   1. Check if 'status' field is OkStatus.
  *   2. Check if result_sets_size() equals the number of statements in
@@ -384,9 +430,11 @@ const ExecuteBatchDmlRequest = {
  *
  * @property {Object[]} resultSets
  *   ResultSets, one for each statement in the request that ran successfully, in
- *   the same order as the statements in the request. Each ResultSet will
- *   not contain any rows. The ResultSetStats in each ResultSet will
- *   contain the number of rows modified by the statement.
+ *   the same order as the statements in the request. Each
+ *   ResultSet will not contain any rows. The
+ *   ResultSetStats in each
+ *   ResultSet will contain the number of rows
+ *   modified by the statement.
  *
  *   Only the first ResultSet in the response contains a valid
  *   ResultSetMetadata.

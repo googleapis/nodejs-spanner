@@ -23,7 +23,7 @@
 import {ServiceObject} from '@google-cloud/common-grpc';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import * as r from 'request';
+import * as r from 'teeny-request';
 import {
   Snapshot,
   Transaction,
