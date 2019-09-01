@@ -76,3 +76,4 @@ s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
 # '''
 subprocess.run(['npm', 'install'])
 subprocess.run(['npm', 'run', 'fix'])
+subprocess.run(['npx', 'compileProtos', 'src'])
