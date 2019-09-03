@@ -61,6 +61,16 @@ class SpannerClient {
     opts = opts || {};
     this._descriptors = {};
 
+    if (global.isBrowser) {
+      // If we're in browser, we use gRPC fallback.
+      opts.fallback = true;
+    }
+
+    // If we are in browser, we are already using fallback because of the
+    // "browser" field in package.json.
+    // But if we were explicitly requested to use fallback, let's do it now.
+    const gaxModule = !global.isBrowser && opts.fallback ? gax.fallback : gax;
+
     const servicePath =
       opts.servicePath || opts.apiEndpoint || this.constructor.servicePath;
 
@@ -77,36 +87,51 @@ class SpannerClient {
     // Create a `gaxGrpc` object, with any grpc-specific options
     // sent to the client.
     opts.scopes = this.constructor.scopes;
-    const gaxGrpc = new gax.GrpcClient(opts);
+    const gaxGrpc = new gaxModule.GrpcClient(opts);
 
     // Save the auth object to the client, for use by other methods.
     this.auth = gaxGrpc.auth;
 
     // Determine the client header string.
-    const clientHeader = [
-      `gl-node/${process.versions.node}`,
-      `grpc/${gaxGrpc.grpcVersion}`,
-      `gax/${gax.version}`,
-      `gapic/${VERSION}`,
-    ];
+    const clientHeader = [];
+
+    if (typeof process !== 'undefined' && 'versions' in process) {
+      clientHeader.push(`gl-node/${process.versions.node}`);
+    }
+    clientHeader.push(`gax/${gaxModule.version}`);
+    if (opts.fallback) {
+      clientHeader.push(`gl-web/${gaxModule.version}`);
+    } else {
+      clientHeader.push(`grpc/${gaxGrpc.grpcVersion}`);
+    }
+    clientHeader.push(`gapic/${VERSION}`);
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
 
     // Load the applicable protos.
+    // For Node.js, pass the path to JSON proto file.
+    // For browsers, pass the JSON content.
+
+    const nodejsProtoPath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'protos',
+      'protos.json'
+    );
     const protos = gaxGrpc.loadProto(
-      path.join(__dirname, '..', '..', 'protos'),
-      ['google/spanner/v1/spanner.proto']
+      opts.fallback ? require('../../protos/protos.json') : nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
     this._pathTemplates = {
-      databasePathTemplate: new gax.PathTemplate(
+      databasePathTemplate: new gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
       ),
-      sessionPathTemplate: new gax.PathTemplate(
+      sessionPathTemplate: new gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}'
       ),
     };
@@ -115,7 +140,7 @@ class SpannerClient {
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
     this._descriptors.page = {
-      listSessions: new gax.PageDescriptor(
+      listSessions: new gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
         'sessions'
@@ -125,10 +150,12 @@ class SpannerClient {
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this._descriptors.stream = {
-      executeStreamingSql: new gax.StreamDescriptor(
+      executeStreamingSql: new gaxModule.StreamDescriptor(
         gax.StreamType.SERVER_STREAMING
       ),
-      streamingRead: new gax.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
+      streamingRead: new gaxModule.StreamDescriptor(
+        gax.StreamType.SERVER_STREAMING
+      ),
     };
 
     // Put together the default options sent with requests.
@@ -147,7 +174,9 @@ class SpannerClient {
     // Put together the "service stub" for
     // google.spanner.v1.Spanner.
     const spannerStub = gaxGrpc.createStub(
-      protos.google.spanner.v1.Spanner,
+      opts.fallback
+        ? protos.lookupService('google.spanner.v1.Spanner')
+        : protos.google.spanner.v1.Spanner,
       opts
     );
 
@@ -171,18 +200,16 @@ class SpannerClient {
       'partitionRead',
     ];
     for (const methodName of spannerStubMethods) {
-      this._innerApiCalls[methodName] = gax.createApiCall(
-        spannerStub.then(
-          stub =>
-            function() {
-              const args = Array.prototype.slice.call(arguments, 0);
-              return stub[methodName].apply(stub, args);
-            },
-          err =>
-            function() {
-              throw err;
-            }
-        ),
+      const innerCallPromise = spannerStub.then(
+        stub => (...args) => {
+          return stub[methodName].apply(stub, args);
+        },
+        err => () => {
+          throw err;
+        }
+      );
+      this._innerApiCalls[methodName] = gaxModule.createApiCall(
+        innerCallPromise,
         defaults[methodName],
         this._descriptors.page[methodName] ||
           this._descriptors.stream[methodName]
