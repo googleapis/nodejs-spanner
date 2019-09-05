@@ -6,6 +6,237 @@
           "nested": {
             "admin": {
               "nested": {
+                "database": {
+                  "nested": {
+                    "v1": {
+                      "options": {
+                        "csharp_namespace": "Google.Cloud.Spanner.Admin.Database.V1",
+                        "go_package": "google.golang.org/genproto/googleapis/spanner/admin/database/v1;database",
+                        "java_multiple_files": true,
+                        "java_outer_classname": "SpannerDatabaseAdminProto",
+                        "java_package": "com.google.spanner.admin.database.v1",
+                        "php_namespace": "Google\\Cloud\\Spanner\\Admin\\Database\\V1"
+                      },
+                      "nested": {
+                        "DatabaseAdmin": {
+                          "methods": {
+                            "ListDatabases": {
+                              "requestType": "ListDatabasesRequest",
+                              "responseType": "ListDatabasesResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/databases"
+                              }
+                            },
+                            "CreateDatabase": {
+                              "requestType": "CreateDatabaseRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*/instances/*}/databases",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "GetDatabase": {
+                              "requestType": "GetDatabaseRequest",
+                              "responseType": "Database",
+                              "options": {
+                                "(google.api.http).get": "/v1/{name=projects/*/instances/*/databases/*}"
+                              }
+                            },
+                            "UpdateDatabaseDdl": {
+                              "requestType": "UpdateDatabaseDdlRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).patch": "/v1/{database=projects/*/instances/*/databases/*}/ddl",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "DropDatabase": {
+                              "requestType": "DropDatabaseRequest",
+                              "responseType": "google.protobuf.Empty",
+                              "options": {
+                                "(google.api.http).delete": "/v1/{database=projects/*/instances/*/databases/*}"
+                              }
+                            },
+                            "GetDatabaseDdl": {
+                              "requestType": "GetDatabaseDdlRequest",
+                              "responseType": "GetDatabaseDdlResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{database=projects/*/instances/*/databases/*}/ddl"
+                              }
+                            },
+                            "SetIamPolicy": {
+                              "requestType": "google.iam.v1.SetIamPolicyRequest",
+                              "responseType": "google.iam.v1.Policy",
+                              "options": {
+                                "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:setIamPolicy",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "GetIamPolicy": {
+                              "requestType": "google.iam.v1.GetIamPolicyRequest",
+                              "responseType": "google.iam.v1.Policy",
+                              "options": {
+                                "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:getIamPolicy",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "TestIamPermissions": {
+                              "requestType": "google.iam.v1.TestIamPermissionsRequest",
+                              "responseType": "google.iam.v1.TestIamPermissionsResponse",
+                              "options": {
+                                "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:testIamPermissions",
+                                "(google.api.http).body": "*"
+                              }
+                            }
+                          }
+                        },
+                        "Database": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "state": {
+                              "type": "State",
+                              "id": 2
+                            }
+                          },
+                          "nested": {
+                            "State": {
+                              "values": {
+                                "STATE_UNSPECIFIED": 0,
+                                "CREATING": 1,
+                                "READY": 2
+                              }
+                            }
+                          }
+                        },
+                        "ListDatabasesRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 3
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ListDatabasesResponse": {
+                          "fields": {
+                            "databases": {
+                              "rule": "repeated",
+                              "type": "Database",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "CreateDatabaseRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "createStatement": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "extraStatements": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "CreateDatabaseMetadata": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "GetDatabaseRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "UpdateDatabaseDdlRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "statements": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 2
+                            },
+                            "operationId": {
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "UpdateDatabaseDdlMetadata": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "statements": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 2
+                            },
+                            "commitTimestamps": {
+                              "rule": "repeated",
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "DropDatabaseRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "GetDatabaseDdlRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "GetDatabaseDdlResponse": {
+                          "fields": {
+                            "statements": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "instance": {
                   "nested": {
                     "v1": {
@@ -306,6 +537,992 @@
                   }
                 }
               }
+            },
+            "v1": {
+              "options": {
+                "csharp_namespace": "Google.Cloud.Spanner.V1",
+                "go_package": "google.golang.org/genproto/googleapis/spanner/v1;spanner",
+                "java_multiple_files": true,
+                "java_outer_classname": "TypeProto",
+                "java_package": "com.google.spanner.v1",
+                "php_namespace": "Google\\Cloud\\Spanner\\V1",
+                "cc_enable_arenas": true
+              },
+              "nested": {
+                "Spanner": {
+                  "methods": {
+                    "CreateSession": {
+                      "requestType": "CreateSessionRequest",
+                      "responseType": "Session",
+                      "options": {
+                        "(google.api.http).post": "/v1/{database=projects/*/instances/*/databases/*}/sessions",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "BatchCreateSessions": {
+                      "requestType": "BatchCreateSessionsRequest",
+                      "responseType": "BatchCreateSessionsResponse",
+                      "options": {
+                        "(google.api.http).post": "/v1/{database=projects/*/instances/*/databases/*}/sessions:batchCreate",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "GetSession": {
+                      "requestType": "GetSessionRequest",
+                      "responseType": "Session",
+                      "options": {
+                        "(google.api.http).get": "/v1/{name=projects/*/instances/*/databases/*/sessions/*}"
+                      }
+                    },
+                    "ListSessions": {
+                      "requestType": "ListSessionsRequest",
+                      "responseType": "ListSessionsResponse",
+                      "options": {
+                        "(google.api.http).get": "/v1/{database=projects/*/instances/*/databases/*}/sessions"
+                      }
+                    },
+                    "DeleteSession": {
+                      "requestType": "DeleteSessionRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(google.api.http).delete": "/v1/{name=projects/*/instances/*/databases/*/sessions/*}"
+                      }
+                    },
+                    "ExecuteSql": {
+                      "requestType": "ExecuteSqlRequest",
+                      "responseType": "ResultSet",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeSql",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "ExecuteStreamingSql": {
+                      "requestType": "ExecuteSqlRequest",
+                      "responseType": "PartialResultSet",
+                      "responseStream": true,
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeStreamingSql",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "ExecuteBatchDml": {
+                      "requestType": "ExecuteBatchDmlRequest",
+                      "responseType": "ExecuteBatchDmlResponse",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeBatchDml",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "Read": {
+                      "requestType": "ReadRequest",
+                      "responseType": "ResultSet",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:read",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "StreamingRead": {
+                      "requestType": "ReadRequest",
+                      "responseType": "PartialResultSet",
+                      "responseStream": true,
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:streamingRead",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "BeginTransaction": {
+                      "requestType": "BeginTransactionRequest",
+                      "responseType": "Transaction",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:beginTransaction",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "Commit": {
+                      "requestType": "CommitRequest",
+                      "responseType": "CommitResponse",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:commit",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "Rollback": {
+                      "requestType": "RollbackRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:rollback",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "PartitionQuery": {
+                      "requestType": "PartitionQueryRequest",
+                      "responseType": "PartitionResponse",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionQuery",
+                        "(google.api.http).body": "*"
+                      }
+                    },
+                    "PartitionRead": {
+                      "requestType": "PartitionReadRequest",
+                      "responseType": "PartitionResponse",
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionRead",
+                        "(google.api.http).body": "*"
+                      }
+                    }
+                  }
+                },
+                "CreateSessionRequest": {
+                  "fields": {
+                    "database": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "session": {
+                      "type": "Session",
+                      "id": 2
+                    }
+                  }
+                },
+                "BatchCreateSessionsRequest": {
+                  "fields": {
+                    "database": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "sessionTemplate": {
+                      "type": "Session",
+                      "id": 2
+                    },
+                    "sessionCount": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "BatchCreateSessionsResponse": {
+                  "fields": {
+                    "session": {
+                      "rule": "repeated",
+                      "type": "Session",
+                      "id": 1
+                    }
+                  }
+                },
+                "Session": {
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "labels": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 2
+                    },
+                    "createTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "approximateLastUseTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    }
+                  }
+                },
+                "GetSessionRequest": {
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ListSessionsRequest": {
+                  "fields": {
+                    "database": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "pageSize": {
+                      "type": "int32",
+                      "id": 2
+                    },
+                    "pageToken": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "filter": {
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "ListSessionsResponse": {
+                  "fields": {
+                    "sessions": {
+                      "rule": "repeated",
+                      "type": "Session",
+                      "id": 1
+                    },
+                    "nextPageToken": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "DeleteSessionRequest": {
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ExecuteSqlRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "TransactionSelector",
+                      "id": 2
+                    },
+                    "sql": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "params": {
+                      "type": "google.protobuf.Struct",
+                      "id": 4
+                    },
+                    "paramTypes": {
+                      "keyType": "string",
+                      "type": "Type",
+                      "id": 5
+                    },
+                    "resumeToken": {
+                      "type": "bytes",
+                      "id": 6
+                    },
+                    "queryMode": {
+                      "type": "QueryMode",
+                      "id": 7
+                    },
+                    "partitionToken": {
+                      "type": "bytes",
+                      "id": 8
+                    },
+                    "seqno": {
+                      "type": "int64",
+                      "id": 9
+                    }
+                  },
+                  "nested": {
+                    "QueryMode": {
+                      "values": {
+                        "NORMAL": 0,
+                        "PLAN": 1,
+                        "PROFILE": 2
+                      }
+                    }
+                  }
+                },
+                "ExecuteBatchDmlRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "TransactionSelector",
+                      "id": 2
+                    },
+                    "statements": {
+                      "rule": "repeated",
+                      "type": "Statement",
+                      "id": 3
+                    },
+                    "seqno": {
+                      "type": "int64",
+                      "id": 4
+                    }
+                  },
+                  "nested": {
+                    "Statement": {
+                      "fields": {
+                        "sql": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "params": {
+                          "type": "google.protobuf.Struct",
+                          "id": 2
+                        },
+                        "paramTypes": {
+                          "keyType": "string",
+                          "type": "Type",
+                          "id": 3
+                        }
+                      }
+                    }
+                  }
+                },
+                "ExecuteBatchDmlResponse": {
+                  "fields": {
+                    "resultSets": {
+                      "rule": "repeated",
+                      "type": "ResultSet",
+                      "id": 1
+                    },
+                    "status": {
+                      "type": "google.rpc.Status",
+                      "id": 2
+                    }
+                  }
+                },
+                "PartitionOptions": {
+                  "fields": {
+                    "partitionSizeBytes": {
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "maxPartitions": {
+                      "type": "int64",
+                      "id": 2
+                    }
+                  }
+                },
+                "PartitionQueryRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "TransactionSelector",
+                      "id": 2
+                    },
+                    "sql": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "params": {
+                      "type": "google.protobuf.Struct",
+                      "id": 4
+                    },
+                    "paramTypes": {
+                      "keyType": "string",
+                      "type": "Type",
+                      "id": 5
+                    },
+                    "partitionOptions": {
+                      "type": "PartitionOptions",
+                      "id": 6
+                    }
+                  }
+                },
+                "PartitionReadRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "TransactionSelector",
+                      "id": 2
+                    },
+                    "table": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "index": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "columns": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 5
+                    },
+                    "keySet": {
+                      "type": "KeySet",
+                      "id": 6
+                    },
+                    "partitionOptions": {
+                      "type": "PartitionOptions",
+                      "id": 9
+                    }
+                  }
+                },
+                "Partition": {
+                  "fields": {
+                    "partitionToken": {
+                      "type": "bytes",
+                      "id": 1
+                    }
+                  }
+                },
+                "PartitionResponse": {
+                  "fields": {
+                    "partitions": {
+                      "rule": "repeated",
+                      "type": "Partition",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "Transaction",
+                      "id": 2
+                    }
+                  }
+                },
+                "ReadRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "TransactionSelector",
+                      "id": 2
+                    },
+                    "table": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "index": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "columns": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 5
+                    },
+                    "keySet": {
+                      "type": "KeySet",
+                      "id": 6
+                    },
+                    "limit": {
+                      "type": "int64",
+                      "id": 8
+                    },
+                    "resumeToken": {
+                      "type": "bytes",
+                      "id": 9
+                    },
+                    "partitionToken": {
+                      "type": "bytes",
+                      "id": 10
+                    }
+                  }
+                },
+                "BeginTransactionRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "options": {
+                      "type": "TransactionOptions",
+                      "id": 2
+                    }
+                  }
+                },
+                "CommitRequest": {
+                  "oneofs": {
+                    "transaction": {
+                      "oneof": [
+                        "transactionId",
+                        "singleUseTransaction"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transactionId": {
+                      "type": "bytes",
+                      "id": 2
+                    },
+                    "singleUseTransaction": {
+                      "type": "TransactionOptions",
+                      "id": 3
+                    },
+                    "mutations": {
+                      "rule": "repeated",
+                      "type": "Mutation",
+                      "id": 4
+                    }
+                  }
+                },
+                "CommitResponse": {
+                  "fields": {
+                    "commitTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 1
+                    }
+                  }
+                },
+                "RollbackRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "transactionId": {
+                      "type": "bytes",
+                      "id": 2
+                    }
+                  }
+                },
+                "KeyRange": {
+                  "oneofs": {
+                    "startKeyType": {
+                      "oneof": [
+                        "startClosed",
+                        "startOpen"
+                      ]
+                    },
+                    "endKeyType": {
+                      "oneof": [
+                        "endClosed",
+                        "endOpen"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "startClosed": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 1
+                    },
+                    "startOpen": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 2
+                    },
+                    "endClosed": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 3
+                    },
+                    "endOpen": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 4
+                    }
+                  }
+                },
+                "KeySet": {
+                  "fields": {
+                    "keys": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.ListValue",
+                      "id": 1
+                    },
+                    "ranges": {
+                      "rule": "repeated",
+                      "type": "KeyRange",
+                      "id": 2
+                    },
+                    "all": {
+                      "type": "bool",
+                      "id": 3
+                    }
+                  }
+                },
+                "Mutation": {
+                  "oneofs": {
+                    "operation": {
+                      "oneof": [
+                        "insert",
+                        "update",
+                        "insertOrUpdate",
+                        "replace",
+                        "delete"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "insert": {
+                      "type": "Write",
+                      "id": 1
+                    },
+                    "update": {
+                      "type": "Write",
+                      "id": 2
+                    },
+                    "insertOrUpdate": {
+                      "type": "Write",
+                      "id": 3
+                    },
+                    "replace": {
+                      "type": "Write",
+                      "id": 4
+                    },
+                    "delete": {
+                      "type": "Delete",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "Write": {
+                      "fields": {
+                        "table": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "columns": {
+                          "rule": "repeated",
+                          "type": "string",
+                          "id": 2
+                        },
+                        "values": {
+                          "rule": "repeated",
+                          "type": "google.protobuf.ListValue",
+                          "id": 3
+                        }
+                      }
+                    },
+                    "Delete": {
+                      "fields": {
+                        "table": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "keySet": {
+                          "type": "KeySet",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "ResultSet": {
+                  "fields": {
+                    "metadata": {
+                      "type": "ResultSetMetadata",
+                      "id": 1
+                    },
+                    "rows": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.ListValue",
+                      "id": 2
+                    },
+                    "stats": {
+                      "type": "ResultSetStats",
+                      "id": 3
+                    }
+                  }
+                },
+                "PartialResultSet": {
+                  "fields": {
+                    "metadata": {
+                      "type": "ResultSetMetadata",
+                      "id": 1
+                    },
+                    "values": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.Value",
+                      "id": 2
+                    },
+                    "chunkedValue": {
+                      "type": "bool",
+                      "id": 3
+                    },
+                    "resumeToken": {
+                      "type": "bytes",
+                      "id": 4
+                    },
+                    "stats": {
+                      "type": "ResultSetStats",
+                      "id": 5
+                    }
+                  }
+                },
+                "ResultSetMetadata": {
+                  "fields": {
+                    "rowType": {
+                      "type": "StructType",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "Transaction",
+                      "id": 2
+                    }
+                  }
+                },
+                "ResultSetStats": {
+                  "oneofs": {
+                    "rowCount": {
+                      "oneof": [
+                        "rowCountExact",
+                        "rowCountLowerBound"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "queryPlan": {
+                      "type": "QueryPlan",
+                      "id": 1
+                    },
+                    "queryStats": {
+                      "type": "google.protobuf.Struct",
+                      "id": 2
+                    },
+                    "rowCountExact": {
+                      "type": "int64",
+                      "id": 3
+                    },
+                    "rowCountLowerBound": {
+                      "type": "int64",
+                      "id": 4
+                    }
+                  }
+                },
+                "PlanNode": {
+                  "fields": {
+                    "index": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "kind": {
+                      "type": "Kind",
+                      "id": 2
+                    },
+                    "displayName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "childLinks": {
+                      "rule": "repeated",
+                      "type": "ChildLink",
+                      "id": 4
+                    },
+                    "shortRepresentation": {
+                      "type": "ShortRepresentation",
+                      "id": 5
+                    },
+                    "metadata": {
+                      "type": "google.protobuf.Struct",
+                      "id": 6
+                    },
+                    "executionStats": {
+                      "type": "google.protobuf.Struct",
+                      "id": 7
+                    }
+                  },
+                  "nested": {
+                    "ChildLink": {
+                      "fields": {
+                        "childIndex": {
+                          "type": "int32",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "variable": {
+                          "type": "string",
+                          "id": 3
+                        }
+                      }
+                    },
+                    "ShortRepresentation": {
+                      "fields": {
+                        "description": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "subqueries": {
+                          "keyType": "string",
+                          "type": "int32",
+                          "id": 2
+                        }
+                      }
+                    },
+                    "Kind": {
+                      "values": {
+                        "KIND_UNSPECIFIED": 0,
+                        "RELATIONAL": 1,
+                        "SCALAR": 2
+                      }
+                    }
+                  }
+                },
+                "QueryPlan": {
+                  "fields": {
+                    "planNodes": {
+                      "rule": "repeated",
+                      "type": "PlanNode",
+                      "id": 1
+                    }
+                  }
+                },
+                "TransactionOptions": {
+                  "oneofs": {
+                    "mode": {
+                      "oneof": [
+                        "readWrite",
+                        "partitionedDml",
+                        "readOnly"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "readWrite": {
+                      "type": "ReadWrite",
+                      "id": 1
+                    },
+                    "partitionedDml": {
+                      "type": "PartitionedDml",
+                      "id": 3
+                    },
+                    "readOnly": {
+                      "type": "ReadOnly",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "ReadWrite": {
+                      "fields": {}
+                    },
+                    "PartitionedDml": {
+                      "fields": {}
+                    },
+                    "ReadOnly": {
+                      "oneofs": {
+                        "timestampBound": {
+                          "oneof": [
+                            "strong",
+                            "minReadTimestamp",
+                            "maxStaleness",
+                            "readTimestamp",
+                            "exactStaleness"
+                          ]
+                        }
+                      },
+                      "fields": {
+                        "strong": {
+                          "type": "bool",
+                          "id": 1
+                        },
+                        "minReadTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 2
+                        },
+                        "maxStaleness": {
+                          "type": "google.protobuf.Duration",
+                          "id": 3
+                        },
+                        "readTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 4
+                        },
+                        "exactStaleness": {
+                          "type": "google.protobuf.Duration",
+                          "id": 5
+                        },
+                        "returnReadTimestamp": {
+                          "type": "bool",
+                          "id": 6
+                        }
+                      }
+                    }
+                  }
+                },
+                "Transaction": {
+                  "fields": {
+                    "id": {
+                      "type": "bytes",
+                      "id": 1
+                    },
+                    "readTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    }
+                  }
+                },
+                "TransactionSelector": {
+                  "oneofs": {
+                    "selector": {
+                      "oneof": [
+                        "singleUse",
+                        "id",
+                        "begin"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "singleUse": {
+                      "type": "TransactionOptions",
+                      "id": 1
+                    },
+                    "id": {
+                      "type": "bytes",
+                      "id": 2
+                    },
+                    "begin": {
+                      "type": "TransactionOptions",
+                      "id": 3
+                    }
+                  }
+                },
+                "Type": {
+                  "fields": {
+                    "code": {
+                      "type": "TypeCode",
+                      "id": 1
+                    },
+                    "arrayElementType": {
+                      "type": "Type",
+                      "id": 2
+                    },
+                    "structType": {
+                      "type": "StructType",
+                      "id": 3
+                    }
+                  }
+                },
+                "StructType": {
+                  "fields": {
+                    "fields": {
+                      "rule": "repeated",
+                      "type": "Field",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "Field": {
+                      "fields": {
+                        "name": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "Type",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "TypeCode": {
+                  "values": {
+                    "TYPE_CODE_UNSPECIFIED": 0,
+                    "BOOL": 1,
+                    "INT64": 2,
+                    "FLOAT64": 3,
+                    "TIMESTAMP": 4,
+                    "DATE": 5,
+                    "STRING": 6,
+                    "BYTES": 7,
+                    "ARRAY": 8,
+                    "STRUCT": 9
+                  }
+                }
+              }
             }
           }
         },
@@ -313,7 +1530,7 @@
           "options": {
             "go_package": "google.golang.org/genproto/googleapis/api/annotations;annotations",
             "java_multiple_files": true,
-            "java_outer_classname": "ResourceProto",
+            "java_outer_classname": "ClientProto",
             "java_package": "com.google.api",
             "objc_class_prefix": "GAPI",
             "cc_enable_arenas": true
@@ -406,57 +1623,21 @@
                 }
               }
             },
-            "resourceReference": {
-              "type": "google.api.ResourceReference",
-              "id": 1055,
-              "extend": "google.protobuf.FieldOptions"
+            "methodSignature": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 1051,
+              "extend": "google.protobuf.MethodOptions"
             },
-            "resource": {
-              "type": "google.api.ResourceDescriptor",
-              "id": 1053,
-              "extend": "google.protobuf.MessageOptions"
+            "defaultHost": {
+              "type": "string",
+              "id": 1049,
+              "extend": "google.protobuf.ServiceOptions"
             },
-            "ResourceDescriptor": {
-              "fields": {
-                "type": {
-                  "type": "string",
-                  "id": 1
-                },
-                "pattern": {
-                  "rule": "repeated",
-                  "type": "string",
-                  "id": 2
-                },
-                "nameField": {
-                  "type": "string",
-                  "id": 3
-                },
-                "history": {
-                  "type": "History",
-                  "id": 4
-                }
-              },
-              "nested": {
-                "History": {
-                  "values": {
-                    "HISTORY_UNSPECIFIED": 0,
-                    "ORIGINALLY_SINGLE_PATTERN": 1,
-                    "FUTURE_MULTI_PATTERN": 2
-                  }
-                }
-              }
-            },
-            "ResourceReference": {
-              "fields": {
-                "type": {
-                  "type": "string",
-                  "id": 1
-                },
-                "childType": {
-                  "type": "string",
-                  "id": 2
-                }
-              }
+            "oauthScopes": {
+              "type": "string",
+              "id": 1050,
+              "extend": "google.protobuf.ServiceOptions"
             }
           }
         },
@@ -1378,15 +2559,6 @@
             "Empty": {
               "fields": {}
             },
-            "FieldMask": {
-              "fields": {
-                "paths": {
-                  "rule": "repeated",
-                  "type": "string",
-                  "id": 1
-                }
-              }
-            },
             "Timestamp": {
               "fields": {
                 "seconds": {
@@ -1396,6 +2568,78 @@
                 "nanos": {
                   "type": "int32",
                   "id": 2
+                }
+              }
+            },
+            "FieldMask": {
+              "fields": {
+                "paths": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 1
+                }
+              }
+            },
+            "Struct": {
+              "fields": {
+                "fields": {
+                  "keyType": "string",
+                  "type": "Value",
+                  "id": 1
+                }
+              }
+            },
+            "Value": {
+              "oneofs": {
+                "kind": {
+                  "oneof": [
+                    "nullValue",
+                    "numberValue",
+                    "stringValue",
+                    "boolValue",
+                    "structValue",
+                    "listValue"
+                  ]
+                }
+              },
+              "fields": {
+                "nullValue": {
+                  "type": "NullValue",
+                  "id": 1
+                },
+                "numberValue": {
+                  "type": "double",
+                  "id": 2
+                },
+                "stringValue": {
+                  "type": "string",
+                  "id": 3
+                },
+                "boolValue": {
+                  "type": "bool",
+                  "id": 4
+                },
+                "structValue": {
+                  "type": "Struct",
+                  "id": 5
+                },
+                "listValue": {
+                  "type": "ListValue",
+                  "id": 6
+                }
+              }
+            },
+            "NullValue": {
+              "values": {
+                "NULL_VALUE": 0
+              }
+            },
+            "ListValue": {
+              "fields": {
+                "values": {
+                  "rule": "repeated",
+                  "type": "Value",
+                  "id": 1
                 }
               }
             }
@@ -1415,6 +2659,9 @@
               },
               "nested": {
                 "IAMPolicy": {
+                  "options": {
+                    "(google.api.default_host)": "iam-meta-api.googleapis.com"
+                  },
                   "methods": {
                     "SetIamPolicy": {
                       "requestType": "SetIamPolicyRequest",
@@ -1459,6 +2706,10 @@
                     "resource": {
                       "type": "string",
                       "id": 1
+                    },
+                    "options": {
+                      "type": "google.iam.v1.GetPolicyOptions",
+                      "id": 2
                     }
                   }
                 },
@@ -1480,6 +2731,14 @@
                     "permissions": {
                       "rule": "repeated",
                       "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "GetPolicyOptions": {
+                  "fields": {
+                    "requestedPolicyVersion": {
+                      "type": "int32",
                       "id": 1
                     }
                   }
