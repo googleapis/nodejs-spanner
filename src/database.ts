@@ -67,6 +67,7 @@ import {
   PagedRequest,
   ResourceCallback,
   PagedResponse,
+  NormalCallback,
 } from './common';
 import {ServiceError, CallOptions, ClientDuplexStream} from 'grpc';
 import {Readable, Transform} from 'stream';
@@ -86,9 +87,9 @@ type CreateBatchTransactionResponse = [
 type DatabaseResponse = [Database, r.Response];
 type DatabaseCallback = ResourceCallback<Database, r.Response>;
 
-type GetSnapshotCallback = ResourceCallback<Snapshot>;
+type GetSnapshotCallback = NormalCallback<Snapshot>;
 
-type GetTransactionCallback = ResourceCallback<Transaction>;
+type GetTransactionCallback = NormalCallback<Transaction>;
 
 export interface SessionPoolConstructor {
   new (
@@ -128,7 +129,7 @@ type GetSchemaResponse = [
 ];
 
 type GetSessionsCallback = RequestCallback<
-  Session,
+  google.spanner.v1.ISession,
   google.spanner.v1.IListSessionsResponse
 >;
 
@@ -155,9 +156,7 @@ export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
 >;
-export interface DatabaseDeleteCallback {
-  (err: Error | null, apiResponse?: r.Response | null): void;
-}
+export type DatabaseDeleteCallback = NormalCallback<r.Response>;
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -329,7 +328,7 @@ class Database extends ServiceObject {
    */
   close(
     callback?: SessionPoolCloseCallback
-  ): void | Promise<google.protobuf.IEmpty> {
+  ): void | Promise<DatabaseCloseResponse> {
     const key = this.id!.split('/').pop();
     // tslint:disable-next-line no-any
     (this.parent as any).databases_.delete(key);
@@ -881,17 +880,17 @@ class Database extends ServiceObject {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
-    this.request<string[] | null>(
+    this.request<
+      databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
+    >(
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',
         reqOpts,
       },
-      (err, ...args) => {
-        if (args[0]) {
-          args[0] = (args[0] as databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse).statements!;
-        }
-        callback!(err, ...args);
+      // tslint:disable-next-line: no-any
+      (err, statements, ...args: any[]) => {
+        callback!(err, statements ? statements.statements : null, ...args);
       }
     );
   }
@@ -999,7 +998,10 @@ class Database extends ServiceObject {
     });
 
     delete reqOpts.gaxOptions;
-    this.request<Session, google.spanner.v1.IListSessionsResponse>(
+    this.request<
+      google.spanner.v1.ISession,
+      google.spanner.v1.IListSessionsResponse
+    >(
       {
         client: 'SpannerClient',
         method: 'listSessions',
@@ -1009,11 +1011,9 @@ class Database extends ServiceObject {
       (err, ...args) => {
         if (args[0]) {
           args[0] = args[0].map(metadata => {
-            const session = self.session(
-              (metadata as google.spanner.v1.ISession).name!
-            );
+            const session = self.session(metadata.name!);
             session.metadata = metadata;
-            return session;
+            return session as google.spanner.v1.ISession;
           });
         }
         callback!(err, ...args);

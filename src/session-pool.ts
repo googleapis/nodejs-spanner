@@ -22,6 +22,7 @@ import trace = require('stack-trace');
 import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
+import {NormalCallback} from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -36,9 +37,7 @@ export interface SessionPoolCloseCallback {
  * @param {?Error} error Request error, if any.
  * @param {Session} session The read-only session.
  */
-export interface GetReadSessionCallback {
-  (err: Error | null, session?: Session | null): void;
-}
+export type GetReadSessionCallback = NormalCallback<Session>;
 
 /**
  * @callback GetWriteSessionCallback

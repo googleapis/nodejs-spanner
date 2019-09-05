@@ -74,19 +74,12 @@ export interface KeyRange {
   endOpen?: Value[];
 }
 
-export interface KeyRang {
-  startClosed?: spannerClient.protobuf.IListValue | null;
-  startOpen?: spannerClient.protobuf.IListValue | null;
-  endClosed?: spannerClient.protobuf.IListValue | null;
-  endOpen?: spannerClient.protobuf.IListValue | null;
-}
-
 export interface ReadRequest extends RequestOptions {
   table?: string;
   index?: string;
   columns?: string[] | null;
   keys?: string[];
-  ranges?: KeyRang[];
+  ranges?: KeyRange[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
   limit?: number | Long | null;
   resumeToken?: Uint8Array | null;
@@ -105,10 +98,10 @@ export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 export type BeginTransactionCallback = NormalCallback<
   spannerClient.spanner.v1.ITransaction
 >;
-export type CommitResponse = [spannerClient.spanner.v1.CommitResponse];
+export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
-export type RunResponse = [Rows, spannerClient.spanner.v1.ResultSetStats];
+export type RunResponse = [Rows, s.ResultSetStats];
 export type RunUpdateResponse = [number];
 
 export interface BatchUpdateCallback {
@@ -131,12 +124,9 @@ export interface RunUpdateCallback {
   (err: null | ServiceError, rowCount: number): void;
 }
 
-export interface CommitCallback {
-  (
-    error: Error | null,
-    response?: spannerClient.spanner.v1.CommitResponse
-  ): void;
-}
+export type CommitCallback = NormalCallback<
+  spannerClient.spanner.v1.ICommitResponse
+>;
 
 /**
  * @typedef {object} TimestampBounds
@@ -195,7 +185,7 @@ export class Snapshot extends EventEmitter {
   protected _seqno = 1;
   id?: Uint8Array | string;
   ended: boolean;
-  metadata?: spannerClient.spanner.v1.Transaction;
+  metadata?: spannerClient.spanner.v1.ITransaction;
   readTimestamp?: PreciseDate;
   readTimestampProto?: spannerClient.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
@@ -311,7 +301,7 @@ export class Snapshot extends EventEmitter {
       },
       (
         err: null | ServiceError,
-        resp: spannerClient.spanner.v1.Transaction
+        resp: spannerClient.spanner.v1.ITransaction
       ) => {
         if (err) {
           callback!(err, resp);
@@ -320,7 +310,7 @@ export class Snapshot extends EventEmitter {
 
         const {id, readTimestamp} = resp;
 
-        this.id = id;
+        this.id = id!;
         this.metadata = resp;
 
         if (readTimestamp) {
@@ -1380,7 +1370,7 @@ export class Transaction extends Dml {
         method: 'commit',
         reqOpts,
       },
-      (err: null | Error, resp: spannerClient.spanner.v1.CommitResponse) => {
+      (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
 
         if (resp && resp.commitTimestamp) {
