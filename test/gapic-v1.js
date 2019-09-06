@@ -44,6 +44,11 @@ describe('InstanceAdminClient', () => {
     assert(client);
   });
 
+  it('should create a client with gRPC fallback', () => {
+    const client = new spannerModule.v1.InstanceAdminClient({fallback: true});
+    assert(client);
+  });
+
   describe('listInstanceConfigs', () => {
     it('invokes listInstanceConfigs without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({

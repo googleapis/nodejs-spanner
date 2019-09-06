@@ -27,7 +27,7 @@ import {promisify, promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import * as extend from 'extend';
 import * as is from 'is';
-import * as r from 'request';
+import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 

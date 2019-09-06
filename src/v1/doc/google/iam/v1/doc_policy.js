@@ -63,7 +63,14 @@
  * [IAM developer's guide](https://cloud.google.com/iam/docs).
  *
  * @property {number} version
- *   Deprecated.
+ *   Specifies the format of the policy.
+ *
+ *   Valid values are 0, 1, and 3. Requests specifying an invalid value will be
+ *   rejected.
+ *
+ *   Policies with any conditional bindings must specify version 3. Policies
+ *   without any conditional bindings may specify any valid value or leave the
+ *   field unset.
  *
  * @property {Object[]} bindings
  *   Associates a list of `members` to a `role`.
@@ -81,7 +88,7 @@
  *   ensure that their change will be applied to the same version of the policy.
  *
  *   If no `etag` is provided in the call to `setIamPolicy`, then the existing
- *   policy is overwritten blindly.
+ *   policy is overwritten.
  *
  * @typedef Policy
  * @memberof google.iam.v1
@@ -109,7 +116,7 @@ const Policy = {
  *      who is authenticated with a Google account or a service account.
  *
  *   * `user:{emailid}`: An email address that represents a specific Google
- *      account. For example, `alice@gmail.com` .
+ *      account. For example, `alice@example.com` .
  *
  *
  *   * `serviceAccount:{emailid}`: An email address that represents a service

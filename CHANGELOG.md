@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.0.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.0.1...v4.0.2) (2019-08-09)
+
+
+### Bug Fixes
+
+* allow calls with no request, add JSON proto ([4a478a7](https://www.github.com/googleapis/nodejs-spanner/commit/4a478a7))
+* **deps:** use the latest extend ([#678](https://www.github.com/googleapis/nodejs-spanner/issues/678)) ([a094fdd](https://www.github.com/googleapis/nodejs-spanner/commit/a094fdd))
+
 ### [4.0.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.0.0...v4.0.1) (2019-07-29)
 
 
