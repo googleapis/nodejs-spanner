@@ -101,7 +101,7 @@ export type BeginTransactionCallback = NormalCallback<
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
-export type RunResponse = [Rows, s.ResultSetStats];
+export type RunResponse = [Rows, spannerClient.spanner.v1.ResultSetStats];
 export type RunUpdateResponse = [number];
 
 export interface BatchUpdateCallback {
@@ -117,7 +117,11 @@ export interface ReadCallback {
 }
 
 export interface RunCallback {
-  (err: null | ServiceError, rows: Rows, stats: s.ResultSetStats): void;
+  (
+    err: null | ServiceError,
+    rows: Rows,
+    stats: spannerClient.spanner.v1.ResultSetStats
+  ): void;
 }
 
 export interface RunUpdateCallback {
@@ -1070,11 +1074,15 @@ export class Dml extends Snapshot {
 
     this.run(
       query,
-      (err: null | ServiceError, rows: Rows, stats: s.ResultSetStats) => {
+      (
+        err: null | ServiceError,
+        rows: Rows,
+        stats: spannerClient.spanner.v1.ResultSetStats
+      ) => {
         let rowCount = 0;
 
         if (stats && stats.rowCount) {
-          rowCount = Math.floor(stats[stats.rowCount]);
+          rowCount = Math.floor(stats[stats.rowCount] as number);
         }
 
         callback!(err, rowCount);

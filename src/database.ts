@@ -69,8 +69,8 @@ import {
   PagedResponse,
   NormalCallback,
 } from './common';
-import {ServiceError, CallOptions, ClientDuplexStream} from 'grpc';
-import {Readable, Transform} from 'stream';
+import {ServiceError, CallOptions} from 'grpc';
+import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../proto/spanner';
 import {RequestConfig} from '.';
@@ -157,6 +157,10 @@ export type CreateSessionCallback = ResourceCallback<
   spannerClient.spanner.v1.ISession
 >;
 export type DatabaseDeleteCallback = NormalCallback<r.Response>;
+
+export interface CancelableDuplex extends Duplex {
+  cancel(): void;
+}
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -1008,15 +1012,16 @@ class Database extends ServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, ...args) => {
-        if (args[0]) {
-          args[0] = args[0].map(metadata => {
+      (err, sessions, ...args) => {
+        let sessionInstances: google.spanner.v1.ISession[] | null = null;
+        if (sessions) {
+          sessionInstances = sessions.map(metadata => {
             const session = self.session(metadata.name!);
             session.metadata = metadata;
             return session as google.spanner.v1.ISession;
           });
         }
-        callback!(err, ...args);
+        callback!(err, sessionInstances!, ...args);
       }
     );
   }
@@ -1200,7 +1205,7 @@ class Database extends ServiceObject {
   makePooledStreamingRequest_(config: RequestConfig): Readable {
     const self = this;
     const pool = this.pool_;
-    let requestStream: ClientDuplexStream<RequestConfig, Readable>;
+    let requestStream: CancelableDuplex;
     let session: Session | null;
     const waitForSessionStream = streamEvents(through.obj());
     // tslint:disable-next-line: no-any
