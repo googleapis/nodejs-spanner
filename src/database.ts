@@ -129,7 +129,7 @@ type GetSchemaResponse = [
 ];
 
 type GetSessionsCallback = RequestCallback<
-  google.spanner.v1.ISession,
+  Session,
   google.spanner.v1.IListSessionsResponse
 >;
 
@@ -1013,12 +1013,12 @@ class Database extends ServiceObject {
         gaxOpts,
       },
       (err, sessions, ...args) => {
-        let sessionInstances: google.spanner.v1.ISession[] | null = null;
+        let sessionInstances: Session[] | null = null;
         if (sessions) {
           sessionInstances = sessions.map(metadata => {
             const session = self.session(metadata.name!);
             session.metadata = metadata;
-            return session as google.spanner.v1.ISession;
+            return session;
           });
         }
         callback!(err, sessionInstances!, ...args);
