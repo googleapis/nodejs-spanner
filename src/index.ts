@@ -41,6 +41,7 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
+import {google} from '../proto/spanner';
 
 const grpc = require('grpc');
 
@@ -57,7 +58,6 @@ export interface SpannerOptions extends GrpcClientOptions {
   port?: number;
   sslCreds?: ChannelCredentials;
 }
-
 export interface RequestConfig {
   client: string;
   method: string;
@@ -65,7 +65,6 @@ export interface RequestConfig {
   reqOpts: any;
   gaxOpts?: {};
 }
-
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
  */

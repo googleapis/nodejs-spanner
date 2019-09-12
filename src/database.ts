@@ -139,7 +139,7 @@ type GetSessionsResponse = PagedResponse<
   google.spanner.v1.IListSessionsResponse
 >;
 
-export type GetDatabaseConfig = GetConfig &
+type GetDatabaseConfig = GetConfig &
   databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest;
 type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
@@ -639,7 +639,7 @@ class Database extends ServiceObject {
       database: this.formattedName_,
     };
     this.close(() => {
-      this.request(
+      this.request<r.Response>(
         {
           client: 'DatabaseAdminClient',
           method: 'dropDatabase',
@@ -1027,7 +1027,6 @@ class Database extends ServiceObject {
       }
     );
   }
-
   getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
   getSnapshot(callback: GetSnapshotCallback): void;
   getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
@@ -1196,6 +1195,7 @@ class Database extends ServiceObject {
       });
     });
   }
+
   /**
    * Make an API request as a stream, first assuring an active session is used.
    *
