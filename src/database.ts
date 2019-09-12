@@ -139,7 +139,7 @@ type GetSessionsResponse = PagedResponse<
   google.spanner.v1.IListSessionsResponse
 >;
 
-type GetDatabaseConfig = GetConfig &
+export type GetDatabaseConfig = GetConfig &
   databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest;
 type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
