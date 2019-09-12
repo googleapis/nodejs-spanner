@@ -23,8 +23,13 @@ import * as is from 'is';
 import * as uuid from 'uuid';
 import {Spanner} from '../src';
 import {Key} from '../src/table';
-import {ReadRequest} from '../src/transaction';
+import {
+  ReadRequest,
+  ExecuteSqlRequest,
+  TimestampBounds,
+} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
+import {GetDatabaseConfig} from '../src/database';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -54,7 +59,8 @@ describe('Spanner', () => {
   after(deleteTestInstances);
 
   describe('types', () => {
-    const database = instance.database(generateName('database'));
+    // tslint:disable-next-line: no-any
+    const database = instance.database(generateName('database')) as any;
     const table = database.table('TypeCheck');
 
     function insert(insertData, callback) {
@@ -144,11 +150,11 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row1 = rows[0].toJSON();
+              const row1 = rows![0].toJSON();
               assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
               assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
 
-              const row2 = rows[1].toJSON();
+              const row2 = rows![1].toJSON();
               assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
               assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
 
@@ -187,11 +193,11 @@ describe('Spanner', () => {
           ];
 
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][0].value[0][0]),
+            JSON.stringify(rows![0][0].value[0][0]),
             JSON.stringify(expected[0].value[0][0])
           );
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][0].value[0][1]),
+            JSON.stringify(rows![0][0].value[0][1]),
             JSON.stringify(expected[0].value[0][1])
           );
 
@@ -233,15 +239,15 @@ describe('Spanner', () => {
           ];
 
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][0]),
+            JSON.stringify(rows![0][0]),
             JSON.stringify(expected[0])
           );
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][1].value[0][0]),
+            JSON.stringify(rows![0][1].value[0][0]),
             JSON.stringify(expected[1].value[0][0])
           );
           assert.deepStrictEqual(
-            JSON.stringify(rows[0][1].value[0][1]),
+            JSON.stringify(rows![0][1].value[0][1]),
             JSON.stringify(expected[1].value[0][1])
           );
 
@@ -787,7 +793,7 @@ describe('Spanner', () => {
     it('should auto create a database', done => {
       const database = instance.database(generateName('database'));
 
-      database.get({autoCreate: true}, err => {
+      database.get({autoCreate: true} as GetDatabaseConfig, err => {
         assert.ifError(err);
         database.getMetadata(done);
       });
@@ -796,8 +802,8 @@ describe('Spanner', () => {
     it('should have created the database', done => {
       database.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual(metadata.name, database.formattedName_);
-        assert.strictEqual(metadata.state, 'READY');
+        assert.strictEqual(metadata!.name, database.formattedName_);
+        assert.strictEqual(metadata!.state, 'READY');
         done();
       });
     });
@@ -870,7 +876,7 @@ describe('Spanner', () => {
           database.getSchema((err, statements) => {
             assert.ifError(err);
             assert.strictEqual(
-              replaceNewLinesAndSpacing(statements[0]),
+              replaceNewLinesAndSpacing(statements![0]),
               replaceNewLinesAndSpacing(createTableStatement)
             );
             done();
@@ -1258,13 +1264,14 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          // tslint:disable-next-line: no-any
+          database.run('SELECT * FROM Singers', (err, rows: any) => {
             assert.ifError(err);
 
             // We just want the two most recent ones.
-            rows.splice(0, rows.length - 2);
+            rows!.splice(0, rows!.length - 2);
 
-            rows = rows.map(x => x.toJSON());
+            rows = rows!.map(x => x.toJSON());
 
             assert.strictEqual(rows[0].SingerId, id1);
             assert.strictEqual(rows[0].Name, name1);
@@ -1395,7 +1402,7 @@ describe('Spanner', () => {
           options,
           (err, rows) => {
             assert.ifError(err);
-            assert.deepStrictEqual(rows.shift().toJSON(), EXPECTED_ROW);
+            assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
             done();
           }
         );
@@ -1457,7 +1464,7 @@ describe('Spanner', () => {
 
       it('should fail invalid queries', done => {
         database.run('SELECT Apples AND Oranges', err => {
-          assert.strictEqual(err.code, 3);
+          assert.strictEqual(err!.code, 3);
           done();
         });
       });
@@ -1471,7 +1478,7 @@ describe('Spanner', () => {
         database.run(query, (err, rows) => {
           assert.ifError(err);
 
-          const values = rows[0][0].value;
+          const values = rows![0][0].value;
           assert.strictEqual(values.length, 2);
 
           assert.strictEqual(values[0][0].value, 'a');
@@ -1496,7 +1503,7 @@ describe('Spanner', () => {
 
         database.run(query, (err, rows) => {
           assert.ifError(err);
-          assert.strictEqual(rows[0][0].value.length, 0);
+          assert.strictEqual(rows![0][0].value.length, 0);
           done();
         });
       });
@@ -1556,7 +1563,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1567,17 +1574,17 @@ describe('Spanner', () => {
                   child: 'bool',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1588,11 +1595,11 @@ describe('Spanner', () => {
                   child: 'bool',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -1660,7 +1667,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1671,17 +1678,17 @@ describe('Spanner', () => {
                   child: 'int64',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1692,11 +1699,11 @@ describe('Spanner', () => {
                   child: 'int64',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -1764,7 +1771,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1775,17 +1782,17 @@ describe('Spanner', () => {
                   child: 'float64',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1796,11 +1803,11 @@ describe('Spanner', () => {
                   child: 'float64',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -1930,7 +1937,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1941,17 +1948,17 @@ describe('Spanner', () => {
                   child: 'string',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1962,11 +1969,11 @@ describe('Spanner', () => {
                   child: 'string',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -2028,7 +2035,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -2039,17 +2046,17 @@ describe('Spanner', () => {
                   child: 'bytes',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -2060,11 +2067,11 @@ describe('Spanner', () => {
                   child: 'bytes',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -2130,7 +2137,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -2141,17 +2148,17 @@ describe('Spanner', () => {
                   child: 'timestamp',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -2162,11 +2169,11 @@ describe('Spanner', () => {
                   child: 'timestamp',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -2236,7 +2243,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -2247,17 +2254,17 @@ describe('Spanner', () => {
                   child: 'date',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
+              assert.deepStrictEqual(rows![0][0].value, values);
               done();
             });
           });
 
           it('should bind null arrays', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -2268,11 +2275,11 @@ describe('Spanner', () => {
                   child: 'date',
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
@@ -2302,7 +2309,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null structs', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @structParam.userf is NULL',
               params: {
                 structParam: null,
@@ -2322,12 +2329,12 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0];
+              const row = rows![0];
               assert.strictEqual(row[0].value, true);
 
               done();
@@ -2357,7 +2364,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null nested structs', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @structParam.structf.nestedf',
               params: {
                 structParam: null,
@@ -2379,12 +2386,12 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
               assert.strictEqual(row.nestedf, null);
 
               done();
@@ -2431,7 +2438,7 @@ describe('Spanner', () => {
           });
 
           it('should bind structs with null fields', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT @structParam.f1',
               params: {
                 structParam: Spanner.struct({
@@ -2449,12 +2456,12 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
               assert.strictEqual(row.f1, null);
 
               done();
@@ -2578,7 +2585,7 @@ describe('Spanner', () => {
           });
 
           it('should allow an array of structs with null fields', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT a.threadid FROM UNNEST(@structParam.arraysf) a',
               params: {
                 structParam: Spanner.struct({
@@ -2610,18 +2617,18 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.strictEqual(rows.length, 0);
+              assert.strictEqual(rows!.length, 0);
 
               done();
             });
           });
 
           it('should allow a null array of structs', done => {
-            const query = {
+            const query = ({
               sql: 'SELECT a.threadid FROM UNNEST(@structParamArray) a',
               params: {
                 structParamArray: null,
@@ -2640,11 +2647,11 @@ describe('Spanner', () => {
                   },
                 },
               },
-            };
+            } as {}) as ExecuteSqlRequest;
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
-              assert.strictEqual(rows.length, 0);
+              assert.strictEqual(rows!.length, 0);
               done();
             });
           });
@@ -3191,7 +3198,7 @@ describe('Spanner', () => {
 
           database.run('SELECT * FROM Singers', (err, rows) => {
             assert.ifError(err);
-            assert.deepStrictEqual(rows.pop().toJSON(), {
+            assert.deepStrictEqual(rows!.pop()!.toJSON(), {
               SingerId: id,
               Name: name,
             });
@@ -3226,9 +3233,9 @@ describe('Spanner', () => {
             assert.ifError(err);
 
             // We just want the two most recent ones.
-            rows.splice(0, rows.length - 2);
+            rows!.splice(0, rows!.length - 2);
 
-            rows = rows.map(x => x.toJSON());
+            rows = rows!.map(x => x.toJSON()) as Row[];
 
             assert.deepStrictEqual(rows, [
               {
@@ -3366,11 +3373,11 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
-            transaction.end();
+            transaction!.end();
             done();
           });
         });
@@ -3380,7 +3387,7 @@ describe('Spanner', () => {
         database.getSnapshot((err, transaction) => {
           assert.ifError(err);
 
-          const query = {
+          const query = ({
             ranges: [
               {
                 startClosed: 'k0',
@@ -3388,13 +3395,13 @@ describe('Spanner', () => {
               },
             ],
             columns: ['Key'],
-          };
+          } as {}) as ReadRequest;
 
-          transaction.read(table.name, query, (err, rows) => {
+          transaction!.read(table.name, query, (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
-            transaction.end();
+            transaction!.end();
             done();
           });
         });
@@ -3408,7 +3415,7 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
             assert.ifError(err);
 
             assert.strictEqual(rows.length, 1);
@@ -3418,7 +3425,7 @@ describe('Spanner', () => {
             assert.strictEqual(row.Key, records[0].Key);
             assert.strictEqual(row.StringValue, records[0].StringValue);
 
-            transaction.end();
+            transaction!.end();
             done();
           });
         });
@@ -3429,13 +3436,13 @@ describe('Spanner', () => {
 
         const options = {
           minReadTimestamp: new Date(),
-        };
+        } as TimestampBounds;
 
         // minTimestamp can only be used in single use transactions
         // so we can't use database.getSnapshot here
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
-          assert.strictEqual(rows.length, records.length);
+          assert.strictEqual(rows!.length, records.length);
           done();
         });
       });
@@ -3448,7 +3455,8 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction.run('SELECT * FROM TxnTable', (err, rows) => {
+          // tslint:disable-next-line: no-any
+          transaction!.run('SELECT * FROM TxnTable', (err, rows: any) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
 
@@ -3459,7 +3467,7 @@ describe('Spanner', () => {
             assert.strictEqual(rows[1].Key, 'k1');
             assert.strictEqual(rows[1].StringValue, 'v1');
 
-            transaction.end();
+            transaction!.end();
             done();
           });
         });
@@ -3476,7 +3484,7 @@ describe('Spanner', () => {
         // so we can't use database.getSnapshot here
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
-          assert.strictEqual(rows.length, records.length);
+          assert.strictEqual(rows!.length, records.length);
           done();
         });
       });
@@ -3491,7 +3499,7 @@ describe('Spanner', () => {
 
           const query = 'SELECT * FROM TxnTable';
 
-          transaction.run(query, (err, rows) => {
+          transaction!.run(query, (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
@@ -3503,13 +3511,13 @@ describe('Spanner', () => {
               err => {
                 assert.ifError(err);
 
-                transaction.run(query, (err, rows_) => {
+                transaction!.run(query, (err, rows_) => {
                   assert.ifError(err);
 
-                  const row = rows_.pop().toJSON();
+                  const row = rows_!.pop()!.toJSON();
                   assert.strictEqual(row.StringValue, 'v4');
 
-                  transaction.end();
+                  transaction!.end();
                   done();
                 });
               }
@@ -3528,7 +3536,7 @@ describe('Spanner', () => {
 
           const query = 'SELECT * FROM TxnTable';
 
-          transaction.run(query, (err, rows) => {
+          transaction!.run(query, (err, rows) => {
             assert.ifError(err);
 
             const originalRows = extend(true, {}, rows);
@@ -3542,14 +3550,14 @@ describe('Spanner', () => {
               err => {
                 assert.ifError(err);
 
-                transaction.run(query, (err, rows_) => {
+                transaction!.run(query, (err, rows_) => {
                   assert.ifError(err);
 
                   rows_ = extend(true, {}, rows_);
 
                   assert.deepStrictEqual(rows_, originalRows);
 
-                  transaction.end();
+                  transaction!.end();
                   done();
                 });
               }
@@ -3568,7 +3576,7 @@ describe('Spanner', () => {
 
           const query = 'SELECT * FROM TxnTable';
 
-          transaction.run(query, (err, rows) => {
+          transaction!.run(query, (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, 1);
 
@@ -3580,11 +3588,11 @@ describe('Spanner', () => {
               err => {
                 assert.ifError(err);
 
-                transaction.run(query, (err, rows) => {
+                transaction!.run(query, (err, rows) => {
                   assert.ifError(err);
                   assert.strictEqual(rows.length, 1);
 
-                  transaction.end();
+                  transaction!.end();
                   done();
                 });
               }

@@ -21,19 +21,15 @@ import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
-import {Database} from './database';
+import {Database, SessionPoolConstructor} from './database';
 import {google as instanceAdmin} from '../proto/spanner_instance_admin';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
-import {Operation as GaxOperation} from 'google-gax';
-import {
-  SessionPoolOptions,
-  SessionPoolInterface,
-  SessionPool,
-} from './session-pool';
 import {Spanner, RequestConfig} from '.';
 import {ServiceError} from 'grpc';
 import {RequestCallback, PagedResponse, LongRunningCallback} from './common';
 import {Duplex} from 'stream';
+import {SessionPoolOptions, SessionPool} from './session-pool';
+import {Operation as GaxOperation} from 'google-gax';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -359,7 +355,7 @@ class Instance extends common.ServiceObject {
    */
   database(
     name: string,
-    poolOptions?: SessionPoolOptions | SessionPoolInterface
+    poolOptions?: SessionPoolOptions | SessionPoolConstructor
   ): Database {
     if (!name) {
       throw new Error('A name is required to access a Database object.');

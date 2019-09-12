@@ -1,5 +1,5 @@
 /*!
- * Copyright 2016 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {ServiceError} from 'grpc';
+import {ServiceError, CallOptions} from 'grpc';
 import {Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../proto/spanner_instance_admin';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 export interface TransactionOptions {
@@ -27,21 +28,17 @@ export interface TransactionOptions {
   returnTimestamp?: boolean;
   strong?: boolean;
 }
-export interface CreateSessionOptions {
-  name: string;
-  labels: {[key: string]: string};
-  createTime: GetTimestamp;
-  approximateLastUseTime: GetTimestamp;
-}
-export interface GetTimestamp {
-  nanos: number;
-  seconds: number;
-}
+
+export type Schema =
+  | string
+  | string[]
+  | databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest;
+
 export interface ResourceCallback<Resource, Response> {
   (
     err: ServiceError | null,
     resource?: Resource | null,
-    response?: Response | null
+    response?: Response
   ): void;
 }
 export type PagedResponse<Item, Response> =
@@ -73,3 +70,9 @@ export interface LongRunningCallback<Resource> {
     apiResponse?: IOperation
   ): void;
 }
+
+export type PagedRequest<P> = P & {
+  autoPaginate?: boolean;
+  maxApiCalls?: number;
+  gaxOptions?: CallOptions;
+};

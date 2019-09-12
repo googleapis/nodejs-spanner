@@ -263,7 +263,11 @@ describe('Database', () => {
       FakePool.prototype.on = util.noop;
       FakePool.prototype.open = util.noop;
 
-      const database = new Database(INSTANCE, NAME, FakePool);
+      const database = new Database(
+        INSTANCE,
+        NAME,
+        (FakePool as {}) as db.SessionPoolConstructor
+      );
       assert(database.pool_ instanceof FakePool);
     });
 
@@ -338,7 +342,7 @@ describe('Database', () => {
       const identifier = {
         session: SESSION,
         transaction: ID,
-        readTimestamp: READ_TIMESTAMP,
+        timestamp: READ_TIMESTAMP,
       };
 
       const transaction = database.batchTransaction(identifier);
@@ -353,7 +357,7 @@ describe('Database', () => {
       const identifier = {
         session: SESSION.id,
         transaction: ID,
-        readTimestamp: READ_TIMESTAMP,
+        timestamp: READ_TIMESTAMP,
       };
 
       database.session = id => {
@@ -1206,7 +1210,7 @@ describe('Database', () => {
     it('should correctly call runStream', done => {
       database.runStream = (query, options) => {
         assert.strictEqual(query, QUERY);
-        assert.strictEqual(options, null);
+        assert.deepStrictEqual(options, {});
         setImmediate(done);
         return QUERY_STREAM;
       };

@@ -61,15 +61,8 @@ export interface SpannerOptions extends GrpcClientOptions {
 export interface RequestConfig {
   client: string;
   method: string;
-  reqOpts: {
-    extraStatements?: string[];
-    schema?: string;
-    parent?: string;
-    name?: string;
-    instance?: {};
-    fieldMask?: {};
-    poolOptions?: {};
-  };
+  // tslint:disable-next-line: no-any
+  reqOpts: any;
   gaxOpts?: {};
 }
 

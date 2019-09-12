@@ -18,8 +18,15 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {codec} from './codec';
 import {Snapshot} from './transaction';
+import {google} from '../proto/spanner';
+import {Session} from '.';
+
+export interface TransactionIdentifier {
+  session: string | Session;
+  transaction?: string;
+  timestamp?: google.protobuf.ITimestamp;
+}
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
@@ -315,7 +322,7 @@ class BatchTransaction extends Snapshot {
    *   const identifier = transaction.identifier();
    * });
    */
-  identifier() {
+  identifier(): TransactionIdentifier {
     return {
       transaction: (this.id! as Buffer).toString('base64'),
       session: this.session.id,

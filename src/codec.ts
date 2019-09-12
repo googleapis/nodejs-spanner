@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 import {Service} from '@google-cloud/common-grpc';
-import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
+import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
-import {CallOptions} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-
+import {google as spannerClient} from '../proto/spanner';
 import {SpannerClient as s} from './v1';
 
 // tslint:disable-next-line no-any
@@ -520,7 +519,9 @@ function convertToListValue<T>(value: T): p.IListValue {
  * @param {number} ms The milliseconds to convert.
  * @returns {object}
  */
-function convertMsToProtoTimestamp(ms: number): p.ITimestamp {
+function convertMsToProtoTimestamp(
+  ms: number
+): spannerClient.protobuf.ITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
   const nanos = Math.round((rawSeconds - seconds) * 1e9);
