@@ -25,7 +25,13 @@ import {Database, SessionPoolConstructor} from './database';
 import {google as instanceAdmin} from '../proto/spanner_instance_admin';
 import {Spanner, RequestConfig} from '.';
 import {ServiceError} from 'grpc';
-import {RequestCallback, PagedResponse, LongRunningCallback} from './common';
+import {
+  RequestCallback,
+  PagedResponse,
+  LongRunningCallback,
+  NormalCallback,
+  ResourceCallback,
+} from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
@@ -62,42 +68,26 @@ export interface GetDatabasesRequest
 }
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
-export interface DeleteInstanceCallback {
-  (err: ServiceError | null, apiResponse: instanceAdmin.protobuf.IEmpty): void;
-}
-export interface ExistsInstanceCallback {
-  (err: ServiceError | null, exists: boolean | null): void;
-}
+export type DeleteInstanceCallback = NormalCallback<
+  instanceAdmin.protobuf.IEmpty
+>;
+
+export type ExistsInstanceCallback = NormalCallback<boolean>;
 export type GetDatabasesCallback = RequestCallback<
   Database,
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
 >;
-export interface GetInstanceCallback {
-  (
-    err: ServiceError | null,
-    instance?: Instance,
-    apiResponse?: IInstance
-  ): void;
-}
-export interface GetInstanceMetadataCalback {
-  (err: ServiceError | null, metadata?: IInstance | null): void;
-}
-export interface SetInstanceMetadataCallback {
-  (
-    err: ServiceError | null,
-    operation: GaxOperation | null,
-    apiResponse: IOperation
-  ): void;
-}
+export type GetInstanceCallback = ResourceCallback<Instance, IInstance>;
+export type GetInstanceMetadataCallback = NormalCallback<IInstance>;
+export type SetInstanceMetadataCallback = ResourceCallback<
+  GaxOperation,
+  IOperation
+>;
 
 interface InstanceRequest {
   (
     config: RequestConfig,
-    callback: (
-      err: ServiceError | null,
-      operation: GaxOperation | null,
-      apiResponse: IOperation
-    ) => void
+    callback: ResourceCallback<GaxOperation, IOperation>
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
 }
@@ -192,7 +182,7 @@ class Instance extends common.ServiceObject {
     this.formattedName_ = formattedName_;
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);
-    this.databases_ = new Map();
+    this.databases_ = new Map<string, Database>();
   }
 
   createDatabase(
@@ -417,8 +407,7 @@ class Instance extends common.ServiceObject {
       name: this.formattedName_,
     };
     Promise.all(
-      // tslint:disable-next-line no-any
-      Array.from(this.databases_.values()).map((database: any) => {
+      Array.from(this.databases_.values()).map(database => {
         return database.close();
       })
     )
@@ -673,8 +662,7 @@ class Instance extends common.ServiceObject {
         reqOpts,
         gaxOpts: query,
       },
-      // tslint:disable-next-line: no-any
-      (err, rowDatabases, ...args: any[]) => {
+      (err, rowDatabases, ...args) => {
         let databases: Database[] | null = null;
         if (rowDatabases) {
           databases = rowDatabases.map(database => {
@@ -688,7 +676,7 @@ class Instance extends common.ServiceObject {
     );
   }
   getMetadata(): Promise<GetInstanceMetadataResponse>;
-  getMetadata(callback: GetInstanceMetadataCalback): void;
+  getMetadata(callback: GetInstanceMetadataCallback): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -728,7 +716,7 @@ class Instance extends common.ServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetInstanceMetadataCalback
+    callback?: GetInstanceMetadataCallback
   ): Promise<GetInstanceMetadataResponse> | void {
     const reqOpts = {
       name: this.formattedName_,

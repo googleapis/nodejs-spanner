@@ -78,7 +78,7 @@ export interface ReadRequest extends RequestOptions {
   table?: string;
   index?: string;
   columns?: string[] | null;
-  keys?: Array<string | number>;
+  keys?: string[];
   ranges?: KeyRange[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
   limit?: number | Long | null;

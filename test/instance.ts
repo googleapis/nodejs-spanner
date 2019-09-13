@@ -388,13 +388,12 @@ describe('Instance', () => {
     it('should close all cached databases', done => {
       let closed = false;
 
-      instance.databases_.set('key', {
+      instance.databases_.set('key', ({
         close() {
           closed = true;
           return Promise.resolve();
         },
-        // tslint:disable-next-line: no-any
-      } as any);
+      } as {}) as Database);
 
       instance.request = () => {
         assert.strictEqual(closed, true);
@@ -406,12 +405,11 @@ describe('Instance', () => {
     });
 
     it('should ignore closing errors', done => {
-      instance.databases_.set('key', {
+      instance.databases_.set('key', ({
         close() {
           return Promise.reject(new Error('err'));
         },
-        // tslint:disable-next-line: no-any
-      } as any);
+      } as {}) as Database);
 
       instance.request = () => {
         done();
@@ -740,8 +738,7 @@ describe('Instance', () => {
           return fakeDatabaseInstance as Database;
         };
 
-        // tslint:disable-next-line: no-any
-        instance.getDatabases(QUERY, (...args: any) => {
+        instance.getDatabases(QUERY, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const database = args[1]!.pop();

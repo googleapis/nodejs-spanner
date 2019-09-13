@@ -1192,18 +1192,16 @@ describe('Spanner', () => {
 
       const table = database.table('SingersComposite');
 
-      const keys = ([[id1, name1], [id2, name2]] as {}) as Array<
-        string | number
-      >;
+      const keys = ([[id1, name1], [id2, name2]] as {}) as string[];
 
       return table
         .create(
           `
-          CREATE TABLE SingersComposite(
+          CREATE TABLE SingersComposite (
             SingerId INT64 NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId, Name)
-            `
+          `
         )
         .then(onPromiseOperationComplete)
         .then(() => {
@@ -1269,9 +1267,9 @@ describe('Spanner', () => {
             assert.ifError(err);
 
             // We just want the two most recent ones.
-            rows!.splice(0, rows!.length - 2);
+            rows.splice(0, rows.length - 2);
 
-            rows = rows!.map(x => x.toJSON());
+            rows = rows.map(x => x.toJSON());
 
             assert.strictEqual(rows[0].SingerId, id1);
             assert.strictEqual(rows[0].Name, name1);
@@ -1413,14 +1411,14 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        const runPromise = database.run(
-          {
-            sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-            params: {id: ID},
-          },
-          options
-        ) as Promise<Row[]>;
-        runPromise
+        database
+          .run(
+            {
+              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+              params: {id: ID},
+            },
+            options
+          )
           .then(data => {
             const rows = data[0];
             assert.deepStrictEqual(
@@ -2691,13 +2689,13 @@ describe('Spanner', () => {
           return table
             .create(
               `
-              CREATE TABLE LargeReads(
+              CREATE TABLE LargeReads (
                 Key STRING(MAX) NOT NULL,
                 StringValue STRING(MAX),
-                StringArray ARRAY < STRING(MAX) >,
+                StringArray ARRAY<STRING(MAX)>,
                 BytesValue BYTES(MAX),
-                BytesArray ARRAY < BYTES(MAX) >
-              ) PRIMARY KEY(Key)`
+                BytesArray ARRAY<BYTES(MAX)>
+              ) PRIMARY KEY (Key)`
             )
             .then(onPromiseOperationComplete)
             .then(() => {
@@ -3855,8 +3853,7 @@ describe('Spanner', () => {
             return database.runPartitionedUpdate({
               sql: `UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'`,
               params: {str},
-              // tslint:disable-next-line: no-any
-            }) as any;
+            });
           })
           .then(([rowCount]) => {
             assert.strictEqual(rowCount, count);
@@ -3864,8 +3861,7 @@ describe('Spanner', () => {
             return database.run({
               sql: `SELECT Key FROM TxnTable WHERE StringValue = @str`,
               params: {str},
-              // tslint:disable-next-line: no-any
-            }) as any;
+            });
           })
           .then(([rows]) => {
             assert.strictEqual(rows.length, count);
