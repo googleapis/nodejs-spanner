@@ -23,7 +23,7 @@ import * as through from 'through2';
 import {Session} from './session';
 import {Transaction} from './transaction';
 
-const jsonProtos = require('../../protos/protos.json');
+const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
 const RETRYABLE: status[] = [status.ABORTED, status.UNKNOWN];
