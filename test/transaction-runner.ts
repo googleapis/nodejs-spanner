@@ -43,7 +43,7 @@ describe('TransactionRunner', () => {
     .stub()
     .withArgs(RETRY_KEY)
     .returns(RETRY_INFO);
-  const LOAD_SYNC = sandbox.stub().returns({lookup: LOOKUP});
+  const FROM_JSON = sandbox.stub().returns({lookup: LOOKUP});
 
   const SESSION = {
     transaction: () => fakeTransaction,
@@ -60,7 +60,7 @@ describe('TransactionRunner', () => {
 
   before(() => {
     const runners = proxyquire('../src/transaction-runner', {
-      protobufjs: {loadSync: LOAD_SYNC},
+      protobufjs: {Root: {fromJSON: FROM_JSON}},
     });
 
     Runner = runners.Runner;
