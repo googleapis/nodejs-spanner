@@ -156,6 +156,21 @@ export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
 >;
+
+export interface BatchCreateSessionsOptions extends CreateSessionOptions {
+  count: number;
+}
+
+export type BatchCreateSessionsResponse = [
+  Session[],
+  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+];
+
+export type BatchCreateSessionsCallback = ResourceCallback<
+  Session[],
+  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+>;
+
 export type DatabaseDeleteCallback = NormalCallback<r.Response>;
 
 export interface CancelableDuplex extends Duplex {
@@ -258,6 +273,103 @@ class Database extends ServiceObject {
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
   }
+
+  batchCreateSessions(
+    options: BatchCreateSessionsOptions
+  ): Promise<BatchCreateSessionsResponse>;
+  batchCreateSessions(
+    options: BatchCreateSessionsOptions,
+    callback: BatchCreateSessionsCallback
+  ): void;
+  /**
+   * @typedef {object} BatchCreateSessionsOptions
+   * @property {number} count The number of sessions to create.
+   * @property {object.<string, string>} [labels] Labels to apply to each
+   *     session.
+   */
+  /**
+   * @typedef {array} BatchCreateSessionsResponse
+   * @property {Session[]} 0 The newly created sessions.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback BatchCreateSessionsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Session[]} sessions The newly created sessions.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Create a batch of session, which can be used to perform transactions that
+   * read and/or modify data.
+   *
+   * **It is unlikely you will need to interact with sessions directly. By
+   * default, sessions are created and utilized for maximum performance
+   * automatically.**
+   *
+   * Wrapper around {@link v1.SpannerClient#batchCreateSessions}.
+   *
+   * @see {@link v1.SpannerClient#batchCreateSessions}
+   * @see [BatchCreateSessions API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BatchCreateSessions)
+   *
+   * @param {BatchCreateSessionsOptions} [options] Configuration object.
+   * @param {BatchCreateSessionsCallback} [callback] Callback function.
+   * @returns {Promise<BatchCreateSessionsResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * const options = {
+   *   count: 5
+   * };
+   *
+   * database.batchCreateSession(options, (err, sessions, response) => {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   // `sessions` is an array of Session objects.
+   * });
+   *
+   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * const [sessions, response] = await database.batchCreateSessions(options);
+   */
+  batchCreateSessions(
+    {count, labels = {}}: BatchCreateSessionsOptions,
+    callback?: BatchCreateSessionsCallback
+  ): void | Promise<BatchCreateSessionsResponse> {
+    const reqOpts: google.spanner.v1.IBatchCreateSessionsRequest = {
+      database: this.formattedName_,
+      sessionTemplate: {labels},
+      sessionCount: count,
+    };
+
+    this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
+      {
+        client: 'SpannerClient',
+        method: 'batchCreateSessions',
+        reqOpts,
+      },
+      (err, resp) => {
+        if (err) {
+          callback!(err, null, resp!);
+          return;
+        }
+
+        const sessions = (resp!.session || []).map(metadata => {
+          const session = this.session(metadata.name!);
+          session.metadata = metadata;
+          return session;
+        });
+
+        callback!(null, sessions, resp!);
+      }
+    );
+  }
+
   /**
    * Get a reference to a {@link BatchTransaction} object.
    *
