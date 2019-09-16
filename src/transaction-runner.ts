@@ -15,24 +15,21 @@
  */
 
 import {promisify} from '@google-cloud/promisify';
-import {GoogleProtoFilesRoot} from 'google-gax';
 import {Metadata, ServiceError, status} from 'grpc';
 import {join} from 'path';
-import {common as p, loadSync} from 'protobufjs';
+import {Root} from 'protobufjs';
 import * as through from 'through2';
 
 import {Session} from './session';
 import {Transaction} from './transaction';
 
+const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
 const RETRYABLE: status[] = [status.ABORTED, status.UNKNOWN];
 
 // tslint:disable-next-line variable-name
-const RetryInfo = loadSync(
-  join(__dirname, '..', 'protos', 'google/rpc/error_details.proto'),
-  new GoogleProtoFilesRoot()
-).lookup('google.rpc.RetryInfo');
+const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
 
 /**
  * @typedef {object} RunTransactionOptions
