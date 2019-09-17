@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+
 import {ServiceError, CallOptions} from 'grpc';
+import {Operation as GaxOperation} from 'google-gax';
+import {google as instanceAdmin} from '../proto/spanner_instance_admin';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
+
+export type IOperation = instanceAdmin.longrunning.IOperation;
 
 export type Schema =
   | string
   | string[]
   | databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest;
+
 export interface ResourceCallback<Resource, Response> {
   (
     err: ServiceError | null,
@@ -27,6 +33,9 @@ export interface ResourceCallback<Resource, Response> {
     response?: Response
   ): void;
 }
+export type PagedResponse<Item, Response> =
+  | [Item[]]
+  | [Item[], {} | null, Response];
 
 export type RequestCallback<T, R = void> = R extends void
   ? NormalCallback<T>
@@ -44,12 +53,18 @@ export interface PagedCallback<Item, Response> {
     response?: Response | null
   ): void;
 }
+
+export interface LongRunningCallback<Resource> {
+  (
+    err: ServiceError | null,
+    resource?: Resource | null,
+    operation?: GaxOperation | null,
+    apiResponse?: IOperation
+  ): void;
+}
+
 export type PagedRequest<P> = P & {
   autoPaginate?: boolean;
   maxApiCalls?: number;
   gaxOptions?: CallOptions;
 };
-
-export type PagedResponse<Item, Response> =
-  | [Item[]]
-  | [Item[], {} | null, Response];

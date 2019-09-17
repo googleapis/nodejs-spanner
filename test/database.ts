@@ -393,7 +393,7 @@ describe('Database', () => {
 
       it('should remove the database cache', done => {
         const cache = INSTANCE.databases_;
-        const cacheId = FAKE_ID.split('/').pop();
+        const cacheId = FAKE_ID.split('/').pop()!;
 
         cache.set(cacheId, database);
         assert(cache.has(cacheId));

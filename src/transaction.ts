@@ -57,7 +57,7 @@ export interface RequestOptions {
 export interface Statement {
   sql: string;
   params?: {[param: string]: Value};
-  types?: {[param: string]: string};
+  types?: Type | {[param: string]: Value};
 }
 
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
@@ -987,7 +987,7 @@ export class Snapshot extends EventEmitter {
    * @returns {object}
    */
   static encodeParams(request: ExecuteSqlRequest) {
-    const typeMap: {[field: string]: string | Type} = request.types || {};
+    const typeMap = request.types || {};
 
     const params: p.IStruct = {};
     const paramTypes: {[field: string]: s.Type} = {};
@@ -1571,7 +1571,9 @@ export class Transaction extends Dml {
    */
   rollback(callback?: s.RollbackCallback): void | Promise<void> {
     if (!this.id) {
-      callback!(new Error('Transaction ID is unknown, nothing to rollback.'));
+      callback!(new Error(
+        'Transaction ID is unknown, nothing to rollback.'
+      ) as ServiceError);
       return;
     }
 

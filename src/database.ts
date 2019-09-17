@@ -138,7 +138,7 @@ type GetSessionsResponse = PagedResponse<
   google.spanner.v1.IListSessionsResponse
 >;
 
-type GetDatabaseConfig = GetConfig &
+export type GetDatabaseConfig = GetConfig &
   databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest;
 type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
@@ -253,7 +253,8 @@ class Database extends ServiceObject {
         : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
     this.request = instance.request;
-    this.requestStream = instance.requestStream;
+    // tslint:disable-next-line: no-any
+    this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
   }
