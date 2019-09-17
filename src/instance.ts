@@ -502,7 +502,7 @@ class Instance extends common.ServiceObject {
    * normally required for the `create` method must be contained within this
    * object as well.
    *
-   * @param {GetInstanceConfig} [options] Configuration object.
+   * @param {options} [options] Configuration object.
    * @param {boolean} [options.autoCreate=false] Automatically create the
    *     object if it does not exist.
    * @param {GetInstanceCallback} [callback] Callback function.

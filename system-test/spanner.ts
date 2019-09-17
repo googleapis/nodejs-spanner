@@ -1419,12 +1419,8 @@ describe('Spanner', () => {
             options
           )
           .then(data => {
-            const rows = data[0];
-            assert.deepStrictEqual(
-              // tslint:disable-next-line: no-any
-              (rows as any).shift().toJSON(),
-              EXPECTED_ROW
-            );
+            const rows = (data[0] as {}) as Row[];
+            assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
             done();
           })
           .catch(done);
