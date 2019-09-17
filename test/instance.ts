@@ -350,21 +350,15 @@ describe('Instance', () => {
 
       assert.strictEqual(cache.has(NAME), false);
 
-      const database = instance.database(NAME, poolOptions);
+      const database = (instance.database(
+        NAME,
+        poolOptions
+      ) as {}) as FakeDatabase;
 
       assert(database instanceof FakeDatabase);
-      assert.strictEqual(
-        ((database as {}) as FakeDatabase).calledWith_[0],
-        instance
-      );
-      assert.strictEqual(
-        ((database as {}) as FakeDatabase).calledWith_[1],
-        NAME
-      );
-      assert.strictEqual(
-        ((database as {}) as FakeDatabase).calledWith_[2],
-        poolOptions
-      );
+      assert.strictEqual(database.calledWith_[0], instance);
+      assert.strictEqual(database.calledWith_[1], NAME);
+      assert.strictEqual(database.calledWith_[2], poolOptions);
       assert.strictEqual(database, cache.get(NAME));
     });
 

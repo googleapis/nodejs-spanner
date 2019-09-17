@@ -83,6 +83,7 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
+export interface GetInstanceConfig extends GetConfig {}
 
 interface InstanceRequest {
   (
@@ -479,9 +480,9 @@ class Instance extends common.ServiceObject {
     });
   }
 
-  get(options?: GetConfig): Promise<GetInstanceResponse>;
+  get(options?: GetInstanceConfig): Promise<GetInstanceResponse>;
   get(callback: GetInstanceCallback): void;
-  get(options: GetConfig, callback: GetInstanceCallback): void;
+  get(options: GetInstanceConfig, callback: GetInstanceCallback): void;
   /**
    * @typedef {array} GetInstanceResponse
    * @property {Instance} 0 The {@link Instance}.
@@ -501,7 +502,7 @@ class Instance extends common.ServiceObject {
    * normally required for the `create` method must be contained within this
    * object as well.
    *
-   * @param {options} [options] Configuration object.
+   * @param {GetInstanceConfig} [options] Configuration object.
    * @param {boolean} [options.autoCreate=false] Automatically create the
    *     object if it does not exist.
    * @param {GetInstanceCallback} [callback] Callback function.
@@ -526,7 +527,7 @@ class Instance extends common.ServiceObject {
    * });
    */
   get(
-    optionsOrCallback?: GetConfig | GetInstanceCallback,
+    optionsOrCallback?: GetInstanceConfig | GetInstanceCallback,
     cb?: GetInstanceCallback
   ): void | Promise<GetInstanceResponse> {
     const callback =
@@ -534,7 +535,7 @@ class Instance extends common.ServiceObject {
     const options =
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
-        : ({} as GetConfig);
+        : ({} as GetInstanceConfig);
 
     this.getMetadata((err, metadata) => {
       if (err) {

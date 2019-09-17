@@ -1262,20 +1262,19 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          // tslint:disable-next-line: no-any
-          database.run('SELECT * FROM Singers', (err, rows: any) => {
+          database.run('SELECT * FROM Singers', (err, rows) => {
             assert.ifError(err);
 
             // We just want the two most recent ones.
-            rows.splice(0, rows.length - 2);
+            rows!.splice(0, rows!.length - 2);
 
-            rows = rows.map(x => x.toJSON());
+            const rowJson = rows!.map(x => x.toJSON());
 
-            assert.strictEqual(rows[0].SingerId, id1);
-            assert.strictEqual(rows[0].Name, name1);
+            assert.strictEqual(rowJson[0].SingerId, id1);
+            assert.strictEqual(rowJson[0].Name, name1);
 
-            assert.strictEqual(rows[1].SingerId, id2);
-            assert.strictEqual(rows[1].Name, name2);
+            assert.strictEqual(rowJson[1].SingerId, id2);
+            assert.strictEqual(rowJson[1].Name, name2);
 
             done();
           });
@@ -1561,7 +1560,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1572,7 +1571,7 @@ describe('Spanner', () => {
                   child: 'bool',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1582,7 +1581,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1593,7 +1592,7 @@ describe('Spanner', () => {
                   child: 'bool',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1665,7 +1664,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1676,7 +1675,7 @@ describe('Spanner', () => {
                   child: 'int64',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1686,7 +1685,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1697,7 +1696,7 @@ describe('Spanner', () => {
                   child: 'int64',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1769,7 +1768,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1780,7 +1779,7 @@ describe('Spanner', () => {
                   child: 'float64',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1790,7 +1789,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1801,7 +1800,7 @@ describe('Spanner', () => {
                   child: 'float64',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1935,7 +1934,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -1946,7 +1945,7 @@ describe('Spanner', () => {
                   child: 'string',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -1956,7 +1955,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -1967,7 +1966,7 @@ describe('Spanner', () => {
                   child: 'string',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2033,7 +2032,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -2044,7 +2043,7 @@ describe('Spanner', () => {
                   child: 'bytes',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2054,7 +2053,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -2065,7 +2064,7 @@ describe('Spanner', () => {
                   child: 'bytes',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2135,7 +2134,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -2146,7 +2145,7 @@ describe('Spanner', () => {
                   child: 'timestamp',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2156,7 +2155,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -2167,7 +2166,7 @@ describe('Spanner', () => {
                   child: 'timestamp',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2241,7 +2240,7 @@ describe('Spanner', () => {
           it('should bind empty arrays', done => {
             const values = [];
 
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: values,
@@ -2252,7 +2251,7 @@ describe('Spanner', () => {
                   child: 'date',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2262,7 +2261,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null arrays', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
                 v: null,
@@ -2273,7 +2272,7 @@ describe('Spanner', () => {
                   child: 'date',
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2307,7 +2306,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null structs', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.userf is NULL',
               params: {
                 structParam: null,
@@ -2327,7 +2326,7 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2362,7 +2361,7 @@ describe('Spanner', () => {
           });
 
           it('should bind null nested structs', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.structf.nestedf',
               params: {
                 structParam: null,
@@ -2384,7 +2383,7 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2436,7 +2435,7 @@ describe('Spanner', () => {
           });
 
           it('should bind structs with null fields', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.f1',
               params: {
                 structParam: Spanner.struct({
@@ -2454,7 +2453,7 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2583,7 +2582,7 @@ describe('Spanner', () => {
           });
 
           it('should allow an array of structs with null fields', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT a.threadid FROM UNNEST(@structParam.arraysf) a',
               params: {
                 structParam: Spanner.struct({
@@ -2615,7 +2614,7 @@ describe('Spanner', () => {
                   ],
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -2626,7 +2625,7 @@ describe('Spanner', () => {
           });
 
           it('should allow a null array of structs', done => {
-            const query = ({
+            const query: ExecuteSqlRequest = {
               sql: 'SELECT a.threadid FROM UNNEST(@structParamArray) a',
               params: {
                 structParamArray: null,
@@ -2645,7 +2644,7 @@ describe('Spanner', () => {
                   },
                 },
               },
-            } as {}) as ExecuteSqlRequest;
+            };
 
             database.run(query, (err, rows) => {
               assert.ifError(err);
@@ -3233,9 +3232,9 @@ describe('Spanner', () => {
             // We just want the two most recent ones.
             rows!.splice(0, rows!.length - 2);
 
-            rows = rows!.map(x => x.toJSON()) as Row[];
+            const rowJson = rows!.map(x => x.toJSON());
 
-            assert.deepStrictEqual(rows, [
+            assert.deepStrictEqual(rowJson, [
               {
                 SingerId: id1,
                 Name: name1,
@@ -3453,17 +3452,16 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          // tslint:disable-next-line: no-any
-          transaction!.run('SELECT * FROM TxnTable', (err, rows: any) => {
+          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
 
-            rows = rows.map(x => x.toJSON());
+            const rowJson = rows.map(x => x.toJSON());
 
-            assert.strictEqual(rows[0].Key, 'k0');
-            assert.strictEqual(rows[0].StringValue, 'v0');
-            assert.strictEqual(rows[1].Key, 'k1');
-            assert.strictEqual(rows[1].StringValue, 'v1');
+            assert.strictEqual(rowJson[0].Key, 'k0');
+            assert.strictEqual(rowJson[0].StringValue, 'v0');
+            assert.strictEqual(rowJson[1].Key, 'k1');
+            assert.strictEqual(rowJson[1].StringValue, 'v1');
 
             transaction!.end();
             done();

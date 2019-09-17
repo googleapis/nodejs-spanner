@@ -1,5 +1,5 @@
 /*!
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,6 @@ import {google as instanceAdmin} from '../proto/spanner_instance_admin';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
-export interface TransactionOptions {
-  readOnly?: boolean;
-  timeout?: number;
-  exactStaleness?: number;
-  readTimestamp?: Date;
-  returnTimestamp?: boolean;
-  strong?: boolean;
-}
 
 export type Schema =
   | string
