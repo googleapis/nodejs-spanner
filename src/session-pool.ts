@@ -574,41 +574,48 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     reads = 0,
     writes = 0,
   }: CreateSessionsOptions): Promise<void> {
-    const count = reads + writes;
     const labels = this.options.labels!;
 
-    this._pending += count;
+    let needed = reads + writes;
+    this._pending += needed;
 
-    let sessions: Session[] | null = null;
+    while (needed > 0) {
+      let sessions: Session[] | null = null;
 
-    try {
-      [sessions] = await this.database.batchCreateSessions({count, labels});
-    } catch (e) {
-      this._pending -= count;
-      throw e;
-    }
+      try {
+        [sessions] = await this.database.batchCreateSessions({
+          count: needed,
+          labels
+        });
 
-    sessions.forEach(
-      async (session: Session): Promise<void> => {
-        let type = --writes > 0 ? types.ReadWrite : types.ReadOnly;
-
-        if (type === types.ReadWrite) {
-          try {
-            await this._prepareTransaction(session);
-          } catch (e) {
-            type = types.ReadOnly;
-          }
-        }
-
-        session.type = type;
-        session.lastUsed = Date.now();
-
-        this._pending -= 1;
-        this._inventory[type].push(session);
-
-        this.emit('available');
+        needed -= sessions.length;
+      } catch (e) {
+        this._pending -= needed;
+        throw e;
       }
-    );
+
+      sessions.forEach(
+        async (session: Session): Promise<void> => {
+          let type = --writes > 0 ? types.ReadWrite : types.ReadOnly;
+
+          if (type === types.ReadWrite) {
+            try {
+              await this._prepareTransaction(session);
+            } catch (e) {
+              type = types.ReadOnly;
+            }
+          }
+
+          session.type = type;
+          session.lastUsed = Date.now();
+
+          this._pending -= 1;
+          this._inventory[type].push(session);
+
+          this.emit('available');
+        }
+      );
+    }
   }
 
   /**
