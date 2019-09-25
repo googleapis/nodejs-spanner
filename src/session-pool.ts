@@ -196,7 +196,7 @@ interface SessionInventory {
   borrowed: Set<Session>;
 }
 
-interface CreateSessionsOptions {
+export interface CreateSessionsOptions {
   writes?: number;
   reads?: number;
 }
@@ -594,27 +594,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         throw e;
       }
 
-      sessions.forEach(
-        async (session: Session): Promise<void> => {
-          let type = --writes > 0 ? types.ReadWrite : types.ReadOnly;
+      sessions.forEach((session: Session) => {
+        session.type = writes-- > 0 ? types.ReadWrite : types.ReadOnly;
 
-          if (type === types.ReadWrite) {
-            try {
-              await this._prepareTransaction(session);
-            } catch (e) {
-              type = types.ReadOnly;
-            }
-          }
+        this._inventory.borrowed.add(session);
+        this._pending -= 1;
 
-          session.type = type;
-          session.lastUsed = Date.now();
-
-          this._pending -= 1;
-          this._inventory[type].push(session);
-
-          this.emit('available');
-        }
-      );
+        this.release(session);
+      });
     }
   }
 
