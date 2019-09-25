@@ -585,7 +585,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       try {
         [sessions] = await this.database.batchCreateSessions({
           count: needed,
-          labels
+          labels,
         });
 
         needed -= sessions.length;
