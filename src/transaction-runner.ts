@@ -48,8 +48,7 @@ export interface RunTransactionOptions {
  *     already been created, and is ready to be queried and committed against.
  */
 export interface RunTransactionCallback {
-  (err: ServiceError, transaction?: null): void;
-  (err: null, transaction: Transaction): void;
+  (err: ServiceError | null, transaction?: Transaction | null): void;
 }
 
 /**
