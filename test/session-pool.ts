@@ -144,10 +144,17 @@ describe('SessionPool', () => {
   });
 
   describe('borrowed', () => {
-    it('should return the number of borrowed sessions', () => {
+    beforeEach(() => {
       inventory.borrowed = new Set([createSession(), createSession()]);
+    });
 
+    it('should return the number of borrowed sessions', () => {
       assert.strictEqual(sessionPool.borrowed, 2);
+    });
+
+    it('should factor in any creation pending sessions', () => {
+      sessionPool._pending = 1;
+      assert.strictEqual(sessionPool.borrowed, 3);
     });
   });
 
@@ -1009,6 +1016,26 @@ describe('SessionPool', () => {
 
       assert.strictEqual(reads, 3);
       assert.strictEqual(writes, 2);
+    });
+
+    it('should noop when no sessions are needed', () => {
+      sessionPool.options.min = 0
+      sessionPool._fill();
+
+      assert.strictEqual(stub.callCount, 0);
+    });
+
+    it('should emit any request errors that occur', done => {
+      const error = new Error('err');
+
+      stub.rejects(error);
+
+      sessionPool.once('error', err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+
+      sessionPool._fill();
     });
   });
 
