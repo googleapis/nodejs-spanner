@@ -1163,7 +1163,11 @@ describe('SessionPool', () => {
       const stub = sandbox
         .stub(sessionPool, '_createSession')
         .withArgs(types.ReadOnly)
-        .resolves();
+        .callsFake(() => {
+          // this will fire off via _createSessions
+          setImmediate(() => sessionPool.emit('available'));
+          return Promise.resolve();
+        });
 
       sessionPool.options.max = 1;
       sandbox

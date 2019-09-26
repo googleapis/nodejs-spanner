@@ -749,8 +749,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     if (!this.isFull) {
       promises.push(
-        new Promise((resolve, reject) => {
-          this._createSession(type).then(() => this.emit('available'), reject);
+        new Promise((_, reject) => {
+          this._createSession(type).catch(reject);
         })
       );
     }
