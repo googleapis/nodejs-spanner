@@ -1306,7 +1306,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
 
               assert.strictEqual(row.SingerId, replacedRow.SingerId);
               assert.strictEqual(row.Name, null);
@@ -1343,7 +1343,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
 
               assert.strictEqual(row.SingerId, updatedRow.SingerId);
               assert.strictEqual(row.Name, updatedRow.Name);
@@ -2713,7 +2713,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
 
               assert.strictEqual(row.Key, expectedRow.Key);
               assert.strictEqual(row.StringValue, expectedRow.StringValue);
@@ -2784,7 +2784,7 @@ describe('Spanner', () => {
               },
               (err, rows) => {
                 assert.ifError(err);
-                assert.deepStrictEqual(rows[0].toJSON(), ROW);
+                assert.deepStrictEqual(rows![0].toJSON(), ROW);
                 done();
               }
             );
@@ -2803,7 +2803,7 @@ describe('Spanner', () => {
             },
             (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0].toJSON(), ROW);
+              assert.deepStrictEqual(rows![0].toJSON(), ROW);
               done();
             }
           );
@@ -3307,7 +3307,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              rows = rows.map(x => x.toJSON());
+              rows = rows!.map(x => x.toJSON());
 
               assert.deepStrictEqual(rows, [
                 {
@@ -3392,7 +3392,7 @@ describe('Spanner', () => {
 
           transaction!.read(table.name, query, (err, rows) => {
             assert.ifError(err);
-            assert.strictEqual(rows.length, records.length);
+            assert.strictEqual(rows!.length, records.length);
 
             transaction!.end();
             done();

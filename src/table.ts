@@ -17,12 +17,9 @@
 'use strict';
 
 import {promisifyAll} from '@google-cloud/promisify';
-import * as is from 'is';
-import {ServiceError} from 'grpc';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';
-import {Json} from './codec';
-import {Database} from './database';
+import {Database, UpdateSchemaCallback, UpdateSchemaResponse} from './database';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {
   ReadRequest,
@@ -30,11 +27,10 @@ import {
   CommitResponse,
   ReadResponse,
   ReadCallback,
-  Transaction,
   CommitCallback,
 } from './transaction';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
-import {Schema, ResourceCallback, LongRunningCallback} from './common';
+import {Schema, LongRunningCallback} from './common';
 
 export type Key = string | string[];
 
@@ -43,15 +39,25 @@ export type CreateTableResponse = [
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
-type DropTableResponse = [GaxOperation, databaseAdmin.longrunning.IOperation];
-
 export type CreateTableCallback = LongRunningCallback<Table>;
 
-type DropTableCallback = ResourceCallback<
-  GaxOperation,
-  databaseAdmin.longrunning.IOperation
->;
+export type DropTableResponse = UpdateSchemaResponse;
+export interface DropTableCallback extends UpdateSchemaCallback {}
 
+export interface DeleteRowsCallback extends CommitCallback {}
+export type DeleteRowsResponse = CommitResponse;
+
+export interface InsertRowsCallback extends CommitCallback {}
+export type InsertRowsResponse = CommitResponse;
+
+export interface ReplaceRowsCallback extends CommitCallback {}
+export type ReplaceRowsResponse = CommitResponse;
+
+export interface UpdateRowsCallback extends CommitCallback {}
+export type UpdateRowsResponse = CommitResponse;
+
+export interface UpsertRowsCallback extends CommitCallback {}
+export type UpsertRowsResponse = CommitResponse;
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
@@ -278,7 +284,7 @@ class Table {
    *   });
    */
   delete(callback?: DropTableCallback): Promise<DropTableResponse> | void {
-    if (callback && !is.fn(callback)) {
+    if (callback && typeof callback !== 'function') {
       throw new TypeError(
         'Unexpected argument, please see Table#deleteRows to delete rows.'
       );
@@ -289,8 +295,8 @@ class Table {
       callback!
     );
   }
-  deleteRows(keys: Key[]): Promise<CommitResponse>;
-  deleteRows(keys: Key[], callback: CommitCallback): void;
+  deleteRows(keys: Key[]): Promise<DeleteRowsResponse>;
+  deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
   /**
    * Delete rows from this table.
    *
@@ -338,8 +344,8 @@ class Table {
    */
   deleteRows(
     keys: Key[],
-    callback?: CommitCallback
-  ): Promise<CommitResponse> | void {
+    callback?: DeleteRowsCallback
+  ): Promise<DeleteRowsResponse> | void {
     return this._mutate('deleteRows', keys, callback!);
   }
   drop(): Promise<DropTableResponse>;
@@ -388,8 +394,8 @@ class Table {
   drop(callback?: DropTableCallback): Promise<DropTableResponse> | void {
     return this.delete(callback!);
   }
-  insert(rows: object | object[]): Promise<CommitResponse>;
-  insert(rows: object | object[], callback: CommitCallback): void;
+  insert(rows: object | object[]): Promise<InsertRowsResponse>;
+  insert(rows: object | object[], callback: InsertRowsCallback): void;
   /**
    * Insert rows of data into this table.
    *
@@ -448,8 +454,8 @@ class Table {
    */
   insert(
     rows: object | object[],
-    callback?: CommitCallback
-  ): Promise<CommitResponse> | void {
+    callback?: InsertRowsCallback
+  ): Promise<InsertRowsResponse> | void {
     this._mutate('insert', rows, callback!);
   }
   read(request: ReadRequest, options?: TimestampBounds): Promise<ReadResponse>;
@@ -613,23 +619,25 @@ class Table {
    */
   read(
     request: ReadRequest,
-    options?: TimestampBounds | ReadCallback,
-    callback?: ReadCallback
+    optionsOrCallback?: TimestampBounds | ReadCallback,
+    cb?: ReadCallback
   ): Promise<ReadResponse> | void {
-    const rows: Array<Row | Json> = [];
+    const rows: Row[] = [];
 
-    if (is.fn(options)) {
-      callback = options as ReadCallback;
-      options = {} as TimestampBounds;
-    }
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as TimestampBounds)
+        : {};
 
-    this.createReadStream(request, options as TimestampBounds)
+    this.createReadStream(request, options)
       .on('error', callback!)
-      .on('data', (row: Row | Json) => rows.push(row))
+      .on('data', (row: Row) => rows.push(row))
       .on('end', () => callback!(null, rows));
   }
-  replace(rows: object | object[]): Promise<CommitResponse>;
-  replace(rows: object | object[], callback: CommitCallback): void;
+  replace(rows: object | object[]): Promise<ReplaceRowsResponse>;
+  replace(rows: object | object[], callback: ReplaceRowsCallback): void;
   /**
    * Replace rows of data within this table.
    *
@@ -671,12 +679,12 @@ class Table {
    */
   replace(
     rows: object | object[],
-    callback?: CommitCallback
-  ): Promise<CommitResponse> | void {
+    callback?: ReplaceRowsCallback
+  ): Promise<ReplaceRowsResponse> | void {
     this._mutate('replace', rows, callback!);
   }
-  update(rows: object | object[]): Promise<CommitResponse>;
-  update(rows: object | object[], callback: CommitCallback): void;
+  update(rows: object | object[]): Promise<UpdateRowsResponse>;
+  update(rows: object | object[], callback: UpdateRowsCallback): void;
   /**
    * Update rows of data within this table.
    *
@@ -722,12 +730,12 @@ class Table {
    */
   update(
     rows: object | object[],
-    callback?: CommitCallback
-  ): Promise<CommitResponse> | void {
+    callback?: UpdateRowsCallback
+  ): Promise<UpdateRowsResponse> | void {
     this._mutate('update', rows, callback!);
   }
-  upsert(rows: object | object[]): Promise<CommitResponse>;
-  upsert(rows: object | object[], callback: CommitCallback): void;
+  upsert(rows: object | object[]): Promise<UpsertRowsResponse>;
+  upsert(rows: object | object[], callback: UpsertRowsCallback): void;
   /**
    * Insert or update rows of data within this table.
    *
@@ -769,8 +777,8 @@ class Table {
    */
   upsert(
     rows: object | object[],
-    callback?: CommitCallback
-  ): Promise<CommitResponse> | void {
+    callback?: UpsertRowsCallback
+  ): Promise<UpsertRowsResponse> | void {
     this._mutate('upsert', rows, callback!);
   }
   /**
