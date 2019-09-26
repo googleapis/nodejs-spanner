@@ -1019,7 +1019,7 @@ describe('SessionPool', () => {
     });
 
     it('should noop when no sessions are needed', () => {
-      sessionPool.options.min = 0
+      sessionPool.options.min = 0;
       sessionPool._fill();
 
       assert.strictEqual(stub.callCount, 0);
