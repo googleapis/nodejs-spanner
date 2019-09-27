@@ -30,17 +30,14 @@ import {
   PartitionedDml,
   TimestampBounds,
 } from './transaction';
+import {google} from '../proto/spanner';
 import {
   Database,
-  CreateSessionOptions,
   CreateSessionCallback,
+  CreateSessionOptions,
 } from './database';
-import {
-  ServiceObjectConfig,
-  DeleteCallback,
-  Metadata,
-  MetadataCallback,
-} from '@google-cloud/common';
+import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
+import {NormalCallback} from './common';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -52,6 +49,14 @@ export const enum types {
   ReadWrite = 'readwrite',
 }
 
+export type GetSessionMetadataCallback = NormalCallback<
+  google.spanner.v1.ISession
+>;
+export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
+
+export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
+export type KeepAliveResponse = [google.spanner.v1.IResultSet];
+export type DeleteResponse = [r.Response];
 /**
  * Create a Session object to interact with a Cloud Spanner session.
  *
@@ -212,7 +217,7 @@ export class Session extends ServiceObject {
           typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
         callback =
           typeof optionsOrCallback === 'function'
-            ? (optionsOrCallback as CreateSessionCallback)
+            ? optionsOrCallback
             : callback;
         return database.createSession(options, (err, session, apiResponse) => {
           if (err) {
@@ -233,7 +238,7 @@ export class Session extends ServiceObject {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
   }
-  delete(): Promise<[r.Response]>;
+  delete(): Promise<DeleteResponse>;
   delete(callback: DeleteCallback): void;
   /**
    * Delete a session.
@@ -262,7 +267,7 @@ export class Session extends ServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback?: DeleteCallback): void | Promise<[r.Response]> {
+  delete(callback?: DeleteCallback): void | Promise<DeleteResponse> {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -275,8 +280,8 @@ export class Session extends ServiceObject {
       callback!
     );
   }
-  getMetadata(): Promise<[Metadata]>;
-  getMetadata(callback: MetadataCallback): void;
+  getMetadata(): Promise<GetSessionMetadataResponse>;
+  getMetadata(callback: GetSessionMetadataCallback): void;
   /**
    * @typedef {array} GetSessionMetadataResponse
    * @property {object} 0 The session's metadata.
@@ -310,7 +315,9 @@ export class Session extends ServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getMetadata(callback?: MetadataCallback): void | Promise<[Metadata]> {
+  getMetadata(
+    callback?: GetSessionMetadataCallback
+  ): void | Promise<GetSessionMetadataResponse> {
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -323,6 +330,8 @@ export class Session extends ServiceObject {
       callback!
     );
   }
+  keepAlive(): Promise<KeepAliveResponse>;
+  keepAlive(callback: KeepAliveCallback): void;
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
    *
@@ -336,7 +345,7 @@ export class Session extends ServiceObject {
    *   }
    * });
    */
-  keepAlive(callback?): void | Promise<void> {
+  keepAlive(callback?: KeepAliveCallback): void | Promise<KeepAliveResponse> {
     const reqOpts = {
       session: this.formattedName_,
       sql: 'SELECT 1',
@@ -358,7 +367,7 @@ export class Session extends ServiceObject {
    * @example
    * const transaction = session.partitionedDml();
    */
-  partitionedDml(): PartitionedDml {
+  partitionedDml() {
     return new PartitionedDml(this);
   }
   /**
@@ -370,7 +379,7 @@ export class Session extends ServiceObject {
    * @example
    * const snapshot = session.snapshot({strong: false});
    */
-  snapshot(options?: TimestampBounds): Snapshot {
+  snapshot(options?: TimestampBounds) {
     return new Snapshot(this, options);
   }
   /**
@@ -381,7 +390,7 @@ export class Session extends ServiceObject {
    * @example
    * const transaction = session.transaction();
    */
-  transaction(): Transaction {
+  transaction() {
     return new Transaction(this);
   }
   /**
@@ -398,7 +407,7 @@ export class Session extends ServiceObject {
    * // 'projects/grape-spaceship-123/instances/my-instance/' +
    * // 'databases/my-database/sessions/my-session'
    */
-  static formatName_(databaseName: string, name: string): string {
+  static formatName_(databaseName: string, name: string) {
     if (name.indexOf('/') > -1) {
       return name;
     }

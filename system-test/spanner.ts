@@ -909,7 +909,7 @@ describe('Spanner', () => {
     it('should have created the session', done => {
       session.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual(session.formattedName_, metadata.name);
+        assert.strictEqual(session.formattedName_, metadata!.name);
         done();
       });
     });
@@ -922,7 +922,7 @@ describe('Spanner', () => {
         assert.ifError(err);
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual(metadataByName.name, metadata.name);
+          assert.strictEqual(metadataByName!.name, metadata!.name);
           done();
         });
       });
