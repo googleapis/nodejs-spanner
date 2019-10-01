@@ -349,17 +349,17 @@ class SpannerClient {
    *   The request object that will be sent.
    * @param {string} request.database
    *   Required. The database in which the new sessions are created.
-   * @param {Object} [request.sessionTemplate]
-   *   Parameters to be applied to each created session.
-   *
-   *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
-   * @param {number} [request.sessionCount]
+   * @param {number} request.sessionCount
    *   Required. The number of sessions to be created in this batch call.
    *   The API may return fewer than the requested number of sessions. If a
    *   specific number of sessions are desired, the client can make additional
    *   calls to BatchCreateSessions (adjusting
    *   session_count
    *   as necessary).
+   * @param {Object} [request.sessionTemplate]
+   *   Parameters to be applied to each created session.
+   *
+   *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -380,7 +380,12 @@ class SpannerClient {
    * });
    *
    * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * client.batchCreateSessions({database: formattedDatabase})
+   * const sessionCount = 0;
+   * const request = {
+   *   database: formattedDatabase,
+   *   sessionCount: sessionCount,
+   * };
+   * client.batchCreateSessions(request)
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
