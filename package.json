@@ -64,7 +64,7 @@
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
     "google-auth-library": "^5.0.0",
-    "google-gax": "^1.0.0",
+    "google-gax": "^1.6.3",
     "grpc": "^1.21.1",
     "grpc-gcp": "^0.1.1",
     "is": "^3.2.1",
