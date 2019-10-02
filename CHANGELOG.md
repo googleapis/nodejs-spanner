@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.2.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.1.0...v4.2.0) (2019-10-02)
+
+
+### Bug Fixes
+
+* adjust timeout values ([#700](https://www.github.com/googleapis/nodejs-spanner/issues/700)) ([4571f15](https://www.github.com/googleapis/nodejs-spanner/commit/4571f15))
+* use compatible version of google-gax ([d312a8f](https://www.github.com/googleapis/nodejs-spanner/commit/d312a8f))
+
+
+### Features
+
+* .d.ts for protos ([4d3d649](https://www.github.com/googleapis/nodejs-spanner/commit/4d3d649))
+
 ## [4.1.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.0.2...v4.1.0) (2019-09-16)
 
 
