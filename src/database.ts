@@ -275,10 +275,10 @@ class Database extends ServiceObject {
   }
 
   batchCreateSessions(
-    options: BatchCreateSessionsOptions
+    options: number | BatchCreateSessionsOptions
   ): Promise<BatchCreateSessionsResponse>;
   batchCreateSessions(
-    options: BatchCreateSessionsOptions,
+    options: number | BatchCreateSessionsOptions,
     callback: BatchCreateSessionsCallback
   ): void;
   /**
@@ -311,7 +311,8 @@ class Database extends ServiceObject {
    * @see {@link v1.SpannerClient#batchCreateSessions}
    * @see [BatchCreateSessions API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BatchCreateSessions)
    *
-   * @param {BatchCreateSessionsOptions} [options] Configuration object.
+   * @param {number|BatchCreateSessionsOptions} options Desired session count or
+   *     a configuration object.
    * @param {BatchCreateSessionsCallback} [callback] Callback function.
    * @returns {Promise<BatchCreateSessionsResponse>}
    *
@@ -322,11 +323,9 @@ class Database extends ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    *
-   * const options = {
-   *   count: 5
-   * };
+   * const count = 5;
    *
-   * database.batchCreateSession(options, (err, sessions, response) => {
+   * database.batchCreateSession(count, (err, sessions, response) => {
    *   if (err) {
    *     // Error handling omitted.
    *   }
@@ -335,12 +334,19 @@ class Database extends ServiceObject {
    * });
    *
    * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
-   * const [sessions, response] = await database.batchCreateSessions(options);
+   * const [sessions, response] = await database.batchCreateSessions(count);
    */
   batchCreateSessions(
-    {count, labels = {}}: BatchCreateSessionsOptions,
+    options: number | BatchCreateSessionsOptions,
     callback?: BatchCreateSessionsCallback
   ): void | Promise<BatchCreateSessionsResponse> {
+    if (typeof options === 'number') {
+      options = {count: options};
+    }
+
+    const count = options.count;
+    const labels = options.labels || {};
+
     const reqOpts: google.spanner.v1.IBatchCreateSessionsRequest = {
       database: this.formattedName_,
       sessionTemplate: {labels},

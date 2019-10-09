@@ -348,6 +348,16 @@ describe('Database', () => {
       assert.strictEqual(reqOpts.sessionCount, count);
     });
 
+    it('should accept just a count number', () => {
+      const stub = sandbox.stub(database, 'request');
+      const count = 10;
+
+      database.batchCreateSessions(count, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+      assert.strictEqual(reqOpts.sessionCount, count);
+    });
+
     it('should accept session labels', () => {
       const stub = sandbox.stub(database, 'request');
       const labels = {foo: 'bar'};
