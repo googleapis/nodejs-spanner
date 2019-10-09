@@ -299,7 +299,7 @@ class Database extends ServiceObject {
    * @param {object} apiResponse The full API response.
    */
   /**
-   * Create a batch of session, which can be used to perform transactions that
+   * Create a batch of sessions, which can be used to perform transactions that
    * read and/or modify data.
    *
    * **It is unlikely you will need to interact with sessions directly. By
