@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {util} from '@google-cloud/common-grpc';
+import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -71,7 +71,7 @@ describe('Session', () => {
 
   before(() => {
     Session = proxyquire('../src/session.js', {
-      '@google-cloud/common-grpc': {
+      './common-grpc/index': {
         ServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,

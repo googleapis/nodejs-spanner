@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {Service} from '@google-cloud/common-grpc';
+import {Service} from '../src/common-grpc/index';
 
 import {SpannerClient as s} from '../src/v1';
 
@@ -31,7 +29,7 @@ describe('codec', () => {
 
   before(() => {
     codec = proxyquire('../src/codec.js', {
-      '@google-cloud/common-grpc': {Service},
+      './common-grpc/index': {Service},
     }).codec;
   });
 

@@ -27,7 +27,7 @@ import {Database} from '../src/database';
 import {Session, types} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
-import {util} from '@google-cloud/common-grpc';
+import {util} from '@google-cloud/common';
 
 let pQueueOverride: typeof PQueue | null = null;
 

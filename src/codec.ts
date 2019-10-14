@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Service} from '@google-cloud/common-grpc';
+import {Service} from './common-grpc/index';
 import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import * as is from 'is';

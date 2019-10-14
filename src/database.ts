@@ -21,7 +21,7 @@ import {
   ServiceObjectConfig,
   GetConfig,
 } from '@google-cloud/common';
-import {ServiceObject} from '@google-cloud/common-grpc';
+import {ServiceObject} from './common-grpc/index';
 import {promisify, promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import * as extend from 'extend';

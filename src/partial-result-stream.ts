@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-'use strict';
-
-import {Service} from '@google-cloud/common-grpc';
+import {Service} from './common-grpc/index';
 import * as checkpointStream from 'checkpoint-stream';
 import * as eventsIntercept from 'events-intercept';
 import * as is from 'is';

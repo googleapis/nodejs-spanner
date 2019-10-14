@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Service, Operation} from '@google-cloud/common-grpc';
+import {Service, Operation, GrpcServiceConfig} from './common-grpc/index';
 import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
@@ -26,7 +26,6 @@ import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
 import {codec} from './codec';
 import {Database} from './database';
 import {Instance} from './instance';
