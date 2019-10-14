@@ -53,7 +53,7 @@ describe('GrpcOperation', () => {
   let grpcOperation: operationTypes.GrpcOperation;
 
   before(() => {
-    GrpcOperation = proxyquire('../../src/common/operation', {
+    GrpcOperation = proxyquire('../../src/common-grpc/operation', {
       './service-object': {GrpcServiceObject: FakeGrpcServiceObject},
       './service': {GrpcService: FakeGrpcService},
     }).GrpcOperation;

@@ -144,9 +144,11 @@ describe('Spanner', () => {
 
   before(() => {
     Spanner = proxyquire('../src', {
-      './common-grpc/index': {
-        Operation: FakeGrpcOperation,
-        Service: FakeGrpcService,
+      './common-grpc/operation': {
+        GrpcOperation: FakeGrpcOperation,
+      },
+      './common-grpc/service': {
+        GrpcService: FakeGrpcService,
       },
       '@google-cloud/paginator': fakePaginator,
       '@google-cloud/promisify': fakePfy,

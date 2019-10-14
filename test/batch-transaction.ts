@@ -25,12 +25,6 @@ import {Session} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
 
-function getFake(obj: {}) {
-  return obj as {
-    calledWith_: IArguments;
-  };
-}
-
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {

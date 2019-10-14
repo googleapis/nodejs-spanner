@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Service, Operation, GrpcServiceConfig} from './common-grpc/index';
+import {GrpcService, GrpcServiceConfig} from './common-grpc/service';
+import {GrpcOperation} from './common-grpc/operation';
 import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
@@ -195,7 +196,7 @@ export interface RequestConfig {
  *
  * @param {ClientConfig} [options] Configuration options.
  */
-class Spanner extends Service {
+class Spanner extends GrpcService {
   options: GoogleAuthOptions;
   auth: GoogleAuth;
   clients_: Map<string, {}>;
@@ -708,7 +709,7 @@ class Spanner extends Service {
       throw new Error('A name is required to access an Operation object.');
     }
     // tslint:disable-next-line no-any
-    return new Operation(this as any, name);
+    return new GrpcOperation(this as any, name);
   }
 
   /**

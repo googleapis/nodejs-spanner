@@ -18,7 +18,7 @@ import * as assert from 'assert';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {Service} from '../src/common-grpc/index';
+import {GrpcService} from '../src/common-grpc/service';
 
 import {SpannerClient as s} from '../src/v1';
 
@@ -29,13 +29,13 @@ describe('codec', () => {
 
   before(() => {
     codec = proxyquire('../src/codec.js', {
-      './common-grpc/index': {Service},
+      './common-grpc/service': {GrpcService},
     }).codec;
   });
 
   beforeEach(() => {
-    sandbox.stub(Service, 'encodeValue_').callsFake(value => value);
-    sandbox.stub(Service, 'decodeValue_').callsFake(value => value);
+    sandbox.stub(GrpcService, 'encodeValue_').callsFake(value => value);
+    sandbox.stub(GrpcService, 'decodeValue_').callsFake(value => value);
   });
 
   afterEach(() => sandbox.restore());
@@ -363,7 +363,7 @@ describe('codec', () => {
     });
 
     it('should return null values as null', () => {
-      (Service.decodeValue_ as sinon.SinonStub).returns(null);
+      (GrpcService.decodeValue_ as sinon.SinonStub).returns(null);
       const decoded = codec.decode(null, BYPASS_FIELD);
       assert.strictEqual(decoded, null);
     });
@@ -468,7 +468,7 @@ describe('codec', () => {
       const value = {};
       const defaultEncodedValue = {};
 
-      (Service.encodeValue_ as sinon.SinonStub)
+      (GrpcService.encodeValue_ as sinon.SinonStub)
         .withArgs(value)
         .returns(defaultEncodedValue);
 

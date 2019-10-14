@@ -18,7 +18,7 @@
  * @module spanner/session
  */
 
-import {ServiceObject} from './common-grpc/index';
+import {GrpcServiceObject} from './common-grpc/service-object';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as r from 'teeny-request';
@@ -93,7 +93,7 @@ export type DeleteResponse = [r.Response];
  * //-
  * const session = database.session('session-name');
  */
-export class Session extends ServiceObject {
+export class Session extends GrpcServiceObject {
   id!: string;
   formattedName_?: string;
   type?: types;

@@ -75,8 +75,8 @@ describe('Instance', () => {
 
   before(() => {
     Instance = proxyquire('../src/instance.js', {
-      './common-grpc/index': {
-        ServiceObject: FakeGrpcServiceObject,
+      './common-grpc/service-object': {
+        GrpcServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/paginator': fakePaginator,

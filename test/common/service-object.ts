@@ -45,7 +45,7 @@ describe('GrpcServiceObject', () => {
   const REQ_OPTS = {};
 
   before(() => {
-    GrpcServiceObject = proxyquire('../../src/common/service-object', {
+    GrpcServiceObject = proxyquire('../../src/common-grpc/service-object', {
       '@google-cloud/common': {
         ServiceObject: FakeServiceObject,
       },

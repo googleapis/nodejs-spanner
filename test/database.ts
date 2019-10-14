@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
@@ -194,8 +192,8 @@ describe('Database', () => {
 
   before(() => {
     Database = proxyquire('../src/database.js', {
-      './common-grpc/index': {
-        ServiceObject: FakeGrpcServiceObject,
+      './common-grpc/service-object': {
+        GrpcServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
       'p-retry': fakeRetry,
