@@ -795,7 +795,7 @@ class Table {
    * @param {function} callback The callback function.
    */
   private _mutate(
-    method: string,
+    method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
     callback: CommitCallback
   ): void {
@@ -805,8 +805,7 @@ class Table {
         return;
       }
 
-      // tslint:disable-next-line: no-any
-      (transaction as any)![method](this.name, rows);
+      transaction![method](this.name, rows as Key[]);
       transaction!.commit(callback);
     });
   }
