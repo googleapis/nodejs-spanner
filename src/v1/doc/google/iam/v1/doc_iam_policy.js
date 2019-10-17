@@ -20,7 +20,8 @@
  *
  * @property {string} resource
  *   REQUIRED: The resource for which the policy is being specified.
- *   See the operation documentation for the appropriate value for this field.
+ *   `resource` is usually specified as a path. For example, a Project
+ *   resource is specified as `projects/{project}`.
  *
  * @property {Object} policy
  *   REQUIRED: The complete policy to be applied to the `resource`. The size of
@@ -43,13 +44,8 @@ const SetIamPolicyRequest = {
  *
  * @property {string} resource
  *   REQUIRED: The resource for which the policy is being requested.
- *   See the operation documentation for the appropriate value for this field.
- *
- * @property {Object} options
- *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
- *   `GetIamPolicy`. This field is only used by Cloud IAM.
- *
- *   This object should have the same structure as [GetPolicyOptions]{@link google.iam.v1.GetPolicyOptions}
+ *   `resource` is usually specified as a path. For example, a Project
+ *   resource is specified as `projects/{project}`.
  *
  * @typedef GetIamPolicyRequest
  * @memberof google.iam.v1
@@ -64,7 +60,8 @@ const GetIamPolicyRequest = {
  *
  * @property {string} resource
  *   REQUIRED: The resource for which the policy detail is being requested.
- *   See the operation documentation for the appropriate value for this field.
+ *   `resource` is usually specified as a path. For example, a Project
+ *   resource is specified as `projects/{project}`.
  *
  * @property {string[]} permissions
  *   The set of permissions to check for the `resource`. Permissions with

@@ -58,16 +58,15 @@ const InstanceConfig = {
  *   Required. The number of nodes allocated to this instance. This may be zero
  *   in API responses for instances that are not yet in state `READY`.
  *
- *   See [the
- *   documentation](https://cloud.google.com/spanner/docs/instances#node_count)
+ *   See [the documentation](https://cloud.google.com/spanner/docs/instances#node_count)
  *   for more information about nodes.
  *
  * @property {number} state
  *   Output only. The current instance state. For
- *   CreateInstance,
- *   the state must be either omitted or set to `CREATING`. For
- *   UpdateInstance,
- *   the state must be either omitted or set to `READY`.
+ *   CreateInstance, the state must be
+ *   either omitted or set to `CREATING`. For
+ *   UpdateInstance, the state must be
+ *   either omitted or set to `READY`.
  *
  *   The number should be among the values of [State]{@link google.spanner.admin.instance.v1.State}
  *
@@ -93,6 +92,16 @@ const InstanceConfig = {
  *   specific characters being disallowed.  For example, representing labels
  *   as the string:  name + "_" + value  would prove problematic if we were to
  *   allow "_" in a future release.
+ *
+ * @property {string[]} endpointUrls
+ *   Output only. The endpoint URLs based on the instance config.
+ *   For example, instances located in a specific cloud region (or multi region)
+ *   such as nam3, would have a nam3 specific endpoint URL.
+ *   This URL is to be used implictly by SDK clients, with fallback to default
+ *   URL. These endpoints are intended to optimize the network routing between
+ *   the client and the instance's serving resources.
+ *   If multiple endpoints are present,
+ *   client may establish connections using any of the given URLs.
  *
  * @typedef Instance
  * @memberof google.spanner.admin.instance.v1
@@ -130,8 +139,7 @@ const Instance = {
 };
 
 /**
- * The request for
- * ListInstanceConfigs.
+ * The request for ListInstanceConfigs.
  *
  * @property {string} parent
  *   Required. The name of the project for which a list of supported instance
@@ -145,8 +153,7 @@ const Instance = {
  * @property {string} pageToken
  *   If non-empty, `page_token` should contain a
  *   next_page_token
- *   from a previous
- *   ListInstanceConfigsResponse.
+ *   from a previous ListInstanceConfigsResponse.
  *
  * @typedef ListInstanceConfigsRequest
  * @memberof google.spanner.admin.instance.v1
@@ -157,8 +164,7 @@ const ListInstanceConfigsRequest = {
 };
 
 /**
- * The response for
- * ListInstanceConfigs.
+ * The response for ListInstanceConfigs.
  *
  * @property {Object[]} instanceConfigs
  *   The list of requested instance configurations.
@@ -167,8 +173,8 @@ const ListInstanceConfigsRequest = {
  *
  * @property {string} nextPageToken
  *   `next_page_token` can be sent in a subsequent
- *   ListInstanceConfigs
- *   call to fetch more of the matching instance configurations.
+ *   ListInstanceConfigs call to
+ *   fetch more of the matching instance configurations.
  *
  * @typedef ListInstanceConfigsResponse
  * @memberof google.spanner.admin.instance.v1
@@ -195,12 +201,18 @@ const GetInstanceConfigRequest = {
 };
 
 /**
- * The request for
- * GetInstance.
+ * The request for GetInstance.
  *
  * @property {string} name
  *   Required. The name of the requested instance. Values are of the form
  *   `projects/<project>/instances/<instance>`.
+ *
+ * @property {Object} fieldMask
+ *   If field_mask is present, specifies the subset of [][google.spanner.admin.instance.v1.Instance] fields that
+ *   should be returned.
+ *   If absent, all [][google.spanner.admin.instance.v1.Instance] fields are returned.
+ *
+ *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
  *
  * @typedef GetInstanceRequest
  * @memberof google.spanner.admin.instance.v1
@@ -211,8 +223,7 @@ const GetInstanceRequest = {
 };
 
 /**
- * The request for
- * CreateInstance.
+ * The request for CreateInstance.
  *
  * @property {string} parent
  *   Required. The name of the project in which to create the instance. Values
@@ -220,7 +231,7 @@ const GetInstanceRequest = {
  *
  * @property {string} instanceId
  *   Required. The ID of the instance to create.  Valid identifiers are of the
- *   form `[a-z][-a-z0-9]*[a-z0-9]` and must be between 6 and 30 characters in
+ *   form `[a-z][-a-z0-9]*[a-z0-9]` and must be between 2 and 64 characters in
  *   length.
  *
  * @property {Object} instance
@@ -238,8 +249,7 @@ const CreateInstanceRequest = {
 };
 
 /**
- * The request for
- * ListInstances.
+ * The request for ListInstances.
  *
  * @property {string} parent
  *   Required. The name of the project for which a list of instances is
@@ -251,9 +261,8 @@ const CreateInstanceRequest = {
  *
  * @property {string} pageToken
  *   If non-empty, `page_token` should contain a
- *   next_page_token
- *   from a previous
- *   ListInstancesResponse.
+ *   next_page_token from a
+ *   previous ListInstancesResponse.
  *
  * @property {string} filter
  *   An expression for filtering the results of the request. Filter rules are
@@ -285,8 +294,7 @@ const ListInstancesRequest = {
 };
 
 /**
- * The response for
- * ListInstances.
+ * The response for ListInstances.
  *
  * @property {Object[]} instances
  *   The list of requested instances.
@@ -295,8 +303,8 @@ const ListInstancesRequest = {
  *
  * @property {string} nextPageToken
  *   `next_page_token` can be sent in a subsequent
- *   ListInstances
- *   call to fetch more of the matching instances.
+ *   ListInstances call to fetch more
+ *   of the matching instances.
  *
  * @typedef ListInstancesResponse
  * @memberof google.spanner.admin.instance.v1
@@ -307,24 +315,19 @@ const ListInstancesResponse = {
 };
 
 /**
- * The request for
- * UpdateInstance.
+ * The request for UpdateInstance.
  *
  * @property {Object} instance
  *   Required. The instance to update, which must always include the instance
- *   name.  Otherwise, only fields mentioned in
- *   [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need
- *   be included.
+ *   name.  Otherwise, only fields mentioned in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be included.
  *
  *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
  *
  * @property {Object} fieldMask
- *   Required. A mask specifying which fields in
- *   [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should
- *   be updated. The field mask must always be specified; this prevents any
- *   future fields in
- *   [][google.spanner.admin.instance.v1.Instance] from being erased
- *   accidentally by clients that do not know about them.
+ *   Required. A mask specifying which fields in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should be updated.
+ *   The field mask must always be specified; this prevents any future fields in
+ *   [][google.spanner.admin.instance.v1.Instance] from being erased accidentally by clients that do not know
+ *   about them.
  *
  *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
  *
@@ -337,8 +340,7 @@ const UpdateInstanceRequest = {
 };
 
 /**
- * The request for
- * DeleteInstance.
+ * The request for DeleteInstance.
  *
  * @property {string} name
  *   Required. The name of the instance to be deleted. Values are of the form
@@ -363,8 +365,8 @@ const DeleteInstanceRequest = {
  *
  * @property {Object} startTime
  *   The time at which the
- *   CreateInstance
- *   request was received.
+ *   CreateInstance request was
+ *   received.
  *
  *   This object should have the same structure as [Timestamp]{@link google.protobuf.Timestamp}
  *
@@ -398,8 +400,7 @@ const CreateInstanceMetadata = {
  *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
  *
  * @property {Object} startTime
- *   The time at which
- *   UpdateInstance
+ *   The time at which UpdateInstance
  *   request was received.
  *
  *   This object should have the same structure as [Timestamp]{@link google.protobuf.Timestamp}

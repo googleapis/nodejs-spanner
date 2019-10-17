@@ -1,4 +1,4 @@
-// Copyright 2018 Google LLC
+// Copyright 2018 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 syntax = "proto3";
 
@@ -22,6 +23,8 @@ import "google/iam/v1/policy.proto";
 import "google/longrunning/operations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/spanner/admin/database/v1/backup.proto";
+import "google/spanner/admin/database/v1/common.proto";
 
 option csharp_namespace = "Google.Cloud.Spanner.Admin.Database.V1";
 option go_package = "google.golang.org/genproto/googleapis/spanner/admin/database/v1;database";
@@ -29,6 +32,7 @@ option java_multiple_files = true;
 option java_outer_classname = "SpannerDatabaseAdminProto";
 option java_package = "com.google.spanner.admin.database.v1";
 option php_namespace = "Google\\Cloud\\Spanner\\Admin\\Database\\V1";
+
 
 // Cloud Spanner Database Admin API
 //
@@ -48,11 +52,10 @@ service DatabaseAdmin {
   // have a name of the format `<database_name>/operations/<operation_id>` and
   // can be used to track preparation of the database. The
   // [metadata][google.longrunning.Operation.metadata] field type is
-  // [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata].
-  // The [response][google.longrunning.Operation.response] field type is
+  // [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The
+  // [response][google.longrunning.Operation.response] field type is
   // [Database][google.spanner.admin.database.v1.Database], if successful.
-  rpc CreateDatabase(CreateDatabaseRequest)
-      returns (google.longrunning.Operation) {
+  rpc CreateDatabase(CreateDatabaseRequest) returns (google.longrunning.Operation) {
     option (google.api.http) = {
       post: "/v1/{parent=projects/*/instances/*}/databases"
       body: "*"
@@ -72,10 +75,8 @@ service DatabaseAdmin {
   // the format `<database_name>/operations/<operation_id>` and can be used to
   // track execution of the schema change(s). The
   // [metadata][google.longrunning.Operation.metadata] field type is
-  // [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].
-  // The operation has no response.
-  rpc UpdateDatabaseDdl(UpdateDatabaseDdlRequest)
-      returns (google.longrunning.Operation) {
+  // [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.
+  rpc UpdateDatabaseDdl(UpdateDatabaseDdlRequest) returns (google.longrunning.Operation) {
     option (google.api.http) = {
       patch: "/v1/{database=projects/*/instances/*/databases/*}/ddl"
       body: "*"
@@ -98,26 +99,25 @@ service DatabaseAdmin {
     };
   }
 
-  // Sets the access control policy on a database resource. Replaces any
-  // existing policy.
+  // Sets the access control policy on a database resource.
+  // Replaces any existing policy.
   //
-  // Authorization requires `spanner.databases.setIamPolicy` permission on
-  // [resource][google.iam.v1.SetIamPolicyRequest.resource].
-  rpc SetIamPolicy(google.iam.v1.SetIamPolicyRequest)
-      returns (google.iam.v1.Policy) {
+  // Authorization requires `spanner.databases.setIamPolicy`
+  // permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].
+  rpc SetIamPolicy(google.iam.v1.SetIamPolicyRequest) returns (google.iam.v1.Policy) {
     option (google.api.http) = {
       post: "/v1/{resource=projects/*/instances/*/databases/*}:setIamPolicy"
       body: "*"
     };
   }
 
-  // Gets the access control policy for a database resource. Returns an empty
-  // policy if a database exists but does not have a policy set.
+  // Gets the access control policy for a database resource.
+  // Returns an empty policy if a database exists but does
+  // not have a policy set.
   //
   // Authorization requires `spanner.databases.getIamPolicy` permission on
   // [resource][google.iam.v1.GetIamPolicyRequest.resource].
-  rpc GetIamPolicy(google.iam.v1.GetIamPolicyRequest)
-      returns (google.iam.v1.Policy) {
+  rpc GetIamPolicy(google.iam.v1.GetIamPolicyRequest) returns (google.iam.v1.Policy) {
     option (google.api.http) = {
       post: "/v1/{resource=projects/*/instances/*/databases/*}:getIamPolicy"
       body: "*"
@@ -126,16 +126,78 @@ service DatabaseAdmin {
 
   // Returns permissions that the caller has on the specified database resource.
   //
-  // Attempting this RPC on a non-existent Cloud Spanner database will result in
-  // a NOT_FOUND error if the user has `spanner.databases.list` permission on
-  // the containing Cloud Spanner instance. Otherwise returns an empty set of
-  // permissions.
-  rpc TestIamPermissions(google.iam.v1.TestIamPermissionsRequest)
-      returns (google.iam.v1.TestIamPermissionsResponse) {
+  // Attempting this RPC on a non-existent Cloud Spanner database will
+  // result in a NOT_FOUND error if the user has
+  // `spanner.databases.list` permission on the containing Cloud
+  // Spanner instance. Otherwise returns an empty set of permissions.
+  rpc TestIamPermissions(google.iam.v1.TestIamPermissionsRequest) returns (google.iam.v1.TestIamPermissionsResponse) {
     option (google.api.http) = {
       post: "/v1/{resource=projects/*/instances/*/databases/*}:testIamPermissions"
       body: "*"
     };
+  }
+
+  rpc CreateBackup(CreateBackupRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1/{parent=projects/*/instances/*}/backups"
+      body: "*"
+    };
+  }
+
+  rpc GetBackup(GetBackupRequest) returns (Backup) {
+    option (google.api.http) = {
+      get: "/v1/{name=projects/*/instances/*/backups/*}"
+    };
+  }
+
+  rpc UpdateBackup(UpdateBackupRequest) returns (Backup) {
+    option (google.api.http) = {
+      patch: "/v1/{backup.name=projects/*/instances/*/backups/*}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteBackup(DeleteBackupRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/{name=projects/*/instances/*/backups/*}"
+    };
+  }
+
+  rpc ListBackups(ListBackupsRequest) returns (ListBackupsResponse) {
+    option (google.api.http) = {
+      get: "/v1/{parent=projects/*/instances/*}/backups"
+    };
+  }
+
+  rpc RestoreDatabase(RestoreDatabaseRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1/{parent=projects/*/instances/*}/databases:restore"
+      body: "*"
+    };
+  }
+
+  rpc ListDatabaseOperations(ListDatabaseOperationsRequest) returns (ListDatabaseOperationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/{parent=projects/*/instances/*}/databaseOperations"
+    };
+  }
+
+  rpc ListBackupOperations(ListBackupOperationsRequest) returns (ListBackupOperationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/{parent=projects/*/instances/*}/backupOperations"
+    };
+  }
+}
+
+message RestoreInfo {
+  // The type of the restore source.
+  RestoreSourceType source_type = 1;
+
+  // Information about the source used to restore the database.
+  oneof source_info {
+    // Information about the backup used to restore the database. The backup
+    // may no longer exist.
+    BackupInfo backup_info = 2;
   }
 }
 
@@ -152,6 +214,8 @@ message Database {
 
     // The database is fully created and ready for use.
     READY = 2;
+
+    READY_OPTIMIZING = 3;
   }
 
   // Required. The name of the database. Values are of the form
@@ -163,10 +227,13 @@ message Database {
 
   // Output only. The current database state.
   State state = 2;
+
+  google.protobuf.Timestamp create_time = 3;
+
+  RestoreInfo restore_info = 4;
 }
 
-// The request for
-// [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
+// The request for [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
 message ListDatabasesRequest {
   // Required. The instance whose databases should be listed.
   // Values are of the form `projects/<project>/instances/<instance>`.
@@ -177,26 +244,23 @@ message ListDatabasesRequest {
   int32 page_size = 3;
 
   // If non-empty, `page_token` should contain a
-  // [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token]
-  // from a previous
-  // [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
+  // [next_page_token][google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token] from a
+  // previous [ListDatabasesResponse][google.spanner.admin.database.v1.ListDatabasesResponse].
   string page_token = 4;
 }
 
-// The response for
-// [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
+// The response for [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
 message ListDatabasesResponse {
   // Databases that matched the request.
   repeated Database databases = 1;
 
   // `next_page_token` can be sent in a subsequent
-  // [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
-  // call to fetch more of the matching databases.
+  // [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
+  // of the matching databases.
   string next_page_token = 2;
 }
 
-// The request for
-// [CreateDatabase][google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase].
+// The request for [CreateDatabase][google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase].
 message CreateDatabaseRequest {
   // Required. The name of the instance that will serve the new database.
   // Values are of the form `projects/<project>/instances/<instance>`.
@@ -223,8 +287,7 @@ message CreateDatabaseMetadata {
   string database = 1;
 }
 
-// The request for
-// [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
+// The request for [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
 message GetDatabaseRequest {
   // Required. The name of the requested database. Values are of the form
   // `projects/<project>/instances/<instance>/databases/<database>`.
@@ -245,8 +308,8 @@ message GetDatabaseRequest {
 // Each batch of statements is assigned a name which can be used with
 // the [Operations][google.longrunning.Operations] API to monitor
 // progress. See the
-// [operation_id][google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.operation_id]
-// field for more details.
+// [operation_id][google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.operation_id] field for more
+// details.
 message UpdateDatabaseDdlRequest {
   // Required. The database to update.
   string database = 1;
@@ -261,20 +324,18 @@ message UpdateDatabaseDdlRequest {
   //
   // Specifying an explicit operation ID simplifies determining
   // whether the statements were executed in the event that the
-  // [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-  // call is replayed, or the return value is otherwise lost: the
-  // [database][google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database]
-  // and `operation_id` fields can be combined to form the
+  // [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
+  // or the return value is otherwise lost: the [database][google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database] and
+  // `operation_id` fields can be combined to form the
   // [name][google.longrunning.Operation.name] of the resulting
-  // [longrunning.Operation][google.longrunning.Operation]:
-  // `<database>/operations/<operation_id>`.
+  // [longrunning.Operation][google.longrunning.Operation]: `<database>/operations/<operation_id>`.
   //
   // `operation_id` should be unique within the database, and must be
   // a valid identifier: `[a-z][a-z0-9_]*`. Note that
   // automatically-generated operation IDs always begin with an
   // underscore. If the named operation already exists,
-  // [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]
-  // returns `ALREADY_EXISTS`.
+  // [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] returns
+  // `ALREADY_EXISTS`.
   string operation_id = 3;
 }
 
@@ -294,24 +355,166 @@ message UpdateDatabaseDdlMetadata {
   repeated google.protobuf.Timestamp commit_timestamps = 3;
 }
 
-// The request for
-// [DropDatabase][google.spanner.admin.database.v1.DatabaseAdmin.DropDatabase].
+// The request for [DropDatabase][google.spanner.admin.database.v1.DatabaseAdmin.DropDatabase].
 message DropDatabaseRequest {
   // Required. The database to be dropped.
   string database = 1;
 }
 
-// The request for
-// [GetDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl].
+// The request for [GetDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl].
 message GetDatabaseDdlRequest {
   // Required. The database whose schema we wish to get.
   string database = 1;
 }
 
-// The response for
-// [GetDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl].
+// The response for [GetDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl].
 message GetDatabaseDdlResponse {
   // A list of formatted DDL statements defining the schema of the database
   // specified in the request.
   repeated string statements = 1;
+}
+
+message ListDatabaseOperationsRequest {
+  // Required. The instance of the database operations.
+  // Values are of the form `projects/<project>/instances/<instance>`.
+  string parent = 1;
+
+  // A filter expression that filters what operations are returned in the
+  // response.
+  //
+  // The response returns a list of
+  // [long-running operations][google.longrunning.Operation] whose names are
+  // prefixed by a database name within the specified instance. The long-running
+  // operation [metadata][google.longrunning.Operation.metadata] field type
+  // `metadata.type_url` describes the type of the metadata.
+  //
+  // The filter expression must specify the field name, a comparison operator,
+  // and the value that you want to use for filtering. The value must be a
+  // string, a number, or a boolean. The comparison operator must be
+  // <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+  // roughly synonymous with equality. Filter rules are case insensitive.
+  //
+  // The long-running operation fields eligible for filtering are:
+  //   * `name` --> The name of the long-running operation
+  //   * `done` --> False if the operation is in progress, else true.
+  //   * `metadata.type_url` (using filter string `metadata.@type`) and fields
+  //      in `metadata.value` (using filter string `metadata.<field_name>`,
+  //      where <field_name> is a field in metadata.value) are eligible for
+  //      filtering.
+  //   * `error` --> Error associated with the long-running operation.
+  //   * `response.type_url` (using filter string `response.@type`) and fields
+  //      in `response.value` (using filter string `response.<field_name>`,
+  //      where <field_name> is a field in response.value) are eligible for
+  //      filtering.
+  //
+  // To filter on multiple expressions, provide each separate expression within
+  // parentheses. By default, each expression is an AND expression. However,
+  // you can include AND, OR, and NOT expressions explicitly.
+  //
+  // Some examples of using filters are:
+  //
+  //   * `done:true` --> The operation is complete.
+  //   * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata)
+  //      AND (metadata.source_type:BACKUP)
+  //      AND (metadata.backup_info.backup:backup_howl)
+  //      AND (metadata.name:restored_howl)
+  //      AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
+  //      AND (error:*)`
+  //          --> Return RestoreDatabase operations from backups whose name
+  //              contains "backup_howl", where the created database name
+  //              contains the string "restored_howl", the start_time of the
+  //              restore operation is before 2018-03-28T14:50:00Z,
+  //              and the operation returned an error.
+  string filter = 2;
+
+  // Number of operations to be returned in the response. If 0 or
+  // less, defaults to the server's maximum allowed page size.
+  int32 page_size = 3;
+
+  // If non-empty, `page_token` should contain a
+  // [next_page_token][google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token]
+  // from a previous [ListDatabaseOperationsResponse][google.spanner.admin.database.v1.ListDatabaseOperationsResponse] to the
+  // same `parent` and with the same `filter`.
+  string page_token = 4;
+}
+
+message ListDatabaseOperationsResponse {
+  // The list of matching
+  // [long-running operations][google.longrunning.Operation] whose names are
+  // prefixed by a database name. The long-running operation
+  // [metadata][google.longrunning.Operation.metadata] field type
+  // `metadata.type_url` describes the type of the metadata.
+  repeated google.longrunning.Operation operations = 1;
+
+  // `next_page_token` can be sent in a subsequent
+  // [ListDatabaseOperations][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseOperations]
+  // call to fetch more of the matching metadata.
+  string next_page_token = 2;
+}
+
+message RestoreDatabaseRequest {
+  // Required. The name of the instance in which to create the
+  // restored database. This instance must be in the same project and
+  // have the same instance configuration as the instance containing
+  // the source backup. Values are of the form
+  // `projects/<project>/instances/<instance>.
+  string parent = 1;
+
+  // Required. The id of the database to create and restore to. This
+  // database must not already exist. The `database_id` appended to
+  // `parent` forms the full database name of the form
+  // `projects/<project>/instances/<instance>/databases/<database_id>`.
+  string database_id = 2;
+
+  // Required. The source from which to restore.
+  oneof source {
+    // Name of the backup from which to restore.  Values are of the form
+    // `projects/<project>/instances/<instance>/backups/<backup>`.
+    string backup = 3;
+  }
+}
+
+message RestoreDatabaseMetadata {
+  // Name of the database being created and restored to.
+  string name = 1;
+
+  // The type of the restore source.
+  RestoreSourceType source_type = 2;
+
+  // Information about the source used to restore the database, as specified by
+  // `source` in [RestoreDatabaseRequest][google.spanner.admin.database.v1.RestoreDatabaseRequest].
+  oneof source_info {
+    BackupInfo backup_info = 3;
+  }
+
+  // The progress of the
+  // [RestoreDatabase][google.spanner.admin.database.v1.DatabaseAdmin.RestoreDatabase]
+  // operation.
+  OperationProgress progress = 4;
+
+  // The time at which this operation was cancelled. If set, this operation is
+  // in the process of undoing itself (which is guaranteed to succeed) and
+  // cannot be cancelled again.
+  google.protobuf.Timestamp cancel_time = 5;
+
+  // If exists, the name of the long-running operation that will be used to
+  // track the post-restore optimization process to optimize the performance of
+  // the restored database, and remove the dependency on the restore source.
+  // The name is of the form
+  // `projects/<project>/instances/<instance>/databases/<database>/operations/<operation>
+  // where the <database> is the name of database being created and restored to.
+  // The metadata type of the  long-running operation is
+  // [OptimizeRestoreDatabaseMetadata][]. This long-running operation will be
+  // automatically created by the system after the RestoreDatabase long-running
+  // operation completes successfully. This operation will not be created if the
+  // restore was not successful.
+  string optimize_database_operation_name = 6;
+}
+
+enum RestoreSourceType {
+  // No restore associated.
+  TYPE_UNSPECIFIED = 0;
+
+  // A backup was used as the source of the restore.
+  BACKUP = 1;
 }

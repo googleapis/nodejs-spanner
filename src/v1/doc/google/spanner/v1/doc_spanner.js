@@ -35,8 +35,7 @@ const CreateSessionRequest = {
 };
 
 /**
- * The request for
- * BatchCreateSessions.
+ * The request for BatchCreateSessions.
  *
  * @property {string} database
  *   Required. The database in which the new sessions are created.
@@ -51,8 +50,8 @@ const CreateSessionRequest = {
  *   The API may return fewer than the requested number of sessions. If a
  *   specific number of sessions are desired, the client can make additional
  *   calls to BatchCreateSessions (adjusting
- *   session_count
- *   as necessary).
+ *   session_count as necessary).
+ *   The maximum allowed sessions are documented at https://goo.gl/hBUQED.
  *
  * @typedef BatchCreateSessionsRequest
  * @memberof google.spanner.v1
@@ -63,8 +62,7 @@ const BatchCreateSessionsRequest = {
 };
 
 /**
- * The response for
- * BatchCreateSessions.
+ * The response for BatchCreateSessions.
  *
  * @property {Object[]} session
  *   The freshly created sessions.
@@ -142,8 +140,7 @@ const GetSessionRequest = {
  *
  * @property {string} pageToken
  *   If non-empty, `page_token` should contain a
- *   next_page_token
- *   from a previous
+ *   next_page_token from a previous
  *   ListSessionsResponse.
  *
  * @property {string} filter
@@ -176,8 +173,8 @@ const ListSessionsRequest = {
  *
  * @property {string} nextPageToken
  *   `next_page_token` can be sent in a subsequent
- *   ListSessions call to fetch more
- *   of the matching sessions.
+ *   ListSessions call to fetch more of the matching
+ *   sessions.
  *
  * @typedef ListSessionsResponse
  * @memberof google.spanner.v1
@@ -209,6 +206,9 @@ const DeleteSessionRequest = {
  *   Required. The session in which the SQL query should be performed.
  *
  * @property {Object} transaction
+ *   The transaction to use. If none is provided, the default is a
+ *   temporary read-only transaction with strong concurrency.
+ *
  *   The transaction to use.
  *
  *   For queries, if none is provided, the default is a temporary read-only
@@ -246,8 +246,7 @@ const DeleteSessionRequest = {
  * @property {Object.<string, Object>} paramTypes
  *   It is not always possible for Cloud Spanner to infer the right SQL type
  *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in
- *   params as JSON strings.
+ *   of type `STRING` both appear in params as JSON strings.
  *
  *   In these cases, `param_types` can be used to specify the exact
  *   SQL type for some or all of the SQL statement parameters. See the
@@ -257,18 +256,15 @@ const DeleteSessionRequest = {
  * @property {Buffer} resumeToken
  *   If this request is resuming a previously interrupted SQL statement
  *   execution, `resume_token` should be copied from the last
- *   PartialResultSet yielded before the
- *   interruption. Doing this enables the new SQL statement execution to resume
- *   where the last one left off. The rest of the request parameters must
- *   exactly match the request that yielded this token.
+ *   PartialResultSet yielded before the interruption. Doing this
+ *   enables the new SQL statement execution to resume where the last one left
+ *   off. The rest of the request parameters must exactly match the
+ *   request that yielded this token.
  *
  * @property {number} queryMode
  *   Used to control the amount of debugging information returned in
- *   ResultSetStats. If
- *   partition_token is
- *   set, query_mode can only
- *   be set to
- *   QueryMode.NORMAL.
+ *   ResultSetStats. If partition_token is set, query_mode can only
+ *   be set to QueryMode.NORMAL.
  *
  *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
  *
@@ -343,7 +339,7 @@ const ExecuteSqlRequest = {
  *   i+1. Each statement must be a DML statement. Execution will stop at the
  *   first failed statement; the remaining statements will not run.
  *
- *   REQUIRES: statements_size() > 0.
+ *   REQUIRES: `statements_size()` > 0.
  *
  *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
  *
@@ -387,9 +383,7 @@ const ExecuteBatchDmlRequest = {
    * @property {Object.<string, Object>} paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in
-   *   params as
-   *   JSON strings.
+   *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -406,35 +400,33 @@ const ExecuteBatchDmlRequest = {
 };
 
 /**
- * The response for
- * ExecuteBatchDml. Contains a list
- * of ResultSet, one for each DML statement that
- * has successfully executed. If a statement fails, the error is returned as
- * part of the response payload. Clients can determine whether all DML
- * statements have run successfully, or if a statement failed, using one of the
- * following approaches:
+ * The response for ExecuteBatchDml. Contains a list
+ * of ResultSet, one for each DML statement that has successfully executed.
+ * If a statement fails, the error is returned as part of the response payload.
+ * Clients can determine whether all DML statements have run successfully, or if
+ * a statement failed, using one of the following approaches:
  *
- *   1. Check if 'status' field is OkStatus.
- *   2. Check if result_sets_size() equals the number of statements in
+ *   1. Check if `'status'` field is `OkStatus`.
+ *   2. Check if `result_sets_size()` equals the number of statements in
  *      ExecuteBatchDmlRequest.
  *
  * Example 1: A request with 5 DML statements, all executed successfully.
+ *
  * Result: A response with 5 ResultSets, one for each statement in the same
- * order, and an OK status.
+ * order, and an `OkStatus`.
  *
  * Example 2: A request with 5 DML statements. The 3rd statement has a syntax
  * error.
+ *
  * Result: A response with 2 ResultSets, for the first 2 statements that
- * run successfully, and a syntax error (INVALID_ARGUMENT) status. From
- * result_set_size() client can determine that the 3rd statement has failed.
+ * run successfully, and a syntax error (`INVALID_ARGUMENT`) status. From
+ * `result_set_size()` client can determine that the 3rd statement has failed.
  *
  * @property {Object[]} resultSets
  *   ResultSets, one for each statement in the request that ran successfully, in
- *   the same order as the statements in the request. Each
- *   ResultSet will not contain any rows. The
- *   ResultSetStats in each
- *   ResultSet will contain the number of rows
- *   modified by the statement.
+ *   the same order as the statements in the request. Each ResultSet will
+ *   not contain any rows. The ResultSetStats in each ResultSet will
+ *   contain the number of rows modified by the statement.
  *
  *   Only the first ResultSet in the response contains a valid
  *   ResultSetMetadata.
@@ -506,8 +498,7 @@ const PartitionOptions = {
  *   then unions all results.
  *
  *   This must not contain DML commands, such as INSERT, UPDATE, or
- *   DELETE. Use
- *   ExecuteStreamingSql with a
+ *   DELETE. Use ExecuteStreamingSql with a
  *   PartitionedDml transaction for large, partition-friendly DML operations.
  *
  * @property {Object} params
@@ -531,8 +522,7 @@ const PartitionOptions = {
  * @property {Object.<string, Object>} paramTypes
  *   It is not always possible for Cloud Spanner to infer the right SQL type
  *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in
- *   params as JSON strings.
+ *   of type `STRING` both appear in params as JSON strings.
  *
  *   In these cases, `param_types` can be used to specify the exact
  *   SQL type for some or all of the SQL query parameters. See the
@@ -568,24 +558,18 @@ const PartitionQueryRequest = {
  *   Required. The name of the table in the database to be read.
  *
  * @property {string} index
- *   If non-empty, the name of an index on
- *   table. This index is used
- *   instead of the table primary key when interpreting
- *   key_set and sorting
- *   result rows. See key_set
- *   for further information.
+ *   If non-empty, the name of an index on table. This index is
+ *   used instead of the table primary key when interpreting key_set
+ *   and sorting result rows. See key_set for further information.
  *
  * @property {string[]} columns
- *   The columns of table to be
- *   returned for each row matching this request.
+ *   The columns of table to be returned for each row matching
+ *   this request.
  *
  * @property {Object} keySet
  *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in
- *   table to be yielded, unless
- *   index is present. If
- *   index is present, then
- *   key_set instead names
+ *   primary keys of the rows in table to be yielded, unless index
+ *   is present. If index is present, then key_set instead names
  *   index keys in index.
  *
  *   It is not an error for the `key_set` to name rows that do not
@@ -662,31 +646,24 @@ const PartitionResponse = {
  *   Required. The name of the table in the database to be read.
  *
  * @property {string} index
- *   If non-empty, the name of an index on
- *   table. This index is used instead of
- *   the table primary key when interpreting
- *   key_set and sorting result rows.
- *   See key_set for further
- *   information.
+ *   If non-empty, the name of an index on table. This index is
+ *   used instead of the table primary key when interpreting key_set
+ *   and sorting result rows. See key_set for further information.
  *
  * @property {string[]} columns
- *   The columns of table to be returned
- *   for each row matching this request.
+ *   The columns of table to be returned for each row matching
+ *   this request.
  *
  * @property {Object} keySet
  *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in table to
- *   be yielded, unless index is present.
- *   If index is present, then
- *   key_set instead names index keys
- *   in index.
+ *   primary keys of the rows in table to be yielded, unless index
+ *   is present. If index is present, then key_set instead names
+ *   index keys in index.
  *
- *   If the partition_token
- *   field is empty, rows are yielded in table primary key order (if
- *   index is empty) or index key order
- *   (if index is non-empty).  If the
- *   partition_token field is
- *   not empty, rows will be yielded in an unspecified order.
+ *   If the partition_token field is empty, rows are yielded
+ *   in table primary key order (if index is empty) or index key order
+ *   (if index is non-empty).  If the partition_token field is not
+ *   empty, rows will be yielded in an unspecified order.
  *
  *   It is not an error for the `key_set` to name rows that do not
  *   exist in the database. Read yields nothing for nonexistent rows.
@@ -701,9 +678,9 @@ const PartitionResponse = {
  * @property {Buffer} resumeToken
  *   If this request is resuming a previously interrupted read,
  *   `resume_token` should be copied from the last
- *   PartialResultSet yielded before the
- *   interruption. Doing this enables the new read to resume where the last read
- *   left off. The rest of the request parameters must exactly match the request
+ *   PartialResultSet yielded before the interruption. Doing this
+ *   enables the new read to resume where the last read left off. The
+ *   rest of the request parameters must exactly match the request
  *   that yielded this token.
  *
  * @property {Buffer} partitionToken
@@ -721,8 +698,7 @@ const ReadRequest = {
 };
 
 /**
- * The request for
- * BeginTransaction.
+ * The request for BeginTransaction.
  *
  * @property {string} session
  *   Required. The session in which the transaction runs.

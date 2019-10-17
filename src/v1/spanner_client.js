@@ -189,8 +189,8 @@ class SpannerClient {
       'listSessions',
       'deleteSession',
       'executeSql',
-      'executeStreamingSql',
       'executeBatchDml',
+      'executeStreamingSql',
       'read',
       'streamingRead',
       'beginTransaction',
@@ -246,6 +246,7 @@ class SpannerClient {
   static get scopes() {
     return [
       'https://www.googleapis.com/auth/cloud-platform',
+      'https://www.googleapis.com/auth/spanner.admin',
       'https://www.googleapis.com/auth/spanner.data',
     ];
   }
@@ -340,7 +341,9 @@ class SpannerClient {
   }
 
   /**
-   * Creates multiple new sessions.
+   * Creates multiple new sessions. If the requested number of sessions would
+   * cause the database to exceed its session limit, returns a
+   * RESOURCE_EXHAUSTED error.
    *
    * This API can be used to initialize a session cache on the clients.
    * See https://goo.gl/TgSFN2 for best practices on session cache management.
@@ -349,17 +352,17 @@ class SpannerClient {
    *   The request object that will be sent.
    * @param {string} request.database
    *   Required. The database in which the new sessions are created.
-   * @param {number} request.sessionCount
-   *   Required. The number of sessions to be created in this batch call.
-   *   The API may return fewer than the requested number of sessions. If a
-   *   specific number of sessions are desired, the client can make additional
-   *   calls to BatchCreateSessions (adjusting
-   *   session_count
-   *   as necessary).
    * @param {Object} [request.sessionTemplate]
    *   Parameters to be applied to each created session.
    *
    *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
+   * @param {number} [request.sessionCount]
+   *   Required. The number of sessions to be created in this batch call.
+   *   The API may return fewer than the requested number of sessions. If a
+   *   specific number of sessions are desired, the client can make additional
+   *   calls to BatchCreateSessions (adjusting
+   *   session_count as necessary).
+   *   The maximum allowed sessions are documented at https://goo.gl/hBUQED.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -380,12 +383,7 @@ class SpannerClient {
    * });
    *
    * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * const sessionCount = 0;
-   * const request = {
-   *   database: formattedDatabase,
-   *   sessionCount: sessionCount,
-   * };
-   * client.batchCreateSessions(request)
+   * client.batchCreateSessions({database: formattedDatabase})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -703,12 +701,10 @@ class SpannerClient {
    *
    * Operations inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See Transaction for more
-   * details.
+   * the beginning. See Transaction for more details.
    *
    * Larger result sets can be fetched in streaming fashion by calling
-   * ExecuteStreamingSql
-   * instead.
+   * ExecuteStreamingSql instead.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -717,6 +713,9 @@ class SpannerClient {
    * @param {string} request.sql
    *   Required. The SQL string.
    * @param {Object} [request.transaction]
+   *   The transaction to use. If none is provided, the default is a
+   *   temporary read-only transaction with strong concurrency.
+   *
    *   The transaction to use.
    *
    *   For queries, if none is provided, the default is a temporary read-only
@@ -749,8 +748,7 @@ class SpannerClient {
    * @param {Object.<string, Object>} [request.paramTypes]
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in
-   *   params as JSON strings.
+   *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -759,17 +757,14 @@ class SpannerClient {
    * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the
-   *   interruption. Doing this enables the new SQL statement execution to resume
-   *   where the last one left off. The rest of the request parameters must
-   *   exactly match the request that yielded this token.
+   *   PartialResultSet yielded before the interruption. Doing this
+   *   enables the new SQL statement execution to resume where the last one left
+   *   off. The rest of the request parameters must exactly match the
+   *   request that yielded this token.
    * @param {number} [request.queryMode]
    *   Used to control the amount of debugging information returned in
-   *   ResultSetStats. If
-   *   partition_token is
-   *   set, query_mode can only
-   *   be set to
-   *   QueryMode.NORMAL.
+   *   ResultSetStats. If partition_token is set, query_mode can only
+   *   be set to QueryMode.NORMAL.
    *
    *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
    * @param {Buffer} [request.partitionToken]
@@ -841,11 +836,108 @@ class SpannerClient {
   }
 
   /**
-   * Like ExecuteSql, except returns the
-   * result set as a stream. Unlike
-   * ExecuteSql, there is no limit on
-   * the size of the returned result set. However, no individual row in the
-   * result set can exceed 100 MiB, and no column value can exceed 10 MiB.
+   * Executes a batch of SQL DML statements. This method allows many statements
+   * to be run with lower latency than submitting them sequentially with
+   * ExecuteSql.
+   *
+   * Statements are executed in order, sequentially.
+   * ExecuteBatchDmlResponse will contain a
+   * ResultSet for each DML statement that has successfully executed. If a
+   * statement fails, its error status will be returned as part of the
+   * ExecuteBatchDmlResponse. Execution will
+   * stop at the first failed statement; the remaining statements will not run.
+   *
+   * ExecuteBatchDml is expected to return an OK status with a response even if
+   * there was an error while processing one of the DML statements. Clients must
+   * inspect response.status to determine if there were any errors while
+   * processing the request.
+   *
+   * See more details in
+   * ExecuteBatchDmlRequest and
+   * ExecuteBatchDmlResponse.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the DML statements should be performed.
+   * @param {Object[]} request.statements
+   *   The list of statements to execute in this batch. Statements are executed
+   *   serially, such that the effects of statement i are visible to statement
+   *   i+1. Each statement must be a DML statement. Execution will stop at the
+   *   first failed statement; the remaining statements will not run.
+   *
+   *   REQUIRES: `statements_size()` > 0.
+   *
+   *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
+   * @param {Object} [request.transaction]
+   *   The transaction to use. A ReadWrite transaction is required. Single-use
+   *   transactions are not supported (to avoid replay).  The caller must either
+   *   supply an existing transaction ID or begin a new transaction.
+   *
+   *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
+   * @param {number} [request.seqno]
+   *   A per-transaction sequence number used to identify this request. This is
+   *   used in the same space as the seqno in
+   *   ExecuteSqlRequest. See more details
+   *   in ExecuteSqlRequest.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.SpannerClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const statements = [];
+   * const request = {
+   *   session: formattedSession,
+   *   statements: statements,
+   * };
+   * client.executeBatchDml(request)
+   *   .then(responses => {
+   *     const response = responses[0];
+   *     // doThingsWith(response)
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  executeBatchDml(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
+
+    return this._innerApiCalls.executeBatchDml(request, options, callback);
+  }
+
+  /**
+   * Like ExecuteSql, except returns the result
+   * set as a stream. Unlike ExecuteSql, there
+   * is no limit on the size of the returned result set. However, no
+   * individual row in the result set can exceed 100 MiB, and no
+   * column value can exceed 10 MiB.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -854,6 +946,9 @@ class SpannerClient {
    * @param {string} request.sql
    *   Required. The SQL string.
    * @param {Object} [request.transaction]
+   *   The transaction to use. If none is provided, the default is a
+   *   temporary read-only transaction with strong concurrency.
+   *
    *   The transaction to use.
    *
    *   For queries, if none is provided, the default is a temporary read-only
@@ -886,8 +981,7 @@ class SpannerClient {
    * @param {Object.<string, Object>} [request.paramTypes]
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in
-   *   params as JSON strings.
+   *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -896,17 +990,14 @@ class SpannerClient {
    * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the
-   *   interruption. Doing this enables the new SQL statement execution to resume
-   *   where the last one left off. The rest of the request parameters must
-   *   exactly match the request that yielded this token.
+   *   PartialResultSet yielded before the interruption. Doing this
+   *   enables the new SQL statement execution to resume where the last one left
+   *   off. The rest of the request parameters must exactly match the
+   *   request that yielded this token.
    * @param {number} [request.queryMode]
    *   Used to control the amount of debugging information returned in
-   *   ResultSetStats. If
-   *   partition_token is
-   *   set, query_mode can only
-   *   be set to
-   *   QueryMode.NORMAL.
+   *   ResultSetStats. If partition_token is set, query_mode can only
+   *   be set to QueryMode.NORMAL.
    *
    *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
    * @param {Buffer} [request.partitionToken]
@@ -964,119 +1055,16 @@ class SpannerClient {
   }
 
   /**
-   * Executes a batch of SQL DML statements. This method allows many statements
-   * to be run with lower latency than submitting them sequentially with
-   * ExecuteSql.
-   *
-   * Statements are executed in order, sequentially.
-   * ExecuteBatchDmlResponse will contain a
-   * ResultSet for each DML statement that has
-   * successfully executed. If a statement fails, its error status will be
-   * returned as part of the
-   * ExecuteBatchDmlResponse. Execution will
-   * stop at the first failed statement; the remaining statements will not run.
-   *
-   * ExecuteBatchDml is expected to return an OK status with a response even if
-   * there was an error while processing one of the DML statements. Clients must
-   * inspect response.status to determine if there were any errors while
-   * processing the request.
-   *
-   * See more details in
-   * ExecuteBatchDmlRequest and
-   * ExecuteBatchDmlResponse.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.session
-   *   Required. The session in which the DML statements should be performed.
-   * @param {Object} request.transaction
-   *   The transaction to use. A ReadWrite transaction is required. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must either
-   *   supply an existing transaction ID or begin a new transaction.
-   *
-   *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
-   * @param {Object[]} request.statements
-   *   The list of statements to execute in this batch. Statements are executed
-   *   serially, such that the effects of statement i are visible to statement
-   *   i+1. Each statement must be a DML statement. Execution will stop at the
-   *   first failed statement; the remaining statements will not run.
-   *
-   *   REQUIRES: statements_size() > 0.
-   *
-   *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
-   * @param {number} request.seqno
-   *   A per-transaction sequence number used to identify this request. This is
-   *   used in the same space as the seqno in
-   *   ExecuteSqlRequest. See more details
-   *   in ExecuteSqlRequest.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.SpannerClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * const transaction = {};
-   * const statements = [];
-   * const seqno = 0;
-   * const request = {
-   *   session: formattedSession,
-   *   transaction: transaction,
-   *   statements: statements,
-   *   seqno: seqno,
-   * };
-   * client.executeBatchDml(request)
-   *   .then(responses => {
-   *     const response = responses[0];
-   *     // doThingsWith(response)
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   */
-  executeBatchDml(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session,
-    });
-
-    return this._innerApiCalls.executeBatchDml(request, options, callback);
-  }
-
-  /**
    * Reads rows from the database using key lookups and scans, as a
    * simple key/value style alternative to
-   * ExecuteSql.  This method cannot be
-   * used to return a result set larger than 10 MiB; if the read matches more
+   * ExecuteSql.  This method cannot be used to
+   * return a result set larger than 10 MiB; if the read matches more
    * data than that, the read fails with a `FAILED_PRECONDITION`
    * error.
    *
    * Reads inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See Transaction for more
-   * details.
+   * the beginning. See Transaction for more details.
    *
    * Larger result sets can be yielded in streaming fashion by calling
    * StreamingRead instead.
@@ -1088,22 +1076,18 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned
-   *   for each row matching this request.
+   *   The columns of table to be returned for each row matching
+   *   this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in table to
-   *   be yielded, unless index is present.
-   *   If index is present, then
-   *   key_set instead names index keys
-   *   in index.
+   *   primary keys of the rows in table to be yielded, unless index
+   *   is present. If index is present, then key_set instead names
+   *   index keys in index.
    *
-   *   If the partition_token
-   *   field is empty, rows are yielded in table primary key order (if
-   *   index is empty) or index key order
-   *   (if index is non-empty).  If the
-   *   partition_token field is
-   *   not empty, rows will be yielded in an unspecified order.
+   *   If the partition_token field is empty, rows are yielded
+   *   in table primary key order (if index is empty) or index key order
+   *   (if index is non-empty).  If the partition_token field is not
+   *   empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -1115,12 +1099,9 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {string} [request.index]
-   *   If non-empty, the name of an index on
-   *   table. This index is used instead of
-   *   the table primary key when interpreting
-   *   key_set and sorting result rows.
-   *   See key_set for further
-   *   information.
+   *   If non-empty, the name of an index on table. This index is
+   *   used instead of the table primary key when interpreting key_set
+   *   and sorting result rows. See key_set for further information.
    * @param {number} [request.limit]
    *   If greater than zero, only the first `limit` rows are yielded. If `limit`
    *   is zero, the default is no limit. A limit cannot be specified if
@@ -1128,9 +1109,9 @@ class SpannerClient {
    * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the
-   *   interruption. Doing this enables the new read to resume where the last read
-   *   left off. The rest of the request parameters must exactly match the request
+   *   PartialResultSet yielded before the interruption. Doing this
+   *   enables the new read to resume where the last read left off. The
+   *   rest of the request parameters must exactly match the request
    *   that yielded this token.
    * @param {Buffer} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
@@ -1194,9 +1175,9 @@ class SpannerClient {
   }
 
   /**
-   * Like Read, except returns the result set
-   * as a stream. Unlike Read, there is no
-   * limit on the size of the returned result set. However, no individual row in
+   * Like Read, except returns the result set as a
+   * stream. Unlike Read, there is no limit on the
+   * size of the returned result set. However, no individual row in
    * the result set can exceed 100 MiB, and no column value can exceed
    * 10 MiB.
    *
@@ -1207,22 +1188,18 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned
-   *   for each row matching this request.
+   *   The columns of table to be returned for each row matching
+   *   this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in table to
-   *   be yielded, unless index is present.
-   *   If index is present, then
-   *   key_set instead names index keys
-   *   in index.
+   *   primary keys of the rows in table to be yielded, unless index
+   *   is present. If index is present, then key_set instead names
+   *   index keys in index.
    *
-   *   If the partition_token
-   *   field is empty, rows are yielded in table primary key order (if
-   *   index is empty) or index key order
-   *   (if index is non-empty).  If the
-   *   partition_token field is
-   *   not empty, rows will be yielded in an unspecified order.
+   *   If the partition_token field is empty, rows are yielded
+   *   in table primary key order (if index is empty) or index key order
+   *   (if index is non-empty).  If the partition_token field is not
+   *   empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -1234,12 +1211,9 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {string} [request.index]
-   *   If non-empty, the name of an index on
-   *   table. This index is used instead of
-   *   the table primary key when interpreting
-   *   key_set and sorting result rows.
-   *   See key_set for further
-   *   information.
+   *   If non-empty, the name of an index on table. This index is
+   *   used instead of the table primary key when interpreting key_set
+   *   and sorting result rows. See key_set for further information.
    * @param {number} [request.limit]
    *   If greater than zero, only the first `limit` rows are yielded. If `limit`
    *   is zero, the default is no limit. A limit cannot be specified if
@@ -1247,9 +1221,9 @@ class SpannerClient {
    * @param {Buffer} [request.resumeToken]
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   PartialResultSet yielded before the
-   *   interruption. Doing this enables the new read to resume where the last read
-   *   left off. The rest of the request parameters must exactly match the request
+   *   PartialResultSet yielded before the interruption. Doing this
+   *   enables the new read to resume where the last read left off. The
+   *   rest of the request parameters must exactly match the request
    *   that yielded this token.
    * @param {Buffer} [request.partitionToken]
    *   If present, results will be restricted to the specified partition
@@ -1300,8 +1274,7 @@ class SpannerClient {
 
   /**
    * Begins a new transaction. This step can often be skipped:
-   * Read,
-   * ExecuteSql and
+   * Read, ExecuteSql and
    * Commit can begin a new transaction as a
    * side-effect.
    *
@@ -1454,9 +1427,8 @@ class SpannerClient {
   /**
    * Rolls back a transaction, releasing any locks it holds. It is a good
    * idea to call this for any transaction that includes one or more
-   * Read or
-   * ExecuteSql requests and ultimately
-   * decides not to commit.
+   * Read or ExecuteSql requests and
+   * ultimately decides not to commit.
    *
    * `Rollback` returns `OK` if it successfully aborts the transaction, the
    * transaction was already aborted, or the transaction is not
@@ -1515,11 +1487,10 @@ class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a query
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by ExecuteStreamingSql to
-   * specify a subset of the query result to read.  The same session and
-   * read-only transaction must be used by the PartitionQueryRequest used to
-   * create the partition tokens and the ExecuteSqlRequests that use the
-   * partition tokens.
+   * by ExecuteStreamingSql to specify a subset
+   * of the query result to read.  The same session and read-only transaction
+   * must be used by the PartitionQueryRequest used to create the
+   * partition tokens and the ExecuteSqlRequests that use the partition tokens.
    *
    * Partition tokens become invalid when the session used to create them
    * is deleted, is idle for too long, begins a new transaction, or becomes too
@@ -1539,8 +1510,7 @@ class SpannerClient {
    *   then unions all results.
    *
    *   This must not contain DML commands, such as INSERT, UPDATE, or
-   *   DELETE. Use
-   *   ExecuteStreamingSql with a
+   *   DELETE. Use ExecuteStreamingSql with a
    *   PartitionedDml transaction for large, partition-friendly DML operations.
    * @param {Object} [request.transaction]
    *   Read only snapshot transactions are supported, read/write and single use
@@ -1567,8 +1537,7 @@ class SpannerClient {
    * @param {Object.<string, Object>} [request.paramTypes]
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in
-   *   params as JSON strings.
+   *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL query parameters. See the
@@ -1633,13 +1602,12 @@ class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a read
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by StreamingRead to specify a
-   * subset of the read result to read.  The same session and read-only
-   * transaction must be used by the PartitionReadRequest used to create the
-   * partition tokens and the ReadRequests that use the partition tokens.  There
-   * are no ordering guarantees on rows returned among the returned partition
-   * tokens, or even within each individual StreamingRead call issued with a
-   * partition_token.
+   * by StreamingRead to specify a subset of the read
+   * result to read.  The same session and read-only transaction must be used by
+   * the PartitionReadRequest used to create the partition tokens and the
+   * ReadRequests that use the partition tokens.  There are no ordering
+   * guarantees on rows returned among the returned partition tokens, or even
+   * within each individual StreamingRead call issued with a partition_token.
    *
    * Partition tokens become invalid when the session used to create them
    * is deleted, is idle for too long, begins a new transaction, or becomes too
@@ -1654,11 +1622,8 @@ class SpannerClient {
    *   Required. The name of the table in the database to be read.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in
-   *   table to be yielded, unless
-   *   index is present. If
-   *   index is present, then
-   *   key_set instead names
+   *   primary keys of the rows in table to be yielded, unless index
+   *   is present. If index is present, then key_set instead names
    *   index keys in index.
    *
    *   It is not an error for the `key_set` to name rows that do not
@@ -1671,15 +1636,12 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {string} [request.index]
-   *   If non-empty, the name of an index on
-   *   table. This index is used
-   *   instead of the table primary key when interpreting
-   *   key_set and sorting
-   *   result rows. See key_set
-   *   for further information.
+   *   If non-empty, the name of an index on table. This index is
+   *   used instead of the table primary key when interpreting key_set
+   *   and sorting result rows. See key_set for further information.
    * @param {string[]} [request.columns]
-   *   The columns of table to be
-   *   returned for each row matching this request.
+   *   The columns of table to be returned for each row matching
+   *   this request.
    * @param {Object} [request.partitionOptions]
    *   Additional options that affect how many partitions are created.
    *

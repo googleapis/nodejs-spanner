@@ -16,7 +16,7 @@
 
 const assert = require('assert');
 
-const spannerModule = require('../src');
+const spannerAdminInstanceModule = require('../src');
 
 const FAKE_STATUS_CODE = 1;
 const error = new Error();
@@ -24,34 +24,38 @@ error.code = FAKE_STATUS_CODE;
 
 describe('InstanceAdminClient', () => {
   it('has servicePath', () => {
-    const servicePath = spannerModule.v1.InstanceAdminClient.servicePath;
+    const servicePath =
+      spannerAdminInstanceModule.v1.InstanceAdminClient.servicePath;
     assert(servicePath);
   });
 
   it('has apiEndpoint', () => {
-    const apiEndpoint = spannerModule.v1.InstanceAdminClient.apiEndpoint;
+    const apiEndpoint =
+      spannerAdminInstanceModule.v1.InstanceAdminClient.apiEndpoint;
     assert(apiEndpoint);
   });
 
   it('has port', () => {
-    const port = spannerModule.v1.InstanceAdminClient.port;
+    const port = spannerAdminInstanceModule.v1.InstanceAdminClient.port;
     assert(port);
     assert(typeof port === 'number');
   });
 
   it('should create a client with no options', () => {
-    const client = new spannerModule.v1.InstanceAdminClient();
+    const client = new spannerAdminInstanceModule.v1.InstanceAdminClient();
     assert(client);
   });
 
   it('should create a client with gRPC fallback', () => {
-    const client = new spannerModule.v1.InstanceAdminClient({fallback: true});
+    const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
+      fallback: true,
+    });
     assert(client);
   });
 
   describe('listInstanceConfigs', () => {
     it('invokes listInstanceConfigs without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -89,7 +93,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes listInstanceConfigs with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -118,7 +122,7 @@ describe('InstanceAdminClient', () => {
 
   describe('getInstanceConfig', () => {
     it('invokes getInstanceConfig without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -154,7 +158,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes getInstanceConfig with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -186,7 +190,7 @@ describe('InstanceAdminClient', () => {
 
   describe('listInstances', () => {
     it('invokes listInstances without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -224,7 +228,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes listInstances with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -253,7 +257,7 @@ describe('InstanceAdminClient', () => {
 
   describe('getInstance', () => {
     it('invokes getInstance without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -290,7 +294,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes getInstance with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -319,7 +323,7 @@ describe('InstanceAdminClient', () => {
 
   describe('createInstance', function() {
     it('invokes createInstance without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -368,7 +372,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes createInstance with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -407,7 +411,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -424,7 +428,7 @@ describe('InstanceAdminClient', () => {
 
   describe('updateInstance', function() {
     it('invokes updateInstance without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -471,7 +475,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes updateInstance with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -508,7 +512,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('has longrunning decoder functions', () => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -525,7 +529,7 @@ describe('InstanceAdminClient', () => {
 
   describe('deleteInstance', () => {
     it('invokes deleteInstance without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -546,7 +550,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes deleteInstance with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -574,7 +578,7 @@ describe('InstanceAdminClient', () => {
 
   describe('setIamPolicy', () => {
     it('invokes setIamPolicy without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -609,7 +613,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes setIamPolicy with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -640,7 +644,7 @@ describe('InstanceAdminClient', () => {
 
   describe('getIamPolicy', () => {
     it('invokes getIamPolicy without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -673,7 +677,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes getIamPolicy with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -702,7 +706,7 @@ describe('InstanceAdminClient', () => {
 
   describe('testIamPermissions', () => {
     it('invokes testIamPermissions without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -732,7 +736,7 @@ describe('InstanceAdminClient', () => {
     });
 
     it('invokes testIamPermissions with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
+      const client = new spannerAdminInstanceModule.v1.InstanceAdminClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });

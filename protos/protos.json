@@ -1253,6 +1253,84 @@
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:testIamPermissions",
                                 "(google.api.http).body": "*"
                               }
+                            },
+                            "CreateBackup": {
+                              "requestType": "CreateBackupRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*/instances/*}/backups",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "GetBackup": {
+                              "requestType": "GetBackupRequest",
+                              "responseType": "Backup",
+                              "options": {
+                                "(google.api.http).get": "/v1/{name=projects/*/instances/*/backups/*}"
+                              }
+                            },
+                            "UpdateBackup": {
+                              "requestType": "UpdateBackupRequest",
+                              "responseType": "Backup",
+                              "options": {
+                                "(google.api.http).patch": "/v1/{backup.name=projects/*/instances/*/backups/*}",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "DeleteBackup": {
+                              "requestType": "DeleteBackupRequest",
+                              "responseType": "google.protobuf.Empty",
+                              "options": {
+                                "(google.api.http).delete": "/v1/{name=projects/*/instances/*/backups/*}"
+                              }
+                            },
+                            "ListBackups": {
+                              "requestType": "ListBackupsRequest",
+                              "responseType": "ListBackupsResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/backups"
+                              }
+                            },
+                            "RestoreDatabase": {
+                              "requestType": "RestoreDatabaseRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*/instances/*}/databases:restore",
+                                "(google.api.http).body": "*"
+                              }
+                            },
+                            "ListDatabaseOperations": {
+                              "requestType": "ListDatabaseOperationsRequest",
+                              "responseType": "ListDatabaseOperationsResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/databaseOperations"
+                              }
+                            },
+                            "ListBackupOperations": {
+                              "requestType": "ListBackupOperationsRequest",
+                              "responseType": "ListBackupOperationsResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/backupOperations"
+                              }
+                            }
+                          }
+                        },
+                        "RestoreInfo": {
+                          "oneofs": {
+                            "sourceInfo": {
+                              "oneof": [
+                                "backupInfo"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "sourceType": {
+                              "type": "RestoreSourceType",
+                              "id": 1
+                            },
+                            "backupInfo": {
+                              "type": "BackupInfo",
+                              "id": 2
                             }
                           }
                         },
@@ -1265,6 +1343,14 @@
                             "state": {
                               "type": "State",
                               "id": 2
+                            },
+                            "createTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            },
+                            "restoreInfo": {
+                              "type": "RestoreInfo",
+                              "id": 4
                             }
                           },
                           "nested": {
@@ -1272,7 +1358,8 @@
                               "values": {
                                 "STATE_UNSPECIFIED": 0,
                                 "CREATING": 1,
-                                "READY": 2
+                                "READY": 2,
+                                "READY_OPTIMIZING": 3
                               }
                             }
                           }
@@ -1396,6 +1483,307 @@
                               "rule": "repeated",
                               "type": "string",
                               "id": 1
+                            }
+                          }
+                        },
+                        "ListDatabaseOperationsRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "filter": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 3
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ListDatabaseOperationsResponse": {
+                          "fields": {
+                            "operations": {
+                              "rule": "repeated",
+                              "type": "google.longrunning.Operation",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "RestoreDatabaseRequest": {
+                          "oneofs": {
+                            "source": {
+                              "oneof": [
+                                "backup"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "databaseId": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "backup": {
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "RestoreDatabaseMetadata": {
+                          "oneofs": {
+                            "sourceInfo": {
+                              "oneof": [
+                                "backupInfo"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "sourceType": {
+                              "type": "RestoreSourceType",
+                              "id": 2
+                            },
+                            "backupInfo": {
+                              "type": "BackupInfo",
+                              "id": 3
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 4
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 5
+                            },
+                            "optimizeDatabaseOperationName": {
+                              "type": "string",
+                              "id": 6
+                            }
+                          }
+                        },
+                        "RestoreSourceType": {
+                          "values": {
+                            "TYPE_UNSPECIFIED": 0,
+                            "BACKUP": 1
+                          }
+                        },
+                        "Backup": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "database": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "expireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            },
+                            "createTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4
+                            },
+                            "sizeBytes": {
+                              "type": "int64",
+                              "id": 5
+                            },
+                            "state": {
+                              "type": "State",
+                              "id": 6
+                            },
+                            "referencingDatabases": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 7
+                            }
+                          },
+                          "nested": {
+                            "State": {
+                              "values": {
+                                "STATE_UNSPECIFIED": 0,
+                                "CREATING": 1,
+                                "READY": 2
+                              }
+                            }
+                          }
+                        },
+                        "CreateBackupRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "backupId": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "backup": {
+                              "type": "Backup",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "CreateBackupMetadata": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "database": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 3
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "UpdateBackupRequest": {
+                          "fields": {
+                            "backup": {
+                              "type": "Backup",
+                              "id": 1
+                            },
+                            "updateMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "GetBackupRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "DeleteBackupRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "ListBackupsRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "filter": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 3
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ListBackupsResponse": {
+                          "fields": {
+                            "backups": {
+                              "rule": "repeated",
+                              "type": "Backup",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "ListBackupOperationsRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "filter": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 3
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ListBackupOperationsResponse": {
+                          "fields": {
+                            "operations": {
+                              "rule": "repeated",
+                              "type": "google.longrunning.Operation",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "BackupInfo": {
+                          "fields": {
+                            "backup": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "createTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2
+                            },
+                            "sourceDatabase": {
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "OperationProgress": {
+                          "fields": {
+                            "progressPercent": {
+                              "type": "int32",
+                              "id": 1
+                            },
+                            "startTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2
+                            },
+                            "endTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
                             }
                           }
                         }
@@ -1532,6 +1920,11 @@
                               "keyType": "string",
                               "type": "string",
                               "id": 7
+                            },
+                            "endpointUrls": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 8
                             }
                           },
                           "nested": {
@@ -1586,6 +1979,10 @@
                             "name": {
                               "type": "string",
                               "id": 1
+                            },
+                            "fieldMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2
                             }
                           }
                         },

@@ -129,12 +129,16 @@ class DatabaseAdminClient {
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
     this._pathTemplates = {
+      backupPathTemplate: new gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/backups/{backup}'
+      ),
       databasePathTemplate: new gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
       ),
       instancePathTemplate: new gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}'
       ),
+      projectPathTemplate: new gaxModule.PathTemplate('projects/{project}'),
     };
 
     // Some of the methods on this service return "paged" results,
@@ -145,6 +149,21 @@ class DatabaseAdminClient {
         'pageToken',
         'nextPageToken',
         'databases'
+      ),
+      listBackups: new gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'backups'
+      ),
+      listDatabaseOperations: new gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'operations'
+      ),
+      listBackupOperations: new gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'operations'
       ),
     };
 
@@ -172,6 +191,18 @@ class DatabaseAdminClient {
     const updateDatabaseDdlMetadata = protoFilesRoot.lookup(
       'google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata'
     );
+    const createBackupResponse = protoFilesRoot.lookup(
+      'google.spanner.admin.database.v1.Backup'
+    );
+    const createBackupMetadata = protoFilesRoot.lookup(
+      'google.spanner.admin.database.v1.CreateBackupMetadata'
+    );
+    const restoreDatabaseResponse = protoFilesRoot.lookup(
+      'google.spanner.admin.database.v1.Database'
+    );
+    const restoreDatabaseMetadata = protoFilesRoot.lookup(
+      'google.spanner.admin.database.v1.RestoreDatabaseMetadata'
+    );
 
     this._descriptors.longrunning = {
       createDatabase: new gaxModule.LongrunningDescriptor(
@@ -183,6 +214,16 @@ class DatabaseAdminClient {
         this.operationsClient,
         updateDatabaseDdlResponse.decode.bind(updateDatabaseDdlResponse),
         updateDatabaseDdlMetadata.decode.bind(updateDatabaseDdlMetadata)
+      ),
+      createBackup: new gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        createBackupResponse.decode.bind(createBackupResponse),
+        createBackupMetadata.decode.bind(createBackupMetadata)
+      ),
+      restoreDatabase: new gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        restoreDatabaseResponse.decode.bind(restoreDatabaseResponse),
+        restoreDatabaseMetadata.decode.bind(restoreDatabaseMetadata)
       ),
     };
 
@@ -220,6 +261,14 @@ class DatabaseAdminClient {
       'setIamPolicy',
       'getIamPolicy',
       'testIamPermissions',
+      'createBackup',
+      'getBackup',
+      'updateBackup',
+      'deleteBackup',
+      'listBackups',
+      'restoreDatabase',
+      'listDatabaseOperations',
+      'listBackupOperations',
     ];
     for (const methodName of databaseAdminStubMethods) {
       const innerCallPromise = databaseAdminStub.then(
@@ -324,9 +373,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -420,9 +469,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -450,8 +499,8 @@ class DatabaseAdminClient {
    * have a name of the format `<database_name>/operations/<operation_id>` and
    * can be used to track preparation of the database. The
    * metadata field type is
-   * CreateDatabaseMetadata.
-   * The response field type is
+   * CreateDatabaseMetadata. The
+   * response field type is
    * Database, if successful.
    *
    * @param {Object} request
@@ -483,9 +532,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -597,9 +646,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -638,8 +687,7 @@ class DatabaseAdminClient {
    * the format `<database_name>/operations/<operation_id>` and can be used to
    * track execution of the schema change(s). The
    * metadata field type is
-   * UpdateDatabaseDdlMetadata.
-   * The operation has no response.
+   * UpdateDatabaseDdlMetadata.  The operation has no response.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -655,20 +703,18 @@ class DatabaseAdminClient {
    *
    *   Specifying an explicit operation ID simplifies determining
    *   whether the statements were executed in the event that the
-   *   UpdateDatabaseDdl
-   *   call is replayed, or the return value is otherwise lost: the
-   *   database
-   *   and `operation_id` fields can be combined to form the
+   *   UpdateDatabaseDdl call is replayed,
+   *   or the return value is otherwise lost: the database and
+   *   `operation_id` fields can be combined to form the
    *   name of the resulting
-   *   longrunning.Operation:
-   *   `<database>/operations/<operation_id>`.
+   *   longrunning.Operation: `<database>/operations/<operation_id>`.
    *
    *   `operation_id` should be unique within the database, and must be
    *   a valid identifier: `[a-z][a-z0-9_]*`. Note that
    *   automatically-generated operation IDs always begin with an
    *   underscore. If the named operation already exists,
-   *   UpdateDatabaseDdl
-   *   returns `ALREADY_EXISTS`.
+   *   UpdateDatabaseDdl returns
+   *   `ALREADY_EXISTS`.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -682,9 +728,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -792,9 +838,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -843,9 +889,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -878,17 +924,18 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Sets the access control policy on a database resource. Replaces any
-   * existing policy.
+   * Sets the access control policy on a database resource.
+   * Replaces any existing policy.
    *
-   * Authorization requires `spanner.databases.setIamPolicy` permission on
-   * resource.
+   * Authorization requires `spanner.databases.setIamPolicy`
+   * permission on resource.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being specified.
-   *   See the operation documentation for the appropriate value for this field.
+   *   `resource` is usually specified as a path. For example, a Project
+   *   resource is specified as `projects/{project}`.
    * @param {Object} request.policy
    *   REQUIRED: The complete policy to be applied to the `resource`. The size of
    *   the policy is limited to a few 10s of KB. An empty policy is a
@@ -909,9 +956,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -949,8 +996,9 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Gets the access control policy for a database resource. Returns an empty
-   * policy if a database exists but does not have a policy set.
+   * Gets the access control policy for a database resource.
+   * Returns an empty policy if a database exists but does
+   * not have a policy set.
    *
    * Authorization requires `spanner.databases.getIamPolicy` permission on
    * resource.
@@ -959,12 +1007,8 @@ class DatabaseAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {Object} [request.options]
-   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
-   *   `GetIamPolicy`. This field is only used by Cloud IAM.
-   *
-   *   This object should have the same structure as [GetPolicyOptions]{@link google.iam.v1.GetPolicyOptions}
+   *   `resource` is usually specified as a path. For example, a Project
+   *   resource is specified as `projects/{project}`.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -978,9 +1022,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1015,16 +1059,17 @@ class DatabaseAdminClient {
   /**
    * Returns permissions that the caller has on the specified database resource.
    *
-   * Attempting this RPC on a non-existent Cloud Spanner database will result in
-   * a NOT_FOUND error if the user has `spanner.databases.list` permission on
-   * the containing Cloud Spanner instance. Otherwise returns an empty set of
-   * permissions.
+   * Attempting this RPC on a non-existent Cloud Spanner database will
+   * result in a NOT_FOUND error if the user has
+   * `spanner.databases.list` permission on the containing Cloud
+   * Spanner instance. Otherwise returns an empty set of permissions.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy detail is being requested.
-   *   See the operation documentation for the appropriate value for this field.
+   *   `resource` is usually specified as a path. For example, a Project
+   *   resource is specified as `projects/{project}`.
    * @param {string[]} request.permissions
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
@@ -1043,9 +1088,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spanner = require('@google-cloud/spanner');
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
    *
-   * const client = new spanner.v1.DatabaseAdminClient({
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1082,9 +1127,1224 @@ class DatabaseAdminClient {
     return this._innerApiCalls.testIamPermissions(request, options, callback);
   }
 
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the instance in which the backup will be
+   *   created. This must be the same instance that contains the database the
+   *   backup will be created from. The backup will be stored in the
+   *   location(s) specified in the instance configuration of this
+   *   instance. Values are of the form
+   *   `projects/<project>/instances/<instance>`.
+   * @param {string} request.backupId
+   *   Required. The id of the backup to be created. The `backup_id` appended to
+   *   `parent` forms the full backup name of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup_id>`.
+   * @param {Object} request.backup
+   *   Required. The backup to create.
+   *
+   *   This object should have the same structure as [Backup]{@link google.spanner.admin.database.v1.Backup}
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const backupId = '';
+   * const backup = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   backupId: backupId,
+   *   backup: backup,
+   * };
+   *
+   * // Handle the operation using the promise pattern.
+   * client.createBackup(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Operation#promise starts polling for the completion of the LRO.
+   *     return operation.promise();
+   *   })
+   *   .then(responses => {
+   *     const result = responses[0];
+   *     const metadata = responses[1];
+   *     const finalApiResponse = responses[2];
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const backupId = '';
+   * const backup = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   backupId: backupId,
+   *   backup: backup,
+   * };
+   *
+   * // Handle the operation using the event emitter pattern.
+   * client.createBackup(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Adding a listener for the "complete" event starts polling for the
+   *     // completion of the operation.
+   *     operation.on('complete', (result, metadata, finalApiResponse) => {
+   *       // doSomethingWith(result);
+   *     });
+   *
+   *     // Adding a listener for the "progress" event causes the callback to be
+   *     // called on any change in metadata when the operation is polled.
+   *     operation.on('progress', (metadata, apiResponse) => {
+   *       // doSomethingWith(metadata)
+   *     });
+   *
+   *     // Adding a listener for the "error" event handles any errors found during polling.
+   *     operation.on('error', err => {
+   *       // throw(err);
+   *     });
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const backupId = '';
+   * const backup = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   backupId: backupId,
+   *   backup: backup,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.createBackup(request);
+   *
+   * const [response] = await operation.promise();
+   */
+  createBackup(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent,
+    });
+
+    return this._innerApiCalls.createBackup(request, options, callback);
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. Name of the backup.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedName = client.backupPath('[PROJECT]', '[INSTANCE]', '[BACKUP]');
+   * client.getBackup({name: formattedName})
+   *   .then(responses => {
+   *     const response = responses[0];
+   *     // doThingsWith(response)
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  getBackup(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      name: request.name,
+    });
+
+    return this._innerApiCalls.getBackup(request, options, callback);
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {Object} request.backup
+   *   Required. The backup to update. `backup.name`, and the fields to be updated
+   *   as specified by `update_mask` are required. Other fields are ignored.
+   *   Update is only supported for the following fields:
+   *    * `backup.expire_time`.
+   *
+   *   This object should have the same structure as [Backup]{@link google.spanner.admin.database.v1.Backup}
+   * @param {Object} request.updateMask
+   *   Required. A mask specifying which fields (e.g. `backup.expire_time`) in the
+   *   Backup resource should be updated. This mask is relative to the Backup
+   *   resource, not to the request message. The field mask must always be
+   *   specified; this prevents any future fields from being erased accidentally
+   *   by clients that do not know about them.
+   *
+   *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const backup = {};
+   * const updateMask = {};
+   * const request = {
+   *   backup: backup,
+   *   updateMask: updateMask,
+   * };
+   * client.updateBackup(request)
+   *   .then(responses => {
+   *     const response = responses[0];
+   *     // doThingsWith(response)
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  updateBackup(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'backup.name': request.backup.name,
+    });
+
+    return this._innerApiCalls.updateBackup(request, options, callback);
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. Name of the backup to delete.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error)} [callback]
+   *   The function which will be called with the result of the API call.
+   * @returns {Promise} - The promise which resolves when API call finishes.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedName = client.backupPath('[PROJECT]', '[INSTANCE]', '[BACKUP]');
+   * client.deleteBackup({name: formattedName}).catch(err => {
+   *   console.error(err);
+   * });
+   */
+  deleteBackup(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      name: request.name,
+    });
+
+    return this._innerApiCalls.deleteBackup(request, options, callback);
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance to list backups from.  Values are of the
+   *   form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   A filter expression that filters backups listed in the response.
+   *   The expression must specify the field name, a comparison operator,
+   *   and the value that you want to use for filtering. The value must be a
+   *   string, a number, or a boolean. The comparison operator must be
+   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *
+   *   The fields eligible for filtering are:
+   *     * `name`
+   *     * `database`
+   *     * `state`
+   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `size_bytes`
+   *
+   *   To filter on multiple expressions, provide each separate expression within
+   *   parentheses. By default, each expression is an AND expression. However,
+   *   you can include AND, OR, and NOT expressions explicitly.
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `name:Howl` --> The backup's name contains the string "howl".
+   *     * `database:prod`
+   *            --> The database's name contains the string "prod".
+   *     * `state:CREATING` --> The backup is pending creation.
+   *     * `state:READY` --> The backup is fully created and ready for use.
+   *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
+   *            --> The backup name contains the string "howl" and `create_time`
+   *                of the backup is before 2018-03-28T14:50:00Z.
+   *     * `expire_time < \"2018-03-28T14:50:00Z\"`
+   *            --> The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` --> The backup's size is greater than 10GB
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Array, ?Object, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is Array of [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *
+   *   When autoPaginate: false is specified through options, it contains the result
+   *   in a single response. If the response indicates the next page exists, the third
+   *   parameter is set to be used for the next request object. The fourth parameter keeps
+   *   the raw response object of an object representing [ListBackupsResponse]{@link google.spanner.admin.database.v1.ListBackupsResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Backup]{@link google.spanner.admin.database.v1.Backup} in a single response.
+   *   The second element is the next request object if the response
+   *   indicates the next page exists, or null. The third element is
+   *   an object representing [ListBackupsResponse]{@link google.spanner.admin.database.v1.ListBackupsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * // Iterate over all elements.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   *
+   * client.listBackups(request)
+   *   .then(responses => {
+   *     const resources = responses[0];
+   *     for (const resource of resources) {
+   *       // doThingsWith(resource)
+   *     }
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * // Or obtain the paged response.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   *
+   *
+   * const options = {autoPaginate: false};
+   * const callback = responses => {
+   *   // The actual resources in a response.
+   *   const resources = responses[0];
+   *   // The next request if the response shows that there are more responses.
+   *   const nextRequest = responses[1];
+   *   // The actual response object, if necessary.
+   *   // const rawResponse = responses[2];
+   *   for (const resource of resources) {
+   *     // doThingsWith(resource);
+   *   }
+   *   if (nextRequest) {
+   *     // Fetch the next page.
+   *     return client.listBackups(nextRequest, options).then(callback);
+   *   }
+   * }
+   * client.listBackups(request, options)
+   *   .then(callback)
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  listBackups(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent,
+    });
+
+    return this._innerApiCalls.listBackups(request, options, callback);
+  }
+
+  /**
+   * Equivalent to {@link listBackups}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listBackups} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance to list backups from.  Values are of the
+   *   form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   A filter expression that filters backups listed in the response.
+   *   The expression must specify the field name, a comparison operator,
+   *   and the value that you want to use for filtering. The value must be a
+   *   string, a number, or a boolean. The comparison operator must be
+   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *
+   *   The fields eligible for filtering are:
+   *     * `name`
+   *     * `database`
+   *     * `state`
+   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `size_bytes`
+   *
+   *   To filter on multiple expressions, provide each separate expression within
+   *   parentheses. By default, each expression is an AND expression. However,
+   *   you can include AND, OR, and NOT expressions explicitly.
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `name:Howl` --> The backup's name contains the string "howl".
+   *     * `database:prod`
+   *            --> The database's name contains the string "prod".
+   *     * `state:CREATING` --> The backup is pending creation.
+   *     * `state:READY` --> The backup is fully created and ready for use.
+   *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
+   *            --> The backup name contains the string "howl" and `create_time`
+   *                of the backup is before 2018-03-28T14:50:00Z.
+   *     * `expire_time < \"2018-03-28T14:50:00Z\"`
+   *            --> The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` --> The backup's size is greater than 10GB
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Backup]{@link google.spanner.admin.database.v1.Backup} on 'data' event.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   * client.listBackupsStream(request)
+   *   .on('data', element => {
+   *     // doThingsWith(element)
+   *   }).on('error', err => {
+   *     console.log(err);
+   *   });
+   */
+  listBackupsStream(request, options) {
+    options = options || {};
+
+    return this._descriptors.page.listBackups.createStream(
+      this._innerApiCalls.listBackups,
+      request,
+      options
+    );
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the instance in which to create the
+   *   restored database. This instance must be in the same project and
+   *   have the same instance configuration as the instance containing
+   *   the source backup. Values are of the form
+   *   `projects/<project>/instances/<instance>.
+   * @param {string} request.databaseId
+   *   Required. The id of the database to create and restore to. This
+   *   database must not already exist. The `database_id` appended to
+   *   `parent` forms the full database name of the form
+   *   `projects/<project>/instances/<instance>/databases/<database_id>`.
+   * @param {string} [request.backup]
+   *   Name of the backup from which to restore.  Values are of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const databaseId = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   databaseId: databaseId,
+   * };
+   *
+   * // Handle the operation using the promise pattern.
+   * client.restoreDatabase(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Operation#promise starts polling for the completion of the LRO.
+   *     return operation.promise();
+   *   })
+   *   .then(responses => {
+   *     const result = responses[0];
+   *     const metadata = responses[1];
+   *     const finalApiResponse = responses[2];
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const databaseId = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   databaseId: databaseId,
+   * };
+   *
+   * // Handle the operation using the event emitter pattern.
+   * client.restoreDatabase(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Adding a listener for the "complete" event starts polling for the
+   *     // completion of the operation.
+   *     operation.on('complete', (result, metadata, finalApiResponse) => {
+   *       // doSomethingWith(result);
+   *     });
+   *
+   *     // Adding a listener for the "progress" event causes the callback to be
+   *     // called on any change in metadata when the operation is polled.
+   *     operation.on('progress', (metadata, apiResponse) => {
+   *       // doSomethingWith(metadata)
+   *     });
+   *
+   *     // Adding a listener for the "error" event handles any errors found during polling.
+   *     operation.on('error', err => {
+   *       // throw(err);
+   *     });
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const databaseId = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   databaseId: databaseId,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.restoreDatabase(request);
+   *
+   * const [response] = await operation.promise();
+   */
+  restoreDatabase(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent,
+    });
+
+    return this._innerApiCalls.restoreDatabase(request, options, callback);
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance of the database operations.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   A filter expression that filters what operations are returned in the
+   *   response.
+   *
+   *   The response returns a list of
+   *   long-running operations whose names are
+   *   prefixed by a database name within the specified instance. The long-running
+   *   operation metadata field type
+   *   `metadata.type_url` describes the type of the metadata.
+   *
+   *   The filter expression must specify the field name, a comparison operator,
+   *   and the value that you want to use for filtering. The value must be a
+   *   string, a number, or a boolean. The comparison operator must be
+   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *
+   *   The long-running operation fields eligible for filtering are:
+   *     * `name` --> The name of the long-running operation
+   *     * `done` --> False if the operation is in progress, else true.
+   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
+   *        in `metadata.value` (using filter string `metadata.<field_name>`,
+   *        where <field_name> is a field in metadata.value) are eligible for
+   *        filtering.
+   *     * `error` --> Error associated with the long-running operation.
+   *     * `response.type_url` (using filter string `response.@type`) and fields
+   *        in `response.value` (using filter string `response.<field_name>`,
+   *        where <field_name> is a field in response.value) are eligible for
+   *        filtering.
+   *
+   *   To filter on multiple expressions, provide each separate expression within
+   *   parentheses. By default, each expression is an AND expression. However,
+   *   you can include AND, OR, and NOT expressions explicitly.
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `done:true` --> The operation is complete.
+   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata)
+   *        AND (metadata.source_type:BACKUP)
+   *        AND (metadata.backup_info.backup:backup_howl)
+   *        AND (metadata.name:restored_howl)
+   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
+   *        AND (error:*)`
+   *            --> Return RestoreDatabase operations from backups whose name
+   *                contains "backup_howl", where the created database name
+   *                contains the string "restored_howl", the start_time of the
+   *                restore operation is before 2018-03-28T14:50:00Z,
+   *                and the operation returned an error.
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Array, ?Object, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is Array of [Operation]{@link google.longrunning.Operation}.
+   *
+   *   When autoPaginate: false is specified through options, it contains the result
+   *   in a single response. If the response indicates the next page exists, the third
+   *   parameter is set to be used for the next request object. The fourth parameter keeps
+   *   the raw response object of an object representing [ListDatabaseOperationsResponse]{@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Operation]{@link google.longrunning.Operation}.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Operation]{@link google.longrunning.Operation} in a single response.
+   *   The second element is the next request object if the response
+   *   indicates the next page exists, or null. The third element is
+   *   an object representing [ListDatabaseOperationsResponse]{@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * // Iterate over all elements.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   *
+   * client.listDatabaseOperations(request)
+   *   .then(responses => {
+   *     const resources = responses[0];
+   *     for (const resource of resources) {
+   *       // doThingsWith(resource)
+   *     }
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * // Or obtain the paged response.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   *
+   *
+   * const options = {autoPaginate: false};
+   * const callback = responses => {
+   *   // The actual resources in a response.
+   *   const resources = responses[0];
+   *   // The next request if the response shows that there are more responses.
+   *   const nextRequest = responses[1];
+   *   // The actual response object, if necessary.
+   *   // const rawResponse = responses[2];
+   *   for (const resource of resources) {
+   *     // doThingsWith(resource);
+   *   }
+   *   if (nextRequest) {
+   *     // Fetch the next page.
+   *     return client.listDatabaseOperations(nextRequest, options).then(callback);
+   *   }
+   * }
+   * client.listDatabaseOperations(request, options)
+   *   .then(callback)
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  listDatabaseOperations(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent,
+    });
+
+    return this._innerApiCalls.listDatabaseOperations(
+      request,
+      options,
+      callback
+    );
+  }
+
+  /**
+   * Equivalent to {@link listDatabaseOperations}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listDatabaseOperations} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance of the database operations.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   A filter expression that filters what operations are returned in the
+   *   response.
+   *
+   *   The response returns a list of
+   *   long-running operations whose names are
+   *   prefixed by a database name within the specified instance. The long-running
+   *   operation metadata field type
+   *   `metadata.type_url` describes the type of the metadata.
+   *
+   *   The filter expression must specify the field name, a comparison operator,
+   *   and the value that you want to use for filtering. The value must be a
+   *   string, a number, or a boolean. The comparison operator must be
+   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *
+   *   The long-running operation fields eligible for filtering are:
+   *     * `name` --> The name of the long-running operation
+   *     * `done` --> False if the operation is in progress, else true.
+   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
+   *        in `metadata.value` (using filter string `metadata.<field_name>`,
+   *        where <field_name> is a field in metadata.value) are eligible for
+   *        filtering.
+   *     * `error` --> Error associated with the long-running operation.
+   *     * `response.type_url` (using filter string `response.@type`) and fields
+   *        in `response.value` (using filter string `response.<field_name>`,
+   *        where <field_name> is a field in response.value) are eligible for
+   *        filtering.
+   *
+   *   To filter on multiple expressions, provide each separate expression within
+   *   parentheses. By default, each expression is an AND expression. However,
+   *   you can include AND, OR, and NOT expressions explicitly.
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `done:true` --> The operation is complete.
+   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata)
+   *        AND (metadata.source_type:BACKUP)
+   *        AND (metadata.backup_info.backup:backup_howl)
+   *        AND (metadata.name:restored_howl)
+   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
+   *        AND (error:*)`
+   *            --> Return RestoreDatabase operations from backups whose name
+   *                contains "backup_howl", where the created database name
+   *                contains the string "restored_howl", the start_time of the
+   *                restore operation is before 2018-03-28T14:50:00Z,
+   *                and the operation returned an error.
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   * client.listDatabaseOperationsStream(request)
+   *   .on('data', element => {
+   *     // doThingsWith(element)
+   *   }).on('error', err => {
+   *     console.log(err);
+   *   });
+   */
+  listDatabaseOperationsStream(request, options) {
+    options = options || {};
+
+    return this._descriptors.page.listDatabaseOperations.createStream(
+      this._innerApiCalls.listDatabaseOperations,
+      request,
+      options
+    );
+  }
+
+  /**
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance of the backup operations. Values are of
+   *   the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   A filter expression that filters what operations are returned in the
+   *   response.
+   *
+   *   The response returns a list of
+   *   long-running operations whose names are
+   *   prefixed by a backup name within the specified instance. The long-running
+   *   operation metadata field type
+   *   `metadata.type_url` describes the type of the metadata.
+   *
+   *   The filter expression must specify the field name of an operation, a
+   *   comparison operator, and the value that you want to use for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be
+   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *
+   *   The long-running operation fields eligible for filtering are:
+   *     * `name` --> The name of the long-running operation
+   *     * `done` --> False if the operation is in progress, else true.
+   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
+   *        in `metadata.value` (using filter string `metadata.<field_name>`,
+   *        where <field_name> is a field in metadata.value) are eligible for
+   *        filtering.
+   *     * `error` --> Error associated with the long-running operation.
+   *     * `response.type_url` (using filter string `response.@type`) and fields
+   *        in `response.value` (using filter string `response.<field_name>`,
+   *        where <field_name> is a field in response.value) are eligible for
+   *        filtering.
+   *
+   *   To filter on multiple expressions, provide each separate expression within
+   *   parentheses. By default, each expression is an AND expression. However,
+   *   you can include AND, OR, and NOT expressions explicitly.
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `done:true` --> The operation is complete.
+   *     * `metadata.database:prod`
+   *            --> The database the backup was taken from has a name containing
+   *                the string "prod".
+   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)
+   *        AND (metadata.name:howl)
+   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
+   *        AND (error:*)`
+   *            --> Return CreateBackup operations where the created backup name
+   *                contains the string "howl", the progress.start_time of the
+   *                backup operation is before 2018-03-28T14:50:00Z, and the
+   *                operation returned an error.
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Array, ?Object, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is Array of [Operation]{@link google.longrunning.Operation}.
+   *
+   *   When autoPaginate: false is specified through options, it contains the result
+   *   in a single response. If the response indicates the next page exists, the third
+   *   parameter is set to be used for the next request object. The fourth parameter keeps
+   *   the raw response object of an object representing [ListBackupOperationsResponse]{@link google.spanner.admin.database.v1.ListBackupOperationsResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Operation]{@link google.longrunning.Operation}.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Operation]{@link google.longrunning.Operation} in a single response.
+   *   The second element is the next request object if the response
+   *   indicates the next page exists, or null. The third element is
+   *   an object representing [ListBackupOperationsResponse]{@link google.spanner.admin.database.v1.ListBackupOperationsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * // Iterate over all elements.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   *
+   * client.listBackupOperations(request)
+   *   .then(responses => {
+   *     const resources = responses[0];
+   *     for (const resource of resources) {
+   *       // doThingsWith(resource)
+   *     }
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * // Or obtain the paged response.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   *
+   *
+   * const options = {autoPaginate: false};
+   * const callback = responses => {
+   *   // The actual resources in a response.
+   *   const resources = responses[0];
+   *   // The next request if the response shows that there are more responses.
+   *   const nextRequest = responses[1];
+   *   // The actual response object, if necessary.
+   *   // const rawResponse = responses[2];
+   *   for (const resource of resources) {
+   *     // doThingsWith(resource);
+   *   }
+   *   if (nextRequest) {
+   *     // Fetch the next page.
+   *     return client.listBackupOperations(nextRequest, options).then(callback);
+   *   }
+   * }
+   * client.listBackupOperations(request, options)
+   *   .then(callback)
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  listBackupOperations(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent,
+    });
+
+    return this._innerApiCalls.listBackupOperations(request, options, callback);
+  }
+
+  /**
+   * Equivalent to {@link listBackupOperations}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listBackupOperations} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance of the backup operations. Values are of
+   *   the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   A filter expression that filters what operations are returned in the
+   *   response.
+   *
+   *   The response returns a list of
+   *   long-running operations whose names are
+   *   prefixed by a backup name within the specified instance. The long-running
+   *   operation metadata field type
+   *   `metadata.type_url` describes the type of the metadata.
+   *
+   *   The filter expression must specify the field name of an operation, a
+   *   comparison operator, and the value that you want to use for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be
+   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
+   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *
+   *   The long-running operation fields eligible for filtering are:
+   *     * `name` --> The name of the long-running operation
+   *     * `done` --> False if the operation is in progress, else true.
+   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
+   *        in `metadata.value` (using filter string `metadata.<field_name>`,
+   *        where <field_name> is a field in metadata.value) are eligible for
+   *        filtering.
+   *     * `error` --> Error associated with the long-running operation.
+   *     * `response.type_url` (using filter string `response.@type`) and fields
+   *        in `response.value` (using filter string `response.<field_name>`,
+   *        where <field_name> is a field in response.value) are eligible for
+   *        filtering.
+   *
+   *   To filter on multiple expressions, provide each separate expression within
+   *   parentheses. By default, each expression is an AND expression. However,
+   *   you can include AND, OR, and NOT expressions explicitly.
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `done:true` --> The operation is complete.
+   *     * `metadata.database:prod`
+   *            --> The database the backup was taken from has a name containing
+   *                the string "prod".
+   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)
+   *        AND (metadata.name:howl)
+   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
+   *        AND (error:*)`
+   *            --> Return CreateBackup operations where the created backup name
+   *                contains the string "howl", the progress.start_time of the
+   *                backup operation is before 2018-03-28T14:50:00Z, and the
+   *                operation returned an error.
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
+   *
+   * @example
+   *
+   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   *
+   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const filter = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   filter: filter,
+   * };
+   * client.listBackupOperationsStream(request)
+   *   .on('data', element => {
+   *     // doThingsWith(element)
+   *   }).on('error', err => {
+   *     console.log(err);
+   *   });
+   */
+  listBackupOperationsStream(request, options) {
+    options = options || {};
+
+    return this._descriptors.page.listBackupOperations.createStream(
+      this._innerApiCalls.listBackupOperations,
+      request,
+      options
+    );
+  }
+
   // --------------------
   // -- Path templates --
   // --------------------
+
+  /**
+   * Return a fully-qualified backup resource name string.
+   *
+   * @param {String} project
+   * @param {String} instance
+   * @param {String} backup
+   * @returns {String}
+   */
+  backupPath(project, instance, backup) {
+    return this._pathTemplates.backupPathTemplate.render({
+      project: project,
+      instance: instance,
+      backup: backup,
+    });
+  }
 
   /**
    * Return a fully-qualified database resource name string.
@@ -1114,6 +2374,51 @@ class DatabaseAdminClient {
       project: project,
       instance: instance,
     });
+  }
+
+  /**
+   * Return a fully-qualified project resource name string.
+   *
+   * @param {String} project
+   * @returns {String}
+   */
+  projectPath(project) {
+    return this._pathTemplates.projectPathTemplate.render({
+      project: project,
+    });
+  }
+
+  /**
+   * Parse the backupName from a backup resource.
+   *
+   * @param {String} backupName
+   *   A fully-qualified path representing a backup resources.
+   * @returns {String} - A string representing the project.
+   */
+  matchProjectFromBackupName(backupName) {
+    return this._pathTemplates.backupPathTemplate.match(backupName).project;
+  }
+
+  /**
+   * Parse the backupName from a backup resource.
+   *
+   * @param {String} backupName
+   *   A fully-qualified path representing a backup resources.
+   * @returns {String} - A string representing the instance.
+   */
+  matchInstanceFromBackupName(backupName) {
+    return this._pathTemplates.backupPathTemplate.match(backupName).instance;
+  }
+
+  /**
+   * Parse the backupName from a backup resource.
+   *
+   * @param {String} backupName
+   *   A fully-qualified path representing a backup resources.
+   * @returns {String} - A string representing the backup.
+   */
+  matchBackupFromBackupName(backupName) {
+    return this._pathTemplates.backupPathTemplate.match(backupName).backup;
   }
 
   /**
@@ -1172,6 +2477,17 @@ class DatabaseAdminClient {
   matchInstanceFromInstanceName(instanceName) {
     return this._pathTemplates.instancePathTemplate.match(instanceName)
       .instance;
+  }
+
+  /**
+   * Parse the projectName from a project resource.
+   *
+   * @param {String} projectName
+   *   A fully-qualified path representing a project resources.
+   * @returns {String} - A string representing the project.
+   */
+  matchProjectFromProjectName(projectName) {
+    return this._pathTemplates.projectPathTemplate.match(projectName).project;
   }
 }
 
