@@ -15,8 +15,8 @@
  */
 
 import arrify = require('arrify');
-const common = require('@google-cloud/common-grpc');
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
+const common = require('./common-grpc/service-object');
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
@@ -108,7 +108,7 @@ interface InstanceRequest {
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  */
-class Instance extends common.ServiceObject {
+class Instance extends common.GrpcServiceObject {
   formattedName_: string;
   request: InstanceRequest;
   requestStream: (config?: RequestConfig) => Duplex;
@@ -412,7 +412,7 @@ class Instance extends common.ServiceObject {
         return database.close();
       })
     )
-      .catch(common.util.noop)
+      .catch(() => {})
       .then(() => {
         this.databases_.clear();
         this.request<instanceAdmin.protobuf.IEmpty>(

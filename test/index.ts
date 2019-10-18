@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
+import {util} from '@google-cloud/common';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
@@ -146,9 +144,11 @@ describe('Spanner', () => {
 
   before(() => {
     Spanner = proxyquire('../src', {
-      '@google-cloud/common-grpc': {
-        Operation: FakeGrpcOperation,
-        Service: FakeGrpcService,
+      './common-grpc/operation': {
+        GrpcOperation: FakeGrpcOperation,
+      },
+      './common-grpc/service': {
+        GrpcService: FakeGrpcService,
       },
       '@google-cloud/paginator': fakePaginator,
       '@google-cloud/promisify': fakePfy,

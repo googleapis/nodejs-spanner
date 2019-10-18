@@ -15,8 +15,7 @@
  */
 
 import {promisify} from '@google-cloud/promisify';
-import {Metadata, ServiceError, status} from 'grpc';
-import {join} from 'path';
+import {ServiceError, status} from 'grpc';
 import {Root} from 'protobufjs';
 import * as through from 'through2';
 
