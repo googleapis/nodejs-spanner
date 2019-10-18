@@ -36,6 +36,7 @@ import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import { Backup } from './backup';
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -185,6 +186,15 @@ class Instance extends common.ServiceObject {
     this.requestStream = spanner.requestStream.bind(spanner);
     this.databases_ = new Map<string, Database>();
   }
+
+  backup(backupId: string, databasePath: string, expireTime: Date): Backup {
+    if (!backupId) {
+      throw new Error('A backup ID is required to create a backup.');
+    }
+
+    return new Backup(this, backupId, databasePath, expireTime);
+  }
+
 
   createDatabase(
     name: string,
