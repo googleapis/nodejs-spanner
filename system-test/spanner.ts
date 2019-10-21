@@ -30,16 +30,24 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
+import { GoogleAuth } from 'google-gax';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
-const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
+const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT, apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  auth: new GoogleAuth({
+    keyFile: '/home/prunge/Downloads/appdev-soda-spanner-staging-1fc517aab335-helix.json',
+    projectId: 'appdev-soda-spanner-staging'
+  })});
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
 describe('Spanner', () => {
-  const instance = spanner.instance(generateName('instance'));
+  //TODO hardcode this so I can run on the Google backup instances
+  //const instance = spanner.instance(generateName('instance'));
+  //const instance = spanner.instance("backups-instance-1");
+  const instance = spanner.instance("test-instance");
 
   const INSTANCE_CONFIG = {
     config: 'regional-us-central1',
@@ -51,12 +59,14 @@ describe('Spanner', () => {
   };
 
   before(async () => {
-    await deleteOldTestInstances();
-    const [, operation] = await instance.create(INSTANCE_CONFIG);
-    await operation.promise();
+    //await deleteOldTestInstances();
+    //TODO also need to modify for testing to not modify existing test backup instances
+    //const [, operation] = await instance.create(INSTANCE_CONFIG);
+    //await operation.promise();
+    console.log(`Not creating temp instance, using + ${instance.formattedName_}...`);
   });
 
-  after(deleteTestInstances);
+  //after(deleteTestInstances);
 
   describe('types', () => {
     // tslint:disable-next-line: no-any
@@ -737,6 +747,18 @@ describe('Spanner', () => {
         assert.strictEqual(exists, false);
         done();
       });
+    });
+
+    it('backup should be created', async () => {
+      console.log(`database formatted name: ${instance.database('helix-test-1').formattedName_}`);
+      //const dbMeta = await instance.database('helix-test-1').getMetadata();
+
+      const futureHours = 12;
+      const expiryDate = new Date(Date.now() + 1000 * 60 * 60 * futureHours);
+
+      const backup = instance.backup('helix-test-backup-1', `${instance.formattedName_}/databases/helix-test-1`, expiryDate);
+      const response = await backup.create();
+      console.log('Here we have a backup: ', response);
     });
   });
 

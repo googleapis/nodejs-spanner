@@ -35,8 +35,9 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import { google, google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Backup } from './backup';
+import IListBackupsResponse = google.spanner.admin.database.v1.IListBackupsResponse;
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -51,6 +52,10 @@ export type GetDatabasesResponse = PagedResponse<
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
 >;
 export type SetInstanceMetadataResponse = [GaxOperation, IOperation];
+export type ListBackupsResponse = PagedResponse<
+  Backup,
+  databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+>;
 
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
@@ -66,6 +71,9 @@ export interface GetDatabasesRequest
   autoPaginate?: boolean;
   maxApiCalls?: number;
   maxResults?: number;
+}
+export interface ListBackupsRequest
+  extends databaseAdmin.spanner.admin.database.v1.IListBackupsRequest {
 }
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
@@ -84,6 +92,10 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
+export type ListBackupsCallback = RequestCallback<
+  Backup,
+  databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+  >;
 export interface GetInstanceConfig extends GetConfig {}
 
 interface InstanceRequest {
@@ -195,6 +207,35 @@ class Instance extends common.ServiceObject {
     return new Backup(this, backupId, databasePath, expireTime);
   }
 
+  /*
+  listBackups(): Promise<ListBackupsResponse>;
+  listBackups(callback: ListBackupsCallback): void;
+  listBackups(callback?: ListBackupsCallback): void | Promise<ListBackupsResponse> {
+
+    const reqOpts = extend(
+      {
+        parent: this.formattedName_,
+      },
+    );
+    this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts,
+      },
+      (err, operation, resp) => {
+        const bResp: IListBackupsResponse | undefined = resp as IListBackupsResponse;
+        if (err) {
+          callback!(err, null, null, bResp); //TODO verify
+          return;
+        }
+
+        const database = this.database(name, poolOptions || poolCtor);
+        callback!(null, operation, resp);
+      }
+    );
+
+  }*/
 
   createDatabase(
     name: string,
@@ -878,7 +919,7 @@ Instance.prototype.getDatabasesStream = paginator.streamify('getDatabases');
  * that a callback is omitted.
  */
 promisifyAll(Instance, {
-  exclude: ['database'],
+  exclude: ['database', 'backup'],
 });
 
 /**

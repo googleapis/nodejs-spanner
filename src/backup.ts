@@ -45,7 +45,7 @@ class Backup {
     private instance: Instance,
     private backupId: string,
     private databasePath: string,
-    expireTime: Date
+    private expireTime: Date
   ) {
     this.request = instance.request;
   }
@@ -58,16 +58,22 @@ class Backup {
   ): Promise<CreateBackupResponse> | void {
 
     /*
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
+    const reqOpts = databaseAdmin.spanner.admin.database.v1.CreateBackupRequest.create({
       parent: this.databasePath,
       backupId: this.backupId,
-    };
-    */
+    });
+
+     */
 
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {
-        parent: this.databasePath,
+        parent: this.instance.formattedName_,
         backupId: this.backupId,
+        backup: {
+          database: this.databasePath,
+          expireTime: { seconds: this.expireTime.getTime() / 1000, nanos: 0 }, //TODO more gran
+          name: this.instance.formattedName_ + '/backups/' + this.backupId
+        }
       }
     );
     return this.request(
