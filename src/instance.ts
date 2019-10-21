@@ -38,6 +38,7 @@ import {Operation as GaxOperation} from 'google-gax';
 import { google, google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Backup } from './backup';
 import IListBackupsResponse = google.spanner.admin.database.v1.IListBackupsResponse;
+import { PreciseDate } from '@google-cloud/precise-date';
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -199,7 +200,7 @@ class Instance extends common.ServiceObject {
     this.databases_ = new Map<string, Database>();
   }
 
-  backup(backupId: string, databasePath: string, expireTime: Date): Backup {
+  backup(backupId: string, databasePath: string, expireTime: PreciseDate): Backup {
     if (!backupId) {
       throw new Error('A backup ID is required to create a backup.');
     }

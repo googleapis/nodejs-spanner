@@ -31,6 +31,7 @@ import {
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import { GoogleAuth } from 'google-gax';
+import { PreciseDate } from '@google-cloud/precise-date';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -754,7 +755,7 @@ describe('Spanner', () => {
       //const dbMeta = await instance.database('helix-test-1').getMetadata();
 
       const futureHours = 12;
-      const expiryDate = new Date(Date.now() + 1000 * 60 * 60 * futureHours);
+      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
 
       const backup = instance.backup('helix-test-backup-1', `${instance.formattedName_}/databases/helix-test-1`, expiryDate);
       const response = await backup.create();

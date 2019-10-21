@@ -15,13 +15,13 @@
  */
 
 import { promisifyAll } from '@google-cloud/promisify';
-import * as r from 'teeny-request';
 import { google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Instance, } from './instance';
 import { RequestCallback, ResourceCallback, } from './common';
 import { RequestConfig, Table } from '.';
 import { Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
+import { PreciseDate } from '@google-cloud/precise-date';
 
 export type CreateBackupCallback = ResourceCallback<
   GaxOperation,
@@ -45,7 +45,7 @@ class Backup {
     private instance: Instance,
     private backupId: string,
     private databasePath: string,
-    private expireTime: Date
+    private expireTime: PreciseDate
   ) {
     this.request = instance.request;
   }
@@ -57,21 +57,13 @@ class Backup {
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
 
-    /*
-    const reqOpts = databaseAdmin.spanner.admin.database.v1.CreateBackupRequest.create({
-      parent: this.databasePath,
-      backupId: this.backupId,
-    });
-
-     */
-
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {
         parent: this.instance.formattedName_,
         backupId: this.backupId,
         backup: {
           database: this.databasePath,
-          expireTime: { seconds: this.expireTime.getTime() / 1000, nanos: 0 }, //TODO more gran
+          expireTime: this.expireTime.toStruct(),
           name: this.instance.formattedName_ + '/backups/' + this.backupId
         }
       }
