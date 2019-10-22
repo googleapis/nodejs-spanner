@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-'use strict';
-
-import {Service} from '@google-cloud/common-grpc';
+import {GrpcService} from './common-grpc/service';
 import * as checkpointStream from 'checkpoint-stream';
 import * as eventsIntercept from 'events-intercept';
 import * as is from 'is';
@@ -197,7 +195,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {object} chunk The partial result set.
    */
   private _addChunk(chunk: s.PartialResultSet): void {
-    const values: Value[] = chunk.values.map(Service.decodeValue_);
+    const values: Value[] = chunk.values.map(GrpcService.decodeValue_);
 
     // If we have a chunk to merge, merge the values now.
     if (this._pendingValue) {

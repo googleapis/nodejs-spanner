@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import {promisifyAll} from '@google-cloud/promisify';
 import * as is from 'is';
 import {ServiceError} from 'grpc';
