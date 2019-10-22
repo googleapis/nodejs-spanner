@@ -749,18 +749,6 @@ describe('Spanner', () => {
         done();
       });
     });
-
-    it('backup should be created', async () => {
-      console.log(`database formatted name: ${instance.database('helix-test-1').formattedName_}`);
-      //const dbMeta = await instance.database('helix-test-1').getMetadata();
-
-      const futureHours = 12;
-      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
-
-      const backup = instance.backup('helix-test-backup-1', `${instance.formattedName_}/databases/helix-test-1`, expiryDate);
-      const response = await backup.create();
-      console.log('Here we have a backup: ', response);
-    });
   });
 
   describe('instanceConfigs', () => {
@@ -906,6 +894,39 @@ describe('Spanner', () => {
           });
         })
       );
+    });
+  });
+
+  describe('Backups', () => {
+    const database = instance.database(generateName('database'));
+
+    before(async () => {
+      const [, operation] = await database.create({
+        schema: `
+              CREATE TABLE Singers (
+                SingerId STRING(1024) NOT NULL,
+                Name STRING(1024),
+              ) PRIMARY KEY(SingerId)`,
+      });
+      await operation.promise();
+
+      const insertResult = await database.table('Singers').insert({
+        SingerId: generateName('id'),
+        Name: generateName('name'),
+      });
+
+      console.log('Insert result: ', insertResult);
+    });
+
+    it('should have created the backup', async () => {
+      const futureHours = 12;
+      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+
+      const backupName = generateName('backup');
+      const backup = instance.backup(backupName, database.formattedName_, expiryDate);
+      const [, operation] = await backup.create();
+
+      console.log('Here we have a backup: ', operation);
     });
   });
 
