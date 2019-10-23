@@ -112,9 +112,7 @@ export interface BatchUpdateCallback {
   ): void;
 }
 
-export interface ReadCallback {
-  (err: null | ServiceError, rows: Rows): void;
-}
+export type ReadCallback = NormalCallback<Rows>;
 
 export interface RunCallback {
   (
