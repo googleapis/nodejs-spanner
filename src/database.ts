@@ -98,12 +98,12 @@ export interface SessionPoolConstructor {
   ): SessionPoolInterface;
 }
 
-type UpdateSchemaCallback = ResourceCallback<
+export type UpdateSchemaCallback = ResourceCallback<
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 >;
 
-type UpdateSchemaResponse = [
+export type UpdateSchemaResponse = [
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
