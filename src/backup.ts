@@ -40,6 +40,7 @@ class Backup {
     callback: RequestCallback<T, R>
   ) => void;
 
+  formattedName_: string;
 
   constructor(
     private instance: Instance,
@@ -48,6 +49,7 @@ class Backup {
     private expireTime: PreciseDate
   ) {
     this.request = instance.request;
+    this.formattedName_ = this.instance.formattedName_ + '/backups/' + this.backupId;
   }
 
   create(): Promise<CreateBackupResponse>;
@@ -64,7 +66,7 @@ class Backup {
         backup: {
           database: this.databasePath,
           expireTime: this.expireTime.toStruct(),
-          name: this.instance.formattedName_ + '/backups/' + this.backupId
+          name: this.formattedName_
         }
       }
     );
