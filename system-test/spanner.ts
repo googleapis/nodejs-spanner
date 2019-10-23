@@ -927,6 +927,16 @@ describe('Spanner', () => {
       const [, operation] = await backup.create();
 
       console.log('Here we have a backup: ', operation);
+      //assert.strictEqual(backup.formattedName_, operation); //TODO this operation does not expose proper metadata
+
+      //TODO some assertions, and wait for operation to finish
+    });
+
+    it('should list backups', async () => {
+      const [backups] = await instance.listBackups();
+      console.log('Backup list: ', backups);
+
+      //TODO some assertions
     });
   });
 

@@ -37,8 +37,8 @@ import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
 import { google, google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Backup } from './backup';
-import IListBackupsResponse = google.spanner.admin.database.v1.IListBackupsResponse;
-import { PreciseDate } from '@google-cloud/precise-date';
+import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
+import IBackup = google.spanner.admin.database.v1.IBackup;
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -96,7 +96,7 @@ export type SetInstanceMetadataCallback = ResourceCallback<
 export type ListBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
-  >;
+>;
 export interface GetInstanceConfig extends GetConfig {}
 
 interface InstanceRequest {
@@ -208,7 +208,6 @@ class Instance extends common.ServiceObject {
     return new Backup(this, backupId, databasePath, expireTime);
   }
 
-  /*
   listBackups(): Promise<ListBackupsResponse>;
   listBackups(callback: ListBackupsCallback): void;
   listBackups(callback?: ListBackupsCallback): void | Promise<ListBackupsResponse> {
@@ -218,25 +217,26 @@ class Instance extends common.ServiceObject {
         parent: this.formattedName_,
       },
     );
-    this.request(
+    this.request<IBackup[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackups',
         reqOpts,
       },
-      (err, operation, resp) => {
-        const bResp: IListBackupsResponse | undefined = resp as IListBackupsResponse;
-        if (err) {
-          callback!(err, null, null, bResp); //TODO verify
-          return;
+      (err, rowBackups, ...args) => {
+        let backups: Backup[] | null = null;
+        if (rowBackups) {
+          backups = rowBackups.map(rowBackup => {
+            const rowBackupName = rowBackup.name!;
+            const backupId = rowBackupName.substring(rowBackupName.lastIndexOf('/') + 1);
+            return this.backup(backupId, rowBackup.database!, new PreciseDate(rowBackup.expireTime as DateStruct))
+          });
         }
 
-        const database = this.database(name, poolOptions || poolCtor);
-        callback!(null, operation, resp);
+        callback!(err, backups, ...args);
       }
     );
-
-  }*/
+  }
 
   createDatabase(
     name: string,
