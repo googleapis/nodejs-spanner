@@ -27,7 +27,6 @@ import {Database} from '../src/database';
 import {Session, types} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
-import {util} from '@google-cloud/common-grpc';
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -689,10 +688,13 @@ describe('SessionPool', () => {
         .withArgs(fakeSession)
         .rejects(fakeError);
 
-      sessionPool._acquire(types.ReadWrite).then(util.noop, err => {
-        assert.deepStrictEqual(err, fakeError);
-        done();
-      });
+      sessionPool._acquire(types.ReadWrite).then(
+        () => {},
+        err => {
+          assert.deepStrictEqual(err, fakeError);
+          done();
+        }
+      );
     });
   });
 

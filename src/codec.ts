@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Service} from '@google-cloud/common-grpc';
+import {GrpcService} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import * as is from 'is';
@@ -328,7 +328,7 @@ function decode(value: Value, type: s.Type): Value {
  * @returns {object} google.protobuf.Value
  */
 function encode(value: Value): p.IValue {
-  return Service.encodeValue_(encodeValue(value));
+  return GrpcService.encodeValue_(encodeValue(value));
 }
 
 /**

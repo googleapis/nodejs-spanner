@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import {promisifyAll} from '@google-cloud/promisify';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';

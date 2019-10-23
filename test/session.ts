@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -63,7 +62,7 @@ describe('Session', () => {
 
   // tslint:disable-next-line no-any
   const DATABASE: any = {
-    request: util.noop,
+    request: () => {},
     formattedName_: 'formatted-database-name',
   };
 
@@ -71,8 +70,8 @@ describe('Session', () => {
 
   before(() => {
     Session = proxyquire('../src/session.js', {
-      '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject,
+      './common-grpc/service-object': {
+        GrpcServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
       './transaction.js': {

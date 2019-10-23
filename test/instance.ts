@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 import {ApiError} from '@google-cloud/common';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
-import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
-import * as inst from '../src/instance';
-import {Spanner, Database} from '../src';
 import {ServiceError} from 'grpc';
 import * as sinon from 'sinon';
+
+import * as inst from '../src/instance';
+import {Spanner, Database} from '../src';
 
 const fakePaginator = {
   paginator: {
@@ -67,8 +65,8 @@ describe('Instance', () => {
   const sandbox = sinon.createSandbox();
 
   const SPANNER = ({
-    request: util.noop,
-    requestStream: util.noop,
+    request: () => {},
+    requestStream: () => {},
     projectId: 'project-id',
     instances_: new Map(),
   } as {}) as Spanner;
@@ -77,8 +75,8 @@ describe('Instance', () => {
 
   before(() => {
     Instance = proxyquire('../src/instance.js', {
-      '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject,
+      './common-grpc/service-object': {
+        GrpcServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/paginator': fakePaginator,
