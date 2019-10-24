@@ -79,6 +79,9 @@ export interface GetDatabasesRequest
 }
 export interface ListBackupsRequest
   extends databaseAdmin.spanner.admin.database.v1.IListBackupsRequest {
+  autoPaginate?: boolean;
+  maxApiCalls?: number;
+  maxResults?: number;
 }
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
@@ -216,10 +219,49 @@ class Instance extends common.ServiceObject {
     return new Backup(this, backupId, databasePath, expireTime);
   }
 
-  listBackups(): Promise<ListBackupsResponse>;
+  listBackups(query?: ListBackupsRequest): Promise<ListBackupsResponse>;
   listBackups(callback: ListBackupsCallback): void;
-  listBackups(callback?: ListBackupsCallback): void | Promise<ListBackupsResponse> {
+  listBackups(query: ListBackupsRequest, callback: ListBackupsCallback): void;
 
+  listBackups(
+    queryOrCallback?: ListBackupsRequest | ListBackupsCallback,
+    cb?: ListBackupsCallback
+  ): void | Promise<ListBackupsResponse> {
+
+
+    const self = this;
+    const callback =
+      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? queryOrCallback
+        : ({} as ListBackupsRequest);
+
+    const reqOpts = extend({}, query, {
+      parent: this.formattedName_,
+    });
+    this.request<IBackup[]>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts,
+        gaxOpts: query,
+      },
+      (err, rowBackups, ...args) => {
+        let backups: Backup[] | null = null;
+        if (rowBackups) {
+          backups = rowBackups.map(rowBackup => {
+            const rowBackupName = rowBackup.name!;
+            const backupId = rowBackupName.substring(rowBackupName.lastIndexOf('/') + 1);
+            return this.backup(backupId, rowBackup.database!, new PreciseDate(rowBackup.expireTime as DateStruct))
+          });
+        }
+
+        callback(err, backups, ...args);
+      }
+    );
+
+    /*
     const reqOpts = extend(
       {
         parent: this.formattedName_,
@@ -244,6 +286,7 @@ class Instance extends common.ServiceObject {
         callback!(err, backups, ...args);
       }
     );
+    */
   }
 
   listBackupOperations(): Promise<ListBackupOperationsResponse>;

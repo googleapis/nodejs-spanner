@@ -947,24 +947,18 @@ describe('Spanner', () => {
     });
 
     it('should list backups', async () => {
-
       const futureHours = 12;
       const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
 
       // Create a backup so we are guaranteed to have one in the list
       const newBackupName = generateName('backup');
       const newBackup = instance.backup(newBackupName, database.formattedName_, expiryDate);
+      await newBackup.create();
 
       const [backups] = await instance.listBackups();
-
-      console.log('Backup list: ', backups);
       assert.ok(backups.length > 0);
-
-      const newBackupFromList = backups.find(backup => backup.formattedName_ === newBackupName);
+      const newBackupFromList = backups.find(backup => backup.formattedName_ === newBackup.formattedName_);
       assert.ok(newBackupFromList);
-      assert.strictEqual(newBackupFromList!.formattedName_, newBackup.formattedName_);
-
-      //TODO some assertions
     });
   });
 
