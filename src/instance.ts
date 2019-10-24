@@ -57,6 +57,10 @@ export type ListBackupsResponse = PagedResponse<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
+export type ListBackupOperationsResponse = PagedResponse<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
+>;
 
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
@@ -96,6 +100,10 @@ export type SetInstanceMetadataCallback = ResourceCallback<
 export type ListBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+>;
+export type ListBackupOperationsCallback = RequestCallback<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
 export interface GetInstanceConfig extends GetConfig {}
 
@@ -234,6 +242,27 @@ class Instance extends common.ServiceObject {
         }
 
         callback!(err, backups, ...args);
+      }
+    );
+  }
+
+  listBackupOperations(): Promise<ListBackupOperationsResponse>;
+  listBackupOperations(callback: ListBackupOperationsCallback): void;
+  listBackupOperations(callback?: ListBackupOperationsCallback): void | Promise<ListBackupOperationsResponse> {
+
+    const reqOpts = extend(
+      {
+        parent: this.formattedName_,
+      },
+    );
+    this.request<IOperation[]>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackupOperations',
+        reqOpts,
+      },
+      (err, operations, ...args) => {
+        callback!(err, operations, ...args);
       }
     );
   }
