@@ -33,6 +33,11 @@ export type CreateBackupResponse = [
   databaseAdmin.longrunning.IOperation
 ];
 
+type GetBackupInfoResponse = [databaseAdmin.spanner.admin.database.v1.IBackup];
+type GetBackupInfoCallback = RequestCallback<
+  databaseAdmin.spanner.admin.database.v1.IBackup
+>;
+
 class Backup {
 
   request: <T, R = void>(
@@ -79,6 +84,30 @@ class Backup {
       callback!
     );
   }
+
+  getBackupInfo(): Promise<GetBackupInfoResponse>;
+  getBackupInfo(callback: GetBackupInfoCallback): void;
+  getBackupInfo(
+    callback?: GetBackupInfoCallback
+  ): void | Promise<GetBackupInfoResponse> {
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
+      name: this.formattedName_,
+    };
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'getBackup',
+        reqOpts,
+      },
+      callback!
+    );
+  }
+
+  async getState(): Promise<databaseAdmin.spanner.admin.database.v1.Backup.State | undefined> {
+    const [backupInfo] = await this.getBackupInfo();
+    const state = backupInfo.state;
+    return state === null || state === undefined ? undefined : state;
+  }
 }
 
 /*! Developer Documentation
@@ -88,6 +117,7 @@ class Backup {
  */
 promisifyAll(Backup, {
   exclude: [
+    'getState'
   ],
 });
 
