@@ -927,14 +927,42 @@ describe('Spanner', () => {
       const [, operation] = await backup.create();
 
       console.log('Here we have a backup: ', operation);
+
+      //Wait until the backup is complete
+
+
+      let state;
+      do {
+        state = await backup.getState();
+        console.log('Backup state is: ', state);
+        await wait(5000);
+      }
+      while (state !== 'READY');
+
+      console.log('Finally backup is done!');
+
       //assert.strictEqual(backup.formattedName_, operation); //TODO this operation does not expose proper metadata
 
       //TODO some assertions, and wait for operation to finish
     });
 
     it('should list backups', async () => {
+
+      const futureHours = 12;
+      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+
+      // Create a backup so we are guaranteed to have one in the list
+      const newBackupName = generateName('backup');
+      const newBackup = instance.backup(newBackupName, database.formattedName_, expiryDate);
+
       const [backups] = await instance.listBackups();
+
       console.log('Backup list: ', backups);
+      assert.ok(backups.length > 0);
+
+      const newBackupFromList = backups.find(backup => backup.formattedName_ === newBackupName);
+      assert.ok(newBackupFromList);
+      assert.strictEqual(newBackupFromList!.formattedName_, newBackup.formattedName_);
 
       //TODO some assertions
     });
