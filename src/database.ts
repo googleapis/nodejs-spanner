@@ -161,6 +161,17 @@ export type DatabaseDeleteCallback = NormalCallback<r.Response>;
 export interface CancelableDuplex extends Duplex {
   cancel(): void;
 }
+
+export type RestoreDatabaseCallback = ResourceCallback<
+  GaxOperation,
+  databaseAdmin.longrunning.IOperation
+  >;
+
+export type RestoreDatabaseResponse = [
+  GaxOperation,
+  databaseAdmin.longrunning.IOperation
+];
+
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -177,6 +188,7 @@ export interface CancelableDuplex extends Duplex {
  * const database = instance.database('my-database');
  */
 class Database extends ServiceObject {
+  private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
   request: <T, R = void>(
@@ -252,6 +264,7 @@ class Database extends ServiceObject {
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
+    this.instance = instance;
     this.request = instance.request;
     // tslint:disable-next-line: no-any
     this.requestStream = instance.requestStream as any;
@@ -1243,6 +1256,29 @@ class Database extends ServiceObject {
     });
     return waitForSessionStream;
   }
+
+  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
+  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
+
+  restore(backupPath: string, callback?: RestoreDatabaseCallback): Promise<RestoreDatabaseResponse> | void {
+
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = extend(
+      {
+        parent: this.instance.formattedName_,
+        databaseId: this.id,
+        backup: backupPath
+      }
+    );
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'restoreDatabase',
+        reqOpts,
+      },
+      callback!
+    );
+  }
+
   run(query: string | ExecuteSqlRequest): Promise<Row[]>;
   run(
     query: string | ExecuteSqlRequest,

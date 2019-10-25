@@ -32,6 +32,7 @@ import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import { GoogleAuth } from 'google-gax';
 import { PreciseDate } from '@google-cloud/precise-date';
+import { Backup } from '../src/backup';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -900,6 +901,16 @@ describe('Spanner', () => {
   describe('Backups', () => {
     const database = instance.database(generateName('database'));
 
+    async function waitForBackupToComplete(backup: Backup): Promise<void> {
+      let state;
+      do {
+        state = await backup.getState();
+        console.log('Backup state is: ', state);
+        await wait(5000);
+      }
+      while (state !== 'READY');
+    }
+
     before(async () => {
       const [, operation] = await database.create({
         schema: `
@@ -928,17 +939,8 @@ describe('Spanner', () => {
 
       console.log('Here we have a backup: ', operation);
 
-      //Wait until the backup is complete
-
-
-      let state;
-      do {
-        state = await backup.getState();
-        console.log('Backup state is: ', state);
-        await wait(5000);
-      }
-      while (state !== 'READY');
-
+      // Wait until the backup is complete
+      await waitForBackupToComplete(backup);
       console.log('Finally backup is done!');
 
       //assert.strictEqual(backup.formattedName_, operation); //TODO this operation does not expose proper metadata
@@ -955,10 +957,41 @@ describe('Spanner', () => {
       const newBackup = instance.backup(newBackupName, database.formattedName_, expiryDate);
       await newBackup.create();
 
+      // The backup doesn't need to have finished to appear in the list
+
       const [backups] = await instance.listBackups();
       assert.ok(backups.length > 0);
       const newBackupFromList = backups.find(backup => backup.formattedName_ === newBackup.formattedName_);
       assert.ok(newBackupFromList);
+    });
+
+    it('should restore a backup', async () => {
+      const futureHours = 12;
+      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+
+      // Create a backup that will be restored later
+      const backupName = generateName('backup');
+      const backup = instance.backup(backupName, database.formattedName_, expiryDate);
+      await backup.create();
+
+      // Wait for backup to complete
+      await waitForBackupToComplete(backup);
+
+      // Perform restore to a different database
+      const restoreDatabase = instance.database(generateName('database'));
+      const [restoreOperation] = await restoreDatabase.restore(backup.formattedName_);
+      console.log('Restore result:', restoreOperation);
+
+      // Wait for restore to complete
+      await restoreOperation.promise();
+      console.log('Finished waiting for restore operation to complete');
+
+      const restoreDatabaseMetadata = await restoreDatabase.getMetadata();
+      console.log("Restore meta: ", restoreDatabaseMetadata);
+
+      // Validate new database has restored data
+      //TODO verify restored database has singer table with data
+
     });
   });
 
