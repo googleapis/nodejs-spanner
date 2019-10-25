@@ -990,8 +990,9 @@ describe('Spanner', () => {
       console.log("Restore meta: ", restoreDatabaseMetadata);
 
       // Validate new database has restored data
-      //TODO verify restored database has singer table with data
-
+      const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
+      const results = rows.map(row => row.toJSON);
+      assert.strictEqual(results.length, 1);
     });
   });
 
