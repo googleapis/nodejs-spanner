@@ -1978,7 +1978,7 @@ class Database extends ServiceObject {
    *   'projects/grape-spaceship-123/instances/my-instance',
    *   'my-database'
    * );
-   * // 'projects/grape-spaceship-123/instances/my-instance/tables/my-database'
+   * // 'projects/grape-spaceship-123/instances/my-instance/databases/my-database'
    */
   static formatName_(instanceName: string, name: string) {
     if (name.indexOf('/') > -1) {
