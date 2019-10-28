@@ -21,7 +21,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Spanner} from '../src';
+import { Database, Spanner } from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -898,9 +898,11 @@ describe('Spanner', () => {
   });
 
   describe('Backups', () => {
-    const database = instance.database(generateName('database'));
+    let database: Database;
 
-    before(async () => {
+    beforeEach(async () => {
+      // New database name per test because can only have one backup per database
+      database = instance.database(generateName('database'));
       const [, operation] = await database.create({
         schema: `
               CREATE TABLE Singers (
@@ -910,21 +912,21 @@ describe('Spanner', () => {
       });
       await operation.promise();
 
-      const insertResult = await database.table('Singers').insert({
+      await database.table('Singers').insert({
         SingerId: generateName('id'),
         Name: generateName('name'),
       });
-
-      console.log('Insert result: ', insertResult);
     });
 
-    it('should have created the backup', async () => {
-      const futureHours = 12;
-      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+    function futureDateByHours(futureHours: number): PreciseDate {
+      return new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+    }
 
+    it('should have created the backup', async () => {
       // Create backup
       const backupName = generateName('backup');
-      const backup = instance.backup(backupName, database.formattedName_, expiryDate);
+      const backupExpiryDate = futureDateByHours(12);
+      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
       const [backupOperation] = await backup.create();
 
       // Wait until the backup is complete
@@ -936,12 +938,10 @@ describe('Spanner', () => {
     });
 
     it('should list backups', async () => {
-      const futureHours = 12;
-      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
-
       // Create a backup so we are guaranteed to have one in the list
       const newBackupName = generateName('backup');
-      const newBackup = instance.backup(newBackupName, database.formattedName_, expiryDate);
+      const newBackupExpiryDate = futureDateByHours(12);
+      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
       await newBackup.create();
 
       // The backup doesn't need to have finished to appear in the list
@@ -952,12 +952,10 @@ describe('Spanner', () => {
     });
 
     it('should restore a backup', async () => {
-      const futureHours = 12;
-      const expiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
-
       // Create a backup that will be restored later
       const backupName = generateName('backup');
-      const backup = instance.backup(backupName, database.formattedName_, expiryDate);
+      const backupExpiryDate = futureDateByHours(12);
+      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
       const [backupOperation] = await backup.create();
 
       // Wait for backup to complete
