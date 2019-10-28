@@ -190,7 +190,7 @@ async function queryWithArray(instanceId, databaseId, projectId) {
   try {
     const [rows] = await database.run(query);
     rows.forEach(row => {
-      const availableDate = new Date(row[2]['value']);
+      const availableDate = row[2]['value'];
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${
