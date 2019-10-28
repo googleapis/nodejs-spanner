@@ -928,6 +928,8 @@ describe('Spanner', () => {
       const backupExpiryDate = futureDateByHours(12);
       const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
       const [backupOperation] = await backup.create();
+      assert.strictEqual(backupOperation.metadata!.name, `${instance.formattedName_}/backups/${backupName}`);
+      assert.strictEqual(backupOperation.metadata!.database, database.formattedName_);
 
       // Wait until the backup is complete
       await backupOperation.promise();

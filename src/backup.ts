@@ -19,7 +19,7 @@ import { google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Instance, } from './instance';
 import { RequestCallback, ResourceCallback, } from './common';
 import { RequestConfig, Table } from '.';
-import { Operation as GaxOperation } from 'google-gax';
+import { Metadata, Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
 import { PreciseDate } from '@google-cloud/precise-date';
 
@@ -28,8 +28,13 @@ export type CreateBackupCallback = ResourceCallback<
   databaseAdmin.longrunning.IOperation
 >;
 
+export interface CreateBackupGaxOperation extends GaxOperation {
+  // Overridden with more specific type for CreateBackup operation
+  metadata: (Metadata & databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata) | null; //TODO can metadata be null for CreateBackup?
+}
+
 export type CreateBackupResponse = [
-  GaxOperation,
+  CreateBackupGaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
 
