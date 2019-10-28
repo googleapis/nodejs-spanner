@@ -935,8 +935,13 @@ describe('Spanner', () => {
       await backupOperation.promise();
 
       // Validate backup has completed
-      const backupState = await backup.getState();
-      assert.strictEqual(backupState, 'READY');
+      const [backupInfo] = await backup.getBackupInfo();
+      assert.strictEqual(backupInfo.state, 'READY');
+      assert.strictEqual(backupInfo.name, `${instance.formattedName_}/backups/${backupName}`);
+      assert.strictEqual(backupInfo.database, database.formattedName_);
+      assert.ok(backupInfo.createTime);
+      assert.deepStrictEqual(Number(backupInfo.expireTime!.seconds), backupExpiryDate.toStruct().seconds);
+      assert.ok(backupInfo.sizeBytes! > 0);
     });
 
     it('should list backups', async () => {
