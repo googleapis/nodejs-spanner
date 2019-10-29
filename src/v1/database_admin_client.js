@@ -73,7 +73,9 @@ class DatabaseAdminClient {
     const gaxModule = !global.isBrowser && opts.fallback ? gax.fallback : gax;
 
     const servicePath =
-      opts.servicePath || opts.apiEndpoint || this.constructor.servicePath;
+      opts.servicePath ||
+      opts.apiEndpoint ||
+      this.constructor.servicePath;
 
     // Ensure that options include the service address and port.
     opts = Object.assign(
@@ -114,15 +116,11 @@ class DatabaseAdminClient {
     // For Node.js, pass the path to JSON proto file.
     // For browsers, pass the JSON content.
 
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'protos.json'
-    );
+    const nodejsProtoPath = path.join(__dirname, '..', '..', 'protos', 'protos.json');
     const protos = gaxGrpc.loadProto(
-      opts.fallback ? require('../../protos/protos.json') : nodejsProtoPath
+      opts.fallback ?
+        require("../../protos/protos.json") :
+        nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
@@ -148,9 +146,9 @@ class DatabaseAdminClient {
       ),
     };
 
-    const protoFilesRoot = opts.fallback
-      ? gaxModule.protobuf.Root.fromJSON(require('../../protos/protos.json'))
-      : gaxModule.protobuf.loadSync(nodejsProtoPath);
+    const protoFilesRoot = opts.fallback ?
+      gaxModule.protobuf.Root.fromJSON(require("../../protos/protos.json")) :
+      gaxModule.protobuf.loadSync(nodejsProtoPath);
 
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
@@ -202,9 +200,9 @@ class DatabaseAdminClient {
     // Put together the "service stub" for
     // google.spanner.admin.database.v1.DatabaseAdmin.
     const databaseAdminStub = gaxGrpc.createStub(
-      opts.fallback
-        ? protos.lookupService('google.spanner.admin.database.v1.DatabaseAdmin')
-        : protos.google.spanner.admin.database.v1.DatabaseAdmin,
+      opts.fallback ?
+        protos.lookupService('google.spanner.admin.database.v1.DatabaseAdmin') :
+        protos.google.spanner.admin.database.v1.DatabaseAdmin,
       opts
     );
 
@@ -233,8 +231,7 @@ class DatabaseAdminClient {
       this._innerApiCalls[methodName] = gaxModule.createApiCall(
         innerCallPromise,
         defaults[methodName],
-        this._descriptors.page[methodName] ||
-          this._descriptors.longrunning[methodName]
+        this._descriptors.page[methodName] || this._descriptors.longrunning[methodName]
       );
     }
   }
@@ -379,11 +376,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
 
     return this._innerApiCalls.listDatabases(request, options, callback);
   }
@@ -442,7 +438,7 @@ class DatabaseAdminClient {
       request,
       options
     );
-  }
+  };
 
   /**
    * Creates a new Cloud Spanner database and starts to prepare it for serving.
@@ -567,11 +563,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
 
     return this._innerApiCalls.createDatabase(request, options, callback);
   }
@@ -622,11 +617,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'name': request.name
+      });
 
     return this._innerApiCalls.getDatabase(request, options, callback);
   }
@@ -766,11 +760,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'database': request.database
+      });
 
     return this._innerApiCalls.updateDatabaseDdl(request, options, callback);
   }
@@ -812,11 +805,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'database': request.database
+      });
 
     return this._innerApiCalls.dropDatabase(request, options, callback);
   }
@@ -868,11 +860,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'database': request.database
+      });
 
     return this._innerApiCalls.getDatabaseDdl(request, options, callback);
   }
@@ -939,11 +930,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'resource': request.resource
+      });
 
     return this._innerApiCalls.setIamPolicy(request, options, callback);
   }
@@ -1003,11 +993,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'resource': request.resource
+      });
 
     return this._innerApiCalls.getIamPolicy(request, options, callback);
   }
@@ -1073,11 +1062,10 @@ class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'resource': request.resource
+      });
 
     return this._innerApiCalls.testIamPermissions(request, options, callback);
   }
@@ -1124,7 +1112,9 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName).project;
+    return this._pathTemplates.databasePathTemplate
+      .match(databaseName)
+      .project;
   }
 
   /**
@@ -1135,7 +1125,8 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName)
+    return this._pathTemplates.databasePathTemplate
+      .match(databaseName)
       .instance;
   }
 
@@ -1147,7 +1138,8 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the database.
    */
   matchDatabaseFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName)
+    return this._pathTemplates.databasePathTemplate
+      .match(databaseName)
       .database;
   }
 
@@ -1159,7 +1151,9 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
+    return this._pathTemplates.instancePathTemplate
+      .match(instanceName)
+      .project;
   }
 
   /**
@@ -1170,9 +1164,11 @@ class DatabaseAdminClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName)
+    return this._pathTemplates.instancePathTemplate
+      .match(instanceName)
       .instance;
   }
 }
+
 
 module.exports = DatabaseAdminClient;
