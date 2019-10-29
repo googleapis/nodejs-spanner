@@ -35,7 +35,7 @@
     "predocs": "npm run compile",
     "lint": "eslint samples/ && gts check",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
-    "system-test": "mocha build/system-test --timeout 600000",
+    "system-test": "mocha build/system-test --timeout 1600000",
     "cleanup": "mocha scripts/cleanup.js --timeout 30000",
     "test": "nyc mocha build/test",
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",

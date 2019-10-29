@@ -18,10 +18,11 @@ import { promisifyAll } from '@google-cloud/promisify';
 import { google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Instance, } from './instance';
 import { RequestCallback, ResourceCallback, } from './common';
-import { RequestConfig, Table } from '.';
+import { RequestConfig } from '.';
 import { Metadata, Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
 import { PreciseDate } from '@google-cloud/precise-date';
+import {DatabaseAdminClient as d} from '../src/v1';
 
 export type CreateBackupCallback = ResourceCallback<
   GaxOperation,
@@ -98,15 +99,47 @@ class Backup {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
-    return this.request(
+    return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
         client: 'DatabaseAdminClient',
         method: 'getBackup',
         reqOpts,
       },
-      callback!
+      (err, response) => {
+        // Fix enum type which incorrectly has the enum name as string instead of number key
+        if (response && typeof response.state === 'string') {
+          //const admin = databaseAdmin;
+          console.log('Need to fix up this state: ' + response.state);
+          //console.log('Google is: ', databaseAdmin);
+          const fixedState = Backup.fixBackupState(response.state);
+          console.log('The fixed state is: ' + fixedState);
+          if (fixedState !== null && fixedState !== undefined) {
+            response.state = fixedState as unknown as databaseAdmin.spanner.admin.database.v1.Backup.State;
+          }
+          //response.state = Backup.enumKeyToValue(databaseAdmin.spanner.admin.database.v1.Backup.State, response.state);
+        }
+        callback!(err, response);
+      }
     );
   }
+
+  private static fixBackupState(state: keyof typeof d.State): d.State {
+    switch (state) {
+      case 'STATE_UNSPECIFIED':
+        return d.State.STATE_UNSPECIFIED;
+      case 'CREATING':
+        return d.State.CREATING;
+      case 'READY':
+        return d.State.READY;
+    }
+  }
+
+  /*
+  private static enumKeyToValue<E extends {[index: string]: unknown}>(enumType: E, key: keyof typeof enumType): E[keyof typeof enumType] {
+    return enumType[key];
+  }
+
+   */
 
   async getState(): Promise<databaseAdmin.spanner.admin.database.v1.Backup.State | undefined> {
     const [backupInfo] = await this.getBackupInfo();

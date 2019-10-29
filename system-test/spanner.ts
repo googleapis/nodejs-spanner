@@ -32,6 +32,7 @@ import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import { GoogleAuth } from 'google-gax';
 import { PreciseDate } from '@google-cloud/precise-date';
+import { DatabaseAdminClient as d } from '../src/v1';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -936,7 +937,7 @@ describe('Spanner', () => {
 
       // Validate backup has completed
       const [backupInfo] = await backup.getBackupInfo();
-      assert.strictEqual(backupInfo.state, 'READY');
+      assert.strictEqual(backupInfo.state, d.State.READY); //TODO is this actually comparing database state with backup state?
       assert.strictEqual(backupInfo.name, `${instance.formattedName_}/backups/${backupName}`);
       assert.strictEqual(backupInfo.database, database.formattedName_);
       assert.ok(backupInfo.createTime);
@@ -976,7 +977,7 @@ describe('Spanner', () => {
       await restoreOperation.promise();
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
-      // assert.ok(databaseMetadata.state === 'READY' || databaseMetadata.state === 'READY_OPTIMIZING'); TODO
+      // assert.ok(databaseMetadata.state === d.State.READY || databaseMetadata.state === d.State.READY_OPTIMIZING); //TODO
 
       // Validate new database has restored data
       const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
