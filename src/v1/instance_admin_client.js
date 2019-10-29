@@ -89,7 +89,9 @@ class InstanceAdminClient {
     const gaxModule = !global.isBrowser && opts.fallback ? gax.fallback : gax;
 
     const servicePath =
-      opts.servicePath || opts.apiEndpoint || this.constructor.servicePath;
+      opts.servicePath ||
+      opts.apiEndpoint ||
+      this.constructor.servicePath;
 
     // Ensure that options include the service address and port.
     opts = Object.assign(
@@ -130,15 +132,11 @@ class InstanceAdminClient {
     // For Node.js, pass the path to JSON proto file.
     // For browsers, pass the JSON content.
 
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'protos.json'
-    );
+    const nodejsProtoPath = path.join(__dirname, '..', '..', 'protos', 'protos.json');
     const protos = gaxGrpc.loadProto(
-      opts.fallback ? require('../../protos/protos.json') : nodejsProtoPath
+      opts.fallback ?
+        require("../../protos/protos.json") :
+        nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
@@ -151,7 +149,9 @@ class InstanceAdminClient {
       instanceConfigPathTemplate: new gaxModule.PathTemplate(
         'projects/{project}/instanceConfigs/{instance_config}'
       ),
-      projectPathTemplate: new gaxModule.PathTemplate('projects/{project}'),
+      projectPathTemplate: new gaxModule.PathTemplate(
+        'projects/{project}'
+      ),
     };
 
     // Some of the methods on this service return "paged" results,
@@ -170,9 +170,9 @@ class InstanceAdminClient {
       ),
     };
 
-    const protoFilesRoot = opts.fallback
-      ? gaxModule.protobuf.Root.fromJSON(require('../../protos/protos.json'))
-      : gaxModule.protobuf.loadSync(nodejsProtoPath);
+    const protoFilesRoot = opts.fallback ?
+      gaxModule.protobuf.Root.fromJSON(require("../../protos/protos.json")) :
+      gaxModule.protobuf.loadSync(nodejsProtoPath);
 
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
@@ -224,9 +224,9 @@ class InstanceAdminClient {
     // Put together the "service stub" for
     // google.spanner.admin.instance.v1.InstanceAdmin.
     const instanceAdminStub = gaxGrpc.createStub(
-      opts.fallback
-        ? protos.lookupService('google.spanner.admin.instance.v1.InstanceAdmin')
-        : protos.google.spanner.admin.instance.v1.InstanceAdmin,
+      opts.fallback ?
+        protos.lookupService('google.spanner.admin.instance.v1.InstanceAdmin') :
+        protos.google.spanner.admin.instance.v1.InstanceAdmin,
       opts
     );
 
@@ -256,8 +256,7 @@ class InstanceAdminClient {
       this._innerApiCalls[methodName] = gaxModule.createApiCall(
         innerCallPromise,
         defaults[methodName],
-        this._descriptors.page[methodName] ||
-          this._descriptors.longrunning[methodName]
+        this._descriptors.page[methodName] || this._descriptors.longrunning[methodName]
       );
     }
   }
@@ -403,11 +402,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
 
     return this._innerApiCalls.listInstanceConfigs(request, options, callback);
   }
@@ -467,7 +465,7 @@ class InstanceAdminClient {
       request,
       options
     );
-  }
+  };
 
   /**
    * Gets information about a particular instance configuration.
@@ -515,11 +513,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'name': request.name
+      });
 
     return this._innerApiCalls.getInstanceConfig(request, options, callback);
   }
@@ -638,11 +635,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
 
     return this._innerApiCalls.listInstances(request, options, callback);
   }
@@ -721,7 +717,7 @@ class InstanceAdminClient {
       request,
       options
     );
-  }
+  };
 
   /**
    * Gets information about a particular instance.
@@ -769,11 +765,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'name': request.name
+      });
 
     return this._innerApiCalls.getInstance(request, options, callback);
   }
@@ -931,11 +926,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
 
     return this._innerApiCalls.createInstance(request, options, callback);
   }
@@ -1097,11 +1091,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'instance.name': request.instance.name,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'instance.name': request.instance.name
+      });
 
     return this._innerApiCalls.updateInstance(request, options, callback);
   }
@@ -1154,11 +1147,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'name': request.name
+      });
 
     return this._innerApiCalls.deleteInstance(request, options, callback);
   }
@@ -1225,11 +1217,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'resource': request.resource
+      });
 
     return this._innerApiCalls.setIamPolicy(request, options, callback);
   }
@@ -1289,11 +1280,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'resource': request.resource
+      });
 
     return this._innerApiCalls.getIamPolicy(request, options, callback);
   }
@@ -1359,11 +1349,10 @@ class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'resource': request.resource
+      });
 
     return this._innerApiCalls.testIamPermissions(request, options, callback);
   }
@@ -1420,7 +1409,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
+    return this._pathTemplates.instancePathTemplate
+      .match(instanceName)
+      .project;
   }
 
   /**
@@ -1431,7 +1422,8 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromInstanceName(instanceName) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName)
+    return this._pathTemplates.instancePathTemplate
+      .match(instanceName)
       .instance;
   }
 
@@ -1443,9 +1435,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromInstanceConfigName(instanceConfigName) {
-    return this._pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
-    ).project;
+    return this._pathTemplates.instanceConfigPathTemplate
+      .match(instanceConfigName)
+      .project;
   }
 
   /**
@@ -1456,9 +1448,9 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the instance_config.
    */
   matchInstanceConfigFromInstanceConfigName(instanceConfigName) {
-    return this._pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
-    ).instance_config;
+    return this._pathTemplates.instanceConfigPathTemplate
+      .match(instanceConfigName)
+      .instance_config;
   }
 
   /**
@@ -1469,8 +1461,11 @@ class InstanceAdminClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromProjectName(projectName) {
-    return this._pathTemplates.projectPathTemplate.match(projectName).project;
+    return this._pathTemplates.projectPathTemplate
+      .match(projectName)
+      .project;
   }
 }
+
 
 module.exports = InstanceAdminClient;
