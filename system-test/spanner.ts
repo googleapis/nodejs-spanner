@@ -37,6 +37,7 @@ import { DatabaseAdminClient as d } from '../src/v1';
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
+//TODO hardcoded endpoint and auth, need to improve this
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT, apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   auth: new GoogleAuth({
     keyFile: '/home/prunge/Downloads/appdev-soda-spanner-staging-1fc517aab335-helix.json',

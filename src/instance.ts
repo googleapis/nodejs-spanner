@@ -260,33 +260,6 @@ class Instance extends common.ServiceObject {
         callback(err, backups, ...args);
       }
     );
-
-    /*
-    const reqOpts = extend(
-      {
-        parent: this.formattedName_,
-      },
-    );
-    this.request<IBackup[]>(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'listBackups',
-        reqOpts,
-      },
-      (err, rowBackups, ...args) => {
-        let backups: Backup[] | null = null;
-        if (rowBackups) {
-          backups = rowBackups.map(rowBackup => {
-            const rowBackupName = rowBackup.name!;
-            const backupId = rowBackupName.substring(rowBackupName.lastIndexOf('/') + 1);
-            return this.backup(backupId, rowBackup.database!, new PreciseDate(rowBackup.expireTime as DateStruct))
-          });
-        }
-
-        callback!(err, backups, ...args);
-      }
-    );
-    */
   }
 
   listBackupOperations(): Promise<ListBackupOperationsResponse>;
