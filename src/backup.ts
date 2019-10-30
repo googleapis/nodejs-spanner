@@ -44,6 +44,10 @@ type GetBackupInfoCallback = RequestCallback<
   databaseAdmin.spanner.admin.database.v1.IBackup
 >;
 
+type UpdateExpireTimeCallback = RequestCallback<
+  Backup
+>;
+
 /**
  * The {@link Backup} class represents a Cloud Spanner
  * backup.
@@ -184,6 +188,36 @@ class Backup {
     const [backupInfo] = await this.getBackupInfo();
     const state = backupInfo.state;
     return state === null || state === undefined ? undefined : state;
+  }
+
+  updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
+  updateExpireTime(expireTime: PreciseDate, callback: UpdateExpireTimeCallback): void;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    callback?: UpdateExpireTimeCallback
+  ): void | Promise<Backup> {
+
+    this.expireTime = expireTime;
+
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
+      backup: {
+        name: this.formattedName_,
+        expireTime: expireTime.toStruct()
+      },
+      updateMask: {
+        paths: ['expire_time']
+      }
+    };
+    return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'updateBackup',
+        reqOpts,
+      },
+      (err) => {
+        callback!(err, this);
+      }
+    );
   }
 }
 

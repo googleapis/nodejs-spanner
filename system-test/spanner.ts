@@ -31,7 +31,7 @@ import {
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import { GoogleAuth } from 'google-gax';
-import { PreciseDate } from '@google-cloud/precise-date';
+import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import { DatabaseAdminClient as d } from '../src/v1';
 
 const PREFIX = 'gcloud-tests-';
@@ -983,6 +983,30 @@ describe('Spanner', () => {
       const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
       const results = rows.map(row => row.toJSON);
       assert.strictEqual(results.length, 1);
+    });
+
+    it('should update backup expiry', async () => {
+      // Create a backup that will be updated later
+      const newBackupName = generateName('backup');
+      const newBackupExpiryDate = futureDateByHours(12);
+      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
+      await newBackup.create();
+
+      // Read metadata, verify expiry date
+      const [newBackupInfo] = await newBackup.getBackupInfo();
+      const expiryDateFromMetadataBeforeUpdate = new PreciseDate(newBackupInfo.expireTime as DateStruct);
+
+      assert.deepStrictEqual(expiryDateFromMetadataBeforeUpdate, newBackupExpiryDate);
+
+      // Update backup expiry date
+      const updatedBackupExpiryDate = futureDateByHours(24);
+      await newBackup.updateExpireTime(updatedBackupExpiryDate);
+
+      // Read metadata, verify expiry date was updated
+      const [updatedBackupInfo] = await newBackup.getBackupInfo();
+      const expiryDateFromMetadataAfterUpdate = new PreciseDate(updatedBackupInfo.expireTime as DateStruct);
+
+      assert.deepStrictEqual(expiryDateFromMetadataAfterUpdate, updatedBackupExpiryDate);
     });
   });
 
