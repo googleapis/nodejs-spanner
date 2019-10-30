@@ -31,7 +31,7 @@ export type CreateBackupCallback = ResourceCallback<
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
-  metadata: (Metadata & databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata) | null; //TODO can metadata be null for CreateBackup?
+  metadata: (Metadata & databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata) | null; //TODO can metadata actually be null for CreateBackup?
 }
 
 export type CreateBackupResponse = [
@@ -44,6 +44,20 @@ type GetBackupInfoCallback = RequestCallback<
   databaseAdmin.spanner.admin.database.v1.IBackup
 >;
 
+/**
+ * The {@link Backup} class represents a Cloud Spanner
+ * backup.
+ *
+ * Create a `Backup` object to interact with or create a Cloud Spanner backup.
+ *
+ * @class
+ *
+ * @example
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instance('my-instance');
+ * const backup = instance.backup('my-backup');
+ */
 class Backup {
 
   request: <T, R = void>(
@@ -63,6 +77,24 @@ class Backup {
     this.formattedName_ = this.instance.formattedName_ + '/backups/' + this.backupId;
   }
 
+  /**
+   * Create a backup.
+   *
+   * @method Backup#create
+   * @returns {Promise<CreateBackupResponse>} when resolved, the backup operation will have started, but will not
+   * have necessarily completed.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = spanner.database('my-database');
+   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
+   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const [backupOperation] = await backup.create();
+   * // To wait until the backup has completed, await completion of the backup operation as well
+   * await backupOperation.promise();
+   */
   create(): Promise<CreateBackupResponse>;
   create(callback: CreateBackupCallback): void;
 
@@ -107,22 +139,29 @@ class Backup {
       },
       (err, response) => {
         // Fix enum type which incorrectly has the enum name as string instead of number key
+        // TODO investigate this
         if (response && typeof response.state === 'string') {
-          //const admin = databaseAdmin;
-          console.log('Need to fix up this state: ' + response.state);
-          //console.log('Google is: ', databaseAdmin);
+          console.debug('Need to fix up this state: ' + response.state);
           const fixedState = Backup.fixBackupState(response.state);
-          console.log('The fixed state is: ' + fixedState);
+          console.debug('The fixed state is: ' + fixedState);
           if (fixedState !== null && fixedState !== undefined) {
             response.state = fixedState as unknown as databaseAdmin.spanner.admin.database.v1.Backup.State;
           }
-          //response.state = Backup.enumKeyToValue(databaseAdmin.spanner.admin.database.v1.Backup.State, response.state);
+          // does not work since databaseAdmin.spanner.admin.database.v1.Backup.State object not resolvable at runtime
+          // enum table object might not be generated due to declare or some other generator magic?
+          // response.state = Backup.enumKeyToValue(databaseAdmin.spanner.admin.database.v1.Backup.State, response.state);
         }
         callback!(err, response);
       }
     );
   }
 
+  /**
+   * Workaround for the backend returning enum values as string keys instead of index values which violates
+   * typescript definition.  Maps any values that are string keys back into their numeric form.
+   *
+   * @param state the backup state to fix.
+   */
   private static fixBackupState(state: keyof typeof d.State): d.State {
     switch (state) {
       case 'STATE_UNSPECIFIED':
@@ -134,12 +173,12 @@ class Backup {
     }
   }
 
+  // Would have been nice to do this but backup state enum object is not resolvable at runtime...
   /*
   private static enumKeyToValue<E extends {[index: string]: unknown}>(enumType: E, key: keyof typeof enumType): E[keyof typeof enumType] {
     return enumType[key];
   }
-
-   */
+  */
 
   async getState(): Promise<databaseAdmin.spanner.admin.database.v1.Backup.State | undefined> {
     const [backupInfo] = await this.getBackupInfo();
