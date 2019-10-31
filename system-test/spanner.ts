@@ -1033,6 +1033,21 @@ describe('Spanner', () => {
         assert.strictEqual(err.code, status.NOT_FOUND);
       }
     });
+
+    it('should list backup operations', async () => {
+      // Create a backup
+      const newBackupName = generateName('backup');
+      const newBackupExpiryDate = futureDateByHours(12);
+      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
+      await newBackup.create();
+
+      // List operations and ensure operation for current backup exists
+      const [operations] = await instance.listBackupOperations();
+      const operationForCurrentBackup =
+        operations.find(operation => operation.name && operation.name.startsWith(newBackup.formattedName_));
+      assert.ok(operationForCurrentBackup);
+      assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
+    });
   });
 
   describe('Sessions', () => {
