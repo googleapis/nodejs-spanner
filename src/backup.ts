@@ -48,6 +48,10 @@ type UpdateExpireTimeCallback = RequestCallback<
   Backup
 >;
 
+type DeleteBackupCallback = RequestCallback<
+  void
+>;
+
 /**
  * The {@link Backup} class represents a Cloud Spanner
  * backup.
@@ -216,6 +220,27 @@ class Backup {
       },
       (err) => {
         callback!(err, this);
+      }
+    );
+  }
+
+  deleteBackup(): Promise<void>;
+  deleteBackup(callback: DeleteBackupCallback): void;
+  deleteBackup(
+    callback?: DeleteBackupCallback
+  ): void | Promise<void> {
+
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
+      name: this.formattedName_
+    };
+    return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'deleteBackup',
+        reqOpts,
+      },
+      (err) => {
+        callback!(err, null);
       }
     );
   }

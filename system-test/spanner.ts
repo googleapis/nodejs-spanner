@@ -33,6 +33,7 @@ import {GetDatabaseConfig} from '../src/database';
 import { GoogleAuth } from 'google-gax';
 import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import { DatabaseAdminClient as d } from '../src/v1';
+import { status } from 'grpc';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -1007,6 +1008,30 @@ describe('Spanner', () => {
       const expiryDateFromMetadataAfterUpdate = new PreciseDate(updatedBackupInfo.expireTime as DateStruct);
 
       assert.deepStrictEqual(expiryDateFromMetadataAfterUpdate, updatedBackupExpiryDate);
+    });
+
+    it('should delete backup', async () => {
+      // Create a backup that will be deleted later
+      const newBackupName = generateName('backup');
+      const newBackupExpiryDate = futureDateByHours(12);
+      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
+      await newBackup.create();
+
+      // Verify backup exists by querying metadata (might not have finished though)
+      const [newBackupInfo] = await newBackup.getBackupInfo();
+      assert.ok(newBackupInfo);
+
+      // Delete backup
+      await newBackup.deleteBackup();
+
+      // Verify backup is gone by querying metadata
+      // Expect backup not to be found
+      try {
+        const [deletedBackupInfo] = await newBackup.getBackupInfo();
+        assert.fail('Backup was not deleted: ' + deletedBackupInfo.name)
+      } catch (err) {
+        assert.strictEqual(err.code, status.NOT_FOUND);
+      }
     });
   });
 
