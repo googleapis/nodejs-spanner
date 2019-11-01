@@ -30,7 +30,6 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import { GoogleAuth } from 'google-gax';
 import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import { DatabaseAdminClient as d } from '../src/v1';
 import { status } from 'grpc';
@@ -38,11 +37,7 @@ import { status } from 'grpc';
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
-const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT, apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
-  auth: new GoogleAuth({
-    keyFile: '/home/prunge/Downloads/appdev-soda-spanner-staging-1fc517aab335-helix.json',
-    projectId: 'appdev-soda-spanner-staging'
-  })});
+const spanner = new Spanner({apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'});
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
