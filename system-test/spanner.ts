@@ -954,6 +954,20 @@ describe('Spanner', () => {
       assert.ifError(backup2Operation.error);
     });
 
+    it('should return error for backup expiration time in the past', async () => {
+      // Create backup
+      const backupName = generateName('backup');
+      const backupExpiryDate = futureDateByHours(-12);
+      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
+      try {
+        const [backupOperation] = await backup.create();
+        assert.fail('Backup should have failed for expiration time in the past');
+      } catch (err) {
+        // Expect to get invalid argument error indicating the expiry date
+        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+      }
+    });
+
     it('should create and complete a backup', async () => {
       // Create backup
       const backupName = generateName('backup');
