@@ -924,7 +924,37 @@ describe('Spanner', () => {
       return new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
     }
 
-    it('should have created the backup', async () => {
+    it('should create multiple backups', async () => {
+      // Create a second database so backups can be done concurrently
+      const database2 = instance.database(generateName('database'));
+      const [, database2CreateOperation] = await database2.create({
+        schema: `
+              CREATE TABLE Albums (
+                AlbumId STRING(1024) NOT NULL,
+                AlbumTitle STRING(1024) NOT NULL,
+              ) PRIMARY KEY(AlbumId)`,
+      });
+      await database2CreateOperation.promise();
+
+      // Create backups
+      const backup1Name = generateName('backup');
+      const backup2Name = generateName('backup');
+      const backupExpiryDate = futureDateByHours(12);
+      const backup1 = instance.backup(backup1Name, database.formattedName_, backupExpiryDate);
+      const [backup1Operation] = await backup1.create();
+      const backup2 = instance.backup(backup2Name, database2.formattedName_, backupExpiryDate);
+      const [backup2Operation] = await backup2.create();
+
+      // Check state of backups
+      assert.strictEqual(backup1Operation.metadata!.name, `${instance.formattedName_}/backups/${backup1Name}`);
+      assert.strictEqual(backup2Operation.metadata!.name, `${instance.formattedName_}/backups/${backup2Name}`);
+      assert.strictEqual(backup1Operation.metadata!.database, database.formattedName_);
+      assert.strictEqual(backup2Operation.metadata!.database, database2.formattedName_);
+      assert.ifError(backup1Operation.error);
+      assert.ifError(backup2Operation.error);
+    });
+
+    it('should create and complete a backup', async () => {
       // Create backup
       const backupName = generateName('backup');
       const backupExpiryDate = futureDateByHours(12);
