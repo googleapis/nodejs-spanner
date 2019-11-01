@@ -49,6 +49,170 @@ describe('InstanceAdminClient', () => {
     assert(client);
   });
 
+  describe('createInstance', function() {
+    it('invokes createInstance without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedParent = client.projectPath('[PROJECT]');
+      const instanceId = 'instanceId-2101995259';
+      const instance = {};
+      const request = {
+        parent: formattedParent,
+        instanceId: instanceId,
+        instance: instance,
+      };
+
+      // Mock response
+      const name = 'name3373707';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
+        name: name,
+        config: config,
+        displayName: displayName,
+        nodeCount: nodeCount,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(request, expectedResponse);
+
+      client.createInstance(request).then(responses => {
+        const operation = responses[0];
+        return operation.promise();
+      }).then(responses => {
+        assert.deepStrictEqual(responses[0], expectedResponse);
+        done();
+      }).catch(err => {
+        done(err);
+      });
+    });
+
+    it('invokes createInstance with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const formattedParent = client.projectPath('[PROJECT]');
+      const instanceId = 'instanceId-2101995259';
+      const instance = {};
+      const request = {
+        parent: formattedParent,
+        instanceId: instanceId,
+        instance: instance,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(request, null, error);
+
+      client.createInstance(request).then(responses => {
+        const operation = responses[0];
+        return operation.promise();
+      }).then(() => {
+        assert.fail();
+      }).catch(err => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
+        done();
+      });
+    });
+
+    it('has longrunning decoder functions', () => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      assert(client._descriptors.longrunning.createInstance.responseDecoder instanceof Function);
+      assert(client._descriptors.longrunning.createInstance.metadataDecoder instanceof Function);
+    });
+  });
+
+  describe('updateInstance', function() {
+    it('invokes updateInstance without error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const instance = {};
+      const fieldMask = {};
+      const request = {
+        instance: instance,
+        fieldMask: fieldMask,
+      };
+
+      // Mock response
+      const name = 'name3373707';
+      const config = 'config-1354792126';
+      const displayName = 'displayName1615086568';
+      const nodeCount = 1539922066;
+      const expectedResponse = {
+        name: name,
+        config: config,
+        displayName: displayName,
+        nodeCount: nodeCount,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(request, expectedResponse);
+
+      client.updateInstance(request).then(responses => {
+        const operation = responses[0];
+        return operation.promise();
+      }).then(responses => {
+        assert.deepStrictEqual(responses[0], expectedResponse);
+        done();
+      }).catch(err => {
+        done(err);
+      });
+    });
+
+    it('invokes updateInstance with error', done => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const instance = {};
+      const fieldMask = {};
+      const request = {
+        instance: instance,
+        fieldMask: fieldMask,
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(request, null, error);
+
+      client.updateInstance(request).then(responses => {
+        const operation = responses[0];
+        return operation.promise();
+      }).then(() => {
+        assert.fail();
+      }).catch(err => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.code, FAKE_STATUS_CODE);
+        done();
+      });
+    });
+
+    it('has longrunning decoder functions', () => {
+      const client = new spannerModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      assert(client._descriptors.longrunning.updateInstance.responseDecoder instanceof Function);
+      assert(client._descriptors.longrunning.updateInstance.metadataDecoder instanceof Function);
+    });
+  });
+
   describe('listInstanceConfigs', () => {
     it('invokes listInstanceConfigs without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
@@ -303,170 +467,6 @@ describe('InstanceAdminClient', () => {
     });
   });
 
-  describe('createInstance', function() {
-    it('invokes createInstance without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const formattedParent = client.projectPath('[PROJECT]');
-      const instanceId = 'instanceId-2101995259';
-      const instance = {};
-      const request = {
-        parent: formattedParent,
-        instanceId: instanceId,
-        instance: instance,
-      };
-
-      // Mock response
-      const name = 'name3373707';
-      const config = 'config-1354792126';
-      const displayName = 'displayName1615086568';
-      const nodeCount = 1539922066;
-      const expectedResponse = {
-        name: name,
-        config: config,
-        displayName: displayName,
-        nodeCount: nodeCount,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(request, expectedResponse);
-
-      client.createInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(responses => {
-        assert.deepStrictEqual(responses[0], expectedResponse);
-        done();
-      }).catch(err => {
-        done(err);
-      });
-    });
-
-    it('invokes createInstance with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const formattedParent = client.projectPath('[PROJECT]');
-      const instanceId = 'instanceId-2101995259';
-      const instance = {};
-      const request = {
-        parent: formattedParent,
-        instanceId: instanceId,
-        instance: instance,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.createInstance = mockLongRunningGrpcMethod(request, null, error);
-
-      client.createInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(() => {
-        assert.fail();
-      }).catch(err => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        done();
-      });
-    });
-
-    it('has longrunning decoder functions', () => {
-      const client = new spannerModule.v1.InstanceAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      assert(client._descriptors.longrunning.createInstance.responseDecoder instanceof Function);
-      assert(client._descriptors.longrunning.createInstance.metadataDecoder instanceof Function);
-    });
-  });
-
-  describe('updateInstance', function() {
-    it('invokes updateInstance without error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const instance = {};
-      const fieldMask = {};
-      const request = {
-        instance: instance,
-        fieldMask: fieldMask,
-      };
-
-      // Mock response
-      const name = 'name3373707';
-      const config = 'config-1354792126';
-      const displayName = 'displayName1615086568';
-      const nodeCount = 1539922066;
-      const expectedResponse = {
-        name: name,
-        config: config,
-        displayName: displayName,
-        nodeCount: nodeCount,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(request, expectedResponse);
-
-      client.updateInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(responses => {
-        assert.deepStrictEqual(responses[0], expectedResponse);
-        done();
-      }).catch(err => {
-        done(err);
-      });
-    });
-
-    it('invokes updateInstance with error', done => {
-      const client = new spannerModule.v1.InstanceAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-
-      // Mock request
-      const instance = {};
-      const fieldMask = {};
-      const request = {
-        instance: instance,
-        fieldMask: fieldMask,
-      };
-
-      // Mock Grpc layer
-      client._innerApiCalls.updateInstance = mockLongRunningGrpcMethod(request, null, error);
-
-      client.updateInstance(request).then(responses => {
-        const operation = responses[0];
-        return operation.promise();
-      }).then(() => {
-        assert.fail();
-      }).catch(err => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        done();
-      });
-    });
-
-    it('has longrunning decoder functions', () => {
-      const client = new spannerModule.v1.InstanceAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      assert(client._descriptors.longrunning.updateInstance.responseDecoder instanceof Function);
-      assert(client._descriptors.longrunning.updateInstance.metadataDecoder instanceof Function);
-    });
-  });
-
   describe('deleteInstance', () => {
     it('invokes deleteInstance without error', done => {
       const client = new spannerModule.v1.InstanceAdminClient({
@@ -524,10 +524,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const policy = {};
       const request = {
-        resource: formattedResource,
+        resource: resource,
         policy: policy,
       };
 
@@ -559,10 +559,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const policy = {};
       const request = {
-        resource: formattedResource,
+        resource: resource,
         policy: policy,
       };
 
@@ -590,9 +590,9 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const request = {
-        resource: formattedResource,
+        resource: resource,
       };
 
       // Mock response
@@ -623,9 +623,9 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const request = {
-        resource: formattedResource,
+        resource: resource,
       };
 
       // Mock Grpc layer
@@ -652,11 +652,9 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      const permissions = [];
+      const resource = 'resource-341064690';
       const request = {
-        resource: formattedResource,
-        permissions: permissions,
+        resource: resource,
       };
 
       // Mock response
@@ -682,11 +680,9 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-      const permissions = [];
+      const resource = 'resource-341064690';
       const request = {
-        resource: formattedResource,
-        permissions: permissions,
+        resource: resource,
       };
 
       // Mock Grpc layer

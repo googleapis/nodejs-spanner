@@ -209,11 +209,11 @@ class DatabaseAdminClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const databaseAdminStubMethods = [
-      'listDatabases',
       'createDatabase',
-      'getDatabase',
       'updateDatabaseDdl',
       'dropDatabase',
+      'listDatabases',
+      'getDatabase',
       'getDatabaseDdl',
       'setIamPolicy',
       'getIamPolicy',
@@ -281,6 +281,322 @@ class DatabaseAdminClient {
   // -------------------
   // -- Service calls --
   // -------------------
+
+  /**
+   * Creates a new Cloud Spanner database and starts to prepare it for serving.
+   * The returned long-running operation will
+   * have a name of the format `<database_name>/operations/<operation_id>` and
+   * can be used to track preparation of the database. The
+   * metadata field type is
+   * CreateDatabaseMetadata. The
+   * response field type is
+   * Database, if successful.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the instance that will serve the new database.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.createStatement
+   *   Required. A `CREATE DATABASE` statement, which specifies the ID of the
+   *   new database.  The database ID must conform to the regular expression
+   *   `[a-z][a-z0-9_\-]*[a-z0-9]` and be between 2 and 30 characters in length.
+   *   If the database ID is a reserved word or if it contains a hyphen, the
+   *   database ID must be enclosed in backticks (`` ` ``).
+   * @param {string[]} [request.extraStatements]
+   *   An optional list of DDL statements to run inside the newly created
+   *   database. Statements can create tables, indexes, etc. These
+   *   statements execute atomically with the creation of the database:
+   *   if there is an error in any statement, the database is not created.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const createStatement = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   createStatement: createStatement,
+   * };
+   *
+   * // Handle the operation using the promise pattern.
+   * client.createDatabase(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Operation#promise starts polling for the completion of the LRO.
+   *     return operation.promise();
+   *   })
+   *   .then(responses => {
+   *     const result = responses[0];
+   *     const metadata = responses[1];
+   *     const finalApiResponse = responses[2];
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const createStatement = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   createStatement: createStatement,
+   * };
+   *
+   * // Handle the operation using the event emitter pattern.
+   * client.createDatabase(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Adding a listener for the "complete" event starts polling for the
+   *     // completion of the operation.
+   *     operation.on('complete', (result, metadata, finalApiResponse) => {
+   *       // doSomethingWith(result);
+   *     });
+   *
+   *     // Adding a listener for the "progress" event causes the callback to be
+   *     // called on any change in metadata when the operation is polled.
+   *     operation.on('progress', (metadata, apiResponse) => {
+   *       // doSomethingWith(metadata)
+   *     });
+   *
+   *     // Adding a listener for the "error" event handles any errors found during polling.
+   *     operation.on('error', err => {
+   *       // throw(err);
+   *     });
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const createStatement = '';
+   * const request = {
+   *   parent: formattedParent,
+   *   createStatement: createStatement,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.createDatabase(request);
+   *
+   * const [response] = await operation.promise();
+   */
+  createDatabase(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
+
+    return this._innerApiCalls.createDatabase(request, options, callback);
+  }
+
+  /**
+   * Updates the schema of a Cloud Spanner database by
+   * creating/altering/dropping tables, columns, indexes, etc. The returned
+   * long-running operation will have a name of
+   * the format `<database_name>/operations/<operation_id>` and can be used to
+   * track execution of the schema change(s). The
+   * metadata field type is
+   * UpdateDatabaseDdlMetadata.  The operation has no response.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database to update.
+   * @param {string[]} request.statements
+   *   Required. DDL statements to be applied to the database.
+   * @param {string} [request.operationId]
+   *   If empty, the new update request is assigned an
+   *   automatically-generated operation ID. Otherwise, `operation_id`
+   *   is used to construct the name of the resulting
+   *   Operation.
+   *
+   *   Specifying an explicit operation ID simplifies determining
+   *   whether the statements were executed in the event that the
+   *   UpdateDatabaseDdl call is replayed,
+   *   or the return value is otherwise lost: the database and
+   *   `operation_id` fields can be combined to form the
+   *   name of the resulting
+   *   longrunning.Operation: `<database>/operations/<operation_id>`.
+   *
+   *   `operation_id` should be unique within the database, and must be
+   *   a valid identifier: `[a-z][a-z0-9_]*`. Note that
+   *   automatically-generated operation IDs always begin with an
+   *   underscore. If the named operation already exists,
+   *   UpdateDatabaseDdl returns
+   *   `ALREADY_EXISTS`.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const statements = [];
+   * const request = {
+   *   database: formattedDatabase,
+   *   statements: statements,
+   * };
+   *
+   * // Handle the operation using the promise pattern.
+   * client.updateDatabaseDdl(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Operation#promise starts polling for the completion of the LRO.
+   *     return operation.promise();
+   *   })
+   *   .then(responses => {
+   *     const result = responses[0];
+   *     const metadata = responses[1];
+   *     const finalApiResponse = responses[2];
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const statements = [];
+   * const request = {
+   *   database: formattedDatabase,
+   *   statements: statements,
+   * };
+   *
+   * // Handle the operation using the event emitter pattern.
+   * client.updateDatabaseDdl(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Adding a listener for the "complete" event starts polling for the
+   *     // completion of the operation.
+   *     operation.on('complete', (result, metadata, finalApiResponse) => {
+   *       // doSomethingWith(result);
+   *     });
+   *
+   *     // Adding a listener for the "progress" event causes the callback to be
+   *     // called on any change in metadata when the operation is polled.
+   *     operation.on('progress', (metadata, apiResponse) => {
+   *       // doSomethingWith(metadata)
+   *     });
+   *
+   *     // Adding a listener for the "error" event handles any errors found during polling.
+   *     operation.on('error', err => {
+   *       // throw(err);
+   *     });
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const statements = [];
+   * const request = {
+   *   database: formattedDatabase,
+   *   statements: statements,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.updateDatabaseDdl(request);
+   *
+   * const [response] = await operation.promise();
+   */
+  updateDatabaseDdl(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'database': request.database
+      });
+
+    return this._innerApiCalls.updateDatabaseDdl(request, options, callback);
+  }
+
+  /**
+   * Drops (aka deletes) a Cloud Spanner database.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database to be dropped.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error)} [callback]
+   *   The function which will be called with the result of the API call.
+   * @returns {Promise} - The promise which resolves when API call finishes.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * client.dropDatabase({database: formattedDatabase}).catch(err => {
+   *   console.error(err);
+   * });
+   */
+  dropDatabase(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'database': request.database
+      });
+
+    return this._innerApiCalls.dropDatabase(request, options, callback);
+  }
 
   /**
    * Lists Cloud Spanner databases.
@@ -441,137 +757,6 @@ class DatabaseAdminClient {
   };
 
   /**
-   * Creates a new Cloud Spanner database and starts to prepare it for serving.
-   * The returned long-running operation will
-   * have a name of the format `<database_name>/operations/<operation_id>` and
-   * can be used to track preparation of the database. The
-   * metadata field type is
-   * CreateDatabaseMetadata.
-   * The response field type is
-   * Database, if successful.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The name of the instance that will serve the new database.
-   *   Values are of the form `projects/<project>/instances/<instance>`.
-   * @param {string} request.createStatement
-   *   Required. A `CREATE DATABASE` statement, which specifies the ID of the
-   *   new database.  The database ID must conform to the regular expression
-   *   `[a-z][a-z0-9_\-]*[a-z0-9]` and be between 2 and 30 characters in length.
-   *   If the database ID is a reserved word or if it contains a hyphen, the
-   *   database ID must be enclosed in backticks (`` ` ``).
-   * @param {string[]} [request.extraStatements]
-   *   An optional list of DDL statements to run inside the newly created
-   *   database. Statements can create tables, indexes, etc. These
-   *   statements execute atomically with the creation of the database:
-   *   if there is an error in any statement, the database is not created.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.DatabaseAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const createStatement = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   createStatement: createStatement,
-   * };
-   *
-   * // Handle the operation using the promise pattern.
-   * client.createDatabase(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Operation#promise starts polling for the completion of the LRO.
-   *     return operation.promise();
-   *   })
-   *   .then(responses => {
-   *     const result = responses[0];
-   *     const metadata = responses[1];
-   *     const finalApiResponse = responses[2];
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const createStatement = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   createStatement: createStatement,
-   * };
-   *
-   * // Handle the operation using the event emitter pattern.
-   * client.createDatabase(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Adding a listener for the "complete" event starts polling for the
-   *     // completion of the operation.
-   *     operation.on('complete', (result, metadata, finalApiResponse) => {
-   *       // doSomethingWith(result);
-   *     });
-   *
-   *     // Adding a listener for the "progress" event causes the callback to be
-   *     // called on any change in metadata when the operation is polled.
-   *     operation.on('progress', (metadata, apiResponse) => {
-   *       // doSomethingWith(metadata)
-   *     });
-   *
-   *     // Adding a listener for the "error" event handles any errors found during polling.
-   *     operation.on('error', err => {
-   *       // throw(err);
-   *     });
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const createStatement = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   createStatement: createStatement,
-   * };
-   *
-   * // Handle the operation using the await pattern.
-   * const [operation] = await client.createDatabase(request);
-   *
-   * const [response] = await operation.promise();
-   */
-  createDatabase(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'parent': request.parent
-      });
-
-    return this._innerApiCalls.createDatabase(request, options, callback);
-  }
-
-  /**
    * Gets the state of a Cloud Spanner database.
    *
    * @param {Object} request
@@ -623,194 +808,6 @@ class DatabaseAdminClient {
       });
 
     return this._innerApiCalls.getDatabase(request, options, callback);
-  }
-
-  /**
-   * Updates the schema of a Cloud Spanner database by
-   * creating/altering/dropping tables, columns, indexes, etc. The returned
-   * long-running operation will have a name of
-   * the format `<database_name>/operations/<operation_id>` and can be used to
-   * track execution of the schema change(s). The
-   * metadata field type is
-   * UpdateDatabaseDdlMetadata.
-   * The operation has no response.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.database
-   *   Required. The database to update.
-   * @param {string[]} request.statements
-   *   DDL statements to be applied to the database.
-   * @param {string} [request.operationId]
-   *   If empty, the new update request is assigned an
-   *   automatically-generated operation ID. Otherwise, `operation_id`
-   *   is used to construct the name of the resulting
-   *   Operation.
-   *
-   *   Specifying an explicit operation ID simplifies determining
-   *   whether the statements were executed in the event that the
-   *   UpdateDatabaseDdl
-   *   call is replayed, or the return value is otherwise lost: the
-   *   database
-   *   and `operation_id` fields can be combined to form the
-   *   name of the resulting
-   *   longrunning.Operation:
-   *   `<database>/operations/<operation_id>`.
-   *
-   *   `operation_id` should be unique within the database, and must be
-   *   a valid identifier: `[a-z][a-z0-9_]*`. Note that
-   *   automatically-generated operation IDs always begin with an
-   *   underscore. If the named operation already exists,
-   *   UpdateDatabaseDdl
-   *   returns `ALREADY_EXISTS`.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.DatabaseAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * const statements = [];
-   * const request = {
-   *   database: formattedDatabase,
-   *   statements: statements,
-   * };
-   *
-   * // Handle the operation using the promise pattern.
-   * client.updateDatabaseDdl(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Operation#promise starts polling for the completion of the LRO.
-   *     return operation.promise();
-   *   })
-   *   .then(responses => {
-   *     const result = responses[0];
-   *     const metadata = responses[1];
-   *     const finalApiResponse = responses[2];
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * const statements = [];
-   * const request = {
-   *   database: formattedDatabase,
-   *   statements: statements,
-   * };
-   *
-   * // Handle the operation using the event emitter pattern.
-   * client.updateDatabaseDdl(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Adding a listener for the "complete" event starts polling for the
-   *     // completion of the operation.
-   *     operation.on('complete', (result, metadata, finalApiResponse) => {
-   *       // doSomethingWith(result);
-   *     });
-   *
-   *     // Adding a listener for the "progress" event causes the callback to be
-   *     // called on any change in metadata when the operation is polled.
-   *     operation.on('progress', (metadata, apiResponse) => {
-   *       // doSomethingWith(metadata)
-   *     });
-   *
-   *     // Adding a listener for the "error" event handles any errors found during polling.
-   *     operation.on('error', err => {
-   *       // throw(err);
-   *     });
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * const statements = [];
-   * const request = {
-   *   database: formattedDatabase,
-   *   statements: statements,
-   * };
-   *
-   * // Handle the operation using the await pattern.
-   * const [operation] = await client.updateDatabaseDdl(request);
-   *
-   * const [response] = await operation.promise();
-   */
-  updateDatabaseDdl(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'database': request.database
-      });
-
-    return this._innerApiCalls.updateDatabaseDdl(request, options, callback);
-  }
-
-  /**
-   * Drops (aka deletes) a Cloud Spanner database.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.database
-   *   Required. The database to be dropped.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error)} [callback]
-   *   The function which will be called with the result of the API call.
-   * @returns {Promise} - The promise which resolves when API call finishes.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.DatabaseAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * client.dropDatabase({database: formattedDatabase}).catch(err => {
-   *   console.error(err);
-   * });
-   */
-  dropDatabase(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'database': request.database
-      });
-
-    return this._innerApiCalls.dropDatabase(request, options, callback);
   }
 
   /**
@@ -869,11 +866,11 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Sets the access control policy on a database resource. Replaces any
-   * existing policy.
+   * Sets the access control policy on a database resource.
+   * Replaces any existing policy.
    *
-   * Authorization requires `spanner.databases.setIamPolicy` permission on
-   * resource.
+   * Authorization requires `spanner.databases.setIamPolicy`
+   * permission on resource.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -906,10 +903,10 @@ class DatabaseAdminClient {
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const resource = '';
    * const policy = {};
    * const request = {
-   *   resource: formattedResource,
+   *   resource: resource,
    *   policy: policy,
    * };
    * client.setIamPolicy(request)
@@ -939,8 +936,9 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Gets the access control policy for a database resource. Returns an empty
-   * policy if a database exists but does not have a policy set.
+   * Gets the access control policy for a database resource.
+   * Returns an empty policy if a database exists but does
+   * not have a policy set.
    *
    * Authorization requires `spanner.databases.getIamPolicy` permission on
    * resource.
@@ -974,8 +972,8 @@ class DatabaseAdminClient {
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * client.getIamPolicy({resource: formattedResource})
+   * const resource = '';
+   * client.getIamPolicy({resource: resource})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -1004,17 +1002,17 @@ class DatabaseAdminClient {
   /**
    * Returns permissions that the caller has on the specified database resource.
    *
-   * Attempting this RPC on a non-existent Cloud Spanner database will result in
-   * a NOT_FOUND error if the user has `spanner.databases.list` permission on
-   * the containing Cloud Spanner instance. Otherwise returns an empty set of
-   * permissions.
+   * Attempting this RPC on a non-existent Cloud Spanner database will
+   * result in a NOT_FOUND error if the user has
+   * `spanner.databases.list` permission on the containing Cloud
+   * Spanner instance. Otherwise returns an empty set of permissions.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy detail is being requested.
    *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
+   * @param {string[]} [request.permissions]
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
    *   information see
@@ -1038,13 +1036,8 @@ class DatabaseAdminClient {
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * const permissions = [];
-   * const request = {
-   *   resource: formattedResource,
-   *   permissions: permissions,
-   * };
-   * client.testIamPermissions(request)
+   * const resource = '';
+   * client.testIamPermissions({resource: resource})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)

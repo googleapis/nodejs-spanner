@@ -26,10 +26,11 @@
  *
  * @property {Object[]} rows
  *   Each element in `rows` is a row whose format is defined by
- *   metadata.row_type. The ith
- *   element in each row matches the ith field in
- *   metadata.row_type. Elements
- *   are encoded based on type as described here.
+ *   metadata.row_type. The ith element
+ *   in each row matches the ith field in
+ *   metadata.row_type. Elements are
+ *   encoded based on type as described
+ *   here.
  *
  *   This object should have the same structure as [ListValue]{@link google.protobuf.ListValue}
  *
@@ -39,8 +40,7 @@
  *   ExecuteSqlRequest.query_mode.
  *   DML statements always produce stats containing the number of rows
  *   modified, unless executed using the
- *   ExecuteSqlRequest.QueryMode.PLAN
- *   ExecuteSqlRequest.query_mode.
+ *   ExecuteSqlRequest.QueryMode.PLAN ExecuteSqlRequest.query_mode.
  *   Other fields may or may not be populated, based on the
  *   ExecuteSqlRequest.query_mode.
  *
@@ -77,10 +77,9 @@ const ResultSet = {
  *
  *   It is possible that the last value in values is "chunked",
  *   meaning that the rest of the value is sent in subsequent
- *   `PartialResultSet`(s). This is denoted by the
- *   chunked_value field.
- *   Two or more chunked values can be merged to form a complete value as
- *   follows:
+ *   `PartialResultSet`(s). This is denoted by the chunked_value
+ *   field. Two or more chunked values can be merged to form a
+ *   complete value as follows:
  *
  *     * `bool/number/null`: cannot be chunked
  *     * `string`: concatenate the strings
@@ -144,10 +143,9 @@ const ResultSet = {
  *   This object should have the same structure as [Value]{@link google.protobuf.Value}
  *
  * @property {boolean} chunkedValue
- *   If true, then the final value in
- *   values is chunked, and must be
- *   combined with more values from subsequent `PartialResultSet`s to obtain a
- *   complete field value.
+ *   If true, then the final value in values is chunked, and must
+ *   be combined with more values from subsequent `PartialResultSet`s
+ *   to obtain a complete field value.
  *
  * @property {Buffer} resumeToken
  *   Streaming calls might be interrupted for a variety of reasons, such
@@ -159,9 +157,10 @@ const ResultSet = {
  * @property {Object} stats
  *   Query plan and execution statistics for the statement that produced this
  *   streaming result set. These can be requested by setting
- *   ExecuteSqlRequest.query_mode
- *   and are sent only once with the last response in the stream. This field
- *   will also be present in the last response for DML statements.
+ *   ExecuteSqlRequest.query_mode and are sent
+ *   only once with the last response in the stream.
+ *   This field will also be present in the last response for DML
+ *   statements.
  *
  *   This object should have the same structure as [ResultSetStats]{@link google.spanner.v1.ResultSetStats}
  *
@@ -174,8 +173,7 @@ const PartialResultSet = {
 };
 
 /**
- * Metadata about a ResultSet or
- * PartialResultSet.
+ * Metadata about a ResultSet or PartialResultSet.
  *
  * @property {Object} rowType
  *   Indicates the field names and types for the rows in the result
@@ -204,12 +202,10 @@ const ResultSetMetadata = {
 };
 
 /**
- * Additional statistics about a ResultSet or
- * PartialResultSet.
+ * Additional statistics about a ResultSet or PartialResultSet.
  *
  * @property {Object} queryPlan
- *   QueryPlan for the query associated with this
- *   result.
+ *   QueryPlan for the query associated with this result.
  *
  *   This object should have the same structure as [QueryPlan]{@link google.spanner.v1.QueryPlan}
  *

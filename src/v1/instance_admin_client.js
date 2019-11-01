@@ -233,12 +233,12 @@ class InstanceAdminClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const instanceAdminStubMethods = [
+      'createInstance',
+      'updateInstance',
       'listInstanceConfigs',
       'getInstanceConfig',
       'listInstances',
       'getInstance',
-      'createInstance',
-      'updateInstance',
       'deleteInstance',
       'setIamPolicy',
       'getIamPolicy',
@@ -306,6 +306,328 @@ class InstanceAdminClient {
   // -------------------
   // -- Service calls --
   // -------------------
+
+  /**
+   * Creates an instance and begins preparing it to begin serving. The
+   * returned long-running operation
+   * can be used to track the progress of preparing the new
+   * instance. The instance name is assigned by the caller. If the
+   * named instance already exists, `CreateInstance` returns
+   * `ALREADY_EXISTS`.
+   *
+   * Immediately upon completion of this request:
+   *
+   *   * The instance is readable via the API, with all requested attributes
+   *     but no allocated resources. Its state is `CREATING`.
+   *
+   * Until completion of the returned operation:
+   *
+   *   * Cancelling the operation renders the instance immediately unreadable
+   *     via the API.
+   *   * The instance can be deleted.
+   *   * All other attempts to modify the instance are rejected.
+   *
+   * Upon completion of the returned operation:
+   *
+   *   * Billing for all successfully-allocated resources begins (some types
+   *     may have lower than the requested levels).
+   *   * Databases can be created in the instance.
+   *   * The instance's allocated resource levels are readable via the API.
+   *   * The instance's state becomes `READY`.
+   *
+   * The returned long-running operation will
+   * have a name of the format `<instance_name>/operations/<operation_id>` and
+   * can be used to track creation of the instance.  The
+   * metadata field type is
+   * CreateInstanceMetadata.
+   * The response field type is
+   * Instance, if successful.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the project in which to create the instance. Values
+   *   are of the form `projects/<project>`.
+   * @param {string} request.instanceId
+   *   Required. The ID of the instance to create.  Valid identifiers are of the
+   *   form `[a-z][-a-z0-9]*[a-z0-9]` and must be between 2 and 64 characters in
+   *   length.
+   * @param {Object} request.instance
+   *   Required. The instance to create.  The name may be omitted, but if
+   *   specified must be `<parent>/instances/<instance_id>`.
+   *
+   *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.InstanceAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.projectPath('[PROJECT]');
+   * const instanceId = '';
+   * const instance = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   instanceId: instanceId,
+   *   instance: instance,
+   * };
+   *
+   * // Handle the operation using the promise pattern.
+   * client.createInstance(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Operation#promise starts polling for the completion of the LRO.
+   *     return operation.promise();
+   *   })
+   *   .then(responses => {
+   *     const result = responses[0];
+   *     const metadata = responses[1];
+   *     const finalApiResponse = responses[2];
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.projectPath('[PROJECT]');
+   * const instanceId = '';
+   * const instance = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   instanceId: instanceId,
+   *   instance: instance,
+   * };
+   *
+   * // Handle the operation using the event emitter pattern.
+   * client.createInstance(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Adding a listener for the "complete" event starts polling for the
+   *     // completion of the operation.
+   *     operation.on('complete', (result, metadata, finalApiResponse) => {
+   *       // doSomethingWith(result);
+   *     });
+   *
+   *     // Adding a listener for the "progress" event causes the callback to be
+   *     // called on any change in metadata when the operation is polled.
+   *     operation.on('progress', (metadata, apiResponse) => {
+   *       // doSomethingWith(metadata)
+   *     });
+   *
+   *     // Adding a listener for the "error" event handles any errors found during polling.
+   *     operation.on('error', err => {
+   *       // throw(err);
+   *     });
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const formattedParent = client.projectPath('[PROJECT]');
+   * const instanceId = '';
+   * const instance = {};
+   * const request = {
+   *   parent: formattedParent,
+   *   instanceId: instanceId,
+   *   instance: instance,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.createInstance(request);
+   *
+   * const [response] = await operation.promise();
+   */
+  createInstance(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'parent': request.parent
+      });
+
+    return this._innerApiCalls.createInstance(request, options, callback);
+  }
+
+  /**
+   * Updates an instance, and begins allocating or releasing resources
+   * as requested. The returned long-running
+   * operation can be used to track the
+   * progress of updating the instance. If the named instance does not
+   * exist, returns `NOT_FOUND`.
+   *
+   * Immediately upon completion of this request:
+   *
+   *   * For resource types for which a decrease in the instance's allocation
+   *     has been requested, billing is based on the newly-requested level.
+   *
+   * Until completion of the returned operation:
+   *
+   *   * Cancelling the operation sets its metadata's
+   *     cancel_time, and begins
+   *     restoring resources to their pre-request values. The operation
+   *     is guaranteed to succeed at undoing all resource changes,
+   *     after which point it terminates with a `CANCELLED` status.
+   *   * All other attempts to modify the instance are rejected.
+   *   * Reading the instance via the API continues to give the pre-request
+   *     resource levels.
+   *
+   * Upon completion of the returned operation:
+   *
+   *   * Billing begins for all successfully-allocated resources (some types
+   *     may have lower than the requested levels).
+   *   * All newly-reserved resources are available for serving the instance's
+   *     tables.
+   *   * The instance's new resource levels are readable via the API.
+   *
+   * The returned long-running operation will
+   * have a name of the format `<instance_name>/operations/<operation_id>` and
+   * can be used to track the instance modification.  The
+   * metadata field type is
+   * UpdateInstanceMetadata.
+   * The response field type is
+   * Instance, if successful.
+   *
+   * Authorization requires `spanner.instances.update` permission on
+   * resource name.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {Object} request.instance
+   *   Required. The instance to update, which must always include the instance
+   *   name.  Otherwise, only fields mentioned in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be included.
+   *
+   *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
+   * @param {Object} request.fieldMask
+   *   Required. A mask specifying which fields in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should be updated.
+   *   The field mask must always be specified; this prevents any future fields in
+   *   [][google.spanner.admin.instance.v1.Instance] from being erased accidentally by clients that do not know
+   *   about them.
+   *
+   *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.InstanceAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const instance = {};
+   * const fieldMask = {};
+   * const request = {
+   *   instance: instance,
+   *   fieldMask: fieldMask,
+   * };
+   *
+   * // Handle the operation using the promise pattern.
+   * client.updateInstance(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Operation#promise starts polling for the completion of the LRO.
+   *     return operation.promise();
+   *   })
+   *   .then(responses => {
+   *     const result = responses[0];
+   *     const metadata = responses[1];
+   *     const finalApiResponse = responses[2];
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const instance = {};
+   * const fieldMask = {};
+   * const request = {
+   *   instance: instance,
+   *   fieldMask: fieldMask,
+   * };
+   *
+   * // Handle the operation using the event emitter pattern.
+   * client.updateInstance(request)
+   *   .then(responses => {
+   *     const [operation, initialApiResponse] = responses;
+   *
+   *     // Adding a listener for the "complete" event starts polling for the
+   *     // completion of the operation.
+   *     operation.on('complete', (result, metadata, finalApiResponse) => {
+   *       // doSomethingWith(result);
+   *     });
+   *
+   *     // Adding a listener for the "progress" event causes the callback to be
+   *     // called on any change in metadata when the operation is polled.
+   *     operation.on('progress', (metadata, apiResponse) => {
+   *       // doSomethingWith(metadata)
+   *     });
+   *
+   *     // Adding a listener for the "error" event handles any errors found during polling.
+   *     operation.on('error', err => {
+   *       // throw(err);
+   *     });
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * const instance = {};
+   * const fieldMask = {};
+   * const request = {
+   *   instance: instance,
+   *   fieldMask: fieldMask,
+   * };
+   *
+   * // Handle the operation using the await pattern.
+   * const [operation] = await client.updateInstance(request);
+   *
+   * const [response] = await operation.promise();
+   */
+  updateInstance(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'instance.name': request.instance.name
+      });
+
+    return this._innerApiCalls.updateInstance(request, options, callback);
+  }
 
   /**
    * Lists the supported instance configurations for a given project.
@@ -774,332 +1096,6 @@ class InstanceAdminClient {
   }
 
   /**
-   * Creates an instance and begins preparing it to begin serving. The
-   * returned long-running operation
-   * can be used to track the progress of preparing the new
-   * instance. The instance name is assigned by the caller. If the
-   * named instance already exists, `CreateInstance` returns
-   * `ALREADY_EXISTS`.
-   *
-   * Immediately upon completion of this request:
-   *
-   *   * The instance is readable via the API, with all requested attributes
-   *     but no allocated resources. Its state is `CREATING`.
-   *
-   * Until completion of the returned operation:
-   *
-   *   * Cancelling the operation renders the instance immediately unreadable
-   *     via the API.
-   *   * The instance can be deleted.
-   *   * All other attempts to modify the instance are rejected.
-   *
-   * Upon completion of the returned operation:
-   *
-   *   * Billing for all successfully-allocated resources begins (some types
-   *     may have lower than the requested levels).
-   *   * Databases can be created in the instance.
-   *   * The instance's allocated resource levels are readable via the API.
-   *   * The instance's state becomes `READY`.
-   *
-   * The returned long-running operation will
-   * have a name of the format `<instance_name>/operations/<operation_id>` and
-   * can be used to track creation of the instance.  The
-   * metadata field type is
-   * CreateInstanceMetadata.
-   * The response field type is
-   * Instance, if successful.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The name of the project in which to create the instance. Values
-   *   are of the form `projects/<project>`.
-   * @param {string} request.instanceId
-   *   Required. The ID of the instance to create.  Valid identifiers are of the
-   *   form `[a-z][-a-z0-9]*[a-z0-9]` and must be between 6 and 30 characters in
-   *   length.
-   * @param {Object} request.instance
-   *   Required. The instance to create.  The name may be omitted, but if
-   *   specified must be `<parent>/instances/<instance_id>`.
-   *
-   *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.InstanceAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedParent = client.projectPath('[PROJECT]');
-   * const instanceId = '';
-   * const instance = {};
-   * const request = {
-   *   parent: formattedParent,
-   *   instanceId: instanceId,
-   *   instance: instance,
-   * };
-   *
-   * // Handle the operation using the promise pattern.
-   * client.createInstance(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Operation#promise starts polling for the completion of the LRO.
-   *     return operation.promise();
-   *   })
-   *   .then(responses => {
-   *     const result = responses[0];
-   *     const metadata = responses[1];
-   *     const finalApiResponse = responses[2];
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const formattedParent = client.projectPath('[PROJECT]');
-   * const instanceId = '';
-   * const instance = {};
-   * const request = {
-   *   parent: formattedParent,
-   *   instanceId: instanceId,
-   *   instance: instance,
-   * };
-   *
-   * // Handle the operation using the event emitter pattern.
-   * client.createInstance(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Adding a listener for the "complete" event starts polling for the
-   *     // completion of the operation.
-   *     operation.on('complete', (result, metadata, finalApiResponse) => {
-   *       // doSomethingWith(result);
-   *     });
-   *
-   *     // Adding a listener for the "progress" event causes the callback to be
-   *     // called on any change in metadata when the operation is polled.
-   *     operation.on('progress', (metadata, apiResponse) => {
-   *       // doSomethingWith(metadata)
-   *     });
-   *
-   *     // Adding a listener for the "error" event handles any errors found during polling.
-   *     operation.on('error', err => {
-   *       // throw(err);
-   *     });
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const formattedParent = client.projectPath('[PROJECT]');
-   * const instanceId = '';
-   * const instance = {};
-   * const request = {
-   *   parent: formattedParent,
-   *   instanceId: instanceId,
-   *   instance: instance,
-   * };
-   *
-   * // Handle the operation using the await pattern.
-   * const [operation] = await client.createInstance(request);
-   *
-   * const [response] = await operation.promise();
-   */
-  createInstance(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'parent': request.parent
-      });
-
-    return this._innerApiCalls.createInstance(request, options, callback);
-  }
-
-  /**
-   * Updates an instance, and begins allocating or releasing resources
-   * as requested. The returned long-running
-   * operation can be used to track the
-   * progress of updating the instance. If the named instance does not
-   * exist, returns `NOT_FOUND`.
-   *
-   * Immediately upon completion of this request:
-   *
-   *   * For resource types for which a decrease in the instance's allocation
-   *     has been requested, billing is based on the newly-requested level.
-   *
-   * Until completion of the returned operation:
-   *
-   *   * Cancelling the operation sets its metadata's
-   *     cancel_time,
-   *     and begins restoring resources to their pre-request values. The
-   *     operation is guaranteed to succeed at undoing all resource changes,
-   *     after which point it terminates with a `CANCELLED` status.
-   *   * All other attempts to modify the instance are rejected.
-   *   * Reading the instance via the API continues to give the pre-request
-   *     resource levels.
-   *
-   * Upon completion of the returned operation:
-   *
-   *   * Billing begins for all successfully-allocated resources (some types
-   *     may have lower than the requested levels).
-   *   * All newly-reserved resources are available for serving the instance's
-   *     tables.
-   *   * The instance's new resource levels are readable via the API.
-   *
-   * The returned long-running operation will
-   * have a name of the format `<instance_name>/operations/<operation_id>` and
-   * can be used to track the instance modification.  The
-   * metadata field type is
-   * UpdateInstanceMetadata.
-   * The response field type is
-   * Instance, if successful.
-   *
-   * Authorization requires `spanner.instances.update` permission on
-   * resource name.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {Object} request.instance
-   *   Required. The instance to update, which must always include the instance
-   *   name.  Otherwise, only fields mentioned in
-   *   [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need
-   *   be included.
-   *
-   *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
-   * @param {Object} request.fieldMask
-   *   Required. A mask specifying which fields in
-   *   [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should
-   *   be updated. The field mask must always be specified; this prevents any
-   *   future fields in
-   *   [][google.spanner.admin.instance.v1.Instance] from being erased
-   *   accidentally by clients that do not know about them.
-   *
-   *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is a [gax.Operation]{@link https://googleapis.github.io/gax-nodejs/classes/Operation.html} object.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.InstanceAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const instance = {};
-   * const fieldMask = {};
-   * const request = {
-   *   instance: instance,
-   *   fieldMask: fieldMask,
-   * };
-   *
-   * // Handle the operation using the promise pattern.
-   * client.updateInstance(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Operation#promise starts polling for the completion of the LRO.
-   *     return operation.promise();
-   *   })
-   *   .then(responses => {
-   *     const result = responses[0];
-   *     const metadata = responses[1];
-   *     const finalApiResponse = responses[2];
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const instance = {};
-   * const fieldMask = {};
-   * const request = {
-   *   instance: instance,
-   *   fieldMask: fieldMask,
-   * };
-   *
-   * // Handle the operation using the event emitter pattern.
-   * client.updateInstance(request)
-   *   .then(responses => {
-   *     const [operation, initialApiResponse] = responses;
-   *
-   *     // Adding a listener for the "complete" event starts polling for the
-   *     // completion of the operation.
-   *     operation.on('complete', (result, metadata, finalApiResponse) => {
-   *       // doSomethingWith(result);
-   *     });
-   *
-   *     // Adding a listener for the "progress" event causes the callback to be
-   *     // called on any change in metadata when the operation is polled.
-   *     operation.on('progress', (metadata, apiResponse) => {
-   *       // doSomethingWith(metadata)
-   *     });
-   *
-   *     // Adding a listener for the "error" event handles any errors found during polling.
-   *     operation.on('error', err => {
-   *       // throw(err);
-   *     });
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * const instance = {};
-   * const fieldMask = {};
-   * const request = {
-   *   instance: instance,
-   *   fieldMask: fieldMask,
-   * };
-   *
-   * // Handle the operation using the await pattern.
-   * const [operation] = await client.updateInstance(request);
-   *
-   * const [response] = await operation.promise();
-   */
-  updateInstance(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'instance.name': request.instance.name
-      });
-
-    return this._innerApiCalls.updateInstance(request, options, callback);
-  }
-
-  /**
    * Deletes an instance.
    *
    * Immediately upon completion of the request:
@@ -1193,10 +1189,10 @@ class InstanceAdminClient {
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const resource = '';
    * const policy = {};
    * const request = {
-   *   resource: formattedResource,
+   *   resource: resource,
    *   policy: policy,
    * };
    * client.setIamPolicy(request)
@@ -1261,8 +1257,8 @@ class InstanceAdminClient {
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * client.getIamPolicy({resource: formattedResource})
+   * const resource = '';
+   * client.getIamPolicy({resource: resource})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -1301,7 +1297,7 @@ class InstanceAdminClient {
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy detail is being requested.
    *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
+   * @param {string[]} [request.permissions]
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
    *   information see
@@ -1325,13 +1321,8 @@ class InstanceAdminClient {
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const permissions = [];
-   * const request = {
-   *   resource: formattedResource,
-   *   permissions: permissions,
-   * };
-   * client.testIamPermissions(request)
+   * const resource = '';
+   * client.testIamPermissions({resource: resource})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)

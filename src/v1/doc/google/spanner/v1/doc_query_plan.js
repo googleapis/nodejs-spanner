@@ -16,19 +16,17 @@
 // to be loaded as the JS file.
 
 /**
- * Node information for nodes appearing in a
- * QueryPlan.plan_nodes.
+ * Node information for nodes appearing in a QueryPlan.plan_nodes.
  *
  * @property {number} index
- *   The `PlanNode`'s index in node
- *   list.
+ *   The `PlanNode`'s index in node list.
  *
  * @property {number} kind
  *   Used to determine the type of node. May be needed for visualizing
  *   different kinds of nodes differently. For example, If the node is a
- *   SCALAR node, it will have a
- *   condensed representation which can be used to directly embed a description
- *   of the node in its parent.
+ *   SCALAR node, it will have a condensed representation
+ *   which can be used to directly embed a description of the node in its
+ *   parent.
  *
  *   The number should be among the values of [Kind]{@link google.spanner.v1.Kind}
  *
@@ -41,8 +39,7 @@
  *   This object should have the same structure as [ChildLink]{@link google.spanner.v1.ChildLink}
  *
  * @property {Object} shortRepresentation
- *   Condensed representation for
- *   SCALAR nodes.
+ *   Condensed representation for SCALAR nodes.
  *
  *   This object should have the same structure as [ShortRepresentation]{@link google.spanner.v1.ShortRepresentation}
  *
@@ -87,14 +84,14 @@ const PlanNode = {
    *   with the output variable.
    *
    * @property {string} variable
-   *   Only present if the child node is
-   *   SCALAR and corresponds to an
-   *   output variable of the parent node. The field carries the name of the
-   *   output variable. For example, a `TableScan` operator that reads rows from
-   *   a table will have child links to the `SCALAR` nodes representing the
-   *   output variables created for each column that is read by the operator.
-   *   The corresponding `variable` fields will be set to the variable names
-   *   assigned to the columns.
+   *   Only present if the child node is SCALAR and corresponds
+   *   to an output variable of the parent node. The field carries the name of
+   *   the output variable.
+   *   For example, a `TableScan` operator that reads rows from a table will
+   *   have child links to the `SCALAR` nodes representing the output variables
+   *   created for each column that is read by the operator. The corresponding
+   *   `variable` fields will be set to the variable names assigned to the
+   *   columns.
    *
    * @typedef ChildLink
    * @memberof google.spanner.v1
@@ -127,8 +124,8 @@ const PlanNode = {
   },
 
   /**
-   * The kind of PlanNode. Distinguishes between
-   * the two different kinds of nodes that can appear in a query plan.
+   * The kind of PlanNode. Distinguishes between the two different kinds of
+   * nodes that can appear in a query plan.
    *
    * @enum {number}
    * @memberof google.spanner.v1
@@ -162,8 +159,8 @@ const PlanNode = {
  *
  * @property {Object[]} planNodes
  *   The nodes in the query plan. Plan nodes are returned in pre-order starting
- *   with the plan root. Each PlanNode's `id`
- *   corresponds to its index in `plan_nodes`.
+ *   with the plan root. Each PlanNode's `id` corresponds to its index in
+ *   `plan_nodes`.
  *
  *   This object should have the same structure as [PlanNode]{@link google.spanner.v1.PlanNode}
  *
