@@ -155,8 +155,8 @@ const KeyRange = {
  *   This object should have the same structure as [ListValue]{@link google.protobuf.ListValue}
  *
  * @property {Object[]} ranges
- *   A list of key ranges. See KeyRange for more
- *   information about key range specifications.
+ *   A list of key ranges. See KeyRange for more information about
+ *   key range specifications.
  *
  *   This object should have the same structure as [KeyRange]{@link google.spanner.v1.KeyRange}
  *
