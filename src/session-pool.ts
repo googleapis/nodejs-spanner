@@ -579,6 +579,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     let needed = reads + writes;
     this._pending += needed;
 
+    // while we can request as many sessions be created as we want, the backend
+    // will return at most 100 at a time. hence the need for a while loop
     while (needed > 0) {
       let sessions: Session[] | null = null;
 
