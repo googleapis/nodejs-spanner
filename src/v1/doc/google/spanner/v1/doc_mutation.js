@@ -33,18 +33,22 @@
  *   This object should have the same structure as [Write]{@link google.spanner.v1.Write}
  *
  * @property {Object} insertOrUpdate
- *   Like insert, except that if the row
- *   already exists, then its column values are overwritten with the ones
- *   provided. Any column values not explicitly written are preserved.
+ *   Like insert, except that if the row already exists, then
+ *   its column values are overwritten with the ones provided. Any
+ *   column values not explicitly written are preserved.
  *
  *   This object should have the same structure as [Write]{@link google.spanner.v1.Write}
  *
  * @property {Object} replace
- *   Like insert, except that if the row
- *   already exists, it is deleted, and the column values provided are
- *   inserted instead. Unlike
- *   insert_or_update, this
- *   means any values not explicitly written become `NULL`.
+ *   Like insert, except that if the row already exists, it is
+ *   deleted, and the column values provided are inserted
+ *   instead. Unlike insert_or_update, this means any values not
+ *   explicitly written become `NULL`.
+ *
+ *   In an interleaved table, if you create the child table with the
+ *   `ON DELETE CASCADE` annotation, then replacing a parent row
+ *   also deletes the child rows. Otherwise, you must delete the
+ *   child rows before you replace the parent row.
  *
  *   This object should have the same structure as [Write]{@link google.spanner.v1.Write}
  *
@@ -62,17 +66,14 @@ const Mutation = {
   // This is for documentation. Actual contents will be loaded by gRPC.
 
   /**
-   * Arguments to insert,
-   * update,
-   * insert_or_update, and
+   * Arguments to insert, update, insert_or_update, and
    * replace operations.
    *
    * @property {string} table
    *   Required. The table whose rows will be written.
    *
    * @property {string[]} columns
-   *   The names of the columns in
-   *   table to be written.
+   *   The names of the columns in table to be written.
    *
    *   The list of columns must contain enough columns to allow
    *   Cloud Spanner to derive values for all primary key columns in the
@@ -82,13 +83,11 @@ const Mutation = {
    *   The values to be written. `values` can contain more than one
    *   list of values. If it does, then multiple rows are written, one
    *   for each entry in `values`. Each list in `values` must have
-   *   exactly as many entries as there are entries in
-   *   columns above. Sending
-   *   multiple lists is equivalent to sending multiple `Mutation`s, each
-   *   containing one `values` entry and repeating
-   *   table and
-   *   columns. Individual values in
-   *   each list are encoded as described here.
+   *   exactly as many entries as there are entries in columns
+   *   above. Sending multiple lists is equivalent to sending multiple
+   *   `Mutation`s, each containing one `values` entry and repeating
+   *   table and columns. Individual values in each list are
+   *   encoded as described here.
    *
    *   This object should have the same structure as [ListValue]{@link google.protobuf.ListValue}
    *
@@ -107,10 +106,9 @@ const Mutation = {
    *   Required. The table whose rows will be deleted.
    *
    * @property {Object} keySet
-   *   Required. The primary keys of the rows within
-   *   table to delete. Delete is
-   *   idempotent. The transaction will succeed even if some or all rows do not
-   *   exist.
+   *   Required. The primary keys of the rows within table to delete.
+   *   Delete is idempotent. The transaction will succeed even if some or all
+   *   rows do not exist.
    *
    *   This object should have the same structure as [KeySet]{@link google.spanner.v1.KeySet}
    *

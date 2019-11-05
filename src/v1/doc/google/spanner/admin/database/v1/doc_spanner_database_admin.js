@@ -64,8 +64,7 @@ const Database = {
 };
 
 /**
- * The request for
- * ListDatabases.
+ * The request for ListDatabases.
  *
  * @property {string} parent
  *   Required. The instance whose databases should be listed.
@@ -77,9 +76,8 @@ const Database = {
  *
  * @property {string} pageToken
  *   If non-empty, `page_token` should contain a
- *   next_page_token
- *   from a previous
- *   ListDatabasesResponse.
+ *   next_page_token from a
+ *   previous ListDatabasesResponse.
  *
  * @typedef ListDatabasesRequest
  * @memberof google.spanner.admin.database.v1
@@ -90,8 +88,7 @@ const ListDatabasesRequest = {
 };
 
 /**
- * The response for
- * ListDatabases.
+ * The response for ListDatabases.
  *
  * @property {Object[]} databases
  *   Databases that matched the request.
@@ -100,8 +97,8 @@ const ListDatabasesRequest = {
  *
  * @property {string} nextPageToken
  *   `next_page_token` can be sent in a subsequent
- *   ListDatabases
- *   call to fetch more of the matching databases.
+ *   ListDatabases call to fetch more
+ *   of the matching databases.
  *
  * @typedef ListDatabasesResponse
  * @memberof google.spanner.admin.database.v1
@@ -112,8 +109,7 @@ const ListDatabasesResponse = {
 };
 
 /**
- * The request for
- * CreateDatabase.
+ * The request for CreateDatabase.
  *
  * @property {string} parent
  *   Required. The name of the instance that will serve the new database.
@@ -156,8 +152,7 @@ const CreateDatabaseMetadata = {
 };
 
 /**
- * The request for
- * GetDatabase.
+ * The request for GetDatabase.
  *
  * @property {string} name
  *   Required. The name of the requested database. Values are of the form
@@ -186,14 +181,14 @@ const GetDatabaseRequest = {
  * Each batch of statements is assigned a name which can be used with
  * the Operations API to monitor
  * progress. See the
- * operation_id
- * field for more details.
+ * operation_id field for more
+ * details.
  *
  * @property {string} database
  *   Required. The database to update.
  *
  * @property {string[]} statements
- *   DDL statements to be applied to the database.
+ *   Required. DDL statements to be applied to the database.
  *
  * @property {string} operationId
  *   If empty, the new update request is assigned an
@@ -203,20 +198,18 @@ const GetDatabaseRequest = {
  *
  *   Specifying an explicit operation ID simplifies determining
  *   whether the statements were executed in the event that the
- *   UpdateDatabaseDdl
- *   call is replayed, or the return value is otherwise lost: the
- *   database
- *   and `operation_id` fields can be combined to form the
+ *   UpdateDatabaseDdl call is replayed,
+ *   or the return value is otherwise lost: the database and
+ *   `operation_id` fields can be combined to form the
  *   name of the resulting
- *   longrunning.Operation:
- *   `<database>/operations/<operation_id>`.
+ *   longrunning.Operation: `<database>/operations/<operation_id>`.
  *
  *   `operation_id` should be unique within the database, and must be
  *   a valid identifier: `[a-z][a-z0-9_]*`. Note that
  *   automatically-generated operation IDs always begin with an
  *   underscore. If the named operation already exists,
- *   UpdateDatabaseDdl
- *   returns `ALREADY_EXISTS`.
+ *   UpdateDatabaseDdl returns
+ *   `ALREADY_EXISTS`.
  *
  * @typedef UpdateDatabaseDdlRequest
  * @memberof google.spanner.admin.database.v1
@@ -253,8 +246,7 @@ const UpdateDatabaseDdlMetadata = {
 };
 
 /**
- * The request for
- * DropDatabase.
+ * The request for DropDatabase.
  *
  * @property {string} database
  *   Required. The database to be dropped.
@@ -268,8 +260,7 @@ const DropDatabaseRequest = {
 };
 
 /**
- * The request for
- * GetDatabaseDdl.
+ * The request for GetDatabaseDdl.
  *
  * @property {string} database
  *   Required. The database whose schema we wish to get.
@@ -283,8 +274,7 @@ const GetDatabaseDdlRequest = {
 };
 
 /**
- * The response for
- * GetDatabaseDdl.
+ * The response for GetDatabaseDdl.
  *
  * @property {string[]} statements
  *   A list of formatted DDL statements defining the schema of the database
