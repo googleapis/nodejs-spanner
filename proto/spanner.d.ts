@@ -43,6 +43,20 @@ export namespace google {
                 public createSession(request: google.spanner.v1.ICreateSessionRequest): Promise<google.spanner.v1.Session>;
 
                 /**
+                 * Calls BatchCreateSessions.
+                 * @param request BatchCreateSessionsRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and BatchCreateSessionsResponse
+                 */
+                public batchCreateSessions(request: google.spanner.v1.IBatchCreateSessionsRequest, callback: google.spanner.v1.Spanner.BatchCreateSessionsCallback): void;
+
+                /**
+                 * Calls BatchCreateSessions.
+                 * @param request BatchCreateSessionsRequest message or plain object
+                 * @returns Promise
+                 */
+                public batchCreateSessions(request: google.spanner.v1.IBatchCreateSessionsRequest): Promise<google.spanner.v1.BatchCreateSessionsResponse>;
+
+                /**
                  * Calls GetSession.
                  * @param request GetSessionRequest message or plain object
                  * @param callback Node-style callback called with the error, if any, and Session
@@ -111,6 +125,20 @@ export namespace google {
                  * @returns Promise
                  */
                 public executeStreamingSql(request: google.spanner.v1.IExecuteSqlRequest): Promise<google.spanner.v1.PartialResultSet>;
+
+                /**
+                 * Calls ExecuteBatchDml.
+                 * @param request ExecuteBatchDmlRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and ExecuteBatchDmlResponse
+                 */
+                public executeBatchDml(request: google.spanner.v1.IExecuteBatchDmlRequest, callback: google.spanner.v1.Spanner.ExecuteBatchDmlCallback): void;
+
+                /**
+                 * Calls ExecuteBatchDml.
+                 * @param request ExecuteBatchDmlRequest message or plain object
+                 * @returns Promise
+                 */
+                public executeBatchDml(request: google.spanner.v1.IExecuteBatchDmlRequest): Promise<google.spanner.v1.ExecuteBatchDmlResponse>;
 
                 /**
                  * Calls Read.
@@ -221,6 +249,13 @@ export namespace google {
                 type CreateSessionCallback = (error: (Error|null), response?: google.spanner.v1.Session) => void;
 
                 /**
+                 * Callback as used by {@link google.spanner.v1.Spanner#batchCreateSessions}.
+                 * @param error Error, if any
+                 * @param [response] BatchCreateSessionsResponse
+                 */
+                type BatchCreateSessionsCallback = (error: (Error|null), response?: google.spanner.v1.BatchCreateSessionsResponse) => void;
+
+                /**
                  * Callback as used by {@link google.spanner.v1.Spanner#getSession}.
                  * @param error Error, if any
                  * @param [response] Session
@@ -254,6 +289,13 @@ export namespace google {
                  * @param [response] PartialResultSet
                  */
                 type ExecuteStreamingSqlCallback = (error: (Error|null), response?: google.spanner.v1.PartialResultSet) => void;
+
+                /**
+                 * Callback as used by {@link google.spanner.v1.Spanner#executeBatchDml}.
+                 * @param error Error, if any
+                 * @param [response] ExecuteBatchDmlResponse
+                 */
+                type ExecuteBatchDmlCallback = (error: (Error|null), response?: google.spanner.v1.ExecuteBatchDmlResponse) => void;
 
                 /**
                  * Callback as used by {@link google.spanner.v1.Spanner#read}.
@@ -396,6 +438,198 @@ export namespace google {
 
                 /**
                  * Converts this CreateSessionRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a BatchCreateSessionsRequest. */
+            interface IBatchCreateSessionsRequest {
+
+                /** BatchCreateSessionsRequest database */
+                database?: (string|null);
+
+                /** BatchCreateSessionsRequest sessionTemplate */
+                sessionTemplate?: (google.spanner.v1.ISession|null);
+
+                /** BatchCreateSessionsRequest sessionCount */
+                sessionCount?: (number|null);
+            }
+
+            /** Represents a BatchCreateSessionsRequest. */
+            class BatchCreateSessionsRequest implements IBatchCreateSessionsRequest {
+
+                /**
+                 * Constructs a new BatchCreateSessionsRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IBatchCreateSessionsRequest);
+
+                /** BatchCreateSessionsRequest database. */
+                public database: string;
+
+                /** BatchCreateSessionsRequest sessionTemplate. */
+                public sessionTemplate?: (google.spanner.v1.ISession|null);
+
+                /** BatchCreateSessionsRequest sessionCount. */
+                public sessionCount: number;
+
+                /**
+                 * Creates a new BatchCreateSessionsRequest instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BatchCreateSessionsRequest instance
+                 */
+                public static create(properties?: google.spanner.v1.IBatchCreateSessionsRequest): google.spanner.v1.BatchCreateSessionsRequest;
+
+                /**
+                 * Encodes the specified BatchCreateSessionsRequest message. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsRequest.verify|verify} messages.
+                 * @param message BatchCreateSessionsRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IBatchCreateSessionsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BatchCreateSessionsRequest message, length delimited. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsRequest.verify|verify} messages.
+                 * @param message BatchCreateSessionsRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IBatchCreateSessionsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BatchCreateSessionsRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BatchCreateSessionsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.BatchCreateSessionsRequest;
+
+                /**
+                 * Decodes a BatchCreateSessionsRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BatchCreateSessionsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.BatchCreateSessionsRequest;
+
+                /**
+                 * Verifies a BatchCreateSessionsRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BatchCreateSessionsRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BatchCreateSessionsRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.BatchCreateSessionsRequest;
+
+                /**
+                 * Creates a plain object from a BatchCreateSessionsRequest message. Also converts values to other types if specified.
+                 * @param message BatchCreateSessionsRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.BatchCreateSessionsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BatchCreateSessionsRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a BatchCreateSessionsResponse. */
+            interface IBatchCreateSessionsResponse {
+
+                /** BatchCreateSessionsResponse session */
+                session?: (google.spanner.v1.ISession[]|null);
+            }
+
+            /** Represents a BatchCreateSessionsResponse. */
+            class BatchCreateSessionsResponse implements IBatchCreateSessionsResponse {
+
+                /**
+                 * Constructs a new BatchCreateSessionsResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IBatchCreateSessionsResponse);
+
+                /** BatchCreateSessionsResponse session. */
+                public session: google.spanner.v1.ISession[];
+
+                /**
+                 * Creates a new BatchCreateSessionsResponse instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BatchCreateSessionsResponse instance
+                 */
+                public static create(properties?: google.spanner.v1.IBatchCreateSessionsResponse): google.spanner.v1.BatchCreateSessionsResponse;
+
+                /**
+                 * Encodes the specified BatchCreateSessionsResponse message. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsResponse.verify|verify} messages.
+                 * @param message BatchCreateSessionsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IBatchCreateSessionsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BatchCreateSessionsResponse message, length delimited. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsResponse.verify|verify} messages.
+                 * @param message BatchCreateSessionsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IBatchCreateSessionsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BatchCreateSessionsResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BatchCreateSessionsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.BatchCreateSessionsResponse;
+
+                /**
+                 * Decodes a BatchCreateSessionsResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BatchCreateSessionsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.BatchCreateSessionsResponse;
+
+                /**
+                 * Verifies a BatchCreateSessionsResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BatchCreateSessionsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BatchCreateSessionsResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.BatchCreateSessionsResponse;
+
+                /**
+                 * Creates a plain object from a BatchCreateSessionsResponse message. Also converts values to other types if specified.
+                 * @param message BatchCreateSessionsResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.BatchCreateSessionsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BatchCreateSessionsResponse to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
@@ -1039,6 +1273,315 @@ export namespace google {
                     PLAN = 1,
                     PROFILE = 2
                 }
+            }
+
+            /** Properties of an ExecuteBatchDmlRequest. */
+            interface IExecuteBatchDmlRequest {
+
+                /** ExecuteBatchDmlRequest session */
+                session?: (string|null);
+
+                /** ExecuteBatchDmlRequest transaction */
+                transaction?: (google.spanner.v1.ITransactionSelector|null);
+
+                /** ExecuteBatchDmlRequest statements */
+                statements?: (google.spanner.v1.ExecuteBatchDmlRequest.IStatement[]|null);
+
+                /** ExecuteBatchDmlRequest seqno */
+                seqno?: (number|Long|null);
+            }
+
+            /** Represents an ExecuteBatchDmlRequest. */
+            class ExecuteBatchDmlRequest implements IExecuteBatchDmlRequest {
+
+                /**
+                 * Constructs a new ExecuteBatchDmlRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IExecuteBatchDmlRequest);
+
+                /** ExecuteBatchDmlRequest session. */
+                public session: string;
+
+                /** ExecuteBatchDmlRequest transaction. */
+                public transaction?: (google.spanner.v1.ITransactionSelector|null);
+
+                /** ExecuteBatchDmlRequest statements. */
+                public statements: google.spanner.v1.ExecuteBatchDmlRequest.IStatement[];
+
+                /** ExecuteBatchDmlRequest seqno. */
+                public seqno: (number|Long);
+
+                /**
+                 * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns ExecuteBatchDmlRequest instance
+                 */
+                public static create(properties?: google.spanner.v1.IExecuteBatchDmlRequest): google.spanner.v1.ExecuteBatchDmlRequest;
+
+                /**
+                 * Encodes the specified ExecuteBatchDmlRequest message. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.verify|verify} messages.
+                 * @param message ExecuteBatchDmlRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IExecuteBatchDmlRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ExecuteBatchDmlRequest message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.verify|verify} messages.
+                 * @param message ExecuteBatchDmlRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IExecuteBatchDmlRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an ExecuteBatchDmlRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ExecuteBatchDmlRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ExecuteBatchDmlRequest;
+
+                /**
+                 * Decodes an ExecuteBatchDmlRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ExecuteBatchDmlRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ExecuteBatchDmlRequest;
+
+                /**
+                 * Verifies an ExecuteBatchDmlRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an ExecuteBatchDmlRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ExecuteBatchDmlRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.ExecuteBatchDmlRequest;
+
+                /**
+                 * Creates a plain object from an ExecuteBatchDmlRequest message. Also converts values to other types if specified.
+                 * @param message ExecuteBatchDmlRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.ExecuteBatchDmlRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ExecuteBatchDmlRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            namespace ExecuteBatchDmlRequest {
+
+                /** Properties of a Statement. */
+                interface IStatement {
+
+                    /** Statement sql */
+                    sql?: (string|null);
+
+                    /** Statement params */
+                    params?: (google.protobuf.IStruct|null);
+
+                    /** Statement paramTypes */
+                    paramTypes?: ({ [k: string]: google.spanner.v1.IType }|null);
+                }
+
+                /** Represents a Statement. */
+                class Statement implements IStatement {
+
+                    /**
+                     * Constructs a new Statement.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ExecuteBatchDmlRequest.IStatement);
+
+                    /** Statement sql. */
+                    public sql: string;
+
+                    /** Statement params. */
+                    public params?: (google.protobuf.IStruct|null);
+
+                    /** Statement paramTypes. */
+                    public paramTypes: { [k: string]: google.spanner.v1.IType };
+
+                    /**
+                     * Creates a new Statement instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns Statement instance
+                     */
+                    public static create(properties?: google.spanner.v1.ExecuteBatchDmlRequest.IStatement): google.spanner.v1.ExecuteBatchDmlRequest.Statement;
+
+                    /**
+                     * Encodes the specified Statement message. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.Statement.verify|verify} messages.
+                     * @param message Statement message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ExecuteBatchDmlRequest.IStatement, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Statement message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.Statement.verify|verify} messages.
+                     * @param message Statement message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ExecuteBatchDmlRequest.IStatement, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Statement message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Statement
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ExecuteBatchDmlRequest.Statement;
+
+                    /**
+                     * Decodes a Statement message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Statement
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ExecuteBatchDmlRequest.Statement;
+
+                    /**
+                     * Verifies a Statement message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Statement message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Statement
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ExecuteBatchDmlRequest.Statement;
+
+                    /**
+                     * Creates a plain object from a Statement message. Also converts values to other types if specified.
+                     * @param message Statement
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ExecuteBatchDmlRequest.Statement, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Statement to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
+
+            /** Properties of an ExecuteBatchDmlResponse. */
+            interface IExecuteBatchDmlResponse {
+
+                /** ExecuteBatchDmlResponse resultSets */
+                resultSets?: (google.spanner.v1.IResultSet[]|null);
+
+                /** ExecuteBatchDmlResponse status */
+                status?: (google.rpc.IStatus|null);
+            }
+
+            /** Represents an ExecuteBatchDmlResponse. */
+            class ExecuteBatchDmlResponse implements IExecuteBatchDmlResponse {
+
+                /**
+                 * Constructs a new ExecuteBatchDmlResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IExecuteBatchDmlResponse);
+
+                /** ExecuteBatchDmlResponse resultSets. */
+                public resultSets: google.spanner.v1.IResultSet[];
+
+                /** ExecuteBatchDmlResponse status. */
+                public status?: (google.rpc.IStatus|null);
+
+                /**
+                 * Creates a new ExecuteBatchDmlResponse instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns ExecuteBatchDmlResponse instance
+                 */
+                public static create(properties?: google.spanner.v1.IExecuteBatchDmlResponse): google.spanner.v1.ExecuteBatchDmlResponse;
+
+                /**
+                 * Encodes the specified ExecuteBatchDmlResponse message. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlResponse.verify|verify} messages.
+                 * @param message ExecuteBatchDmlResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IExecuteBatchDmlResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ExecuteBatchDmlResponse message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlResponse.verify|verify} messages.
+                 * @param message ExecuteBatchDmlResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IExecuteBatchDmlResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an ExecuteBatchDmlResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ExecuteBatchDmlResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ExecuteBatchDmlResponse;
+
+                /**
+                 * Decodes an ExecuteBatchDmlResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ExecuteBatchDmlResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ExecuteBatchDmlResponse;
+
+                /**
+                 * Verifies an ExecuteBatchDmlResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an ExecuteBatchDmlResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ExecuteBatchDmlResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.ExecuteBatchDmlResponse;
+
+                /**
+                 * Creates a plain object from an ExecuteBatchDmlResponse message. Also converts values to other types if specified.
+                 * @param message ExecuteBatchDmlResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.ExecuteBatchDmlResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ExecuteBatchDmlResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
             }
 
             /** Properties of a PartitionOptions. */
@@ -4396,9 +4939,6 @@ export namespace google {
 
             /** Http rules */
             rules?: (google.api.IHttpRule[]|null);
-
-            /** Http fullyDecodeReservedExpansion */
-            fullyDecodeReservedExpansion?: (boolean|null);
         }
 
         /** Represents a Http. */
@@ -4412,9 +4952,6 @@ export namespace google {
 
             /** Http rules. */
             public rules: google.api.IHttpRule[];
-
-            /** Http fullyDecodeReservedExpansion. */
-            public fullyDecodeReservedExpansion: boolean;
 
             /**
              * Creates a new Http instance using the specified properties.
@@ -4514,9 +5051,6 @@ export namespace google {
             /** HttpRule body */
             body?: (string|null);
 
-            /** HttpRule responseBody */
-            responseBody?: (string|null);
-
             /** HttpRule additionalBindings */
             additionalBindings?: (google.api.IHttpRule[]|null);
         }
@@ -4553,9 +5087,6 @@ export namespace google {
 
             /** HttpRule body. */
             public body: string;
-
-            /** HttpRule responseBody. */
-            public responseBody: string;
 
             /** HttpRule additionalBindings. */
             public additionalBindings: google.api.IHttpRule[];
@@ -5134,9 +5665,6 @@ export namespace google {
 
                 /** ExtensionRange end */
                 end?: (number|null);
-
-                /** ExtensionRange options */
-                options?: (google.protobuf.IExtensionRangeOptions|null);
             }
 
             /** Represents an ExtensionRange. */
@@ -5153,9 +5681,6 @@ export namespace google {
 
                 /** ExtensionRange end. */
                 public end: number;
-
-                /** ExtensionRange options. */
-                public options?: (google.protobuf.IExtensionRangeOptions|null);
 
                 /**
                  * Creates a new ExtensionRange instance using the specified properties.
@@ -5323,96 +5848,6 @@ export namespace google {
                  */
                 public toJSON(): { [k: string]: any };
             }
-        }
-
-        /** Properties of an ExtensionRangeOptions. */
-        interface IExtensionRangeOptions {
-
-            /** ExtensionRangeOptions uninterpretedOption */
-            uninterpretedOption?: (google.protobuf.IUninterpretedOption[]|null);
-        }
-
-        /** Represents an ExtensionRangeOptions. */
-        class ExtensionRangeOptions implements IExtensionRangeOptions {
-
-            /**
-             * Constructs a new ExtensionRangeOptions.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: google.protobuf.IExtensionRangeOptions);
-
-            /** ExtensionRangeOptions uninterpretedOption. */
-            public uninterpretedOption: google.protobuf.IUninterpretedOption[];
-
-            /**
-             * Creates a new ExtensionRangeOptions instance using the specified properties.
-             * @param [properties] Properties to set
-             * @returns ExtensionRangeOptions instance
-             */
-            public static create(properties?: google.protobuf.IExtensionRangeOptions): google.protobuf.ExtensionRangeOptions;
-
-            /**
-             * Encodes the specified ExtensionRangeOptions message. Does not implicitly {@link google.protobuf.ExtensionRangeOptions.verify|verify} messages.
-             * @param message ExtensionRangeOptions message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: google.protobuf.IExtensionRangeOptions, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified ExtensionRangeOptions message, length delimited. Does not implicitly {@link google.protobuf.ExtensionRangeOptions.verify|verify} messages.
-             * @param message ExtensionRangeOptions message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: google.protobuf.IExtensionRangeOptions, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes an ExtensionRangeOptions message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns ExtensionRangeOptions
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.ExtensionRangeOptions;
-
-            /**
-             * Decodes an ExtensionRangeOptions message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns ExtensionRangeOptions
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.ExtensionRangeOptions;
-
-            /**
-             * Verifies an ExtensionRangeOptions message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates an ExtensionRangeOptions message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns ExtensionRangeOptions
-             */
-            public static fromObject(object: { [k: string]: any }): google.protobuf.ExtensionRangeOptions;
-
-            /**
-             * Creates a plain object from an ExtensionRangeOptions message. Also converts values to other types if specified.
-             * @param message ExtensionRangeOptions
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: google.protobuf.ExtensionRangeOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this ExtensionRangeOptions to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
         }
 
         /** Properties of a FieldDescriptorProto. */
@@ -5698,12 +6133,6 @@ export namespace google {
 
             /** EnumDescriptorProto options */
             options?: (google.protobuf.IEnumOptions|null);
-
-            /** EnumDescriptorProto reservedRange */
-            reservedRange?: (google.protobuf.EnumDescriptorProto.IEnumReservedRange[]|null);
-
-            /** EnumDescriptorProto reservedName */
-            reservedName?: (string[]|null);
         }
 
         /** Represents an EnumDescriptorProto. */
@@ -5723,12 +6152,6 @@ export namespace google {
 
             /** EnumDescriptorProto options. */
             public options?: (google.protobuf.IEnumOptions|null);
-
-            /** EnumDescriptorProto reservedRange. */
-            public reservedRange: google.protobuf.EnumDescriptorProto.IEnumReservedRange[];
-
-            /** EnumDescriptorProto reservedName. */
-            public reservedName: string[];
 
             /**
              * Creates a new EnumDescriptorProto instance using the specified properties.
@@ -5799,105 +6222,6 @@ export namespace google {
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
-        }
-
-        namespace EnumDescriptorProto {
-
-            /** Properties of an EnumReservedRange. */
-            interface IEnumReservedRange {
-
-                /** EnumReservedRange start */
-                start?: (number|null);
-
-                /** EnumReservedRange end */
-                end?: (number|null);
-            }
-
-            /** Represents an EnumReservedRange. */
-            class EnumReservedRange implements IEnumReservedRange {
-
-                /**
-                 * Constructs a new EnumReservedRange.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: google.protobuf.EnumDescriptorProto.IEnumReservedRange);
-
-                /** EnumReservedRange start. */
-                public start: number;
-
-                /** EnumReservedRange end. */
-                public end: number;
-
-                /**
-                 * Creates a new EnumReservedRange instance using the specified properties.
-                 * @param [properties] Properties to set
-                 * @returns EnumReservedRange instance
-                 */
-                public static create(properties?: google.protobuf.EnumDescriptorProto.IEnumReservedRange): google.protobuf.EnumDescriptorProto.EnumReservedRange;
-
-                /**
-                 * Encodes the specified EnumReservedRange message. Does not implicitly {@link google.protobuf.EnumDescriptorProto.EnumReservedRange.verify|verify} messages.
-                 * @param message EnumReservedRange message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: google.protobuf.EnumDescriptorProto.IEnumReservedRange, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified EnumReservedRange message, length delimited. Does not implicitly {@link google.protobuf.EnumDescriptorProto.EnumReservedRange.verify|verify} messages.
-                 * @param message EnumReservedRange message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: google.protobuf.EnumDescriptorProto.IEnumReservedRange, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes an EnumReservedRange message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns EnumReservedRange
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.EnumDescriptorProto.EnumReservedRange;
-
-                /**
-                 * Decodes an EnumReservedRange message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns EnumReservedRange
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.EnumDescriptorProto.EnumReservedRange;
-
-                /**
-                 * Verifies an EnumReservedRange message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates an EnumReservedRange message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns EnumReservedRange
-                 */
-                public static fromObject(object: { [k: string]: any }): google.protobuf.EnumDescriptorProto.EnumReservedRange;
-
-                /**
-                 * Creates a plain object from an EnumReservedRange message. Also converts values to other types if specified.
-                 * @param message EnumReservedRange
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: google.protobuf.EnumDescriptorProto.EnumReservedRange, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this EnumReservedRange to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
         }
 
         /** Properties of an EnumValueDescriptorProto. */
@@ -6257,9 +6581,6 @@ export namespace google {
             /** FileOptions pyGenericServices */
             pyGenericServices?: (boolean|null);
 
-            /** FileOptions phpGenericServices */
-            phpGenericServices?: (boolean|null);
-
             /** FileOptions deprecated */
             deprecated?: (boolean|null);
 
@@ -6277,15 +6598,6 @@ export namespace google {
 
             /** FileOptions phpClassPrefix */
             phpClassPrefix?: (string|null);
-
-            /** FileOptions phpNamespace */
-            phpNamespace?: (string|null);
-
-            /** FileOptions phpMetadataNamespace */
-            phpMetadataNamespace?: (string|null);
-
-            /** FileOptions rubyPackage */
-            rubyPackage?: (string|null);
 
             /** FileOptions uninterpretedOption */
             uninterpretedOption?: (google.protobuf.IUninterpretedOption[]|null);
@@ -6330,9 +6642,6 @@ export namespace google {
             /** FileOptions pyGenericServices. */
             public pyGenericServices: boolean;
 
-            /** FileOptions phpGenericServices. */
-            public phpGenericServices: boolean;
-
             /** FileOptions deprecated. */
             public deprecated: boolean;
 
@@ -6350,15 +6659,6 @@ export namespace google {
 
             /** FileOptions phpClassPrefix. */
             public phpClassPrefix: string;
-
-            /** FileOptions phpNamespace. */
-            public phpNamespace: string;
-
-            /** FileOptions phpMetadataNamespace. */
-            public phpMetadataNamespace: string;
-
-            /** FileOptions rubyPackage. */
-            public rubyPackage: string;
 
             /** FileOptions uninterpretedOption. */
             public uninterpretedOption: google.protobuf.IUninterpretedOption[];
@@ -8321,6 +8621,102 @@ export namespace google {
             public toJSON(): { [k: string]: any };
         }
 
+        /** Properties of an Any. */
+        interface IAny {
+
+            /** Any type_url */
+            type_url?: (string|null);
+
+            /** Any value */
+            value?: (Uint8Array|null);
+        }
+
+        /** Represents an Any. */
+        class Any implements IAny {
+
+            /**
+             * Constructs a new Any.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.protobuf.IAny);
+
+            /** Any type_url. */
+            public type_url: string;
+
+            /** Any value. */
+            public value: Uint8Array;
+
+            /**
+             * Creates a new Any instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns Any instance
+             */
+            public static create(properties?: google.protobuf.IAny): google.protobuf.Any;
+
+            /**
+             * Encodes the specified Any message. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
+             * @param message Any message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Any message, length delimited. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
+             * @param message Any message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an Any message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Any
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.Any;
+
+            /**
+             * Decodes an Any message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Any
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.Any;
+
+            /**
+             * Verifies an Any message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates an Any message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Any
+             */
+            public static fromObject(object: { [k: string]: any }): google.protobuf.Any;
+
+            /**
+             * Creates a plain object from an Any message. Also converts values to other types if specified.
+             * @param message Any
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.protobuf.Any, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Any to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
         /** Properties of a Duration. */
         interface IDuration {
 
@@ -8412,6 +8808,112 @@ export namespace google {
 
             /**
              * Converts this Duration to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace rpc. */
+    namespace rpc {
+
+        /** Properties of a Status. */
+        interface IStatus {
+
+            /** Status code */
+            code?: (number|null);
+
+            /** Status message */
+            message?: (string|null);
+
+            /** Status details */
+            details?: (google.protobuf.IAny[]|null);
+        }
+
+        /** Represents a Status. */
+        class Status implements IStatus {
+
+            /**
+             * Constructs a new Status.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.rpc.IStatus);
+
+            /** Status code. */
+            public code: number;
+
+            /** Status message. */
+            public message: string;
+
+            /** Status details. */
+            public details: google.protobuf.IAny[];
+
+            /**
+             * Creates a new Status instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns Status instance
+             */
+            public static create(properties?: google.rpc.IStatus): google.rpc.Status;
+
+            /**
+             * Encodes the specified Status message. Does not implicitly {@link google.rpc.Status.verify|verify} messages.
+             * @param message Status message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.rpc.IStatus, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Status message, length delimited. Does not implicitly {@link google.rpc.Status.verify|verify} messages.
+             * @param message Status message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.rpc.IStatus, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Status message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Status
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.rpc.Status;
+
+            /**
+             * Decodes a Status message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Status
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.rpc.Status;
+
+            /**
+             * Verifies a Status message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Status message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Status
+             */
+            public static fromObject(object: { [k: string]: any }): google.rpc.Status;
+
+            /**
+             * Creates a plain object from a Status message. Also converts values to other types if specified.
+             * @param message Status
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.rpc.Status, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Status to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };

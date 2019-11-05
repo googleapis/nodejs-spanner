@@ -196,6 +196,11 @@ interface SessionInventory {
   borrowed: Set<Session>;
 }
 
+export interface CreateSessionsOptions {
+  writes?: number;
+  reads?: number;
+}
+
 /**
  * Class used to manage connections to Spanner.
  *
@@ -213,6 +218,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _evictHandle!: NodeJS.Timer;
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
+  _pending = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -252,7 +258,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get borrowed(): number {
-    return this._inventory.borrowed.size;
+    return this._inventory.borrowed.size + this._pending;
   }
 
   /**
@@ -542,61 +548,62 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Attempts to create a session of a certain type.
+   * Attempts to create a single session of a certain type.
    *
    * @private
    *
    * @param {string} type The desired type to create.
    * @returns {Promise}
    */
-  async _createSession(type: types): Promise<void> {
-    const session = this.database.session();
-    const labels = this.options.labels!;
+  _createSession(type: types): Promise<void> {
+    const kind = type === types.ReadOnly ? 'reads' : 'writes';
+    const options = {[kind]: 1};
 
-    this._inventory.borrowed.add(session);
-
-    const createSession = async (): Promise<void> => {
-      await session.create({labels});
-
-      if (type === types.ReadWrite) {
-        try {
-          await this._prepareTransaction(session);
-        } catch (e) {
-          type = types.ReadOnly;
-        }
-      }
-    };
-
-    try {
-      await this._requests.add(createSession);
-    } catch (e) {
-      this._inventory.borrowed.delete(session);
-      throw e;
-    }
-
-    session.type = type;
-    session.lastUsed = Date.now();
-
-    this._inventory[type].push(session);
-    this._inventory.borrowed.delete(session);
+    return this._createSessions(options);
   }
 
   /**
-   * Attempts to create a session but emits any errors that occur.
+   * Batch creates sessions and prepares any necessary transactions.
    *
    * @private
    *
-   * @emits SessionPool#available
-   * @emits SessionPool#error
-   * @param {string} type The desired type to create.
+   * @param {object} [options] Config specifying how many sessions to create.
    * @returns {Promise}
    */
-  async _createSessionInBackground(type: types): Promise<void> {
-    try {
-      await this._createSession(type);
-      this.emit('available');
-    } catch (e) {
-      this.emit('error', e);
+  async _createSessions({
+    reads = 0,
+    writes = 0,
+  }: CreateSessionsOptions): Promise<void> {
+    const labels = this.options.labels!;
+
+    let needed = reads + writes;
+    this._pending += needed;
+
+    // while we can request as many sessions be created as we want, the backend
+    // will return at most 100 at a time. hence the need for a while loop
+    while (needed > 0) {
+      let sessions: Session[] | null = null;
+
+      try {
+        [sessions] = await this.database.batchCreateSessions({
+          count: needed,
+          labels,
+        });
+
+        needed -= sessions.length;
+      } catch (e) {
+        this._pending -= needed;
+        throw e;
+      }
+
+      sessions.forEach((session: Session) => {
+        session.type = writes-- > 0 ? types.ReadWrite : types.ReadOnly;
+
+        this._inventory.borrowed.add(session);
+        this._pending -= 1;
+
+        this.release(session);
+      });
     }
   }
 
@@ -652,22 +659,21 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Promise}
    */
   async _fill(): Promise<void> {
-    const requests: Array<Promise<void>> = [];
     const minReadWrite = Math.floor(this.options.min! * this.options.writes!);
-    const neededReadWrite = Math.max(minReadWrite - this.writes, 0);
-
-    for (let i = 0; i < neededReadWrite; i++) {
-      requests.push(this._createSessionInBackground(types.ReadWrite));
-    }
-
+    const writes = Math.max(minReadWrite - this.writes, 0);
     const minReadOnly = Math.ceil(this.options.min! - minReadWrite);
-    const neededReadOnly = Math.max(minReadOnly - this.reads, 0);
+    const reads = Math.max(minReadOnly - this.reads, 0);
+    const totalNeeded = writes + reads;
 
-    for (let i = 0; i < neededReadOnly; i++) {
-      requests.push(this._createSessionInBackground(types.ReadOnly));
+    if (totalNeeded === 0) {
+      return;
     }
 
-    await Promise.all(requests);
+    try {
+      await this._createSessions({reads, writes});
+    } catch (e) {
+      this.emit('error', e);
+    }
   }
 
   /**
@@ -745,8 +751,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     if (!this.isFull) {
       promises.push(
-        new Promise((resolve, reject) => {
-          this._createSession(type).then(() => this.emit('available'), reject);
+        new Promise((_, reject) => {
+          this._createSession(type).catch(reject);
         })
       );
     }
