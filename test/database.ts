@@ -331,6 +331,82 @@ describe('Database', () => {
     });
   });
 
+  describe('batchCreateSessions', () => {
+    it('should make the correct request', () => {
+      const stub = sandbox.stub(database, 'request');
+      const count = 10;
+
+      database.batchCreateSessions({count}, assert.ifError);
+
+      const {client, method, reqOpts} = stub.lastCall.args[0];
+
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'batchCreateSessions');
+      assert.strictEqual(reqOpts.database, DATABASE_FORMATTED_NAME);
+      assert.strictEqual(reqOpts.sessionCount, count);
+    });
+
+    it('should accept just a count number', () => {
+      const stub = sandbox.stub(database, 'request');
+      const count = 10;
+
+      database.batchCreateSessions(count, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+      assert.strictEqual(reqOpts.sessionCount, count);
+    });
+
+    it('should accept session labels', () => {
+      const stub = sandbox.stub(database, 'request');
+      const labels = {foo: 'bar'};
+
+      database.batchCreateSessions({count: 10, labels}, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(reqOpts.sessionTemplate, {labels});
+    });
+
+    it('should return any request errors', done => {
+      const error = new Error('err');
+      const response = {};
+
+      sandbox.stub(database, 'request').callsFake((_, cb) => {
+        cb(error, response);
+      });
+
+      database.batchCreateSessions({count: 10}, (err, sessions, resp) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(sessions, null);
+        assert.strictEqual(resp, response);
+        done();
+      });
+    });
+
+    it('should create session objects from the response', done => {
+      const stub = sandbox.stub(database, 'session');
+      const fakeSessions = [{}, {}, {}];
+      const response = {
+        session: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
+      };
+
+      response.session.forEach((session, i) => {
+        stub.withArgs(session.name).returns(fakeSessions[i]);
+      });
+
+      sandbox.stub(database, 'request').callsFake((_, cb) => {
+        cb(null, response);
+      });
+
+      database.batchCreateSessions({count: 10}, (err, sessions, resp) => {
+        assert.strictEqual(err, null);
+        assert.deepStrictEqual(sessions, fakeSessions);
+        assert.strictEqual(resp, response);
+        done();
+      });
+    });
+  });
+
   describe('batchTransaction', () => {
     const SESSION = {id: 'hijklmnop'};
     const ID = 'abcdefg';
