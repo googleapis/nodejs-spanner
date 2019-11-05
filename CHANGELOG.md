@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.3.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.2.0...v4.3.0) (2019-11-05)
+
+
+### Features
+
+* **database:** batch create sessions ([#692](https://www.github.com/googleapis/nodejs-spanner/issues/692)) ([21f83b1](https://www.github.com/googleapis/nodejs-spanner/commit/21f83b1b13e12fb413138267dd4dc1bdaa24ccb9))
+
+
+### Bug Fixes
+
+* **deps:** bump google-gax to 1.7.5 ([#712](https://www.github.com/googleapis/nodejs-spanner/issues/712)) ([03384d4](https://www.github.com/googleapis/nodejs-spanner/commit/03384d4b93a66c758f1db75fa5efa1572f5c1eaf))
+* don't wrap SpannerDate so timezone does not affect results ([#711](https://www.github.com/googleapis/nodejs-spanner/issues/711)) ([86c0ae5](https://www.github.com/googleapis/nodejs-spanner/commit/86c0ae5fbdddccd915689bbfff3af8834ec64d12))
+
 ## [4.2.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.1.0...v4.2.0) (2019-10-02)
 
 
