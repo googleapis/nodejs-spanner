@@ -72,9 +72,7 @@ class SpannerClient {
     const gaxModule = !global.isBrowser && opts.fallback ? gax.fallback : gax;
 
     const servicePath =
-      opts.servicePath ||
-      opts.apiEndpoint ||
-      this.constructor.servicePath;
+      opts.servicePath || opts.apiEndpoint || this.constructor.servicePath;
 
     // Ensure that options include the service address and port.
     opts = Object.assign(
@@ -115,11 +113,15 @@ class SpannerClient {
     // For Node.js, pass the path to JSON proto file.
     // For browsers, pass the JSON content.
 
-    const nodejsProtoPath = path.join(__dirname, '..', '..', 'protos', 'protos.json');
+    const nodejsProtoPath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'protos',
+      'protos.json'
+    );
     const protos = gaxGrpc.loadProto(
-      opts.fallback ?
-        require("../../protos/protos.json") :
-        nodejsProtoPath
+      opts.fallback ? require('../../protos/protos.json') : nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
@@ -148,8 +150,12 @@ class SpannerClient {
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this._descriptors.stream = {
-      executeStreamingSql: new gaxModule.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
-      streamingRead: new gaxModule.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
+      executeStreamingSql: new gaxModule.StreamDescriptor(
+        gax.StreamType.SERVER_STREAMING
+      ),
+      streamingRead: new gaxModule.StreamDescriptor(
+        gax.StreamType.SERVER_STREAMING
+      ),
     };
 
     // Put together the default options sent with requests.
@@ -168,9 +174,9 @@ class SpannerClient {
     // Put together the "service stub" for
     // google.spanner.v1.Spanner.
     const spannerStub = gaxGrpc.createStub(
-      opts.fallback ?
-        protos.lookupService('google.spanner.v1.Spanner') :
-        protos.google.spanner.v1.Spanner,
+      opts.fallback
+        ? protos.lookupService('google.spanner.v1.Spanner')
+        : protos.google.spanner.v1.Spanner,
       opts
     );
 
@@ -205,7 +211,8 @@ class SpannerClient {
       this._innerApiCalls[methodName] = gaxModule.createApiCall(
         innerCallPromise,
         defaults[methodName],
-        this._descriptors.page[methodName] || this._descriptors.stream[methodName]
+        this._descriptors.page[methodName] ||
+          this._descriptors.stream[methodName]
       );
     }
   }
@@ -268,8 +275,8 @@ class SpannerClient {
    * transaction internally, and count toward the one transaction
    * limit.
    *
-   * Cloud Spanner limits the number of sessions that can exist at any given
-   * time; thus, it is a good idea to delete idle and/or unneeded sessions.
+   * Active sessions use additional server resources, so it is a good idea to
+   * delete idle and unneeded sessions.
    * Aside from explicit deletes, Cloud Spanner can delete sessions for which no
    * operations are sent for more than an hour. If a session is deleted,
    * requests to it return `NOT_FOUND`.
@@ -323,10 +330,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'database': request.database
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      database: request.database,
+    });
 
     return this._innerApiCalls.createSession(request, options, callback);
   }
@@ -395,10 +403,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'database': request.database
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      database: request.database,
+    });
 
     return this._innerApiCalls.batchCreateSessions(request, options, callback);
   }
@@ -450,10 +459,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'name': request.name
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      name: request.name,
+    });
 
     return this._innerApiCalls.getSession(request, options, callback);
   }
@@ -562,10 +572,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'database': request.database
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      database: request.database,
+    });
 
     return this._innerApiCalls.listSessions(request, options, callback);
   }
@@ -634,7 +645,7 @@ class SpannerClient {
       request,
       options
     );
-  };
+  }
 
   /**
    * Ends a session, releasing server resources associated with it. This will
@@ -675,10 +686,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'name': request.name
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      name: request.name,
+    });
 
     return this._innerApiCalls.deleteSession(request, options, callback);
   }
@@ -710,28 +722,26 @@ class SpannerClient {
    *   For queries, if none is provided, the default is a temporary read-only
    *   transaction with strong concurrency.
    *
-   *   Standard DML statements require a ReadWrite transaction. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must
-   *   either supply an existing transaction ID or begin a new transaction.
+   *   Standard DML statements require a read-write transaction. To protect
+   *   against replays, single-use transactions are not supported.  The caller
+   *   must either supply an existing transaction ID or begin a new transaction.
    *
-   *   Partitioned DML requires an existing PartitionedDml transaction ID.
+   *   Partitioned DML requires an existing Partitioned DML transaction ID.
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL string can contain parameter placeholders. A parameter
-   *   placeholder consists of `'@'` followed by the parameter
-   *   name. Parameter names consist of any combination of letters,
-   *   numbers, and underscores.
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
-   *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL statement with unbound parameters.
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   Parameter values are specified using `params`, which is a JSON
-   *   object whose keys are parameter names, and whose values are the
-   *   corresponding parameter values.
+   *   It is an error to execute a SQL statement with unbound parameters.
    *
    *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
    * @param {Object.<string, Object>} [request.paramTypes]
@@ -766,7 +776,7 @@ class SpannerClient {
    *   match for the values of fields common to this message and the
    *   PartitionQueryRequest message used to create this partition_token.
    * @param {number} [request.seqno]
-   *   A per-transaction sequence number used to identify this request. This
+   *   A per-transaction sequence number used to identify this request. This field
    *   makes each request idempotent such that if the request is received multiple
    *   times, at most one will succeed.
    *
@@ -819,10 +829,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.executeSql(request, options, callback);
   }
@@ -846,28 +857,26 @@ class SpannerClient {
    *   For queries, if none is provided, the default is a temporary read-only
    *   transaction with strong concurrency.
    *
-   *   Standard DML statements require a ReadWrite transaction. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must
-   *   either supply an existing transaction ID or begin a new transaction.
+   *   Standard DML statements require a read-write transaction. To protect
+   *   against replays, single-use transactions are not supported.  The caller
+   *   must either supply an existing transaction ID or begin a new transaction.
    *
-   *   Partitioned DML requires an existing PartitionedDml transaction ID.
+   *   Partitioned DML requires an existing Partitioned DML transaction ID.
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL string can contain parameter placeholders. A parameter
-   *   placeholder consists of `'@'` followed by the parameter
-   *   name. Parameter names consist of any combination of letters,
-   *   numbers, and underscores.
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
-   *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL statement with unbound parameters.
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   Parameter values are specified using `params`, which is a JSON
-   *   object whose keys are parameter names, and whose values are the
-   *   corresponding parameter values.
+   *   It is an error to execute a SQL statement with unbound parameters.
    *
    *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
    * @param {Object.<string, Object>} [request.paramTypes]
@@ -902,7 +911,7 @@ class SpannerClient {
    *   match for the values of fields common to this message and the
    *   PartitionQueryRequest message used to create this partition_token.
    * @param {number} [request.seqno]
-   *   A per-transaction sequence number used to identify this request. This
+   *   A per-transaction sequence number used to identify this request. This field
    *   makes each request idempotent such that if the request is received multiple
    *   times, at most one will succeed.
    *
@@ -941,10 +950,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.executeStreamingSql(request, options);
   }
@@ -954,47 +964,45 @@ class SpannerClient {
    * to be run with lower latency than submitting them sequentially with
    * ExecuteSql.
    *
-   * Statements are executed in order, sequentially.
-   * ExecuteBatchDmlResponse will contain a
-   * ResultSet for each DML statement that has
-   * successfully executed. If a statement fails, its error status will be
-   * returned as part of the
-   * ExecuteBatchDmlResponse. Execution will
-   * stop at the first failed statement; the remaining statements will not run.
+   * Statements are executed in sequential order. A request can succeed even if
+   * a statement fails. The
+   * ExecuteBatchDmlResponse.status
+   * field in the response provides information about the statement that failed.
+   * Clients must inspect this field to determine whether an error occurred.
    *
-   * ExecuteBatchDml is expected to return an OK status with a response even if
-   * there was an error while processing one of the DML statements. Clients must
-   * inspect response.status to determine if there were any errors while
-   * processing the request.
-   *
-   * See more details in
-   * ExecuteBatchDmlRequest and
-   * ExecuteBatchDmlResponse.
+   * Execution stops after the first failed statement; the remaining statements
+   * are not executed.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.session
    *   Required. The session in which the DML statements should be performed.
    * @param {Object} request.transaction
-   *   The transaction to use. A ReadWrite transaction is required. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must either
-   *   supply an existing transaction ID or begin a new transaction.
+   *   Required. The transaction to use. Must be a read-write transaction.
+   *
+   *   To protect against replays, single-use transactions are not supported. The
+   *   caller must either supply an existing transaction ID or begin a new
+   *   transaction.
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object[]} request.statements
-   *   The list of statements to execute in this batch. Statements are executed
-   *   serially, such that the effects of statement i are visible to statement
-   *   i+1. Each statement must be a DML statement. Execution will stop at the
-   *   first failed statement; the remaining statements will not run.
+   *   Required. The list of statements to execute in this batch. Statements are
+   *   executed serially, such that the effects of statement `i` are visible to
+   *   statement `i+1`. Each statement must be a DML statement. Execution stops at
+   *   the first failed statement; the remaining statements are not executed.
    *
-   *   REQUIRES: statements_size() > 0.
+   *   Callers must provide at least one statement.
    *
    *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
    * @param {number} request.seqno
-   *   A per-transaction sequence number used to identify this request. This is
-   *   used in the same space as the seqno in
-   *   ExecuteSqlRequest. See more details
-   *   in ExecuteSqlRequest.
+   *   Required. A per-transaction sequence number used to identify this request.
+   *   This field makes each request idempotent such that if the request is
+   *   received multiple times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -1042,10 +1050,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.executeBatchDml(request, options, callback);
   }
@@ -1073,8 +1082,8 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned
-   *   for each row matching this request.
+   *   Required. The columns of table to be
+   *   returned for each row matching this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
    *   primary keys of the rows in table to
@@ -1169,10 +1178,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.read(request, options, callback);
   }
@@ -1191,8 +1201,8 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned
-   *   for each row matching this request.
+   *   Required. The columns of table to be
+   *   returned for each row matching this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
    *   primary keys of the rows in table to
@@ -1273,10 +1283,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.streamingRead(request, options);
   }
@@ -1339,10 +1350,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.beginTransaction(request, options, callback);
   }
@@ -1361,12 +1373,6 @@ class SpannerClient {
    *   The request object that will be sent.
    * @param {string} request.session
    *   Required. The session in which the transaction to be committed is running.
-   * @param {Object[]} request.mutations
-   *   The mutations to be executed when this transaction commits. All
-   *   mutations are applied atomically, in the order they appear in
-   *   this list.
-   *
-   *   This object should have the same structure as [Mutation]{@link google.spanner.v1.Mutation}
    * @param {Buffer} [request.transactionId]
    *   Commit a previously-started transaction.
    * @param {Object} [request.singleUseTransaction]
@@ -1381,6 +1387,12 @@ class SpannerClient {
    *   Commit instead.
    *
    *   This object should have the same structure as [TransactionOptions]{@link google.spanner.v1.TransactionOptions}
+   * @param {Object[]} [request.mutations]
+   *   The mutations to be executed when this transaction commits. All
+   *   mutations are applied atomically, in the order they appear in
+   *   this list.
+   *
+   *   This object should have the same structure as [Mutation]{@link google.spanner.v1.Mutation}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -1401,12 +1413,7 @@ class SpannerClient {
    * });
    *
    * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * const mutations = [];
-   * const request = {
-   *   session: formattedSession,
-   *   mutations: mutations,
-   * };
-   * client.commit(request)
+   * client.commit({session: formattedSession})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -1424,10 +1431,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.commit(request, options, callback);
   }
@@ -1484,10 +1492,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.rollback(request, options, callback);
   }
@@ -1511,8 +1520,8 @@ class SpannerClient {
    * @param {string} request.session
    *   Required. The session used to create the partitions.
    * @param {string} request.sql
-   *   The query request to generate partitions for. The request will fail if
-   *   the query is not root partitionable. The query plan of a root
+   *   Required. The query request to generate partitions for. The request will
+   *   fail if the query is not root partitionable. The query plan of a root
    *   partitionable query has a single distributed union operator. A distributed
    *   union operator conceptually divides one or more tables into multiple
    *   splits, remotely evaluates a subquery independently on each split, and
@@ -1528,20 +1537,18 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL query string can contain parameter placeholders. A parameter
-   *   placeholder consists of `'@'` followed by the parameter
-   *   name. Parameter names consist of any combination of letters,
-   *   numbers, and underscores.
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
-   *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL query with unbound parameters.
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   Parameter values are specified using `params`, which is a JSON
-   *   object whose keys are parameter names, and whose values are the
-   *   corresponding parameter values.
+   *   It is an error to execute a SQL statement with unbound parameters.
    *
    *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
    * @param {Object.<string, Object>} [request.paramTypes]
@@ -1601,10 +1608,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.partitionQuery(request, options, callback);
   }
@@ -1708,10 +1716,11 @@ class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        'session': request.session
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
 
     return this._innerApiCalls.partitionRead(request, options, callback);
   }
@@ -1762,9 +1771,7 @@ class SpannerClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate
-      .match(databaseName)
-      .project;
+    return this._pathTemplates.databasePathTemplate.match(databaseName).project;
   }
 
   /**
@@ -1775,8 +1782,7 @@ class SpannerClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate
-      .match(databaseName)
+    return this._pathTemplates.databasePathTemplate.match(databaseName)
       .instance;
   }
 
@@ -1788,8 +1794,7 @@ class SpannerClient {
    * @returns {String} - A string representing the database.
    */
   matchDatabaseFromDatabaseName(databaseName) {
-    return this._pathTemplates.databasePathTemplate
-      .match(databaseName)
+    return this._pathTemplates.databasePathTemplate.match(databaseName)
       .database;
   }
 
@@ -1801,9 +1806,7 @@ class SpannerClient {
    * @returns {String} - A string representing the project.
    */
   matchProjectFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate
-      .match(sessionName)
-      .project;
+    return this._pathTemplates.sessionPathTemplate.match(sessionName).project;
   }
 
   /**
@@ -1814,9 +1817,7 @@ class SpannerClient {
    * @returns {String} - A string representing the instance.
    */
   matchInstanceFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate
-      .match(sessionName)
-      .instance;
+    return this._pathTemplates.sessionPathTemplate.match(sessionName).instance;
   }
 
   /**
@@ -1827,9 +1828,7 @@ class SpannerClient {
    * @returns {String} - A string representing the database.
    */
   matchDatabaseFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate
-      .match(sessionName)
-      .database;
+    return this._pathTemplates.sessionPathTemplate.match(sessionName).database;
   }
 
   /**
@@ -1840,11 +1839,8 @@ class SpannerClient {
    * @returns {String} - A string representing the session.
    */
   matchSessionFromSessionName(sessionName) {
-    return this._pathTemplates.sessionPathTemplate
-      .match(sessionName)
-      .session;
+    return this._pathTemplates.sessionPathTemplate.match(sessionName).session;
   }
 }
-
 
 module.exports = SpannerClient;

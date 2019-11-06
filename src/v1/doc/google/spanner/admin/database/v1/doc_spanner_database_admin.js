@@ -193,7 +193,7 @@ const GetDatabaseRequest = {
  *   Required. The database to update.
  *
  * @property {string[]} statements
- *   DDL statements to be applied to the database.
+ *   Required. DDL statements to be applied to the database.
  *
  * @property {string} operationId
  *   If empty, the new update request is assigned an
