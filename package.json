@@ -111,7 +111,7 @@
     "sinon": "^7.1.0",
     "stats-lite": "^2.1.1",
     "time-span": "^3.0.0",
-    "typescript": "~3.6.0",
+    "typescript": "~3.7.0",
     "uuid": "^3.3.2",
     "yargs": "^14.0.0"
   }
