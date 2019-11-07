@@ -25,16 +25,14 @@
  *   The number should be among the values of [TypeCode]{@link google.spanner.v1.TypeCode}
  *
  * @property {Object} arrayElementType
- *   If code ==
- *   ARRAY, then `array_element_type` is the
- *   type of the array elements.
+ *   If code == ARRAY, then `array_element_type`
+ *   is the type of the array elements.
  *
  *   This object should have the same structure as [Type]{@link google.spanner.v1.Type}
  *
  * @property {Object} structType
- *   If code ==
- *   STRUCT, then `struct_type` provides
- *   type information for the struct's fields.
+ *   If code == STRUCT, then `struct_type`
+ *   provides type information for the struct's fields.
  *
  *   This object should have the same structure as [StructType]{@link google.spanner.v1.StructType}
  *
@@ -47,16 +45,15 @@ const Type = {
 };
 
 /**
- * `StructType` defines the fields of a
- * STRUCT type.
+ * `StructType` defines the fields of a STRUCT type.
  *
  * @property {Object[]} fields
  *   The list of fields that make up this struct. Order is
  *   significant, because values of this struct type are represented as
  *   lists, where the order of field values matches the order of
- *   fields in the StructType. In turn, the
- *   order of fields matches the order of columns in a read request, or the
- *   order of fields in the `SELECT` clause of a query.
+ *   fields in the StructType. In turn, the order of fields
+ *   matches the order of columns in a read request, or the order of
+ *   fields in the `SELECT` clause of a query.
  *
  *   This object should have the same structure as [Field]{@link google.spanner.v1.Field}
  *
