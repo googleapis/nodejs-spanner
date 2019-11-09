@@ -1569,9 +1569,11 @@ export class Transaction extends Dml {
    */
   rollback(callback?: s.RollbackCallback): void | Promise<void> {
     if (!this.id) {
-      callback!(new Error(
-        'Transaction ID is unknown, nothing to rollback.'
-      ) as ServiceError);
+      callback!(
+        new Error(
+          'Transaction ID is unknown, nothing to rollback.'
+        ) as ServiceError
+      );
       return;
     }
 

@@ -70,7 +70,7 @@ class FakeMetadata {
 
 // tslint:disable-next-line:variable-name
 let GrpcMetadataOverride;
-let grpcProtoLoadOverride: (typeof grpcProtoLoader.loadSync) | null = null;
+let grpcProtoLoadOverride: typeof grpcProtoLoader.loadSync | null = null;
 
 const fakeGrpcProtoLoader = {
   loadSync(filename: string, options?: grpcProtoLoader.Options) {

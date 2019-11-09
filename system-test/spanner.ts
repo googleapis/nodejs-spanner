@@ -1201,7 +1201,10 @@ describe('Spanner', () => {
 
       const table = database.table('SingersComposite');
 
-      const keys = ([[id1, name1], [id2, name2]] as {}) as string[];
+      const keys = ([
+        [id1, name1],
+        [id2, name2],
+      ] as {}) as string[];
 
       return table
         .create(
