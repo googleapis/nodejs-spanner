@@ -1471,7 +1471,10 @@ describe('Transaction', () => {
         const stub = sandbox.stub(transaction, 'request');
 
         const fakeTable = 'my-table-123';
-        const rows = [{name: 'dave', id: '1'}, {name: 'stephen', id: '2'}];
+        const rows = [
+          {name: 'dave', id: '1'},
+          {name: 'stephen', id: '2'},
+        ];
 
         const expectedColumns = Object.keys(rows[0]).sort();
         const expectedValues = rows.map(row => {

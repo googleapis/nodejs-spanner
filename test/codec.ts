@@ -186,7 +186,10 @@ describe('codec', () => {
     describe('fromJSON', () => {
       it('should covert json to a struct', () => {
         const json = {a: 'b', c: 'd'};
-        const expected = [{name: 'a', value: 'b'}, {name: 'c', value: 'd'}];
+        const expected = [
+          {name: 'a', value: 'b'},
+          {name: 'c', value: 'd'},
+        ];
         const struct = codec.Struct.fromJSON(json);
 
         assert(struct instanceof codec.Struct);
