@@ -915,7 +915,13 @@ describe('Spanner', () => {
     });
 
     afterEach(async () => {
-      await database.delete();
+      try {
+        // A best effort attempt to delete the database being used by the test, though might not always work
+        await database.delete();
+      } catch (err) {
+        // Might be that there is still a backup in progress, so can't delete the database right now
+        console.warn(`Could not delete database ${database.formattedName_} after test:`, err);
+      }
     });
 
     function futureDateByHours(futureHours: number): PreciseDate {
