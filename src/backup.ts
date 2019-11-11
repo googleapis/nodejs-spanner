@@ -31,7 +31,7 @@ export type CreateBackupCallback = ResourceCallback<
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
-  metadata: (Metadata & databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata) | null; //TODO can metadata actually be null for CreateBackup?
+  metadata: Metadata & databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata;
 }
 
 export type CreateBackupResponse = [
