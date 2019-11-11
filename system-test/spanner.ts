@@ -31,7 +31,6 @@ import {
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import { PreciseDate } from '@google-cloud/precise-date';
-import { DatabaseAdminClient as d } from '../src/v1';
 import { replaceProjectIdToken } from '@google-cloud/projectify';
 
 const PREFIX = 'gcloud-tests-';
@@ -948,7 +947,7 @@ describe('Spanner', () => {
 
       // Validate backup has completed
       const [backupInfo] = await backup.getBackupInfo();
-      assert.strictEqual(backupInfo.state, d.State.READY); //TODO is this actually comparing database state with backup state?
+      assert.strictEqual(backupInfo.state, 'READY');
       assert.strictEqual(backupInfo.name,
                          `${replaceProjectIdToken(instance.formattedName_, projectId)}/backups/${backupName}`);
       assert.strictEqual(backupInfo.database, replaceProjectIdToken(database.formattedName_, projectId));

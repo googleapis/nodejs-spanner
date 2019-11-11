@@ -22,7 +22,6 @@ import { RequestConfig } from '.';
 import { Metadata, Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
 import { PreciseDate } from '@google-cloud/precise-date';
-import {DatabaseAdminClient as d} from '../src/v1';
 
 export type CreateBackupCallback = ResourceCallback<
   GaxOperation,
@@ -39,10 +38,33 @@ export type CreateBackupResponse = [
   databaseAdmin.longrunning.IOperation
 ];
 
-type GetBackupInfoResponse = [databaseAdmin.spanner.admin.database.v1.IBackup];
+/**
+ * IBackup structure with backup state enum translated to string form.
+ */
+type IBackupTranslatedEnum = TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IBackup, 'state', typeof databaseAdmin.spanner.admin.database.v1.Backup.State>;
+
+type GetBackupInfoResponse = [IBackupTranslatedEnum];
 type GetBackupInfoCallback = RequestCallback<
-  databaseAdmin.spanner.admin.database.v1.IBackup
+  IBackupTranslatedEnum
 >;
+
+/**
+ * Translates enum values to string keys.
+ *
+ * @param E enum type.
+ */
+type EnumKey<E extends {[index: string]: unknown}> = keyof E;
+
+/**
+ * Translates an enum property of an object from enum value to enum key, leaving all other properties as-is.
+ *
+ * @param T type containing properties to translate.
+ * @param U name of the enum property.
+ * @param E enum type to translate.
+ */
+type TranslateEnumKeys<T, U, E extends {[index: string]: unknown}> = {
+  [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P]
+};
 
 /**
  * The {@link Backup} class represents a Cloud Spanner
@@ -131,56 +153,19 @@ class Backup {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
-    return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
+    return this.request<IBackupTranslatedEnum>(
       {
         client: 'DatabaseAdminClient',
         method: 'getBackup',
         reqOpts,
       },
       (err, response) => {
-        // Fix enum type which incorrectly has the enum name as string instead of number key
-        // TODO investigate this
-        if (response && typeof response.state === 'string') {
-          console.debug('Need to fix up this state: ' + response.state);
-          const fixedState = Backup.fixBackupState(response.state);
-          console.debug('The fixed state is: ' + fixedState);
-          if (fixedState !== null && fixedState !== undefined) {
-            response.state = fixedState as unknown as databaseAdmin.spanner.admin.database.v1.Backup.State;
-          }
-          // does not work since databaseAdmin.spanner.admin.database.v1.Backup.State object not resolvable at runtime
-          // enum table object might not be generated due to declare or some other generator magic?
-          // response.state = Backup.enumKeyToValue(databaseAdmin.spanner.admin.database.v1.Backup.State, response.state);
-        }
         callback!(err, response);
       }
     );
   }
 
-  /**
-   * Workaround for the backend returning enum values as string keys instead of index values which violates
-   * typescript definition.  Maps any values that are string keys back into their numeric form.
-   *
-   * @param state the backup state to fix.
-   */
-  private static fixBackupState(state: keyof typeof d.State): d.State {
-    switch (state) {
-      case 'STATE_UNSPECIFIED':
-        return d.State.STATE_UNSPECIFIED;
-      case 'CREATING':
-        return d.State.CREATING;
-      case 'READY':
-        return d.State.READY;
-    }
-  }
-
-  // Would have been nice to do this but backup state enum object is not resolvable at runtime...
-  /*
-  private static enumKeyToValue<E extends {[index: string]: unknown}>(enumType: E, key: keyof typeof enumType): E[keyof typeof enumType] {
-    return enumType[key];
-  }
-  */
-
-  async getState(): Promise<databaseAdmin.spanner.admin.database.v1.Backup.State | undefined> {
+  async getState(): Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined> {
     const [backupInfo] = await this.getBackupInfo();
     const state = backupInfo.state;
     return state === null || state === undefined ? undefined : state;
