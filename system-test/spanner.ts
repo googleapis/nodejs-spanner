@@ -1094,12 +1094,15 @@ describe('Spanner', () => {
       const newBackupName = generateName('backup');
       const newBackupExpiryDate = futureDateByHours(12);
       const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      await newBackup.create();
+      const [newBackupCreateResponse] = await newBackup.create();
+
+      // Look up the backup full name from the operation response to expand any {{project}} tokens
+      const newBackupFullName = newBackupCreateResponse.metadata.name;
 
       // List operations and ensure operation for current backup exists
       const [operations] = await instance.listBackupOperations();
       const operationForCurrentBackup =
-        operations.find(operation => operation.name && operation.name.startsWith(newBackup.formattedName_));
+        operations.find(operation => operation.name && operation.name.startsWith(newBackupFullName));
       assert.ok(operationForCurrentBackup);
       assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
     });
