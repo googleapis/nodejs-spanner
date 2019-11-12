@@ -45,7 +45,7 @@ describe('Spanner', () => {
   //TODO hardcode this so I can run on the Google backup instances
   //const instance = spanner.instance(generateName('instance'));
   //const instance = spanner.instance("backups-instance-1");
-  const instance = spanner.instance("appdev-test-instance");
+  const instance = spanner.instance("test-instance");
 
   const INSTANCE_CONFIG = {
     config: 'regional-us-central1',
