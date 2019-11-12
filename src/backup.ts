@@ -18,7 +18,7 @@ import { promisifyAll } from '@google-cloud/promisify';
 import { google as databaseAdmin } from '../proto/spanner_database_admin';
 import { Instance, } from './instance';
 import { RequestCallback, ResourceCallback, } from './common';
-import { RequestConfig } from '.';
+import { EnumKey, RequestConfig, TranslateEnumKeys } from '.';
 import { Metadata, Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
 import { PreciseDate } from '@google-cloud/precise-date';
@@ -55,24 +55,6 @@ type UpdateExpireTimeCallback = RequestCallback<
 type DeleteBackupCallback = RequestCallback<
   void
 >;
-
-/**
- * Translates enum values to string keys.
- *
- * @param E enum type.
- */
-type EnumKey<E extends {[index: string]: unknown}> = keyof E;
-
-/**
- * Translates an enum property of an object from enum value to enum key, leaving all other properties as-is.
- *
- * @param T type containing properties to translate.
- * @param U name of the enum property.
- * @param E enum type to translate.
- */
-type TranslateEnumKeys<T, U, E extends {[index: string]: unknown}> = {
-  [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P]
-};
 
 /**
  * The {@link Backup} class represents a Cloud Spanner

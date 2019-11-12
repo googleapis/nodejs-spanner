@@ -65,6 +65,25 @@ export interface RequestConfig {
   reqOpts: any;
   gaxOpts?: {};
 }
+
+/**
+ * Translates enum values to string keys.
+ *
+ * @param E enum type.
+ */
+export type EnumKey<E extends {[index: string]: unknown}> = keyof E;
+
+/**
+ * Translates an enum property of an object from enum value to enum key, leaving all other properties as-is.
+ *
+ * @param T type containing properties to translate.
+ * @param U name of the enum property.
+ * @param E enum type to translate.
+ */
+export type TranslateEnumKeys<T, U extends keyof T, E extends {[index: string]: unknown}> = {
+  [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P]
+};
+
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
  */

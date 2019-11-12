@@ -73,7 +73,7 @@ import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../proto/spanner';
-import {RequestConfig} from '.';
+import { RequestConfig, TranslateEnumKeys } from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -114,9 +114,14 @@ type RunCallback = RequestCallback<Row[]>;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 
-type GetMetadataResponse = [databaseAdmin.spanner.admin.database.v1.IDatabase];
+/**
+ * IDatabase structure with database state enum translated to string form.
+ */
+type IDatabaseTranslatedEnum = TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IDatabase, 'state', typeof databaseAdmin.spanner.admin.database.v1.Database.State>;
+
+type GetMetadataResponse = [IDatabaseTranslatedEnum];
 type GetMetadataCallback = RequestCallback<
-  databaseAdmin.spanner.admin.database.v1.IDatabase
+  IDatabaseTranslatedEnum
 >;
 
 type GetSchemaCallback = RequestCallback<

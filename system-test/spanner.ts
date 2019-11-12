@@ -1033,7 +1033,7 @@ describe('Spanner', () => {
       await restoreOperation.promise();
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
-      // assert.ok(databaseMetadata.state === d.State.READY || databaseMetadata.state === d.State.READY_OPTIMIZING); //TODO
+      assert.ok(databaseMetadata.state === 'READY' || databaseMetadata.state === 'READY_OPTIMIZING');
 
       // Validate new database has restored data
       const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
