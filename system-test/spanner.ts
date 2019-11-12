@@ -31,8 +31,8 @@ import {
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
-import { DatabaseAdminClient as d } from '../src/v1';
 import { status } from 'grpc';
+import { replaceProjectIdToken } from '@google-cloud/projectify';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -45,7 +45,7 @@ describe('Spanner', () => {
   //TODO hardcode this so I can run on the Google backup instances
   //const instance = spanner.instance(generateName('instance'));
   //const instance = spanner.instance("backups-instance-1");
-  const instance = spanner.instance("test-instance");
+  const instance = spanner.instance("appdev-test-instance");
 
   const INSTANCE_CONFIG = {
     config: 'regional-us-central1',
@@ -896,6 +896,7 @@ describe('Spanner', () => {
 
   describe('Backups', () => {
     let database: Database;
+    let projectId: string;
 
     beforeEach(async () => {
       // New database name per test because can only have one backup per database
@@ -913,6 +914,19 @@ describe('Spanner', () => {
         SingerId: generateName('id'),
         Name: generateName('name'),
       });
+
+      // Read actual project ID so we can do replacement of {{projectId}} when doing comparisons
+      projectId = await spanner.getProjectId();
+    });
+
+    afterEach(async () => {
+      try {
+        // A best effort attempt to delete the database being used by the test, though might not always work
+        await database.delete();
+      } catch (err) {
+        // Might be that there is still a backup in progress, so can't delete the database right now
+        console.warn(`Could not delete database ${database.formattedName_} after test:`, err);
+      }
     });
 
     afterEach(async () => {
@@ -973,17 +987,19 @@ describe('Spanner', () => {
       const backupExpiryDate = futureDateByHours(12);
       const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
       const [backupOperation] = await backup.create();
-      assert.strictEqual(backupOperation.metadata!.name, `${instance.formattedName_}/backups/${backupName}`);
-      assert.strictEqual(backupOperation.metadata!.database, database.formattedName_);
+      assert.strictEqual(backupOperation.metadata!.name,
+                         `${replaceProjectIdToken(instance.formattedName_, projectId)}/backups/${backupName}`);
+      assert.strictEqual(backupOperation.metadata!.database, replaceProjectIdToken(database.formattedName_, projectId));
 
       // Wait until the backup is complete
       await backupOperation.promise();
 
       // Validate backup has completed
       const [backupInfo] = await backup.getBackupInfo();
-      assert.strictEqual(backupInfo.state, d.State.READY); //TODO is this actually comparing database state with backup state?
-      assert.strictEqual(backupInfo.name, `${instance.formattedName_}/backups/${backupName}`);
-      assert.strictEqual(backupInfo.database, database.formattedName_);
+      assert.strictEqual(backupInfo.state, 'READY');
+      assert.strictEqual(backupInfo.name,
+                         `${replaceProjectIdToken(instance.formattedName_, projectId)}/backups/${backupName}`);
+      assert.strictEqual(backupInfo.database, replaceProjectIdToken(database.formattedName_, projectId));
       assert.ok(backupInfo.createTime);
       assert.deepStrictEqual(Number(backupInfo.expireTime!.seconds), backupExpiryDate.toStruct().seconds);
       assert.ok(backupInfo.sizeBytes! > 0);
