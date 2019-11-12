@@ -929,10 +929,6 @@ describe('Spanner', () => {
       }
     });
 
-    afterEach(async () => {
-      await database.delete();
-    });
-
     function futureDateByHours(futureHours: number): PreciseDate {
       return new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
     }
