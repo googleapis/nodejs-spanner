@@ -33,6 +33,8 @@ import {GetDatabaseConfig} from '../src/database';
 import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import { status } from 'grpc';
 import { replaceProjectIdToken } from '@google-cloud/projectify';
+import { google } from '../protos/protos';
+import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -1025,7 +1027,7 @@ describe('Spanner', () => {
       // Wait for backup to complete
       await backupOperation.promise();
 
-      // Look up the backup full name from the operation response to expand any {{project}} tokens
+      // Look up the backup full name from the operation response to expand any {{projectId}} tokens
       const backupFullName = backupOperation.metadata.name;
 
       // Perform restore to a different database
@@ -1119,6 +1121,26 @@ describe('Spanner', () => {
         operations.find(operation => operation.name && operation.name.startsWith(newBackupFullName));
       assert.ok(operationForCurrentBackup);
       assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
+    });
+
+    it('should list database operations', async () => {
+      // Look up the database full name from the metadata to expand any {{projectId}} tokens
+      const [databaseMetadata] = await database.getMetadata();
+      const databaseFullName = databaseMetadata.name;
+
+      // List operations and ensure operation for creation of test database exists
+      const [databaseCreateOperations] = await instance.listDatabaseOperations({
+        filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata) AND 
+                 (metadata.database:${database.formattedName_})`
+      });
+
+      // Validate operation and its metadata
+      assert.strictEqual(databaseCreateOperations.length, 1);
+      const databaseCreateOperation = databaseCreateOperations[0];
+      assert.strictEqual(databaseCreateOperation.metadata!.type_url,
+                         'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata');
+      const createMeta = CreateDatabaseMetadata.decode(databaseCreateOperation.metadata!.value!);
+      assert.strictEqual(createMeta.database, databaseFullName);
     });
   });
 

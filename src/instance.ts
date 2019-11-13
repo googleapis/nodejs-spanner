@@ -61,6 +61,10 @@ export type ListBackupOperationsResponse = PagedResponse<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
+export type ListDatabaseOperationsResponse = PagedResponse<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
+>;
 
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
@@ -79,6 +83,12 @@ export interface GetDatabasesRequest
 }
 export interface ListBackupsRequest
   extends databaseAdmin.spanner.admin.database.v1.IListBackupsRequest {
+  autoPaginate?: boolean;
+  maxApiCalls?: number;
+  maxResults?: number;
+}
+export interface ListDatabaseOperationsRequest
+  extends databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest {
   autoPaginate?: boolean;
   maxApiCalls?: number;
   maxResults?: number;
@@ -107,6 +117,10 @@ export type ListBackupsCallback = RequestCallback<
 export type ListBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
+>;
+export type ListDatabaseOperationsCallback = RequestCallback<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
 >;
 export interface GetInstanceConfig extends GetConfig {}
 
@@ -228,8 +242,6 @@ class Instance extends common.ServiceObject {
     cb?: ListBackupsCallback
   ): void | Promise<ListBackupsResponse> {
 
-
-    const self = this;
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
@@ -276,6 +288,36 @@ class Instance extends common.ServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
         reqOpts,
+      },
+      (err, operations, ...args) => {
+        callback!(err, operations, ...args);
+      }
+    );
+  }
+
+  listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse>;
+  listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
+  listDatabaseOperations(query: ListDatabaseOperationsRequest, callback: ListDatabaseOperationsCallback): void;
+
+  listDatabaseOperations(queryOrCallback?: ListDatabaseOperationsRequest | ListDatabaseOperationsCallback,
+                         cb?: ListDatabaseOperationsCallback): void | Promise<ListDatabaseOperationsResponse> {
+
+    const callback =
+      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? queryOrCallback
+        : ({} as ListDatabaseOperationsRequest);
+
+    const reqOpts = extend({}, query, {
+      parent: this.formattedName_,
+    });
+    this.request<IBackup[]>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listDatabaseOperations',
+        reqOpts,
+        gaxOpts: query,
       },
       (err, operations, ...args) => {
         callback!(err, operations, ...args);
