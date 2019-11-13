@@ -73,7 +73,7 @@ import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../proto/spanner';
-import { RequestConfig, TranslateEnumKeys } from '.';
+import { EnumKey, RequestConfig, TranslateEnumKeys } from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -117,7 +117,17 @@ type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 /**
  * IDatabase structure with database state enum translated to string form.
  */
-type IDatabaseTranslatedEnum = TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IDatabase, 'state', typeof databaseAdmin.spanner.admin.database.v1.Database.State>;
+type IDatabaseTranslatedEnum =
+  Omit<
+    TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IDatabase, 'state', typeof databaseAdmin.spanner.admin.database.v1.Database.State>,
+    'restoreInfo'
+  > & { restoreInfo?: IRestoreInfoTranslatedEnum | null };
+
+/**
+ * IRestoreInfo structure with restore source type enum translated to string form.
+ */
+type IRestoreInfoTranslatedEnum =
+  TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IRestoreInfo, 'sourceType', typeof databaseAdmin.spanner.admin.database.v1.RestoreSourceType>;
 
 type GetMetadataResponse = [IDatabaseTranslatedEnum];
 type GetMetadataCallback = RequestCallback<
@@ -857,6 +867,17 @@ class Database extends ServiceObject {
       callback!
     );
   }
+
+  async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
+    const [metadata] = await this.getMetadata();
+    return metadata.restoreInfo === null || metadata.restoreInfo === undefined ? undefined : metadata.restoreInfo;
+  };
+
+  async getState(): Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State> | undefined> {
+    const [metadata] = await this.getMetadata();
+    return metadata.state === null || metadata.state === undefined ? undefined : metadata.state;
+  }
+
   getSchema(): Promise<GetSchemaResponse>;
   getSchema(callback: GetSchemaCallback): void;
   /**
@@ -2039,6 +2060,8 @@ promisifyAll(Database, {
   exclude: [
     'batchTransaction',
     'getMetadata',
+    'getRestoreInfo',
+    'getState',
     'runTransaction',
     'table',
     'updateSchema',

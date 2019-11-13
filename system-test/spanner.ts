@@ -1025,6 +1025,9 @@ describe('Spanner', () => {
       // Wait for backup to complete
       await backupOperation.promise();
 
+      // Look up the backup full name from the operation response to expand any {{project}} tokens
+      const backupFullName = backupOperation.metadata.name;
+
       // Perform restore to a different database
       const restoreDatabase = instance.database(generateName('database'));
       const [restoreOperation] = await restoreDatabase.restore(backup.formattedName_);
@@ -1035,10 +1038,21 @@ describe('Spanner', () => {
       const [databaseMetadata] = await restoreDatabase.getMetadata();
       assert.ok(databaseMetadata.state === 'READY' || databaseMetadata.state === 'READY_OPTIMIZING');
 
+      // Validate restore state of database directly
+      const restoreState = await restoreDatabase.getState();
+      assert.ok(restoreState === 'READY' || restoreState === 'READY_OPTIMIZING');
+
       // Validate new database has restored data
       const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
       const results = rows.map(row => row.toJSON);
       assert.strictEqual(results.length, 1);
+
+      // Validate restore info of database
+      const restoreInfo = await restoreDatabase.getRestoreInfo();
+      assert.strictEqual(restoreInfo!.backupInfo!.backup, backupFullName);
+      const [originalDatabaseMetadata] = await database.getMetadata();
+      assert.strictEqual(restoreInfo!.backupInfo!.sourceDatabase, originalDatabaseMetadata.name);
+      assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
     });
 
     it('should update backup expiry', async () => {
