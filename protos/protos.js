@@ -16837,6 +16837,7 @@
                              * @property {number|null} [nodeCount] Instance nodeCount
                              * @property {google.spanner.admin.instance.v1.Instance.State|null} [state] Instance state
                              * @property {Object.<string,string>|null} [labels] Instance labels
+                             * @property {Array.<string>|null} [endpointUrls] Instance endpointUrls
                              */
     
                             /**
@@ -16849,6 +16850,7 @@
                              */
                             function Instance(properties) {
                                 this.labels = {};
+                                this.endpointUrls = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -16904,6 +16906,14 @@
                             Instance.prototype.labels = $util.emptyObject;
     
                             /**
+                             * Instance endpointUrls.
+                             * @member {Array.<string>} endpointUrls
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.endpointUrls = $util.emptyArray;
+    
+                            /**
                              * Creates a new Instance instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.instance.v1.Instance
@@ -16940,6 +16950,9 @@
                                 if (message.labels != null && message.hasOwnProperty("labels"))
                                     for (var keys = Object.keys(message.labels), i = 0; i < keys.length; ++i)
                                         writer.uint32(/* id 7, wireType 2 =*/58).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.labels[keys[i]]).ldelim();
+                                if (message.endpointUrls != null && message.endpointUrls.length)
+                                    for (var i = 0; i < message.endpointUrls.length; ++i)
+                                        writer.uint32(/* id 8, wireType 2 =*/66).string(message.endpointUrls[i]);
                                 return writer;
                             };
     
@@ -16996,6 +17009,11 @@
                                         key = reader.string();
                                         reader.pos++;
                                         message.labels[key] = reader.string();
+                                        break;
+                                    case 8:
+                                        if (!(message.endpointUrls && message.endpointUrls.length))
+                                            message.endpointUrls = [];
+                                        message.endpointUrls.push(reader.string());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -17061,6 +17079,13 @@
                                         if (!$util.isString(message.labels[key[i]]))
                                             return "labels: string{k:string} expected";
                                 }
+                                if (message.endpointUrls != null && message.hasOwnProperty("endpointUrls")) {
+                                    if (!Array.isArray(message.endpointUrls))
+                                        return "endpointUrls: array expected";
+                                    for (var i = 0; i < message.endpointUrls.length; ++i)
+                                        if (!$util.isString(message.endpointUrls[i]))
+                                            return "endpointUrls: string[] expected";
+                                }
                                 return null;
                             };
     
@@ -17105,6 +17130,13 @@
                                     for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i)
                                         message.labels[keys[i]] = String(object.labels[keys[i]]);
                                 }
+                                if (object.endpointUrls) {
+                                    if (!Array.isArray(object.endpointUrls))
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.endpointUrls: array expected");
+                                    message.endpointUrls = [];
+                                    for (var i = 0; i < object.endpointUrls.length; ++i)
+                                        message.endpointUrls[i] = String(object.endpointUrls[i]);
+                                }
                                 return message;
                             };
     
@@ -17121,6 +17153,8 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.endpointUrls = [];
                                 if (options.objects || options.defaults)
                                     object.labels = {};
                                 if (options.defaults) {
@@ -17145,6 +17179,11 @@
                                     object.labels = {};
                                     for (var j = 0; j < keys2.length; ++j)
                                         object.labels[keys2[j]] = message.labels[keys2[j]];
+                                }
+                                if (message.endpointUrls && message.endpointUrls.length) {
+                                    object.endpointUrls = [];
+                                    for (var j = 0; j < message.endpointUrls.length; ++j)
+                                        object.endpointUrls[j] = message.endpointUrls[j];
                                 }
                                 return object;
                             };
@@ -17836,6 +17875,7 @@
                              * @memberof google.spanner.admin.instance.v1
                              * @interface IGetInstanceRequest
                              * @property {string|null} [name] GetInstanceRequest name
+                             * @property {google.protobuf.IFieldMask|null} [fieldMask] GetInstanceRequest fieldMask
                              */
     
                             /**
@@ -17860,6 +17900,14 @@
                              * @instance
                              */
                             GetInstanceRequest.prototype.name = "";
+    
+                            /**
+                             * GetInstanceRequest fieldMask.
+                             * @member {google.protobuf.IFieldMask|null|undefined} fieldMask
+                             * @memberof google.spanner.admin.instance.v1.GetInstanceRequest
+                             * @instance
+                             */
+                            GetInstanceRequest.prototype.fieldMask = null;
     
                             /**
                              * Creates a new GetInstanceRequest instance using the specified properties.
@@ -17887,6 +17935,8 @@
                                     writer = $Writer.create();
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.fieldMask != null && message.hasOwnProperty("fieldMask"))
+                                    $root.google.protobuf.FieldMask.encode(message.fieldMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
     
@@ -17923,6 +17973,9 @@
                                     switch (tag >>> 3) {
                                     case 1:
                                         message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.fieldMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -17962,6 +18015,11 @@
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     if (!$util.isString(message.name))
                                         return "name: string expected";
+                                if (message.fieldMask != null && message.hasOwnProperty("fieldMask")) {
+                                    var error = $root.google.protobuf.FieldMask.verify(message.fieldMask);
+                                    if (error)
+                                        return "fieldMask." + error;
+                                }
                                 return null;
                             };
     
@@ -17979,6 +18037,11 @@
                                 var message = new $root.google.spanner.admin.instance.v1.GetInstanceRequest();
                                 if (object.name != null)
                                     message.name = String(object.name);
+                                if (object.fieldMask != null) {
+                                    if (typeof object.fieldMask !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.GetInstanceRequest.fieldMask: object expected");
+                                    message.fieldMask = $root.google.protobuf.FieldMask.fromObject(object.fieldMask);
+                                }
                                 return message;
                             };
     
@@ -17995,10 +18058,14 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
-                                if (options.defaults)
+                                if (options.defaults) {
                                     object.name = "";
+                                    object.fieldMask = null;
+                                }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
+                                if (message.fieldMask != null && message.hasOwnProperty("fieldMask"))
+                                    object.fieldMask = $root.google.protobuf.FieldMask.toObject(message.fieldMask, options);
                                 return object;
                             };
     

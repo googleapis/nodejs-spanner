@@ -1657,6 +1657,11 @@
                               "keyType": "string",
                               "type": "string",
                               "id": 7
+                            },
+                            "endpointUrls": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 8
                             }
                           },
                           "nested": {
@@ -1723,6 +1728,10 @@
                                 "(google.api.field_behavior)": "REQUIRED",
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/Instance"
                               }
+                            },
+                            "fieldMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2
                             }
                           }
                         },

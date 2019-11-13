@@ -731,6 +731,12 @@ class InstanceAdminClient {
    * @param {string} request.name
    *   Required. The name of the requested instance. Values are of the form
    *   `projects/<project>/instances/<instance>`.
+   * @param {Object} [request.fieldMask]
+   *   If field_mask is present, specifies the subset of [][google.spanner.admin.instance.v1.Instance] fields that
+   *   should be returned.
+   *   If absent, all [][google.spanner.admin.instance.v1.Instance] fields are returned.
+   *
+   *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
