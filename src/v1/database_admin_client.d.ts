@@ -90,7 +90,7 @@ declare namespace DatabaseAdminClient {
     (error: null | Error, projectId: string): void;
   }
 
-  const enum State {
+  enum State {
     STATE_UNSPECIFIED,
     CREATING,
     READY
