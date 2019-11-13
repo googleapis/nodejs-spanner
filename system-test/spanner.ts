@@ -1112,7 +1112,7 @@ describe('Spanner', () => {
       const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
       const [newBackupCreateResponse] = await newBackup.create();
 
-      // Look up the backup full name from the operation response to expand any {{project}} tokens
+      // Look up the backup full name from the operation response to expand any {{projectId}} tokens
       const newBackupFullName = newBackupCreateResponse.metadata.name;
 
       // List operations and ensure operation for current backup exists

@@ -87,6 +87,12 @@ export interface ListBackupsRequest
   maxApiCalls?: number;
   maxResults?: number;
 }
+export interface ListBackupOperationsRequest
+  extends databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest {
+  autoPaginate?: boolean;
+  maxApiCalls?: number;
+  maxResults?: number;
+}
 export interface ListDatabaseOperationsRequest
   extends databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest {
   autoPaginate?: boolean;
@@ -274,20 +280,29 @@ class Instance extends common.ServiceObject {
     );
   }
 
-  listBackupOperations(): Promise<ListBackupOperationsResponse>;
+  listBackupOperations(query?: ListBackupOperationsRequest): Promise<ListBackupOperationsResponse>;
   listBackupOperations(callback: ListBackupOperationsCallback): void;
-  listBackupOperations(callback?: ListBackupOperationsCallback): void | Promise<ListBackupOperationsResponse> {
+  listBackupOperations(query: ListBackupOperationsRequest, callback: ListBackupOperationsCallback): void;
 
-    const reqOpts = extend(
-      {
-        parent: this.formattedName_,
-      },
-    );
-    this.request<IOperation[]>(
+  listBackupOperations(queryOrCallback?: ListBackupOperationsRequest | ListBackupOperationsCallback,
+                       cb?: ListBackupOperationsCallback): void | Promise<ListBackupOperationsResponse> {
+
+    const callback =
+      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? queryOrCallback
+        : ({} as ListBackupOperationsRequest);
+
+    const reqOpts = extend({}, query, {
+      parent: this.formattedName_,
+    });
+    this.request<IBackup[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
         reqOpts,
+        gaxOpts: query,
       },
       (err, operations, ...args) => {
         callback!(err, operations, ...args);
