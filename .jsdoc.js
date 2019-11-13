@@ -20,13 +20,14 @@ module.exports = {
   opts: {
     readme: './README.md',
     package: './package.json',
-    template: './node_modules/jsdoc-baseline',
+    template: './node_modules/jsdoc-fresh',
     recurse: true,
     verbose: true,
     destination: './docs/'
   },
   plugins: [
-    'plugins/markdown'
+    'plugins/markdown',
+    'jsdoc-region-tag'
   ],
   source: {
     excludePattern: '(^|\\/|\\\\)[._]',
@@ -41,5 +42,8 @@ module.exports = {
     sourceFiles: false,
     systemName: '@google-cloud/spanner',
     theme: 'lumen'
+  },
+  markdown: {
+    idInHeadings: true
   }
 };
