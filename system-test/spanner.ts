@@ -922,13 +922,7 @@ describe('Spanner', () => {
     });
 
     afterEach(async () => {
-      try {
-        // A best effort attempt to delete the database being used by the test, though might not always work
-        await database.delete();
-      } catch (err) {
-        // Might be that there is still a backup in progress, so can't delete the database right now
-        console.warn(`Could not delete database ${database.formattedName_} after test:`, err);
-      }
+      await database.delete();
     });
 
     function futureDateByHours(futureHours: number): PreciseDate {
@@ -1006,7 +1000,10 @@ describe('Spanner', () => {
       const newBackupName = generateName('backup');
       const newBackupExpiryDate = futureDateByHours(12);
       const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      await newBackup.create();
+      const [backupOperation] = await newBackup.create();
+
+      // Wait for backup to complete
+      await backupOperation.promise();
 
       // The backup doesn't need to have finished to appear in the list
       const [backups] = await instance.listBackups();
