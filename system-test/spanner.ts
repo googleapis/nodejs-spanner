@@ -993,6 +993,12 @@ describe('Spanner', () => {
       assert.ok(backupInfo.createTime);
       assert.deepStrictEqual(Number(backupInfo.expireTime!.seconds), backupExpiryDate.toStruct().seconds);
       assert.ok(backupInfo.sizeBytes! > 0);
+
+      // Validate additional metadata functions on backup
+      const backupState = await backup.getState();
+      assert.strictEqual(backupState, 'READY');
+      const expireTime = await backup.getExpireTime();
+      assert.deepStrictEqual(expireTime!.getFullTime(), backupExpiryDate.getFullTime());
     });
 
     it('should list backups', async () => {

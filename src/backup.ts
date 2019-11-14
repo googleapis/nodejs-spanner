@@ -21,7 +21,7 @@ import { RequestCallback, ResourceCallback, } from './common';
 import { EnumKey, RequestConfig, TranslateEnumKeys } from '.';
 import { Metadata, Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
-import { PreciseDate } from '@google-cloud/precise-date';
+import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 
 export type CreateBackupCallback = ResourceCallback<
   GaxOperation,
@@ -161,6 +161,12 @@ class Backup {
     return state === null || state === undefined ? undefined : state;
   }
 
+  async getExpireTime(): Promise<PreciseDate | undefined> {
+    const [backupInfo] = await this.getBackupInfo();
+    const expireTime = backupInfo.expireTime;
+    return expireTime ? new PreciseDate(expireTime as DateStruct) : undefined;
+  }
+
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
   updateExpireTime(expireTime: PreciseDate, callback: UpdateExpireTimeCallback): void;
   updateExpireTime(
@@ -220,7 +226,8 @@ class Backup {
  */
 promisifyAll(Backup, {
   exclude: [
-    'getState'
+    'getState',
+    'getExpireTime'
   ],
 });
 
