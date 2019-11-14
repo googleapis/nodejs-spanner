@@ -1136,7 +1136,7 @@ describe('Spanner', () => {
       assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
     });
 
-    it('should list database operations', async () => {
+    it('should list database operations on an instance', async () => {
       // Look up the database full name from the metadata to expand any {{projectId}} tokens
       const [databaseMetadata] = await database.getMetadata();
       const databaseFullName = databaseMetadata.name;
@@ -1153,6 +1153,22 @@ describe('Spanner', () => {
       assert.strictEqual(databaseCreateOperation.metadata!.type_url,
                          'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata');
       const createMeta = CreateDatabaseMetadata.decode(databaseCreateOperation.metadata!.value!);
+      assert.strictEqual(createMeta.database, databaseFullName);
+    });
+
+    it('should list database operations on a database', async () => {
+      // Look up the database full name from the metadata to expand any {{projectId}} tokens
+      const [databaseMetadata] = await database.getMetadata();
+      const databaseFullName = databaseMetadata.name;
+
+      // List operations
+      const [databaseOperations] = await database.listDatabaseOperations();
+
+      // Validate operation has at least the create operation for the database
+      assert.ok(databaseOperations.length > 0);
+      const databaseCreateOperation =
+        databaseOperations.find(op => op.metadata!.type_url === 'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata');
+      const createMeta = CreateDatabaseMetadata.decode(databaseCreateOperation!.metadata!.value!);
       assert.strictEqual(createMeta.database, databaseFullName);
     });
   });

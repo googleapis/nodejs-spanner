@@ -34,7 +34,7 @@ import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {
   Instance,
   CreateDatabaseOptions,
-  CreateDatabaseCallback,
+  CreateDatabaseCallback, ListDatabaseOperationsRequest, ListDatabaseOperationsResponse,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -1203,7 +1203,24 @@ class Database extends ServiceObject {
       callback!(err, transaction);
     });
   }
-  makePooledRequest_(config: RequestConfig): Promise<Session>;
+
+  async listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse> {
+
+    // Create a query that lists database operations only on this database from the instance
+    // Operation name will be prefixed with the database path for all operations on this database
+    let dbSpecificFilter = `name: ${this.formattedName_}`;
+    if (query && query.filter) {
+      dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
+    }
+    const dbSpecificQuery: ListDatabaseOperationsRequest = {
+      ...query,
+      filter: dbSpecificFilter
+    };
+
+    return await this.instance.listDatabaseOperations(dbSpecificQuery);
+  }
+
+    makePooledRequest_(config: RequestConfig): Promise<Session>;
   makePooledRequest_(
     config: RequestConfig,
     callback: PoolRequestCallback
@@ -2062,6 +2079,7 @@ promisifyAll(Database, {
     'getMetadata',
     'getRestoreInfo',
     'getState',
+    'listDatabaseOperations',
     'runTransaction',
     'table',
     'updateSchema',
