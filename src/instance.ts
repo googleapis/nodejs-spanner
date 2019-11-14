@@ -235,6 +235,9 @@ class Instance extends common.ServiceObject {
     if (!backupId) {
       throw new Error('A backup ID is required to create a backup.');
     }
+    if (!expireTime) {
+      throw new Error('Expire time is required to create a backup.');
+    }
 
     return new Backup(this, backupId, databasePath, expireTime);
   }
