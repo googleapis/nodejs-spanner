@@ -898,7 +898,7 @@ describe('Spanner', () => {
     let projectId: string;
 
     beforeEach(async () => {
-      // New database name per test because can only have one backup per database
+      // New database name per test because there can only be one pending backup per database.
       database = instance.database(generateName('database'));
       const [, operation] = await database.create({
         schema: `
