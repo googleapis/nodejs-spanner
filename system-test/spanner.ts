@@ -973,6 +973,16 @@ describe('Spanner', () => {
       }
     });
 
+    it('should return false for a backup that does not exist', async() => {
+      // This backup won't exist, we're just generating the name without creating the backup itself
+      const backupName = generateName('backup');
+      const backupExpiryDate = futureDateByHours(12);
+      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
+
+      const exists = await backup.exists();
+      assert.strictEqual(exists, false);
+    });
+
     it('should create and complete a backup', async () => {
       // Create backup
       const backupName = generateName('backup');
@@ -999,6 +1009,8 @@ describe('Spanner', () => {
       assert.strictEqual(backupState, 'READY');
       const expireTime = await backup.getExpireTime();
       assert.deepStrictEqual(expireTime!.getFullTime(), backupExpiryDate.getFullTime());
+      const exists = await backup.exists();
+      assert.strictEqual(exists, true);
     });
 
     it('should list backups', async () => {

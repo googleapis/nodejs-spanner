@@ -22,6 +22,7 @@ import { EnumKey, RequestConfig, TranslateEnumKeys } from '.';
 import { Metadata, Operation as GaxOperation } from 'google-gax';
 import * as extend from 'extend';
 import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
+import { status } from "grpc";
 
 export type CreateBackupCallback = ResourceCallback<
   GaxOperation,
@@ -167,6 +168,24 @@ class Backup {
     return expireTime ? new PreciseDate(expireTime as DateStruct) : undefined;
   }
 
+  async exists(): Promise<boolean> {
+    try {
+      // Attempt to read metadata to determine whether backup exists
+      await this.getBackupInfo();
+
+      // Found therefore it exists
+      return true;
+    } catch (err) {
+      if (err.code === status.NOT_FOUND) {
+        // Not found therefore does not exist
+        return false;
+      }
+
+      // Some other error occurred, rethrow
+      throw err;
+    }
+  }
+
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
   updateExpireTime(expireTime: PreciseDate, callback: UpdateExpireTimeCallback): void;
   updateExpireTime(
@@ -227,7 +246,8 @@ class Backup {
 promisifyAll(Backup, {
   exclude: [
     'getState',
-    'getExpireTime'
+    'getExpireTime',
+    'exists'
   ],
 });
 
