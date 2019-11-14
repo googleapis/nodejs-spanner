@@ -709,8 +709,10 @@ describe('InstanceAdminClient', () => {
 
       // Mock request
       const resource = 'resource-341064690';
+      const permissions = [];
       const request = {
         resource: resource,
+        permissions: permissions,
       };
 
       // Mock response
@@ -737,8 +739,10 @@ describe('InstanceAdminClient', () => {
 
       // Mock request
       const resource = 'resource-341064690';
+      const permissions = [];
       const request = {
         resource: resource,
+        permissions: permissions,
       };
 
       // Mock Grpc layer

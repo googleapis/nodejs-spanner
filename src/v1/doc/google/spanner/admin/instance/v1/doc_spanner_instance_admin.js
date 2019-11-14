@@ -171,6 +171,16 @@ const InstanceConfig = {
  *   as the string:  name + "_" + value  would prove problematic if we were to
  *   allow "_" in a future release.
  *
+ * @property {string[]} endpointUrls
+ *   Output only. The endpoint URLs based on the instance config.
+ *   For example, instances located in a specific cloud region (or multi region)
+ *   such as nam3, would have a nam3 specific endpoint URL.
+ *   This URL is to be used implictly by SDK clients, with fallback to default
+ *   URL. These endpoints are intended to optimize the network routing between
+ *   the client and the instance's serving resources.
+ *   If multiple endpoints are present,
+ *   client may establish connections using any of the given URLs.
+ *
  * @typedef Instance
  * @memberof google.spanner.admin.instance.v1
  * @see [google.spanner.admin.instance.v1.Instance definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
@@ -274,6 +284,13 @@ const GetInstanceConfigRequest = {
  * @property {string} name
  *   Required. The name of the requested instance. Values are of the form
  *   `projects/<project>/instances/<instance>`.
+ *
+ * @property {Object} fieldMask
+ *   If field_mask is present, specifies the subset of [][google.spanner.admin.instance.v1.Instance] fields that
+ *   should be returned.
+ *   If absent, all [][google.spanner.admin.instance.v1.Instance] fields are returned.
+ *
+ *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
  *
  * @typedef GetInstanceRequest
  * @memberof google.spanner.admin.instance.v1
