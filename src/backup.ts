@@ -104,7 +104,7 @@ class Backup {
    * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
    * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
    * const [backupOperation] = await backup.create();
-   * // To wait until the backup has completed, await completion of the backup operation as well
+   * // Await completion of the backup operation.
    * await backupOperation.promise();
    */
   create(): Promise<CreateBackupResponse>;
