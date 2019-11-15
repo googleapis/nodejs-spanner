@@ -42,7 +42,7 @@ const fakePfy = extend({}, pfy, {
       return;
     }
     promisified = true;
-    assert.deepStrictEqual(options.exclude, ['database']);
+    assert.deepStrictEqual(options.exclude, ['database', 'backup']);
   },
 });
 

@@ -40,6 +40,9 @@ const fakePfy = extend({}, pfy, {
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
       'getMetadata',
+      'getRestoreInfo',
+      'getState',
+      'listDatabaseOperations',
       'runTransaction',
       'table',
       'updateSchema',
