@@ -903,4 +903,27 @@ describe('Instance', () => {
       });
     });
   });
+
+  describe('backup', () => {
+    const BACKUP_NAME = 'backup-name';
+    const DATABASE_NAME = 'database-name';
+    const EXPIRE_TIME = new PreciseDate(1000);
+
+    it('should throw if a backup ID is not provided', () => {
+      assert.throws(() => {
+        instance.backup(null!, DATABASE_NAME, EXPIRE_TIME);
+      }, /A backup ID is required to create a backup\./);
+    });
+
+    it('should throw if an expite time is not provided', () => {
+      assert.throws(() => {
+        instance.backup(BACKUP_NAME, DATABASE_NAME, null!);
+      }, /Expire time is required to create a backup\./);
+    });
+
+    it('should create a Backup instance', () => {
+      const backup = instance.backup(BACKUP_NAME, DATABASE_NAME, EXPIRE_TIME);
+      assert.strictEqual(backup.formattedName_, 'projects/project-id/instances/instance-name/backups/backup-name');
+    });
+  });
 });
