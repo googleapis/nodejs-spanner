@@ -926,4 +926,80 @@ describe('Instance', () => {
       assert.strictEqual(backup.formattedName_, 'projects/project-id/instances/instance-name/backups/backup-name');
     });
   });
+
+  describe('listBackupOperations', () => {
+    const QUERY = {
+      a: 'b',
+    } as inst.ListBackupOperationsRequest;
+    const ORIGINAL_QUERY = extend({}, QUERY);
+
+    it('should make the correct request', async () => {
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: instance.formattedName_,
+      });
+
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listBackupOperations');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+
+        assert.strictEqual(config.gaxOpts, QUERY);
+      };
+
+      await instance.listBackupOperations(QUERY);
+    });
+
+    it('should not require a query', async () => {
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+      };
+
+      await instance.listBackupOperations();
+    });
+  });
+
+  describe('listDatabaseOperations', () => {
+    const QUERY = {
+      a: 'b',
+    } as inst.ListDatabaseOperationsRequest;
+    const ORIGINAL_QUERY = extend({}, QUERY);
+
+    it('should make the correct request', async () => {
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: instance.formattedName_,
+      });
+
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listDatabaseOperations');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+
+        assert.strictEqual(config.gaxOpts, QUERY);
+      };
+
+      await instance.listDatabaseOperations(QUERY);
+    });
+
+    it('should not require a query', async () => {
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+      };
+
+      await instance.listDatabaseOperations();
+    });
+  });
 });
