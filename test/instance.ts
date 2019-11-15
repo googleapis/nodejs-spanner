@@ -26,6 +26,8 @@ import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
 import {ServiceError} from 'grpc';
 import * as sinon from 'sinon';
+import { Backup } from '../src/backup';
+import { PreciseDate } from '@google-cloud/precise-date';
 
 const fakePaginator = {
   paginator: {
@@ -804,6 +806,100 @@ describe('Instance', () => {
     it('should not require a callback', () => {
       assert.doesNotThrow(() => {
         instance.setMetadata(METADATA);
+      });
+    });
+  });
+
+  describe('listBackups', () => {
+    const QUERY = {
+      a: 'b',
+    } as inst.ListBackupsRequest;
+    const ORIGINAL_QUERY = extend({}, QUERY);
+
+    it('should make the correct request', async () => {
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: instance.formattedName_,
+      });
+
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listBackups');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+
+        assert.strictEqual(config.gaxOpts, QUERY);
+      };
+
+      await instance.listBackups(QUERY);
+    });
+
+    it('should not require a query', async () => {
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+      };
+
+      await instance.listBackups();
+    });
+
+    describe('error', () => {
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+
+      beforeEach(() => {
+        instance.request = (config, callback: Function) => {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should execute callback with original arguments', done => {
+        instance.listBackups(QUERY, (...args) => {
+          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+          done();
+        });
+      });
+    });
+
+    describe('success', () => {
+      const BACKUPS = [
+        {
+          name: 'backup-name',
+          database: 'database-name',
+          expireTime: new PreciseDate(1000)
+        },
+      ];
+
+      // tslint:disable-next-line no-any
+      const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, {}];
+
+      beforeEach(() => {
+        instance.request = (config, callback) => {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should create and return Backup objects', done => {
+        const fakeBackupInstance = {};
+
+        instance.backup = (backupId, databasePath, expireTime) => {
+          assert.strictEqual(backupId, BACKUPS[0].name);
+          assert.strictEqual(databasePath, BACKUPS[0].database);
+          assert.strictEqual(expireTime.getFullTime(), BACKUPS[0].expireTime.getFullTime());
+          return fakeBackupInstance as Backup;
+        };
+
+        instance.listBackups(QUERY, (...args) => {
+          assert.ifError(args[0]);
+          assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
+          const backup = args[1]!.pop();
+          assert.strictEqual(backup, fakeBackupInstance);
+          assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
+          done();
+        });
       });
     });
   });
