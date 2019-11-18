@@ -2083,5 +2083,50 @@ describe('Database', () => {
     });
   });
 
-  //TODO restore() tests
+  describe('restore', () => {
+
+    const BACKUP_NAME = 'backup-name';
+    const BACKUP_FORMATTED_NAME = INSTANCE.formattedName_ + '/backups/' + BACKUP_NAME;
+
+    it('should make the correct request', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        databaseId: NAME,
+        parent: INSTANCE.formattedName_,
+        backup: BACKUP_FORMATTED_NAME
+      });
+
+      database.id = NAME;
+      database.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'restoreDatabase');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+      };
+
+      await database.restore(BACKUP_FORMATTED_NAME);
+    });
+
+    describe('error', () => {
+      const ERROR = new Error('Error.');
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        database.request = (config, callback: Function) => {
+          callback(ERROR, null, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with error & API response', done => {
+        database.restore(BACKUP_FORMATTED_NAME, (err, resp) => {
+          assert.strictEqual(err, ERROR);
+          assert.strictEqual(resp, null);
+          done();
+        });
+      });
+    });
+  });
 });
