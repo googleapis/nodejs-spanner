@@ -268,6 +268,18 @@ describe('Backup', () => {
       const result = await backup.exists();
       assert.strictEqual(result, false);
     });
+
+    it('should rethrow other errors', async () => {
+      const err = { code: grpc.status.INTERNAL };
+      backup.getBackupInfo = async () => { throw err };
+
+      try {
+        await backup.exists();
+        assert.fail('Should have rethrown error');
+      } catch (thrown) {
+        assert.deepStrictEqual(thrown, err);
+      }
+    });
   });
 
   describe('updateExpireTime', () => {
