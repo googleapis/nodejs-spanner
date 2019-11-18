@@ -2038,4 +2038,21 @@ describe('Database', () => {
       assert.strictEqual(session.calledWith_[1], NAME);
     });
   });
+
+  describe('getState', () => {
+    it('should get state from database metadata', async () => {
+      database.getMetadata = async () => [{ state: 'READY' }];
+      const result = await database.getState();
+      assert.strictEqual(result, 'READY');
+    });
+  });
+
+  describe('getRestoreInfo', () => {
+    it('should get restore info from database metadata', async () => {
+      const restoreInfo = { sourceType: 'BACKUP' };
+      database.getMetadata = async () => [{ restoreInfo }];
+      const result = await database.getRestoreInfo();
+      assert.deepStrictEqual(result, restoreInfo);
+    });
+  });
 });
