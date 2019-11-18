@@ -335,4 +335,42 @@ describe('Backup', () => {
       });
     });
   });
+
+  describe('delete', () => {
+    it('should make the correct request', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        name: BACKUP_FORMATTED_NAME,
+      });
+
+      backup.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'deleteBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+      };
+
+      await backup.deleteBackup();
+    });
+
+    describe('error', () => {
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
+
+      beforeEach(() => {
+        backup.request = (config, callback: Function) => {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should execute callback with original arguments', done => {
+        backup.deleteBackup((...args) => {
+          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+          done();
+        });
+      });
+    });
+  });
 });
