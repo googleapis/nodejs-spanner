@@ -269,4 +269,70 @@ describe('Backup', () => {
       assert.strictEqual(result, false);
     });
   });
+
+  describe('updateExpireTime', () => {
+    const NEW_EXPIRE_TIME = new PreciseDate(1977, 1, 10);
+
+    it('should make the correct request', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        backup: {
+          name: BACKUP_FORMATTED_NAME,
+          expireTime: NEW_EXPIRE_TIME.toStruct()
+        },
+        updateMask: {
+          paths: ['expire_time']
+        }
+      });
+
+      backup.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'updateBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+      };
+
+      await backup.updateExpireTime(NEW_EXPIRE_TIME);
+    });
+
+    describe('error', () => {
+      const ERROR = new Error('Error.');
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        backup.request = (config, callback: Function) => {
+          callback(ERROR, null, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with error & API response', done => {
+        backup.updateExpireTime(NEW_EXPIRE_TIME, (err, resp) => {
+          assert.strictEqual(err, ERROR);
+          assert.strictEqual(resp, undefined);
+          done();
+        });
+      });
+    });
+
+    describe('success', () => {
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        backup.request = (config, callback: Function) => {
+          callback(null, null, API_RESPONSE);
+        };
+      });
+
+      it('should return same backup object on successful update', done => {
+        backup.updateExpireTime(NEW_EXPIRE_TIME, (...args) => {
+          assert.ifError(args[0]);
+          assert.strictEqual(args[1], backup);
+          done();
+        });
+      });
+    });
+  });
 });

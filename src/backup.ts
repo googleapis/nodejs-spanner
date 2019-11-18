@@ -211,7 +211,7 @@ class Backup {
         reqOpts,
       },
       (err) => {
-        callback!(err, this);
+        callback!(err, err ? undefined : this);
       }
     );
   }
