@@ -27,6 +27,7 @@ import {Instance} from '../src';
 import { PreciseDate } from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
 import { Backup, GetBackupInfoResponse } from '../src/backup';
+import * as grpc from 'grpc';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -249,6 +250,23 @@ describe('Backup', () => {
 
       const result = await backup.getExpireTime();
       assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
+    });
+  });
+
+  describe('exists', () => {
+    it('should return true when backup info indicates backup exists', async () => {
+      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [{}];
+      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+
+      const result = await backup.exists();
+      assert.strictEqual(result, true);
+    });
+
+    it('should return false when backup info indicates backup does not exist', async () => {
+      backup.getBackupInfo = async () => { throw { code: grpc.status.NOT_FOUND }};
+
+      const result = await backup.exists();
+      assert.strictEqual(result, false);
     });
   });
 });
