@@ -150,4 +150,77 @@ describe('Backup', () => {
       });
     });
   });
+
+  describe('getBackupInfo', () => {
+    const BACKUP_NAME = 'backup-name';
+
+    it('should make the correct request', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        name: BACKUP_FORMATTED_NAME,
+      });
+
+      backup.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'getBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+      };
+
+      await backup.getBackupInfo();
+    });
+
+    describe('error', () => {
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
+
+      beforeEach(() => {
+        backup.request = (config, callback: Function) => {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should execute callback with original arguments', done => {
+        backup.getBackupInfo((...args) => {
+          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+          done();
+        });
+      });
+    });
+
+    describe('success', () => {
+      const INFO = {
+        name: 'backup-name',
+        database: 'database-name',
+        expireTime: BACKUP_EXPIRE_TIME
+      };
+
+      // tslint:disable-next-line no-any
+      const REQUEST_RESPONSE_ARGS: any = [null, INFO, {}];
+
+      beforeEach(() => {
+        backup.request = (config, callback: Function) => {
+          callback.apply(null, REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should get backup info', done => {
+        const fakeInfo = {
+          name: BACKUP_NAME,
+          database: DATABASE_NAME,
+          expireTime: BACKUP_EXPIRE_TIME
+        };
+
+        backup.getBackupInfo((...args) => {
+          assert.ifError(args[0]);
+          assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
+          const backupInfo = args[1];
+          assert.deepStrictEqual(backupInfo, fakeInfo);
+          done();
+        });
+      });
+    });
+  });
 });
