@@ -26,7 +26,7 @@ import * as pfy from '@google-cloud/promisify';
 import {Instance} from '../src';
 import { PreciseDate } from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
-import { Backup } from '../src/backup';
+import { Backup, GetBackupInfoResponse } from '../src/backup';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -221,6 +221,34 @@ describe('Backup', () => {
           done();
         });
       });
+    });
+  });
+
+  describe('getState', () => {
+    it('should return the state from backup info', async () => {
+      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
+        {
+          state: 'CREATING'
+        }
+      ];
+      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+
+      const result = await backup.getState();
+      assert.strictEqual(result, 'CREATING');
+    });
+  });
+
+  describe('getExpireTime', () => {
+    it('should return the expire time from backup info', async () => {
+      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
+        {
+           expireTime: BACKUP_EXPIRE_TIME.toStruct()
+        }
+      ];
+      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+
+      const result = await backup.getExpireTime();
+      assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
     });
   });
 });

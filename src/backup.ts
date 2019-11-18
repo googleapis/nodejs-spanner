@@ -44,7 +44,7 @@ export type CreateBackupResponse = [
  */
 type IBackupTranslatedEnum = TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IBackup, 'state', typeof databaseAdmin.spanner.admin.database.v1.Backup.State>;
 
-type GetBackupInfoResponse = [IBackupTranslatedEnum];
+export type GetBackupInfoResponse = [IBackupTranslatedEnum];
 type GetBackupInfoCallback = RequestCallback<
   IBackupTranslatedEnum
 >;
