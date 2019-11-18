@@ -29,6 +29,7 @@ import * as pfy from '@google-cloud/promisify';
 import * as db from '../src/database';
 import {Instance} from '../src';
 import {TimestampBounds} from '../src/transaction';
+import { IOperation } from '../src/instance';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -2055,4 +2056,32 @@ describe('Database', () => {
       assert.deepStrictEqual(result, restoreInfo);
     });
   });
+
+  describe('listDatabaseOperations', () => {
+    it('should create filter for querying the database', async () => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+
+      database.instance.listDatabaseOperations = async query => {
+        assert.strictEqual(query.filter, `name: ${DATABASE_FORMATTED_NAME}`);
+        return [operations, {}]
+      };
+
+      const [results] = await database.listDatabaseOperations();
+      assert.deepStrictEqual(results, operations);
+    });
+
+    it('should create filter for querying the database in combination with user supplied filter', async () => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+
+      database.instance.listDatabaseOperations = async query => {
+        assert.strictEqual(query.filter, `(name: ${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`);
+        return [operations, {}]
+      };
+
+      const [results] = await database.listDatabaseOperations({filter: 'someOtherAttribute: aValue'});
+      assert.deepStrictEqual(results, operations);
+    });
+  });
+
+  //TODO restore() tests
 });
