@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 (function(global, factory) { /* global define, require, module */
 
@@ -4417,6 +4431,7 @@
                  * @property {string|null} [phpMetadataNamespace] FileOptions phpMetadataNamespace
                  * @property {string|null} [rubyPackage] FileOptions rubyPackage
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] FileOptions uninterpretedOption
+                 * @property {Array.<google.api.IResourceDescriptor>|null} [".google.api.resourceDefinition"] FileOptions .google.api.resourceDefinition
                  */
     
                 /**
@@ -4429,6 +4444,7 @@
                  */
                 function FileOptions(properties) {
                     this.uninterpretedOption = [];
+                    this[".google.api.resourceDefinition"] = [];
                     if (properties)
                         for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                             if (properties[keys[i]] != null)
@@ -4604,6 +4620,14 @@
                 FileOptions.prototype.uninterpretedOption = $util.emptyArray;
     
                 /**
+                 * FileOptions .google.api.resourceDefinition.
+                 * @member {Array.<google.api.IResourceDescriptor>} .google.api.resourceDefinition
+                 * @memberof google.protobuf.FileOptions
+                 * @instance
+                 */
+                FileOptions.prototype[".google.api.resourceDefinition"] = $util.emptyArray;
+    
+                /**
                  * Creates a new FileOptions instance using the specified properties.
                  * @function create
                  * @memberof google.protobuf.FileOptions
@@ -4670,6 +4694,9 @@
                     if (message.uninterpretedOption != null && message.uninterpretedOption.length)
                         for (var i = 0; i < message.uninterpretedOption.length; ++i)
                             $root.google.protobuf.UninterpretedOption.encode(message.uninterpretedOption[i], writer.uint32(/* id 999, wireType 2 =*/7994).fork()).ldelim();
+                    if (message[".google.api.resourceDefinition"] != null && message[".google.api.resourceDefinition"].length)
+                        for (var i = 0; i < message[".google.api.resourceDefinition"].length; ++i)
+                            $root.google.api.ResourceDescriptor.encode(message[".google.api.resourceDefinition"][i], writer.uint32(/* id 1053, wireType 2 =*/8426).fork()).ldelim();
                     return writer;
                 };
     
@@ -4768,6 +4795,11 @@
                             if (!(message.uninterpretedOption && message.uninterpretedOption.length))
                                 message.uninterpretedOption = [];
                             message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                            break;
+                        case 1053:
+                            if (!(message[".google.api.resourceDefinition"] && message[".google.api.resourceDefinition"].length))
+                                message[".google.api.resourceDefinition"] = [];
+                            message[".google.api.resourceDefinition"].push($root.google.api.ResourceDescriptor.decode(reader, reader.uint32()));
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -4879,6 +4911,15 @@
                                 return "uninterpretedOption." + error;
                         }
                     }
+                    if (message[".google.api.resourceDefinition"] != null && message.hasOwnProperty(".google.api.resourceDefinition")) {
+                        if (!Array.isArray(message[".google.api.resourceDefinition"]))
+                            return ".google.api.resourceDefinition: array expected";
+                        for (var i = 0; i < message[".google.api.resourceDefinition"].length; ++i) {
+                            var error = $root.google.api.ResourceDescriptor.verify(message[".google.api.resourceDefinition"][i]);
+                            if (error)
+                                return ".google.api.resourceDefinition." + error;
+                        }
+                    }
                     return null;
                 };
     
@@ -4956,6 +4997,16 @@
                             message.uninterpretedOption[i] = $root.google.protobuf.UninterpretedOption.fromObject(object.uninterpretedOption[i]);
                         }
                     }
+                    if (object[".google.api.resourceDefinition"]) {
+                        if (!Array.isArray(object[".google.api.resourceDefinition"]))
+                            throw TypeError(".google.protobuf.FileOptions..google.api.resourceDefinition: array expected");
+                        message[".google.api.resourceDefinition"] = [];
+                        for (var i = 0; i < object[".google.api.resourceDefinition"].length; ++i) {
+                            if (typeof object[".google.api.resourceDefinition"][i] !== "object")
+                                throw TypeError(".google.protobuf.FileOptions..google.api.resourceDefinition: object expected");
+                            message[".google.api.resourceDefinition"][i] = $root.google.api.ResourceDescriptor.fromObject(object[".google.api.resourceDefinition"][i]);
+                        }
+                    }
                     return message;
                 };
     
@@ -4972,8 +5023,10 @@
                     if (!options)
                         options = {};
                     var object = {};
-                    if (options.arrays || options.defaults)
+                    if (options.arrays || options.defaults) {
                         object.uninterpretedOption = [];
+                        object[".google.api.resourceDefinition"] = [];
+                    }
                     if (options.defaults) {
                         object.javaPackage = "";
                         object.javaOuterClassname = "";
@@ -5040,6 +5093,11 @@
                         object.uninterpretedOption = [];
                         for (var j = 0; j < message.uninterpretedOption.length; ++j)
                             object.uninterpretedOption[j] = $root.google.protobuf.UninterpretedOption.toObject(message.uninterpretedOption[j], options);
+                    }
+                    if (message[".google.api.resourceDefinition"] && message[".google.api.resourceDefinition"].length) {
+                        object[".google.api.resourceDefinition"] = [];
+                        for (var j = 0; j < message[".google.api.resourceDefinition"].length; ++j)
+                            object[".google.api.resourceDefinition"][j] = $root.google.api.ResourceDescriptor.toObject(message[".google.api.resourceDefinition"][j], options);
                     }
                     return object;
                 };
@@ -16837,6 +16895,7 @@
                              * @property {number|null} [nodeCount] Instance nodeCount
                              * @property {google.spanner.admin.instance.v1.Instance.State|null} [state] Instance state
                              * @property {Object.<string,string>|null} [labels] Instance labels
+                             * @property {Array.<string>|null} [endpointUris] Instance endpointUris
                              */
     
                             /**
@@ -16849,6 +16908,7 @@
                              */
                             function Instance(properties) {
                                 this.labels = {};
+                                this.endpointUris = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -16904,6 +16964,14 @@
                             Instance.prototype.labels = $util.emptyObject;
     
                             /**
+                             * Instance endpointUris.
+                             * @member {Array.<string>} endpointUris
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.endpointUris = $util.emptyArray;
+    
+                            /**
                              * Creates a new Instance instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.instance.v1.Instance
@@ -16940,6 +17008,9 @@
                                 if (message.labels != null && message.hasOwnProperty("labels"))
                                     for (var keys = Object.keys(message.labels), i = 0; i < keys.length; ++i)
                                         writer.uint32(/* id 7, wireType 2 =*/58).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.labels[keys[i]]).ldelim();
+                                if (message.endpointUris != null && message.endpointUris.length)
+                                    for (var i = 0; i < message.endpointUris.length; ++i)
+                                        writer.uint32(/* id 8, wireType 2 =*/66).string(message.endpointUris[i]);
                                 return writer;
                             };
     
@@ -16996,6 +17067,11 @@
                                         key = reader.string();
                                         reader.pos++;
                                         message.labels[key] = reader.string();
+                                        break;
+                                    case 8:
+                                        if (!(message.endpointUris && message.endpointUris.length))
+                                            message.endpointUris = [];
+                                        message.endpointUris.push(reader.string());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -17061,6 +17137,13 @@
                                         if (!$util.isString(message.labels[key[i]]))
                                             return "labels: string{k:string} expected";
                                 }
+                                if (message.endpointUris != null && message.hasOwnProperty("endpointUris")) {
+                                    if (!Array.isArray(message.endpointUris))
+                                        return "endpointUris: array expected";
+                                    for (var i = 0; i < message.endpointUris.length; ++i)
+                                        if (!$util.isString(message.endpointUris[i]))
+                                            return "endpointUris: string[] expected";
+                                }
                                 return null;
                             };
     
@@ -17105,6 +17188,13 @@
                                     for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i)
                                         message.labels[keys[i]] = String(object.labels[keys[i]]);
                                 }
+                                if (object.endpointUris) {
+                                    if (!Array.isArray(object.endpointUris))
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.endpointUris: array expected");
+                                    message.endpointUris = [];
+                                    for (var i = 0; i < object.endpointUris.length; ++i)
+                                        message.endpointUris[i] = String(object.endpointUris[i]);
+                                }
                                 return message;
                             };
     
@@ -17121,6 +17211,8 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.endpointUris = [];
                                 if (options.objects || options.defaults)
                                     object.labels = {};
                                 if (options.defaults) {
@@ -17145,6 +17237,11 @@
                                     object.labels = {};
                                     for (var j = 0; j < keys2.length; ++j)
                                         object.labels[keys2[j]] = message.labels[keys2[j]];
+                                }
+                                if (message.endpointUris && message.endpointUris.length) {
+                                    object.endpointUris = [];
+                                    for (var j = 0; j < message.endpointUris.length; ++j)
+                                        object.endpointUris[j] = message.endpointUris[j];
                                 }
                                 return object;
                             };
@@ -17836,6 +17933,7 @@
                              * @memberof google.spanner.admin.instance.v1
                              * @interface IGetInstanceRequest
                              * @property {string|null} [name] GetInstanceRequest name
+                             * @property {google.protobuf.IFieldMask|null} [fieldMask] GetInstanceRequest fieldMask
                              */
     
                             /**
@@ -17860,6 +17958,14 @@
                              * @instance
                              */
                             GetInstanceRequest.prototype.name = "";
+    
+                            /**
+                             * GetInstanceRequest fieldMask.
+                             * @member {google.protobuf.IFieldMask|null|undefined} fieldMask
+                             * @memberof google.spanner.admin.instance.v1.GetInstanceRequest
+                             * @instance
+                             */
+                            GetInstanceRequest.prototype.fieldMask = null;
     
                             /**
                              * Creates a new GetInstanceRequest instance using the specified properties.
@@ -17887,6 +17993,8 @@
                                     writer = $Writer.create();
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.fieldMask != null && message.hasOwnProperty("fieldMask"))
+                                    $root.google.protobuf.FieldMask.encode(message.fieldMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
     
@@ -17923,6 +18031,9 @@
                                     switch (tag >>> 3) {
                                     case 1:
                                         message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.fieldMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -17962,6 +18073,11 @@
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     if (!$util.isString(message.name))
                                         return "name: string expected";
+                                if (message.fieldMask != null && message.hasOwnProperty("fieldMask")) {
+                                    var error = $root.google.protobuf.FieldMask.verify(message.fieldMask);
+                                    if (error)
+                                        return "fieldMask." + error;
+                                }
                                 return null;
                             };
     
@@ -17979,6 +18095,11 @@
                                 var message = new $root.google.spanner.admin.instance.v1.GetInstanceRequest();
                                 if (object.name != null)
                                     message.name = String(object.name);
+                                if (object.fieldMask != null) {
+                                    if (typeof object.fieldMask !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.GetInstanceRequest.fieldMask: object expected");
+                                    message.fieldMask = $root.google.protobuf.FieldMask.fromObject(object.fieldMask);
+                                }
                                 return message;
                             };
     
@@ -17995,10 +18116,14 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
-                                if (options.defaults)
+                                if (options.defaults) {
                                     object.name = "";
+                                    object.fieldMask = null;
+                                }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
+                                if (message.fieldMask != null && message.hasOwnProperty("fieldMask"))
+                                    object.fieldMask = $root.google.protobuf.FieldMask.toObject(message.fieldMask, options);
                                 return object;
                             };
     
@@ -32797,6 +32922,8 @@
                  * @property {Array.<string>|null} [pattern] ResourceDescriptor pattern
                  * @property {string|null} [nameField] ResourceDescriptor nameField
                  * @property {google.api.ResourceDescriptor.History|null} [history] ResourceDescriptor history
+                 * @property {string|null} [plural] ResourceDescriptor plural
+                 * @property {string|null} [singular] ResourceDescriptor singular
                  */
     
                 /**
@@ -32848,6 +32975,22 @@
                 ResourceDescriptor.prototype.history = 0;
     
                 /**
+                 * ResourceDescriptor plural.
+                 * @member {string} plural
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.plural = "";
+    
+                /**
+                 * ResourceDescriptor singular.
+                 * @member {string} singular
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.singular = "";
+    
+                /**
                  * Creates a new ResourceDescriptor instance using the specified properties.
                  * @function create
                  * @memberof google.api.ResourceDescriptor
@@ -32880,6 +33023,10 @@
                         writer.uint32(/* id 3, wireType 2 =*/26).string(message.nameField);
                     if (message.history != null && message.hasOwnProperty("history"))
                         writer.uint32(/* id 4, wireType 0 =*/32).int32(message.history);
+                    if (message.plural != null && message.hasOwnProperty("plural"))
+                        writer.uint32(/* id 5, wireType 2 =*/42).string(message.plural);
+                    if (message.singular != null && message.hasOwnProperty("singular"))
+                        writer.uint32(/* id 6, wireType 2 =*/50).string(message.singular);
                     return writer;
                 };
     
@@ -32927,6 +33074,12 @@
                             break;
                         case 4:
                             message.history = reader.int32();
+                            break;
+                        case 5:
+                            message.plural = reader.string();
+                            break;
+                        case 6:
+                            message.singular = reader.string();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -32985,6 +33138,12 @@
                         case 2:
                             break;
                         }
+                    if (message.plural != null && message.hasOwnProperty("plural"))
+                        if (!$util.isString(message.plural))
+                            return "plural: string expected";
+                    if (message.singular != null && message.hasOwnProperty("singular"))
+                        if (!$util.isString(message.singular))
+                            return "singular: string expected";
                     return null;
                 };
     
@@ -33025,6 +33184,10 @@
                         message.history = 2;
                         break;
                     }
+                    if (object.plural != null)
+                        message.plural = String(object.plural);
+                    if (object.singular != null)
+                        message.singular = String(object.singular);
                     return message;
                 };
     
@@ -33047,6 +33210,8 @@
                         object.type = "";
                         object.nameField = "";
                         object.history = options.enums === String ? "HISTORY_UNSPECIFIED" : 0;
+                        object.plural = "";
+                        object.singular = "";
                     }
                     if (message.type != null && message.hasOwnProperty("type"))
                         object.type = message.type;
@@ -33059,6 +33224,10 @@
                         object.nameField = message.nameField;
                     if (message.history != null && message.hasOwnProperty("history"))
                         object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] : message.history;
+                    if (message.plural != null && message.hasOwnProperty("plural"))
+                        object.plural = message.plural;
+                    if (message.singular != null && message.hasOwnProperty("singular"))
+                        object.singular = message.singular;
                     return object;
                 };
     
