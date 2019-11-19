@@ -136,6 +136,27 @@ class Backup {
     );
   }
 
+  /**
+   * Retrieves all metadata of the backup.
+   *
+   * @see {@link #getState}
+   * @see {@link #getExpireTime}
+   *
+   * @method Backup#getBackupInfo
+   * @returns {Promise<GetBackupInfoResponse>} when resolved, contains metadata of the backup.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = spanner.database('my-database');
+   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
+   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const [backupInfo] = await backup.getBackupInfo();
+   *
+   * // Do something with the metadata
+   * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
+   */
   getBackupInfo(): Promise<GetBackupInfoResponse>;
   getBackupInfo(callback: GetBackupInfoCallback): void;
   getBackupInfo(
@@ -156,18 +177,79 @@ class Backup {
     );
   }
 
+  /**
+   * Retrieves the state of the backup.  The backup state indicates if the backup has completed.
+   *
+   * @see {@link #getBackupInfo}
+   *
+   * @method Backup#getState
+   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>} when
+   *          resolved, contains the current state of the backup if it exists, or undefined if the backup does not
+   *          exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [backups] = await instance.listBackups();
+   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const state = await backup.getState();
+   * const backupCompleted = (state === 'READY');
+   */
   async getState(): Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined> {
     const [backupInfo] = await this.getBackupInfo();
     const state = backupInfo.state;
     return state === null || state === undefined ? undefined : state;
   }
 
+  /**
+   * Retrieves the expiry time of the backup.
+   *
+   * @see {@link #updateExpireTime}
+   * @see {@link #getBackupInfo}
+   *
+   * @method Backup#getExpireTime
+   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>} when
+   *          resolved, contains the current expire time of the backup if it exists, or undefined if the backup does not
+   *          exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [backups] = await instance.listBackups();
+   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const expireTime = await backup.getExpireTime();
+   * console.log(`Backup ${myBackup.formattedName_} expires on ${expireTime.toISOString()}`);
+   */
   async getExpireTime(): Promise<PreciseDate | undefined> {
     const [backupInfo] = await this.getBackupInfo();
     const expireTime = backupInfo.expireTime;
     return expireTime ? new PreciseDate(expireTime as DateStruct) : undefined;
   }
 
+  /**
+   * Checks whether the backup exists.
+   *
+   * @see {@link #getBackupInfo}
+   *
+   * @method Backup#exists
+   * @returns {Promise<boolean>} when resolved, contains true if the backup exists and false if it does not exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = spanner.database('my-database');
+   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
+   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const alreadyExists = await backup.exists();
+   *
+   * // Create new backup only when backup named 'my-backup' does not already exist
+   * if (!alreadyExists) {
+   *   await backup.create();
+   * }
+   */
   async exists(): Promise<boolean> {
     try {
       // Attempt to read metadata to determine whether backup exists
@@ -186,6 +268,23 @@ class Backup {
     }
   }
 
+  /**
+   * Sets the expiry time of a backup.
+   *
+   * @see {@link #getExpireTime}
+   *
+   * @method Backup#updateExpireTime
+   * @returns {Promise<Backup>} when resolved, the backup's expire time will have been updated.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [backups] = await instance.listBackups();
+   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const newExpireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
+   * await myBackup.updateExpireTime(newExpireTime);
+   */
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
   updateExpireTime(expireTime: PreciseDate, callback: UpdateExpireTimeCallback): void;
   updateExpireTime(
@@ -216,6 +315,20 @@ class Backup {
     );
   }
 
+  /**
+   * Deletes a backup.
+   *
+   * @method Backup#deleteBackup
+   * @returns {Promise<void>} when resolved, the backup will have been deleted.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [backups] = await instance.listBackups();
+   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * await myBackup.deleteBackup();
+   */
   deleteBackup(): Promise<void>;
   deleteBackup(callback: DeleteBackupCallback): void;
   deleteBackup(
