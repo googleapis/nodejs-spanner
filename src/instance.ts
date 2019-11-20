@@ -231,6 +231,23 @@ class Instance extends common.ServiceObject {
     this.databases_ = new Map<string, Database>();
   }
 
+  /**
+   * Get a reference to a Backup object.
+   *
+   * @throws {Error} If any parameter is not provided.
+   *
+   * @param {string} backupId The name of the backup.
+   * @param {string} databasePath the path of the backup.
+   * @param {PreciseDate} expireTime expiry time of the backup.
+   * @return {Backup} A Backup object.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
+   * const backup = instance.backup('my-backup', 'projects/my-project/instances/my-instance/databases/my-database', backupExpiryDate);
+   */
   backup(backupId: string, databasePath: string, expireTime: PreciseDate): Backup {
     if (!backupId) {
       throw new Error('A backup ID is required to create a backup.');
@@ -242,6 +259,38 @@ class Instance extends common.ServiceObject {
     return new Backup(this, backupId, databasePath, expireTime);
   }
 
+  /**
+   * Query object for listing backups.
+   *
+   * @typedef {object} ListBackupsRequest
+   * @property {boolean} [autoPaginate=true] Have pagination handled
+   *     automatically.
+   * @property {number} [maxApiCalls] Maximum number of API calls to make.
+   * @property {number} [maxResults] Maximum number of items to return.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} ListBackupsResponse
+   * @property {Backup[]} 0 Array of {@link Backup} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List backups on the instance.  Both completed and in-progress backups are listed if no filter is supplied.
+   *
+   * @see {@link #backup}
+   *
+   * @param query query object for listing backups.
+   * @returns {Promise<ListBackupsResponse>} when resolved, contains a paged list of backups.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [backups] = await instance.listBackups();
+   * // ... then do something with the backups
+   */
   listBackups(query?: ListBackupsRequest): Promise<ListBackupsResponse>;
   listBackups(callback: ListBackupsCallback): void;
   listBackups(query: ListBackupsRequest, callback: ListBackupsCallback): void;
@@ -283,6 +332,38 @@ class Instance extends common.ServiceObject {
     );
   }
 
+  /**
+   * Query object for listing backup operations.
+   *
+   * @typedef {object} ListBackupOperationsRequest
+   * @property {boolean} [autoPaginate=true] Have pagination handled
+   *     automatically.
+   * @property {number} [maxApiCalls] Maximum number of API calls to make.
+   * @property {number} [maxResults] Maximum number of items to return.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} ListBackupOperationsResponse
+   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List pending and completed backup operations for all databases in the instance.
+   *
+   * @see {@link #listOperations}
+   *
+   * @param query query object for listing backup operations.
+   * @returns {Promise<ListBackupOperationsResponse>} when resolved, contains a paged list of backup operations.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [operations] = await instance.listBackupOperations();
+   * // ... then do something with the operations
+   */
   listBackupOperations(query?: ListBackupOperationsRequest): Promise<ListBackupOperationsResponse>;
   listBackupOperations(callback: ListBackupOperationsCallback): void;
   listBackupOperations(query: ListBackupOperationsRequest, callback: ListBackupOperationsCallback): void;
@@ -313,6 +394,38 @@ class Instance extends common.ServiceObject {
     );
   }
 
+  /**
+   * Query object for listing database operations.
+   *
+   * @typedef {object} ListDatabaseOperationsRequest
+   * @property {boolean} [autoPaginate=true] Have pagination handled
+   *     automatically.
+   * @property {number} [maxApiCalls] Maximum number of API calls to make.
+   * @property {number} [maxResults] Maximum number of items to return.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} ListDatabaseOperationsResponse
+   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List pending and completed operations for all databases in the instance.
+   *
+   * @see {@link Database.listDatabaseOperations}
+   *
+   * @param query query object for listing database operations.
+   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [operations] = await instance.listDatabaseOperations();
+   * // ... then do something with the operations
+   */
   listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse>;
   listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
   listDatabaseOperations(query: ListDatabaseOperationsRequest, callback: ListDatabaseOperationsCallback): void;
