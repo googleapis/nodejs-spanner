@@ -1204,6 +1204,39 @@ class Database extends ServiceObject {
     });
   }
 
+  /**
+   * Query object for listing database operations.
+   *
+   * @typedef {object} ListDatabaseOperationsRequest
+   * @property {boolean} [autoPaginate=true] Have pagination handled
+   *     automatically.
+   * @property {number} [maxApiCalls] Maximum number of API calls to make.
+   * @property {number} [maxResults] Maximum number of items to return.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} ListDatabaseOperationsResponse
+   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List pending and completed operations for the database.
+   *
+   * @see {@link Instance.listDatabaseOperations}
+   *
+   * @param query query object for listing database operations.
+   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const [operations] = await database.listDatabaseOperations();
+   * // ... then do something with the operations
+   */
   async listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse> {
 
     // Create a query that lists database operations only on this database from the instance
@@ -1300,6 +1333,22 @@ class Database extends ServiceObject {
     return waitForSessionStream;
   }
 
+  /**
+   * Restore a backup into this database.  When this call completes, the restore will have commenced but will not
+   * necessarily have completed.
+   *
+   * @param backupPath the path of the backup to restore.
+   * @returns Promise<RestoreDatabaseResponse> when resolved, contains the restore operation.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const [restoreOperation] = await restoreDatabase.restore('projects/my-project/instances/my-instance/backups/my-backup');
+   * // Wait for restore to complete
+   * await restoreOperation.promise();
+   */
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
 
