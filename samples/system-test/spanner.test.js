@@ -30,17 +30,41 @@ const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
 const dmlCmd = `node dml.js`;
 const datatypesCmd = `node datatypes.js`;
+const backupsCmd = `node backups.js`;
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
-const INSTANCE_ID = `test-instance-${date}`;
+//const INSTANCE_ID = `test-instance-${date}`;
+const INSTANCE_ID = `test-instance`; // TODO sample-backup: hardcode instance
 const DATABASE_ID = `test-database-${date}`;
+const BACKUP_ID = `test-backup-${date}`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
+  // TODO sample-backup: temporary endpoint override
+  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
 });
 
 describe('Spanner', () => {
+
+  // TODO sample-backup: change before/after to use specific instance and only delete DB, not instance
+  before(async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    try {
+      await database.delete();
+    } catch (err) {
+      // Ignore error
+    }
+  });
+
+  after(async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    await database.delete();
+  });
+
+  /*
   before(async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
@@ -99,7 +123,9 @@ describe('Spanner', () => {
     await database.delete();
     await instance.delete();
   });
+   */
 
+  /*
   // create_database
   it(`should create an example database`, async () => {
     const output = execSync(
@@ -657,5 +683,30 @@ describe('Spanner', () => {
     assert.match(output, /VenueId: 4, VenueName: Venue 4, LastUpdateTime:/);
     assert.match(output, /VenueId: 19, VenueName: Venue 19, LastUpdateTime:/);
     assert.match(output, /VenueId: 42, VenueName: Venue 42, LastUpdateTime:/);
+  });
+
+   */
+
+  // create_database
+  it(`should create an example database`, async () => {
+    const output = execSync(
+        `${backupsCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+        output,
+        new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
+    );
+  });
+
+  // create_backup
+  it(`should create a backup of the database`, async () => {
+    const output = execSync(
+        `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backup created./);
   });
 });
