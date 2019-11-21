@@ -726,4 +726,12 @@ describe('Spanner', () => {
     );
     assert.match(output, /Database restored from backup./);
   });
+
+  // delete_backup
+  it(`should delete a backup`, async () => {
+      const output = execSync(
+          `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, /Backup deleted./);
+  });
 });

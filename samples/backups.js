@@ -117,6 +117,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
 
 async function updateBackupExpireTime(instanceId, databaseId, backupId, projectId) {
   // [START spanner_update_backup_expire_time]
+  // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
@@ -137,10 +138,9 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
-  const databasePath = database.formattedName_;
   const newExpireTime =  new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 2); // two days in the future
 
-  const [backups] = await instance.listBackups({filter:`name:${backupId}`})
+  const [backups] = await instance.listBackups({filter:`name:${backupId}`});
   if (backups.length < 1) {
     console.error(`Backup ${backupId} not found.`);
     return;
@@ -165,7 +165,7 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
 
 async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_restore_backup]
-  // Imports the Google Cloud client library and precise date library
+  // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
   /**
@@ -198,6 +198,44 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // [END spanner_restore_backup]
 }
 
+async function deleteBackup(instanceId, databaseId, backupId, projectId) {
+    // [START spanner_delete_backup]
+    // Imports the Google Cloud client library
+    const {Spanner} = require('@google-cloud/spanner');
+
+    /**
+     * TODO(developer): Uncomment the following lines before running the sample.
+     */
+        // const projectId = 'my-project-id';
+        // const instanceId = 'my-instance';
+        // const databaseId = 'my-database';
+        // const backupId = 'my-backup';
+
+        // Creates a client
+    const spanner = new Spanner({
+            projectId: projectId,
+            apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+        });
+
+    // Gets a reference to a Cloud Spanner instance and database
+    const instance = spanner.instance(instanceId);
+
+    // Find backup to delete
+    const [backups] = await instance.listBackups({filter:`name:${backupId}`});
+    if (backups.length < 1) {
+        console.error(`Backup ${backupId} not found.`);
+        return;
+    }
+    const backup = backups[0];
+
+    // Delete the backup
+    console.log(`Deleting backup ${backupId}.`);
+    await backup.deleteBackup();
+    console.log(`Backup deleted.`);
+
+    // [END spanner_delete_backup]
+}
+
 require(`yargs`)
   .demand(1)
   // TODO sample-backup: remove once there is no more custom endpoint and schema.js's version of this can be used
@@ -225,6 +263,12 @@ require(`yargs`)
     {},
     opts => restoreBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
   )
+  .command(
+    `deleteBackup <instanceName> <databaseName> <backupName> <projectId>`,
+    `Deletes a backup.`,
+    {},
+    opts => deleteBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+    )
   .example(`node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"`)
   .wrap(120)
   .recommendCommands()
