@@ -711,6 +711,14 @@ describe('Spanner', () => {
     assert.match(output, /Backup created./);
   });
 
+  // update_backup_expire_time
+  it(`should update the expire time of a backup`, async () => {
+    const output = execSync(
+        `${backupsCmd} updateBackupExpireTime ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Expire time updated./);
+  });
+
   // restore_backup
   it(`should restore database from a backup`, async () => {
     const output = execSync(

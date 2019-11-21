@@ -115,6 +115,54 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // [END spanner_create_backup]
 }
 
+async function updateBackupExpireTime(instanceId, databaseId, backupId, projectId) {
+  // [START spanner_update_backup_expire_time]
+  const {Spanner} = require('@google-cloud/spanner');
+  const {PreciseDate} = require('@google-cloud/precise-date');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
+
+      // Creates a client
+  const spanner = new Spanner({
+        projectId: projectId,
+        apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+      });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+  const databasePath = database.formattedName_;
+  const newExpireTime =  new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 2); // two days in the future
+
+  const [backups] = await instance.listBackups({filter:`name:${backupId}`})
+  if (backups.length < 1) {
+    console.error(`Backup ${backupId} not found.`);
+    return;
+  }
+  const backup = backups[0];
+
+  // Creates a new backup of the database
+  try {
+    const currentExpireTime = await backup.getExpireTime();
+    console.log(`Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`);
+    console.log(`Updating expire time to ${currentExpireTime.toISOString()}`);
+    await backup.updateExpireTime(newExpireTime);
+    console.log('Expire time updated.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    await database.close();
+  }
+  // [END spanner_update_backup_expire_time]
+}
+
 async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_restore_backup]
   // Imports the Google Cloud client library and precise date library
@@ -164,6 +212,12 @@ require(`yargs`)
     `Creates a backup of a Cloud Spanner database.`,
     {},
     opts => createBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+  )
+  .command(
+    `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,
+    `Updates the expire time of a backup.`,
+    {},
+    opts => updateBackupExpireTime(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
   )
   .command(
     `restoreBackup <instanceName> <databaseName> <backupName> <projectId>`,
