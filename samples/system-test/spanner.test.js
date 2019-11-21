@@ -37,6 +37,7 @@ const PROJECT_ID = process.env.GCLOUD_PROJECT;
 //const INSTANCE_ID = `test-instance-${date}`;
 const INSTANCE_ID = `test-instance`; // TODO sample-backup: hardcode instance
 const DATABASE_ID = `test-database-${date}`;
+const RESTORE_DATABASE_ID = `test-database-${date}-r`;
 const BACKUP_ID = `test-backup-${date}`;
 
 const spanner = new Spanner({
@@ -708,5 +709,13 @@ describe('Spanner', () => {
         `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup created./);
+  });
+
+  // restore_backup
+  it(`should restore database from a backup`, async () => {
+    const output = execSync(
+        `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Database restored from backup./);
   });
 });

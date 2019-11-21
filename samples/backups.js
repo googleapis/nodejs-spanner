@@ -25,11 +25,11 @@ async function createDatabase(instanceId, databaseId, projectId) {
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
-      // const projectId = 'my-project-id';
-      // const instanceId = 'my-instance';
-      // const databaseId = 'my-database';
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
         projectId: projectId,
         apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
@@ -115,6 +115,41 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // [END spanner_create_backup]
 }
 
+async function restoreBackup(instanceId, databaseId, backupId, projectId) {
+  // [START spanner_restore_backup]
+  // Imports the Google Cloud client library and precise date library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
+
+  // Creates a client
+  const spanner = new Spanner({
+        projectId: projectId,
+        apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+      });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  // Restore the database
+  console.log(`Restoring database ${database.formattedName_} from backup ${backupId}.`);
+  const [restoreOperation] = await database.restore(`projects/${projectId}/instances/${instanceId}/backups/${backupId}`);
+
+  // Wait for restore to complete
+  console.log(`Waiting for database restore to complete...`);
+  await restoreOperation.promise();
+
+  console.log(`Database restored from backup.`);
+  // [END spanner_restore_backup]
+}
+
 require(`yargs`)
   .demand(1)
   // TODO sample-backup: remove once there is no more custom endpoint and schema.js's version of this can be used
@@ -129,6 +164,12 @@ require(`yargs`)
     `Creates a backup of a Cloud Spanner database.`,
     {},
     opts => createBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+  )
+  .command(
+    `restoreBackup <instanceName> <databaseName> <backupName> <projectId>`,
+    `Restores a Cloud Spanner database from a backup.`,
+    {},
+    opts => restoreBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
   )
   .example(`node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"`)
   .wrap(120)
