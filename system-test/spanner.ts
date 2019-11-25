@@ -1106,6 +1106,26 @@ describe('Spanner', () => {
       assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
     });
 
+    it('should not be able to restore to an existing database', async () => {
+      // Create a backup
+      const backupName = generateName('backup');
+      const backupExpiryDate = futureDateByHours(12);
+      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
+      const [backupOperation] = await backup.create();
+
+      // Wait for backup to complete
+      await backupOperation.promise();
+
+      // Perform restore to the same database - should fail
+      try {
+        await database.restore(backup.formattedName_);
+        assert.fail('Should not have restored backup over existing database');
+      } catch (err) {
+        // Expect to get error indicating database already exists
+        assert.strictEqual(err.code, status.ALREADY_EXISTS);
+      }
+    });
+
     it('should update backup expiry', async () => {
       // Create a backup that will be updated later
       const newBackupName = generateName('backup');
