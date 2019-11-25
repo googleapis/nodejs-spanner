@@ -1119,6 +1119,20 @@ describe('Spanner', () => {
       }
     });
 
+    it('should be able to delete non-existent backup', async () => {
+      // Get a reference to a backup that doesn't already exist
+      const notExistingBackupName = generateName('backup');
+      const notExistingBackupExpiryDate = futureDateByHours(12);
+      const notExistingBackup = instance.backup(notExistingBackupName, database.formattedName_, notExistingBackupExpiryDate);
+
+      // Verify backup does not exist
+      const nonExistingBackupExists = await notExistingBackup.exists();
+      assert.strictEqual(nonExistingBackupExists, false);
+
+      // Attempt to delete backup - should not fail since backup is already gone
+      await notExistingBackup.deleteBackup();
+    });
+
     it('should list backup operations', async () => {
       // Create a backup
       const newBackupName = generateName('backup');
