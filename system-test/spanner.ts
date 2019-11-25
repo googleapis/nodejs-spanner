@@ -1111,7 +1111,7 @@ describe('Spanner', () => {
       const newBackupName = generateName('backup');
       const newBackupExpiryDate = futureDateByHours(12);
       const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      await newBackup.create();
+      const [newBackupCreateOperation] = await newBackup.create();
 
       // Read metadata, verify expiry date
       const [newBackupInfo] = await newBackup.getBackupInfo();
@@ -1128,6 +1128,19 @@ describe('Spanner', () => {
       const expiryDateFromMetadataAfterUpdate = new PreciseDate(updatedBackupInfo.expireTime as DateStruct);
 
       assert.deepStrictEqual(expiryDateFromMetadataAfterUpdate, updatedBackupExpiryDate);
+
+      // Attempt to update expiry date to the past
+      const expiryDateInPast = futureDateByHours(-24);
+      try {
+        await newBackup.updateExpireTime(expiryDateInPast);
+        assert.fail('Backup should have failed for expiration time in the past');
+      } catch (err) {
+        // Expect to get invalid argument error indicating the expiry date
+        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+      }
+
+      //Finally wait for the backup to complete
+      await newBackupCreateOperation.promise();
     });
 
     it('should delete backup', async () => {
