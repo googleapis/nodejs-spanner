@@ -915,12 +915,6 @@ describe('Instance', () => {
       }, /A backup ID is required to create a backup\./);
     });
 
-    it('should throw if an expite time is not provided', () => {
-      assert.throws(() => {
-        instance.backup(BACKUP_NAME, DATABASE_NAME, null!);
-      }, /Expire time is required to create a backup\./);
-    });
-
     it('should create a Backup instance', () => {
       const backup = instance.backup(BACKUP_NAME, DATABASE_NAME, EXPIRE_TIME);
       assert.strictEqual(backup.formattedName_, 'projects/project-id/instances/instance-name/backups/backup-name');

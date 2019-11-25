@@ -83,8 +83,8 @@ class Backup {
   constructor(
     private instance: Instance,
     private backupId: string,
-    private databasePath: string,
-    private expireTime: PreciseDate
+    private databasePath?: string,
+    private expireTime?: PreciseDate
   ) {
     this.request = instance.request;
     this.formattedName_ = this.instance.formattedName_ + '/backups/' + this.backupId;
@@ -114,6 +114,13 @@ class Backup {
   create(
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
+
+    if (!this.expireTime) {
+      throw new Error('Expire time is required to create a backup.');
+    }
+    if (!this.databasePath) {
+      throw new Error('Database path is required to create a backup.');
+    }
 
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {

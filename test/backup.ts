@@ -150,6 +150,20 @@ describe('Backup', () => {
         });
       });
     });
+
+    it('should throw if a database path is not provided', async () => {
+      await assert.rejects(async () => {
+        const backupWithoutDatabasePath = new Backup(INSTANCE, BACKUP_NAME, undefined, BACKUP_EXPIRE_TIME);
+        await backupWithoutDatabasePath.create();
+      }, /Database path is required to create a backup\./);
+    });
+
+    it('should throw if an expire time is not provided', async () => {
+      await assert.rejects(async () => {
+        const backupWithoutDatabasePath = new Backup(INSTANCE, BACKUP_NAME, DATABASE_FORMATTED_NAME, undefined);
+        await backupWithoutDatabasePath.create();
+      }, /Expire time is required to create a backup\./);
+    });
   });
 
   describe('getBackupInfo', () => {

@@ -237,8 +237,8 @@ class Instance extends common.ServiceObject {
    * @throws {Error} If any parameter is not provided.
    *
    * @param {string} backupId The name of the backup.
-   * @param {string} databasePath the path of the backup.
-   * @param {PreciseDate} expireTime expiry time of the backup.
+   * @param {string} databasePath the path of the backup.  Only needs to be specified for new backups.
+   * @param {PreciseDate} expireTime expiry time of the backup.  Only needs to be specified for new backups.
    * @return {Backup} A Backup object.
    *
    * @example
@@ -251,9 +251,6 @@ class Instance extends common.ServiceObject {
   backup(backupId: string, databasePath: string, expireTime: PreciseDate): Backup {
     if (!backupId) {
       throw new Error('A backup ID is required to create a backup.');
-    }
-    if (!expireTime) {
-      throw new Error('Expire time is required to create a backup.');
     }
 
     return new Backup(this, backupId, databasePath, expireTime);
