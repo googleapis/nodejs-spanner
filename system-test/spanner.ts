@@ -1031,6 +1031,41 @@ describe('Spanner', () => {
       assert.ok(newBackupFromList);
     });
 
+    it('should list backups with pagination', async done => {
+
+      // Create a second database so backups can be done concurrently
+      const database2 = instance.database(generateName('database'));
+      const [, database2CreateOperation] = await database2.create({
+        schema: `
+              CREATE TABLE Albums (
+                AlbumId STRING(1024) NOT NULL,
+                AlbumTitle STRING(1024) NOT NULL,
+              ) PRIMARY KEY(AlbumId)`,
+      });
+      await database2CreateOperation.promise();
+
+      // Create backups
+      const backup1Name = generateName('backup');
+      const backup2Name = generateName('backup');
+      const backupExpiryDate = futureDateByHours(12);
+      const backup1 = instance.backup(backup1Name, database.formattedName_, backupExpiryDate);
+      const backup2 = instance.backup(backup2Name, database2.formattedName_, backupExpiryDate);
+      const [backup1Operation] = await backup1.create();
+      const [backup2Operation] = await backup2.create();
+      const [backups1,, resp1] = await instance.listBackups({pageSize: 1, autoPaginate: false});
+      const [backups2] = await instance.listBackups({pageSize: 1, autoPaginate: false, pageToken: resp1!.nextPageToken});
+      const [backups3] = await instance.listBackups({pageSize: 2, autoPaginate: false});
+      assert.strictEqual(backups1.length, 1);
+      assert.strictEqual(backups2.length, 1);
+      assert.strictEqual(backups3.length, 2);
+      assert.notStrictEqual(backups2[0].formattedName_, backups1[0].formattedName_);
+      assert.deepStrictEqual(backups3, [...backups1, ...backups2]);
+
+      // Finally wait for backups to finish at end of test
+      await backup1Operation.promise();
+      await backup2Operation.promise();
+    });
+
     it('should restore a backup', async () => {
       // Create a backup that will be restored later
       const backupName = generateName('backup');
