@@ -34,6 +34,7 @@ import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import { status } from 'grpc';
 import { google } from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -1129,11 +1130,25 @@ describe('Spanner', () => {
       const newBackupFullName = newBackupCreateResponse.metadata.name;
 
       // List operations and ensure operation for current backup exists
-      const [operations] = await instance.listBackupOperations();
+      // Without a filter
+      const [operationsWithoutFilter] = await instance.listBackupOperations();
       const operationForCurrentBackup =
-        operations.find(operation => operation.name && operation.name.startsWith(newBackupFullName));
+        operationsWithoutFilter.find(operation => operation.name && operation.name.startsWith(newBackupFullName));
       assert.ok(operationForCurrentBackup);
       assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
+
+      // With a filter
+      const [operationsWithFilter] = await instance.listBackupOperations(
+        { filter: `(metadata.@type:CreateBackupMetadata AND metadata.name:${newBackupFullName})`}
+      );
+      const operationForCurrentBackupWithFilter = operationsWithFilter[0];
+      assert.ok(operationForCurrentBackupWithFilter);
+      assert.strictEqual(operationForCurrentBackupWithFilter!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
+      const operationForCurrentBackupWithFilterMetadata = CreateBackupMetadata.decode(operationForCurrentBackupWithFilter!.metadata!.value!);
+      assert.strictEqual(operationForCurrentBackupWithFilterMetadata.database, database.formattedName_);
+
+      // Wait for the backup to complete before finishing the test
+      await newBackupCreateResponse.promise();
     });
 
     it('should list database operations on an instance', async () => {
