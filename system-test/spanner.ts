@@ -1169,7 +1169,7 @@ describe('Spanner', () => {
       const databaseCreateOperation =
         databaseOperations.find(op => op.metadata!.type_url === 'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata');
       const createMeta = CreateDatabaseMetadata.decode(databaseCreateOperation!.metadata!.value!);
-      assert.strictEqual(createMeta.database, databaseFullName);
+      assert.strictEqual(createMetadata.database, databaseFullName);
     });
   });
 
