@@ -1235,7 +1235,6 @@ class Database extends ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const [operations] = await database.listDatabaseOperations();
-   * // ... then do something with the operations
    */
   async listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse> {
 
@@ -1253,7 +1252,7 @@ class Database extends ServiceObject {
     return await this.instance.listDatabaseOperations(dbSpecificQuery);
   }
 
-    makePooledRequest_(config: RequestConfig): Promise<Session>;
+  makePooledRequest_(config: RequestConfig): Promise<Session>;
   makePooledRequest_(
     config: RequestConfig,
     callback: PoolRequestCallback

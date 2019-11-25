@@ -286,7 +286,6 @@ class Instance extends common.ServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const [backups] = await instance.listBackups();
-   * // ... then do something with the backups
    */
   listBackups(query?: ListBackupsRequest): Promise<ListBackupsResponse>;
   listBackups(callback: ListBackupsCallback): void;
@@ -359,7 +358,6 @@ class Instance extends common.ServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const [operations] = await instance.listBackupOperations();
-   * // ... then do something with the operations
    */
   listBackupOperations(query?: ListBackupOperationsRequest): Promise<ListBackupOperationsResponse>;
   listBackupOperations(callback: ListBackupOperationsCallback): void;

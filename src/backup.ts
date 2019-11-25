@@ -160,8 +160,6 @@ class Backup {
    * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
    * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
    * const [backupInfo] = await backup.getBackupInfo();
-   *
-   * // Do something with the metadata
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
   getBackupInfo(): Promise<GetBackupInfoResponse>;
@@ -198,8 +196,7 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [backups] = await instance.listBackups();
-   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const myBackup = instance.backup('my-backup');
    * const state = await backup.getState();
    * const backupCompleted = (state === 'READY');
    */
@@ -224,10 +221,9 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [backups] = await instance.listBackups();
-   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const backup = instance.backup('my-backup');
    * const expireTime = await backup.getExpireTime();
-   * console.log(`Backup ${myBackup.formattedName_} expires on ${expireTime.toISOString()}`);
+   * console.log(`Backup ${backup.formattedName_} expires on ${expireTime.toISOString()}`);
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
     const [backupInfo] = await this.getBackupInfo();
@@ -266,7 +262,6 @@ class Backup {
       return true;
     } catch (err) {
       if (err.code === status.NOT_FOUND) {
-        // Not found therefore does not exist
         return false;
       }
 
@@ -287,8 +282,7 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [backups] = await instance.listBackups();
-   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const myBackup = instance.backup('my-backup');
    * const newExpireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
    * await myBackup.updateExpireTime(newExpireTime);
    */
@@ -332,8 +326,7 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [backups] = await instance.listBackups();
-   * const myBackup = backups.find(backup => backup.formattedName_ === 'projects/my-project/instances/my-instance/backups/my-backup')!;
+   * const myBackup = instance.backup('my-backup');
    * await myBackup.deleteBackup();
    */
   deleteBackup(): Promise<void>;
