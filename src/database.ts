@@ -1240,7 +1240,10 @@ class Database extends ServiceObject {
 
     // Create a query that lists database operations only on this database from the instance
     // Operation name will be prefixed with the database path for all operations on this database
-    let dbSpecificFilter = `name: ${this.formattedName_}`;
+    let dbSpecificFilter =
+      `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${this.formattedName_}) OR ` +
+      `(metadata.@type:RestoreDatabaseMetadata AND metadata.name:${this.formattedName_}) OR ` +
+      `(metadata.@type:UpdateDatabaseDdl AND metadata.database:${this.formattedName_})`;
     if (query && query.filter) {
       dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
     }
