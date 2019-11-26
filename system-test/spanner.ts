@@ -47,10 +47,10 @@ const spanner = new Spanner({
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
 describe('Spanner', () => {
-  //TODO hardcode this so I can run on the Google backup instances
-  //const instance = spanner.instance(generateName('instance'));
-  //const instance = spanner.instance("backups-instance-1");
-  const instance = spanner.instance("test-instance");
+  const envInstanceName = process.env.SPANNERTEST_INSTANCE;
+  // True if a new instance has been created for this test run, false if reusing an existing instance
+  const generateInstanceForTest = !envInstanceName;
+  const instance = envInstanceName ? spanner.instance(envInstanceName) : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
     config: 'regional-us-central1',
@@ -62,15 +62,20 @@ describe('Spanner', () => {
   };
 
   before(async () => {
-    //await deleteOldTestInstances();
-    //TODO also need to modify for testing to not modify existing test backup instances
-    //const [, operation] = await instance.create(INSTANCE_CONFIG);
-    //await operation.promise();
-    console.log(`Not creating temp instance, using + ${instance.formattedName_}...`);
+    if (generateInstanceForTest) {
+      await deleteOldTestInstances();
+      const [, operation] = await instance.create(INSTANCE_CONFIG);
+      await operation.promise();
+    } else {
+      console.log(`Not creating temp instance, using + ${instance.formattedName_}...`);
+    }
   });
 
-  //TODO restore
-  //after(deleteTestInstances);
+  after(async () => {
+    if (generateInstanceForTest) {
+      await deleteTestInstances();
+    }
+  });
 
   describe('types', () => {
     // tslint:disable-next-line: no-any
