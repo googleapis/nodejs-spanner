@@ -41,8 +41,7 @@ const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
-  // TODO temporary endpoint override
-  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+  apiEndpoint: process.env.API_ENDPOINT
 });
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
