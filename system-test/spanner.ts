@@ -1104,6 +1104,10 @@ describe('Spanner', () => {
       const [originalDatabaseMetadata] = await database.getMetadata();
       assert.strictEqual(restoreInfo!.backupInfo!.sourceDatabase, originalDatabaseMetadata.name);
       assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
+
+      // Check that restore operation ends up in the operations list
+      const [restoreOperations] = await restoreDatabase.listDatabaseOperations({filter: 'metadata.@type:RestoreDatabaseMetadata'});
+      assert.strictEqual(restoreOperations.length, 1);
     });
 
     it('should not be able to restore to an existing database', async () => {
