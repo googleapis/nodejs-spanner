@@ -1235,13 +1235,15 @@ class Database extends ServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const [operations] = await database.listDatabaseOperations();
-   * // ... then do something with the operations
    */
   async listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse> {
 
     // Create a query that lists database operations only on this database from the instance
     // Operation name will be prefixed with the database path for all operations on this database
-    let dbSpecificFilter = `name: ${this.formattedName_}`;
+    let dbSpecificFilter =
+      `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${this.formattedName_}) OR ` +
+      `(metadata.@type:RestoreDatabaseMetadata AND metadata.name:${this.formattedName_}) OR ` +
+      `(metadata.@type:UpdateDatabaseDdl AND metadata.database:${this.formattedName_})`;
     if (query && query.filter) {
       dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
     }
@@ -1253,7 +1255,7 @@ class Database extends ServiceObject {
     return await this.instance.listDatabaseOperations(dbSpecificQuery);
   }
 
-    makePooledRequest_(config: RequestConfig): Promise<Session>;
+  makePooledRequest_(config: RequestConfig): Promise<Session>;
   makePooledRequest_(
     config: RequestConfig,
     callback: PoolRequestCallback
