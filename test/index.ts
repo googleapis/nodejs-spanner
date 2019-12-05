@@ -837,6 +837,10 @@ describe('Spanner', () => {
         callback(null, PROJECT_ID);
       };
 
+      asAny(spanner).getInstanceEndPointUris = (name, callback) => {
+        callback(null, []);
+      };
+
       fakeV1[CONFIG.client] = class {
         constructor() {
           return FAKE_GAPIC_CLIENT;
@@ -868,7 +872,7 @@ describe('Spanner', () => {
     it('should create and cache a gapic client', done => {
       fakeV1[CONFIG.client] = class {
         constructor(options) {
-          assert.strictEqual(options, spanner.options);
+          assert.deepStrictEqual(options, spanner.options);
 
           setImmediate(() => {
             const cachedClient = spanner.clients_.get(CONFIG.client);
@@ -925,6 +929,49 @@ describe('Spanner', () => {
 
       spanner.prepareGapicRequest_(CONFIG, (err, requestFn) => {
         requestFn(done); // (FAKE_GAPIC_CLIENT[CONFIG.method])
+      });
+    });
+
+    it('should create and cache a gapic client with end point urls', done => {
+      const instanceId = 'instance-id';
+      const databaseId = 'database-id';
+      asAny(
+        CONFIG.reqOpts
+      ).database = `projects/${OPTIONS.projectId}/instances/${instanceId}/databases/${databaseId}`;
+      asAny(spanner).getInstanceEndPointUris = (name, callback) => {
+        callback(null, ['us-central1-spanner.googleapis.com']);
+      };
+      spanner.options = Object.assign({}, spanner.options, {
+        apiEndpoint: 'us-central1-spanner.googleapis.com',
+      });
+      fakeV1[CONFIG.client] = class {
+        constructor(options) {
+          assert.deepStrictEqual(options, spanner.options);
+
+          setImmediate(() => {
+            const cachedClient = spanner.clients_.get(
+              `${CONFIG.client}-${instanceId}`
+            );
+            assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
+            done();
+          });
+
+          return FAKE_GAPIC_CLIENT;
+        }
+      };
+      spanner.prepareGapicRequest_(CONFIG, assert.ifError);
+    });
+
+    it('should return an error from GetInstance end point uris', done => {
+      const error = new Error('Error.');
+
+      asAny(spanner).getInstanceEndPointUris = (name, callback) => {
+        callback(error);
+      };
+
+      spanner.prepareGapicRequest_(CONFIG, err => {
+        assert.strictEqual(err, error);
+        done();
       });
     });
   });

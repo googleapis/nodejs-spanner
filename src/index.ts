@@ -41,7 +41,8 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
-import {google} from '../proto/spanner';
+import {NormalCallback} from './common';
+import {ServiceError} from '@grpc/grpc-js';
 
 const grpc = require('grpc');
 
@@ -65,6 +66,7 @@ export interface RequestConfig {
   reqOpts: any;
   gaxOpts?: {};
 }
+export type GetInstanceEndPointUrisCallback = NormalCallback<string[]>;
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
  */
@@ -201,6 +203,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  instanceEndPointUrisMapping_: Map<string, string[]>;
   getInstancesStream: Function;
 
   /**
@@ -302,7 +305,7 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
-
+    this.instanceEndPointUrisMapping_ = new Map();
     /**
      * Get a list of {@link Instance} objects as a readable object stream.
      *
@@ -712,6 +715,53 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Get the instance's end point Uris.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#getInstance}.
+   *
+   * @see {@link v1.InstanceAdminClient#getInstance}
+   * @see [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
+   *
+   * @param {GetInstanceEndPointUrisCallback} [callback] Callback function.
+   * @returns {Promise<string[]>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   *
+   * instance.getInstanceEndPointUris(function(err, endPointUris) {});
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * instance.getInstanceEndPointUris().then(function(data) {
+   *   const endPointUris = data[0];
+   * });
+   */
+  getInstanceEndPointUris(
+    name: string,
+    callback?: GetInstanceEndPointUrisCallback
+  ): Promise<string[]> | void {
+    const reqOpts = {
+      name,
+      fieldMask: {
+        paths: ['endpointUris'],
+      },
+    };
+    this.request(
+      {
+        client: 'InstanceAdminClient',
+        method: 'getInstance',
+        reqOpts,
+      },
+      (err: ServiceError, resp: Instance) => {
+        callback!(err, resp!.endpointUris);
+      }
+    );
+  }
+  /**
    * Get a reference to an Instance object.
    *
    * @throws {Error} If a name is not provided.
@@ -771,20 +821,70 @@ class Spanner extends GrpcService {
         callback(err);
         return;
       }
-      const clientName = config.client;
+      this.getGaxClient_(projectId, config, (err, gaxClient) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+        let reqOpts = extend(true, {}, config.reqOpts);
+        reqOpts = replaceProjectIdToken(reqOpts, projectId!);
+        const requestFn = gaxClient[config.method].bind(
+          gaxClient,
+          reqOpts,
+          config.gaxOpts
+        );
+        callback(null, requestFn);
+      });
+    });
+  }
+
+  /**
+   * get GAX client. This will retrive the end point uris for specific instance and cache the client accordingly.
+   *
+   * @private
+   *
+   * @param {string} projectId Request config
+   * @param {object} config Request config
+   * @param {function} callback Callback function
+   */
+  getGaxClient_(projectId, config, callback) {
+    let clientName = config.client;
+    if (clientName !== 'SpannerClient') {
       if (!this.clients_.has(clientName)) {
         this.clients_.set(clientName, new gapic.v1[clientName](this.options));
       }
       const gaxClient = this.clients_.get(clientName)!;
-      let reqOpts = extend(true, {}, config.reqOpts);
-      reqOpts = replaceProjectIdToken(reqOpts, projectId!);
-      const requestFn = gaxClient[config.method].bind(
-        gaxClient,
-        reqOpts,
-        config.gaxOpts
+      callback(null, gaxClient);
+      return;
+    }
+
+    let instanceId = '';
+    if (config.reqOpts.database) {
+      instanceId = (config.reqOpts.database as string).split('/')![3];
+      clientName = `${clientName}-${instanceId}`;
+    }
+
+    if (!this.clients_.has(clientName)) {
+      this.getInstanceEndPointUris(
+        `projects/${projectId}/instances/${instanceId}`,
+        (err, endPointUris) => {
+          if (err) {
+            callback(err);
+            return;
+          }
+          this.instanceEndPointUrisMapping_.set(instanceId, endPointUris!);
+          const options = Object.assign({}, this.options);
+          if (endPointUris!.length > 0) {
+            // tslint:disable-next-line: no-any
+            (options as any).apiEndpoint = endPointUris![0];
+          }
+          this.clients_.set(clientName, new gapic.v1[config.client](options));
+          callback(null, this.clients_.get(clientName)!);
+        }
       );
-      callback(null, requestFn);
-    });
+    } else {
+      callback(null, this.clients_.get(clientName)!);
+    }
   }
 
   /**
