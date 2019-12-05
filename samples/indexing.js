@@ -30,6 +30,7 @@ async function createIndex(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -75,6 +76,7 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -125,6 +127,7 @@ async function queryDataWithIndex(
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -178,6 +181,7 @@ async function readDataWithIndex(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -231,6 +235,7 @@ async function readDataWithStoringIndex(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database

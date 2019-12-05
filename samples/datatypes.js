@@ -30,6 +30,7 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance.
@@ -76,6 +77,7 @@ async function insertData(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -157,6 +159,7 @@ async function queryWithArray(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -222,6 +225,7 @@ async function queryWithBool(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -280,6 +284,7 @@ async function queryWithBytes(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -335,6 +340,7 @@ async function queryWithDate(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -394,6 +400,7 @@ async function queryWithFloat(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -452,6 +459,7 @@ async function queryWithInt(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -510,6 +518,7 @@ async function queryWithString(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.
@@ -565,6 +574,7 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database.

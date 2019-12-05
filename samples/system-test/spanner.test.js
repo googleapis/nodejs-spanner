@@ -113,7 +113,6 @@ describe('Spanner', () => {
     }
   });
 
-  /*
   // create_database
   it(`should create an example database`, async () => {
     const output = execSync(
@@ -671,23 +670,6 @@ describe('Spanner', () => {
     assert.match(output, /VenueId: 4, VenueName: Venue 4, LastUpdateTime:/);
     assert.match(output, /VenueId: 19, VenueName: Venue 19, LastUpdateTime:/);
     assert.match(output, /VenueId: 42, VenueName: Venue 42, LastUpdateTime:/);
-  });
-
-   */
-
-  // create_database
-  it(`should create an example database`, async () => {
-    const output = execSync(
-        `${backupsCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
-    );
-    assert.match(
-        output,
-        new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
-    );
-    assert.match(
-        output,
-        new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
-    );
   });
 
   // create_backup

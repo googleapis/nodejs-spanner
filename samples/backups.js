@@ -15,61 +15,6 @@
 
 'use strict';
 
-// TODO sample-backup: creates database using the custom endpoint, remove this once everything is using the same
-//   endpoint and use the schema.js one instead
-async function createDatabase(instanceId, databaseId, projectId) {
-  // [START spanner_create_database]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-        projectId: projectId,
-        apiEndpoint: process.env.API_ENDPOINT
-      });
-
-  // Gets a reference to a Cloud Spanner instance
-  const instance = spanner.instance(instanceId);
-
-  // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
-  // must be converted to strings before being inserted as INT64s
-  const request = {
-    schema: [
-      `CREATE TABLE Singers (
-        SingerId    INT64 NOT NULL,
-        FirstName   STRING(1024),
-        LastName    STRING(1024),
-        SingerInfo  BYTES(MAX)
-      ) PRIMARY KEY (SingerId)`,
-      `CREATE TABLE Albums (
-        SingerId    INT64 NOT NULL,
-        AlbumId     INT64 NOT NULL,
-        AlbumTitle  STRING(MAX)
-      ) PRIMARY KEY (SingerId, AlbumId),
-      INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-    ],
-  };
-
-  // Creates a database
-  const [database, operation] = await instance.createDatabase(
-      databaseId,
-      request
-  );
-
-  console.log(`Waiting for operation on ${database.id} to complete...`);
-  await operation.promise();
-
-  console.log(`Created database ${databaseId} on instance ${instanceId}.`);
-  // [END spanner_create_database]
-}
-
 async function createBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_create_backup]
   // Imports the Google Cloud client library and precise date library
@@ -87,7 +32,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: process.env.API_ENDPOINT
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -129,11 +74,11 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-        apiEndpoint: process.env.API_ENDPOINT
-      });
+    projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -178,9 +123,9 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-        apiEndpoint: process.env.API_ENDPOINT
-      });
+    projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -206,16 +151,16 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
     /**
      * TODO(developer): Uncomment the following lines before running the sample.
      */
-        // const projectId = 'my-project-id';
-        // const instanceId = 'my-instance';
-        // const databaseId = 'my-database';
-        // const backupId = 'my-backup';
+    // const projectId = 'my-project-id';
+    // const instanceId = 'my-instance';
+    // const databaseId = 'my-database';
+    // const backupId = 'my-backup';
 
-        // Creates a client
+    // Creates a client
     const spanner = new Spanner({
-            projectId: projectId,
-            apiEndpoint: process.env.API_ENDPOINT
-        });
+      projectId: projectId,
+      apiEndpoint: process.env.API_ENDPOINT,
+    });
 
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
@@ -238,13 +183,6 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
 
 require(`yargs`)
   .demand(1)
-  // TODO sample-backup: remove once there is no more custom endpoint and schema.js's version of this can be used
-  .command(
-    `createDatabase <instanceName> <databaseName> <projectId>`,
-    `Creates an example database with two tables in a Cloud Spanner instance.`,
-    {},
-    opts => createDatabase(opts.instanceName, opts.databaseName, opts.projectId)
-  )
   .command(
     `createBackup <instanceName> <databaseName> <backupName> <projectId>`,
     `Creates a backup of a Cloud Spanner database.`,

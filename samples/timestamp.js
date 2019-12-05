@@ -30,6 +30,7 @@ async function createTableWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance
@@ -75,6 +76,7 @@ async function insertWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -138,6 +140,7 @@ async function queryTableWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -184,6 +187,7 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -243,6 +247,7 @@ async function updateWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -309,6 +314,7 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database

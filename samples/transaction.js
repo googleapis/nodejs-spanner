@@ -30,6 +30,7 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -104,6 +105,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
