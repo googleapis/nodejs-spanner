@@ -34,28 +34,72 @@ const backupsCmd = `node backups.js`;
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
-//const INSTANCE_ID = `test-instance-${date}`;
-const INSTANCE_ID = `test-instance`; // TODO sample-backup: hardcode instance
+const INSTANCE_ID = process.env.SPANNERTEST_INSTANCE || `test-instance-${date}`;
+const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${date}`;
 const RESTORE_DATABASE_ID = `test-database-${date}-r`;
 const BACKUP_ID = `test-backup-${date}`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
-  // TODO sample-backup: temporary endpoint override
-  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  apiEndpoint: process.env.API_ENDPOINT
 });
 
 describe('Spanner', () => {
-
-  // TODO sample-backup: change before/after to use specific instance and only delete DB, not instance
   before(async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
+
+    if (!INSTANCE_ALREADY_EXISTS) {
+      try {
+        await instance.delete();
+      } catch (err) {
+        // Ignore error
+      }
+    }
     try {
       await database.delete();
     } catch (err) {
       // Ignore error
+    }
+
+    if (!INSTANCE_ALREADY_EXISTS) {
+      const [, operation] = await instance.create({
+        config: 'regional-us-central1',
+        nodes: 1,
+        labels: {
+          'gcloud-sample-tests': 'true',
+        },
+      });
+
+      await operation.promise();
+
+      const [instances] = await spanner.getInstances({
+        filter: 'labels.gcloud-sample-tests:true',
+      });
+
+      await Promise.all(
+        instances.map(async instance => {
+          const instanceName = instance.metadata.name;
+          const res = await spanner.auth.request({
+            url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
+          });
+          const operations = res.data.operations;
+          await Promise.all(
+            operations
+              .filter(operation => {
+                return operation.metadata['@type'].includes('CreateInstance');
+              })
+              .filter(operation => {
+                const yesterday = new Date();
+                yesterday.setHours(-24);
+                const instanceCreated = new Date(operation.metadata.startTime);
+                return instanceCreated < yesterday;
+              })
+              .map(() => instance.delete())
+          );
+        })
+      );
     }
   });
 
@@ -63,68 +107,11 @@ describe('Spanner', () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
     await database.delete();
-  });
 
-  /*
-  before(async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
-    try {
+    if (!INSTANCE_ALREADY_EXISTS) {
       await instance.delete();
-    } catch (err) {
-      // Ignore error
     }
-    try {
-      await database.delete();
-    } catch (err) {
-      // Ignore error
-    }
-
-    const [, operation] = await instance.create({
-      config: 'regional-us-central1',
-      nodes: 1,
-      labels: {
-        'gcloud-sample-tests': 'true',
-      },
-    });
-
-    await operation.promise();
-
-    const [instances] = await spanner.getInstances({
-      filter: 'labels.gcloud-sample-tests:true',
-    });
-
-    await Promise.all(
-      instances.map(async instance => {
-        const instanceName = instance.metadata.name;
-        const res = await spanner.auth.request({
-          url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
-        });
-        const operations = res.data.operations;
-        await Promise.all(
-          operations
-            .filter(operation => {
-              return operation.metadata['@type'].includes('CreateInstance');
-            })
-            .filter(operation => {
-              const yesterday = new Date();
-              yesterday.setHours(-24);
-              const instanceCreated = new Date(operation.metadata.startTime);
-              return instanceCreated < yesterday;
-            })
-            .map(() => instance.delete())
-        );
-      })
-    );
   });
-
-  after(async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
-    await database.delete();
-    await instance.delete();
-  });
-   */
 
   /*
   // create_database

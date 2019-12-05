@@ -32,7 +32,7 @@ async function createDatabase(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
         projectId: projectId,
-        apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+        apiEndpoint: process.env.API_ENDPOINT
       });
 
   // Gets a reference to a Cloud Spanner instance
@@ -87,7 +87,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+    apiEndpoint: process.env.API_ENDPOINT
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -132,7 +132,7 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
       // Creates a client
   const spanner = new Spanner({
         projectId: projectId,
-        apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+        apiEndpoint: process.env.API_ENDPOINT
       });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -179,7 +179,7 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
         projectId: projectId,
-        apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+        apiEndpoint: process.env.API_ENDPOINT
       });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -214,7 +214,7 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
         // Creates a client
     const spanner = new Spanner({
             projectId: projectId,
-            apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com' //TODO temp-testing
+            apiEndpoint: process.env.API_ENDPOINT
         });
 
     // Gets a reference to a Cloud Spanner instance and database
