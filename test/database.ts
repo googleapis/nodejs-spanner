@@ -2062,7 +2062,7 @@ describe('Database', () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
       database.instance.listDatabaseOperations = async query => {
-        assert.strictEqual(query.filter, `name: ${DATABASE_FORMATTED_NAME}`);
+        assert.strictEqual(query.filter, `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})`);
         return [operations, {}]
       };
 
@@ -2074,7 +2074,7 @@ describe('Database', () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
       database.instance.listDatabaseOperations = async query => {
-        assert.strictEqual(query.filter, `(name: ${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`);
+        assert.strictEqual(query.filter, `((metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})) AND (someOtherAttribute: aValue)`);
         return [operations, {}]
       };
 
