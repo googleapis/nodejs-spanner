@@ -907,7 +907,7 @@ describe('Instance', () => {
   describe('backup', () => {
     const BACKUP_NAME = 'backup-name';
     const DATABASE_NAME = 'database-name';
-    const EXPIRE_TIME = new PreciseDate(1000);
+    const EXPIRE_TIME = new PreciseDate({seconds: 3, nanos: 5});
 
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
@@ -918,6 +918,27 @@ describe('Instance', () => {
     it('should create a Backup instance', () => {
       const backup = instance.backup(BACKUP_NAME, DATABASE_NAME, EXPIRE_TIME);
       assert.strictEqual(backup.formattedName_, 'projects/project-id/instances/instance-name/backups/backup-name');
+    });
+
+    it('should create a backup from a Backup instance', done => {
+      const expectedReqOpts = {
+        parent: instance.formattedName_,
+        backupId: BACKUP_NAME,
+        backup: {
+          name: 'projects/project-id/instances/instance-name/backups/backup-name',
+          database: 'projects/project-id/instances/instance-name/database/database-name',
+          expireTime: { seconds: 3, nanos: 5 }
+        }
+      };
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'createBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        done();
+      };
+
+      const backup = new Backup(instance, BACKUP_NAME, 'projects/project-id/instances/instance-name/database/database-name', EXPIRE_TIME);
+      backup.create();
     });
   });
 
