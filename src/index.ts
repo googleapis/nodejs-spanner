@@ -854,7 +854,13 @@ class Spanner extends GrpcService {
    */
   getGaxClient_(projectId, config, callback) {
     let clientName = config.client;
-    if (clientName !== 'SpannerClient') {
+    const resourceBasedRoutingFlag =
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+
+    if (
+      clientName !== 'SpannerClient' ||
+      resourceBasedRoutingFlag === 'false'
+    ) {
       if (!this.clients_.has(clientName)) {
         this.clients_.set(clientName, new gapic.v1[clientName](this.options));
       }
