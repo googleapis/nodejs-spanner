@@ -757,7 +757,11 @@ class Spanner extends GrpcService {
         reqOpts,
       },
       (err: ServiceError, resp: Instance) => {
-        callback!(err, resp!.endpointUris);
+        if (err) {
+          callback!(err);
+          return;
+        }
+        callback!(null, resp!.endpointUris);
       }
     );
   }
@@ -858,21 +862,25 @@ class Spanner extends GrpcService {
       return;
     }
 
-    let instanceId = '';
-    if (config.reqOpts.database) {
-      instanceId = (config.reqOpts.database as string).split('/')![3];
-      clientName = `${clientName}-${instanceId}`;
+    if (!config.instanceId) {
+      const error = new Error('instanceId is requires.');
+      callback(error);
+      return;
     }
+    clientName = `${clientName}-${config.instanceId}`;
 
     if (!this.clients_.has(clientName)) {
       this.getInstanceEndPointUris(
-        `projects/${projectId}/instances/${instanceId}`,
+        `projects/${projectId}/instances/${config.instanceId}`,
         (err, endPointUris) => {
           if (err) {
             callback(err);
             return;
           }
-          this.instanceEndPointUrisMapping_.set(instanceId, endPointUris!);
+          this.instanceEndPointUrisMapping_.set(
+            config.instanceId,
+            endPointUris!
+          );
           const options = Object.assign({}, this.options);
           if (endPointUris!.length > 0) {
             // tslint:disable-next-line: no-any

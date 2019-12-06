@@ -818,6 +818,7 @@ describe('Spanner', () => {
     const CONFIG = {
       client: 'SpannerClient',
       method: 'methodName',
+      instanceId: 'instance',
       reqOpts: {
         a: 'b',
         c: 'd',
@@ -875,7 +876,9 @@ describe('Spanner', () => {
           assert.deepStrictEqual(options, spanner.options);
 
           setImmediate(() => {
-            const cachedClient = spanner.clients_.get(CONFIG.client);
+            const cachedClient = spanner.clients_.get(
+              `${CONFIG.client}-${CONFIG.instanceId}`
+            );
             assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
             done();
           });
@@ -890,7 +893,10 @@ describe('Spanner', () => {
       fakeV1[CONFIG.client] = () => {
         throw new Error('Should not have re-created client!');
       };
-      spanner.clients_.set(CONFIG.client, FAKE_GAPIC_CLIENT);
+      spanner.clients_.set(
+        `${CONFIG.client}-${CONFIG.instanceId}`,
+        FAKE_GAPIC_CLIENT
+      );
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
@@ -933,11 +939,6 @@ describe('Spanner', () => {
     });
 
     it('should create and cache a gapic client with end point urls', done => {
-      const instanceId = 'instance-id';
-      const databaseId = 'database-id';
-      asAny(
-        CONFIG.reqOpts
-      ).database = `projects/${OPTIONS.projectId}/instances/${instanceId}/databases/${databaseId}`;
       asAny(spanner).getInstanceEndPointUris = (name, callback) => {
         callback(null, ['us-central1-spanner.googleapis.com']);
       };
@@ -950,7 +951,7 @@ describe('Spanner', () => {
 
           setImmediate(() => {
             const cachedClient = spanner.clients_.get(
-              `${CONFIG.client}-${instanceId}`
+              `${CONFIG.client}-${CONFIG.instanceId}`
             );
             assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
             done();
