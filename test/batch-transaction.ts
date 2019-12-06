@@ -126,6 +126,14 @@ describe('BatchTransaction', () => {
       types: {},
     };
 
+    before(() => {
+      batchTransaction.session.formattedName_ = `projects/project-id/instances/instance-id`;
+    });
+
+    after(() => {
+      batchTransaction.session = {} as Session;
+    });
+
     it('should make the correct request', () => {
       const fakeParams = {
         params: {a: 'b'},

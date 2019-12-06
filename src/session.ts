@@ -273,6 +273,7 @@ export class Session extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'deleteSession',
+        instanceId: this.formattedName_!.split('/')[3],
         reqOpts,
       },
       callback!
@@ -323,6 +324,7 @@ export class Session extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'getSession',
+        instanceId: this.formattedName_!.split('/')[3],
         reqOpts,
       },
       callback!
@@ -352,6 +354,7 @@ export class Session extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'executeSql',
+        instanceId: this.formattedName_!.split('/')[3],
         reqOpts,
       },
       callback!

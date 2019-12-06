@@ -818,7 +818,7 @@ describe('Spanner', () => {
     const CONFIG = {
       client: 'SpannerClient',
       method: 'methodName',
-      instanceId: 'instance',
+      instanceId: 'instance-id',
       reqOpts: {
         a: 'b',
         c: 'd',

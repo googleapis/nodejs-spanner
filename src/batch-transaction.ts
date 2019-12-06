@@ -130,6 +130,7 @@ class BatchTransaction extends Snapshot {
       {
         client: 'SpannerClient',
         method: 'partitionQuery',
+        instanceId: this.session.formattedName_!.split('/')[3],
         reqOpts,
         gaxOpts: query.gaxOptions,
       },
@@ -218,6 +219,7 @@ class BatchTransaction extends Snapshot {
       {
         client: 'SpannerClient',
         method: 'partitionRead',
+        instanceId: this.session.formattedName_!.split('/')[3],
         reqOpts,
         gaxOpts: options.gaxOptions,
       },
