@@ -1,0 +1,205 @@
+/*!
+ * Copyright 2019 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {google} from '../../protos/protos';
+import * as grpc from 'grpc';
+import * as protoLoader from '@grpc/proto-loader';
+import {createUnimplementedError, now} from './mockspanner';
+import v1 = google.spanner.admin.database.v1;
+import iam = google.iam.v1;
+import longrunning = google.longrunning;
+import Any = google.protobuf.Any;
+import Empty = google.protobuf.Empty;
+
+const PROTO_PATH = 'spanner_database_admin.proto';
+const IMPORT_PATH = __dirname + '/../../../protos';
+const PROTO_DIR =
+  __dirname + '/../../../protos/google/spanner/admin/database/v1';
+
+/**
+ * Load the Spanner Database Admin service proto.
+ */
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+  keepCase: false,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+  includeDirs: [IMPORT_PATH, PROTO_DIR],
+});
+const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
+const databaseAdminProtoDescriptor =
+  protoDescriptor['google']['spanner']['admin']['database']['v1'];
+export const TEST_DATABASE_NAME =
+  'projects/mock-project/instances/test/databases/test';
+export const PROD_DATABASE_NAME =
+  'projects/mock-project/instances/prod/databases/prod';
+
+export class MockDatabaseAdmin {
+  private static TEST_DATABASE = v1.Database.create({
+    name: TEST_DATABASE_NAME,
+    state: v1.Database.State.READY,
+  });
+
+  private static PROD_DATABASE = v1.Database.create({
+    name: PROD_DATABASE_NAME,
+    state: v1.Database.State.READY,
+  });
+
+  private constructor() {}
+
+  /**
+   * Creates a MockDatabaseAdmin.
+   */
+  static create(): MockDatabaseAdmin {
+    return new MockDatabaseAdmin();
+  }
+
+  private static createNotFoundError(msg: string): grpc.ServiceError {
+    const error = new Error(msg);
+    return Object.assign(error, {
+      code: grpc.status.NOT_FOUND,
+    });
+  }
+
+  private static createServiceError(msg: string, code: grpc.status) {
+    const error = new Error(msg);
+    return Object.assign(error, {
+      code,
+    });
+  }
+
+  listDatabases(
+    call: grpc.ServerUnaryCall<v1.ListDatabasesRequest>,
+    callback: v1.DatabaseAdmin.ListDatabasesCallback
+  ) {
+    callback(
+      null,
+      v1.ListDatabasesResponse.create({
+        databases: [
+          MockDatabaseAdmin.TEST_DATABASE,
+          MockDatabaseAdmin.PROD_DATABASE,
+        ],
+      })
+    );
+  }
+
+  createDatabase(
+    call: grpc.ServerUnaryCall<v1.CreateDatabaseRequest>,
+    callback: v1.DatabaseAdmin.CreateDatabaseCallback
+  ) {
+    let name = call.request.createStatement.replace('CREATE DATABASE ', '');
+    name = name.substring(1, name.length - 1);
+    const database = v1.Database.create({
+      name: `${call.request.parent}/databases/${name}`,
+      state: v1.Database.State.READY,
+    });
+    const metadataBuffer = v1.CreateDatabaseMetadata.encode(
+      v1.CreateDatabaseMetadata.create({
+        database: database.name,
+      })
+    ).finish();
+    const databaseBuffer = v1.Database.encode(database).finish();
+    callback(
+      null,
+      longrunning.Operation.create({
+        name: 'projects/mock-project/operations/mock-operation',
+        done: true,
+        metadata: Any.create({
+          value: metadataBuffer,
+        }),
+        response: Any.create({
+          value: databaseBuffer,
+        }),
+      })
+    );
+  }
+
+  getDatabase(
+    call: grpc.ServerUnaryCall<v1.GetDatabaseRequest>,
+    callback: v1.DatabaseAdmin.GetDatabaseCallback
+  ) {
+    callback(createUnimplementedError('GetDatabase is not yet implemented'));
+  }
+
+  updateDatabaseDdl(
+    call: grpc.ServerUnaryCall<v1.UpdateDatabaseDdlRequest>,
+    callback: v1.DatabaseAdmin.UpdateDatabaseDdlCallback
+  ) {
+    callback(
+      createUnimplementedError('UpdateDatabaseDdl is not yet implemented')
+    );
+  }
+
+  dropDatabase(
+    call: grpc.ServerUnaryCall<v1.DropDatabaseRequest>,
+    callback: v1.DatabaseAdmin.DropDatabaseCallback
+  ) {
+    callback(createUnimplementedError('DropDatabase is not yet implemented'));
+  }
+
+  getDatabaseDdl(
+    call: grpc.ServerUnaryCall<v1.GetDatabaseDdlRequest>,
+    callback: v1.DatabaseAdmin.GetDatabaseDdlCallback
+  ) {
+    callback(createUnimplementedError('GetDatabaseDdl is not yet implemented'));
+  }
+
+  setIamPolicy(
+    call: grpc.ServerUnaryCall<iam.SetIamPolicyRequest>,
+    callback: iam.IAMPolicy.SetIamPolicyCallback
+  ) {
+    callback(createUnimplementedError('SetIamPolicy is not yet implemented'));
+  }
+
+  getIamPolicy(
+    call: grpc.ServerUnaryCall<iam.GetIamPolicyRequest>,
+    callback: iam.IAMPolicy.GetIamPolicyCallback
+  ) {
+    callback(createUnimplementedError('GetIamPolicy is not yet implemented'));
+  }
+
+  testIamPermissions(
+    call: grpc.ServerUnaryCall<iam.TestIamPermissionsRequest>,
+    callback: iam.IAMPolicy.TestIamPermissionsCallback
+  ) {
+    callback(
+      createUnimplementedError('TestIamPermissions is not yet implemented')
+    );
+  }
+}
+
+/**
+ * Creates and adds a MockDatabaseAdmin instance to the given server. The mock contains the following data by default:
+ * 1. Two Databases: 'projects/mock-project/instances/test/databases/test' and 'projects/mock-project/instances/prod/databases/prod'.
+ */
+export function createMockDatabaseAdmin(
+  server: grpc.Server
+): MockDatabaseAdmin {
+  const mock = MockDatabaseAdmin.create();
+  server.addService(databaseAdminProtoDescriptor.DatabaseAdmin.service, {
+    listDatabases: mock.listDatabases,
+    createDatabase: mock.createDatabase,
+    getDatabase: mock.getDatabase,
+    updateDatabaseDdl: mock.updateDatabaseDdl,
+    dropDatabase: mock.dropDatabase,
+    getDatabaseDdl: mock.getDatabaseDdl,
+    setIamPolicy: mock.setIamPolicy,
+    getIamPolicy: mock.getIamPolicy,
+    testIamPermissions: mock.testIamPermissions,
+  });
+  return mock;
+}
