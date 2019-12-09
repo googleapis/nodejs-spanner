@@ -299,7 +299,7 @@ export class Snapshot extends EventEmitter {
       {
         client: 'SpannerClient',
         method: 'beginTransaction',
-        instanceId: session.split('/')[3],
+        formattedName_: session,
         reqOpts,
       },
       (
@@ -499,7 +499,7 @@ export class Snapshot extends EventEmitter {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
-        instanceId: this.session.formattedName_!.split('/')[3],
+        formattedName_: this.session.formattedName_,
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
       });
@@ -889,7 +889,7 @@ export class Snapshot extends EventEmitter {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
-        instanceId: this.session.formattedName_!.split('/')[3],
+        formattedName_: this.session.formattedName_,
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
       });
@@ -1283,7 +1283,7 @@ export class Transaction extends Dml {
       {
         client: 'SpannerClient',
         method: 'executeBatchDml',
-        instanceId: this.session.formattedName_!.split('/')[3],
+        formattedName_: this.session.formattedName_,
         reqOpts,
       },
       (err: null | ServiceError, resp: s.ExecuteBatchDmlResponse) => {
@@ -1378,7 +1378,7 @@ export class Transaction extends Dml {
       {
         client: 'SpannerClient',
         method: 'commit',
-        instanceId: this.session.formattedName_!.split('/')[3],
+        formattedName_: this.session.formattedName_,
         reqOpts,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
@@ -1590,7 +1590,7 @@ export class Transaction extends Dml {
       {
         client: 'SpannerClient',
         method: 'rollback',
-        instanceId: this.session.formattedName_!.split('/')[3],
+        formattedName_: this.session.formattedName_,
         reqOpts,
       },
       (err: null | ServiceError) => {

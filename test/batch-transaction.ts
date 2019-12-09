@@ -125,13 +125,16 @@ describe('BatchTransaction', () => {
       params: {},
       types: {},
     };
+    let GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING: string | undefined;
 
     before(() => {
-      batchTransaction.session.formattedName_ = `projects/project-id/instances/instance-id`;
+      GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
+        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
     });
 
     after(() => {
-      batchTransaction.session = {} as Session;
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
     });
 
     it('should make the correct request', () => {

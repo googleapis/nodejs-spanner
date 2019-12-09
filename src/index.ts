@@ -62,12 +62,11 @@ export interface SpannerOptions extends GrpcClientOptions {
 export interface RequestConfig {
   client: string;
   method: string;
-  instanceId?: string;
+  formattedName_?: string;
   // tslint:disable-next-line: no-any
   reqOpts: any;
   gaxOpts?: {};
 }
-export type GetInstanceEndPointUrisCallback = NormalCallback<string[]>;
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
  */
@@ -716,57 +715,6 @@ class Spanner extends GrpcService {
   }
 
   /**
-   * Get the instance's end point Uris.
-   *
-   * Wrapper around {@link v1.InstanceAdminClient#getInstance}.
-   *
-   * @see {@link v1.InstanceAdminClient#getInstance}
-   * @see [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
-   *
-   * @param {GetInstanceEndPointUrisCallback} [callback] Callback function.
-   * @returns {Promise<string[]>}
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   *
-   * const instance = spanner.instance('my-instance');
-   *
-   * instance.getInstanceEndPointUris(function(err, endPointUris) {});
-   *
-   * //-
-   * // If the callback is omitted, we'll return a Promise.
-   * //-
-   * instance.getInstanceEndPointUris().then(function(data) {
-   *   const endPointUris = data[0];
-   * });
-   */
-  getInstanceEndPointUris(
-    name: string,
-    callback?: GetInstanceEndPointUrisCallback
-  ): Promise<string[]> | void {
-    const reqOpts = {
-      name,
-      fieldMask: {
-        paths: ['endpointUris'],
-      },
-    };
-    this.request(
-      {
-        client: 'InstanceAdminClient',
-        method: 'getInstance',
-        reqOpts,
-      },
-      (err: ServiceError, resp: Instance) => {
-        if (err) {
-          callback!(err);
-          return;
-        }
-        callback!(null, resp!.endpointUris);
-      }
-    );
-  }
-  /**
    * Get a reference to an Instance object.
    *
    * @throws {Error} If a name is not provided.
@@ -826,7 +774,7 @@ class Spanner extends GrpcService {
         callback(err);
         return;
       }
-      this.getGaxClient_(projectId, config, (err, gaxClient) => {
+      this.getGaxClient_(config, (err, gaxClient) => {
         if (err) {
           callback(err);
           return;
@@ -852,7 +800,7 @@ class Spanner extends GrpcService {
    * @param {object} config Request config
    * @param {function} callback Callback function
    */
-  getGaxClient_(projectId, config, callback) {
+  getGaxClient_(config, callback) {
     let clientName = config.client;
     const resourceBasedRoutingFlag =
       process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
@@ -869,25 +817,26 @@ class Spanner extends GrpcService {
       return;
     }
 
-    if (!config.instanceId) {
+    if (
+      !config.formattedName_ &&
+      (config.formattedName_ as string).split('/').length < 3
+    ) {
       const error = new Error('instanceId is requires.');
       callback(error);
       return;
     }
-    clientName = `${clientName}-${config.instanceId}`;
+    const instanceId = (config.formattedName_ as string).split('/')![3];
+    clientName = `${clientName}-${instanceId}`;
 
     if (!this.clients_.has(clientName)) {
-      this.getInstanceEndPointUris(
-        `projects/${projectId}/instances/${config.instanceId}`,
-        (err, endPointUris) => {
+      this.instances_
+        .get(instanceId)!
+        .getInstanceEndPointUris((err, endPointUris) => {
           if (err) {
             callback(err);
             return;
           }
-          this.instanceEndPointUrisMapping_.set(
-            config.instanceId,
-            endPointUris!
-          );
+          this.instanceEndPointUrisMapping_.set(instanceId, endPointUris!);
           const options = Object.assign({}, this.options);
           if (endPointUris!.length > 0) {
             // tslint:disable-next-line: no-any
@@ -895,8 +844,7 @@ class Spanner extends GrpcService {
           }
           this.clients_.set(clientName, new gapic.v1[config.client](options));
           callback(null, this.clients_.get(clientName)!);
-        }
-      );
+        });
     } else {
       callback(null, this.clients_.get(clientName)!);
     }

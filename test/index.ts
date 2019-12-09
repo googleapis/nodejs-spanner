@@ -818,7 +818,6 @@ describe('Spanner', () => {
     const CONFIG = {
       client: 'SpannerClient',
       method: 'methodName',
-      instanceId: 'instance-id',
       reqOpts: {
         a: 'b',
         c: 'd',
@@ -830,16 +829,23 @@ describe('Spanner', () => {
     const FAKE_GAPIC_CLIENT: any = {
       [CONFIG.method]: util.noop,
     };
+    let GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING: string | undefined;
+
+    before(() => {
+      GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
+        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
+    });
+
+    after(() => {
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+    });
 
     beforeEach(() => {
       FAKE_GAPIC_CLIENT[CONFIG.method] = util.noop;
 
       asAny(spanner).auth.getProjectId = callback => {
         callback(null, PROJECT_ID);
-      };
-
-      asAny(spanner).getInstanceEndPointUris = (name, callback) => {
-        callback(null, []);
       };
 
       fakeV1[CONFIG.client] = class {
@@ -873,12 +879,10 @@ describe('Spanner', () => {
     it('should create and cache a gapic client', done => {
       fakeV1[CONFIG.client] = class {
         constructor(options) {
-          assert.deepStrictEqual(options, spanner.options);
+          assert.strictEqual(options, spanner.options);
 
           setImmediate(() => {
-            const cachedClient = spanner.clients_.get(
-              `${CONFIG.client}-${CONFIG.instanceId}`
-            );
+            const cachedClient = spanner.clients_.get(CONFIG.client);
             assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
             done();
           });
@@ -893,10 +897,7 @@ describe('Spanner', () => {
       fakeV1[CONFIG.client] = () => {
         throw new Error('Should not have re-created client!');
       };
-      spanner.clients_.set(
-        `${CONFIG.client}-${CONFIG.instanceId}`,
-        FAKE_GAPIC_CLIENT
-      );
+      spanner.clients_.set(CONFIG.client, FAKE_GAPIC_CLIENT);
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
@@ -935,44 +936,6 @@ describe('Spanner', () => {
 
       spanner.prepareGapicRequest_(CONFIG, (err, requestFn) => {
         requestFn(done); // (FAKE_GAPIC_CLIENT[CONFIG.method])
-      });
-    });
-
-    it('should create and cache a gapic client with end point urls', done => {
-      asAny(spanner).getInstanceEndPointUris = (name, callback) => {
-        callback(null, ['us-central1-spanner.googleapis.com']);
-      };
-      spanner.options = Object.assign({}, spanner.options, {
-        apiEndpoint: 'us-central1-spanner.googleapis.com',
-      });
-      fakeV1[CONFIG.client] = class {
-        constructor(options) {
-          assert.deepStrictEqual(options, spanner.options);
-
-          setImmediate(() => {
-            const cachedClient = spanner.clients_.get(
-              `${CONFIG.client}-${CONFIG.instanceId}`
-            );
-            assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
-            done();
-          });
-
-          return FAKE_GAPIC_CLIENT;
-        }
-      };
-      spanner.prepareGapicRequest_(CONFIG, assert.ifError);
-    });
-
-    it('should return an error from GetInstance end point uris', done => {
-      const error = new Error('Error.');
-
-      asAny(spanner).getInstanceEndPointUris = (name, callback) => {
-        callback(error);
-      };
-
-      spanner.prepareGapicRequest_(CONFIG, err => {
-        assert.strictEqual(err, error);
-        done();
       });
     });
   });
