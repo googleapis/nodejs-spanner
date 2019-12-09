@@ -30,6 +30,7 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -77,6 +78,7 @@ async function insertData(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -159,6 +161,7 @@ async function queryWithArray(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -225,6 +228,7 @@ async function queryWithBool(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -284,6 +288,7 @@ async function queryWithBytes(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -340,6 +345,7 @@ async function queryWithDate(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -400,6 +406,7 @@ async function queryWithFloat(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -459,6 +466,7 @@ async function queryWithInt(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -518,6 +526,7 @@ async function queryWithString(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -574,6 +583,7 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client.
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 

@@ -30,6 +30,7 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -105,6 +106,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 

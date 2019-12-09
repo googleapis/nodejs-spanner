@@ -30,6 +30,7 @@ async function writeDataForStructQueries(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -100,6 +101,7 @@ async function queryDataWithStruct(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -147,6 +149,7 @@ async function queryWithArrayofStruct(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -238,6 +241,7 @@ async function queryStructField(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -288,6 +292,7 @@ async function queryNestedStructField(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 

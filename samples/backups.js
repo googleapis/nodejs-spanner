@@ -32,6 +32,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -77,6 +78,7 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -124,6 +126,7 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -159,7 +162,8 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
     // Creates a client
     const spanner = new Spanner({
       projectId: projectId,
-      apiEndpoint: process.env.API_ENDPOINT,
+      // Optional - allow Spanner API endpoint to be configured with environment variable
+    apiEndpoint: process.env.API_ENDPOINT,
     });
 
     // Gets a reference to a Cloud Spanner instance and database

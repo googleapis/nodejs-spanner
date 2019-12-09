@@ -33,6 +33,7 @@ function insertUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -85,6 +86,7 @@ function updateUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -130,6 +132,7 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -174,6 +177,7 @@ function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -220,6 +224,7 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -277,6 +282,7 @@ function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -325,6 +331,7 @@ function writeUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -373,6 +380,7 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -427,6 +435,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -534,6 +543,7 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -570,6 +580,7 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
@@ -606,6 +617,7 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    // Optional - allow Spanner API endpoint to be configured with environment variable
     apiEndpoint: process.env.API_ENDPOINT,
   });
 
