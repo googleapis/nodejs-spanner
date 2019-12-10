@@ -818,7 +818,7 @@ class Spanner extends GrpcService {
     }
 
     if (
-      !config.formattedName_ &&
+      !config.formattedName_ ||
       (config.formattedName_ as string).split('/').length < 3
     ) {
       const error = new Error('instanceId is requires.');

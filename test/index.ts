@@ -26,6 +26,7 @@ import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
+import {ServiceError} from '@grpc/grpc-js';
 
 const grpc = require('grpc');
 
@@ -843,7 +844,7 @@ describe('Spanner', () => {
 
     beforeEach(() => {
       FAKE_GAPIC_CLIENT[CONFIG.method] = util.noop;
-
+      asAny(CONFIG).formattedName_ = '';
       asAny(spanner).auth.getProjectId = callback => {
         callback(null, PROJECT_ID);
       };
@@ -936,6 +937,95 @@ describe('Spanner', () => {
 
       spanner.prepareGapicRequest_(CONFIG, (err, requestFn) => {
         requestFn(done); // (FAKE_GAPIC_CLIENT[CONFIG.method])
+      });
+    });
+
+    it('should create and cache a gapic client when resource based routing is enabled.', done => {
+      const instanceId = 'instance-id';
+      const endpointUris = ['us-central1-spanner.googleapis.com'];
+      // tslint:disable-next-line: no-any
+      (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+
+      const cache = spanner.instances_;
+      const fakeInstance = {} as spnr.Instance;
+      cache.set(instanceId, fakeInstance);
+
+      asAny(spanner).instances_.get(
+        instanceId
+      )!.getInstanceEndPointUris = callback => {
+        asAny(spanner.options).apiEndpoint = endpointUris[0];
+        callback(null, endpointUris);
+      };
+
+      fakeV1[`${CONFIG.client}`] = class {
+        constructor(options) {
+          assert.deepStrictEqual(options, spanner.options);
+          setImmediate(() => {
+            const cachedClient = spanner.clients_.get(
+              `${CONFIG.client}-${instanceId}`
+            );
+            assert.strictEqual(cachedClient, FAKE_GAPIC_CLIENT);
+            done();
+          });
+
+          return FAKE_GAPIC_CLIENT;
+        }
+      };
+      spanner.prepareGapicRequest_(CONFIG, assert.ifError);
+    });
+
+    it('should re-use a cached gapic client when resource based routing is enabled.', () => {
+      const instanceId = 'instance-id';
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+
+      const cache = spanner.instances_;
+      const fakeInstance = {} as spnr.Instance;
+      cache.set(instanceId, fakeInstance);
+
+      asAny(spanner).instances_.get(
+        instanceId
+      )!.getInstanceEndPointUris = callback => {
+        callback(null, []);
+      };
+      // tslint:disable-next-line: no-any
+      (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      fakeV1[`${CONFIG.client}-${instanceId}`] = () => {
+        throw new Error('Should not have re-created client!');
+      };
+      spanner.clients_.set(`${CONFIG.client}-${instanceId}`, FAKE_GAPIC_CLIENT);
+      spanner.prepareGapicRequest_(CONFIG, assert.ifError);
+    });
+
+    it('should return an error from get instance endpointUris', done => {
+      const error = new Error('Error.') as ServiceError;
+      const instanceId = 'instance-id';
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+
+      const cache = spanner.instances_;
+      const fakeInstance = {} as spnr.Instance;
+      cache.set(instanceId, fakeInstance);
+
+      asAny(spanner).instances_.get(
+        instanceId
+      )!.getInstanceEndPointUris = callback => {
+        callback(error);
+      };
+      // tslint:disable-next-line: no-any
+      (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+
+      spanner.prepareGapicRequest_(CONFIG, err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should return an error formattedName_ does not provided.', done => {
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+
+      spanner.prepareGapicRequest_(CONFIG, err => {
+        assert(err!.message.indexOf('instanceId is requires') > -1);
+        done();
       });
     });
   });

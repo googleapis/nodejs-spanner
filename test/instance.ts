@@ -814,6 +814,43 @@ describe('Instance', () => {
     });
   });
 
+  describe('getInstanceEndPointUris', () => {
+    it('should correctly call and return endpointUris', done => {
+      const requestReturnValue = ['us-central1-spanner.googleapis.com'];
+
+      instance.request = (config, callback: Function) => {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'getInstance');
+        assert.deepStrictEqual(config.reqOpts, {
+          fieldMask: {
+            paths: ['endpointUris'],
+          },
+          name: instance.formattedName_,
+        });
+        // tslint:disable-next-line: no-any
+        (instance as any).endpointUris = requestReturnValue;
+        callback(null, instance);
+      };
+
+      instance.getInstanceEndPointUris((err, returnValue) => {
+        assert.strictEqual(returnValue, requestReturnValue);
+        done();
+      });
+    });
+
+    it('should return an error from endpointUris', done => {
+      const error = new Error('Error.') as ServiceError;
+      instance.request = (config, callback: Function) => {
+        callback(error);
+      };
+
+      instance.getInstanceEndPointUris((err, returnValue) => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+  });
+
   describe('setMetadata', () => {
     const METADATA = {
       needsToBeSnakeCased: true,
