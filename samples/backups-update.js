@@ -48,7 +48,7 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
   }
   const backup = backups[0];
 
-  // Creates a new backup of the database
+  // Read backup metadata and update expiry time
   try {
     const currentExpireTime = await backup.getExpireTime();
     console.log(`Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`);
