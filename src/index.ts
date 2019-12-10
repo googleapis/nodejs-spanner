@@ -372,7 +372,8 @@ class Spanner extends GrpcService {
    *     // Instance created successfully.
    *   });
    */
-  createInstance(name: string, config?, callback?) {
+  // tslint:disable-next-line no-any
+  createInstance(name: string, config?, callback?): any {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
