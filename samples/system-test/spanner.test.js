@@ -416,7 +416,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /SingerId: 8\nSingerId: 7\nSingerId: 6/);
+    assert.match(output, /SingerId: 6\nSingerId: 7\nSingerId: 8/);
   });
 
   // query_with_struct_field_param

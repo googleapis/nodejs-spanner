@@ -385,6 +385,7 @@ describe('SessionPool', () => {
       sandbox.stub(sessionPool, '_getLeaks').returns(fakeLeaks);
 
       sessionPool.close((err?: sp.SessionLeakError) => {
+        assert.strictEqual(err!.name, 'SessionLeakError');
         assert.strictEqual(
           err!.message,
           `${fakeLeaks.length} session leak(s) detected.`

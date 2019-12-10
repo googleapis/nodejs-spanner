@@ -178,6 +178,8 @@ export class SessionLeakError extends Error {
   messages: string[];
   constructor(leaks: string[]) {
     super(`${leaks.length} session leak(s) detected.`);
+    // Restore error name that was overwritten by the super constructor call.
+    this.name = SessionLeakError.name;
     this.messages = leaks;
   }
 }

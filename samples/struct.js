@@ -193,7 +193,8 @@ async function queryWithArrayofStruct(instanceId, databaseId, projectId) {
     sql:
       'SELECT SingerId FROM Singers ' +
       'WHERE STRUCT<FirstName STRING, LastName STRING>(FirstName, LastName) ' +
-      'IN UNNEST(@names)',
+      'IN UNNEST(@names) ' +
+      'ORDER BY SingerId',
     params: {
       names: bandMembers,
     },
