@@ -680,6 +680,18 @@ describe('Spanner', () => {
     assert.match(output, /Backup created./);
   });
 
+  // list_backups
+  it(`should list backups in the instance`, async () => {
+    const output = execSync(
+        `${backupsCmd} listBackups ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backups:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}`)
+    );
+  });
+
   // update_backup_expire_time
   it(`should update the expire time of a backup`, async () => {
     const output = execSync(

@@ -16,6 +16,7 @@
 'use strict';
 
 const {createBackup} = require('./backups-create');
+const {listBackups} = require('./backups-list');
 const {updateBackupExpireTime} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
 const {deleteBackup} = require('./backups-delete');
@@ -27,6 +28,12 @@ require(`yargs`)
     `Creates a backup of a Cloud Spanner database.`,
     {},
     opts => createBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+  )
+  .command(
+    `listBackups <instanceName> <projectId>`,
+    `Lists all backups in the instance.`,
+    {},
+    opts => listBackups(opts.instanceName, opts.projectId)
   )
   .command(
     `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,
