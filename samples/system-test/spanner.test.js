@@ -704,6 +704,14 @@ describe('Spanner', () => {
     );
   });
 
+  // list_database_operations
+  it(`should list database operations in the instance`, async () => {
+    const output = execSync(
+        `${backupsCmd} listDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Database Operations:/);
+  });
+
   // update_backup_expire_time
   it(`should update the expire time of a backup`, async () => {
     const output = execSync(

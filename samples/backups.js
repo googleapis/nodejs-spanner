@@ -18,6 +18,7 @@
 const {createBackup} = require('./backups-create');
 const {listBackups} = require('./backups-list');
 const {listBackupOperations} = require('./backups-list-operations');
+const {listDatabaseOperations} = require('./backups-list-database-operations');
 const {updateBackupExpireTime} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
 const {deleteBackup} = require('./backups-delete');
@@ -41,6 +42,12 @@ require(`yargs`)
     `Lists all backup operations in the instance.`,
     {},
     opts => listBackupOperations(opts.instanceName, opts.projectId)
+  )
+  .command(
+    `listDatabaseOperations <instanceName> <projectId>`,
+    `Lists all database operations in the instance.`,
+    {},
+    opts => listDatabaseOperations(opts.instanceName, opts.projectId)
   )
   .command(
     `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,
