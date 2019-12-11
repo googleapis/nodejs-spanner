@@ -51,7 +51,16 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
     await operation.promise();
 
-    console.log('Backup created.');
+    // Verify backup is ready
+    const [backupInfo] = await backup.getBackupInfo();
+    if (backupInfo.state === 'READY') {
+      console.log('Backup created.');
+      console.log(`Name: ${backupInfo.name}`);
+      console.log(`Size: ${backupInfo.sizeBytes} bytes`);
+      console.log(`Created: ${new PreciseDate(backupInfo.createTime).toISOString()}`);
+    } else {
+      console.error('ERROR: Backup is not ready.');
+    }
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
