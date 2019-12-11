@@ -203,7 +203,6 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
-  instanceEndPointUrisMapping_: Map<string, string[]>;
   getInstancesStream: Function;
 
   /**
@@ -305,7 +304,6 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
-    this.instanceEndPointUrisMapping_ = new Map();
     /**
      * Get a list of {@link Instance} objects as a readable object stream.
      *
@@ -836,7 +834,6 @@ class Spanner extends GrpcService {
             callback(err);
             return;
           }
-          this.instanceEndPointUrisMapping_.set(instanceId, endPointUris!);
           const options = Object.assign({}, this.options);
           if (endPointUris!.length > 0) {
             // tslint:disable-next-line: no-any

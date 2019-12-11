@@ -958,7 +958,7 @@ describe('Spanner', () => {
         callback(null, endpointUris);
       };
 
-      fakeV1[`${CONFIG.client}`] = class {
+      fakeV1[CONFIG.client] = class {
         constructor(options) {
           assert.deepStrictEqual(options, spanner.options);
           setImmediate(() => {
@@ -990,7 +990,7 @@ describe('Spanner', () => {
       };
       // tslint:disable-next-line: no-any
       (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
-      fakeV1[`${CONFIG.client}-${instanceId}`] = () => {
+      fakeV1[CONFIG.client] = () => {
         throw new Error('Should not have re-created client!');
       };
       spanner.clients_.set(`${CONFIG.client}-${instanceId}`, FAKE_GAPIC_CLIENT);

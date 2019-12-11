@@ -41,7 +41,7 @@ const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
 describe('Spanner', () => {
   const instance = spanner.instance(generateName('instance'));
-
+  let GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING: string | undefined;
   const INSTANCE_CONFIG = {
     config: 'regional-us-central1',
     nodes: 1,
@@ -52,12 +52,19 @@ describe('Spanner', () => {
   };
 
   before(async () => {
+    GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+    process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
     await deleteOldTestInstances();
     const [, operation] = await instance.create(INSTANCE_CONFIG);
     await operation.promise();
   });
 
-  after(deleteTestInstances);
+  after(async () => {
+    await deleteTestInstances();
+    console.log('instance deleted.');
+    process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+  });
 
   describe('types', () => {
     // tslint:disable-next-line: no-any
