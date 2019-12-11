@@ -692,6 +692,18 @@ describe('Spanner', () => {
     );
   });
 
+  // list_backup_operations
+  it(`should list backup operations in the instance`, async () => {
+    const output = execSync(
+        `${backupsCmd} listBackupOperations ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backup Operations:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}/operations/`)
+    );
+  });
+
   // update_backup_expire_time
   it(`should update the expire time of a backup`, async () => {
     const output = execSync(
