@@ -47,7 +47,8 @@
     "proto:spanner_instance_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/instance/v1/spanner_instance_admin.proto | pbts -o proto/spanner_instance_admin.d.ts -",
     "proto:spanner_database_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/database/v1/spanner_database_admin.proto | pbts -o proto/spanner_database_admin.d.ts -",
     "docs-test": "linkinator docs",
-    "predocs-test": "npm run docs"
+    "predocs-test": "npm run docs",
+    "benchwrapper": "node bin/benchwrapper.js"
   },
   "dependencies": {
     "@google-cloud/common": "^2.2.2",
@@ -74,6 +75,7 @@
     "through2": "^3.0.0"
   },
   "devDependencies": {
+    "@grpc/proto-loader": "^0.5.1",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.21",
