@@ -41,8 +41,6 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
-import {NormalCallback} from './common';
-import {ServiceError} from '@grpc/grpc-js';
 
 const grpc = require('grpc');
 
@@ -58,6 +56,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   servicePath?: string;
   port?: number;
   sslCreds?: ChannelCredentials;
+  enableResourceBasedRouting?: boolean;
 }
 export interface RequestConfig {
   client: string;
@@ -199,7 +198,7 @@ export interface RequestConfig {
  * @param {ClientConfig} [options] Configuration options.
  */
 class Spanner extends GrpcService {
-  options: GoogleAuthOptions;
+  options: SpannerOptions;
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
@@ -304,6 +303,10 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.options.enableResourceBasedRouting =
+      typeof options!.enableResourceBasedRouting === 'boolean'
+        ? options.enableResourceBasedRouting
+        : process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING !== 'false';
     /**
      * Get a list of {@link Instance} objects as a readable object stream.
      *
@@ -800,12 +803,9 @@ class Spanner extends GrpcService {
    */
   getGaxClient_(config, callback) {
     let clientName = config.client;
-    const resourceBasedRoutingFlag =
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
-
     if (
       clientName !== 'SpannerClient' ||
-      resourceBasedRoutingFlag === 'false'
+      !this.options.enableResourceBasedRouting
     ) {
       if (!this.clients_.has(clientName)) {
         this.clients_.set(clientName, new gapic.v1[clientName](this.options));
@@ -836,8 +836,7 @@ class Spanner extends GrpcService {
           }
           const options = Object.assign({}, this.options);
           if (endPointUris!.length > 0) {
-            // tslint:disable-next-line: no-any
-            (options as any).apiEndpoint = endPointUris![0];
+            options.apiEndpoint = endPointUris![0];
           }
           this.clients_.set(clientName, new gapic.v1[config.client](options));
           callback(null, this.clients_.get(clientName)!);

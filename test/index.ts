@@ -142,6 +142,7 @@ describe('Spanner', () => {
 
   const OPTIONS = {
     projectId: 'project-id',
+    enableResourceBasedRouting: false,
   };
 
   before(() => {
@@ -830,17 +831,6 @@ describe('Spanner', () => {
     const FAKE_GAPIC_CLIENT: any = {
       [CONFIG.method]: util.noop,
     };
-    let GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING: string | undefined;
-
-    before(() => {
-      GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-    });
-
-    after(() => {
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
-    });
 
     beforeEach(() => {
       FAKE_GAPIC_CLIENT[CONFIG.method] = util.noop;
@@ -941,14 +931,11 @@ describe('Spanner', () => {
     });
 
     it('should create and cache a gapic client when resource based routing is enabled.', done => {
-      after(() => {
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-      });
       const instanceId = 'instance-id';
       const endpointUris = ['us-central1-spanner.googleapis.com'];
       // tslint:disable-next-line: no-any
       (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         asAny(spanner.options).apiEndpoint = endpointUris[0];
@@ -973,11 +960,8 @@ describe('Spanner', () => {
     });
 
     it('should re-use a cached gapic client when resource based routing is enabled.', () => {
-      after(() => {
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-      });
       const instanceId = 'instance-id';
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         callback!(null, ['us-central1-spanner.googleapis.com']);
@@ -992,12 +976,9 @@ describe('Spanner', () => {
     });
 
     it('should return an error from get instance endpointUris', done => {
-      after(() => {
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-      });
       const error = new Error('Error.') as ServiceError;
       const instanceId = 'instance-id';
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         callback!(error);
@@ -1012,10 +993,7 @@ describe('Spanner', () => {
     });
 
     it('should return an error formattedName_ does not provided.', done => {
-      after(() => {
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-      });
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      spanner.options.enableResourceBasedRouting = true;
 
       spanner.prepareGapicRequest_(CONFIG, err => {
         assert(err!.message.indexOf('instanceId is requires') > -1);
@@ -1024,15 +1002,12 @@ describe('Spanner', () => {
     });
 
     it('should override the endpoint from GetInstance response.', done => {
-      after(() => {
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-      });
       const instanceId = 'instance-id';
       const endpointUris = ['us-central1-spanner.googleapis.com'];
       asAny(
         CONFIG
       ).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         asAny(spanner.options).apiEndpoint = endpointUris[0];
@@ -1053,15 +1028,12 @@ describe('Spanner', () => {
     });
 
     it('should use user-specified endpoint when GetInstance response is empty.', done => {
-      after(() => {
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-      });
       const instanceId = 'instance-id';
       const customeEndpoint = 'us-central1-spanner.googleapis.com';
       asAny(
         CONFIG
       ).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         asAny(spanner.options).apiEndpoint = customeEndpoint;

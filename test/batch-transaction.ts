@@ -125,17 +125,6 @@ describe('BatchTransaction', () => {
       params: {},
       types: {},
     };
-    let GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING: string | undefined;
-
-    before(() => {
-      GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
-        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'false';
-    });
-
-    after(() => {
-      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
-    });
 
     it('should make the correct request', () => {
       const fakeParams = {
