@@ -318,17 +318,18 @@ export class MockSpanner {
           for (const partial of partialResultSets) {
             call.write(partial);
           }
+          call.end();
           break;
         case StatementResultType.UPDATE_COUNT:
           call.write(MockSpanner.toPartialResultSet(res.updateCount));
+          call.end();
           break;
         case StatementResultType.ERROR:
-          call.write(res.error);
+          call.destroy(res.error);
           break;
         default:
-          call.write(new Error(`Unknown StatementResult type: ${res.type}`));
+          call.destroy(new Error(`Unknown StatementResult type: ${res.type}`));
       }
-      call.end();
     } else {
       call.destroy(
         new Error(`There is no result registered for ${call.request.sql}`)

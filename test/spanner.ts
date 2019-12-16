@@ -26,6 +26,7 @@ import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {SessionLeakError} from '../src/session-pool';
+import {ServiceError} from 'grpc';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -43,7 +44,11 @@ function numberToEnglishWord(num: number): string {
 describe('Spanner with mock server', () => {
   let sandbox: sinon.SinonSandbox;
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
+  const invalidSql = 'SELECT * FROM FOO';
   const insertSql = `INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')`;
+  const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
+    code: grpc.status.NOT_FOUND,
+  });
   const server = new grpc.Server();
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
@@ -62,6 +67,10 @@ describe('Spanner with mock server', () => {
     spannerMock.putStatementResult(
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet())
+    );
+    spannerMock.putStatementResult(
+      invalidSql,
+      mock.StatementResult.error(fooNotFoundErr)
     );
     spannerMock.putStatementResult(
       insertSql,
@@ -121,7 +130,7 @@ describe('Spanner with mock server', () => {
   });
 
   it('should throw an error with a stacktrace when leaking a session', async () => {
-    await leakSession();
+    await testLeakSession();
   });
 
   async function testLeakSession() {
@@ -187,6 +196,62 @@ describe('Spanner with mock server', () => {
       }
       sessionId = pool._inventory[types.ReadOnly][0].id;
     }
+  }
+
+  it('should reuse sessions after executing streaming sql', async () => {
+    // The query to execute
+    const query = {
+      sql: selectSql,
+    };
+    const database = instance.database('database-for-streaming');
+    const pool = database.pool_ as SessionPool;
+    for (let i = 0; i < 10; i++) {
+      const rowCount = await getRowCountFromStreamingSql(query);
+      assert.strictEqual(rowCount, 3);
+    }
+    assert.strictEqual(pool.size, 0);
+    await database.close();
+  });
+
+  it('should reuse sessions after executing an invalid streaming sql', async () => {
+    // The query to execute
+    const query = {
+      sql: invalidSql,
+    };
+    const database = instance.database('database-for-invalid-streaming');
+    const pool = database.pool_ as SessionPool;
+    for (let i = 0; i < 10; i++) {
+      try {
+        const rowCount = await getRowCountFromStreamingSql(query);
+        assert.fail('missing expected exception');
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+        );
+      }
+    }
+    assert.strictEqual(pool.size, 0);
+    await database.close();
+  });
+
+  function getRowCountFromStreamingSql(
+    query: ExecuteSqlRequest
+  ): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      let rows = 0;
+      database
+        .runStream(query)
+        .on('error', err => {
+          reject(err);
+        })
+        .on('data', row => {
+          rows++;
+        })
+        .on('end', res => {
+          return resolve(rows);
+        });
+    });
   }
 
   it('should reuse write sessions', async () => {
