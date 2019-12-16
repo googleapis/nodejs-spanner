@@ -16,13 +16,13 @@
 
 import * as assert from 'assert';
 import * as grpc from 'grpc';
-import {Database, Instance, Snapshot, Spanner} from '../src';
+import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
-import longrunning = google.longrunning;
+import {types} from '../src/session';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -168,6 +168,45 @@ describe('Spanner with mock server', () => {
       .catch(reason => {
         assert.strictEqual(reason.name, 'SessionLeakError', reason);
       });
+  });
+
+  it('should reuse sessions', async () => {
+    // The query to execute
+    const query = {
+      sql: selectSql,
+    };
+    const pool = database.pool_ as SessionPool;
+    let sessionId = '';
+    for (let i = 0; i < 10; i++) {
+      const [rows] = await database.run(query);
+      assert.strictEqual(rows.length, 3);
+      rows.forEach(() => {});
+      assert.strictEqual(pool.size, 1);
+      if (i > 0) {
+        assert.strictEqual(pool._inventory[types.ReadOnly][0].id, sessionId);
+      }
+      sessionId = pool._inventory[types.ReadOnly][0].id;
+    }
+  });
+
+  it('should reuse sessions when fail=true', async () => {
+    // The query to execute
+    const query = {
+      sql: selectSql,
+    };
+    const db = instance.database('other-database', {
+      max: 10,
+      concurrency: 5,
+      writes: 0.1,
+      fail: true,
+    });
+    const pool = db.pool_ as SessionPool;
+    for (let i = 0; i < 10; i++) {
+      const [rows] = await db.run(query);
+      assert.strictEqual(rows.length, 3);
+      rows.forEach(() => {});
+      assert.strictEqual(pool.size, 1);
+    }
   });
 
   it('should list instance configurations', async () => {
