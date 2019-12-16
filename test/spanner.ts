@@ -25,6 +25,7 @@ import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
+import {SessionLeakError} from '../src/session-pool';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -119,7 +120,11 @@ describe('Spanner with mock server', () => {
     assert.deepStrictEqual(updated, [1]);
   });
 
-  it('should leak a session', async () => {
+  it('should throw an error with a stacktrace when leaking a session', async () => {
+    await leakSession();
+  });
+
+  async function testLeakSession() {
     // The query to execute
     const query = {
       sql: selectSql,
@@ -145,10 +150,11 @@ describe('Spanner with mock server', () => {
       .then(() => {
         assert.fail('Missing expected SessionLeakError');
       })
-      .catch(reason => {
+      .catch((reason: SessionLeakError) => {
         assert.strictEqual(reason.name, 'SessionLeakError', reason);
+        assert.ok(reason.stack && reason.stack.indexOf('testLeakSession'));
       });
-  });
+  }
 
   it('should reuse sessions', async () => {
     await verifyReadSessionReuse(database);

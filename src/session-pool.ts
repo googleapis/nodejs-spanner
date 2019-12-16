@@ -249,7 +249,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   static formatTrace(frames: trace.StackFrame[]): string {
     const stack = frames.map(frame => {
-      const name = frame.getFunctionName() || frame.getMethodName();
+      const name =
+        frame.getFunctionName() || frame.getMethodName() || 'anonymous';
       const file = frame.getFileName();
       const lineno = frame.getLineNumber();
       const columnno = frame.getColumnNumber();
