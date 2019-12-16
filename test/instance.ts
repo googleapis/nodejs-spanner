@@ -24,6 +24,7 @@ import * as sinon from 'sinon';
 
 import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
+import {SessionPoolOptions} from '../src/session-pool';
 
 const fakePaginator = {
   paginator: {
@@ -369,6 +370,40 @@ describe('Instance', () => {
       const database = instance.database(NAME);
 
       assert.strictEqual(database, fakeDatabase);
+    });
+
+    it('should create and cache different objects when called with different session pool options', () => {
+      const cache = instance.databases_;
+      const fakeDatabase = {} as Database;
+      const fakeDatabaseWithSessionPoolOptions = {} as Database;
+      const emptySessionPoolOptions = {} as SessionPoolOptions;
+      const fakeSessionPoolOptions = {
+        min: 1000,
+        max: 1000,
+      } as SessionPoolOptions;
+
+      cache.set(NAME, fakeDatabase);
+      cache.set(
+        NAME + '/' + JSON.stringify(fakeSessionPoolOptions),
+        fakeDatabaseWithSessionPoolOptions
+      );
+
+      const database = instance.database(NAME);
+      const databaseWithEmptyOptions = instance.database(
+        NAME,
+        emptySessionPoolOptions
+      );
+      const databaseWithOptions = instance.database(
+        NAME,
+        fakeSessionPoolOptions
+      );
+
+      assert.strictEqual(database, fakeDatabase);
+      assert.strictEqual(databaseWithEmptyOptions, fakeDatabase);
+      assert.strictEqual(
+        databaseWithOptions,
+        fakeDatabaseWithSessionPoolOptions
+      );
     });
   });
 
