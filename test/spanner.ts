@@ -24,6 +24,7 @@ import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
+import {Row} from '../src/partial-result-stream';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -222,6 +223,64 @@ describe('Spanner with mock server', () => {
     }
   }
 
+  it('should execute queries in parallel', async () => {
+    // The query to execute
+    const query = {
+      sql: selectSql,
+    };
+    const pool = database.pool_ as SessionPool;
+    const promises: Array<Promise<Row[]>> = [];
+    for (let i = 0; i < 10; i++) {
+      promises.push(database.run(query));
+    }
+    await Promise.all(promises);
+    assert.strictEqual(pool.size, 10);
+  });
+
+  it('should execute updates in parallel', async () => {
+    const update = {
+      sql: insertSql,
+    };
+    const pool = database.pool_ as SessionPool;
+    const promises: Array<Promise<number | number[]>> = [];
+    for (let i = 0; i < 10; i++) {
+      promises.push(executeSimpleUpdate(database, update));
+    }
+    await Promise.all(promises);
+    assert.strictEqual(pool.size, 10);
+  });
+
+  it('should fail on session pool exhaustion and fail=true', async () => {
+    // The query to execute
+    const query = {
+      sql: selectSql,
+    };
+    const database = instance.database('other-database2', {
+      max: 1,
+      fail: true,
+    });
+    const pool = database.pool_ as SessionPool;
+    const promises: Array<Promise<Row[]>> = [];
+    for (let i = 0; i < 3; i++) {
+      promises.push(database.run(query));
+    }
+    try {
+      await Promise.all(promises);
+      assert.fail('missing expected exception');
+    } catch (e) {
+      assert.strictEqual(e.message, 'No resources available.');
+    }
+  });
+
+  // tslint:disable-next-line:ban
+  it.skip('should return different database instances when the same database is requested twice with different session pool options', async () => {
+    const dbWithDefaultOptions = instance.database('some-database');
+    const dbWithWriteSessions = instance.database('some-database', {
+      writes: 1.0,
+    });
+    assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
+  });
+
   it('should list instance configurations', async () => {
     const [configs] = await spanner.getInstanceConfigs();
     assert.strictEqual(configs.length, 1);
@@ -298,7 +357,10 @@ describe('Spanner with mock server', () => {
   });
 });
 
-function executeSimpleUpdate(database: Database, update: string | ExecuteSqlRequest): Promise<number | [number]> {
+function executeSimpleUpdate(
+  database: Database,
+  update: string | ExecuteSqlRequest
+): Promise<number | [number]> {
   return database
     .runTransactionAsync<[number]>(
       (transaction): Promise<[number]> => {
