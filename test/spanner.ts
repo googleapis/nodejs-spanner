@@ -273,7 +273,7 @@ describe('Spanner with mock server', () => {
   });
 
   // tslint:disable-next-line:ban
-  it.skip('should return different database instances when the same database is requested twice with different session pool options', async () => {
+  it('should return different database instances when the same database is requested twice with different session pool options', async () => {
     const dbWithDefaultOptions = instance.database('some-database');
     const dbWithWriteSessions = instance.database('some-database', {
       writes: 1.0,

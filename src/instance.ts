@@ -36,6 +36,8 @@ import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {util} from 'protobufjs';
+import pool = util.pool;
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
