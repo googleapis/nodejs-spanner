@@ -224,6 +224,7 @@ describe('Spanner with mock server', () => {
   }
 
   it('should execute queries in parallel', async () => {
+    spannerMock.freeze();
     // The query to execute
     const query = {
       sql: selectSql,
@@ -233,11 +234,13 @@ describe('Spanner with mock server', () => {
     for (let i = 0; i < 10; i++) {
       promises.push(database.run(query));
     }
+    spannerMock.unfreeze();
     await Promise.all(promises);
     assert.strictEqual(pool.size, 10);
   });
 
   it('should execute updates in parallel', async () => {
+    spannerMock.freeze();
     const update = {
       sql: insertSql,
     };
@@ -246,6 +249,7 @@ describe('Spanner with mock server', () => {
     for (let i = 0; i < 10; i++) {
       promises.push(executeSimpleUpdate(database, update));
     }
+    spannerMock.unfreeze();
     await Promise.all(promises);
     assert.strictEqual(pool.size, 10);
   });
@@ -272,7 +276,6 @@ describe('Spanner with mock server', () => {
     }
   });
 
-  // tslint:disable-next-line:ban
   it('should return different database instances when the same database is requested twice with different session pool options', async () => {
     const dbWithDefaultOptions = instance.database('some-database');
     const dbWithWriteSessions = instance.database('some-database', {

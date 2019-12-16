@@ -135,6 +135,7 @@ export function createUnimplementedError(msg: string): grpc.ServiceError {
  * MockSpanner is a mocked in-mem Spanner server that manages sessions and transactions automatically. Results for SQL statements must be registered on the server using the MockSpanner.putStatementResult function.
  */
 export class MockSpanner {
+  private frozen = 0;
   private sessionCounter = 0;
   private sessions: Map<string, protobuf.Session> = new Map<
     string,
@@ -184,6 +185,17 @@ export class MockSpanner {
     this.statementResults.set(sql, result);
   }
 
+  freeze() {
+    this.frozen++;
+  }
+
+  unfreeze() {
+    if (this.frozen === 0) {
+      throw new Error('This mock server is already unfrozen');
+    }
+    this.frozen--;
+  }
+
   /**
    * Creates a new session for the given database and adds it to the map of sessions of this server.
    * @param database The database to create the session for.
@@ -212,49 +224,67 @@ export class MockSpanner {
     });
   }
 
+  private static sleep(ms): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private async simulateExecutionTime(): Promise<void> {
+    while (this.frozen > 0) {
+      await MockSpanner.sleep(10);
+    }
+  }
+
   batchCreateSessions(
     call: grpc.ServerUnaryCall<protobuf.BatchCreateSessionsRequest>,
     callback: protobuf.Spanner.BatchCreateSessionsCallback
   ) {
-    const sessions = new Array<protobuf.Session>();
-    for (let i = 0; i < call.request.sessionCount; i++) {
-      sessions.push(this.newSession(call.request.database));
-    }
-    callback(
-      null,
-      protobuf.BatchCreateSessionsResponse.create({session: sessions})
-    );
+    this.simulateExecutionTime().then(() => {
+      const sessions = new Array<protobuf.Session>();
+      for (let i = 0; i < call.request.sessionCount; i++) {
+        sessions.push(this.newSession(call.request.database));
+      }
+      callback(
+        null,
+        protobuf.BatchCreateSessionsResponse.create({session: sessions})
+      );
+    });
   }
 
   createSession(
     call: grpc.ServerUnaryCall<protobuf.CreateSessionRequest>,
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
-    callback(null, this.newSession(call.request.database));
+    this.simulateExecutionTime().then(() => {
+      callback(null, this.newSession(call.request.database));
+    });
   }
 
   getSession(
     call: grpc.ServerUnaryCall<protobuf.GetSessionRequest>,
     callback: protobuf.Spanner.GetSessionCallback
   ) {
-    const session = this.sessions[call.request.name];
-    if (session) {
-      callback(null, session);
-    } else {
-      callback(MockSpanner.createSessionNotFoundError(call.request.name));
-    }
+    this.simulateExecutionTime().then(() => {
+      const session = this.sessions[call.request.name];
+      if (session) {
+        callback(null, session);
+      } else {
+        callback(MockSpanner.createSessionNotFoundError(call.request.name));
+      }
+    });
   }
 
   listSessions(
     call: grpc.ServerUnaryCall<protobuf.ListSessionsRequest>,
     callback: protobuf.Spanner.ListSessionsCallback
   ) {
-    callback(
-      null,
-      protobuf.ListSessionsResponse.create({
-        sessions: Array.from(this.sessions.values()),
-      })
-    );
+    this.simulateExecutionTime().then(() => {
+      callback(
+        null,
+        protobuf.ListSessionsResponse.create({
+          sessions: Array.from(this.sessions.values()),
+        })
+      );
+    });
   }
 
   deleteSession(
