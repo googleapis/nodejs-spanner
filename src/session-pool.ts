@@ -723,7 +723,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return this._borrowNextAvailableSession(type);
     }
 
-    if (this.options.fail!) {
+    if (this.isFull && this.options.fail!) {
       throw new Error('No resources available.');
     }
 
