@@ -25,7 +25,7 @@ import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
-import {SessionLeakError} from '../src/session-pool';
+import {SessionLeakError, SessionPoolExhaustedError} from '../src/session-pool';
 import {ServiceError} from 'grpc';
 
 function numberToEnglishWord(num: number): string {
@@ -161,7 +161,8 @@ describe('Spanner with mock server', () => {
       })
       .catch((reason: SessionLeakError) => {
         assert.strictEqual(reason.name, 'SessionLeakError', reason);
-        assert.ok(reason.stack && reason.stack.indexOf('testLeakSession'));
+        assert.strictEqual(reason.messages.length, 1);
+        assert.ok(reason.messages[0].indexOf('testLeakSession') > -1);
       });
   }
 
@@ -196,6 +197,35 @@ describe('Spanner with mock server', () => {
       }
       sessionId = pool._inventory[types.ReadOnly][0].id;
     }
+  }
+
+  it('should throw SessionPoolExhaustedError with stacktraces when pool is exhausted', async () => {
+    await testSessionPoolExhaustedError();
+  });
+
+  async function testSessionPoolExhaustedError() {
+    // The query to execute
+    const query = {
+      sql: selectSql,
+    };
+    const database = instance.database('other-database', {
+      max: 1,
+      fail: true,
+    });
+    const [tx1] = await database.getSnapshot();
+    try {
+      const [tx2] = await database.getSnapshot();
+    } catch (e) {
+      assert.strictEqual(e.name, SessionPoolExhaustedError.name);
+      const exhausted = e as SessionPoolExhaustedError;
+      assert.ok(exhausted.messages);
+      assert.strictEqual(exhausted.messages.length, 1);
+      assert.ok(
+        exhausted.messages[0].indexOf('testSessionPoolExhaustedError') > -1
+      );
+    }
+    tx1.end();
+    await database.close();
   }
 
   it('should reuse sessions after executing streaming sql', async () => {
