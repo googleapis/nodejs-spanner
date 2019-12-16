@@ -459,6 +459,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new Error(errors.Closed);
     }
 
+    // Get the stacktrace of the caller before we call any async methods, as calling an async method will break the stacktrace.
+    const frames = trace.get();
     const startTime = Date.now();
     const timeout = this.options.acquireTimeout;
 
@@ -492,7 +494,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       }
     }
 
-    this._traces.set(session.id, trace.get());
+    this._traces.set(session.id, frames);
     return session;
   }
 
