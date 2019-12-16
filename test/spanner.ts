@@ -23,6 +23,7 @@ import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
+import {ExecuteSqlRequest} from '../src/transaction';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -113,29 +114,7 @@ describe('Spanner with mock server', () => {
     const update = {
       sql: insertSql,
     };
-    const updated = await database
-      .runTransactionAsync<[number]>(
-        (transaction): Promise<[number]> => {
-          return transaction
-            .runUpdate(update)
-            .then(rowCount => {
-              return rowCount;
-            })
-            .then(rowCount => {
-              transaction.commit();
-              return rowCount;
-            })
-            .then(rowCount => {
-              return rowCount;
-            })
-            .catch(() => {
-              return [-1];
-            });
-        }
-      )
-      .then(updated => {
-        return updated;
-      });
+    const updated = await executeSimpleUpdate(database, update);
     assert.deepStrictEqual(updated, [1]);
   });
 
@@ -171,6 +150,20 @@ describe('Spanner with mock server', () => {
   });
 
   it('should reuse sessions', async () => {
+    await verifyReadSessionReuse(database);
+  });
+
+  it('should reuse sessions when fail=true', async () => {
+    const db = instance.database('other-database', {
+      max: 10,
+      concurrency: 5,
+      writes: 0.1,
+      fail: true,
+    });
+    await verifyReadSessionReuse(db);
+  });
+
+  async function verifyReadSessionReuse(database: Database) {
     // The query to execute
     const query = {
       sql: selectSql,
@@ -187,27 +180,47 @@ describe('Spanner with mock server', () => {
       }
       sessionId = pool._inventory[types.ReadOnly][0].id;
     }
+  }
+
+  it('should reuse write sessions', async () => {
+    await verifyWriteSessionReuse(database);
   });
 
-  it('should reuse sessions when fail=true', async () => {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
+  it('should reuse write sessions when fail=true', async () => {
     const db = instance.database('other-database', {
       max: 10,
       concurrency: 5,
       writes: 0.1,
       fail: true,
     });
-    const pool = db.pool_ as SessionPool;
-    for (let i = 0; i < 10; i++) {
-      const [rows] = await db.run(query);
-      assert.strictEqual(rows.length, 3);
-      rows.forEach(() => {});
-      assert.strictEqual(pool.size, 1);
-    }
+    await verifyWriteSessionReuse(db);
   });
+
+  async function verifyWriteSessionReuse(database: Database) {
+    const update = {
+      sql: insertSql,
+    };
+    const pool = database.pool_ as SessionPool;
+    let sessionId = '';
+    for (let i = 0; i < 10; i++) {
+      const updated = await executeSimpleUpdate(database, update);
+      assert.strictEqual(pool.size, 1);
+      if (i > 0) {
+        if (pool._inventory[types.ReadOnly].length > 0) {
+          assert.strictEqual(pool._inventory[types.ReadOnly][0].id, sessionId);
+        } else if (pool._inventory[types.ReadWrite].length > 0) {
+          assert.strictEqual(pool._inventory[types.ReadWrite][0].id, sessionId);
+        }
+      }
+      if (pool._inventory[types.ReadOnly].length > 0) {
+        sessionId = pool._inventory[types.ReadOnly][0].id;
+      } else if (pool._inventory[types.ReadWrite].length > 0) {
+        sessionId = pool._inventory[types.ReadWrite][0].id;
+      } else {
+        assert.fail('missing expected available session in pool');
+      }
+    }
+  }
 
   it('should list instance configurations', async () => {
     const [configs] = await spanner.getInstanceConfigs();
@@ -284,3 +297,29 @@ describe('Spanner with mock server', () => {
     );
   });
 });
+
+function executeSimpleUpdate(database: Database, update: string | ExecuteSqlRequest): Promise<number | [number]> {
+  return database
+    .runTransactionAsync<[number]>(
+      (transaction): Promise<[number]> => {
+        return transaction
+          .runUpdate(update)
+          .then(rowCount => {
+            return rowCount;
+          })
+          .then(rowCount => {
+            transaction.commit();
+            return rowCount;
+          })
+          .then(rowCount => {
+            return rowCount;
+          })
+          .catch(() => {
+            return [-1];
+          });
+      }
+    )
+    .then(updated => {
+      return updated;
+    });
+}
