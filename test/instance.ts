@@ -381,10 +381,16 @@ describe('Instance', () => {
         min: 1000,
         max: 1000,
       } as SessionPoolOptions;
+      const fakeSessionPoolOptionsInOtherOrder = {
+        max: 1000,
+        min: 1000,
+      } as SessionPoolOptions;
 
       cache.set(NAME, fakeDatabase);
       cache.set(
-        NAME + '/' + JSON.stringify(fakeSessionPoolOptions),
+        NAME +
+          '/' +
+          JSON.stringify(Object.entries(fakeSessionPoolOptions).sort()),
         fakeDatabaseWithSessionPoolOptions
       );
 
@@ -397,11 +403,19 @@ describe('Instance', () => {
         NAME,
         fakeSessionPoolOptions
       );
+      const databaseWithOptionsInOtherOrder = instance.database(
+        NAME,
+        fakeSessionPoolOptionsInOtherOrder
+      );
 
       assert.strictEqual(database, fakeDatabase);
       assert.strictEqual(databaseWithEmptyOptions, fakeDatabase);
       assert.strictEqual(
         databaseWithOptions,
+        fakeDatabaseWithSessionPoolOptions
+      );
+      assert.strictEqual(
+        databaseWithOptionsInOtherOrder,
         fakeDatabaseWithSessionPoolOptions
       );
     });

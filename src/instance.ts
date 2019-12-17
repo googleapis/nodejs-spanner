@@ -354,7 +354,7 @@ class Instance extends common.GrpcServiceObject {
     // Only add an additional key for SessionPoolOptions if an options object with at least one value was passed in.
     const optionsKey =
       poolOptions && Object.keys(poolOptions).length > 0
-        ? '/' + JSON.stringify(poolOptions)
+        ? '/' + JSON.stringify(Object.entries(poolOptions).sort())
         : '';
     const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
