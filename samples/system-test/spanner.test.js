@@ -692,6 +692,30 @@ describe('Spanner', () => {
     );
   });
 
+  // list_backups_by_database
+  it(`should list backups for a database`, async () => {
+    const output = execSync(
+        `${backupsCmd} listBackupsByDatabase ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backups:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}`)
+    );
+  });
+
+  // list_backups_by_name
+  it(`should list backups by backup name`, async () => {
+    const output = execSync(
+        `${backupsCmd} listBackupsByName ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backups:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}`)
+    );
+  });
+
   // list_backup_operations
   it(`should list backup operations in the instance`, async () => {
     const output = execSync(
