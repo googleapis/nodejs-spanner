@@ -834,7 +834,7 @@ describe('Spanner', () => {
 
     beforeEach(() => {
       FAKE_GAPIC_CLIENT[CONFIG.method] = util.noop;
-      asAny(CONFIG).formattedName_ = '';
+      asAny(CONFIG).instanceId = '';
       asAny(spanner).auth.getProjectId = callback => {
         callback(null, PROJECT_ID);
       };
@@ -933,8 +933,7 @@ describe('Spanner', () => {
     it('should create and cache a gapic client when resource based routing is enabled.', done => {
       const instanceId = 'instance-id';
       const endpointUris = ['us-central1-spanner.googleapis.com'];
-      // tslint:disable-next-line: no-any
-      (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
@@ -966,8 +965,7 @@ describe('Spanner', () => {
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         callback!(null, ['us-central1-spanner.googleapis.com']);
       };
-      // tslint:disable-next-line: no-any
-      (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      asAny(CONFIG).instanceId = instanceId;
       fakeV1[CONFIG.client] = () => {
         throw new Error('Should not have re-created client!');
       };
@@ -983,8 +981,7 @@ describe('Spanner', () => {
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
         callback!(error);
       };
-      // tslint:disable-next-line: no-any
-      (CONFIG as any).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      asAny(CONFIG).instanceId = instanceId;
 
       spanner.prepareGapicRequest_(CONFIG, err => {
         assert.strictEqual(err, error);
@@ -992,11 +989,11 @@ describe('Spanner', () => {
       });
     });
 
-    it('should return an error formattedName_ does not provided.', done => {
+    it('should return an error if instanceId does not provided.', done => {
       spanner.options.enableResourceBasedRouting = true;
 
       spanner.prepareGapicRequest_(CONFIG, err => {
-        assert(err!.message.indexOf('instanceId is requires') > -1);
+        assert(err!.message.indexOf('instanceId is required.') > -1);
         done();
       });
     });
@@ -1004,9 +1001,7 @@ describe('Spanner', () => {
     it('should override the endpoint from GetInstance response.', done => {
       const instanceId = 'instance-id';
       const endpointUris = ['us-central1-spanner.googleapis.com'];
-      asAny(
-        CONFIG
-      ).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
@@ -1030,9 +1025,7 @@ describe('Spanner', () => {
     it('should use user-specified endpoint when GetInstance response is empty.', done => {
       const instanceId = 'instance-id';
       const customeEndpoint = 'us-central1-spanner.googleapis.com';
-      asAny(
-        CONFIG
-      ).formattedName_ = `projects/${PROJECT_ID}/instances/${instanceId}`;
+      asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
       spanner.instance(instanceId).getInstanceEndPointUris = callback => {
