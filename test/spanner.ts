@@ -25,7 +25,11 @@ import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
-import {SessionLeakError, SessionPoolExhaustedError} from '../src/session-pool';
+import {
+  SessionLeakError,
+  SessionPoolExhaustedError,
+  SessionPoolOptions,
+} from '../src/session-pool';
 import {ServiceError} from 'grpc';
 
 function numberToEnglishWord(num: number): string {
@@ -55,7 +59,11 @@ describe('Spanner with mock server', () => {
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
   let spanner: Spanner;
   let instance: Instance;
-  let database: Database;
+  let dbCounter = 1;
+
+  function newTestDatabase(options?: SessionPoolOptions): Database {
+    return instance.database(`database-${dbCounter++}`, options);
+  }
 
   before(() => {
     sandbox = sinon.createSandbox();
@@ -88,18 +96,10 @@ describe('Spanner with mock server', () => {
     });
     // Gets a reference to a Cloud Spanner instance and database
     instance = spanner.instance('instance');
-    database = instance.database('database');
   });
 
   after(() => {
-    database
-      .close()
-      .then(() => {
-        server.tryShutdown(() => {});
-      })
-      .catch(reason => {
-        console.log(`Failed to close database: ${reason}`);
-      });
+    server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
   });
@@ -109,24 +109,34 @@ describe('Spanner with mock server', () => {
     const query = {
       sql: selectSql,
     };
-    const [rows] = await database.run(query);
-    assert.strictEqual(rows.length, 3);
-    let i = 0;
-    rows.forEach(row => {
-      i++;
-      assert.strictEqual(row[0].name, 'NUM');
-      assert.strictEqual(row[0].value.valueOf(), i);
-      assert.strictEqual(row[1].name, 'NAME');
-      assert.strictEqual(row[1].value.valueOf(), numberToEnglishWord(i));
-    });
+    const database = newTestDatabase();
+    try {
+      const [rows] = await database.run(query);
+      assert.strictEqual(rows.length, 3);
+      let i = 0;
+      rows.forEach(row => {
+        i++;
+        assert.strictEqual(row[0].name, 'NUM');
+        assert.strictEqual(row[0].value.valueOf(), i);
+        assert.strictEqual(row[1].name, 'NAME');
+        assert.strictEqual(row[1].value.valueOf(), numberToEnglishWord(i));
+      });
+    } finally {
+      await database.close();
+    }
   });
 
   it('should execute update', async () => {
     const update = {
       sql: insertSql,
     };
-    const updated = await executeSimpleUpdate(database, update);
-    assert.deepStrictEqual(updated, [1]);
+    const database = newTestDatabase();
+    try {
+      const updated = await executeSimpleUpdate(database, update);
+      assert.deepStrictEqual(updated, [1]);
+    } finally {
+      await database.close();
+    }
   });
 
   it('should throw an error with a stacktrace when leaking a session', async () => {
@@ -138,7 +148,7 @@ describe('Spanner with mock server', () => {
     const query = {
       sql: selectSql,
     };
-    const db = instance.database('other-database');
+    const db = newTestDatabase();
     let transaction: Snapshot;
     await db
       .getSnapshot({strong: true, returnReadTimestamp: true})
@@ -167,17 +177,26 @@ describe('Spanner with mock server', () => {
   }
 
   it('should reuse sessions', async () => {
-    await verifyReadSessionReuse(database);
+    const database = newTestDatabase();
+    try {
+      await verifyReadSessionReuse(database);
+    } finally {
+      await database.close();
+    }
   });
 
   it('should reuse sessions when fail=true', async () => {
-    const db = instance.database('other-database', {
+    const db = newTestDatabase({
       max: 10,
       concurrency: 5,
       writes: 0.1,
       fail: true,
     });
-    await verifyReadSessionReuse(db);
+    try {
+      await verifyReadSessionReuse(db);
+    } finally {
+      await db.close();
+    }
   });
 
   async function verifyReadSessionReuse(database: Database) {
@@ -208,25 +227,28 @@ describe('Spanner with mock server', () => {
     const query = {
       sql: selectSql,
     };
-    const database = instance.database('other-database', {
+    const database = newTestDatabase({
       max: 1,
       fail: true,
     });
-    const [tx1] = await database.getSnapshot();
     try {
-      const [tx2] = await database.getSnapshot();
-      assert.fail('missing expected exception');
-    } catch (e) {
-      assert.strictEqual(e.name, SessionPoolExhaustedError.name);
-      const exhausted = e as SessionPoolExhaustedError;
-      assert.ok(exhausted.messages);
-      assert.strictEqual(exhausted.messages.length, 1);
-      assert.ok(
-        exhausted.messages[0].indexOf('testSessionPoolExhaustedError') > -1
-      );
+      const [tx1] = await database.getSnapshot();
+      try {
+        const [tx2] = await database.getSnapshot();
+        assert.fail('missing expected exception');
+      } catch (e) {
+        assert.strictEqual(e.name, SessionPoolExhaustedError.name);
+        const exhausted = e as SessionPoolExhaustedError;
+        assert.ok(exhausted.messages);
+        assert.strictEqual(exhausted.messages.length, 1);
+        assert.ok(
+          exhausted.messages[0].indexOf('testSessionPoolExhaustedError') > -1
+        );
+      }
+      tx1.end();
+    } finally {
+      await database.close();
     }
-    tx1.end();
-    await database.close();
   }
 
   it('should reuse sessions after executing streaming sql', async () => {
@@ -234,14 +256,17 @@ describe('Spanner with mock server', () => {
     const query = {
       sql: selectSql,
     };
-    const database = instance.database('database-for-streaming');
-    const pool = database.pool_ as SessionPool;
-    for (let i = 0; i < 10; i++) {
-      const rowCount = await getRowCountFromStreamingSql(query);
-      assert.strictEqual(rowCount, 3);
+    const database = newTestDatabase();
+    try {
+      const pool = database.pool_ as SessionPool;
+      for (let i = 0; i < 10; i++) {
+        const rowCount = await getRowCountFromStreamingSql(database, query);
+        assert.strictEqual(rowCount, 3);
+      }
+      assert.strictEqual(pool.size, 1);
+    } finally {
+      await database.close();
     }
-    assert.strictEqual(pool.size, 0);
-    await database.close();
   });
 
   it('should reuse sessions after executing an invalid streaming sql', async () => {
@@ -249,24 +274,28 @@ describe('Spanner with mock server', () => {
     const query = {
       sql: invalidSql,
     };
-    const database = instance.database('database-for-invalid-streaming');
-    const pool = database.pool_ as SessionPool;
-    for (let i = 0; i < 10; i++) {
-      try {
-        const rowCount = await getRowCountFromStreamingSql(query);
-        assert.fail('missing expected exception');
-      } catch (e) {
-        assert.strictEqual(
-          e.message,
-          `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-        );
+    const database = newTestDatabase();
+    try {
+      const pool = database.pool_ as SessionPool;
+      for (let i = 0; i < 10; i++) {
+        try {
+          const rowCount = await getRowCountFromStreamingSql(database, query);
+          assert.fail('missing expected exception');
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+          );
+        }
       }
+      assert.strictEqual(pool.size, 1);
+    } finally {
+      await database.close();
     }
-    assert.strictEqual(pool.size, 0);
-    await database.close();
   });
 
   function getRowCountFromStreamingSql(
+    database: Database,
     query: ExecuteSqlRequest
   ): Promise<number> {
     return new Promise<number>((resolve, reject) => {
@@ -286,17 +315,26 @@ describe('Spanner with mock server', () => {
   }
 
   it('should reuse write sessions', async () => {
-    await verifyWriteSessionReuse(database);
+    const database = newTestDatabase();
+    try {
+      await verifyWriteSessionReuse(database);
+    } finally {
+      await database.close();
+    }
   });
 
   it('should reuse write sessions when fail=true', async () => {
-    const db = instance.database('other-database', {
+    const db = newTestDatabase({
       max: 10,
       concurrency: 5,
       writes: 0.1,
       fail: true,
     });
-    await verifyWriteSessionReuse(db);
+    try {
+      await verifyWriteSessionReuse(db);
+    } finally {
+      await db.close();
+    }
   });
 
   async function verifyWriteSessionReuse(database: Database) {
@@ -304,41 +342,36 @@ describe('Spanner with mock server', () => {
       sql: insertSql,
     };
     const pool = database.pool_ as SessionPool;
-    let sessionId = '';
     for (let i = 0; i < 10; i++) {
       const updated = await executeSimpleUpdate(database, update);
-      assert.strictEqual(pool.size, 1);
-      if (i > 0) {
-        if (pool._inventory[types.ReadOnly].length > 0) {
-          assert.strictEqual(pool._inventory[types.ReadOnly][0].id, sessionId);
-        } else if (pool._inventory[types.ReadWrite].length > 0) {
-          assert.strictEqual(pool._inventory[types.ReadWrite][0].id, sessionId);
-        }
-      }
-      if (pool._inventory[types.ReadOnly].length > 0) {
-        sessionId = pool._inventory[types.ReadOnly][0].id;
-      } else if (pool._inventory[types.ReadWrite].length > 0) {
-        sessionId = pool._inventory[types.ReadWrite][0].id;
-      } else {
-        assert.fail('missing expected available session in pool');
-      }
+      // The pool should not contain more sessions than the number of transactions that we have executed.
+      // The exact number depends on the time needed to prepare new transactions, as checking in a read/write
+      // transaction to the pool will cause the session to be prepared with a read/write transaction before it is added
+      // to the list of available sessions.
+      assert.ok(pool.size <= i + 1);
     }
   }
 
   it('should execute queries in parallel', async () => {
-    spannerMock.freeze();
     // The query to execute
     const query = {
       sql: selectSql,
     };
-    const pool = database.pool_ as SessionPool;
-    const promises: Array<Promise<Row[]>> = [];
-    for (let i = 0; i < 10; i++) {
-      promises.push(database.run(query));
+    const database = newTestDatabase();
+    try {
+      const pool = database.pool_ as SessionPool;
+      const promises: Array<Promise<Row[]>> = [];
+      for (let i = 0; i < 10; i++) {
+        promises.push(database.run(query));
+      }
+      await Promise.all(promises);
+      assert.ok(
+        pool.size >= 1 && pool.size <= 10,
+        'Pool size should be between 1 and 10'
+      );
+    } finally {
+      await database.close();
     }
-    spannerMock.unfreeze();
-    await Promise.all(promises);
-    assert.strictEqual(pool.size, 10);
   });
 
   it('should execute updates in parallel', async () => {
@@ -346,14 +379,19 @@ describe('Spanner with mock server', () => {
     const update = {
       sql: insertSql,
     };
-    const pool = database.pool_ as SessionPool;
-    const promises: Array<Promise<number | number[]>> = [];
-    for (let i = 0; i < 10; i++) {
-      promises.push(executeSimpleUpdate(database, update));
+    const database = newTestDatabase();
+    try {
+      const pool = database.pool_ as SessionPool;
+      const promises: Array<Promise<number | number[]>> = [];
+      for (let i = 0; i < 10; i++) {
+        promises.push(executeSimpleUpdate(database, update));
+      }
+      spannerMock.unfreeze();
+      await Promise.all(promises);
+      assert.strictEqual(pool.size, 10);
+    } finally {
+      await database.close();
     }
-    spannerMock.unfreeze();
-    await Promise.all(promises);
-    assert.strictEqual(pool.size, 10);
   });
 
   it('should fail on session pool exhaustion and fail=true', async () => {
@@ -361,26 +399,30 @@ describe('Spanner with mock server', () => {
     const query = {
       sql: selectSql,
     };
-    const database = instance.database('other-database2', {
+    const database = newTestDatabase({
       max: 1,
       fail: true,
     });
-    const pool = database.pool_ as SessionPool;
-    const promises: Array<Promise<Row[]>> = [];
-    for (let i = 0; i < 3; i++) {
-      promises.push(database.run(query));
-    }
+    let tx1;
     try {
-      await Promise.all(promises);
-      assert.fail('missing expected exception');
-    } catch (e) {
-      assert.strictEqual(e.message, 'No resources available.');
+      try {
+        [tx1] = await database.getSnapshot();
+        await database.getSnapshot();
+        assert.fail('missing expected exception');
+      } catch (e) {
+        assert.strictEqual(e.message, 'No resources available.');
+      }
+    } finally {
+      if (tx1) {
+        tx1.end();
+      }
+      await database.close();
     }
   });
 
   it('should return different database instances when the same database is requested twice with different session pool options', async () => {
-    const dbWithDefaultOptions = instance.database('some-database');
-    const dbWithWriteSessions = instance.database('some-database', {
+    const dbWithDefaultOptions = newTestDatabase();
+    const dbWithWriteSessions = instance.database(dbWithDefaultOptions.id!, {
       writes: 1.0,
     });
     assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
@@ -475,13 +517,13 @@ function executeSimpleUpdate(
             return rowCount;
           })
           .then(rowCount => {
-            transaction.commit();
-            return rowCount;
+            return transaction.commit().then(() => rowCount);
           })
           .then(rowCount => {
             return rowCount;
           })
           .catch(() => {
+            transaction.rollback().then(() => {});
             return [-1];
           });
       }
