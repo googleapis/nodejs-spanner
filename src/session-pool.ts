@@ -228,10 +228,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Formats stack trace objects into Node-like stack trace.
    *
+   * @param {string} session ID.
    * @param {object[]} trace The trace object.
    * @return {string}
    */
-  static formatTrace(frames: trace.StackFrame[]): string {
+  static formatTrace(sessionId: string, frames: trace.StackFrame[]): string {
     const stack = frames.map(frame => {
       const name = frame.getFunctionName() || frame.getMethodName();
       const file = frame.getFileName();
@@ -241,7 +242,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return `    at ${name} (${file}:${lineno}:${columnno})`;
     });
 
-    return `Session leak detected!\n${stack.join('\n')}`;
+    return `Session leak detected!\nsession ID:${sessionId}\n${stack.join('\n')}`;
   }
 
   /**
@@ -705,7 +706,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {string[]}
    */
   _getLeaks(): string[] {
-    return [...this._traces.values()].map(SessionPool.formatTrace);
+    return [...this._traces.entries()].map(([sessionId, frames]) => SessionPool.formatTrace(sessionId, frames));
   }
 
   /**
