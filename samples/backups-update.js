@@ -39,14 +39,9 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
+  const databasePath = database.formattedName_;
   const newExpireTime =  new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 2); // two days in the future
-
-  const [backups] = await instance.listBackups({filter:`name:${backupId}`});
-  if (backups.length < 1) {
-    console.error(`Backup ${backupId} not found.`);
-    return;
-  }
-  const backup = backups[0];
+  const backup = instance.backup(backupId, databasePath);
 
   // Read backup metadata and update expiry time
   try {
