@@ -242,7 +242,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return `    at ${name} (${file}:${lineno}:${columnno})`;
     });
 
-    return `Session leak detected!\nsession ID:${sessionId}\n${stack.join('\n')}`;
+    return `Session leak detected!\nSession ID:${sessionId}\n${stack.join('\n')}`;
   }
 
   /**

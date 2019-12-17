@@ -117,8 +117,8 @@ describe('SessionPool', () => {
     it('should return a trace with the method name', () => {
       (stackFrame.getFunctionName as sinon.SinonStub).returns(undefined);
 
-      const expected = `Session leak detected!\n    at ${stackFrame.getMethodName()} (${file})`;
-      const actual = SessionPool.formatTrace(fakeTrace);
+      const expected = `Session leak detected!\nSession ID:session-123\n    at ${stackFrame.getMethodName()} (${file})`;
+      const actual = SessionPool.formatTrace("session-123", fakeTrace);
 
       assert.strictEqual(expected, actual);
     });
@@ -126,8 +126,8 @@ describe('SessionPool', () => {
     it('should return a trace with the function name', () => {
       (stackFrame.getMethodName as sinon.SinonStub).returns(undefined);
 
-      const expected = `Session leak detected!\n    at ${stackFrame.getFunctionName()} (${file})`;
-      const actual = SessionPool.formatTrace(fakeTrace);
+      const expected = `Session leak detected!\nSession ID:session-123\n    at ${stackFrame.getFunctionName()} (${file})`;
+      const actual = SessionPool.formatTrace("session-123", fakeTrace);
 
       assert.strictEqual(expected, actual);
     });
@@ -1073,8 +1073,8 @@ describe('SessionPool', () => {
 
       const stub = sandbox.stub(SessionPool, 'formatTrace');
 
-      stub.withArgs(trace1).returns(formatted1);
-      stub.withArgs(trace2).returns(formatted2);
+      stub.withArgs("a", trace1).returns(formatted1);
+      stub.withArgs("b", trace2).returns(formatted2);
 
       sessionPool._traces.set('a', trace1);
       sessionPool._traces.set('b', trace2);
