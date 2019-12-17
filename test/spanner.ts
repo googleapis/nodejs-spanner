@@ -302,16 +302,20 @@ describe('Spanner with mock server', () => {
   ): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       let rows = 0;
+      let errored = false;
       database
         .runStream(query)
         .on('error', err => {
-          reject(err);
+          errored = true;
+          return reject(err);
         })
         .on('data', row => {
           rows++;
         })
         .on('end', res => {
-          return resolve(rows);
+          if (!errored) {
+            return resolve(rows);
+          }
         });
     });
   }
