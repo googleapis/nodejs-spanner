@@ -253,6 +253,31 @@ describe('Spanner with mock server', () => {
     }
   }
 
+  it('should reuse sessions after executing invalid sql', async () => {
+    // The query to execute
+    const query = {
+      sql: invalidSql,
+    };
+    const database = newTestDatabase();
+    try {
+      const pool = database.pool_ as SessionPool;
+      for (let i = 0; i < 10; i++) {
+        try {
+          const [rows] = await database.run(query);
+          assert.fail(`missing expected exception, got ${rows.length} rows`);
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+          );
+        }
+      }
+      assert.strictEqual(pool.size, 1);
+    } finally {
+      await database.close();
+    }
+  });
+
   it('should reuse sessions after executing streaming sql', async () => {
     // The query to execute
     const query = {
@@ -428,6 +453,52 @@ describe('Spanner with mock server', () => {
       await database.close();
     }
   });
+
+  // tslint:disable-next-line:ban
+  it.skip('should not create unnecessary write-prepared sessions', async () => {
+    const query = {
+      sql: selectSql,
+    };
+    const update = {
+      sql: insertSql,
+    };
+    const database = newTestDatabase({
+      writes: 0.2,
+      min: 100,
+    });
+    const pool = database.pool_ as SessionPool;
+    try {
+      // First execute three consecutive read/write transactions.
+      const promises: Array<Promise<Row[] | number | [number]>> = [];
+      for(let i=0; i<3; i++) {
+        promises.push(executeSimpleUpdate(database, update));
+        const ms = Math.floor(Math.random() * 5) + 1;
+        await sleep(ms);
+      }
+      let maxWriteSessions = 0;
+      for(let i=0; i<1000; i++) {
+        if (Math.random() < 0.8) {
+          promises.push(database.run(query));
+        } else {
+          promises.push(executeSimpleUpdate(database, update));
+        }
+        maxWriteSessions = Math.max(maxWriteSessions, pool.writes);
+        const ms = Math.floor(Math.random() * 5) + 1;
+        await sleep(ms);
+      }
+      await Promise.all(promises);
+      console.log(`Session pool size: ${pool.size}`);
+      console.log(`Session pool read sessions: ${pool.reads}`);
+      console.log(`Session pool write sessions: ${pool.writes}`);
+      console.log(`Session pool max write sessions: ${maxWriteSessions}`);
+    } finally {
+      await database.close();
+    }
+  });
+
+  function sleep(ms): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   it('should return different database instances when the same database is requested twice with different session pool options', async () => {
     const dbWithDefaultOptions = newTestDatabase();
