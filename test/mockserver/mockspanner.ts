@@ -325,7 +325,8 @@ export class MockSpanner {
           call.end();
           break;
         case StatementResultType.ERROR:
-          call.destroy(res.error);
+          call.emit('error', res.error);
+          call.end();
           break;
         default:
           call.destroy(new Error(`Unknown StatementResult type: ${res.type}`));

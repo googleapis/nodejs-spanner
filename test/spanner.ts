@@ -470,13 +470,13 @@ describe('Spanner with mock server', () => {
     try {
       // First execute three consecutive read/write transactions.
       const promises: Array<Promise<Row[] | number | [number]>> = [];
-      for(let i=0; i<3; i++) {
+      for (let i = 0; i < 3; i++) {
         promises.push(executeSimpleUpdate(database, update));
         const ms = Math.floor(Math.random() * 5) + 1;
         await sleep(ms);
       }
       let maxWriteSessions = 0;
-      for(let i=0; i<1000; i++) {
+      for (let i = 0; i < 1000; i++) {
         if (Math.random() < 0.8) {
           promises.push(database.run(query));
         } else {
@@ -497,7 +497,7 @@ describe('Spanner with mock server', () => {
   });
 
   function sleep(ms): Promise<void> {
-      return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   it('should return different database instances when the same database is requested twice with different session pool options', async () => {
