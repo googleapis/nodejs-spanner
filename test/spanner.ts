@@ -215,6 +215,7 @@ describe('Spanner with mock server', () => {
     const [tx1] = await database.getSnapshot();
     try {
       const [tx2] = await database.getSnapshot();
+      assert.fail('missing expected exception');
     } catch (e) {
       assert.strictEqual(e.name, SessionPoolExhaustedError.name);
       const exhausted = e as SessionPoolExhaustedError;
