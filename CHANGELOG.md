@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.4.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.4.0...v4.4.1) (2019-12-16)
+
+
+### Bug Fixes
+
+* get stacktrace before any async method call ([#756](https://www.github.com/googleapis/nodejs-spanner/issues/756)) ([3091a78](https://www.github.com/googleapis/nodejs-spanner/commit/3091a7849985330828703018b43f6cfabc0e381a))
+
 ## [4.4.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.3.0...v4.4.0) (2019-12-10)
 
 
