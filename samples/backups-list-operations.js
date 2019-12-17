@@ -15,15 +15,17 @@
 
 'use strict';
 
-async function listBackupOperations(instanceId, projectId) {
+async function listBackupOperations(instanceId, databaseId, projectId) {
   // [START spanner_list_backup_operations]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
+  const {google} = require('../protos/protos');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
   // const projectId = 'my-project-id';
+  // const databaseId = 'my-database';
   // const instanceId = 'my-instance';
 
   // Creates a client
@@ -38,10 +40,14 @@ async function listBackupOperations(instanceId, projectId) {
 
   // List backup operations
   try {
-    const [backupOperations] = await instance.listBackupOperations();
+    const [backupOperations] = await instance.listBackupOperations({
+      filter: `(metadata.database:${databaseId}) AND (metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`
+    });
     console.log('Backup Operations:');
     backupOperations.forEach(backupOperation => {
-      console.log(backupOperation.name + (backupOperation.done ? ' (completed)' : ' (in progress)'));
+      console.log(backupOperation.name + (backupOperation.done
+                  ? ' (completed)'
+                  : ` (in progress - ${google.spanner.admin.database.v1.CreateBackupMetadata.decode(backupOperation.metadata.value).progress.progressPercent}%)`));
     });
   } catch (err) {
     console.error('ERROR:', err);

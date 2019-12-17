@@ -38,10 +38,10 @@ require(`yargs`)
     opts => listBackups(opts.instanceName, opts.projectId)
   )
   .command(
-    `listBackupOperations <instanceName> <projectId>`,
+    `listBackupOperations <instanceName> <databaseName> <projectId>`,
     `Lists all backup operations in the instance.`,
     {},
-    opts => listBackupOperations(opts.instanceName, opts.projectId)
+    opts => listBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
     `listDatabaseOperations <instanceName> <projectId>`,

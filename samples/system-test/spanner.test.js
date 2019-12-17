@@ -695,7 +695,7 @@ describe('Spanner', () => {
   // list_backup_operations
   it(`should list backup operations in the instance`, async () => {
     const output = execSync(
-        `${backupsCmd} listBackupOperations ${INSTANCE_ID} ${PROJECT_ID}`
+        `${backupsCmd} listBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup Operations:/);
     assert.match(
