@@ -409,7 +409,14 @@ describe('Database', () => {
   });
 
   describe('batchTransaction', () => {
-    const SESSION = {id: 'hijklmnop'};
+    const SESSION = {
+      id: 'hijklmnop',
+      parent: {
+        parent: {
+          id: 'instance-id',
+        },
+      },
+    };
     const ID = 'abcdefg';
     const READ_TIMESTAMP = {seconds: 0, nanos: 0};
 

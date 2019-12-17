@@ -61,7 +61,6 @@ export interface SpannerOptions extends GrpcClientOptions {
 export interface RequestConfig {
   client: string;
   method: string;
-  formattedName_?: string;
   instanceId?: string;
   // tslint:disable-next-line: no-any
   reqOpts: any;

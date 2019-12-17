@@ -85,6 +85,11 @@ describe('Session', () => {
 
   beforeEach(() => {
     session = new Session(DATABASE, NAME);
+    session.parent = {
+      parent: {
+        id: 'instance-id',
+      },
+    };
   });
 
   describe('instantiation', () => {

@@ -79,7 +79,13 @@ describe('BatchTransaction', () => {
   let batchTransaction: bt.BatchTransaction;
 
   // tslint:disable-next-line no-any
-  const SESSION: any = {};
+  const SESSION: any = {
+    parent: {
+      parent: {
+        id: 'instance-id',
+      },
+    },
+  };
 
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {

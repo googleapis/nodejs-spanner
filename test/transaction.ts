@@ -36,6 +36,11 @@ describe('Transaction', () => {
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
+    parent: {
+      parent: {
+        id: 'instance-id',
+      },
+    },
   };
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
