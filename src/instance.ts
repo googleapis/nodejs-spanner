@@ -511,7 +511,8 @@ class Instance extends common.GrpcServiceObject {
    * @param {boolean} [options.autoCreate=false] Automatically create the
    *     object if it does not exist.
    * @param {string | string[]} [options.fieldNames] A list of `Instance` field
-   *     names to be requested.
+   *     names to be requested. Eligible values are: `name`, `displayName`,
+   *     `endpointUris`, `labels`, `config`, `nodeCount`, `state`.
    * @param {GetInstanceCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceResponse>}
    *
@@ -717,7 +718,8 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetInstanceMetadataOptions} [options] Configuration object
    * @param {string | string[]} [options.fieldNames] A list of `Instance` field
-   *     names to be requested.
+   *     names to be requested. Eligible values are: `name`, `displayName`,
+   *     `endpointUris`, `labels`, `config`, `nodeCount`, `state`.
    * @param {GetInstanceMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceMetadataResponse>}
    *
@@ -728,6 +730,23 @@ class Instance extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    *
    * instance.getMetadata(function(err, metadata, apiResponse) {});
+   *
+   * //-
+   * // Request only `displayName`.
+   * //-
+   * instance.getMetadata({fieldNames: 'displayName'}, (err, metadata, apiResponse) => {
+   *   // metadata will only contain value for `displayName`
+   *   const displayName = metadata['displayName'];
+   * })
+   *
+   * //-
+   * // Request multiple specific field names.
+   * //-
+   * instance.getMetadata({fieldNames: ['displayName', 'nodeCount']}, (err, metadata, apiResponse) => {
+   *   // metadata will only contain value for `displayName` and 'nodeCount'
+   *   const displayName = metadata['displayName'];
+   *   const nodeCount = metadata['nodeCount'];
+   * });
    *
    * //-
    * // If the callback is omitted, we'll return a Promise.
