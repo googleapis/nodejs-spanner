@@ -357,7 +357,7 @@ class Database extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'batchCreateSessions',
-        formattedName_: this.formattedName_,
+        instanceId: ((this.parent as {}) as Instance).id,
         reqOpts,
       },
       (err, resp) => {
@@ -600,7 +600,7 @@ class Database extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'createSession',
-        formattedName_: this.formattedName_,
+        instanceId: ((this.parent as {}) as Instance).id,
         reqOpts,
         gaxOpts,
       },
@@ -1130,7 +1130,7 @@ class Database extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'listSessions',
-        formattedName_: this.formattedName_,
+        instanceId: ((this.parent as {}) as Instance).id,
         reqOpts,
         gaxOpts,
       },

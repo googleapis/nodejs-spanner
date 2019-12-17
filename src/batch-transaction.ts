@@ -20,7 +20,7 @@ import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
 import {google} from '../proto/spanner';
-import {Session} from '.';
+import {Session, Instance} from '.';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -130,7 +130,7 @@ class BatchTransaction extends Snapshot {
       {
         client: 'SpannerClient',
         method: 'partitionQuery',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts,
         gaxOpts: query.gaxOptions,
       },
@@ -219,7 +219,7 @@ class BatchTransaction extends Snapshot {
       {
         client: 'SpannerClient',
         method: 'partitionRead',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts,
         gaxOpts: options.gaxOptions,
       },

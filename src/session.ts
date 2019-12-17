@@ -36,6 +36,7 @@ import {
 } from './database';
 import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
 import {NormalCallback} from './common';
+import {Instance} from '.';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -273,7 +274,7 @@ export class Session extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'deleteSession',
-        formattedName_: this.formattedName_,
+        instanceId: ((this.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       callback!
@@ -324,7 +325,7 @@ export class Session extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'getSession',
-        formattedName_: this.formattedName_,
+        instanceId: ((this.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       callback!
@@ -354,7 +355,7 @@ export class Session extends GrpcServiceObject {
       {
         client: 'SpannerClient',
         method: 'executeSql',
-        formattedName_: this.formattedName_,
+        instanceId: ((this.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       callback!

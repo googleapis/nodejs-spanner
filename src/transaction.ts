@@ -36,6 +36,7 @@ import {Key} from './table';
 import {SpannerClient as s} from './v1';
 import {google as spannerClient} from '../proto/spanner';
 import {NormalCallback} from './common';
+import {Instance} from '.';
 
 export type Rows = Array<Row | Json>;
 
@@ -299,7 +300,7 @@ export class Snapshot extends EventEmitter {
       {
         client: 'SpannerClient',
         method: 'beginTransaction',
-        formattedName_: session,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       (
@@ -499,7 +500,7 @@ export class Snapshot extends EventEmitter {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
       });
@@ -889,7 +890,7 @@ export class Snapshot extends EventEmitter {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
       });
@@ -1283,7 +1284,7 @@ export class Transaction extends Dml {
       {
         client: 'SpannerClient',
         method: 'executeBatchDml',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       (err: null | ServiceError, resp: s.ExecuteBatchDmlResponse) => {
@@ -1378,7 +1379,7 @@ export class Transaction extends Dml {
       {
         client: 'SpannerClient',
         method: 'commit',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
@@ -1590,7 +1591,7 @@ export class Transaction extends Dml {
       {
         client: 'SpannerClient',
         method: 'rollback',
-        formattedName_: this.session.formattedName_,
+        instanceId: ((this.session.parent.parent as {}) as Instance).id,
         reqOpts,
       },
       (err: null | ServiceError) => {

@@ -21,7 +21,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import {GoogleAuth} from 'google-auth-library';
 import * as is from 'is';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
@@ -62,6 +62,7 @@ export interface RequestConfig {
   client: string;
   method: string;
   formattedName_?: string;
+  instanceId?: string;
   // tslint:disable-next-line: no-any
   reqOpts: any;
   gaxOpts?: {};
@@ -815,15 +816,12 @@ class Spanner extends GrpcService {
       return;
     }
 
-    if (
-      !config.formattedName_ ||
-      (config.formattedName_ as string).split('/').length < 3
-    ) {
-      const error = new Error('instanceId is requires.');
+    if (!config.instanceId) {
+      const error = new Error('instanceId is required.');
       callback(error);
       return;
     }
-    const instanceId = (config.formattedName_ as string).split('/')![3];
+    const instanceId = config.instanceId;
     clientName = `${clientName}-${instanceId}`;
 
     if (!this.clients_.has(clientName)) {
