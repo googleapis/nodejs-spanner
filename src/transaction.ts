@@ -295,6 +295,8 @@ export class Snapshot extends EventEmitter {
       options,
     };
 
+    console.log("Request options for `beginTransaction`:", reqOpts);
+
     this.request(
       {
         client: 'SpannerClient',
@@ -554,6 +556,8 @@ export class Snapshot extends EventEmitter {
 
     this.ended = true;
     process.nextTick(() => this.emit('end'));
+
+    console.log("End a transaction with ID:", this.id, "session:", this.session);
   }
 
   read(table: string, request: ReadRequest): Promise<ReadResponse>;
@@ -1276,6 +1280,8 @@ export class Transaction extends Dml {
       statements,
     };
 
+    console.log("Request options for `executeBatchDml`:", reqOpts);
+
     this.request(
       {
         client: 'SpannerClient',
@@ -1369,6 +1375,8 @@ export class Transaction extends Dml {
     } else {
       reqOpts.singleUseTransaction = this._options;
     }
+
+    console.log("Request options for `commit`:", reqOpts);
 
     this.request(
       {
@@ -1580,6 +1588,8 @@ export class Transaction extends Dml {
     const session = this.session.formattedName_!;
     const transactionId = this.id;
     const reqOpts: s.RollbackRequest = {session, transactionId};
+
+    console.log("Request options for `rollback`:", reqOpts);
 
     this.request(
       {
