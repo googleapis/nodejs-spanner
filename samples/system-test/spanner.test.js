@@ -716,6 +716,30 @@ describe('Spanner', () => {
     );
   });
 
+  // list_small_backups
+  it(`should list small backups on the instance`, async () => {
+    const output = execSync(
+        `${backupsCmd} listSmallBackups ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backups:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}`)
+    );
+  });
+
+  // list_new_backups
+  it(`should list new backups on the instance`, async () => {
+    const output = execSync(
+        `${backupsCmd} listNewBackups ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backups:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}`)
+    );
+  });
+
   // list_backup_operations
   it(`should list backup operations in the instance`, async () => {
     const output = execSync(
