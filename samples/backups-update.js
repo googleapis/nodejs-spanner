@@ -61,7 +61,7 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
     // Close the database when finished.
     await database.close();
   }
-  // [END spanner_update_backup_expire_time]
+  // [END spanner_update_backup]
 }
 
 module.exports.updateBackupExpireTime = updateBackupExpireTime;
