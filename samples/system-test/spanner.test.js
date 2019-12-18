@@ -39,6 +39,7 @@ const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${date}`;
 const RESTORE_DATABASE_ID = `test-database-${date}-r`;
 const BACKUP_ID = `test-backup-${date}`;
+const CANCELLED_BACKUP_ID = `test-backup-${date}-c`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -678,6 +679,14 @@ describe('Spanner', () => {
         `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup created./);
+  });
+
+  // cancel_backup
+  it(`should cancel a backup of the database`, async () => {
+    const output = execSync(
+        `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backup cancelled./);
   });
 
   // list_backups

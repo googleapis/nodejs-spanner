@@ -16,6 +16,7 @@
 'use strict';
 
 const {createBackup} = require('./backups-create');
+const {cancelBackup} = require('./backups-cancel');
 const {listBackups} = require('./backups-list');
 const {listBackupsByDatabase} = require('./backups-list-bydatabase');
 const {listBackupsByName} = require('./backups-list-byname');
@@ -34,6 +35,12 @@ require(`yargs`)
     `Creates a backup of a Cloud Spanner database.`,
     {},
     opts => createBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+  )
+  .command(
+    `cancelBackup <instanceName> <databaseName> <backupName> <projectId>`,
+    `Creates and cancels a backup of a Cloud Spanner database.`,
+    {},
+    opts => cancelBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
   )
   .command(
     `listBackups <instanceName> <projectId>`,
