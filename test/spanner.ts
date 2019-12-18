@@ -141,6 +141,31 @@ describe('Spanner with mock server', () => {
     }
   });
 
+  it('should execute table mutations without leaking sessions', async () => {
+    const database = newTestDatabase();
+    try {
+      const tab = database.table('foo');
+      // tslint:disable-next-line:no-construct
+      const num1 = new Number('1.3');
+      // tslint:disable-next-line:no-construct
+      const num2 = new Number('3.14');
+      const data = {
+        lat: Spanner.float(num1),
+        lon: Spanner.float(num2),
+      };
+      const [response] = await database.table('foo').upsert({
+        lat: {
+          value: 36.124309,
+        },
+        lng: {
+          value: -115.124401,
+        },
+      });
+    } finally {
+      await database.close();
+    }
+  });
+
   it('should throw an error with a stacktrace when leaking a session', async () => {
     await testLeakSession();
   });

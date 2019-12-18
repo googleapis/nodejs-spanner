@@ -210,6 +210,7 @@ interface SessionInventory {
   [types.ReadOnly]: Session[];
   [types.ReadWrite]: Session[];
   borrowed: Set<Session>;
+  preparing: Set<Session>;
 }
 
 export interface CreateSessionsOptions {
@@ -281,6 +282,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Total number of session currently being prepared for a read/write transaction.
+   * @type {number}
+   */
+  get preparing(): number {
+    return this._inventory.preparing.size;
+  }
+
+  /**
    * Flag to determine if Pool is full.
    * @type {boolean}
    */
@@ -306,7 +315,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get size(): number {
-    return this.available + this.borrowed;
+    return this.available + this.borrowed + this.preparing;
   }
 
   /**
@@ -319,7 +328,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       session => session.type === types.ReadWrite
     ).length;
 
-    return available + borrowed;
+    return available + borrowed + this.preparing;
   }
 
   /**
@@ -346,6 +355,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       [types.ReadOnly]: [],
       [types.ReadWrite]: [],
       borrowed: new Set(),
+      preparing: new Set(),
     };
 
     this._requests = new PQueue({
@@ -370,6 +380,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       ...this._inventory[types.ReadOnly],
       ...this._inventory[types.ReadWrite],
       ...this._inventory.borrowed,
+      ...this._inventory.preparing,
     ];
 
     this.isOpen = false;
@@ -386,6 +397,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       this._inventory[types.ReadOnly] = [];
       this._inventory[types.ReadWrite] = [];
       this._inventory.borrowed.clear();
+      this._inventory.preparing.clear();
 
       if (leaks.length) {
         error = new SessionLeakError(leaks);
@@ -446,7 +458,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {Session} session The session to release.
    */
   release(session: Session): void {
-    if (!this._inventory.borrowed.has(session)) {
+    if (
+      !(
+        this._inventory.borrowed.has(session) ||
+        this._inventory.preparing.has(session)
+      )
+    ) {
       throw new ReleaseError(session);
     }
 
@@ -868,6 +885,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise}
    */
   async _prepareTransaction(session: Session): Promise<void> {
+    this._inventory.borrowed.delete(session);
+    this._inventory.preparing.add(session);
     const transaction = session.transaction();
     await transaction.begin();
     session.txn = transaction;
@@ -886,6 +905,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this._inventory[type].push(session);
     this._inventory.borrowed.delete(session);
+    this._inventory.preparing.delete(session);
     this._traces.delete(session.id);
 
     this.emit('available');
