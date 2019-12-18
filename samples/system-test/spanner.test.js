@@ -787,9 +787,21 @@ describe('Spanner', () => {
 
   // delete_backup
   it(`should delete a backup`, async () => {
-      const output = execSync(
-          `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
-      );
-      assert.match(output, /Backup deleted./);
+
+    function sleep(timeMillis) {
+      return new Promise(resolve => setTimeout(resolve, timeMillis));
+    }
+
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(RESTORE_DATABASE_ID);
+    while (await database.getState() === 'READY_OPTIMIZING') {
+      await sleep(1000);
+    }
+
+    const output = execSync(
+        `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backup deleted./);
   });
 });
