@@ -318,24 +318,26 @@ export class MockSpanner {
           for (const partial of partialResultSets) {
             call.write(partial);
           }
-          call.end();
           break;
         case StatementResultType.UPDATE_COUNT:
           call.write(MockSpanner.toPartialResultSet(res.updateCount));
-          call.end();
           break;
         case StatementResultType.ERROR:
           call.emit('error', res.error);
-          call.end();
           break;
         default:
-          call.destroy(new Error(`Unknown StatementResult type: ${res.type}`));
+          call.emit(
+            'error',
+            new Error(`Unknown StatementResult type: ${res.type}`)
+          );
       }
     } else {
-      call.destroy(
+      call.emit(
+        'error',
         new Error(`There is no result registered for ${call.request.sql}`)
       );
     }
+    call.end();
   }
 
   /**
@@ -391,9 +393,11 @@ export class MockSpanner {
   }
 
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest>) {
-    call.destroy(
+    call.emit(
+      'error',
       createUnimplementedError('StreamingRead is not yet implemented')
     );
+    call.end();
   }
 
   beginTransaction(
