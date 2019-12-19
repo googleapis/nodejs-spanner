@@ -40,12 +40,13 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
   const databasePath = database.formattedName_;
-  const newExpireTime =  new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days in the future
   const backup = instance.backup(backupId, databasePath);
 
   // Read backup metadata and update expiry time
   try {
     const currentExpireTime = await backup.getExpireTime();
+    const newExpireTime = new PreciseDate(currentExpireTime);
+    newExpireTime.setDate(newExpireTime.getDate() + 30);
     console.log(`Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`);
     console.log(`Updating expire time to ${newExpireTime.toISOString()}`);
     await backup.updateExpireTime(newExpireTime);
