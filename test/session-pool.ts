@@ -276,7 +276,6 @@ describe('SessionPool', () => {
         readonly: [],
         readwrite: [],
         borrowed: new Set(),
-        preparing: new Set(),
       });
     });
 
