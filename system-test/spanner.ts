@@ -35,7 +35,10 @@ import {GetDatabaseConfig} from '../src/database';
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
-const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
+const spanner = new Spanner({
+  projectId: process.env.GCLOUD_PROJECT,
+  enableResourceBasedRouting: false,
+});
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
@@ -4368,6 +4371,37 @@ describe('Spanner', () => {
             });
           });
         }
+      });
+    });
+  });
+
+  describe('Resource Based Routing', () => {
+    const database = instance.database(generateName('database'));
+    const table = database.table('ResourceBasedRoutingTable');
+
+    const schema = `
+      CREATE TABLE UserTable (
+        Key STRING(MAX) NOT NULL,
+        Name STRING(MAX)
+      ) PRIMARY KEY (Key)
+    `;
+
+    before(async () => {
+      await onPromiseOperationComplete(await database.create());
+      await onPromiseOperationComplete(await table.create(schema));
+    });
+    beforeEach(() => {
+      spanner.options.enableResourceBasedRouting = true;
+    });
+    afterEach(() => {
+      spanner.options.enableResourceBasedRouting = false;
+    });
+
+    it('should list the session while resource based routing is enabled', done => {
+      database.getSessions((err, session) => {
+        assert.ifError(err);
+        assert.equal(session!.length, 0);
+        done();
       });
     });
   });
