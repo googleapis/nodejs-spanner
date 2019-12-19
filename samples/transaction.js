@@ -188,6 +188,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
         console.error('ERROR:', err);
       })
       .then(() => {
+        transaction.end();
         // Closes the database when finished
         return database.close();
       });
