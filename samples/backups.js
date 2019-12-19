@@ -17,11 +17,7 @@
 
 const {createBackup} = require('./backups-create');
 const {cancelBackup} = require('./backups-cancel');
-const {listBackups} = require('./backups-list');
-const {listBackupsByDatabase} = require('./backups-list-bydatabase');
-const {listBackupsByName} = require('./backups-list-byname');
-const {listSmallBackups} = require('./backups-list-small');
-const {listNewBackups} = require('./backups-list-new');
+const {listBackups, listBackupsByDatabase, listBackupsByName, listSmallBackups, listNewBackups} = require('./backups-list');
 const {listBackupOperations} = require('./backups-list-operations');
 const {listDatabaseOperations} = require('./backups-list-database-operations');
 const {updateBackupExpireTime} = require('./backups-update');

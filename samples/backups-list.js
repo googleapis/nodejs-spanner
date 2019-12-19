@@ -15,8 +15,8 @@
 
 'use strict';
 
+// [START spanner_list_backups]
 async function listBackups(instanceId, projectId) {
-  // [START spanner_list_backups]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -46,7 +46,146 @@ async function listBackups(instanceId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   }
-  // [END spanner_list_backups]
 }
 
+async function listBackupsByDatabase(instanceId, databaseId, projectId) {
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+      // const projectId = 'my-project-id';
+      // const databaseId = 'my-database';
+      // const instanceId = 'my-instance';
+
+      // Creates a client
+  const spanner = new Spanner({
+        projectId: projectId,
+        // Optional - allow Spanner API endpoint to be configured with environment variable
+        apiEndpoint: process.env.API_ENDPOINT,
+      });
+
+  // Gets a reference to a Cloud Spanner instance
+  const instance = spanner.instance(instanceId);
+
+  // List backups and print their names
+  try {
+    const [backups] = await instance.listBackups({filter: `Database:${databaseId}`});
+    console.log('Backups:');
+    backups.forEach(backup => {
+      console.log(backup.backupId);
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  }
+}
+
+async function listBackupsByName(instanceId, backupId, projectId) {
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+      // const projectId = 'my-project-id';
+      // const databaseId = 'my-database';
+      // const instanceId = 'my-instance';
+
+      // Creates a client
+  const spanner = new Spanner({
+        projectId: projectId,
+        // Optional - allow Spanner API endpoint to be configured with environment variable
+        apiEndpoint: process.env.API_ENDPOINT,
+      });
+
+  // Gets a reference to a Cloud Spanner instance
+  const instance = spanner.instance(instanceId);
+
+  // List backups and print their names
+  try {
+    const [backups] = await instance.listBackups({filter: `Name:${backupId}`});
+    console.log('Backups:');
+    backups.forEach(backup => {
+      console.log(backup.backupId);
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  }
+}
+
+async function listNewBackups(instanceId, projectId) {
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+      // const projectId = 'my-project-id';
+      // const instanceId = 'my-instance';
+
+      // Creates a client
+  const spanner = new Spanner({
+        projectId: projectId,
+        // Optional - allow Spanner API endpoint to be configured with environment variable
+        apiEndpoint: process.env.API_ENDPOINT,
+      });
+
+  // Gets a reference to a Cloud Spanner instance
+  const instance = spanner.instance(instanceId);
+
+  // List backups and print their names
+  try {
+    const minCreateTime = new Date();
+    const maxExpireTime = new Date(minCreateTime.getTime());
+    minCreateTime.setDate(minCreateTime.getDate() - 1);
+    maxExpireTime.setDate(maxExpireTime.getDate() + 3);
+
+    const [backups] = await instance.listBackups({filter: `(state:READY) AND (create_time > "${minCreateTime.toISOString()}") AND (expire_time < "${maxExpireTime.toISOString()}")`});
+    console.log('Backups:');
+    backups.forEach(backup => {
+      console.log(backup.backupId);
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  }
+}
+
+async function listSmallBackups(instanceId, projectId) {
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+      // const projectId = 'my-project-id';
+      // const instanceId = 'my-instance';
+
+      // Creates a client
+  const spanner = new Spanner({
+        projectId: projectId,
+        // Optional - allow Spanner API endpoint to be configured with environment variable
+        apiEndpoint: process.env.API_ENDPOINT,
+      });
+
+  // Gets a reference to a Cloud Spanner instance
+  const instance = spanner.instance(instanceId);
+
+  // List backups and print their names
+  try {
+    const [backups] = await instance.listBackups({filter: '(state:READY) AND (size_bytes < 65536)'});
+    console.log('Backups:');
+    backups.forEach(backup => {
+      console.log(backup.backupId);
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  }
+}
+// [END spanner_list_backups]
+
 module.exports.listBackups = listBackups;
+module.exports.listBackupsByDatabase = listBackupsByDatabase;
+module.exports.listBackupsByName = listBackupsByName;
+module.exports.listNewBackups = listNewBackups;
+module.exports.listSmallBackups = listSmallBackups;
