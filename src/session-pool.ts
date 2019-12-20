@@ -185,11 +185,25 @@ export class SessionLeakError extends Error {
 }
 
 /**
+ * Error to be thrown when the session pool is exhausted.
+ */
+export class SessionPoolExhaustedError extends Error {
+  messages: string[];
+  constructor(leaks: string[]) {
+    super(errors.Exhausted);
+    // Restore error name that was overwritten by the super constructor call.
+    this.name = SessionPoolExhaustedError.name;
+    this.messages = leaks;
+  }
+}
+
+/**
  * enum to capture errors that can appear from multiple places
  */
 const enum errors {
   Closed = 'Database is closed.',
   Timeout = 'Timeout occurred while acquiring session.',
+  Exhausted = 'No resources available.',
 }
 
 interface SessionInventory {
@@ -441,6 +455,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
+    // Delete the trace associated with this session to mark the session as checked
+    // back into the pool. This will prevent the session to be marked as leaked if
+    // the pool is closed while the session is being prepared.
+    this._traces.delete(session.id);
     this._prepareTransaction(session)
       .catch(() => (session.type = types.ReadOnly))
       .then(() => this._release(session));
@@ -459,6 +477,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new Error(errors.Closed);
     }
 
+    // Get the stacktrace of the caller before we call any async methods, as calling an async method will break the stacktrace.
+    const frames = trace.get();
     const startTime = Date.now();
     const timeout = this.options.acquireTimeout;
 
@@ -492,7 +512,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       }
     }
 
-    this._traces.set(session.id, trace.get());
+    this._traces.set(session.id, frames);
     return session;
   }
 
@@ -721,8 +741,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return this._borrowNextAvailableSession(type);
     }
 
-    if (this.options.fail!) {
-      throw new Error('No resources available.');
+    if (this.isFull && this.options.fail!) {
+      throw new SessionPoolExhaustedError(this._getLeaks());
     }
 
     let removeListener: Function;
