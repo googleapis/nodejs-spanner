@@ -351,7 +351,12 @@ class Instance extends common.GrpcServiceObject {
     if (!name) {
       throw new Error('A name is required to access a Database object.');
     }
-    const key = name.split('/').pop();
+    // Only add an additional key for SessionPoolOptions if an options object with at least one value was passed in.
+    const optionsKey =
+      poolOptions && Object.keys(poolOptions).length > 0
+        ? '/' + JSON.stringify(Object.entries(poolOptions).sort())
+        : '';
+    const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
       this.databases_.set(key!, new Database(this, name, poolOptions));
     }
