@@ -749,6 +749,18 @@ describe('Spanner', () => {
     );
   });
 
+  // list_backups_paginated
+  it(`should list backups using pagination`, async () => {
+    const output = execSync(
+        `${backupsCmd} listBackupsPaginated ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backups:/);
+    assert.match(
+        output,
+        new RegExp(`${BACKUP_ID}`)
+    );
+  });
+
   // list_backup_operations
   it(`should list backup operations in the instance`, async () => {
     const output = execSync(

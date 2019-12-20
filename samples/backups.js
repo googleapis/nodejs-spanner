@@ -17,7 +17,7 @@
 
 const {createBackup} = require('./backups-create');
 const {cancelBackup} = require('./backups-cancel');
-const {listBackups, listBackupsByDatabase, listBackupsByName, listSmallBackups, listNewBackups} = require('./backups-list');
+const {listBackups, listBackupsByDatabase, listBackupsByName, listSmallBackups, listNewBackups, listBackupsPaginated} = require('./backups-list');
 const {listBackupOperations} = require('./backups-list-operations');
 const {listDatabaseOperations} = require('./backups-list-database-operations');
 const {updateBackupExpireTime} = require('./backups-update');
@@ -67,6 +67,12 @@ require(`yargs`)
     `Lists all backups in the instance created recently and which expire soon.`,
     {},
     opts => listNewBackups(opts.instanceName, opts.projectId)
+  )
+  .command(
+    `listBackupsPaginated <instanceName> <projectId>`,
+    `Lists all backups in the instance using pagination.`,
+    {},
+    opts => listBackupsPaginated(opts.instanceName, opts.projectId)
   )
   .command(
     `listBackupOperations <instanceName> <databaseName> <projectId>`,
