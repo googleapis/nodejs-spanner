@@ -55,6 +55,9 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
+    // Delete backup in case it got created before there was a chance to cancel it
+    await backup.deleteBackup();
+
     // Close the database when finished.
     await database.close();
   }
