@@ -455,6 +455,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
+    // Delete the trace associated with this session to mark the session as checked
+    // back into the pool. This will prevent the session to be marked as leaked if
+    // the pool is closed while the session is being prepared.
+    this._traces.delete(session.id);
     this._prepareTransaction(session)
       .catch(() => (session.type = types.ReadOnly))
       .then(() => this._release(session));
