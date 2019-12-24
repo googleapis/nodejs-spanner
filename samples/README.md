@@ -30,6 +30,12 @@ and automatic, synchronous replication for high availability.
 Before running the samples, make sure you've followed the steps outlined in
 [Using the client library](https://github.com/googleapis/nodejs-spanner#using-the-client-library).
 
+`cd samples`
+
+`npm install`
+
+`cd ..`
+
 ## Samples
 
 
@@ -43,7 +49,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node batch.js`
+`node samples/batch.js`
 
 
 -----
@@ -60,7 +66,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node crud.js`
+`node samples/crud.js`
 
 
 -----
@@ -77,7 +83,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node datatypes.js`
+`node samples/datatypes.js`
 
 
 -----
@@ -94,7 +100,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node dml.js`
+`node samples/dml.js`
 
 
 -----
@@ -111,7 +117,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node indexing.js`
+`node samples/indexing.js`
 
 
 -----
@@ -128,7 +134,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node quickstart.js`
+`node samples/quickstart.js`
 
 
 -----
@@ -145,7 +151,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node schema.js`
+`node samples/schema.js`
 
 
 -----
@@ -162,7 +168,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node struct.js`
+`node samples/struct.js`
 
 
 -----
@@ -179,7 +185,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node timestamp.js`
+`node samples/timestamp.js`
 
 
 -----
@@ -196,7 +202,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/
 __Usage:__
 
 
-`node transaction.js`
+`node samples/transaction.js`
 
 
 
