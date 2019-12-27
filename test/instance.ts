@@ -21,6 +21,7 @@ import * as proxyquire from 'proxyquire';
 import * as pfy from '@google-cloud/promisify';
 import {ServiceError} from 'grpc';
 import * as sinon from 'sinon';
+import snakeCase = require('lodash.snakecase');
 
 import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
@@ -532,32 +533,22 @@ describe('Instance', () => {
       instance.get(assert.ifError);
     });
 
-    it('should accept `fields` string', done => {
-      const fieldNames = 'name';
-      instance.request = config => {
-        assert.deepStrictEqual(config.reqOpts, {
-          fieldMask: {
-            paths: arrify(fieldNames),
-          },
-          name: instance.formattedName_,
-        });
-        done();
-      };
+    it('should accept and pass `fields` string as is', () => {
+      const fieldNames = 'nodeCount';
+      const spyMetadata = sandbox.spy(instance, 'getMetadata');
+     
       instance.get({fieldNames}, assert.ifError);
+
+      assert.ok(spyMetadata.calledWith({fieldNames}));
     });
 
-    it('should accept `fields` array', done => {
-      const fieldNames = ['name', 'labels'];
-      instance.request = config => {
-        assert.deepStrictEqual(config.reqOpts, {
-          fieldMask: {
-            paths: fieldNames,
-          },
-          name: instance.formattedName_,
-        });
-        done();
-      };
+    it('should accept and pass `fields` array as is', () => {
+      const fieldNames = ['name', 'labels', 'nodeCount'];
+      const spyMetadata = sandbox.stub(instance, 'getMetadata');
+
       instance.get({fieldNames}, assert.ifError);
+     
+      assert.ok(spyMetadata.calledWith({fieldNames}));
     });
 
     describe('autoCreate', () => {
@@ -816,7 +807,6 @@ describe('Instance', () => {
         assert.strictEqual(config.method, 'getInstance');
         assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
-          fieldMask: {paths: []},
         });
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
@@ -827,12 +817,12 @@ describe('Instance', () => {
     });
 
     it('should accept `fieldNames` as string', done => {
-      const fieldNames = 'name';
+      const fieldNames = 'nodeCount';
 
       instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           fieldMask: {
-            paths: arrify(fieldNames),
+            paths: arrify(fieldNames).map(snakeCase),
           },
           name: instance.formattedName_,
         });
@@ -842,12 +832,12 @@ describe('Instance', () => {
     });
 
     it('should accept `fieldNames` as string array', done => {
-      const fieldNames = ['name', 'labels'];
+      const fieldNames = ['name', 'labels', 'nodeCount'];
 
       instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           fieldMask: {
-            paths: fieldNames,
+            paths: fieldNames.map(snakeCase),
           },
           name: instance.formattedName_,
         });

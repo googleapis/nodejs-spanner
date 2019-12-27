@@ -545,10 +545,11 @@ class Instance extends common.GrpcServiceObject {
         ? optionsOrCallback
         : ({} as GetInstanceConfig);
 
-    const getMetadataOptions: GetInstanceMetadataOptions = Object.assign(
-      {},
-      {fieldNames: options[`fieldNames`]}
-    );
+    const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
+    if (options.fieldNames) {
+      getMetadataOptions.fieldNames = options[`fieldNames`];
+      delete options.fieldNames;
+    }
 
     this.getMetadata(getMetadataOptions, (err, metadata) => {
       if (err) {
@@ -768,10 +769,12 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const reqOpts = {
       name: this.formattedName_,
-      fieldMask: {
-        paths: arrify(options['fieldNames']!).map(snakeCase),
-      },
     };
+    if (options.fieldNames) {
+      reqOpts['fieldMask'] = {
+        paths: arrify(options['fieldNames']!).map(snakeCase),
+      };
+    }
     return this.request<IInstance>(
       {
         client: 'InstanceAdminClient',
