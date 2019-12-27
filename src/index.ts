@@ -212,6 +212,39 @@ class Spanner extends GrpcService {
    */
   static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
 
+  /**
+   * Gets the configured Spanner emulator host from an environment variable.
+   */
+  static getSpannerEmulatorHost():
+    | {endpoint: string; port?: number}
+    | undefined {
+    const endpointWithPort = process.env.SPANNER_EMULATOR_HOST;
+    if (endpointWithPort) {
+      if (
+        endpointWithPort.startsWith('http:') ||
+        endpointWithPort.startsWith('https:')
+      ) {
+        throw new Error(
+          'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
+        );
+      }
+      const index = endpointWithPort.indexOf(':');
+      if (index > -1) {
+        const portName = endpointWithPort.substring(index + 1);
+        const port = +portName;
+        if (!port || port < 1 || port > 65535) {
+          throw new Error(`Invalid port number: ${portName}`);
+        }
+        return {
+          endpoint: endpointWithPort.substring(0, index),
+          port: +endpointWithPort.substring(index + 1),
+        };
+      }
+      return {endpoint: endpointWithPort};
+    }
+    return undefined;
+  }
+
   constructor(options?: SpannerOptions) {
     const scopes: Array<{}> = [];
     const clientClasses = [
@@ -239,6 +272,16 @@ class Spanner extends GrpcService {
       },
       options || {}
     ) as {}) as SpannerOptions;
+    const emulatorHost = Spanner.getSpannerEmulatorHost();
+    if (
+      emulatorHost &&
+      emulatorHost.endpoint &&
+      emulatorHost.endpoint.length > 0
+    ) {
+      options.servicePath = emulatorHost.endpoint;
+      options.port = emulatorHost.port;
+      options.sslCreds = grpc.credentials.createInsecure();
+    }
     const config = ({
       baseUrl:
         options.apiEndpoint ||
