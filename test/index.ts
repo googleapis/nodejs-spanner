@@ -280,7 +280,11 @@ describe('Spanner', () => {
 
         assert.deepStrictEqual(emulator, {endpoint: EMULATOR_HOST});
       } finally {
-        process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
       }
     });
 
@@ -298,7 +302,11 @@ describe('Spanner', () => {
           port: EMULATOR_PORT,
         });
       } finally {
-        process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
       }
     });
 
@@ -315,7 +323,11 @@ describe('Spanner', () => {
           'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
         );
       } finally {
-        process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
       }
     });
 
@@ -329,7 +341,11 @@ describe('Spanner', () => {
       } catch (e) {
         assert.strictEqual(e.message, 'Invalid port number: not_a_port');
       } finally {
-        process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
       }
     });
 
@@ -347,7 +363,11 @@ describe('Spanner', () => {
         assert.strictEqual(config.baseUrl, EMULATOR_HOST);
         assert.strictEqual(options.port, EMULATOR_PORT);
       } finally {
-        process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
       }
     });
   });
