@@ -219,7 +219,7 @@ class Spanner extends GrpcService {
     | {endpoint: string; port?: number}
     | undefined {
     const endpointWithPort = process.env.SPANNER_EMULATOR_HOST;
-    if (endpointWithPort) {
+    if (endpointWithPort && endpointWithPort.length > 0) {
       if (
         endpointWithPort.startsWith('http:') ||
         endpointWithPort.startsWith('https:')
