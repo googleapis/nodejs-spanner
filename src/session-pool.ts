@@ -532,7 +532,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Borrows session from specific group.
+   * Borrows the first session from specific group. This method may only be called if the inventory
+   * actually contains a session of the desired type.
    *
    * @private
    *
@@ -540,9 +541,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Session}
    */
   _borrowFrom(type: types): Session {
-    const session = this._inventory[type][0];
-    this._borrow(session);
-    return session;
+    const session = this._inventory[type].pop();
+    if (session) {
+      this._inventory.borrowed.add(session);
+      return session;
+    } else {
+      throw new Error(`Inventory of type ${type} does not contain any sessions`);
+    }
   }
 
   /**
@@ -868,7 +873,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _release(session: Session): void {
     const type = session.type!;
 
-    this._inventory[type].unshift(session);
+    this._inventory[type].push(session);
     this._inventory.borrowed.delete(session);
     this._traces.delete(session.id);
 
