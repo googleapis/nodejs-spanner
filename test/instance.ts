@@ -26,6 +26,7 @@ import snakeCase = require('lodash.snakecase');
 import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
 import arrify = require('arrify');
+import {SessionPoolOptions} from '../src/session-pool';
 
 const fakePaginator = {
   paginator: {
@@ -372,6 +373,54 @@ describe('Instance', () => {
 
       assert.strictEqual(database, fakeDatabase);
     });
+
+    it('should create and cache different objects when called with different session pool options', () => {
+      const cache = instance.databases_;
+      const fakeDatabase = {} as Database;
+      const fakeDatabaseWithSessionPoolOptions = {} as Database;
+      const emptySessionPoolOptions = {} as SessionPoolOptions;
+      const fakeSessionPoolOptions = {
+        min: 1000,
+        max: 1000,
+      } as SessionPoolOptions;
+      const fakeSessionPoolOptionsInOtherOrder = {
+        max: 1000,
+        min: 1000,
+      } as SessionPoolOptions;
+
+      cache.set(NAME, fakeDatabase);
+      cache.set(
+        NAME +
+          '/' +
+          JSON.stringify(Object.entries(fakeSessionPoolOptions).sort()),
+        fakeDatabaseWithSessionPoolOptions
+      );
+
+      const database = instance.database(NAME);
+      const databaseWithEmptyOptions = instance.database(
+        NAME,
+        emptySessionPoolOptions
+      );
+      const databaseWithOptions = instance.database(
+        NAME,
+        fakeSessionPoolOptions
+      );
+      const databaseWithOptionsInOtherOrder = instance.database(
+        NAME,
+        fakeSessionPoolOptionsInOtherOrder
+      );
+
+      assert.strictEqual(database, fakeDatabase);
+      assert.strictEqual(databaseWithEmptyOptions, fakeDatabase);
+      assert.strictEqual(
+        databaseWithOptions,
+        fakeDatabaseWithSessionPoolOptions
+      );
+      assert.strictEqual(
+        databaseWithOptionsInOtherOrder,
+        fakeDatabaseWithSessionPoolOptions
+      );
+    });
   });
 
   describe('delete', () => {
@@ -536,7 +585,7 @@ describe('Instance', () => {
     it('should accept and pass `fields` string as is', () => {
       const fieldNames = 'nodeCount';
       const spyMetadata = sandbox.spy(instance, 'getMetadata');
-     
+
       instance.get({fieldNames}, assert.ifError);
 
       assert.ok(spyMetadata.calledWith({fieldNames}));
@@ -547,7 +596,7 @@ describe('Instance', () => {
       const spyMetadata = sandbox.stub(instance, 'getMetadata');
 
       instance.get({fieldNames}, assert.ifError);
-     
+
       assert.ok(spyMetadata.calledWith({fieldNames}));
     });
 
