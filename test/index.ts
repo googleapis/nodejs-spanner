@@ -15,6 +15,7 @@
  */
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';

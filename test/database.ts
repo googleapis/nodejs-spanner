@@ -15,6 +15,7 @@
  */
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import {ApiError} from '@google-cloud/common';
