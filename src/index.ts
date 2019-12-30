@@ -828,11 +828,17 @@ class Spanner extends GrpcService {
         .get(instanceId)!
         .getInstanceEndPointUris((err, endPointUris) => {
           if (err) {
-            callback(err);
-            return;
+            if (err.code === 7) {
+              process.emitWarning(
+                'instance permisssion must be added to use resource based routing.'
+              );
+            } else {
+              callback(err);
+              return;
+            }
           }
           const options = Object.assign({}, this.options);
-          if (endPointUris!.length > 0) {
+          if (endPointUris && endPointUris!.length > 0) {
             options.apiEndpoint = endPointUris![0];
           }
           this.clients_.set(clientName, new gapic.v1[config.client](options));

@@ -989,6 +989,23 @@ describe('Spanner', () => {
       });
     });
 
+    it('should continue if do not have permission for instance', done => {
+      const error = new Error('Error.') as ServiceError;
+      error.code = 7;
+      const instanceId = 'instance-id';
+      spanner.options.enableResourceBasedRouting = true;
+
+      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+        callback!(error);
+      };
+      asAny(CONFIG).instanceId = instanceId;
+
+      spanner.prepareGapicRequest_(CONFIG, err => {
+        assert.ifError(err);
+        done();
+      });
+    });
+
     it('should return an error if instanceId does not provided.', done => {
       spanner.options.enableResourceBasedRouting = true;
 
