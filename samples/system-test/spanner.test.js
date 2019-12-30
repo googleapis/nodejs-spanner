@@ -16,7 +16,7 @@
 
 const {Spanner} = require(`@google-cloud/spanner`);
 const {assert} = require('chai');
-const {describe, it} = require('mocha');
+const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
