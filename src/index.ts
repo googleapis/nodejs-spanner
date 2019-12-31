@@ -808,7 +808,7 @@ class Spanner extends GrpcService {
       !this.options.enableResourceBasedRouting
     ) {
       if (!this.clients_.has(clientName)) {
-        this.clients_.set(clientName, new gapic.v1[clientName](this.options));
+        this.setSpannerClient(clientName, config, this.options);
       }
       const gaxClient = this.clients_.get(clientName)!;
       callback(null, gaxClient);
@@ -830,23 +830,38 @@ class Spanner extends GrpcService {
           if (err) {
             if (err.code === 7) {
               process.emitWarning(
-                'instance permisssion must be added to use resource based routing.'
+                'spanner.instances.get permisssion must be added to use resource based routing.'
               );
+              this.setSpannerClient(clientName, config, this.options);
+              callback(null, this.clients_.get(clientName)!);
+              return;
             } else {
               callback(err);
               return;
             }
           }
           const options = Object.assign({}, this.options);
-          if (endPointUris && endPointUris!.length > 0) {
+          if (endPointUris!.length) {
             options.apiEndpoint = endPointUris![0];
           }
-          this.clients_.set(clientName, new gapic.v1[config.client](options));
+          this.setSpannerClient(clientName, config, options);
           callback(null, this.clients_.get(clientName)!);
         });
     } else {
       callback(null, this.clients_.get(clientName)!);
     }
+  }
+  /**
+   * cache the GAX client accordingly.
+   *
+   * @private
+   *
+   * @param {string} clientName client name to cache.
+   * @param {object} config Request config
+   * @param {object} options Spanner options
+   */
+  setSpannerClient(clientName: string, config, options: SpannerOptions) {
+    this.clients_.set(clientName, new gapic.v1[config.client](options));
   }
 
   /**
