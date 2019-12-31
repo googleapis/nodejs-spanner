@@ -270,27 +270,29 @@ describe('Spanner', () => {
       assert.strictEqual(config.baseUrl, SERVICE_PATH);
     });
 
-    it('should parse emulator host without port correctly', () => {
-      const currentEmulator = process.env.SPANNER_EMULATOR_HOST;
-      try {
+    describe('SPANNER_EMULATOR_HOST', () => {
+      let currentEmulator: string | undefined;
+
+      beforeEach(() => (currentEmulator = process.env.SPANNER_EMULATOR_HOST));
+
+      afterEach(() => {
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
+      });
+
+      it('should parse emulator host without port correctly', () => {
         const EMULATOR_HOST = 'somehost.local';
         process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
 
         const emulator = Spanner.getSpannerEmulatorHost();
 
         assert.deepStrictEqual(emulator, {endpoint: EMULATOR_HOST});
-      } finally {
-        if (currentEmulator) {
-          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
-        } else {
-          delete process.env.SPANNER_EMULATOR_HOST;
-        }
-      }
-    });
+      });
 
-    it('should parse emulator host with port correctly', () => {
-      const currentEmulator = process.env.SPANNER_EMULATOR_HOST;
-      try {
+      it('should parse emulator host with port correctly', () => {
         const EMULATOR_HOST = 'somehost.local';
         const EMULATOR_PORT = 1610;
         process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}:${EMULATOR_PORT}`;
@@ -301,57 +303,34 @@ describe('Spanner', () => {
           endpoint: EMULATOR_HOST,
           port: EMULATOR_PORT,
         });
-      } finally {
-        if (currentEmulator) {
-          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
-        } else {
-          delete process.env.SPANNER_EMULATOR_HOST;
-        }
-      }
-    });
+      });
 
-    it('should reject emulator host with protocol', () => {
-      const currentEmulator = process.env.SPANNER_EMULATOR_HOST;
-      try {
-        const EMULATOR_HOST = 'https://somehost.local:1234';
-        process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
-        Spanner.getSpannerEmulatorHost();
-        assert.fail('Missing expected error');
-      } catch (e) {
-        assert.strictEqual(
-          e.message,
-          'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
-        );
-      } finally {
-        if (currentEmulator) {
-          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
-        } else {
-          delete process.env.SPANNER_EMULATOR_HOST;
+      it('should reject emulator host with protocol', () => {
+        try {
+          const EMULATOR_HOST = 'https://somehost.local:1234';
+          process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
+          Spanner.getSpannerEmulatorHost();
+          assert.fail('Missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
+          );
         }
-      }
-    });
+      });
 
-    it('should reject emulator host with invalid port number', () => {
-      const currentEmulator = process.env.SPANNER_EMULATOR_HOST;
-      try {
-        const EMULATOR_HOST = 'somehost.local:not_a_port';
-        process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
-        Spanner.getSpannerEmulatorHost();
-        assert.fail('Missing expected error');
-      } catch (e) {
-        assert.strictEqual(e.message, 'Invalid port number: not_a_port');
-      } finally {
-        if (currentEmulator) {
-          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
-        } else {
-          delete process.env.SPANNER_EMULATOR_HOST;
+      it('should reject emulator host with invalid port number', () => {
+        try {
+          const EMULATOR_HOST = 'somehost.local:not_a_port';
+          process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
+          Spanner.getSpannerEmulatorHost();
+          assert.fail('Missing expected error');
+        } catch (e) {
+          assert.strictEqual(e.message, 'Invalid port number: not_a_port');
         }
-      }
-    });
+      });
 
-    it('should use SPANNER_EMULATOR_HOST', () => {
-      const currentEmulator = process.env.SPANNER_EMULATOR_HOST;
-      try {
+      it('should use SPANNER_EMULATOR_HOST', () => {
         const EMULATOR_HOST = 'somehost.local';
         const EMULATOR_PORT = 1610;
         process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}:${EMULATOR_PORT}`;
@@ -362,13 +341,7 @@ describe('Spanner', () => {
 
         assert.strictEqual(config.baseUrl, EMULATOR_HOST);
         assert.strictEqual(options.port, EMULATOR_PORT);
-      } finally {
-        if (currentEmulator) {
-          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
-        } else {
-          delete process.env.SPANNER_EMULATOR_HOST;
-        }
-      }
+      });
     });
   });
 
