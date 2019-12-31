@@ -339,6 +339,19 @@ describe('Spanner', () => {
   });
 
   describe('date', () => {
+    it('should create a default SpannerDate instance', () => {
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor() {
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date();
+      assert.strictEqual(date, customValue);
+    });
+
     it('should create a SpannerDate instance', () => {
       const value = '1999-1-1';
       const customValue = {};
@@ -351,6 +364,44 @@ describe('Spanner', () => {
       };
 
       const date = Spanner.date(value);
+      assert.strictEqual(date, customValue);
+    });
+
+    it('should create a SpannerDate instance from year/month/day', () => {
+      const year = 1999;
+      const month = 1;
+      const day = 1;
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor(year_, month_, day_) {
+          assert.strictEqual(year_, year);
+          assert.strictEqual(month_, month);
+          assert.strictEqual(day_, day);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date(year, month, day);
+      assert.strictEqual(date, customValue);
+    });
+
+    it('should create a SpannerDate instance in year 0', () => {
+      const year = 0;
+      const month = 1;
+      const day = 1;
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor(year_, month_, day_) {
+          assert.strictEqual(year_, year);
+          assert.strictEqual(month_, month);
+          assert.strictEqual(day_, day);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date(year, month, day);
       assert.strictEqual(date, customValue);
     });
   });

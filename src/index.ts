@@ -848,13 +848,10 @@ class Spanner extends GrpcService {
     month?: number,
     date?: number
   ): SpannerDate {
-    if (!dateStringOrYear) {
-      return new codec.SpannerDate();
+    if (typeof dateStringOrYear === 'number') {
+      return new codec.SpannerDate(dateStringOrYear, month!, date!);
     }
-    if (isString(dateStringOrYear)) {
-      return new codec.SpannerDate(dateStringOrYear as string);
-    }
-    return new codec.SpannerDate(dateStringOrYear as number, month!, date!);
+    return new codec.SpannerDate(dateStringOrYear);
   }
 
   /**
