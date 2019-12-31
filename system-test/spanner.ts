@@ -15,6 +15,7 @@
  */
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import pLimit from 'p-limit';
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
