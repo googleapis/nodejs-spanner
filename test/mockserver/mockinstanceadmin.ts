@@ -135,10 +135,20 @@ export class MockInstanceAdmin {
     callback: v1.InstanceAdmin.ListInstancesCallback
   ) {
     let instances: IInstance[] = [];
-    if (!call.request.filter || call.request.filter.includes(`name:${MockInstanceAdmin.TEST_INSTANCE.name}`)) {
+    if (
+      !call.request.filter ||
+      call.request.filter.includes(
+        `name:${MockInstanceAdmin.TEST_INSTANCE.name}`
+      )
+    ) {
       instances.push(MockInstanceAdmin.TEST_INSTANCE);
     }
-    if (!call.request.filter || call.request.filter.includes(`name:${MockInstanceAdmin.PROD_INSTANCE.name}`)) {
+    if (
+      !call.request.filter ||
+      call.request.filter.includes(
+        `name:${MockInstanceAdmin.PROD_INSTANCE.name}`
+      )
+    ) {
       instances.push(MockInstanceAdmin.PROD_INSTANCE);
     }
     if (call.request.pageToken) {

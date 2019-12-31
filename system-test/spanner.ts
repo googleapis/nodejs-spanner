@@ -677,7 +677,7 @@ describe('Spanner', () => {
     it('should list the instances', done => {
       spanner.getInstances((err, instances) => {
         assert.ifError(err);
-        assert(instances.length > 0);
+        assert(instances!.length > 0);
         done();
       });
     });
@@ -745,7 +745,7 @@ describe('Spanner', () => {
     it('should list the available instanceConfigs', done => {
       spanner.getInstanceConfigs((err, instanceConfigs) => {
         assert.ifError(err);
-        assert(instanceConfigs.length > 0);
+        assert(instanceConfigs!.length > 0);
         done();
       });
     });
@@ -4432,7 +4432,7 @@ async function deleteOldTestInstances() {
   const toDelete = instances.filter(
     instance =>
       instance.id.includes(PREFIX) &&
-      isHourOld(Number(instance.metadata.labels.created))
+      isHourOld(Number(instance.metadata!.labels!.created))
   );
 
   return deleteInstanceArray(toDelete);

@@ -16,7 +16,14 @@
 
 import * as assert from 'assert';
 import * as grpc from 'grpc';
-import {Database, Instance, IOperation, SessionPool, Snapshot, Spanner} from '../src';
+import {
+  Database,
+  Instance,
+  IOperation,
+  SessionPool,
+  Snapshot,
+  Spanner,
+} from '../src';
 import * as mock from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
@@ -35,7 +42,10 @@ import Context = Mocha.Context;
 import Done = Mocha.Done;
 import {IInstance} from '../src/instance';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import {MockInstanceAdmin, TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
+import {
+  MockInstanceAdmin,
+  TEST_INSTANCE_NAME,
+} from './mockserver/mockinstanceadmin';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -520,12 +530,29 @@ describe('Spanner with mock server', () => {
     assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
   });
 
-  it('should list instance configurations', async () => {
-    const [configs] = await spanner.getInstanceConfigs();
-    assert.strictEqual(configs.length, 1);
-  });
-
   describe('instanceAdmin', () => {
+    it('should list instance configurations', async () => {
+      const [configs] = await spanner.getInstanceConfigs();
+      assert.strictEqual(configs.length, 1);
+    });
+
+    it('should return all instance configs in a stream', done => {
+      let count = 0;
+      const stream = spanner.getInstanceConfigsStream();
+      stream
+        .on('error', err => {
+          assert.fail(err);
+          done(err);
+        })
+        .on('data', instanceConfig => {
+          count++;
+        })
+        .on('end', () => {
+          assert.strictEqual(count, 1);
+          done();
+        });
+    });
+
     it('should list all instances', async () => {
       const [instances] = await spanner.getInstances();
       assert.strictEqual(instances.length, 2);
@@ -533,7 +560,7 @@ describe('Spanner with mock server', () => {
 
     it('should filter instances', async () => {
       const [instances] = await spanner.getInstances({
-        filter: `name:${TEST_INSTANCE_NAME}`
+        filter: `name:${TEST_INSTANCE_NAME}`,
       });
       assert.strictEqual(instances.length, 1);
     });
@@ -553,7 +580,7 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(instances.length, 1);
     });
 
-    it('should list all instances with a callback', (done) => {
+    it('should list all instances with a callback', done => {
       spanner.getInstances((err, instances) => {
         if (err) {
           assert.fail(err);
@@ -615,11 +642,11 @@ describe('Spanner with mock server', () => {
           return;
         }
         operation
-          .on('error', (err) => {
+          .on('error', err => {
             assert.fail(err);
             done();
           })
-          .on('complete', (instance) => {
+          .on('complete', instance => {
             // Instance created successfully.
             assert.strictEqual(
               instance.name,
