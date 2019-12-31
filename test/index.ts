@@ -29,6 +29,9 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import * as grpc from 'grpc';
+import {CreateInstanceRequest} from '../src/instance';
+import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
+import {SpannerDate} from '../src/codec';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -440,13 +443,13 @@ describe('Spanner', () => {
 
     it('should throw if a name is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(null!);
+        spanner.createInstance(null!, {});
       }, /A name is required to create an instance\./);
     });
 
     it('should throw if a config object is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(NAME);
+        spanner.createInstance(NAME, null!);
       }, /A configuration object is required to create an instance\./);
     });
 
@@ -476,12 +479,20 @@ describe('Spanner', () => {
         });
         done();
       };
-      spanner.createInstance(NAME, CONFIG, assert.ifError);
+      spanner.createInstance(
+        NAME,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
     });
 
     it('should accept a path', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
-      spanner.createInstance(PATH, CONFIG, assert.ifError);
+      spanner.createInstance(
+        PATH,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
 
       const [, name] = stub.lastCall.args;
       assert.strictEqual(name, PATH);
@@ -598,7 +609,7 @@ describe('Spanner', () => {
         done();
       };
 
-      spanner.getInstances(QUERY, assert.ifError);
+      spanner.getInstances(QUERY as GetInstancesRequest, assert.ifError);
     });
 
     it('should not require a query', done => {
@@ -625,7 +636,7 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        spanner.getInstances(QUERY, (...args) => {
+        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
           assert.deepStrictEqual(args, GAX_RESPONSE_ARGS);
           done();
         });
@@ -655,12 +666,12 @@ describe('Spanner', () => {
           return fakeInstanceInstance;
         };
 
-        spanner.getInstances(QUERY, (...args) => {
+        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], GAX_RESPONSE_ARGS[0]);
-          const instance = args[1].pop();
+          const instance = args[1]!.pop();
           assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1]![0]);
+          assert.strictEqual(instance!.metadata, GAX_RESPONSE_ARGS[1]![0]);
           assert.strictEqual(args[2], GAX_RESPONSE_ARGS[2]);
           done();
         });
@@ -699,7 +710,10 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigs(query, callback);
+      const returnedValue = spanner.getInstanceConfigs(
+        query as GetInstanceConfigsRequest,
+        callback
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
 
@@ -742,7 +756,9 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigsStream(query);
+      const returnedValue = spanner.getInstanceConfigsStream(
+        query as GetInstanceConfigsRequest
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
   });
