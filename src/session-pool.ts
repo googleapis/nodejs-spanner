@@ -541,14 +541,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Session}
    */
   _borrowFrom(type: types): Session {
-    const session = this._inventory[type].pop();
-    // The following if-statement will always be true, but the compiler is not able to see that.
-    if (session) {
-      this._inventory.borrowed.add(session);
-      return session;
-    } else {
-      throw new Error(`Inventory of type ${type} does not contain any sessions`);
-    }
+    const session = this._inventory[type].pop()!;
+    this._inventory.borrowed.add(session);
+    return session;
   }
 
   /**
