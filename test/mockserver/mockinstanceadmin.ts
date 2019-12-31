@@ -23,6 +23,7 @@ import iam = google.iam.v1;
 import longrunning = google.longrunning;
 import Any = google.protobuf.Any;
 import Empty = google.protobuf.Empty;
+import {IInstance} from '../../src/instance';
 
 const PROTO_PATH = 'spanner_instance_admin.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -130,16 +131,27 @@ export class MockInstanceAdmin {
   }
 
   listInstances(
-    call: grpc.ServerUnaryCall<v1.ListInstanceConfigsRequest>,
+    call: grpc.ServerUnaryCall<v1.ListInstancesRequest>,
     callback: v1.InstanceAdmin.ListInstancesCallback
   ) {
+    let instances: IInstance[] = [];
+    if (!call.request.filter || call.request.filter.includes(`name:${MockInstanceAdmin.TEST_INSTANCE.name}`)) {
+      instances.push(MockInstanceAdmin.TEST_INSTANCE);
+    }
+    if (!call.request.filter || call.request.filter.includes(`name:${MockInstanceAdmin.PROD_INSTANCE.name}`)) {
+      instances.push(MockInstanceAdmin.PROD_INSTANCE);
+    }
+    if (call.request.pageToken) {
+      const beginIndex = Number.parseInt(call.request.pageToken, 10);
+      instances = instances.slice(beginIndex);
+    }
+    if (call.request.pageSize && call.request.pageSize < instances.length) {
+      instances = instances.slice(0, call.request.pageSize);
+    }
     callback(
       null,
       v1.ListInstancesResponse.create({
-        instances: [
-          MockInstanceAdmin.TEST_INSTANCE,
-          MockInstanceAdmin.PROD_INSTANCE,
-        ],
+        instances,
       })
     );
   }

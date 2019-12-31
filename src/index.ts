@@ -29,7 +29,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {codec} from './codec';
 import {Database} from './database';
-import {Instance} from './instance';
+import {CreateInstanceCallback, CreateInstanceRequest, IInstance, Instance} from './instance';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -42,6 +42,11 @@ import {
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
 import {google} from '../proto/spanner';
+import {google as instanceAdmin} from '../proto/spanner_instance_admin';
+import {Operation} from '@google-cloud/common';
+import {Operation as GaxOperation} from 'google-gax';
+import {PagedCallback, PagedRequest, PagedResponse, RequestCallback} from './common';
+import InstanceConfig = instanceAdmin.spanner.admin.instance.v1.InstanceConfig;
 
 const grpc = require('grpc');
 
@@ -51,6 +56,33 @@ const gapic = Object.freeze({
 });
 
 const gcpApiConfig = require('./spanner_grpc_config.json');
+
+export type IOperation = instanceAdmin.longrunning.IOperation;
+export type CreateInstanceResponse = [Instance, GaxOperation, IOperation];
+
+type GetInstancesRequest = PagedRequest<instanceAdmin.spanner.admin.instance.v1.IListInstancesRequest & {
+  maxResults?: number;
+}>;
+type GetInstancesResponse = PagedResponse<
+  Instance,
+  instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
+  >;
+type GetInstancesCallback = PagedCallback<
+  Instance,
+  instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
+  >;
+
+type GetInstanceConfigsRequest = PagedRequest<instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsRequest & {
+  maxResults?: number;
+}>
+type GetInstanceConfigsResponse = PagedResponse<
+  InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
+  >;
+type GetInstanceConfigsCallback = PagedCallback<
+  InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
+  >;
 
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -341,6 +373,8 @@ class Spanner extends GrpcService {
     this.getInstancesStream = paginator.streamify('getInstances');
   }
 
+  createInstance(name: string, config: CreateInstanceRequest): Promise<CreateInstanceResponse>;
+  createInstance(name: string, config: CreateInstanceRequest, callback: CreateInstanceCallback): void;
   /**
    * Config for the new instance.
    *
@@ -351,9 +385,9 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {Operation} 1 An {@link GaxOperation} object that can be used to check
    *     the status of the request.
-   * @property {object} 2 The full API response.
+   * @property {IOperation} 2 The full API response.
    */
   /**
    * @callback CreateInstanceCallback
@@ -361,7 +395,7 @@ class Spanner extends GrpcService {
    * @param {Instance} instance The new {@link Instance}.
    * @param {Operation} operation An {@link Operation} object that can be used to
    *     check the status of the request.
-   * @param {object} apiResponse The full API response.
+   * @param {IOperation} apiResponse The full API response.
    */
   /**
    * Create an instance.
@@ -415,8 +449,11 @@ class Spanner extends GrpcService {
    *     // Instance created successfully.
    *   });
    */
-  // tslint:disable-next-line no-any
-  createInstance(name: string, config?, callback?): any {
+  createInstance(
+    name: string,
+    config,
+    callback?
+  ): void | Promise<CreateInstanceResponse> {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
@@ -462,6 +499,9 @@ class Spanner extends GrpcService {
     );
   }
 
+  getInstances(query?: GetInstancesRequest): Promise<GetInstancesResponse>;
+  getInstances(callback: GetInstancesCallback): void;
+  getInstances(query: GetInstancesRequest, callback: GetInstancesCallback): void;
   /**
    * Query object for listing instances.
    *
@@ -541,13 +581,16 @@ class Spanner extends GrpcService {
    *   const instances = data[0];
    * });
    */
-  // tslint:disable-next-line no-any
-  getInstances(query?, callback?): any {
+  getInstances(queryOrCallback?: GetInstancesRequest | GetInstancesCallback, cb?: GetInstancesCallback): Promise<GetInstancesResponse> | void {
     const self = this;
-    if (is.fn(query)) {
-      callback = query;
-      query = {};
-    }
+    const callback =
+      typeof queryOrCallback === 'function'
+        ? (queryOrCallback as GetInstancesCallback)
+        : cb;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? (queryOrCallback as GetInstancesRequest)
+        : {gaxOptions: {}};
     const reqOpts = extend({}, query, {
       parent: 'projects/' + this.projectId,
     });
@@ -558,21 +601,24 @@ class Spanner extends GrpcService {
         reqOpts,
         gaxOpts: query,
       },
-      // tslint:disable-next-line only-arrow-functions
-      function(err, instances) {
+      (err, instances, ...args) => {
+        let instanceInstances: Instance[] | null = null;
         if (instances) {
-          arguments[1] = instances.map(instance => {
+          instanceInstances = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
             // tslint:disable-next-line no-any
             (instanceInstance as any).metadata = instance;
             return instanceInstance;
           });
         }
-        callback.apply(null, arguments);
+        callback!(err, instanceInstances, ...args);
       }
     );
   }
 
+  getInstanceConfigs(query?: GetInstanceConfigsRequest): Promise<GetInstanceConfigsResponse>;
+  getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
+  getInstanceConfigs(query: GetInstanceConfigsRequest, callback: GetInstanceConfigsCallback): void;
   /**
    * Query object for listing instance configs.
    *
@@ -646,12 +692,15 @@ class Spanner extends GrpcService {
    *   const instanceConfigs = data[0];
    * });
    */
-  // tslint:disable-next-line no-any
-  getInstanceConfigs(query?, callback?): any {
-    if (is.fn(query)) {
-      callback = query;
-      query = {};
-    }
+  getInstanceConfigs(queryOrCallback?: GetInstanceConfigsRequest | GetInstanceConfigsCallback, cb?: GetInstanceConfigsCallback): Promise<GetInstanceConfigsResponse> | void {
+    const callback =
+      typeof queryOrCallback === 'function'
+        ? (queryOrCallback as GetInstanceConfigsCallback)
+        : cb;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? (queryOrCallback as GetInstanceConfigsRequest)
+        : {gaxOptions: {}};
     const reqOpts = extend({}, query, {
       parent: 'projects/' + this.projectId,
     });

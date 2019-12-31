@@ -16,7 +16,7 @@
 
 import * as assert from 'assert';
 import * as grpc from 'grpc';
-import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
+import {Database, Instance, IOperation, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
@@ -33,6 +33,9 @@ import {
 import {ServiceError} from 'grpc';
 import Context = Mocha.Context;
 import Done = Mocha.Done;
+import {IInstance} from '../src/instance';
+import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import {MockInstanceAdmin, TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -522,9 +525,44 @@ describe('Spanner with mock server', () => {
     assert.strictEqual(configs.length, 1);
   });
 
-  it('should list instances', async () => {
-    const [instances] = await spanner.getInstances();
-    assert.strictEqual(instances.length, 2);
+  describe('instanceAdmin', () => {
+    it('should list all instances', async () => {
+      const [instances] = await spanner.getInstances();
+      assert.strictEqual(instances.length, 2);
+    });
+
+    it('should filter instances', async () => {
+      const [instances] = await spanner.getInstances({
+        filter: `name:${TEST_INSTANCE_NAME}`
+      });
+      assert.strictEqual(instances.length, 1);
+    });
+
+    it('should cap results', async () => {
+      const [instances] = await spanner.getInstances({
+        maxResults: 1,
+      });
+      assert.strictEqual(instances.length, 1);
+    });
+
+    it('should maximize api calls', async () => {
+      const [instances] = await spanner.getInstances({
+        maxApiCalls: 1,
+        pageSize: 1,
+      });
+      assert.strictEqual(instances.length, 1);
+    });
+
+    it('should list all instances with a callback', (done) => {
+      spanner.getInstances((err, instances) => {
+        if (err) {
+          assert.fail(err);
+          done();
+        }
+        assert.strictEqual(instances!.length, 2);
+        done();
+      });
+    });
   });
 
   it('should create an instance', async () => {
@@ -535,16 +573,63 @@ describe('Spanner with mock server', () => {
       })
       .then(data => {
         const operation = data[1];
-        return operation.promise();
+        return operation.promise() as Promise<
+          [Instance, CreateInstanceMetadata, object]
+        >;
       })
-      .then(instance => {
-        return instance;
+      .then(response => {
+        return response;
       });
     assert.strictEqual(
       createdInstance.name,
       `projects/${spanner.projectId}/instances/new-instance`
     );
     assert.strictEqual(createdInstance.nodeCount, 10);
+  });
+
+  it('should create an instance using a callback', done => {
+    spanner.createInstance(
+      'new-instance',
+      {
+        config: 'test-instance-config',
+        nodes: 10,
+      },
+      (err, resource, operation, apiResponse) => {
+        if (err) {
+          assert.fail(err);
+          done();
+          return;
+        }
+        if (!resource) {
+          assert.fail('no instance returned');
+          done();
+          return;
+        }
+        assert.strictEqual(
+          resource.formattedName_,
+          `projects/${spanner.projectId}/instances/new-instance`
+        );
+        if (!operation) {
+          assert.fail('no operation returned');
+          done();
+          return;
+        }
+        operation
+          .on('error', (err) => {
+            assert.fail(err);
+            done();
+          })
+          .on('complete', (instance) => {
+            // Instance created successfully.
+            assert.strictEqual(
+              instance.name,
+              `projects/${spanner.projectId}/instances/new-instance`
+            );
+            assert.strictEqual(instance.nodeCount, 10);
+            done();
+          });
+      }
+    );
   });
 
   it('should update an instance', async () => {
