@@ -936,7 +936,7 @@ describe('Spanner', () => {
       asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
-      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
         asAny(spanner.options).apiEndpoint = endpointUris[0];
         callback!(null, endpointUris);
       };
@@ -962,7 +962,7 @@ describe('Spanner', () => {
       const instanceId = 'instance-id';
       spanner.options.enableResourceBasedRouting = true;
 
-      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
         callback!(null, ['us-central1-spanner.googleapis.com']);
       };
       asAny(CONFIG).instanceId = instanceId;
@@ -978,7 +978,7 @@ describe('Spanner', () => {
       const instanceId = 'instance-id';
       spanner.options.enableResourceBasedRouting = true;
 
-      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
         callback!(error);
       };
       asAny(CONFIG).instanceId = instanceId;
@@ -999,7 +999,7 @@ describe('Spanner', () => {
       const instanceId = 'instance-id';
       spanner.options.enableResourceBasedRouting = true;
 
-      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
         callback!(error);
       };
       asAny(CONFIG).instanceId = instanceId;
@@ -1028,7 +1028,7 @@ describe('Spanner', () => {
       asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
-      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
         asAny(spanner.options).apiEndpoint = endpointUris[0];
         callback!(null, endpointUris);
       };
@@ -1052,7 +1052,7 @@ describe('Spanner', () => {
       asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
-      spanner.instance(instanceId).getInstanceEndPointUris = callback => {
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
         asAny(spanner.options).apiEndpoint = customeEndpoint;
         callback!(null, []);
       };

@@ -832,7 +832,7 @@ describe('Instance', () => {
         callback(null, instance);
       };
 
-      instance.getInstanceEndPointUris((err, returnValue) => {
+      instance.getInstanceEndpointUris((err, returnValue) => {
         assert.strictEqual(returnValue, requestReturnValue);
         done();
       });
@@ -844,7 +844,7 @@ describe('Instance', () => {
         callback(error);
       };
 
-      instance.getInstanceEndPointUris((err, returnValue) => {
+      instance.getInstanceEndpointUris((err, returnValue) => {
         assert.strictEqual(err, error);
         done();
       });

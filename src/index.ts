@@ -826,7 +826,7 @@ class Spanner extends GrpcService {
     if (!this.clients_.has(clientName)) {
       this.instances_
         .get(instanceId)!
-        .getInstanceEndPointUris((err, endPointUris) => {
+        .getInstanceEndpointUris((err, endpointUris) => {
           if (err) {
             if (err.code === 7) {
               process.emitWarning(
@@ -841,8 +841,8 @@ class Spanner extends GrpcService {
             }
           }
           const options = Object.assign({}, this.options);
-          if (endPointUris!.length) {
-            options.apiEndpoint = endPointUris![0];
+          if (endpointUris!.length) {
+            options.apiEndpoint = endpointUris![0];
           }
           this.setSpannerClient(clientName, config, options);
           callback(null, this.clients_.get(clientName)!);
