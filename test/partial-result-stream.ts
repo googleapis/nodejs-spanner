@@ -15,6 +15,7 @@
  */
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
 import * as proxyquire from 'proxyquire';
