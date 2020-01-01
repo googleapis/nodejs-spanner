@@ -306,7 +306,7 @@ class Spanner extends GrpcService {
     this.options.enableResourceBasedRouting =
       typeof options!.enableResourceBasedRouting === 'boolean'
         ? options.enableResourceBasedRouting
-        : process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING !== 'false';
+        : process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING === 'true';
     /**
      * Get a list of {@link Instance} objects as a readable object stream.
      *
@@ -826,6 +826,7 @@ class Spanner extends GrpcService {
     if (!this.clients_.has(clientName)) {
       this.instances_
         .get(instanceId)!
+        //will move to getMetadata call once PR#760 merged.
         .getInstanceEndpointUris((err, endpointUris) => {
           if (err) {
             if (err.code === 7) {
