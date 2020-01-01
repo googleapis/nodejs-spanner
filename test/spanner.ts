@@ -530,6 +530,91 @@ describe('Spanner with mock server', () => {
     assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
   });
 
+  describe('transaction', () => {
+    it('should retry on aborted query', async () => {
+      let aborted = false;
+      const database = newTestDatabase();
+      const rowCount = await database.runTransactionAsync(
+        (transaction): Promise<number> => {
+          if (!aborted) {
+            spannerMock.abortTransaction(transaction);
+            aborted = true;
+          }
+          return transaction.run(selectSql).then(([rows]) => {
+            let count = 0;
+            rows.forEach(() => count++);
+            return transaction.commit().then(response => count);
+          });
+        }
+      );
+      assert.strictEqual(rowCount, 3);
+      assert.ok(aborted);
+    });
+
+    it('should retry on aborted query with callback', done => {
+      let aborted = false;
+      const database = newTestDatabase();
+      let rowCount = 0;
+      database.runTransaction((err, transaction) => {
+        if (err) {
+          assert.fail(err);
+          done(err);
+          return;
+        }
+        transaction!.run(selectSql, (err, rows) => {
+          if (err) {
+            assert.fail(err);
+            done(err);
+            return;
+          }
+          rows.forEach(() => rowCount++);
+          assert.strictEqual(rowCount, 3);
+          aborted = true;
+          assert.ok(aborted);
+          done();
+        });
+      });
+    });
+
+    it('should retry on aborted update statement', async () => {
+      let aborted = false;
+      const database = newTestDatabase();
+      const [updated] = await database.runTransactionAsync(
+        (transaction): Promise<number[]> => {
+          if (!aborted) {
+            spannerMock.abortTransaction(transaction);
+            aborted = true;
+          }
+          return transaction
+            .runUpdate(insertSql)
+            .then(updateCount =>
+              transaction.commit().then(response => updateCount)
+            );
+        }
+      );
+      assert.strictEqual(updated, 1);
+      assert.ok(aborted);
+    });
+
+    it('should retry on aborted commit', async () => {
+      let aborted = false;
+      const database = newTestDatabase();
+      const [updated] = await database.runTransactionAsync(
+        (transaction): Promise<number[]> => {
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            if (!aborted) {
+              spannerMock.abortTransaction(transaction);
+              aborted = true;
+            }
+            return transaction.commit().then(response => updateCount);
+          });
+        }
+      );
+      assert.strictEqual(updated, 1);
+      assert.ok(aborted);
+    });
+  });
+
   describe('instanceAdmin', () => {
     it('should list instance configurations', async () => {
       const [configs] = await spanner.getInstanceConfigs();

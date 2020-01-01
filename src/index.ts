@@ -32,7 +32,6 @@ import {Database} from './database';
 import {
   CreateInstanceCallback,
   CreateInstanceRequest,
-  IInstance,
   Instance,
 } from './instance';
 import {Session} from './session';
@@ -261,7 +260,7 @@ class Spanner extends GrpcService {
     | {endpoint: string; port?: number}
     | undefined {
     const endpointWithPort = process.env.SPANNER_EMULATOR_HOST;
-    if (endpointWithPort && endpointWithPort.length > 0) {
+    if (endpointWithPort) {
       if (
         endpointWithPort.startsWith('http:') ||
         endpointWithPort.startsWith('https:')
@@ -402,7 +401,7 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An {@link GaxOperation} object that can be used to check
+   * @property {Operation} 1 A {@link GaxOperation} object that can be used to check
    *     the status of the request.
    * @property {IOperation} 2 The full API response.
    */
@@ -410,7 +409,7 @@ class Spanner extends GrpcService {
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {Operation} operation A {@link GaxOperation} object that can be used to
    *     check the status of the request.
    * @param {IOperation} apiResponse The full API response.
    */
@@ -959,13 +958,10 @@ class Spanner extends GrpcService {
     month?: number,
     date?: number
   ): SpannerDate {
-    if (!dateStringOrYear) {
-      return new codec.SpannerDate();
+    if (typeof dateStringOrYear === 'number') {
+      return new codec.SpannerDate(dateStringOrYear, month!, date!);
     }
-    if (isString(dateStringOrYear)) {
-      return new codec.SpannerDate(dateStringOrYear as string);
-    }
-    return new codec.SpannerDate(dateStringOrYear as number, month!, date!);
+    return new codec.SpannerDate(dateStringOrYear);
   }
 
   /**

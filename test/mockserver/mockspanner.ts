@@ -19,6 +19,9 @@ import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
 import protobuf = google.spanner.v1;
 import Timestamp = google.protobuf.Timestamp;
+import {Database, Session, Transaction} from '../../src';
+import {Root} from 'protobufjs';
+import RetryInfo = google.rpc.RetryInfo;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -37,6 +40,11 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const spannerProtoDescriptor = protoDescriptor['google']['spanner']['v1'];
+const jsonProtos = require('../../../protos/protos.json');
+
+const RETRY_INFO = 'google.rpc.retryinfo-bin';
+// // tslint:disable-next-line variable-name
+// const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
 
 /**
  * The type of result for an SQL statement that the mock server should return.
@@ -150,6 +158,7 @@ export class MockSpanner {
     string,
     protobuf.ITransactionOptions | null | undefined
   > = new Map<string, protobuf.ITransactionOptions | null | undefined>();
+  private abortedTransactions: Set<string> = new Set<string>();
   private statementResults: Map<string, StatementResult> = new Map<
     string,
     StatementResult
@@ -183,6 +192,17 @@ export class MockSpanner {
    */
   putStatementResult(sql: string, result: StatementResult) {
     this.statementResults.set(sql, result);
+  }
+
+  abortTransaction(transaction: Transaction): void {
+    const formattedId = `${transaction.session.formattedName_}/transactions/${transaction.id}`;
+    if (this.transactions.has(formattedId)) {
+      this.transactions.delete(formattedId);
+      this.transactionOptions.delete(formattedId);
+      this.abortedTransactions.add(formattedId);
+    } else {
+      throw new Error(`Transaction ${formattedId} does not exist`);
+    }
   }
 
   freeze() {
@@ -221,6 +241,24 @@ export class MockSpanner {
     const error = new Error(`Transaction not found: ${name}`);
     return Object.assign(error, {
       code: grpc.status.NOT_FOUND,
+    });
+  }
+
+  private static createTransactionAbortedError(
+    name: string
+  ): grpc.ServiceError {
+    const error = new Error(`Transaction aborted: ${name}`);
+    const metadata = new grpc.Metadata();
+    const retry = RetryInfo.encode({
+      retryDelay: {
+        seconds: 0,
+        nanos: 1,
+      },
+    });
+    metadata.add(RETRY_INFO, Buffer.from(retry.finish()));
+    return Object.assign(error, {
+      code: grpc.status.ABORTED,
+      metadata,
     });
   }
 
@@ -308,6 +346,17 @@ export class MockSpanner {
   executeStreamingSql(
     call: grpc.ServerWritableStream<protobuf.ExecuteSqlRequest>
   ) {
+    if (call.request.transaction && call.request.transaction.id) {
+      const fullTransactionId = `${call.request.session}/transactions/${call.request.transaction.id}`;
+      if (this.abortedTransactions.has(fullTransactionId)) {
+        call.emit(
+          'error',
+          MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
+        );
+        call.end();
+        return;
+      }
+    }
     const res = this.statementResults.get(call.request.sql);
     if (res) {
       switch (res.type) {
@@ -410,7 +459,7 @@ export class MockSpanner {
       if (!counter) {
         counter = 0;
       }
-      const id = counter++;
+      const id = ++counter;
       this.transactionCounters.set(session.name, counter);
       const transactionId = id.toString().padStart(12, '0');
       const fullTransactionId = session.name + '/transactions/' + transactionId;
@@ -434,6 +483,15 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CommitRequest>,
     callback: protobuf.Spanner.CommitCallback
   ) {
+    if (call.request.transactionId) {
+      const fullTransactionId = `${call.request.session}/transactions/${call.request.transactionId}`;
+      if (this.abortedTransactions.has(fullTransactionId)) {
+        callback(
+          MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
+        );
+        return;
+      }
+    }
     const session = this.sessions.get(call.request.session);
     if (session) {
       const buffer = Buffer.from(call.request.transactionId);
