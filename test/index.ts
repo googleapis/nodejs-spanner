@@ -1069,6 +1069,39 @@ describe('Spanner', () => {
       };
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
+
+    it('should override the first endpoint while multiple endpointUri available.', done => {
+      const GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
+        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+      process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';
+      const instanceId = 'instance-id';
+      const endpointUris = [
+        'us-central1-spanner.googleapis.com',
+        'us-central2-spanner.googleapis.com',
+      ];
+      asAny(CONFIG).instanceId = instanceId;
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
+      });
+
+      spanner.instance(instanceId).getInstanceEndpointUris = callback => {
+        asAny(spanner.options).apiEndpoint = endpointUris[0];
+        callback!(null, endpointUris);
+      };
+
+      fakeV1[CONFIG.client] = class {
+        constructor(options) {
+          assert.equal(
+            asAny(options).apiEndpoint,
+            asAny(spanner.options).apiEndpoint
+          );
+          done();
+          return FAKE_GAPIC_CLIENT;
+        }
+      };
+      spanner.prepareGapicRequest_(CONFIG, assert.ifError);
+    });
   });
 
   describe('request', () => {
