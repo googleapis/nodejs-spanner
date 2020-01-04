@@ -14,6 +14,7 @@
 
 import {ApiError} from '@google-cloud/common';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 
 const spannerModule = require('../src');
 

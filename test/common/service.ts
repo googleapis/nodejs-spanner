@@ -16,6 +16,7 @@ import {util} from '@google-cloud/common';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as grpcProtoLoader from '@grpc/proto-loader';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as duplexify from 'duplexify';
 import * as extend from 'extend';
 import * as grpc from 'grpc';
