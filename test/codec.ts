@@ -74,6 +74,15 @@ describe('codec', () => {
         assert.strictEqual(json, '1986-03-22');
       });
 
+      it('should accept year zero in y/m/d number values', () => {
+        const d = new codec.SpannerDate(null!);
+        const date = new codec.SpannerDate(0, 2, 22);
+        const json = date.toJSON();
+
+        assert.ok(d);
+        assert.strictEqual(json, '1900-03-22');
+      });
+
       it('should truncate additional date fields', () => {
         const truncated = new codec.SpannerDate(1986, 2, 22, 4, 8, 10);
         const expected = new codec.SpannerDate(1986, 2, 22);
