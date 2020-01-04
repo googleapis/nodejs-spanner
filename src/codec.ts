@@ -59,7 +59,7 @@ type DateFields = [number, number, number];
  *
  * @param {string|number} [date] String representing the date or number
  *     representing the year. If year is a number between 0 and 99, then year is
- *     is assumed to be 1900 + year.
+ *     assumed to be 1900 + year.
  * @param {number} [month] Number representing the month (0 = January).
  * @param {number} [date] Number representing the date.
  *

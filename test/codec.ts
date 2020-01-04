@@ -80,6 +80,7 @@ describe('codec', () => {
         const date = new codec.SpannerDate(0, 2, 22);
         const json = date.toJSON();
 
+        assert.ok(d);
         assert.strictEqual(json, '1900-03-22');
       });
 
