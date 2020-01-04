@@ -16,6 +16,7 @@
 
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
