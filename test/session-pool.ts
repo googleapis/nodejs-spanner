@@ -721,15 +721,17 @@ describe('SessionPool', () => {
   });
 
   describe('_borrowFrom', () => {
-    it('should borrow the first available type', () => {
-      const fakeSession = createSession();
-      const stub = sandbox.stub(sessionPool, '_borrow').withArgs(fakeSession);
+    it('should borrow the last pushed session', () => {
+      const fakeSession1 = createSession();
+      const fakeSession2 = createSession();
 
-      inventory[types.ReadOnly].push(fakeSession, createSession());
+      inventory[types.ReadOnly].push(fakeSession1);
+      inventory[types.ReadOnly].push(fakeSession2);
 
-      const session = sessionPool._borrowFrom(types.ReadOnly);
-      assert.strictEqual(session, fakeSession);
-      assert.strictEqual(stub.callCount, 1);
+      let session = sessionPool._borrowFrom(types.ReadOnly);
+      assert.strictEqual(session, fakeSession2);
+      session = sessionPool._borrowFrom(types.ReadOnly);
+      assert.strictEqual(session, fakeSession1);
     });
   });
 
