@@ -828,7 +828,7 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner();
    * const operation = spanner.operation('operation-name');
    */
-  operation(name): GrpcOperation {
+  operation(name: string): GrpcOperation {
     if (!name) {
       throw new Error('A name is required to access an Operation object.');
     }
