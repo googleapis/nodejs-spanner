@@ -186,7 +186,9 @@ export abstract class Runner<T> {
 
     let lastError: ServiceError;
 
-    while (Date.now() - start < timeout) {
+    // The transaction runner should always executed at least one attempt before
+    // timing out.
+    while (this.attempts === 0 || Date.now() - start < timeout) {
       const transaction = await this.getTransaction();
 
       try {
