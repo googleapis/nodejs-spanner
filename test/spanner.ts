@@ -37,7 +37,7 @@ import {
   SessionPoolExhaustedError,
   SessionPoolOptions,
 } from '../src/session-pool';
-import {ServiceError} from 'grpc';
+import {ServiceError, status} from 'grpc';
 import Context = Mocha.Context;
 import Done = Mocha.Done;
 import {IInstance} from '../src/instance';
@@ -578,9 +578,11 @@ describe('Spanner with mock server', () => {
 
     it('should retry on aborted update statement', async () => {
       let aborted = false;
+      let attempts = 0;
       const database = newTestDatabase();
       const [updated] = await database.runTransactionAsync(
         (transaction): Promise<number[]> => {
+          attempts++;
           if (!aborted) {
             spannerMock.abortTransaction(transaction);
             aborted = true;
@@ -594,6 +596,31 @@ describe('Spanner with mock server', () => {
       );
       assert.strictEqual(updated, 1);
       assert.ok(aborted);
+      assert.strictEqual(attempts, 2);
+    });
+
+    it('should retry on aborted update statement with callback', (done) => {
+      let aborted = false;
+      let attempts = 0;
+      const database = newTestDatabase();
+      database.runTransaction((err, transaction) => {
+        attempts++;
+        assert.ifError(err);
+        if (!aborted) {
+          spannerMock.abortTransaction(transaction!);
+          aborted = true;
+        }
+        transaction!.runUpdate(insertSql, (err, rowCount) => {
+          assert.ifError(err);
+          transaction!.commit((err, response) => {
+            assert.ifError(err);
+            assert.strictEqual(rowCount, 1);
+            assert.ok(aborted);
+            assert.strictEqual(attempts, 2);
+            done();
+          });
+        });
+      });
     });
 
     it('should retry on aborted commit', async () => {
@@ -612,6 +639,28 @@ describe('Spanner with mock server', () => {
       );
       assert.strictEqual(updated, 1);
       assert.ok(aborted);
+    });
+
+    it('should throw DeadlineError', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      try {
+        const [updated] = await database.runTransactionAsync({timeout: 1},
+          (transaction): Promise<number[]> => {
+            attempts++;
+            return transaction.runUpdate(insertSql).then(updateCount => {
+              // Always abort the transaction.
+              spannerMock.abortTransaction(transaction);
+              return transaction.commit().then(response => updateCount);
+            });
+          }
+        );
+        assert.fail('missing expected DEADLINE_EXCEEDED error');
+      } catch (e) {
+        assert.strictEqual(e.code, status.DEADLINE_EXCEEDED, `Got unexpected error ${e} with code ${e.code}`);
+        // The transaction should be tried at least once before timing out.
+        assert.ok(attempts >= 1);
+      }
     });
   });
 
