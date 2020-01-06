@@ -287,11 +287,16 @@ describe('TransactionRunner', () => {
         sandbox.stub(runner, 'getNextDelay').returns(2);
         runner.options.timeout = 1;
 
-        runner.run().catch(err => {
-          assert.strictEqual(err.code, status.DEADLINE_EXCEEDED);
-          assert.deepStrictEqual(err.errors, [fakeError]);
-          done();
-        });
+        runner
+          .run()
+          .then(() => {
+            done(new Error('missing expected DEADLINE_EXCEEDED error'));
+          })
+          .catch(err => {
+            assert.strictEqual(err.code, status.DEADLINE_EXCEEDED);
+            assert.deepStrictEqual(err.errors, [fakeError]);
+            done();
+          });
       });
     });
   });
