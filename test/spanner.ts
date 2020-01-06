@@ -119,415 +119,443 @@ describe('Spanner with mock server', () => {
     sandbox.restore();
   });
 
-  it('should execute query', async () => {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const [rows] = await database.run(query);
-      assert.strictEqual(rows.length, 3);
-      let i = 0;
-      rows.forEach(row => {
-        i++;
-        assert.strictEqual(row[0].name, 'NUM');
-        assert.strictEqual(row[0].value.valueOf(), i);
-        assert.strictEqual(row[1].name, 'NAME');
-        assert.strictEqual(row[1].value.valueOf(), numberToEnglishWord(i));
+  describe('basics', () => {
+    it('should return different database instances when the same database is requested twice with different session pool options', async () => {
+      const dbWithDefaultOptions = newTestDatabase();
+      const dbWithWriteSessions = instance.database(dbWithDefaultOptions.id!, {
+        writes: 1.0,
       });
-    } finally {
-      await database.close();
-    }
-  });
+      assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
+    });
 
-  it('should execute update', async () => {
-    const update = {
-      sql: insertSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const updated = await executeSimpleUpdate(database, update);
-      assert.deepStrictEqual(updated, [1]);
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should execute table mutations without leaking sessions', async () => {
-    const database = newTestDatabase();
-    try {
-      await database.table('foo').upsert({id: 1, name: 'bar'});
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should throw an error with a stacktrace when leaking a session', async () => {
-    await testLeakSession();
-  });
-
-  async function testLeakSession() {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const db = newTestDatabase();
-    let transaction: Snapshot;
-    await db
-      .getSnapshot({strong: true, returnReadTimestamp: true})
-      .then(([tx]) => {
-        transaction = tx;
-        return tx.run(query);
-      })
-      .then(([rows]) => {
-        // Assert that we get all results from the server.
+    it('should execute query', async () => {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const [rows] = await database.run(query);
         assert.strictEqual(rows.length, 3);
-        // Note that we do not call transaction.end(). This will cause a session leak.
-      })
-      .catch(reason => {
-        assert.fail(reason);
-      });
-    await db
-      .close()
-      .then(() => {
-        assert.fail('Missing expected SessionLeakError');
-      })
-      .catch((reason: SessionLeakError) => {
-        assert.strictEqual(reason.name, 'SessionLeakError', reason);
-        assert.strictEqual(reason.messages.length, 1);
-        assert.ok(reason.messages[0].indexOf('testLeakSession') > -1);
-      });
-  }
-
-  it('should reuse sessions', async () => {
-    const database = newTestDatabase();
-    try {
-      await verifyReadSessionReuse(database);
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should reuse sessions when fail=true', async () => {
-    const db = newTestDatabase({
-      max: 10,
-      concurrency: 5,
-      writes: 0.1,
-      fail: true,
-    });
-    try {
-      await verifyReadSessionReuse(db);
-    } finally {
-      await db.close();
-    }
-  });
-
-  async function verifyReadSessionReuse(database: Database) {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const pool = database.pool_ as SessionPool;
-    let sessionId = '';
-    for (let i = 0; i < 10; i++) {
-      const [rows] = await database.run(query);
-      assert.strictEqual(rows.length, 3);
-      rows.forEach(() => {});
-      assert.strictEqual(pool.size, 1);
-      if (i > 0) {
-        assert.strictEqual(pool._inventory[types.ReadOnly][0].id, sessionId);
-      }
-      sessionId = pool._inventory[types.ReadOnly][0].id;
-    }
-  }
-
-  it('should throw SessionPoolExhaustedError with stacktraces when pool is exhausted', async () => {
-    await testSessionPoolExhaustedError();
-  });
-
-  async function testSessionPoolExhaustedError() {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const database = newTestDatabase({
-      max: 1,
-      fail: true,
-    });
-    try {
-      const [tx1] = await database.getSnapshot();
-      try {
-        const [tx2] = await database.getSnapshot();
-        assert.fail('missing expected exception');
-      } catch (e) {
-        assert.strictEqual(e.name, SessionPoolExhaustedError.name);
-        const exhausted = e as SessionPoolExhaustedError;
-        assert.ok(exhausted.messages);
-        assert.strictEqual(exhausted.messages.length, 1);
-        assert.ok(
-          exhausted.messages[0].indexOf('testSessionPoolExhaustedError') > -1
-        );
-      }
-      tx1.end();
-    } finally {
-      await database.close();
-    }
-  }
-
-  it('should reuse sessions after executing invalid sql', async () => {
-    // The query to execute
-    const query = {
-      sql: invalidSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const pool = database.pool_ as SessionPool;
-      for (let i = 0; i < 10; i++) {
-        try {
-          const [rows] = await database.run(query);
-          assert.fail(`missing expected exception, got ${rows.length} rows`);
-        } catch (e) {
-          assert.strictEqual(
-            e.message,
-            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-          );
-        }
-      }
-      assert.strictEqual(pool.size, 1);
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should reuse sessions after executing streaming sql', async () => {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const pool = database.pool_ as SessionPool;
-      for (let i = 0; i < 10; i++) {
-        const rowCount = await getRowCountFromStreamingSql(database, query);
-        assert.strictEqual(rowCount, 3);
-      }
-      assert.strictEqual(pool.size, 1);
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should reuse sessions after executing an invalid streaming sql', async () => {
-    // The query to execute
-    const query = {
-      sql: invalidSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const pool = database.pool_ as SessionPool;
-      for (let i = 0; i < 10; i++) {
-        try {
-          const rowCount = await getRowCountFromStreamingSql(database, query);
-          assert.fail(`missing expected exception, got ${rowCount}`);
-        } catch (e) {
-          assert.strictEqual(
-            e.message,
-            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-          );
-        }
-      }
-      assert.strictEqual(pool.size, 1);
-    } finally {
-      await database.close();
-    }
-  });
-
-  function getRowCountFromStreamingSql(
-    database: Database,
-    query: ExecuteSqlRequest
-  ): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      let rows = 0;
-      let errored = false;
-      database
-        .runStream(query)
-        .on('error', err => {
-          errored = true;
-          return reject(err);
-        })
-        .on('data', row => {
-          rows++;
-        })
-        .on('end', res => {
-          if (!errored) {
-            return resolve(rows);
-          }
+        let i = 0;
+        rows.forEach(row => {
+          i++;
+          assert.strictEqual(row[0].name, 'NUM');
+          assert.strictEqual(row[0].value.valueOf(), i);
+          assert.strictEqual(row[1].name, 'NAME');
+          assert.strictEqual(row[1].value.valueOf(), numberToEnglishWord(i));
         });
-    });
-  }
-
-  it('should reuse write sessions', async () => {
-    const database = newTestDatabase();
-    try {
-      await verifyWriteSessionReuse(database);
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should reuse write sessions when fail=true', async () => {
-    const db = newTestDatabase({
-      max: 10,
-      concurrency: 5,
-      writes: 0.1,
-      fail: true,
-    });
-    try {
-      await verifyWriteSessionReuse(db);
-    } finally {
-      await db.close();
-    }
-  });
-
-  async function verifyWriteSessionReuse(database: Database) {
-    const update = {
-      sql: insertSql,
-    };
-    const pool = database.pool_ as SessionPool;
-    for (let i = 0; i < 10; i++) {
-      const updated = await executeSimpleUpdate(database, update);
-      // The pool should not contain more sessions than the number of transactions that we have executed.
-      // The exact number depends on the time needed to prepare new transactions, as checking in a read/write
-      // transaction to the pool will cause the session to be prepared with a read/write transaction before it is added
-      // to the list of available sessions.
-      assert.ok(pool.size <= i + 1);
-    }
-  }
-
-  it('should execute queries in parallel', async () => {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const pool = database.pool_ as SessionPool;
-      const promises: Array<Promise<Row[]>> = [];
-      for (let i = 0; i < 10; i++) {
-        promises.push(database.run(query));
+      } finally {
+        await database.close();
       }
-      await Promise.all(promises);
-      assert.ok(
-        pool.size >= 1 && pool.size <= 10,
-        'Pool size should be between 1 and 10'
-      );
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should execute updates in parallel', async () => {
-    spannerMock.freeze();
-    const update = {
-      sql: insertSql,
-    };
-    const database = newTestDatabase();
-    try {
-      const pool = database.pool_ as SessionPool;
-      const promises: Array<Promise<number | number[]>> = [];
-      for (let i = 0; i < 10; i++) {
-        promises.push(executeSimpleUpdate(database, update));
-      }
-      spannerMock.unfreeze();
-      await Promise.all(promises);
-      assert.ok(
-        pool.size >= 1 && pool.size <= 10,
-        'Pool size should be between 1 and 10'
-      );
-    } finally {
-      await database.close();
-    }
-  });
-
-  it('should fail on session pool exhaustion and fail=true', async () => {
-    // The query to execute
-    const query = {
-      sql: selectSql,
-    };
-    const database = newTestDatabase({
-      max: 1,
-      fail: true,
     });
-    let tx1;
-    try {
+
+    it('should execute update', async () => {
+      const update = {
+        sql: insertSql,
+      };
+      const database = newTestDatabase();
       try {
-        [tx1] = await database.getSnapshot();
-        await database.getSnapshot();
-        assert.fail('missing expected exception');
-      } catch (e) {
-        assert.strictEqual(e.message, 'No resources available.');
+        const updated = await executeSimpleUpdate(database, update);
+        assert.deepStrictEqual(updated, [1]);
+      } finally {
+        await database.close();
       }
-    } finally {
-      if (tx1) {
-        tx1.end();
-      }
-      await database.close();
-    }
-  });
-
-  // tslint:disable-next-line:ban
-  it.skip('should not create unnecessary write-prepared sessions', async () => {
-    const query = {
-      sql: selectSql,
-    };
-    const update = {
-      sql: insertSql,
-    };
-    const database = newTestDatabase({
-      writes: 0.2,
-      min: 100,
     });
-    const pool = database.pool_ as SessionPool;
-    try {
-      // First execute three consecutive read/write transactions.
-      const promises: Array<Promise<Row[] | number | [number]>> = [];
-      for (let i = 0; i < 3; i++) {
-        promises.push(executeSimpleUpdate(database, update));
-        const ms = Math.floor(Math.random() * 5) + 1;
-        await sleep(ms);
-      }
-      let maxWriteSessions = 0;
-      for (let i = 0; i < 1000; i++) {
-        if (Math.random() < 0.8) {
+
+    it('should execute queries in parallel', async () => {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const pool = database.pool_ as SessionPool;
+        const promises: Array<Promise<Row[]>> = [];
+        for (let i = 0; i < 10; i++) {
           promises.push(database.run(query));
-        } else {
+        }
+        await Promise.all(promises);
+        assert.ok(
+          pool.size >= 1 && pool.size <= 10,
+          'Pool size should be between 1 and 10'
+        );
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should execute updates in parallel', async () => {
+      spannerMock.freeze();
+      const update = {
+        sql: insertSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const pool = database.pool_ as SessionPool;
+        const promises: Array<Promise<number | number[]>> = [];
+        for (let i = 0; i < 10; i++) {
           promises.push(executeSimpleUpdate(database, update));
         }
-        maxWriteSessions = Math.max(maxWriteSessions, pool.writes);
-        const ms = Math.floor(Math.random() * 5) + 1;
-        await sleep(ms);
+        spannerMock.unfreeze();
+        await Promise.all(promises);
+        assert.ok(
+          pool.size >= 1 && pool.size <= 10,
+          'Pool size should be between 1 and 10'
+        );
+      } finally {
+        await database.close();
       }
-      await Promise.all(promises);
-      console.log(`Session pool size: ${pool.size}`);
-      console.log(`Session pool read sessions: ${pool.reads}`);
-      console.log(`Session pool write sessions: ${pool.writes}`);
-      console.log(`Session pool max write sessions: ${maxWriteSessions}`);
-    } finally {
-      await database.close();
-    }
+    });
   });
 
-  function sleep(ms): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  it('should return different database instances when the same database is requested twice with different session pool options', async () => {
-    const dbWithDefaultOptions = newTestDatabase();
-    const dbWithWriteSessions = instance.database(dbWithDefaultOptions.id!, {
-      writes: 1.0,
+  describe('session-pool', () => {
+    it('should execute table mutations without leaking sessions', async () => {
+      const database = newTestDatabase();
+      try {
+        await database.table('foo').upsert({id: 1, name: 'bar'});
+      } finally {
+        await database.close();
+      }
     });
-    assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
+
+    it('should throw an error with a stacktrace when leaking a session', async () => {
+      await testLeakSession();
+    });
+
+    async function testLeakSession() {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const db = newTestDatabase();
+      let transaction: Snapshot;
+      await db
+        .getSnapshot({strong: true, returnReadTimestamp: true})
+        .then(([tx]) => {
+          transaction = tx;
+          return tx.run(query);
+        })
+        .then(([rows]) => {
+          // Assert that we get all results from the server.
+          assert.strictEqual(rows.length, 3);
+          // Note that we do not call transaction.end(). This will cause a session leak.
+        })
+        .catch(reason => {
+          assert.fail(reason);
+        });
+      await db
+        .close()
+        .then(() => {
+          assert.fail('Missing expected SessionLeakError');
+        })
+        .catch((reason: SessionLeakError) => {
+          assert.strictEqual(reason.name, 'SessionLeakError', reason);
+          assert.strictEqual(reason.messages.length, 1);
+          assert.ok(reason.messages[0].indexOf('testLeakSession') > -1);
+        });
+    }
+
+    it('should reuse sessions', async () => {
+      const database = newTestDatabase();
+      try {
+        await verifyReadSessionReuse(database);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should reuse sessions when fail=true', async () => {
+      const db = newTestDatabase({
+        max: 10,
+        concurrency: 5,
+        writes: 0.1,
+        fail: true,
+      });
+      try {
+        await verifyReadSessionReuse(db);
+      } finally {
+        await db.close();
+      }
+    });
+
+    async function verifyReadSessionReuse(database: Database) {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const pool = database.pool_ as SessionPool;
+      let sessionId = '';
+      for (let i = 0; i < 10; i++) {
+        const [rows] = await database.run(query);
+        assert.strictEqual(rows.length, 3);
+        rows.forEach(() => {});
+        assert.strictEqual(pool.size, 1);
+        if (i > 0) {
+          assert.strictEqual(pool._inventory[types.ReadOnly][0].id, sessionId);
+        }
+        sessionId = pool._inventory[types.ReadOnly][0].id;
+      }
+    }
+
+    it('should throw SessionPoolExhaustedError with stacktraces when pool is exhausted', async () => {
+      await testSessionPoolExhaustedError();
+    });
+
+    async function testSessionPoolExhaustedError() {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase({
+        max: 1,
+        fail: true,
+      });
+      try {
+        const [tx1] = await database.getSnapshot();
+        try {
+          const [tx2] = await database.getSnapshot();
+          assert.fail('missing expected exception');
+        } catch (e) {
+          assert.strictEqual(e.name, SessionPoolExhaustedError.name);
+          const exhausted = e as SessionPoolExhaustedError;
+          assert.ok(exhausted.messages);
+          assert.strictEqual(exhausted.messages.length, 1);
+          assert.ok(
+            exhausted.messages[0].indexOf('testSessionPoolExhaustedError') > -1
+          );
+        }
+        tx1.end();
+      } finally {
+        await database.close();
+      }
+    }
+
+    it('should reuse sessions after executing invalid sql', async () => {
+      // The query to execute
+      const query = {
+        sql: invalidSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const pool = database.pool_ as SessionPool;
+        for (let i = 0; i < 10; i++) {
+          try {
+            const [rows] = await database.run(query);
+            assert.fail(`missing expected exception, got ${rows.length} rows`);
+          } catch (e) {
+            assert.strictEqual(
+              e.message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+        }
+        assert.strictEqual(pool.size, 1);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should reuse sessions after executing streaming sql', async () => {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const pool = database.pool_ as SessionPool;
+        for (let i = 0; i < 10; i++) {
+          const rowCount = await getRowCountFromStreamingSql(database, query);
+          assert.strictEqual(rowCount, 3);
+        }
+        assert.strictEqual(pool.size, 1);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should reuse sessions after executing an invalid streaming sql', async () => {
+      // The query to execute
+      const query = {
+        sql: invalidSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const pool = database.pool_ as SessionPool;
+        for (let i = 0; i < 10; i++) {
+          try {
+            const rowCount = await getRowCountFromStreamingSql(database, query);
+            assert.fail(`missing expected exception, got ${rowCount}`);
+          } catch (e) {
+            assert.strictEqual(
+              e.message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+        }
+        assert.strictEqual(pool.size, 1);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should reuse write sessions', async () => {
+      const database = newTestDatabase();
+      try {
+        await verifyWriteSessionReuse(database);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should reuse write sessions when fail=true', async () => {
+      const db = newTestDatabase({
+        max: 10,
+        concurrency: 5,
+        writes: 0.1,
+        fail: true,
+      });
+      try {
+        await verifyWriteSessionReuse(db);
+      } finally {
+        await db.close();
+      }
+    });
+
+    async function verifyWriteSessionReuse(database: Database) {
+      const update = {
+        sql: insertSql,
+      };
+      const pool = database.pool_ as SessionPool;
+      for (let i = 0; i < 10; i++) {
+        const updated = await executeSimpleUpdate(database, update);
+        // The pool should not contain more sessions than the number of transactions that we have executed.
+        // The exact number depends on the time needed to prepare new transactions, as checking in a read/write
+        // transaction to the pool will cause the session to be prepared with a read/write transaction before it is added
+        // to the list of available sessions.
+        assert.ok(pool.size <= i + 1);
+      }
+    }
+
+    it('should fail on session pool exhaustion and fail=true', async () => {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase({
+        max: 1,
+        fail: true,
+      });
+      let tx1;
+      try {
+        try {
+          [tx1] = await database.getSnapshot();
+          await database.getSnapshot();
+          assert.fail('missing expected exception');
+        } catch (e) {
+          assert.strictEqual(e.message, 'No resources available.');
+        }
+      } finally {
+        if (tx1) {
+          tx1.end();
+        }
+        await database.close();
+      }
+    });
+
+    // tslint:disable-next-line:ban
+    it.skip('should not create unnecessary write-prepared sessions', async () => {
+      const query = {
+        sql: selectSql,
+      };
+      const update = {
+        sql: insertSql,
+      };
+      const database = newTestDatabase({
+        writes: 0.2,
+        min: 100,
+      });
+      const pool = database.pool_ as SessionPool;
+      try {
+        // First execute three consecutive read/write transactions.
+        const promises: Array<Promise<Row[] | number | [number]>> = [];
+        for (let i = 0; i < 3; i++) {
+          promises.push(executeSimpleUpdate(database, update));
+          const ms = Math.floor(Math.random() * 5) + 1;
+          await sleep(ms);
+        }
+        let maxWriteSessions = 0;
+        for (let i = 0; i < 1000; i++) {
+          if (Math.random() < 0.8) {
+            promises.push(database.run(query));
+          } else {
+            promises.push(executeSimpleUpdate(database, update));
+          }
+          maxWriteSessions = Math.max(maxWriteSessions, pool.writes);
+          const ms = Math.floor(Math.random() * 5) + 1;
+          await sleep(ms);
+        }
+        await Promise.all(promises);
+        console.log(`Session pool size: ${pool.size}`);
+        console.log(`Session pool read sessions: ${pool.reads}`);
+        console.log(`Session pool write sessions: ${pool.writes}`);
+        console.log(`Session pool max write sessions: ${maxWriteSessions}`);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should pre-fill session pool', async () => {
+      const database = newTestDatabase({
+        writes: 0.2,
+        min: 100,
+        max: 200,
+      });
+      const pool = database.pool_ as SessionPool;
+      const expectedWrites = pool.options.min! * pool.options.writes!;
+      const expectedReads = pool.options.min! - expectedWrites;
+      assert.strictEqual(pool.size, expectedReads + expectedWrites);
+      // Wait until all sessions have been created and prepared.
+      const started = new Date().getTime();
+      while (
+        (pool.reads < expectedReads || pool.writes < expectedWrites) &&
+        new Date().getTime() - started < 1000
+      ) {
+        await sleep(1);
+      }
+      assert.strictEqual(pool.reads, expectedReads);
+      assert.strictEqual(pool.writes, expectedWrites);
+    });
+
+    // The following test case fails as the session pool does not use sessions
+    // that are pending creation when one is requested. Instead, the session
+    // pool creates an additional session.
+    // tslint:disable-next-line:ban
+    it.skip('should use pre-filled session pool', async () => {
+      const database = newTestDatabase({
+        writes: 0.2,
+        min: 100,
+        max: 200,
+      });
+      const pool = database.pool_ as SessionPool;
+      const expectedWrites = pool.options.min! * pool.options.writes!;
+      const expectedReads = pool.options.min! - expectedWrites;
+      // Start executing a query. This query should use one of the sessions that
+      // has been pre-filled into the pool.
+      const [rows] = await database.run(selectSql);
+      assert.strictEqual(rows.length, 3);
+      // Wait until all sessions have been created and prepared.
+      const started = new Date().getTime();
+      while (
+        (pool.reads < expectedReads || pool.writes < expectedWrites) &&
+        new Date().getTime() - started < 1000
+      ) {
+        await sleep(1);
+      }
+      assert.strictEqual(pool.reads, expectedReads);
+      assert.strictEqual(pool.writes, expectedWrites);
+      assert.strictEqual(pool.size, expectedReads + expectedWrites);
+    });
   });
 
   describe('transaction', () => {
@@ -599,7 +627,7 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(attempts, 2);
     });
 
-    it('should retry on aborted update statement with callback', (done) => {
+    it('should retry on aborted update statement with callback', done => {
       let aborted = false;
       let attempts = 0;
       const database = newTestDatabase();
@@ -645,7 +673,8 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       const database = newTestDatabase();
       try {
-        const [updated] = await database.runTransactionAsync({timeout: 1},
+        const [updated] = await database.runTransactionAsync(
+          {timeout: 1},
           (transaction): Promise<number[]> => {
             attempts++;
             return transaction.runUpdate(insertSql).then(updateCount => {
@@ -657,7 +686,11 @@ describe('Spanner with mock server', () => {
         );
         assert.fail('missing expected DEADLINE_EXCEEDED error');
       } catch (e) {
-        assert.strictEqual(e.code, status.DEADLINE_EXCEEDED, `Got unexpected error ${e} with code ${e.code}`);
+        assert.strictEqual(
+          e.code,
+          status.DEADLINE_EXCEEDED,
+          `Got unexpected error ${e} with code ${e.code}`
+        );
         // The transaction should be tried at least once before timing out.
         assert.ok(attempts >= 1);
       }
@@ -724,118 +757,118 @@ describe('Spanner with mock server', () => {
         done();
       });
     });
-  });
 
-  it('should create an instance', async () => {
-    const [createdInstance] = await spanner
-      .createInstance('new-instance', {
-        config: 'test-instance-config',
-        nodes: 10,
-      })
-      .then(data => {
-        const operation = data[1];
-        return operation.promise() as Promise<
-          [Instance, CreateInstanceMetadata, object]
-        >;
-      })
-      .then(response => {
-        return response;
-      });
-    assert.strictEqual(
-      createdInstance.name,
-      `projects/${spanner.projectId}/instances/new-instance`
-    );
-    assert.strictEqual(createdInstance.nodeCount, 10);
-  });
+    it('should create an instance', async () => {
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          nodes: 10,
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(createdInstance.nodeCount, 10);
+    });
 
-  it('should create an instance using a callback', done => {
-    spanner.createInstance(
-      'new-instance',
-      {
-        config: 'test-instance-config',
-        nodes: 10,
-      },
-      (err, resource, operation, apiResponse) => {
-        if (err) {
-          assert.fail(err);
-          done();
-          return;
-        }
-        if (!resource) {
-          assert.fail('no instance returned');
-          done();
-          return;
-        }
-        assert.strictEqual(
-          resource.formattedName_,
-          `projects/${spanner.projectId}/instances/new-instance`
-        );
-        if (!operation) {
-          assert.fail('no operation returned');
-          done();
-          return;
-        }
-        operation
-          .on('error', err => {
+    it('should create an instance using a callback', done => {
+      spanner.createInstance(
+        'new-instance',
+        {
+          config: 'test-instance-config',
+          nodes: 10,
+        },
+        (err, resource, operation, apiResponse) => {
+          if (err) {
             assert.fail(err);
             done();
-          })
-          .on('complete', instance => {
-            // Instance created successfully.
-            assert.strictEqual(
-              instance.name,
-              `projects/${spanner.projectId}/instances/new-instance`
-            );
-            assert.strictEqual(instance.nodeCount, 10);
+            return;
+          }
+          if (!resource) {
+            assert.fail('no instance returned');
             done();
-          });
-      }
-    );
-  });
+            return;
+          }
+          assert.strictEqual(
+            resource.formattedName_,
+            `projects/${spanner.projectId}/instances/new-instance`
+          );
+          if (!operation) {
+            assert.fail('no operation returned');
+            done();
+            return;
+          }
+          operation
+            .on('error', err => {
+              assert.fail(err);
+              done();
+            })
+            .on('complete', instance => {
+              // Instance created successfully.
+              assert.strictEqual(
+                instance.name,
+                `projects/${spanner.projectId}/instances/new-instance`
+              );
+              assert.strictEqual(instance.nodeCount, 10);
+              done();
+            });
+        }
+      );
+    });
 
-  it('should update an instance', async () => {
-    const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
-    const [updatedInstance] = await instance
-      .setMetadata({
-        nodeCount: 20,
-        displayName: 'Production instance with 20 nodes',
-      })
-      .then(data => {
-        return data[0].promise() as Promise<
-          [google.spanner.admin.instance.v1.Instance]
-        >;
-      })
-      .then(instance => {
-        return instance;
-      });
-    assert.strictEqual(updatedInstance.nodeCount, 20);
-  });
+    it('should update an instance', async () => {
+      const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
+      const [updatedInstance] = await instance
+        .setMetadata({
+          nodeCount: 20,
+          displayName: 'Production instance with 20 nodes',
+        })
+        .then(data => {
+          return data[0].promise() as Promise<
+            [google.spanner.admin.instance.v1.Instance]
+          >;
+        })
+        .then(instance => {
+          return instance;
+        });
+      assert.strictEqual(updatedInstance.nodeCount, 20);
+    });
 
-  it('should delete an instance', async () => {
-    const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
-    const [res] = await instance.delete();
-    assert.ok(res);
-  });
+    it('should delete an instance', async () => {
+      const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
+      const [res] = await instance.delete();
+      assert.ok(res);
+    });
 
-  it('should list databases', async () => {
-    const [databases] = await instance.getDatabases();
-    assert.strictEqual(databases.length, 2);
-  });
+    it('should list databases', async () => {
+      const [databases] = await instance.getDatabases();
+      assert.strictEqual(databases.length, 2);
+    });
 
-  it('should create a database', async () => {
-    const [createdDatabase] = await instance
-      .createDatabase('new-database')
-      .then(data => {
-        const operation = data[1];
-        return operation.promise();
-      })
-      .then(database => {
-        return database as [google.spanner.admin.database.v1.Database];
-      });
-    assert.strictEqual(
-      createdDatabase.name,
-      `${instance.formattedName_}/databases/new-database`
-    );
+    it('should create a database', async () => {
+      const [createdDatabase] = await instance
+        .createDatabase('new-database')
+        .then(data => {
+          const operation = data[1];
+          return operation.promise();
+        })
+        .then(database => {
+          return database as [google.spanner.admin.database.v1.Database];
+        });
+      assert.strictEqual(
+        createdDatabase.name,
+        `${instance.formattedName_}/databases/new-database`
+      );
+    });
   });
 });
 
@@ -866,4 +899,32 @@ function executeSimpleUpdate(
     .then(updated => {
       return updated;
     });
+}
+
+function getRowCountFromStreamingSql(
+  database: Database,
+  query: ExecuteSqlRequest
+): Promise<number> {
+  return new Promise<number>((resolve, reject) => {
+    let rows = 0;
+    let errored = false;
+    database
+      .runStream(query)
+      .on('error', err => {
+        errored = true;
+        return reject(err);
+      })
+      .on('data', row => {
+        rows++;
+      })
+      .on('end', res => {
+        if (!errored) {
+          return resolve(rows);
+        }
+      });
+  });
+}
+
+function sleep(ms): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
