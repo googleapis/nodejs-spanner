@@ -4,6 +4,24 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.5.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.4.1...v4.5.0) (2020-01-06)
+
+
+### Features
+
+* include potential leaked session stacktraces in error ([#759](https://www.github.com/googleapis/nodejs-spanner/issues/759)) ([1c0cf27](https://www.github.com/googleapis/nodejs-spanner/commit/1c0cf27b6c502fe7cc03f9b4c9191d746761b8b6))
+
+
+### Bug Fixes
+
+* clear stack of session while preparing new r/w tx ([#768](https://www.github.com/googleapis/nodejs-spanner/issues/768)) ([c852709](https://www.github.com/googleapis/nodejs-spanner/commit/c852709cf509d174ff140ad946fbbc20e5594aba))
+* delete env var after test if it was not set ([#774](https://www.github.com/googleapis/nodejs-spanner/issues/774)) ([7a1f40d](https://www.github.com/googleapis/nodejs-spanner/commit/7a1f40d5041e217363722d5a8b45c181f7a1510a))
+* end readWrite transaction in sample ([#766](https://www.github.com/googleapis/nodejs-spanner/issues/766)) ([f419e27](https://www.github.com/googleapis/nodejs-spanner/commit/f419e27e24eb8df78633d8245c364a709e58d007))
+* return different databases for different pool options ([#754](https://www.github.com/googleapis/nodejs-spanner/issues/754)) ([106c7a5](https://www.github.com/googleapis/nodejs-spanner/commit/106c7a513052631cf08f1db23ed099d2e3178635))
+* session pool should use push/pop and return sessions lifo ([#776](https://www.github.com/googleapis/nodejs-spanner/issues/776)) ([384bde1](https://www.github.com/googleapis/nodejs-spanner/commit/384bde1848f2fc72f52601f5b57af17dadebca69))
+* transaction runner should not timeout before first attempt ([#789](https://www.github.com/googleapis/nodejs-spanner/issues/789)) ([c75076e](https://www.github.com/googleapis/nodejs-spanner/commit/c75076e01b8480386289c237bc01d0ea2b42c85c)), closes [#786](https://www.github.com/googleapis/nodejs-spanner/issues/786)
+* year zero was not accepted for SpannerDate ([#783](https://www.github.com/googleapis/nodejs-spanner/issues/783)) ([0ceb862](https://www.github.com/googleapis/nodejs-spanner/commit/0ceb862beac57f3732e0097d808b62dbdfa5d3a9))
+
 ### [4.4.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.4.0...v4.4.1) (2019-12-16)
 
 
