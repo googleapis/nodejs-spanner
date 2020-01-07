@@ -152,7 +152,11 @@ export abstract class Runner<T> {
       return secondsInMs + nanosInMs;
     }
 
-    return Math.pow(2, this.attempts) * 1000 + Math.floor(Math.random() * 1000);
+    // Max backoff should be 32 seconds.
+    return (
+      Math.pow(2, Math.min(this.attempts, 5)) * 1000 +
+      Math.floor(Math.random() * 1000)
+    );
   }
   /**
    * Retrieves a transaction to run against.
