@@ -237,6 +237,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pending = 0;
   _pendingPrepare = 0;
   _numWaiters = 0;
+  _numWriteWaiters = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -320,6 +321,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     ).length;
 
     return available + borrowed;
+  }
+
+  /**
+   * Number of sessions currently being created.
+   * @type {number}
+   */
+  get pending(): number {
+    return this._pending;
+  }
+
+  /**
+   * Number of sessions currently being prepared for a read/write transaction.
+   * @type {number}
+   */
+  get pendingWrite(): number {
+    return this._pendingWrite;
   }
 
   /**
@@ -512,10 +529,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     if (type === types.ReadWrite && session.type === types.ReadOnly) {
       try {
+        this._pendingWrite++;
         await this._prepareTransaction(session);
       } catch (e) {
         this._release(session);
         throw e;
+      } finally {
+        this._pendingWrite--;
       }
     }
 
@@ -887,6 +907,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._inventory[type].push(session);
     this._inventory.borrowed.delete(session);
     this._traces.delete(session.id);
+    if (type === types.ReadWrite) {
+      this._pendingWrite--;
+    }
 
     this.emit('available');
   }
