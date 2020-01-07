@@ -588,7 +588,7 @@ describe('Spanner with mock server', () => {
       // Wait until all sessions have been created and prepared.
       const started = new Date().getTime();
       while (
-        (pool.pending > 0 || pool.pendingWrite > 0) &&
+        (pool.pending > 0 || pool.pendingPrepare > 0) &&
         new Date().getTime() - started < 1000
       ) {
         await sleep(1);
