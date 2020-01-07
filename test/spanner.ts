@@ -37,15 +37,9 @@ import {
   SessionPoolExhaustedError,
   SessionPoolOptions,
 } from '../src/session-pool';
-import {ServiceError, status} from 'grpc';
-import Context = Mocha.Context;
-import Done = Mocha.Done;
-import {IInstance} from '../src/instance';
+import {status} from 'grpc';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import {
-  MockInstanceAdmin,
-  TEST_INSTANCE_NAME,
-} from './mockserver/mockinstanceadmin';
+import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -438,10 +432,6 @@ describe('Spanner with mock server', () => {
     }
 
     it('should fail on session pool exhaustion and fail=true', async () => {
-      // The query to execute
-      const query = {
-        sql: selectSql,
-      };
       const database = newTestDatabase({
         max: 1,
         fail: true,
@@ -527,11 +517,7 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.writes, expectedWrites);
     });
 
-    // The following test case fails as the session pool does not use sessions
-    // that are pending creation when one is requested. Instead, the session
-    // pool creates an additional session.
-    // tslint:disable-next-line:ban
-    it.skip('should use pre-filled session pool', async () => {
+    it('should use pre-filled session pool', async () => {
       const database = newTestDatabase({
         writes: 0.2,
         min: 100,
@@ -548,6 +534,61 @@ describe('Spanner with mock server', () => {
       const started = new Date().getTime();
       while (
         (pool.reads < expectedReads || pool.writes < expectedWrites) &&
+        new Date().getTime() - started < 1000
+      ) {
+        await sleep(1);
+      }
+      assert.strictEqual(pool.reads, expectedReads);
+      assert.strictEqual(pool.writes, expectedWrites);
+      assert.strictEqual(pool.size, expectedReads + expectedWrites);
+    });
+
+    it('should create new session when numWaiters >= pending', async () => {
+      const database = newTestDatabase({
+        min: 1,
+        max: 10,
+      });
+      const pool = database.pool_ as SessionPool;
+      // Start executing a query. This query should use the one session that is
+      // being pre-filled into the pool.
+      const promise1 = database.run(selectSql);
+      // Start executing another query. This query should initiate the creation
+      // of a new session.
+      const promise2 = database.run(selectSql);
+      const rows = await Promise.all([promise1, promise2]);
+      assert.strictEqual(pool.size, 2);
+      assert.strictEqual(rows[0][0].length, 3);
+      assert.strictEqual(rows[1][0].length, 3);
+    });
+
+    it('should use pre-filled write sessions', async () => {
+      const database = newTestDatabase({
+        writes: 0.2,
+        min: 100,
+        max: 200,
+      });
+      const pool = database.pool_ as SessionPool;
+      const expectedWrites = pool.options.min! * pool.options.writes!;
+      const expectedReads = pool.options.min! - expectedWrites;
+      // Execute an update. This should use one of the sessions that is being
+      // prepared as a result of pre-filling the session pool.
+      const [count] = await database.runTransactionAsync(
+        (transaction): Promise<[number]> => {
+          // The transaction should borrow a read/write type session.
+          // TODO(loite): Enable when the session pool has been changed to wait
+          // for pending write sessions to come available.
+          // assert.strictEqual(transaction.session.type, types.ReadWrite);
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            transaction.commit();
+            return updateCount;
+          });
+        }
+      );
+      assert.strictEqual(count, 1);
+      // Wait until all sessions have been created and prepared.
+      const started = new Date().getTime();
+      while (
+        (pool.pending > 0 || pool.pendingWrite > 0) &&
         new Date().getTime() - started < 1000
       ) {
         await sleep(1);
