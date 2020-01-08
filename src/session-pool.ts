@@ -779,7 +779,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     // Only create a new session if there are more waiters than sessions already
-    // being created.
+    // being created. The current requester will be waiter number _numWaiters+1.
     if (
       !this.isFull &&
       this._pending + this._pendingPrepare <= this._numWaiters
