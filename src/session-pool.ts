@@ -212,6 +212,11 @@ interface SessionInventory {
   borrowed: Set<Session>;
 }
 
+interface Waiters {
+  [types.ReadOnly]: number;
+  [types.ReadWrite]: number;
+}
+
 export interface CreateSessionsOptions {
   writes?: number;
   reads?: number;
@@ -236,7 +241,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _onClose!: Promise<void>;
   _pending = 0;
   _pendingPrepare = 0;
-  _numWaiters = 0;
+  _waiters: Waiters;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -342,6 +347,38 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Number of sessions being created or prepared for a read/write transaction.
+   * @type {number}
+   */
+  get totalPending(): number {
+    return this._pending + this._pendingPrepare;
+  }
+
+  /**
+   * Current number of waiters for a read-only session.
+   * @type {number}
+   */
+  get numReadWaiters(): number {
+    return this._waiters[types.ReadOnly];
+  }
+
+  /**
+   * Current number of waiters for a read/write session.
+   * @type {number}
+   */
+  get numWriteWaiters(): number {
+    return this._waiters[types.ReadWrite];
+  }
+
+  /**
+   * Sum of read and write waiters.
+   * @type {number}
+   */
+  get totalWaiters(): number {
+    return this.numReadWaiters + this.numWriteWaiters;
+  }
+
+  /**
    * @constructor
    * @param {Database} database The DB instance.
    * @param {SessionPoolOptions} [options] Configuration options.
@@ -365,6 +402,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       [types.ReadOnly]: [],
       [types.ReadWrite]: [],
       borrowed: new Set(),
+    };
+    this._waiters = {
+      [types.ReadOnly]: 0,
+      [types.ReadWrite]: 0,
     };
 
     this._requests = new PQueue({
@@ -461,6 +502,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @throws {Error} For unknown sessions.
    * @emits SessionPool#available
+   * @emits SessionPool#readonly-available
+   * @emits SessionPool#readwrite-available
    * @emits SessionPool#error
    * @param {Session} session The session to release.
    */
@@ -754,6 +797,19 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Returns true if the pool has a session that is usable for the specified
+   * type, i.e. if a read-only session is requested, it returns true if the
+   * pool has a read-only or a read/write session. If a read/write session is
+   * requested, the method only returns true if the pool has a read/write
+   * session available.
+   * @param type The type of session.
+   * @private
+   */
+  _hasSessionUsableFor(type: types): boolean {
+    return this._inventory[type].length > 0;
+  }
+
+  /**
    * Attempts to get a session of a specific type. If the type is unavailable it
    * may try to use a different type.
    *
@@ -764,7 +820,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise<Session>}
    */
   async _getSession(type: types, startTime: number): Promise<Session> {
-    if (this.available) {
+    if (this._hasSessionUsableFor(type)) {
+      return this._borrowNextAvailableSession(type);
+    }
+    // If a read/write session is requested and the pool has a read-only session
+    // available, we should return that session unless there is a session
+    // currently being prepared for read/write that is not already claimed by
+    // another requester.
+    if (type === types.ReadWrite && this._hasSessionUsableFor(types.ReadOnly) && this.numWriteWaiters >= this.pendingPrepare) {
       return this._borrowNextAvailableSession(type);
     }
 
@@ -774,13 +837,15 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     let removeListener: Function;
 
+    // Wait for the requested type of session to become available.
+    const availableEvent = type + '-available';
     const promises = [
       this._onClose.then(() => {
         throw new Error(errors.Closed);
       }),
       new Promise(resolve => {
-        this.once('available', resolve);
-        removeListener = this.removeListener.bind(this, 'available', resolve);
+        this.once(availableEvent, resolve);
+        removeListener = this.removeListener.bind(this, availableEvent, resolve);
       }),
     ];
 
@@ -802,7 +867,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // being created. The current requester will be waiter number _numWaiters+1.
     if (
       !this.isFull &&
-      this._pending + this._pendingPrepare <= this._numWaiters
+      this.totalPending <= this.totalWaiters
     ) {
       promises.push(
         new Promise((_, reject) => {
@@ -812,13 +877,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     try {
-      this._numWaiters++;
+      this._waiters[type]++;
       await Promise.race(promises);
     } catch (e) {
       removeListener!();
       throw e;
     } finally {
-      this._numWaiters--;
+      this._waiters[type]--;
     }
 
     return this._borrowNextAvailableSession(type);
@@ -898,6 +963,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    *
    * @fires SessionPool#available
+   * @fires SessionPool#readonly-available
+   * @fires SessionPool#readwrite-available
    * @param {Session} session The session object.
    */
   _release(session: Session): void {
@@ -908,6 +975,16 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._traces.delete(session.id);
 
     this.emit('available');
+    // Determine the type of waiter to unblock.
+    let emitType: types;
+    if (type === types.ReadOnly && !this.numReadWaiters && this.numWriteWaiters) {
+      emitType = types.ReadWrite;
+    } else if (type === types.ReadWrite && !this.numWriteWaiters && this.numReadWaiters) {
+      emitType = types.ReadOnly;
+    } else {
+      emitType = type;
+    }
+    this.emit(emitType + '-available');
   }
 
   /**
