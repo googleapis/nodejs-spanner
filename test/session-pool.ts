@@ -1113,6 +1113,79 @@ describe('SessionPool', () => {
       assert.strictEqual(session, fakeSession);
     });
 
+    it('should return a read-only session if both read-only and read/write sessions are available', async () => {
+      const fakeReadSession = createSession();
+      const fakeWriteSession = createSession();
+
+      inventory[types.ReadOnly] = [fakeReadSession];
+      inventory[types.ReadWrite] = [fakeWriteSession];
+
+      const session = await sessionPool._getSession(types.ReadOnly, startTime);
+      assert.strictEqual(session, fakeReadSession);
+    });
+
+    it('should return a read/write session if only read/write sessions are available', async () => {
+      const fakeWriteSession = createSession();
+
+      inventory[types.ReadOnly] = [];
+      inventory[types.ReadWrite] = [fakeWriteSession];
+
+      const session = await sessionPool._getSession(types.ReadOnly, startTime);
+      assert.strictEqual(session, fakeWriteSession);
+    });
+
+    it('should return a read/write session if both read-only and read/write sessions are available', async () => {
+      const fakeReadSession = createSession();
+      const fakeWriteSession = createSession();
+
+      inventory[types.ReadOnly] = [fakeReadSession];
+      inventory[types.ReadWrite] = [fakeWriteSession];
+
+      const session = await sessionPool._getSession(types.ReadWrite, startTime);
+      assert.strictEqual(session, fakeWriteSession);
+    });
+
+    it('should return a read-only session if only read-only sessions are available and there are no sessions currently being prepared', async () => {
+      const fakeReadSession = createSession();
+
+      inventory[types.ReadOnly] = [fakeReadSession];
+      inventory[types.ReadWrite] = [];
+      sessionPool._waiters[types.ReadWrite] = 0;
+      sessionPool._pendingPrepare = 0;
+
+      const session = await sessionPool._getSession(types.ReadWrite, startTime);
+      assert.strictEqual(session, fakeReadSession);
+    });
+
+    it('should return a read-write session if only read-only sessions are available and there are more sessions currently being prepared than there are read/write waiters', async () => {
+      const fakeReadSession = createSession();
+      const fakeWriteSession = createSession();
+
+      inventory[types.ReadOnly] = [fakeReadSession];
+      inventory[types.ReadWrite] = [];
+      sessionPool._waiters[types.ReadWrite] = 0;
+      sessionPool._pendingPrepare = 1;
+
+      setTimeout(() => {
+        inventory[types.ReadWrite] = [fakeWriteSession];
+        sessionPool.emit('readwrite-available');
+      }, 100);
+      const session = await sessionPool._getSession(types.ReadWrite, startTime);
+      assert.strictEqual(session, fakeWriteSession);
+    });
+
+    it('should return a read-only session if only read-only sessions are available and all sessions currently being prepared are reserved for current read/write waiters', async () => {
+      const fakeReadSession = createSession();
+
+      inventory[types.ReadOnly] = [fakeReadSession];
+      inventory[types.ReadWrite] = [];
+      sessionPool._waiters[types.ReadWrite] = 1;
+      sessionPool._pendingPrepare = 1;
+
+      const session = await sessionPool._getSession(types.ReadWrite, startTime);
+      assert.strictEqual(session, fakeReadSession);
+    });
+
     it('should return an error if empty and fail = true', async () => {
       sessionPool.options.fail = true;
 
@@ -1135,16 +1208,29 @@ describe('SessionPool', () => {
       }
     });
 
-    it('should return a session when it becomes available', async () => {
+    it('should return a read-only session when it becomes available', async () => {
       const fakeSession = createSession();
 
       sandbox
         .stub(sessionPool, '_borrowNextAvailableSession')
         .withArgs(types.ReadOnly)
         .returns(fakeSession);
-      setTimeout(() => sessionPool.emit('available'), 100);
+      setTimeout(() => sessionPool.emit('readonly-available'), 100);
 
       const session = await sessionPool._getSession(types.ReadOnly, startTime);
+      assert.strictEqual(session, fakeSession);
+    });
+
+    it('should return a read/write session when it becomes available', async () => {
+      const fakeSession = createSession();
+
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .withArgs(types.ReadWrite)
+        .returns(fakeSession);
+      setTimeout(() => sessionPool.emit('readwrite-available'), 100);
+
+      const session = await sessionPool._getSession(types.ReadWrite, startTime);
       assert.strictEqual(session, fakeSession);
     });
 
@@ -1171,7 +1257,7 @@ describe('SessionPool', () => {
         .withArgs(types.ReadOnly)
         .callsFake(() => {
           // this will fire off via _createSessions
-          setImmediate(() => sessionPool.emit('available'));
+          setImmediate(() => sessionPool.emit('readonly-available'));
           return Promise.resolve();
         });
 
@@ -1227,13 +1313,13 @@ describe('SessionPool', () => {
 
       const promise = sessionPool._getSession(types.ReadOnly, startTime);
 
-      assert.strictEqual(sessionPool.listenerCount('available'), 1);
+      assert.strictEqual(sessionPool.listenerCount('readonly-available'), 1);
 
       try {
         await promise;
         shouldNotBeCalled();
       } catch (e) {
-        assert.strictEqual(sessionPool.listenerCount('available'), 0);
+        assert.strictEqual(sessionPool.listenerCount('readonly-available'), 0);
       }
     });
   });
@@ -1385,10 +1471,59 @@ describe('SessionPool', () => {
       assert.strictEqual(sessionPool._traces.has(id), false);
     });
 
-    it('should emit the available event', done => {
+    it('should emit the readonly-available event', done => {
       const fakeSession = createSession('id', {type: types.ReadOnly});
 
-      sessionPool.on('available', done);
+      sessionPool.on('readonly-available', done);
+      sessionPool._release(fakeSession);
+    });
+
+    it('should emit the readwrite-available event', done => {
+      const fakeSession = createSession('id', {type: types.ReadWrite});
+
+      sessionPool.on('readwrite-available', done);
+      sessionPool._release(fakeSession);
+    });
+
+    it('should emit the readonly-available event for a read/write session when there are only read-only waiters', done => {
+      const fakeSession = createSession('id', {type: types.ReadWrite});
+      sessionPool._waiters[types.ReadOnly] = 1;
+
+      sessionPool.on('readonly-available', done);
+      sessionPool._release(fakeSession);
+    });
+
+    it('should emit the readonly-available event for a read/write session when there are only read-only waiters', done => {
+      const fakeSession = createSession('id', {type: types.ReadWrite});
+      sessionPool._waiters[types.ReadOnly] = 1;
+
+      sessionPool.on('readonly-available', done);
+      sessionPool._release(fakeSession);
+    });
+
+    it('should emit the readwrite-available event for a read-only session when there are only read/write waiters', done => {
+      const fakeSession = createSession('id', {type: types.ReadOnly});
+      sessionPool._waiters[types.ReadWrite] = 1;
+
+      sessionPool.on('readwrite-available', done);
+      sessionPool._release(fakeSession);
+    });
+
+    it('should emit the readwrite-available event for a read/write session when there are both read-only and read/write waiters', done => {
+      const fakeSession = createSession('id', {type: types.ReadWrite});
+      sessionPool._waiters[types.ReadOnly] = 1;
+      sessionPool._waiters[types.ReadWrite] = 1;
+
+      sessionPool.on('readwrite-available', done);
+      sessionPool._release(fakeSession);
+    });
+
+    it('should emit the readonly-available event for a read-only session when there are both read-only and read/write waiters', done => {
+      const fakeSession = createSession('id', {type: types.ReadOnly});
+      sessionPool._waiters[types.ReadOnly] = 1;
+      sessionPool._waiters[types.ReadWrite] = 1;
+
+      sessionPool.on('readonly-available', done);
       sessionPool._release(fakeSession);
     });
   });

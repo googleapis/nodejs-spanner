@@ -806,7 +806,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    */
   _hasSessionUsableFor(type: types): boolean {
-    return this._inventory[type].length > 0;
+    return (
+      this._inventory[type].length > 0 ||
+      this._inventory[types.ReadWrite].length > 0
+    );
   }
 
   /**
@@ -827,7 +830,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // available, we should return that session unless there is a session
     // currently being prepared for read/write that is not already claimed by
     // another requester.
-    if (type === types.ReadWrite && this._hasSessionUsableFor(types.ReadOnly) && this.numWriteWaiters >= this.pendingPrepare) {
+    if (
+      type === types.ReadWrite &&
+      this._hasSessionUsableFor(types.ReadOnly) &&
+      this.numWriteWaiters >= this.pendingPrepare
+    ) {
       return this._borrowNextAvailableSession(type);
     }
 
@@ -845,7 +852,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       }),
       new Promise(resolve => {
         this.once(availableEvent, resolve);
-        removeListener = this.removeListener.bind(this, availableEvent, resolve);
+        removeListener = this.removeListener.bind(
+          this,
+          availableEvent,
+          resolve
+        );
       }),
     ];
 
@@ -977,9 +988,17 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.emit('available');
     // Determine the type of waiter to unblock.
     let emitType: types;
-    if (type === types.ReadOnly && !this.numReadWaiters && this.numWriteWaiters) {
+    if (
+      type === types.ReadOnly &&
+      !this.numReadWaiters &&
+      this.numWriteWaiters
+    ) {
       emitType = types.ReadWrite;
-    } else if (type === types.ReadWrite && !this.numWriteWaiters && this.numReadWaiters) {
+    } else if (
+      type === types.ReadWrite &&
+      !this.numWriteWaiters &&
+      this.numReadWaiters
+    ) {
       emitType = types.ReadOnly;
     } else {
       emitType = type;

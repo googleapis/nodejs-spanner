@@ -570,14 +570,9 @@ describe('Spanner with mock server', () => {
       const pool = database.pool_ as SessionPool;
       const expectedWrites = pool.options.min! * pool.options.writes!;
       const expectedReads = pool.options.min! - expectedWrites;
-      // Execute an update. This should use one of the sessions that is being
-      // prepared as a result of pre-filling the session pool.
+      // Execute an update.
       const [count] = await database.runTransactionAsync(
         (transaction): Promise<[number]> => {
-          // The transaction should borrow a read/write type session.
-          // TODO(loite): Enable when the session pool has been changed to wait
-          // for pending write sessions to come available.
-          // assert.strictEqual(transaction.session.type, types.ReadWrite);
           return transaction.runUpdate(insertSql).then(updateCount => {
             transaction.commit();
             return updateCount;
