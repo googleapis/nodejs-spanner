@@ -1185,6 +1185,28 @@ describe('SessionPool', () => {
       assert.strictEqual(stub.callCount, 1);
     });
 
+    it('should wait for a pending session to become available', async () => {
+      const fakeSession = createSession();
+
+      sessionPool.options.max = 2;
+      sessionPool._pending = 1;
+      const stub = sandbox
+        .stub(sessionPool, '_createSession')
+        .withArgs(types.ReadOnly)
+        .callsFake(() => {
+          return Promise.reject(new Error('should not be called'));
+        });
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .withArgs(types.ReadOnly)
+        .returns(fakeSession);
+      setTimeout(() => sessionPool.emit('available'), 100);
+
+      const session = await sessionPool._getSession(types.ReadOnly, startTime);
+      assert.strictEqual(session, fakeSession);
+      assert.strictEqual(stub.callCount, 0);
+    });
+
     it('should return any create errors', async () => {
       const error = new Error('err');
 
