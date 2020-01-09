@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.5.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.0...v4.5.1) (2020-01-08)
+
+
+### Bug Fixes
+
+* session pool should only create session if pending<=waiters ([#791](https://www.github.com/googleapis/nodejs-spanner/issues/791)) ([75345b1](https://www.github.com/googleapis/nodejs-spanner/commit/75345b18d37937b60a89c6b039c6b3a39b0ea6b7)), closes [#790](https://www.github.com/googleapis/nodejs-spanner/issues/790)
+
 ## [4.5.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.4.1...v4.5.0) (2020-01-06)
 
 
