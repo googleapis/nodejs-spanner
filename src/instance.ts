@@ -552,7 +552,7 @@ class Instance extends common.GrpcServiceObject {
 
     const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
     if (options.fieldNames) {
-      getMetadataOptions.fieldNames = options[`fieldNames`];
+      getMetadataOptions.fieldNames = options['fieldNames'];
       delete options.fieldNames;
     }
 
