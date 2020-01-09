@@ -722,15 +722,17 @@ describe('SessionPool', () => {
   });
 
   describe('_borrowFrom', () => {
-    it('should borrow the first available type', () => {
-      const fakeSession = createSession();
-      const stub = sandbox.stub(sessionPool, '_borrow').withArgs(fakeSession);
+    it('should borrow the last pushed session', () => {
+      const fakeSession1 = createSession();
+      const fakeSession2 = createSession();
 
-      inventory[types.ReadOnly].push(fakeSession, createSession());
+      inventory[types.ReadOnly].push(fakeSession1);
+      inventory[types.ReadOnly].push(fakeSession2);
 
-      const session = sessionPool._borrowFrom(types.ReadOnly);
-      assert.strictEqual(session, fakeSession);
-      assert.strictEqual(stub.callCount, 1);
+      let session = sessionPool._borrowFrom(types.ReadOnly);
+      assert.strictEqual(session, fakeSession2);
+      session = sessionPool._borrowFrom(types.ReadOnly);
+      assert.strictEqual(session, fakeSession1);
     });
   });
 
@@ -1182,6 +1184,28 @@ describe('SessionPool', () => {
 
       assert.strictEqual(session, fakeSession);
       assert.strictEqual(stub.callCount, 1);
+    });
+
+    it('should wait for a pending session to become available', async () => {
+      const fakeSession = createSession();
+
+      sessionPool.options.max = 2;
+      sessionPool._pending = 1;
+      const stub = sandbox
+        .stub(sessionPool, '_createSession')
+        .withArgs(types.ReadOnly)
+        .callsFake(() => {
+          return Promise.reject(new Error('should not be called'));
+        });
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .withArgs(types.ReadOnly)
+        .returns(fakeSession);
+      setTimeout(() => sessionPool.emit('available'), 100);
+
+      const session = await sessionPool._getSession(types.ReadOnly, startTime);
+      assert.strictEqual(session, fakeSession);
+      assert.strictEqual(stub.callCount, 0);
     });
 
     it('should return any create errors', async () => {

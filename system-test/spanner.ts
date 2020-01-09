@@ -4229,7 +4229,10 @@ describe('Spanner', () => {
                   const lastRow = rows!.pop()!.toJSON();
 
                   assert.deepStrictEqual(lastRow, expectedRow);
-                  assert.strictEqual(attempts, 2);
+                  // The transaction should have been tried at least twice, but
+                  // there could be more attempts, as the backend could abort
+                  // any subsequent retry attempts as well.
+                  assert.ok(attempts >= 2);
 
                   done();
                 });
@@ -4298,7 +4301,10 @@ describe('Spanner', () => {
               const lastRow = rows!.pop()!.toJSON();
 
               assert.deepStrictEqual(lastRow, expectedRow);
-              assert.strictEqual(attempts, 2);
+              // The transaction should have been tried at least twice, but
+              // there could be more attempts, as the backend could abort any
+              // subsequent retry attempts as well.
+              assert.ok(attempts >= 2);
 
               done();
             });

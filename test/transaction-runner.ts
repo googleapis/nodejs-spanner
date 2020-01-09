@@ -163,7 +163,22 @@ describe('TransactionRunner', () => {
       it('should create a backoff when `retryInfo` is absent', () => {
         const random = Math.random();
 
-        runner.attempts = 5;
+        runner.attempts = 3;
+        sandbox.stub(global.Math, 'random').returns(random);
+
+        const badError = new Error('err') as ServiceError;
+        badError.metadata = new Metadata();
+
+        const expectedDelay = Math.pow(2, 3) * 1000 + Math.floor(random * 1000);
+        const delay = runner.getNextDelay(badError);
+
+        assert.strictEqual(delay, expectedDelay);
+      });
+
+      it('should use a backoff of max 32 seconds when `retryInfo` is absent', () => {
+        const random = Math.random();
+
+        runner.attempts = 10;
         sandbox.stub(global.Math, 'random').returns(random);
 
         const badError = new Error('err') as ServiceError;
@@ -287,11 +302,16 @@ describe('TransactionRunner', () => {
         sandbox.stub(runner, 'getNextDelay').returns(2);
         runner.options.timeout = 1;
 
-        runner.run().catch(err => {
-          assert.strictEqual(err.code, status.DEADLINE_EXCEEDED);
-          assert.deepStrictEqual(err.errors, [fakeError]);
-          done();
-        });
+        runner
+          .run()
+          .then(() => {
+            done(new Error('missing expected DEADLINE_EXCEEDED error'));
+          })
+          .catch(err => {
+            assert.strictEqual(err.code, status.DEADLINE_EXCEEDED);
+            assert.deepStrictEqual(err.errors, [fakeError]);
+            done();
+          });
       });
     });
   });

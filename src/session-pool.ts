@@ -235,6 +235,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
   _pending = 0;
+  _pendingPrepare = 0;
+  _numWaiters = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -459,9 +461,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // back into the pool. This will prevent the session to be marked as leaked if
     // the pool is closed while the session is being prepared.
     this._traces.delete(session.id);
+    this._pendingPrepare++;
     this._prepareTransaction(session)
       .catch(() => (session.type = types.ReadOnly))
-      .then(() => this._release(session));
+      .then(() => {
+        this._pendingPrepare--;
+        this._release(session);
+      });
   }
 
   /**
@@ -532,7 +538,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Borrows session from specific group.
+   * Borrows the first session from specific group. This method may only be called if the inventory
+   * actually contains a session of the desired type.
    *
    * @private
    *
@@ -540,8 +547,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Session}
    */
   _borrowFrom(type: types): Session {
-    const session = this._inventory[type][0];
-    this._borrow(session);
+    const session = this._inventory[type].pop()!;
+    this._inventory.borrowed.add(session);
     return session;
   }
 
@@ -771,7 +778,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       );
     }
 
-    if (!this.isFull) {
+    // Only create a new session if there are more waiters than sessions already
+    // being created. The current requester will be waiter number _numWaiters+1.
+    if (
+      !this.isFull &&
+      this._pending + this._pendingPrepare <= this._numWaiters
+    ) {
       promises.push(
         new Promise((_, reject) => {
           this._createSession(type).catch(reject);
@@ -780,10 +792,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     try {
+      this._numWaiters++;
       await Promise.race(promises);
     } catch (e) {
       removeListener!();
       throw e;
+    } finally {
+      this._numWaiters--;
     }
 
     return this._borrowNextAvailableSession(type);
@@ -868,7 +883,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _release(session: Session): void {
     const type = session.type!;
 
-    this._inventory[type].unshift(session);
+    this._inventory[type].push(session);
     this._inventory.borrowed.delete(session);
     this._traces.delete(session.id);
 
