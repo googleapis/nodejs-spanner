@@ -831,7 +831,7 @@ class Spanner extends GrpcService {
           if (err) {
             if (err.code === 7) {
               process.emitWarning(
-                'spanner.instances.get permisssion must be added to use resource based routing.'
+                'spanner.instances.get permission must be added to use resource based routing.'
               );
               this.setSpannerClient(clientName, config, this.options);
               callback(null, this.clients_.get(clientName)!);

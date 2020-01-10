@@ -985,7 +985,7 @@ describe('Spanner', () => {
     it('should continue if do not have permission for instance', done => {
       sandbox.stub(process, 'emitWarning');
       const expectedWarning =
-        'spanner.instances.get permisssion must be added to use resource based routing.';
+        'spanner.instances.get permission must be added to use resource based routing.';
 
       const error = new Error('Error.') as ServiceError;
       error.code = 7;
