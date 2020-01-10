@@ -58,8 +58,9 @@ type DateFields = [number, number, number];
  * @extends Date
  *
  * @param {string|number} [date] String representing the date or number
- *     representing the year.
- * @param {number} [month] Number representing the month.
+ *     representing the year. If year is a number between 0 and 99, then year is
+ *     assumed to be 1900 + year.
+ * @param {number} [month] Number representing the month (0 = January).
  * @param {number} [date] Number representing the date.
  *
  * @example
@@ -71,7 +72,8 @@ export class SpannerDate extends Date {
   constructor(...dateFields: Array<string | number | undefined>) {
     const yearOrDateString = dateFields[0];
 
-    if (!yearOrDateString) {
+    // yearOrDateString could be 0 (number).
+    if (yearOrDateString == null) {
       dateFields[0] = new Date().toDateString();
     }
 
