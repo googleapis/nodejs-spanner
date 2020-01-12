@@ -428,6 +428,70 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(rows.length, 3);
       await database.close();
     });
+
+    it('should retry UNAVAILABLE on update', done => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Temporary unavailable',
+        code: status.UNAVAILABLE,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      database.runTransaction((err, tx) => {
+        if (err) {
+          assert.fail(err);
+          done();
+          return;
+        }
+        tx!.runUpdate(insertSql, (err, updateCount) => {
+          if (err) {
+            assert.fail(err);
+            done();
+            return;
+          }
+          assert.strictEqual(updateCount, 1);
+          done();
+        });
+      });
+    });
+
+    it('should not retry non-retryable error on update', done => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Permanent error',
+        // We need to specify a non-retryable error code to prevent the entire
+        // transaction to retry. Not specifying an error code, will result in
+        // an error with code UNKNOWN, which again will retry the transaction.
+        code: status.INVALID_ARGUMENT,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      let attempts = 0;
+      database.runTransaction((err, tx) => {
+        attempts++;
+        if (err) {
+          assert.fail(err);
+          done();
+          return;
+        }
+        tx!.runUpdate(insertSql, (err, updateCount) => {
+          if (!err) {
+            assert.fail('Missing expected error');
+            done();
+            return;
+          }
+          assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+          // Only the update RPC should be retried and not the entire
+          // transaction.
+          assert.strictEqual(attempts, 1);
+          done();
+        });
+      });
+    });
   });
 
   describe('session-pool', () => {
