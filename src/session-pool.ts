@@ -876,10 +876,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     // Only create a new session if there are more waiters than sessions already
     // being created. The current requester will be waiter number _numWaiters+1.
-    if (
-      !this.isFull &&
-      this.totalPending <= this.totalWaiters
-    ) {
+    if (!this.isFull && this.totalPending <= this.totalWaiters) {
       promises.push(
         new Promise((_, reject) => {
           this._createSession(type).catch(reject);
