@@ -1287,7 +1287,7 @@ describe('SessionPool', () => {
         .stub(sessionPool, '_borrowNextAvailableSession')
         .withArgs(types.ReadOnly)
         .returns(fakeSession);
-      setTimeout(() => sessionPool.emit('available'), 100);
+      setTimeout(() => sessionPool.emit('readonly-available'), 100);
 
       const session = await sessionPool._getSession(types.ReadOnly, startTime);
       assert.strictEqual(session, fakeSession);
