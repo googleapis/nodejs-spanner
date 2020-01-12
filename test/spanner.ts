@@ -16,30 +16,24 @@
 
 import * as assert from 'assert';
 import * as grpc from 'grpc';
-import {
-  Database,
-  Instance,
-  IOperation,
-  SessionPool,
-  Snapshot,
-  Spanner,
-} from '../src';
+import {status} from 'grpc';
+import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
+import {MockError, SimulatedExecutionTime} from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
+import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
-import {Row} from '../src/partial-result-stream';
+import {PartialResultStream, Row} from '../src/partial-result-stream';
 import {
   SessionLeakError,
   SessionPoolExhaustedError,
   SessionPoolOptions,
 } from '../src/session-pool';
-import {status} from 'grpc';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -201,6 +195,239 @@ describe('Spanner with mock server', () => {
         await database.close();
       }
     });
+
+    it('should retry UNAVAILABLE from executeStreamingSql with a callback', done => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Temporary unavailable',
+        code: status.UNAVAILABLE,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      database.run(selectSql, (err, rows) => {
+        if (err) {
+          assert.fail(err);
+        } else {
+          assert.strictEqual(rows!.length, 3);
+        }
+        done();
+      });
+    });
+
+    it('should not retry non-retryable error from executeStreamingSql with a callback', done => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Non-retryable error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      database.run(selectSql, (err, _) => {
+        if (!err) {
+          assert.fail('Missing expected error');
+        } else {
+          assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
+        }
+        done();
+      });
+    });
+
+    it('should emit non-retryable error to runStream', done => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      const rows: Row[] = [];
+      const stream = database.runStream(selectSql);
+      stream
+        .on('error', err => {
+          assert.strictEqual(err.message, '2 UNKNOWN: Test error');
+          database.close();
+          done();
+        })
+        .on('data', row => {
+          rows.push(row);
+        })
+        .on('end', () => {
+          if (rows.length) {
+            assert.fail('Should not receive data');
+          }
+          assert.fail('Missing expected error');
+          done();
+        });
+    });
+
+    it('should retry UNAVAILABLE from executeStreamingSql', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Temporary unavailable',
+        code: status.UNAVAILABLE,
+        details: 'Transient error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        const [rows] = await database.run(selectSql);
+        assert.strictEqual(rows.length, 3);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should not retry non-retryable errors from executeStreamingSql', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.run(selectSql);
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+      } finally {
+        await database.close();
+      }
+    });
+
+    describe('PartialResultStream', () => {
+      const streamIndexes = [1, 2];
+      streamIndexes.forEach(index => {
+        it('should retry UNAVAILABLE during streaming', async () => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Temporary unavailable',
+            code: status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          const [rows] = await database.run(selectSql);
+          assert.strictEqual(rows.length, 3);
+        });
+
+        it('should not retry non-retryable error during streaming', async () => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Test error',
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          try {
+            await database.run(selectSql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+          }
+        });
+
+        it('should retry UNAVAILABLE during streaming with a callback', done => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Temporary unavailable',
+            code: status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          database.run(selectSql, (err, rows) => {
+            if (err) {
+              assert.fail(err);
+            } else {
+              assert.strictEqual(rows!.length, 3);
+            }
+            done();
+          });
+        });
+
+        it('should not retry non-retryable error during streaming with a callback', done => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Non-retryable error',
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          database.run(selectSql, (err, _) => {
+            if (!err) {
+              assert.fail('Missing expected error');
+            } else {
+              assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
+            }
+            done();
+          });
+        });
+
+        it('should emit non-retryable error during streaming to stream', done => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Non-retryable error',
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          const receivedRows: Row[] = [];
+          database
+            .runStream(selectSql)
+            .on('error', err => {
+              assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
+              assert.strictEqual(receivedRows.length, index);
+              done();
+            })
+            .on('data', row => {
+              // We will receive data for the partial result sets that are
+              // returned before the error occurs.
+              receivedRows.push(row);
+            })
+            .on('end', () => {
+              assert.fail('Missing expected error');
+              done();
+            });
+        });
+      });
+    });
+
+    it('should retry UNAVAILABLE from executeStreamingSql with multiple errors during streaming', async () => {
+      const database = newTestDatabase();
+      const errors: MockError[] = [];
+      for (const index of [0, 1, 1, 2, 2]) {
+        errors.push({
+          message: 'Temporary unavailable',
+          code: status.UNAVAILABLE,
+          streamIndex: index,
+        } as MockError);
+      }
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofErrors(errors)
+      );
+      const [rows] = await database.run(selectSql);
+      assert.strictEqual(rows.length, 3);
+      await database.close();
+    });
   });
 
   describe('session-pool', () => {
@@ -297,10 +524,6 @@ describe('Spanner with mock server', () => {
     });
 
     async function testSessionPoolExhaustedError() {
-      // The query to execute
-      const query = {
-        sql: selectSql,
-      };
       const database = newTestDatabase({
         max: 1,
         fail: true,
@@ -308,7 +531,7 @@ describe('Spanner with mock server', () => {
       try {
         const [tx1] = await database.getSnapshot();
         try {
-          const [tx2] = await database.getSnapshot();
+          await database.getSnapshot();
           assert.fail('missing expected exception');
         } catch (e) {
           assert.strictEqual(e.name, SessionPoolExhaustedError.name);
@@ -422,7 +645,7 @@ describe('Spanner with mock server', () => {
       };
       const pool = database.pool_ as SessionPool;
       for (let i = 0; i < 10; i++) {
-        const updated = await executeSimpleUpdate(database, update);
+        await executeSimpleUpdate(database, update);
         // The pool should not contain more sessions than the number of transactions that we have executed.
         // The exact number depends on the time needed to prepare new transactions, as checking in a read/write
         // transaction to the pool will cause the session to be prepared with a read/write transaction before it is added
@@ -607,7 +830,7 @@ describe('Spanner with mock server', () => {
           return transaction.run(selectSql).then(([rows]) => {
             let count = 0;
             rows.forEach(() => count++);
-            return transaction.commit().then(response => count);
+            return transaction.commit().then(_ => count);
           });
         }
       );
@@ -653,9 +876,7 @@ describe('Spanner with mock server', () => {
           }
           return transaction
             .runUpdate(insertSql)
-            .then(updateCount =>
-              transaction.commit().then(response => updateCount)
-            );
+            .then(updateCount => transaction.commit().then(_ => updateCount));
         }
       );
       assert.strictEqual(updated, 1);
@@ -676,7 +897,7 @@ describe('Spanner with mock server', () => {
         }
         transaction!.runUpdate(insertSql, (err, rowCount) => {
           assert.ifError(err);
-          transaction!.commit((err, response) => {
+          transaction!.commit((err, _) => {
             assert.ifError(err);
             assert.strictEqual(rowCount, 1);
             assert.ok(aborted);
@@ -697,7 +918,7 @@ describe('Spanner with mock server', () => {
               spannerMock.abortTransaction(transaction);
               aborted = true;
             }
-            return transaction.commit().then(response => updateCount);
+            return transaction.commit().then(_ => updateCount);
           });
         }
       );
@@ -709,14 +930,14 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       const database = newTestDatabase();
       try {
-        const [updated] = await database.runTransactionAsync(
+        await database.runTransactionAsync(
           {timeout: 1},
           (transaction): Promise<number[]> => {
             attempts++;
             return transaction.runUpdate(insertSql).then(updateCount => {
               // Always abort the transaction.
               spannerMock.abortTransaction(transaction);
-              return transaction.commit().then(response => updateCount);
+              return transaction.commit().then(_ => updateCount);
             });
           }
         );
@@ -747,7 +968,7 @@ describe('Spanner with mock server', () => {
           assert.fail(err);
           done(err);
         })
-        .on('data', instanceConfig => {
+        .on('data', () => {
           count++;
         })
         .on('end', () => {
@@ -823,7 +1044,7 @@ describe('Spanner with mock server', () => {
           config: 'test-instance-config',
           nodes: 10,
         },
-        (err, resource, operation, apiResponse) => {
+        (err, resource, operation, _) => {
           if (err) {
             assert.fail(err);
             done();
@@ -953,7 +1174,7 @@ function getRowCountFromStreamingSql(
       .on('data', row => {
         rows++;
       })
-      .on('end', res => {
+      .on('end', () => {
         if (!errored) {
           return resolve(rows);
         }

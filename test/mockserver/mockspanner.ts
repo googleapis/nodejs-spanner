@@ -16,11 +16,11 @@
 
 import {google} from '../../protos/protos';
 import * as grpc from 'grpc';
+import {ServiceError, status} from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
+import {Transaction} from '../../src';
 import protobuf = google.spanner.v1;
 import Timestamp = google.protobuf.Timestamp;
-import {Database, Session, Transaction} from '../../src';
-import {Root} from 'protobufjs';
 import RetryInfo = google.rpc.RetryInfo;
 
 const PROTO_PATH = 'spanner.proto';
@@ -132,6 +132,42 @@ export class StatementResult {
   }
 }
 
+export interface MockError extends ServiceError {
+  streamIndex?: number;
+}
+
+export class SimulatedExecutionTime {
+  private readonly _minimumExecutionTime?: number;
+  private readonly _randomExecutionTime?: number;
+  private readonly _errors?: ServiceError[];
+  get errors(): MockError[] | undefined {
+    return this._errors;
+  }
+  // Keep error after execution. The error will continue to be returned until
+  // it is cleared.
+  private readonly _keepError?: boolean;
+
+  private constructor(input: {
+    minimumExecutionTime?: number;
+    randomExecutionTime?: number;
+    errors?: ServiceError[];
+    keepError?: boolean;
+  }) {
+    this._minimumExecutionTime = input.minimumExecutionTime;
+    this._randomExecutionTime = input.randomExecutionTime;
+    this._errors = input.errors;
+    this._keepError = input.keepError;
+  }
+
+  static ofError(error: MockError): SimulatedExecutionTime {
+    return new SimulatedExecutionTime({errors: [error]});
+  }
+
+  static ofErrors(errors: MockError[]): SimulatedExecutionTime {
+    return new SimulatedExecutionTime({errors});
+  }
+}
+
 export function createUnimplementedError(msg: string): grpc.ServiceError {
   const error = new Error(msg);
   return Object.assign(error, {
@@ -163,6 +199,10 @@ export class MockSpanner {
     string,
     StatementResult
   >();
+  private executionTimes: Map<string, SimulatedExecutionTime> = new Map<
+    string,
+    SimulatedExecutionTime
+  >();
 
   private constructor() {
     this.putStatementResult = this.putStatementResult.bind(this);
@@ -192,6 +232,14 @@ export class MockSpanner {
    */
   putStatementResult(sql: string, result: StatementResult) {
     this.statementResults.set(sql, result);
+  }
+
+  removeExecutionTime(fn: Function) {
+    this.executionTimes.delete(fn.name);
+  }
+
+  setExecutionTime(fn: Function, time: SimulatedExecutionTime) {
+    this.executionTimes.set(fn.name, time);
   }
 
   abortTransaction(transaction: Transaction): void {
@@ -266,33 +314,65 @@ export class MockSpanner {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  private async simulateExecutionTime(): Promise<void> {
+  private async simulateExecutionTime(functionName: string): Promise<void> {
     while (this.frozen > 0) {
       await MockSpanner.sleep(10);
     }
+    const execTime = this.executionTimes.get(functionName);
+    if (execTime) {
+      if (
+        execTime.errors &&
+        execTime.errors.length &&
+        !execTime.errors[0].streamIndex
+      ) {
+        throw execTime.errors.shift();
+      }
+    }
+    return Promise.resolve();
+  }
+
+  private shiftStreamError(
+    functionName: string,
+    index: number
+  ): MockError | undefined {
+    const execTime = this.executionTimes.get(functionName);
+    if (execTime) {
+      if (
+        execTime.errors &&
+        execTime.errors.length &&
+        execTime.errors[0].streamIndex === index
+      ) {
+        return execTime.errors.shift();
+      }
+    }
+    return undefined;
   }
 
   batchCreateSessions(
     call: grpc.ServerUnaryCall<protobuf.BatchCreateSessionsRequest>,
     callback: protobuf.Spanner.BatchCreateSessionsCallback
   ) {
-    this.simulateExecutionTime().then(() => {
-      const sessions = new Array<protobuf.Session>();
-      for (let i = 0; i < call.request.sessionCount; i++) {
-        sessions.push(this.newSession(call.request.database));
-      }
-      callback(
-        null,
-        protobuf.BatchCreateSessionsResponse.create({session: sessions})
-      );
-    });
+    this.simulateExecutionTime(this.batchCreateSessions.name)
+      .then(() => {
+        const sessions = new Array<protobuf.Session>();
+        for (let i = 0; i < call.request.sessionCount; i++) {
+          sessions.push(this.newSession(call.request.database));
+        }
+        callback(
+          null,
+          protobuf.BatchCreateSessionsResponse.create({session: sessions})
+        );
+      })
+      .catch(err => {
+        callback(err);
+      });
   }
 
   createSession(
     call: grpc.ServerUnaryCall<protobuf.CreateSessionRequest>,
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
-    this.simulateExecutionTime().then(() => {
+    this.simulateExecutionTime(this.createSession.name).then(() => {
       callback(null, this.newSession(call.request.database));
     });
   }
@@ -301,7 +381,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.GetSessionRequest>,
     callback: protobuf.Spanner.GetSessionCallback
   ) {
-    this.simulateExecutionTime().then(() => {
+    this.simulateExecutionTime(this.getSession.name).then(() => {
       const session = this.sessions[call.request.name];
       if (session) {
         callback(null, session);
@@ -315,7 +395,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.ListSessionsRequest>,
     callback: protobuf.Spanner.ListSessionsCallback
   ) {
-    this.simulateExecutionTime().then(() => {
+    this.simulateExecutionTime(this.listSessions.name).then(() => {
       callback(
         null,
         protobuf.ListSessionsResponse.create({
@@ -346,47 +426,72 @@ export class MockSpanner {
   executeStreamingSql(
     call: grpc.ServerWritableStream<protobuf.ExecuteSqlRequest>
   ) {
-    if (call.request.transaction && call.request.transaction.id) {
-      const fullTransactionId = `${call.request.session}/transactions/${call.request.transaction.id}`;
-      if (this.abortedTransactions.has(fullTransactionId)) {
-        call.emit(
-          'error',
-          MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
-        );
-        call.end();
-        return;
-      }
-    }
-    const res = this.statementResults.get(call.request.sql);
-    if (res) {
-      switch (res.type) {
-        case StatementResultType.RESULT_SET:
-          const partialResultSets = MockSpanner.toPartialResultSets(
-            res.resultSet
-          );
-          for (const partial of partialResultSets) {
-            call.write(partial);
+    this.simulateExecutionTime(this.executeStreamingSql.name)
+      .then(() => {
+        if (call.request.transaction && call.request.transaction.id) {
+          const fullTransactionId = `${call.request.session}/transactions/${call.request.transaction.id}`;
+          if (this.abortedTransactions.has(fullTransactionId)) {
+            call.emit(
+              'error',
+              MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
+            );
+            call.end();
+            return;
           }
-          break;
-        case StatementResultType.UPDATE_COUNT:
-          call.write(MockSpanner.toPartialResultSet(res.updateCount));
-          break;
-        case StatementResultType.ERROR:
-          call.emit('error', res.error);
-          break;
-        default:
+        }
+        const res = this.statementResults.get(call.request.sql);
+        if (res) {
+          switch (res.type) {
+            case StatementResultType.RESULT_SET:
+              const partialResultSets = MockSpanner.toPartialResultSets(
+                res.resultSet
+              );
+              // Resume on the next index after the last one seen by the client.
+              const resumeIndex =
+                call.request.resumeToken.length === 0
+                  ? 0
+                  : Number.parseInt(call.request.resumeToken.toString(), 10) +
+                    1;
+              for (
+                let index = resumeIndex;
+                index < partialResultSets.length;
+                index++
+              ) {
+                const streamErr = this.shiftStreamError(
+                  this.executeStreamingSql.name,
+                  index
+                );
+                if (streamErr) {
+                  call.emit('error', streamErr);
+                  break;
+                }
+                call.write(partialResultSets[index]);
+              }
+              break;
+            case StatementResultType.UPDATE_COUNT:
+              call.write(MockSpanner.toPartialResultSet(res.updateCount));
+              break;
+            case StatementResultType.ERROR:
+              call.emit('error', res.error);
+              break;
+            default:
+              call.emit(
+                'error',
+                new Error(`Unknown StatementResult type: ${res.type}`)
+              );
+          }
+        } else {
           call.emit(
             'error',
-            new Error(`Unknown StatementResult type: ${res.type}`)
+            new Error(`There is no result registered for ${call.request.sql}`)
           );
-      }
-    } else {
-      call.emit(
-        'error',
-        new Error(`There is no result registered for ${call.request.sql}`)
-      );
-    }
-    call.end();
+        }
+        call.end();
+      })
+      .catch(err => {
+        call.emit('error', err);
+        call.end();
+      });
   }
 
   /**
