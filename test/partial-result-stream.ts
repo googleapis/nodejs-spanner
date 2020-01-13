@@ -282,7 +282,10 @@ describe('PartialResultStream', () => {
       });
 
       requestFnStub.onCall(1).callsFake(resumeToken => {
-        assert.ok(!resumeToken, 'Retry called with resume token');
+        assert.ok(
+          !resumeToken,
+          'Retry should be called with empty resume token'
+        );
 
         setTimeout(() => {
           secondFakeRequestStream.push(RESULT_WITH_TOKEN);

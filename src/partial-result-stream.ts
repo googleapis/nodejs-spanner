@@ -345,7 +345,7 @@ export function partialResultStream(
 ): PartialResultStream {
   const retryableCodes = [status.UNAVAILABLE];
   let lastResumeToken: ResumeToken;
-  let lastErr: ServiceError | undefined;
+  let lastRetriedErr: ServiceError | undefined;
   let lastRequestStream: Readable;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
@@ -362,7 +362,7 @@ export function partialResultStream(
   // This listener ensures that the last request that executed successfully
   // after one or more retries will end the requestsStream.
   const endListener = () => {
-    if (lastErr) {
+    if (lastRetriedErr) {
       setImmediate(() => requestsStream.end());
     }
   };
@@ -385,6 +385,9 @@ export function partialResultStream(
     }
 
     // We're going to retry from where we left off.
+    // Keep track of the fact that we retried an error in order to end the
+    // merged result stream.
+    lastRetriedErr = err;
     // Empty queued rows on the checkpoint stream (will not emit them to user).
     batchAndSplitOnTokenStream.reset();
     makeRequest();
@@ -396,7 +399,6 @@ export function partialResultStream(
   // need types for events-intercept
   // tslint:disable-next-line no-any
   (requestsStream as any).intercept('error', err => {
-    lastErr = err;
     retry(err);
   });
 
