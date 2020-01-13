@@ -27,6 +27,10 @@ import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
 import {ServiceError, status} from 'grpc';
 import {Row} from '../src/partial-result-stream';
+import {PartialResultStream} from '../src/partial-result-stream';
+import mergeStream = require('merge-stream');
+import {Readable} from 'stream';
+import * as eventsIntercept from 'events-intercept';
 
 describe('PartialResultStream', () => {
   const sandbox = sinon.createSandbox();
@@ -115,6 +119,47 @@ describe('PartialResultStream', () => {
     });
 
     afterEach(() => stream.destroy());
+
+    it('should not end merged stream automatically when retried', done => {
+      const mergedStream = mergeStream();
+
+      eventsIntercept.patch(mergedStream);
+      // tslint:disable-next-line no-any
+      (mergedStream as any).intercept('error', _ => {});
+
+      const inputStream1 = new Readable();
+      inputStream1._read = (_: number): void => {
+        setImmediate(() => {
+          inputStream1.emit('data', 'one');
+          inputStream1.emit('data', 'two');
+          inputStream1.emit('error', new Error('test error'));
+        });
+      };
+      // Add a stream that ends with an error. That error is then intercepted by the merged
+      // stream, causing inputStream1 to never end. This in turn will cause this test case
+      // to never end.
+      mergedStream.add(inputStream1);
+
+      const inputStream2 = new Readable();
+      inputStream2._read = (_: number): void => {
+        setImmediate(() => {
+          inputStream2.emit('data', 'three');
+          inputStream2.emit('data', 'four');
+          inputStream2.emit('end');
+        });
+      };
+      mergedStream.add(inputStream2);
+      mergedStream.on('finish', () => {
+        assert.fail('Expected merged stream to never finish');
+        done();
+      });
+      inputStream2.on('end', () => {
+        setImmediate(() => {
+          assert.ok(mergedStream.writable);
+          done();
+        });
+      });
+    });
 
     it('should emit the response', done => {
       const stream = new PartialResultStream();
