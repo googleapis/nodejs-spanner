@@ -28,7 +28,12 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {codec} from './codec';
 import {Database} from './database';
-import {Instance} from './instance';
+import {
+  Instance,
+  IInstance,
+  CreateInstanceCallback,
+  CreateInstanceResponse,
+} from './instance';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -59,7 +64,110 @@ export interface RequestConfig {
   reqOpts: any;
   gaxOpts?: {};
 }
-
+export interface CreateInstanceRequest {
+  config: string;
+  nodes?: number;
+  labels?: {[k: string]: string} | null;
+}
+/*!
+ * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
+ */
+/**
+ * @namespace google
+ */
+/**
+ * @namespace google.iam
+ */
+/**
+ * @namespace google.iam.v1
+ */
+/**
+ * @namespace google.type
+ */
+/**
+ * @namespace google.protobuf
+ */
+/**
+ * @namespace google.rpc
+ */
+/**
+ * @namespace google.longrunning
+ */
+/**
+ * @namespace google.spanner
+ */
+/**
+ * @namespace google.spanner.admin
+ */
+/**
+ * @namespace google.spanner.admin.database.v1
+ */
+/**
+ * @namespace google.spanner.admin.instance.v1
+ */
+/**
+ * @namespace google.spanner.database
+ */
+/**
+ * @namespace google.spanner.database.v1
+ */
+/**
+ * @namespace google.spanner.instance
+ */
+/**
+ * @namespace google.spanner.instance.v1
+ */
+/**
+ * @namespace google.spanner.v1
+ */
+/**
+ * @typedef {array} BasicResponse
+ * @property {object} 0 The full API response.
+ */
+/**
+ * @callback BasicCallback
+ * @param {?Error} err Request error, if any.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * @typedef {array} LongRunningOperationResponse
+ * @property {Operation} 0 An {@link Operation} object that can be used to check
+ *     the status of the request.
+ * @property {object} 1 The full API response.
+ */
+/**
+ * @callback LongRunningOperationCallback
+ * @param {?Error} err Request error, if any.
+ * @param {Operation} operation An {@link Operation} object that can be used to
+ *     check the status of the request.
+ * @param {object} apiResponse The full API response.
+ */
+/**
+ * @typedef {object} ClientConfig
+ * @property {string} [projectId] The project ID from the Google Developer's
+ *     Console, e.g. 'grape-spaceship-123'. We will also check the environment
+ *     variable `GCLOUD_PROJECT` for your project ID. If your app is running in
+ *     an environment which supports {@link
+ * https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application
+ * Application Default Credentials}, your project ID will be detected
+ * automatically.
+ * @property {string} [keyFilename] Full path to the a .json, .pem, or .p12 key
+ *     downloaded from the Google Developers Console. If you provide a path to a
+ *     JSON file, the `projectId` option above is not necessary. NOTE: .pem and
+ *     .p12 require you to specify the `email` option as well.
+ * @property {string} [email] Account email address. Required when using a .pem
+ *     or .p12 keyFilename.
+ * @property {object} [credentials] Credentials object.
+ * @property {string} [credentials.client_email]
+ * @property {string} [credentials.private_key]
+ * @property {boolean} [autoRetry=true] Automatically retry requests if the
+ *     response is related to rate limits or certain intermittent server errors.
+ *     We will exponentially backoff subsequent requests by default.
+ * @property {number} [maxRetries=3] Maximum number of automatic retries
+ *     attempted before returning the error.
+ * @property {Constructor} [promise] Custom promise module to use instead of
+ *     native Promises.
+ */
 /**
  * [Cloud Spanner](https://cloud.google.com/spanner) is a highly scalable,
  * transactional, managed, NewSQL database service. Cloud Spanner solves the
@@ -237,17 +345,34 @@ class Spanner extends GrpcService {
     this.getInstancesStream = paginator.streamify('getInstances');
   }
 
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest
+  ): Promise<CreateInstanceResponse>;
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback: CreateInstanceCallback
+  ): void;
   /**
    * Config for the new instance.
    *
    * @typedef {object} CreateInstanceRequest
    * @property {string} config The name of the instance's configuration.
-   * @property {number} nodes The number of nodes allocated to this instance.
+   * @property {number} [nodes] The number of nodes allocated to this instance.
+   *     Defaults to 1.
+   * @property {Object.<string, string>} [labels] Labels are a flexible and
+   *     lightweight mechanism for organizing cloud resources into groups that
+   *     reflect a customer's organizational needs and deployment strategies.
+   *     Cloud Labels can be used to filter collections of resources. They can
+   *     be used to control how resource metrics are aggregated. And they can
+   *     be used as arguments to policy management rules (e.g. route,
+   *     firewall, load balancing, etc.).
    */
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {Operation} 1 An operation object that can be used to check
    *     the status of the request.
    * @property {object} 2 The full API response.
    */
@@ -255,7 +380,7 @@ class Spanner extends GrpcService {
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {Operation} operation An operation object that can be used to
    *     check the status of the request.
    * @param {object} apiResponse The full API response.
    */
@@ -311,8 +436,12 @@ class Spanner extends GrpcService {
    *     // Instance created successfully.
    *   });
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createInstance(name: string, config?, callback?): any {
+  // tslint:disable-next-line no-any
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback?
+  ): void | Promise<CreateInstanceResponse> {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
@@ -330,15 +459,15 @@ class Spanner extends GrpcService {
         {
           name: formattedName,
           displayName: shortName,
+          nodeCount: config.nodes || 1,
         },
         config
-      ),
+      ) as IInstance,
     };
-    if (is.defined(config.nodes)) {
-      reqOpts.instance.nodeCount = config.nodes;
-      delete reqOpts.instance.nodes;
-    }
-    if (config.config && config.config.indexOf('/') === -1) {
+    // tslint:disable-next-line no-any
+    delete (reqOpts.instance as any).nodes;
+
+    if (config.config.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
     this.request(
