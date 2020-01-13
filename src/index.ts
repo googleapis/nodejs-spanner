@@ -29,7 +29,12 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {codec} from './codec';
 import {Database} from './database';
-import {Instance} from './instance';
+import {
+  Instance,
+  IInstance,
+  CreateInstanceCallback,
+  CreateInstanceResponse,
+} from './instance';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -64,6 +69,11 @@ export interface RequestConfig {
   // tslint:disable-next-line: no-any
   reqOpts: any;
   gaxOpts?: {};
+}
+export interface CreateInstanceRequest {
+  config: string;
+  nodes?: number;
+  labels?: {[k: string]: string} | null;
 }
 /*!
  * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
@@ -341,17 +351,34 @@ class Spanner extends GrpcService {
     this.getInstancesStream = paginator.streamify('getInstances');
   }
 
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest
+  ): Promise<CreateInstanceResponse>;
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback: CreateInstanceCallback
+  ): void;
   /**
    * Config for the new instance.
    *
    * @typedef {object} CreateInstanceRequest
    * @property {string} config The name of the instance's configuration.
-   * @property {number} nodes The number of nodes allocated to this instance.
+   * @property {number} [nodes] The number of nodes allocated to this instance.
+   *     Defaults to 1.
+   * @property {Object.<string, string>} [labels] Labels are a flexible and
+   *     lightweight mechanism for organizing cloud resources into groups that
+   *     reflect a customer's organizational needs and deployment strategies.
+   *     Cloud Labels can be used to filter collections of resources. They can
+   *     be used to control how resource metrics are aggregated. And they can
+   *     be used as arguments to policy management rules (e.g. route,
+   *     firewall, load balancing, etc.).
    */
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {Operation} 1 An operation object that can be used to check
    *     the status of the request.
    * @property {object} 2 The full API response.
    */
@@ -359,7 +386,7 @@ class Spanner extends GrpcService {
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {Operation} operation An operation object that can be used to
    *     check the status of the request.
    * @param {object} apiResponse The full API response.
    */
@@ -416,7 +443,11 @@ class Spanner extends GrpcService {
    *   });
    */
   // tslint:disable-next-line no-any
-  createInstance(name: string, config?, callback?): any {
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback?
+  ): void | Promise<CreateInstanceResponse> {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
@@ -434,15 +465,15 @@ class Spanner extends GrpcService {
         {
           name: formattedName,
           displayName: shortName,
+          nodeCount: config.nodes || 1,
         },
         config
-      ),
+      ) as IInstance,
     };
-    if (is.defined(config.nodes)) {
-      reqOpts.instance.nodeCount = config.nodes;
-      delete reqOpts.instance.nodes;
-    }
-    if (config.config && config.config.indexOf('/') === -1) {
+    // tslint:disable-next-line no-any
+    delete (reqOpts.instance as any).nodes;
+
+    if (config.config.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
     this.request(
