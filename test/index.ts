@@ -26,6 +26,7 @@ import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
+import {CreateInstanceRequest} from '../src/index';
 
 const grpc = require('grpc');
 
@@ -440,7 +441,7 @@ describe('Spanner', () => {
     let PATH;
 
     const CONFIG = {
-      a: 'b',
+      config: 'b',
     };
     const ORIGINAL_CONFIG = extend({}, CONFIG);
 
@@ -451,13 +452,13 @@ describe('Spanner', () => {
 
     it('should throw if a name is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(null!);
+        spanner.createInstance(null!, {} as CreateInstanceRequest);
       }, /A name is required to create an instance\./);
     });
 
     it('should throw if a config object is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(NAME);
+        spanner.createInstance(NAME, null!);
       }, /A configuration object is required to create an instance\./);
     });
 
@@ -477,22 +478,29 @@ describe('Spanner', () => {
         assert.deepStrictEqual(reqOpts, {
           parent: 'projects/' + spanner.projectId,
           instanceId: NAME,
-          instance: extend(
-            {
-              name: PATH,
-              displayName: NAME,
-            },
-            CONFIG
-          ),
+          instance: {
+            name: PATH,
+            displayName: NAME,
+            nodeCount: 1,
+            config: `projects/project-id/instanceConfigs/${CONFIG.config}`,
+          },
         });
         done();
       };
-      spanner.createInstance(NAME, CONFIG, assert.ifError);
+      spanner.createInstance(
+        NAME,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
     });
 
     it('should accept a path', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
-      spanner.createInstance(PATH, CONFIG, assert.ifError);
+      spanner.createInstance(
+        PATH,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
 
       const [projectId, name] = stub.lastCall.args;
       assert.strictEqual(name, PATH);
@@ -540,13 +548,17 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(instance, null);
-          assert.strictEqual(op, null);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          CONFIG as CreateInstanceRequest,
+          (err, instance, op, resp) => {
+            assert.strictEqual(err, ERROR);
+            assert.strictEqual(instance, null);
+            assert.strictEqual(op, null);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
 
@@ -568,15 +580,19 @@ describe('Spanner', () => {
           .stub(spanner, 'instance')
           .returns(fakeInstanceInstance);
 
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.ifError(err);
-          const [instanceName] = instanceStub.lastCall.args;
-          assert.strictEqual(instanceName, formattedName);
-          assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(op, OPERATION);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          CONFIG as CreateInstanceRequest,
+          (err, instance, op, resp) => {
+            assert.ifError(err);
+            const [instanceName] = instanceStub.lastCall.args;
+            assert.strictEqual(instanceName, formattedName);
+            assert.strictEqual(instance, fakeInstanceInstance);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
   });
