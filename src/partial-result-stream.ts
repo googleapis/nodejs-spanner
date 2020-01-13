@@ -399,7 +399,6 @@ export function partialResultStream(
   // need types for events-intercept
   // tslint:disable-next-line no-any
   (requestsStream as any).intercept('error', err => {
-    lastErr = err;
     retry(err);
   });
 
