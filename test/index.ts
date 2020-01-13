@@ -546,6 +546,18 @@ describe('Spanner', () => {
       assert.strictEqual(name, PATH);
     });
 
+    it('should accept the displayName', done => {
+      const displayName = 'my-instance';
+      const config = Object.assign({}, CONFIG, {displayName});
+
+      spanner.request = config => {
+        assert.strictEqual(config.reqOpts.instance.displayName, displayName);
+        done();
+      };
+
+      spanner.createInstance(NAME, config, assert.ifError);
+    });
+
     describe('config.nodes', () => {
       it('should rename to nodeCount', () => {
         const config = extend({}, CONFIG, {nodes: 10});
