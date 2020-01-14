@@ -275,7 +275,6 @@ describe('PartialResultStream', () => {
             code: status.UNAVAILABLE,
             message: 'Error.',
           } as ServiceError);
-          firstFakeRequestStream.end();
         }, 50);
 
         return firstFakeRequestStream;
@@ -338,7 +337,6 @@ describe('PartialResultStream', () => {
               code: status.UNAVAILABLE,
               message: 'Error.',
             } as ServiceError);
-            firstFakeRequestStream.end();
           }, 50);
         }, 50);
 
@@ -393,7 +391,6 @@ describe('PartialResultStream', () => {
               code: status.DATA_LOSS,
               message: 'Non-retryable error.',
             } as ServiceError);
-            fakeRequestStream.end();
           }, 50);
         }, 50);
 
