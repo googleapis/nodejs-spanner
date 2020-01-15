@@ -24,6 +24,8 @@ import * as through from 'through2';
 
 import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
+import {ServiceError, status} from 'grpc';
+import {Row} from '../src/partial-result-stream';
 
 describe('PartialResultStream', () => {
   const sandbox = sinon.createSandbox();
@@ -250,7 +252,62 @@ describe('PartialResultStream', () => {
       );
     });
 
-    it('should resume if there was an error', done => {
+    it('should retry if the initial call returned a retryable error', done => {
+      // This test will emit two rows total:
+      // - UNAVAILABLE error (should retry)
+      // - Two rows
+      // - Confirm all rows were received.
+      const fakeCheckpointStream = through.obj();
+      // tslint:disable-next-line no-any
+      const resetStub = ((fakeCheckpointStream as any).reset = () => {});
+      sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
+
+      const firstFakeRequestStream = through.obj();
+      const secondFakeRequestStream = through.obj();
+
+      const requestFnStub = sandbox.stub();
+
+      requestFnStub.onCall(0).callsFake(() => {
+        setTimeout(() => {
+          // This causes a new request stream to be created.
+          firstFakeRequestStream.emit('error', {
+            code: status.UNAVAILABLE,
+            message: 'Error.',
+          } as ServiceError);
+        }, 50);
+
+        return firstFakeRequestStream;
+      });
+
+      requestFnStub.onCall(1).callsFake(resumeToken => {
+        assert.ok(
+          !resumeToken,
+          'Retry should be called with empty resume token'
+        );
+
+        setTimeout(() => {
+          secondFakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+          secondFakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+
+          secondFakeRequestStream.end();
+        }, 500);
+
+        return secondFakeRequestStream;
+      });
+
+      partialResultStream(requestFnStub)
+        .on('error', done)
+        .pipe(
+          concat(rows => {
+            assert.strictEqual(rows.length, 2);
+            done();
+          })
+        );
+    });
+
+    it('should resume if there was a retryable error', done => {
       // This test will emit four rows total:
       // - Two rows
       // - Error event (should retry)
@@ -275,8 +332,10 @@ describe('PartialResultStream', () => {
 
           setTimeout(() => {
             // This causes a new request stream to be created.
-            firstFakeRequestStream.emit('error', new Error('Error.'));
-            firstFakeRequestStream.end();
+            firstFakeRequestStream.emit('error', {
+              code: status.UNAVAILABLE,
+              message: 'Error.',
+            } as ServiceError);
           }, 50);
         }, 50);
 
@@ -306,6 +365,49 @@ describe('PartialResultStream', () => {
             done();
           })
         );
+    });
+
+    it('should emit non-retryable error', done => {
+      // This test will emit two rows and then an error.
+      const fakeCheckpointStream = through.obj();
+      // tslint:disable-next-line no-any
+      const resetStub = ((fakeCheckpointStream as any).reset = () => {});
+      sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
+
+      const fakeRequestStream = through.obj();
+
+      const requestFnStub = sandbox.stub();
+
+      requestFnStub.onCall(0).callsFake(() => {
+        setTimeout(() => {
+          fakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+          fakeRequestStream.push(RESULT_WITH_TOKEN);
+          fakeCheckpointStream.emit('checkpoint', RESULT_WITH_TOKEN);
+
+          setTimeout(() => {
+            fakeRequestStream.emit('error', {
+              code: status.DATA_LOSS,
+              message: 'Non-retryable error.',
+            } as ServiceError);
+          }, 50);
+        }, 50);
+
+        return fakeRequestStream;
+      });
+
+      const receivedRows: Row[] = [];
+      partialResultStream(requestFnStub)
+        .on('data', row => {
+          receivedRows.push(row);
+        })
+        .on('error', err => {
+          // We should receive two rows before we get an error.
+          assert.strictEqual(receivedRows.length, 2);
+          assert.strictEqual(err.code, status.DATA_LOSS);
+          assert.strictEqual(requestFnStub.callCount, 1);
+          done();
+        });
     });
 
     it('should emit rows and error when there is no token', done => {

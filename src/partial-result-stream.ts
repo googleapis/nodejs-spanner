@@ -25,6 +25,7 @@ import * as streamEvents from 'stream-events';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {SpannerClient as s} from './v1';
+import {ServiceError, status} from 'grpc';
 
 export type ResumeToken = string | Uint8Array;
 
@@ -342,7 +343,10 @@ export function partialResultStream(
   requestFn: RequestFunction,
   options?: RowOptions
 ): PartialResultStream {
+  const retryableCodes = [status.UNAVAILABLE];
   let lastResumeToken: ResumeToken;
+  let lastRetriedErr: ServiceError | undefined;
+  let lastRequestStream: Readable;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
@@ -355,13 +359,25 @@ export function partialResultStream(
     },
   });
 
+  // This listener ensures that the last request that executed successfully
+  // after one or more retries will end the requestsStream.
+  const endListener = () => {
+    if (lastRetriedErr) {
+      setImmediate(() => requestsStream.end());
+    }
+  };
   const makeRequest = (): void => {
-    requestsStream.add(requestFn(lastResumeToken));
+    if (lastRequestStream) {
+      lastRequestStream.removeListener('end', endListener);
+    }
+    lastRequestStream = requestFn(lastResumeToken);
+    lastRequestStream.on('end', endListener);
+    requestsStream.add(lastRequestStream);
   };
 
-  const retry = (err: Error): void => {
-    if (!lastResumeToken) {
-      // We won't retry the request, so this will flush any rows the
+  const retry = (err: ServiceError): void => {
+    if (!(err.code && retryableCodes!.includes(err.code))) {
+      // This is not a retryable error, so this will flush any rows the
       // checkpoint stream has queued. After that, we will destroy the
       // user's stream with the same error.
       setImmediate(() => batchAndSplitOnTokenStream.destroy(err));
@@ -369,6 +385,9 @@ export function partialResultStream(
     }
 
     // We're going to retry from where we left off.
+    // Keep track of the fact that we retried an error in order to end the
+    // merged result stream.
+    lastRetriedErr = err;
     // Empty queued rows on the checkpoint stream (will not emit them to user).
     batchAndSplitOnTokenStream.reset();
     makeRequest();
