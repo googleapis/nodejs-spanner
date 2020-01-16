@@ -97,7 +97,6 @@ interface InstanceRequest {
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
 }
-export type GetInstanceEndpointUrisCallback = NormalCallback<string[]>;
 /**
  * The {@link Instance} class represents a [Cloud Spanner
  * instance](https://cloud.google.com/spanner/docs/instances).
@@ -788,57 +787,6 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
       },
       callback!
-    );
-  }
-
-  /**
-   * Get the instance's end point Uris.
-   *
-   * Wrapper around {@link v1.InstanceAdminClient#getInstance}.
-   *
-   * @see {@link v1.InstanceAdminClient#getInstance}
-   * @see [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
-   *
-   * @param {GetInstanceEndpointUrisCallback} [callback] Callback function.
-   * @returns {Promise<string[]>}
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   *
-   * const instance = spanner.instance('my-instance');
-   *
-   * instance.getInstanceEndpointUris(function(err, endpointUris) {});
-   *
-   * //-
-   * // If the callback is omitted, we'll return a Promise.
-   * //-
-   * instance.getInstanceEndpointUris().then(function(data) {
-   *   const endpointUris = data[0];
-   * });
-   */
-  getInstanceEndpointUris(
-    callback?: GetInstanceEndpointUrisCallback
-  ): Promise<string[]> | void {
-    const reqOpts = {
-      name: this.formattedName_,
-      fieldMask: {
-        paths: ['endpointUris'],
-      },
-    };
-    this.request<Instance>(
-      {
-        client: 'InstanceAdminClient',
-        method: 'getInstance',
-        reqOpts,
-      },
-      (err, resp) => {
-        if (err) {
-          callback!(err);
-          return;
-        }
-        callback!(null, resp!.endpointUris);
-      }
     );
   }
 

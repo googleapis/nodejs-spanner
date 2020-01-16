@@ -824,10 +824,11 @@ class Spanner extends GrpcService {
     clientName = `${clientName}-${instanceId}`;
 
     if (!this.clients_.has(clientName)) {
-      this.instances_
-        .get(instanceId)!
-        //will move to getMetadata call once PR#760 merged.
-        .getInstanceEndpointUris((err, endpointUris) => {
+      this.instances_.get(instanceId)!.getMetadata(
+        {
+          fieldNames: ['endpointUris'],
+        },
+        (err, instance) => {
           if (err) {
             if (err.code === 7) {
               process.emitWarning(
@@ -842,12 +843,13 @@ class Spanner extends GrpcService {
             }
           }
           const options = Object.assign({}, this.options);
-          if (endpointUris!.length) {
-            options.apiEndpoint = endpointUris![0];
+          if ((instance as Instance)!.endpointUris!.length) {
+            options.apiEndpoint = (instance as Instance)!.endpointUris![0];
           }
           this.setSpannerClient(clientName, config, options);
           callback(null, this.clients_.get(clientName)!);
-        });
+        }
+      );
     } else {
       callback(null, this.clients_.get(clientName)!);
     }
