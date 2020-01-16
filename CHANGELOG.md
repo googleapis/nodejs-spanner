@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.6.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.2...v4.6.0) (2020-01-16)
+
+
+### Features
+
+* add fieldNames option in instance#getMetadata() ([#760](https://www.github.com/googleapis/nodejs-spanner/issues/760)) ([fa3154e](https://www.github.com/googleapis/nodejs-spanner/commit/fa3154ebe6754ecce1dd7b32442bda0eb27842f6))
+
+### [4.5.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.1...v4.5.2) (2020-01-15)
+
+
+### Bug Fixes
+
+* max backoff should be 32 seconds ([#792](https://www.github.com/googleapis/nodejs-spanner/issues/792)) ([c697240](https://www.github.com/googleapis/nodejs-spanner/commit/c697240c0f1c5d55bee63732b7346e7c95f25dcc))
+* retry executeStreamingSql when error code is retryable ([#795](https://www.github.com/googleapis/nodejs-spanner/issues/795)) ([1491858](https://www.github.com/googleapis/nodejs-spanner/commit/149185809fe32e05504d398849f7eadfe864fb6b)), closes [#620](https://www.github.com/googleapis/nodejs-spanner/issues/620)
+
 ### [4.5.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.0...v4.5.1) (2020-01-08)
 
 

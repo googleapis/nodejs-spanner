@@ -45,6 +45,9 @@ export type DeleteInstanceResponse = [instanceAdmin.protobuf.IEmpty];
 export type ExistsInstanceResponse = [boolean];
 export type GetInstanceResponse = [Instance, IInstance];
 export type GetInstanceMetadataResponse = [IInstance];
+export interface GetInstanceMetadataOptions {
+  fieldNames?: string | string[];
+}
 export type GetDatabasesResponse = PagedResponse<
   Database,
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
@@ -83,7 +86,9 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
-export interface GetInstanceConfig extends GetConfig {}
+export interface GetInstanceConfig
+  extends GetConfig,
+    GetInstanceMetadataOptions {}
 
 interface InstanceRequest {
   (
@@ -511,6 +516,9 @@ class Instance extends common.GrpcServiceObject {
    * @param {options} [options] Configuration object.
    * @param {boolean} [options.autoCreate=false] Automatically create the
    *     object if it does not exist.
+   * @param {string | string[]} [options.fieldNames] A list of `Instance` field
+   *     names to be requested. Eligible values are: `name`, `displayName`,
+   *     `endpointUris`, `labels`, `config`, `nodeCount`, `state`.
    * @param {GetInstanceCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceResponse>}
    *
@@ -543,7 +551,13 @@ class Instance extends common.GrpcServiceObject {
         ? optionsOrCallback
         : ({} as GetInstanceConfig);
 
-    this.getMetadata((err, metadata) => {
+    const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
+    if (options.fieldNames) {
+      getMetadataOptions.fieldNames = options['fieldNames'];
+      delete options.fieldNames;
+    }
+
+    this.getMetadata(getMetadataOptions, (err, metadata) => {
       if (err) {
         if (err.code === 5 && options.autoCreate) {
           this.create(
@@ -682,8 +696,14 @@ class Instance extends common.GrpcServiceObject {
       }
     );
   }
-  getMetadata(): Promise<GetInstanceMetadataResponse>;
+  getMetadata(
+    options?: GetInstanceMetadataOptions
+  ): Promise<GetInstanceMetadataResponse>;
   getMetadata(callback: GetInstanceMetadataCallback): void;
+  getMetadata(
+    options: GetInstanceMetadataOptions,
+    callback: GetInstanceMetadataCallback
+  ): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -703,6 +723,10 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.InstanceAdminClient#getInstance}
    * @see [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
    *
+   * @param {GetInstanceMetadataOptions} [options] Configuration object
+   * @param {string | string[]} [options.fieldNames] A list of `Instance` field
+   *     names to be requested. Eligible values are: `name`, `displayName`,
+   *     `endpointUris`, `labels`, `config`, `nodeCount`, `state`.
    * @param {GetInstanceMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceMetadataResponse>}
    *
@@ -715,6 +739,23 @@ class Instance extends common.GrpcServiceObject {
    * instance.getMetadata(function(err, metadata, apiResponse) {});
    *
    * //-
+   * // Request only `displayName`.
+   * //-
+   * instance.getMetadata({fieldNames: 'displayName'}, (err, metadata, apiResponse) => {
+   *   // metadata will only contain value for `displayName`
+   *   const displayName = metadata['displayName'];
+   * })
+   *
+   * //-
+   * // Request multiple specific field names.
+   * //-
+   * instance.getMetadata({fieldNames: ['displayName', 'nodeCount']}, (err, metadata, apiResponse) => {
+   *   // metadata will only contain value for `displayName` and 'nodeCount'
+   *   const displayName = metadata['displayName'];
+   *   const nodeCount = metadata['nodeCount'];
+   * });
+   *
+   * //-
    * // If the callback is omitted, we'll return a Promise.
    * //-
    * instance.getMetadata().then(function(data) {
@@ -723,11 +764,23 @@ class Instance extends common.GrpcServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetInstanceMetadataCallback
+    optionsOrCallback?:
+      | GetInstanceMetadataOptions
+      | GetInstanceMetadataCallback,
+    cb?: GetInstanceMetadataCallback
   ): Promise<GetInstanceMetadataResponse> | void {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const reqOpts = {
       name: this.formattedName_,
     };
+    if (options.fieldNames) {
+      reqOpts['fieldMask'] = {
+        paths: arrify(options['fieldNames']!).map(snakeCase),
+      };
+    }
     return this.request<IInstance>(
       {
         client: 'InstanceAdminClient',

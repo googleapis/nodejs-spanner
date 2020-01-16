@@ -661,6 +661,22 @@ describe('Spanner', () => {
       });
     });
 
+    it('should respect the FieldMask', async () => {
+      const fieldNames = ['name', 'displayName'];
+
+      const [metadata] = await instance.getMetadata({fieldNames});
+      assert.deepStrictEqual(metadata['endpointUris'], []);
+      assert.deepStrictEqual(metadata['labels'], {});
+      assert.strictEqual(metadata.name, instance.formattedName_);
+      assert.ok(!metadata['config']);
+      assert.strictEqual(
+        metadata['displayName'],
+        instance.formattedName_.split('/').pop()
+      );
+      assert.strictEqual(metadata['nodeCount'], 0);
+      assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
+    });
+
     it('should auto create an instance', done => {
       const instance = spanner.instance(generateName('instance'));
 

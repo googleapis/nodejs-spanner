@@ -22,9 +22,11 @@ import * as proxyquire from 'proxyquire';
 import * as pfy from '@google-cloud/promisify';
 import {ServiceError} from 'grpc';
 import * as sinon from 'sinon';
+import snakeCase = require('lodash.snakecase');
 
 import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
+import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
 
 const fakePaginator = {
@@ -499,7 +501,17 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(cb => cb(error as ServiceError));
+        .callsFake(
+          (
+            opts_:
+              | inst.GetInstanceMetadataOptions
+              | inst.GetInstanceMetadataCallback,
+            cb
+          ) => {
+            cb = typeof opts_ === 'function' ? opts_ : cb;
+            cb(error as ServiceError);
+          }
+        );
 
       instance.exists((err, exists) => {
         assert.strictEqual(err, error);
@@ -509,7 +521,19 @@ describe('Instance', () => {
     });
 
     it('should return true if error is absent', done => {
-      sandbox.stub(instance, 'getMetadata').callsFake(cb => cb(null));
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(
+          (
+            opts_:
+              | inst.GetInstanceMetadataOptions
+              | inst.GetInstanceMetadataCallback,
+            cb
+          ) => {
+            cb = typeof opts_ === 'function' ? opts_ : cb;
+            cb(null);
+          }
+        );
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -523,7 +547,18 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error as ServiceError));
+        .callsFake(
+          (
+            opts_:
+              | inst.GetInstanceMetadataOptions
+              | inst.GetInstanceMetadataCallback,
+            callback
+          ) => {
+            callback = typeof opts_ === 'function' ? opts_ : callback;
+
+            callback(error as ServiceError);
+          }
+        );
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -548,6 +583,24 @@ describe('Instance', () => {
       instance.get(assert.ifError);
     });
 
+    it('should accept and pass `fields` string as is', () => {
+      const fieldNames = 'nodeCount';
+      const spyMetadata = sandbox.spy(instance, 'getMetadata');
+
+      instance.get({fieldNames}, assert.ifError);
+
+      assert.ok(spyMetadata.calledWith({fieldNames}));
+    });
+
+    it('should accept and pass `fields` array as is', () => {
+      const fieldNames = ['name', 'labels', 'nodeCount'];
+      const spyMetadata = sandbox.stub(instance, 'getMetadata');
+
+      instance.get({fieldNames}, assert.ifError);
+
+      assert.ok(spyMetadata.calledWith({fieldNames}));
+    });
+
     describe('autoCreate', () => {
       const error = new ApiError('Error.') as ServiceError;
       error.code = 5;
@@ -569,7 +622,7 @@ describe('Instance', () => {
 
         sandbox
           .stub(instance, 'getMetadata')
-          .callsFake(callback => callback!(error));
+          .callsFake((opts_: {}, callback) => callback!(error));
 
         instance.create = (options, callback) => {
           callback(null, null, OPERATION);
@@ -639,7 +692,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error));
+        .callsFake((opts_: {}, callback) => callback!(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -657,7 +710,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error));
+        .callsFake((opts_: {}, callback) => callback!(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -674,7 +727,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error));
+        .callsFake((opts_: {}, callback) => callback!(error));
 
       instance.get(err => {
         assert.strictEqual(err, error);
@@ -687,7 +740,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(null, apiResponse));
+        .callsFake((opts_: {}, callback) => callback!(null, apiResponse));
 
       instance.get((err, instance_, apiResponse_) => {
         assert.ifError(err);
@@ -811,6 +864,36 @@ describe('Instance', () => {
 
       const returnValue = instance.getMetadata(callback);
       assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept `fieldNames` as string', done => {
+      const fieldNames = 'nodeCount';
+
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          fieldMask: {
+            paths: arrify(fieldNames).map(snakeCase),
+          },
+          name: instance.formattedName_,
+        });
+        done();
+      };
+      instance.getMetadata({fieldNames}, assert.ifError);
+    });
+
+    it('should accept `fieldNames` as string array', done => {
+      const fieldNames = ['name', 'labels', 'nodeCount'];
+
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          fieldMask: {
+            paths: fieldNames.map(snakeCase),
+          },
+          name: instance.formattedName_,
+        });
+        done();
+      };
+      instance.getMetadata({fieldNames}, assert.ifError);
     });
   });
 
