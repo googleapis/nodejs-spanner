@@ -51,6 +51,7 @@ import {
   Transaction,
   ExecuteSqlRequest,
   RunUpdateCallback,
+  RunResponse,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -1361,11 +1362,11 @@ class Database extends GrpcServiceObject {
     });
     return waitForSessionStream;
   }
-  run(query: string | ExecuteSqlRequest): Promise<Row[]>;
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
   run(
     query: string | ExecuteSqlRequest,
     options?: TimestampBounds
-  ): Promise<Row[]>;
+  ): Promise<RunResponse>;
   run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   run(
     query: string | ExecuteSqlRequest,
@@ -1524,7 +1525,7 @@ class Database extends GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     optionsOrCallback?: TimestampBounds | RunCallback,
     cb?: RunCallback
-  ): void | Promise<Row[]> {
+  ): void | Promise<RunResponse> {
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'

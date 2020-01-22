@@ -26,7 +26,7 @@ import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
-import {ExecuteSqlRequest} from '../src/transaction';
+import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {PartialResultStream, Row} from '../src/partial-result-stream';
 import {
   SessionLeakError,
@@ -126,12 +126,13 @@ describe('Spanner with mock server', () => {
         const [rows] = await database.run(query);
         assert.strictEqual(rows.length, 3);
         let i = 0;
-        rows.forEach(row => {
+        rows.forEach(r => {
           i++;
-          assert.strictEqual(row[0].name, 'NUM');
-          assert.strictEqual(row[0].value.valueOf(), i);
-          assert.strictEqual(row[1].name, 'NAME');
-          assert.strictEqual(row[1].value.valueOf(), numberToEnglishWord(i));
+          const [numField, nameField] = r as Row;
+          assert.strictEqual(numField.name, 'NUM');
+          assert.strictEqual(numField.value.valueOf(), i);
+          assert.strictEqual(nameField.name, 'NAME');
+          assert.strictEqual(nameField.value.valueOf(), numberToEnglishWord(i));
         });
       } finally {
         await database.close();
@@ -159,7 +160,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       try {
         const pool = database.pool_ as SessionPool;
-        const promises: Array<Promise<Row[]>> = [];
+        const promises: Array<Promise<RunResponse>> = [];
         for (let i = 0; i < 10; i++) {
           promises.push(database.run(query));
         }
@@ -755,7 +756,7 @@ describe('Spanner with mock server', () => {
       const pool = database.pool_ as SessionPool;
       try {
         // First execute three consecutive read/write transactions.
-        const promises: Array<Promise<Row[] | number | [number]>> = [];
+        const promises: Array<Promise<RunResponse | number | [number]>> = [];
         for (let i = 0; i < 3; i++) {
           promises.push(executeSimpleUpdate(database, update));
           const ms = Math.floor(Math.random() * 5) + 1;
