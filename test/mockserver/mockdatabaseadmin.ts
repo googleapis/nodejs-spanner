@@ -43,9 +43,9 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const databaseAdminProtoDescriptor =
   protoDescriptor['google']['spanner']['admin']['database']['v1'];
-export const TEST_DATABASE_NAME =
+const TEST_DATABASE_NAME =
   'projects/mock-project/instances/test/databases/test';
-export const PROD_DATABASE_NAME =
+const PROD_DATABASE_NAME =
   'projects/mock-project/instances/prod/databases/prod';
 
 export class MockDatabaseAdmin {

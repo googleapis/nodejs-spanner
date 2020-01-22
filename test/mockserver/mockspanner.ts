@@ -40,11 +40,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const spannerProtoDescriptor = protoDescriptor['google']['spanner']['v1'];
-const jsonProtos = require('../../../protos/protos.json');
-
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
-// // tslint:disable-next-line variable-name
-// const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
 
 /**
  * The type of result for an SQL statement that the mock server should return.
@@ -319,14 +315,13 @@ export class MockSpanner {
       await MockSpanner.sleep(10);
     }
     const execTime = this.executionTimes.get(functionName);
-    if (execTime) {
-      if (
-        execTime.errors &&
-        execTime.errors.length &&
-        !execTime.errors[0].streamIndex
-      ) {
-        throw execTime.errors.shift();
-      }
+    if (
+      execTime &&
+      execTime.errors &&
+      execTime.errors.length &&
+      !execTime.errors[0].streamIndex
+    ) {
+      throw execTime.errors.shift();
     }
     return Promise.resolve();
   }
