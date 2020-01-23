@@ -26,6 +26,8 @@ import * as streamEvents from 'stream-events';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {SpannerClient as s} from './v1';
 import {ServiceError, status} from 'grpc';
+import {isSessionNotFoundError} from './session-pool';
+import {Session} from './session';
 
 export type ResumeToken = string | Uint8Array;
 

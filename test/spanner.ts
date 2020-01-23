@@ -29,6 +29,7 @@ import {types} from '../src/session';
 import {ExecuteSqlRequest} from '../src/transaction';
 import {PartialResultStream, Row} from '../src/partial-result-stream';
 import {
+  isSessionNotFoundError,
   SessionLeakError,
   SessionPoolExhaustedError,
   SessionPoolOptions,
@@ -490,6 +491,107 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(attempts, 1);
           done();
         });
+      });
+    });
+  });
+
+  describe('session-not-found', () => {
+    it('should retry "Session not found" errors on Database.run()', done => {
+      const db = newTestDatabase({
+        min: 0,
+      });
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError({
+          code: status.NOT_FOUND,
+          message: 'Session not found',
+        } as MockError)
+      );
+      db.run(selectSql, (err, rows) => {
+        if (err) {
+          assert.fail(err);
+          done();
+          return;
+        }
+        assert.strictEqual(rows!.length, 3);
+        db.getSessions((err, results) => {
+          if (err) {
+            assert.fail(err);
+            done();
+            return;
+          }
+          // The server should have exactly 2 sessions. The first one that was
+          // created was removed from the session pool because of the simulated
+          // 'Session not found' error, but it was not removed from the server.
+          // The second session is created by the retry.
+          assert.strictEqual(results!.length, 2);
+          done();
+        });
+      });
+    });
+
+    it('should retry "Session not found" errors for Database.runStream()', done => {
+      const db = newTestDatabase();
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError({
+          code: status.NOT_FOUND,
+          message: 'Session not found',
+        } as MockError)
+      );
+      let rowCount = 0;
+      db.runStream(selectSql)
+        .on('data', () => rowCount++)
+        .on('error', err => {
+          assert.fail(err);
+          done();
+        })
+        .on('end', () => {
+          assert.strictEqual(rowCount, 3);
+          done();
+        });
+    });
+
+    it('should retry multiple "Session not found" errors on Database.run()', done => {
+      const db = newTestDatabase();
+      for (let i = 0; i < 10; i++) {
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+      }
+      db.run(selectSql, (err, rows) => {
+        if (err) {
+          assert.fail(err);
+          done();
+          return;
+        }
+        assert.strictEqual(rows!.length, 3);
+        done();
+      });
+    });
+
+    it('should not retry "Session not found" errors halfway a stream', done => {
+      const db = newTestDatabase();
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError({
+          code: status.NOT_FOUND,
+          message: 'Session not found',
+          streamIndex: 1,
+        } as MockError)
+      );
+      db.run(selectSql, (err, rows) => {
+        if (err) {
+          assert.ok(isSessionNotFoundError(err));
+          done();
+          return;
+        }
+        assert.fail('Missing expected "Session not found" error');
+        done();
       });
     });
   });

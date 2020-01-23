@@ -17,12 +17,13 @@
 import {EventEmitter} from 'events';
 import * as is from 'is';
 import PQueue from 'p-queue';
-import trace = require('stack-trace');
 
 import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
+import {ServiceError, status} from 'grpc';
+import trace = require('stack-trace');
 
 /**
  * @callback SessionPoolCloseCallback
@@ -195,6 +196,21 @@ export class SessionPoolExhaustedError extends Error {
     this.name = SessionPoolExhaustedError.name;
     this.messages = leaks;
   }
+}
+
+/**
+ * Checks whether the given error is a 'Session not found' error.
+ * @param error the error to check
+ * @return true if the error is a 'Session not found' error, and otherwise false.
+ */
+export function isSessionNotFoundError(
+  error: ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.code === status.NOT_FOUND &&
+    error.message.includes('Session not found')
+  );
 }
 
 /**
@@ -451,6 +467,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     delete session.txn;
     session.lastUsed = Date.now();
+
+    if (isSessionNotFoundError(session.lastError)) {
+      // Remove the session from the pool. It is not necessary to call _destroy,
+      // as the session is already removed from the backend.
+      this._inventory.borrowed.delete(session);
+      this._traces.delete(session.id);
+      return;
+    }
 
     if (session.type === types.ReadOnly) {
       this._release(session);
