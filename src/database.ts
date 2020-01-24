@@ -51,6 +51,7 @@ import {
   Transaction,
   ExecuteSqlRequest,
   RunUpdateCallback,
+  RunResponse,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -111,6 +112,7 @@ export type UpdateSchemaResponse = [
 type PoolRequestCallback = RequestCallback<Session>;
 
 type RunCallback = RequestCallback<Row[]>;
+type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 
@@ -1361,11 +1363,11 @@ class Database extends GrpcServiceObject {
     });
     return waitForSessionStream;
   }
-  run(query: string | ExecuteSqlRequest): Promise<Row[]>;
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
   run(
     query: string | ExecuteSqlRequest,
     options?: TimestampBounds
-  ): Promise<Row[]>;
+  ): Promise<RunResponse>;
   run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   run(
     query: string | ExecuteSqlRequest,
@@ -1385,17 +1387,20 @@ class Database extends GrpcServiceObject {
    */
   /**
    * @typedef {array} RunResponse
-   * @property {array[]} 0 Rows are returned as an array of objects. Each object
-   *     has a `name` and `value` property. To get a serialized object, call
-   *     `toJSON()`.
+   * @property {Array<Row | Json>} 0 Rows are returned as an array objects. Each
+   *     object has a `name` and `value` property. To get a serialized object,
+   *     call `toJSON()`.
+   * @property {?ResultSetStats} 1 Query statistics, if the query is executed in
+   *     PLAN or PROFILE mode.
    */
   /**
    * @callback RunCallback
    * @param {?Error} err Request error, if any.
-   * @param {array[]} rows Rows are returned as an array of objects. Each object
-   *     has a `name` and `value` property. To get a serialized object, call
-   *     `toJSON()`.
-   * @param {object} stats Stats returned for the provided SQL statement.
+   * @param {Array<Row | Json>} rows Rows are returned as an array of objects.
+   *     Each object has a `name` and `value` property. To get a serialized
+   *     object, call `toJSON()`.
+   * @param {?ResultSetStats} stats Query statistics, if the query is executed
+   *     in PLAN or PROFILE mode.
    */
   /**
    * Execute a SQL statement on this database.
@@ -1524,7 +1529,7 @@ class Database extends GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     optionsOrCallback?: TimestampBounds | RunCallback,
     cb?: RunCallback
-  ): void | Promise<Row[]> {
+  ): void | Promise<RunResponse> {
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'
