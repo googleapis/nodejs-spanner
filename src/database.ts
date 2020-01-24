@@ -1745,7 +1745,6 @@ class Database extends GrpcServiceObject {
             // Remove the current data stream from the end user stream.
             dataStream.unpipe(proxyStream);
             dataStream.end();
-            snapshot.end();
             // Create a new data stream and add it to the end user stream.
             dataStream = this.runStream(query, options);
             dataStream.pipe(proxyStream);
