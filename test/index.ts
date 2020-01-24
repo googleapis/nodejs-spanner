@@ -966,7 +966,7 @@ describe('Spanner', () => {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should return an error from get instance endpointUris', done => {
+    it('should return an error from get instance endpointUris.', done => {
       const error = new Error('Error.') as ServiceError;
       const instanceId = 'instance-id';
       spanner.options.enableResourceBasedRouting = true;
@@ -982,11 +982,15 @@ describe('Spanner', () => {
       });
     });
 
-    it('should continue if do not have permission for instance', done => {
+    it('should continue if a permission error is returned for the instance.', done => {
+      const PERMISSION_DENIED_MESSAGE = `The client library attempted to connect to 
+an endpoint closer to your Cloud Spanner data but was unable to 
+do so. The client library will fallback to the API endpoint given 
+in the client options, which may result in increased latency.
+We recommend including the scope 
+https://www.googleapis.com/auth/spanner.admin 
+so that the client library can get an instance-specific endpoint and efficiently route requests.`;
       sandbox.stub(process, 'emitWarning');
-      const expectedWarning =
-        'spanner.instances.get permission must be added to use resource based routing.';
-
       const error = new Error('Error.') as ServiceError;
       error.code = 7;
       const instanceId = 'instance-id';
@@ -1000,13 +1004,15 @@ describe('Spanner', () => {
       spanner.prepareGapicRequest_(CONFIG, err => {
         assert.ifError(err);
         assert.ok(
-          (process.emitWarning as sinon.SinonStub).calledWith(expectedWarning)
+          (process.emitWarning as sinon.SinonStub).calledWith(
+            PERMISSION_DENIED_MESSAGE
+          )
         );
         done();
       });
     });
 
-    it('should return an error if instanceId does not provided.', done => {
+    it('should return an error if instanceId is not provided.', done => {
       spanner.options.enableResourceBasedRouting = true;
 
       spanner.prepareGapicRequest_(CONFIG, err => {
@@ -1041,12 +1047,12 @@ describe('Spanner', () => {
 
     it('should use user-specified endpoint when GetInstance response is empty.', done => {
       const instanceId = 'instance-id';
-      const customeEndpoint = 'us-central1-spanner.googleapis.com';
+      const customEndpoint = 'us-central1-spanner.googleapis.com';
       asAny(CONFIG).instanceId = instanceId;
       spanner.options.enableResourceBasedRouting = true;
 
       asAny(spanner).instance(instanceId).getMetadata = (options, callback) => {
-        asAny(spanner.options).apiEndpoint = customeEndpoint;
+        asAny(spanner.options).apiEndpoint = customEndpoint;
         callback!(null, {endpointUris: []});
       };
 
@@ -1063,7 +1069,7 @@ describe('Spanner', () => {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should override the first endpoint while multiple endpointUri available.', done => {
+    it('should override the first endpoint while multiple endpointUris are available.', done => {
       const GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING =
         process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING;
       process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING = 'true';

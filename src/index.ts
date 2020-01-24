@@ -793,7 +793,7 @@ class Spanner extends GrpcService {
   }
 
   /**
-   * get GAX client. This will retrive the end point uris for specific instance and cache the client accordingly.
+   * get GAX client. This will retrieve the end point uris for specific instance and cache the client accordingly.
    *
    * @private
    *
@@ -830,10 +830,16 @@ class Spanner extends GrpcService {
         },
         (err, instance) => {
           if (err) {
-            if (err.code === 7) {
-              process.emitWarning(
-                'spanner.instances.get permission must be added to use resource based routing.'
-              );
+            const PERMISSION_DENIED = 7;
+            const PERMISSION_DENIED_MESSAGE = `The client library attempted to connect to 
+an endpoint closer to your Cloud Spanner data but was unable to 
+do so. The client library will fallback to the API endpoint given 
+in the client options, which may result in increased latency.
+We recommend including the scope 
+https://www.googleapis.com/auth/spanner.admin 
+so that the client library can get an instance-specific endpoint and efficiently route requests.`;
+            if (err.code === PERMISSION_DENIED) {
+              process.emitWarning(PERMISSION_DENIED_MESSAGE);
               this.setSpannerClient(clientName, config, this.options);
               callback(null, this.clients_.get(clientName)!);
               return;
@@ -855,11 +861,11 @@ class Spanner extends GrpcService {
     }
   }
   /**
-   * cache the GAX client accordingly.
+   * Cache the GAX client accordingly.
    *
    * @private
    *
-   * @param {string} clientName client name to cache.
+   * @param {string} clientName Client name to cache.
    * @param {object} config Request config
    * @param {object} options Spanner options
    */
