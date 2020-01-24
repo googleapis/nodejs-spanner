@@ -27,7 +27,7 @@ import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
-import {PartialResultStream, Row} from '../src/partial-result-stream';
+import {Row} from '../src/partial-result-stream';
 import {
   SessionLeakError,
   SessionPoolExhaustedError,
@@ -97,6 +97,7 @@ describe('Spanner with mock server', () => {
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
+      enableResourceBasedRouting: false, //diabled resource based routing
     });
     // Gets a reference to a Cloud Spanner instance and database
     instance = spanner.instance('instance');
