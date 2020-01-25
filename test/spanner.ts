@@ -26,7 +26,7 @@ import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
-import {ExecuteSqlRequest} from '../src/transaction';
+import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {PartialResultStream, Row} from '../src/partial-result-stream';
 import {
   SessionLeakError,
@@ -34,6 +34,7 @@ import {
   SessionPoolOptions,
 } from '../src/session-pool';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import {Json} from '../src/codec';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -126,12 +127,29 @@ describe('Spanner with mock server', () => {
         const [rows] = await database.run(query);
         assert.strictEqual(rows.length, 3);
         let i = 0;
-        rows.forEach(row => {
+        (rows as Row[]).forEach(row => {
           i++;
-          assert.strictEqual(row[0].name, 'NUM');
-          assert.strictEqual(row[0].value.valueOf(), i);
-          assert.strictEqual(row[1].name, 'NAME');
-          assert.strictEqual(row[1].value.valueOf(), numberToEnglishWord(i));
+          const [numCol, nameCol] = row;
+          assert.strictEqual(numCol.name, 'NUM');
+          assert.strictEqual(numCol.value.valueOf(), i);
+          assert.strictEqual(nameCol.name, 'NAME');
+          assert.strictEqual(nameCol.value.valueOf(), numberToEnglishWord(i));
+        });
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should return an array of json objects', async () => {
+      const database = newTestDatabase();
+      try {
+        const [rows] = await database.run({sql: selectSql, json: true});
+        assert.strictEqual(rows.length, 3);
+        let i = 0;
+        (rows as Json[]).forEach(row => {
+          i++;
+          assert.strictEqual(row.NUM, i);
+          assert.strictEqual(row.NAME, numberToEnglishWord(i));
         });
       } finally {
         await database.close();
@@ -159,7 +177,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       try {
         const pool = database.pool_ as SessionPool;
-        const promises: Array<Promise<Row[]>> = [];
+        const promises: Array<Promise<RunResponse>> = [];
         for (let i = 0; i < 10; i++) {
           promises.push(database.run(query));
         }

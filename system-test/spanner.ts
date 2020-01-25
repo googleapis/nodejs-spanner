@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import pLimit from 'p-limit';
@@ -3457,7 +3458,7 @@ describe('Spanner', () => {
         const query = 'SELECT * FROM TxnTable';
 
         const options = {
-          minReadTimestamp: new Date(),
+          minReadTimestamp: new PreciseDate(),
         } as TimestampBounds;
 
         // minTimestamp can only be used in single use transactions
