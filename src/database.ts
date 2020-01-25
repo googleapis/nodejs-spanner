@@ -1737,6 +1737,7 @@ class Database extends GrpcServiceObject {
 
       let dataReceived = false;
       let dataStream = snapshot.runStream(query);
+      const endListener = () => snapshot.end();
       dataStream
         .once('data', () => (dataReceived = true))
         .once('error', err => {
@@ -1749,7 +1750,9 @@ class Database extends GrpcServiceObject {
             }
             // Remove the current data stream from the end user stream.
             dataStream.unpipe(proxyStream);
+            dataStream.removeListener('end', endListener);
             dataStream.end();
+            snapshot.end();
             // Create a new data stream and add it to the end user stream.
             dataStream = this.runStream(query, options);
             dataStream.pipe(proxyStream);
@@ -1758,7 +1761,7 @@ class Database extends GrpcServiceObject {
             snapshot.end();
           }
         })
-        .once('end', () => snapshot.end())
+        .once('end', endListener)
         .pipe(proxyStream);
     });
 

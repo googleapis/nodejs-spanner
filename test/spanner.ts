@@ -543,7 +543,9 @@ describe('Spanner with mock server', () => {
           // 'Session not found' error, but it was not removed from the server.
           // The second session is created by the retry.
           assert.strictEqual(results!.length, 2);
-          done();
+          db.close()
+            .catch(err => assert.fail(err))
+            .then(() => done());
         });
       });
     });
