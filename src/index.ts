@@ -35,7 +35,7 @@ import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import {GrpcClientOptions} from 'google-gax';
-import {ChannelCredentials} from 'grpc';
+import {ChannelCredentials, status} from 'grpc';
 import {
   createGcpApiConfig,
   gcpCallInvocationTransformer,
@@ -830,7 +830,6 @@ class Spanner extends GrpcService {
         },
         (err, instance) => {
           if (err) {
-            const PERMISSION_DENIED = 7;
             const PERMISSION_DENIED_MESSAGE = `The client library attempted to connect to 
 an endpoint closer to your Cloud Spanner data but was unable to 
 do so. The client library will fallback to the API endpoint given 
@@ -838,7 +837,7 @@ in the client options, which may result in increased latency.
 We recommend including the scope 
 https://www.googleapis.com/auth/spanner.admin 
 so that the client library can get an instance-specific endpoint and efficiently route requests.`;
-            if (err.code === PERMISSION_DENIED) {
+            if (err.code === status.PERMISSION_DENIED) {
               process.emitWarning(PERMISSION_DENIED_MESSAGE);
               this.setSpannerClient(clientName, config, this.options);
               callback(null, this.clients_.get(clientName)!);
