@@ -229,7 +229,6 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(rows!.length, 3);
         database
           .close()
-          // This will cause done to be called with an error and fail the test.
           .catch(done)
           .then(() => done());
       });
