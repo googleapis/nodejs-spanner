@@ -206,6 +206,7 @@ export class MockSpanner {
     this.createSession = this.createSession.bind(this);
     this.deleteSession = this.deleteSession.bind(this);
     this.getSession = this.getSession.bind(this);
+    this.listSessions = this.listSessions.bind(this);
 
     this.beginTransaction = this.beginTransaction.bind(this);
     this.commit = this.commit.bind(this);
@@ -394,7 +395,9 @@ export class MockSpanner {
       callback(
         null,
         protobuf.ListSessionsResponse.create({
-          sessions: Array.from(this.sessions.values()),
+          sessions: Array.from(this.sessions.values()).filter(session => {
+            return session.name.startsWith(call.request.database);
+          }),
         })
       );
     });

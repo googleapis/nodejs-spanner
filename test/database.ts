@@ -28,6 +28,8 @@ import * as pfy from '@google-cloud/promisify';
 import * as db from '../src/database';
 import {Instance} from '../src';
 import {TimestampBounds} from '../src/transaction';
+import {ServiceError, status} from 'grpc';
+import {isSessionNotFoundError} from '../src/session-pool';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -1336,30 +1338,49 @@ describe('Database', () => {
 
     let fakePool: FakeSessionPool;
     let fakeSession: FakeSession;
+    let fakeSession2: FakeSession;
     let fakeSnapshot: FakeTransaction;
+    let fakeSnapshot2: FakeTransaction;
     let fakeStream: Transform;
+    let fakeStream2: Transform;
 
     let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
     let snapshotStub: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
+    let snapshotStub2: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
     let runStreamStub: sinon.SinonStub<[string | {}], Transform>;
+    let runStreamStub2: sinon.SinonStub<[string | {}], Transform>;
 
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
+      fakeSession2 = new FakeSession();
       fakeSnapshot = new FakeTransaction();
+      fakeSnapshot2 = new FakeTransaction();
       fakeStream = through.obj();
+      fakeStream2 = through.obj();
 
       getReadSessionStub = sandbox
         .stub(fakePool, 'getReadSession')
-        .callsFake(callback => callback(null, fakeSession));
+        .onFirstCall()
+        .callsFake(callback => callback(null, fakeSession))
+        .onSecondCall()
+        .callsFake(callback => callback(null, fakeSession2));
 
       snapshotStub = sandbox
         .stub(fakeSession, 'snapshot')
         .returns(fakeSnapshot);
 
+      snapshotStub2 = sandbox
+        .stub(fakeSession2, 'snapshot')
+        .returns(fakeSnapshot2);
+
       runStreamStub = sandbox
         .stub(fakeSnapshot, 'runStream')
         .returns(fakeStream);
+
+      runStreamStub2 = sandbox
+        .stub(fakeSnapshot2, 'runStream')
+        .returns(fakeStream2);
     });
 
     it('should get a read session via `getReadSession`', () => {
@@ -1372,7 +1393,9 @@ describe('Database', () => {
     it('should destroy the stream if `getReadSession` errors', done => {
       const fakeError = new Error('err');
 
-      getReadSessionStub.callsFake(callback => callback(fakeError));
+      getReadSessionStub
+        .onFirstCall()
+        .callsFake(callback => callback(fakeError));
 
       database.runStream(QUERY).on('error', err => {
         assert.strictEqual(err, fakeError);
@@ -1434,6 +1457,34 @@ describe('Database', () => {
 
       const session = releaseStub.lastCall.args[0];
       assert.strictEqual(session, fakeSession);
+    });
+
+    it('should retry "Session not found" error', done => {
+      const sessionNotFoundError = {
+        code: status.NOT_FOUND,
+        message: 'Session not found',
+      } as ServiceError;
+      const endStub = sandbox.stub(fakeSnapshot, 'end');
+      const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
+      let rows = 0;
+
+      database
+        .runStream(QUERY)
+        .on('data', () => rows++)
+        .on('error', err => {
+          assert.fail(err);
+          done();
+        })
+        .on('end', () => {
+          assert.strictEqual(endStub.callCount, 1);
+          assert.strictEqual(endStub2.callCount, 1);
+          assert.strictEqual(rows, 1);
+          done();
+        });
+
+      fakeStream.emit('error', sessionNotFoundError);
+      fakeStream2.push('row1');
+      fakeStream2.push(null);
     });
   });
 
