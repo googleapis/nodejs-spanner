@@ -226,12 +226,12 @@ describe('Spanner with mock server', () => {
         SimulatedExecutionTime.ofError(err)
       );
       database.run(selectSql, (err, rows) => {
-        if (err) {
-          assert.fail(err);
-        } else {
-          assert.strictEqual(rows!.length, 3);
-        }
-        done();
+        assert.ifError(err);
+        assert.strictEqual(rows!.length, 3);
+        database
+          .close()
+          .catch(done)
+          .then(() => done());
       });
     });
 
@@ -245,12 +245,12 @@ describe('Spanner with mock server', () => {
         SimulatedExecutionTime.ofError(err)
       );
       database.run(selectSql, (err, _) => {
-        if (!err) {
-          assert.fail('Missing expected error');
-        } else {
-          assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
-        }
-        done();
+        assert.ok(err, 'Missing expected error');
+        assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+        database
+          .close()
+          .catch(done)
+          .then(() => done());
       });
     });
 
@@ -268,12 +268,12 @@ describe('Spanner with mock server', () => {
       stream
         .on('error', err => {
           assert.strictEqual(err.message, '2 UNKNOWN: Test error');
-          database.close();
-          done();
+          database
+            .close()
+            .catch(done)
+            .then(() => done());
         })
-        .on('data', row => {
-          rows.push(row);
-        })
+        .on('data', row => rows.push(row))
         .on('end', () => {
           if (rows.length) {
             assert.fail('Should not receive data');
@@ -337,6 +337,7 @@ describe('Spanner with mock server', () => {
           );
           const [rows] = await database.run(selectSql);
           assert.strictEqual(rows.length, 3);
+          await database.close();
         });
 
         it('should not retry non-retryable error during streaming', async () => {
@@ -355,6 +356,7 @@ describe('Spanner with mock server', () => {
           } catch (e) {
             assert.strictEqual(e.message, '2 UNKNOWN: Test error');
           }
+          await database.close();
         });
 
         it('should retry UNAVAILABLE during streaming with a callback', done => {
@@ -369,12 +371,12 @@ describe('Spanner with mock server', () => {
             SimulatedExecutionTime.ofError(err)
           );
           database.run(selectSql, (err, rows) => {
-            if (err) {
-              assert.fail(err);
-            } else {
-              assert.strictEqual(rows!.length, 3);
-            }
-            done();
+            assert.ifError(err);
+            assert.strictEqual(rows!.length, 3);
+            database
+              .close()
+              .catch(done)
+              .then(() => done());
           });
         });
 
@@ -389,12 +391,12 @@ describe('Spanner with mock server', () => {
             SimulatedExecutionTime.ofError(err)
           );
           database.run(selectSql, (err, _) => {
-            if (!err) {
-              assert.fail('Missing expected error');
-            } else {
-              assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
-            }
-            done();
+            assert.ok(err, 'Missing expected error');
+            assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+            database
+              .close()
+              .catch(done)
+              .then(() => done());
           });
         });
 
@@ -414,13 +416,14 @@ describe('Spanner with mock server', () => {
             .on('error', err => {
               assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
               assert.strictEqual(receivedRows.length, index);
-              done();
+              database
+                .close()
+                .catch(done)
+                .then(() => done());
             })
-            .on('data', row => {
-              // We will receive data for the partial result sets that are
-              // returned before the error occurs.
-              receivedRows.push(row);
-            })
+            // We will receive data for the partial result sets that are
+            // returned before the error occurs.
+            .on('data', row => receivedRows.push(row))
             .on('end', () => {
               assert.fail('Missing expected error');
               done();
@@ -459,19 +462,16 @@ describe('Spanner with mock server', () => {
         SimulatedExecutionTime.ofError(err)
       );
       database.runTransaction((err, tx) => {
-        if (err) {
-          assert.fail(err);
-          done();
-          return;
-        }
+        assert.ifError(err);
         tx!.runUpdate(insertSql, (err, updateCount) => {
-          if (err) {
-            assert.fail(err);
-            done();
-            return;
-          }
+          assert.ifError(err);
           assert.strictEqual(updateCount, 1);
-          done();
+          tx!.commit().then(() => {
+            database
+              .close()
+              .catch(done)
+              .then(() => done());
+          });
         });
       });
     });
@@ -491,23 +491,23 @@ describe('Spanner with mock server', () => {
       );
       let attempts = 0;
       database.runTransaction((err, tx) => {
+        assert.ifError(err);
         attempts++;
-        if (err) {
-          assert.fail(err);
-          done();
-          return;
-        }
-        tx!.runUpdate(insertSql, (err, updateCount) => {
-          if (!err) {
-            assert.fail('Missing expected error');
-            done();
-            return;
-          }
-          assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        tx!.runUpdate(insertSql, (err, _) => {
+          assert.ok(err, 'Missing expected error');
+          assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
           // Only the update RPC should be retried and not the entire
           // transaction.
           assert.strictEqual(attempts, 1);
-          done();
+          tx!
+            .commit()
+            .then(() => {
+              database
+                .close()
+                .catch(done)
+                .then(() => done());
+            })
+            .catch(done);
         });
       });
     });
@@ -883,6 +883,7 @@ describe('Spanner with mock server', () => {
       }
       assert.strictEqual(pool.reads, expectedReads);
       assert.strictEqual(pool.writes, expectedWrites);
+      await database.close();
     });
 
     it('should use pre-filled session pool', async () => {
@@ -909,6 +910,7 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.reads, expectedReads);
       assert.strictEqual(pool.writes, expectedWrites);
       assert.strictEqual(pool.size, expectedReads + expectedWrites);
+      await database.close();
     });
 
     it('should create new session when numWaiters >= pending', async () => {
@@ -927,6 +929,7 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.size, 2);
       assert.strictEqual(rows[0][0].length, 3);
       assert.strictEqual(rows[1][0].length, 3);
+      await database.close();
     });
 
     it('should use pre-filled write sessions', async () => {
@@ -959,19 +962,20 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.reads, expectedReads);
       assert.strictEqual(pool.writes, expectedWrites);
       assert.strictEqual(pool.size, expectedReads + expectedWrites);
+      await database.close();
     });
   });
 
   describe('transaction', () => {
     it('should retry on aborted query', async () => {
-      let aborted = false;
+      let attempts = 0;
       const database = newTestDatabase();
       const rowCount = await database.runTransactionAsync(
         (transaction): Promise<number> => {
-          if (!aborted) {
+          if (!attempts) {
             spannerMock.abortTransaction(transaction);
-            aborted = true;
           }
+          attempts++;
           return transaction.run(selectSql).then(([rows]) => {
             let count = 0;
             rows.forEach(() => count++);
@@ -980,95 +984,98 @@ describe('Spanner with mock server', () => {
         }
       );
       assert.strictEqual(rowCount, 3);
-      assert.ok(aborted);
+      assert.strictEqual(attempts, 2);
+      await database.close();
     });
 
     it('should retry on aborted query with callback', done => {
-      let aborted = false;
+      let attempts = 0;
       const database = newTestDatabase();
       let rowCount = 0;
       database.runTransaction((err, transaction) => {
-        if (err) {
-          assert.fail(err);
-          done(err);
-          return;
+        assert.ifError(err);
+        if (!attempts) {
+          spannerMock.abortTransaction(transaction!);
         }
+        attempts++;
         transaction!.run(selectSql, (err, rows) => {
-          if (err) {
-            assert.fail(err);
-            done(err);
-            return;
-          }
+          assert.ifError(err);
           rows.forEach(() => rowCount++);
           assert.strictEqual(rowCount, 3);
-          aborted = true;
-          assert.ok(aborted);
-          done();
+          assert.strictEqual(attempts, 2);
+          transaction!
+            .commit()
+            .catch(done)
+            .then(() => {
+              database
+                .close()
+                .catch(done)
+                .then(() => done());
+            });
         });
       });
     });
 
     it('should retry on aborted update statement', async () => {
-      let aborted = false;
       let attempts = 0;
       const database = newTestDatabase();
       const [updated] = await database.runTransactionAsync(
         (transaction): Promise<number[]> => {
-          attempts++;
-          if (!aborted) {
+          if (!attempts) {
             spannerMock.abortTransaction(transaction);
-            aborted = true;
           }
+          attempts++;
           return transaction
             .runUpdate(insertSql)
             .then(updateCount => transaction.commit().then(_ => updateCount));
         }
       );
       assert.strictEqual(updated, 1);
-      assert.ok(aborted);
       assert.strictEqual(attempts, 2);
+      await database.close();
     });
 
     it('should retry on aborted update statement with callback', done => {
-      let aborted = false;
       let attempts = 0;
       const database = newTestDatabase();
       database.runTransaction((err, transaction) => {
-        attempts++;
         assert.ifError(err);
-        if (!aborted) {
+        if (!attempts) {
           spannerMock.abortTransaction(transaction!);
-          aborted = true;
         }
+        attempts++;
         transaction!.runUpdate(insertSql, (err, rowCount) => {
           assert.ifError(err);
           transaction!.commit((err, _) => {
             assert.ifError(err);
             assert.strictEqual(rowCount, 1);
-            assert.ok(aborted);
             assert.strictEqual(attempts, 2);
-            done();
+            database
+              .close()
+              .catch(done)
+              .then(() => done());
           });
         });
       });
     });
 
     it('should retry on aborted commit', async () => {
-      let aborted = false;
+      let attempts = 0;
       const database = newTestDatabase();
       const [updated] = await database.runTransactionAsync(
         (transaction): Promise<number[]> => {
           return transaction.runUpdate(insertSql).then(updateCount => {
-            if (!aborted) {
+            if (!attempts) {
               spannerMock.abortTransaction(transaction);
-              aborted = true;
             }
+            attempts++;
             return transaction.commit().then(_ => updateCount);
           });
         }
       );
       assert.strictEqual(updated, 1);
-      assert.ok(aborted);
+      assert.strictEqual(attempts, 2);
+      await database.close();
     });
 
     it('should throw DeadlineError', async () => {
@@ -1096,6 +1103,7 @@ describe('Spanner with mock server', () => {
         // The transaction should be tried at least once before timing out.
         assert.ok(attempts >= 1);
       }
+      await database.close();
     });
   });
 
@@ -1113,9 +1121,7 @@ describe('Spanner with mock server', () => {
           assert.fail(err);
           done(err);
         })
-        .on('data', () => {
-          count++;
-        })
+        .on('data', () => count++)
         .on('end', () => {
           assert.strictEqual(count, 1);
           done();
@@ -1151,10 +1157,7 @@ describe('Spanner with mock server', () => {
 
     it('should list all instances with a callback', done => {
       spanner.getInstances((err, instances) => {
-        if (err) {
-          assert.fail(err);
-          done();
-        }
+        assert.ifError(err);
         assert.strictEqual(instances!.length, 2);
         done();
       });
@@ -1190,39 +1193,22 @@ describe('Spanner with mock server', () => {
           nodes: 10,
         },
         (err, resource, operation, _) => {
-          if (err) {
-            assert.fail(err);
-            done();
-            return;
-          }
-          if (!resource) {
-            assert.fail('no instance returned');
-            done();
-            return;
-          }
+          assert.ifError(err);
+          assert.ok(resource, 'no instance returned');
           assert.strictEqual(
             resource.formattedName_,
             `projects/${spanner.projectId}/instances/new-instance`
           );
-          if (!operation) {
-            assert.fail('no operation returned');
+          assert.ok(operation, 'no operation returned');
+          operation.on('error', assert.ifError).on('complete', instance => {
+            // Instance created successfully.
+            assert.strictEqual(
+              instance.name,
+              `projects/${spanner.projectId}/instances/new-instance`
+            );
+            assert.strictEqual(instance.nodeCount, 10);
             done();
-            return;
-          }
-          operation
-            .on('error', err => {
-              assert.fail(err);
-              done();
-            })
-            .on('complete', instance => {
-              // Instance created successfully.
-              assert.strictEqual(
-                instance.name,
-                `projects/${spanner.projectId}/instances/new-instance`
-              );
-              assert.strictEqual(instance.nodeCount, 10);
-              done();
-            });
+          });
         }
       );
     });
@@ -1316,9 +1302,7 @@ function getRowCountFromStreamingSql(
         errored = true;
         return reject(err);
       })
-      .on('data', row => {
-        rows++;
-      })
+      .on('data', () => rows++)
       .on('end', () => {
         if (!errored) {
           return resolve(rows);
