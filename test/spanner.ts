@@ -538,10 +538,11 @@ describe('Spanner with mock server', () => {
             done();
             return;
           }
-          // The server should have exactly 2 sessions. The first one that was
-          // created was removed from the session pool because of the simulated
-          // 'Session not found' error, but it was not removed from the server.
-          // The second session is created by the retry.
+          // The mock server should have exactly 2 sessions. The first one was
+          // removed from the session pool because of the simulated
+          // 'Session not found' error. The second one was created by the retry.
+          // As we only simulate the 'Session not found' error, the first
+          // session is still present on the mock server.
           assert.strictEqual(results!.length, 2);
           db.close()
             .catch(err => assert.fail(err))
