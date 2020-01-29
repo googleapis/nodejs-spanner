@@ -1,19 +1,19 @@
 {
-  "updateTime": "2020-01-24T12:35:01.379815Z",
+  "updateTime": "2020-01-29T04:19:01.160832Z",
   "sources": [
     {
       "generator": {
         "name": "artman",
-        "version": "0.44.1",
-        "dockerImage": "googleapis/artman@sha256:5599b61e56a372d21b671969ee915fbca0f6c3a0daaeb898d01f8f685f1bbc8b"
+        "version": "0.44.4",
+        "dockerImage": "googleapis/artman@sha256:19e945954fc960a4bdfee6cb34695898ab21a8cf0bac063ee39b91f00a1faec8"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "e26cab8afd19d396b929039dac5d874cf0b5336c",
-        "internalRef": "291240093"
+        "sha": "cf3b61102ed5f36b827bc82ec39be09525f018c8",
+        "internalRef": "292034635"
       }
     },
     {
@@ -79,16 +79,7 @@
       "path": ".github/release-please.yml"
     },
     {
-      "path": ".gitignore"
-    },
-    {
       "path": ".jsdoc.js"
-    },
-    {
-      "path": ".kokoro/.gitattributes"
-    },
-    {
-      "path": ".kokoro/cleanup.sh"
     },
     {
       "path": ".kokoro/common.cfg"
@@ -130,9 +121,6 @@
       "path": ".kokoro/lint.sh"
     },
     {
-      "path": ".kokoro/pre-system-test.sh"
-    },
-    {
       "path": ".kokoro/presubmit/node10/common.cfg"
     },
     {
@@ -172,12 +160,6 @@
       "path": ".kokoro/publish.sh"
     },
     {
-      "path": ".kokoro/release/cleanup.cfg"
-    },
-    {
-      "path": ".kokoro/release/common.cfg"
-    },
-    {
       "path": ".kokoro/release/docs.cfg"
     },
     {
@@ -211,15 +193,6 @@
       "path": ".prettierrc"
     },
     {
-      "path": ".readme-partials.yml"
-    },
-    {
-      "path": ".repo-metadata.json"
-    },
-    {
-      "path": "CHANGELOG.md"
-    },
-    {
       "path": "CODE_OF_CONDUCT.md"
     },
     {
@@ -232,223 +205,7 @@
       "path": "README.md"
     },
     {
-      "path": "benchmark/.eslintrc.yml"
-    },
-    {
-      "path": "benchmark/README.md"
-    },
-    {
-      "path": "benchmark/bin/ycsb"
-    },
-    {
-      "path": "benchmark/workload.js"
-    },
-    {
-      "path": "benchmark/workloada"
-    },
-    {
-      "path": "benchmark/workloadb"
-    },
-    {
-      "path": "benchmark/ycsb.js"
-    },
-    {
-      "path": "bin/README.md"
-    },
-    {
-      "path": "bin/benchwrapper.js"
-    },
-    {
-      "path": "bin/benchwrapper_test_client.js"
-    },
-    {
-      "path": "bin/spanner.proto"
-    },
-    {
       "path": "codecov.yaml"
-    },
-    {
-      "path": "linkinator.config.json"
-    },
-    {
-      "path": "package.json"
-    },
-    {
-      "path": "proto/spanner.d.ts"
-    },
-    {
-      "path": "proto/spanner_database_admin.d.ts"
-    },
-    {
-      "path": "proto/spanner_instance_admin.d.ts"
-    },
-    {
-      "path": "protos/google/api/annotations.proto"
-    },
-    {
-      "path": "protos/google/api/auth.proto"
-    },
-    {
-      "path": "protos/google/api/backend.proto"
-    },
-    {
-      "path": "protos/google/api/billing.proto"
-    },
-    {
-      "path": "protos/google/api/client.proto"
-    },
-    {
-      "path": "protos/google/api/config_change.proto"
-    },
-    {
-      "path": "protos/google/api/consumer.proto"
-    },
-    {
-      "path": "protos/google/api/context.proto"
-    },
-    {
-      "path": "protos/google/api/control.proto"
-    },
-    {
-      "path": "protos/google/api/distribution.proto"
-    },
-    {
-      "path": "protos/google/api/documentation.proto"
-    },
-    {
-      "path": "protos/google/api/endpoint.proto"
-    },
-    {
-      "path": "protos/google/api/experimental/authorization_config.proto"
-    },
-    {
-      "path": "protos/google/api/experimental/experimental.proto"
-    },
-    {
-      "path": "protos/google/api/field_behavior.proto"
-    },
-    {
-      "path": "protos/google/api/http.proto"
-    },
-    {
-      "path": "protos/google/api/httpbody.proto"
-    },
-    {
-      "path": "protos/google/api/label.proto"
-    },
-    {
-      "path": "protos/google/api/log.proto"
-    },
-    {
-      "path": "protos/google/api/logging.proto"
-    },
-    {
-      "path": "protos/google/api/metric.proto"
-    },
-    {
-      "path": "protos/google/api/monitored_resource.proto"
-    },
-    {
-      "path": "protos/google/api/monitoring.proto"
-    },
-    {
-      "path": "protos/google/api/quota.proto"
-    },
-    {
-      "path": "protos/google/api/resource.proto"
-    },
-    {
-      "path": "protos/google/api/service.proto"
-    },
-    {
-      "path": "protos/google/api/servicecontrol/v1/check_error.proto"
-    },
-    {
-      "path": "protos/google/api/servicecontrol/v1/distribution.proto"
-    },
-    {
-      "path": "protos/google/api/servicecontrol/v1/log_entry.proto"
-    },
-    {
-      "path": "protos/google/api/servicecontrol/v1/metric_value.proto"
-    },
-    {
-      "path": "protos/google/api/servicecontrol/v1/operation.proto"
-    },
-    {
-      "path": "protos/google/api/servicecontrol/v1/service_controller.proto"
-    },
-    {
-      "path": "protos/google/api/servicemanagement/v1/resources.proto"
-    },
-    {
-      "path": "protos/google/api/servicemanagement/v1/servicemanager.proto"
-    },
-    {
-      "path": "protos/google/api/source_info.proto"
-    },
-    {
-      "path": "protos/google/api/system_parameter.proto"
-    },
-    {
-      "path": "protos/google/api/usage.proto"
-    },
-    {
-      "path": "protos/google/iam/v1/iam_policy.proto"
-    },
-    {
-      "path": "protos/google/iam/v1/options.proto"
-    },
-    {
-      "path": "protos/google/iam/v1/policy.proto"
-    },
-    {
-      "path": "protos/google/longrunning/operations.proto"
-    },
-    {
-      "path": "protos/google/protobuf/any.proto"
-    },
-    {
-      "path": "protos/google/protobuf/api.proto"
-    },
-    {
-      "path": "protos/google/protobuf/descriptor.proto"
-    },
-    {
-      "path": "protos/google/protobuf/duration.proto"
-    },
-    {
-      "path": "protos/google/protobuf/empty.proto"
-    },
-    {
-      "path": "protos/google/protobuf/field_mask.proto"
-    },
-    {
-      "path": "protos/google/protobuf/source_context.proto"
-    },
-    {
-      "path": "protos/google/protobuf/struct.proto"
-    },
-    {
-      "path": "protos/google/protobuf/timestamp.proto"
-    },
-    {
-      "path": "protos/google/protobuf/type.proto"
-    },
-    {
-      "path": "protos/google/protobuf/util/json_format_proto3.proto"
-    },
-    {
-      "path": "protos/google/protobuf/wrappers.proto"
-    },
-    {
-      "path": "protos/google/rpc/code.proto"
-    },
-    {
-      "path": "protos/google/rpc/error_details.proto"
-    },
-    {
-      "path": "protos/google/rpc/status.proto"
     },
     {
       "path": "protos/google/spanner/admin/database/v1/spanner_database_admin.proto"
@@ -478,9 +235,6 @@
       "path": "protos/google/spanner/v1/type.proto"
     },
     {
-      "path": "protos/google/type/expr.proto"
-    },
-    {
       "path": "protos/protos.d.ts"
     },
     {
@@ -493,112 +247,10 @@
       "path": "renovate.json"
     },
     {
-      "path": "samples/.eslintrc.yml"
-    },
-    {
       "path": "samples/README.md"
     },
     {
-      "path": "samples/batch.js"
-    },
-    {
-      "path": "samples/crud.js"
-    },
-    {
-      "path": "samples/datatypes.js"
-    },
-    {
-      "path": "samples/dml.js"
-    },
-    {
-      "path": "samples/indexing.js"
-    },
-    {
-      "path": "samples/package.json"
-    },
-    {
-      "path": "samples/quickstart.js"
-    },
-    {
-      "path": "samples/schema.js"
-    },
-    {
-      "path": "samples/struct.js"
-    },
-    {
-      "path": "samples/system-test/spanner.test.js"
-    },
-    {
-      "path": "samples/timestamp.js"
-    },
-    {
-      "path": "samples/transaction.js"
-    },
-    {
-      "path": "scripts/.eslintrc.yml"
-    },
-    {
-      "path": "scripts/cleanup.js"
-    },
-    {
-      "path": "src/.eslintrc.yml"
-    },
-    {
-      "path": "src/batch-transaction.ts"
-    },
-    {
       "path": "src/browser.js"
-    },
-    {
-      "path": "src/codec.ts"
-    },
-    {
-      "path": "src/common-grpc/operation.ts"
-    },
-    {
-      "path": "src/common-grpc/service-object.ts"
-    },
-    {
-      "path": "src/common-grpc/service.ts"
-    },
-    {
-      "path": "src/common.ts"
-    },
-    {
-      "path": "src/database.ts"
-    },
-    {
-      "path": "src/extra_proto_list.json"
-    },
-    {
-      "path": "src/index.ts"
-    },
-    {
-      "path": "src/instance.ts"
-    },
-    {
-      "path": "src/partial-result-stream.ts"
-    },
-    {
-      "path": "src/session-pool.ts"
-    },
-    {
-      "path": "src/session.ts"
-    },
-    {
-      "path": "src/spanner_grpc_config.json"
-    },
-    {
-      "path": "src/table.ts"
-    },
-    {
-      "path": "src/transaction-runner.ts"
-    },
-    {
-      "path": "src/transaction.ts"
-    },
-    {
-      "path": "src/v1/database_admin_client.d.ts"
     },
     {
       "path": "src/v1/database_admin_client.js"
@@ -673,13 +325,7 @@
       "path": "src/v1/doc/google/type/doc_expr.js"
     },
     {
-      "path": "src/v1/index.d.ts"
-    },
-    {
       "path": "src/v1/index.js"
-    },
-    {
-      "path": "src/v1/instance_admin_client.d.ts"
     },
     {
       "path": "src/v1/instance_admin_client.js"
@@ -691,9 +337,6 @@
       "path": "src/v1/instance_admin_proto_list.json"
     },
     {
-      "path": "src/v1/spanner_client.d.ts"
-    },
-    {
       "path": "src/v1/spanner_client.js"
     },
     {
@@ -703,100 +346,7 @@
       "path": "src/v1/spanner_proto_list.json"
     },
     {
-      "path": "synth.py"
-    },
-    {
-      "path": "system-test/fixtures/sample/package.json"
-    },
-    {
-      "path": "system-test/fixtures/sample/src/index.ts"
-    },
-    {
-      "path": "system-test/fixtures/sample/tsconfig.json"
-    },
-    {
-      "path": "system-test/install.ts"
-    },
-    {
-      "path": "system-test/spanner.ts"
-    },
-    {
-      "path": "test/.eslintrc.yml"
-    },
-    {
-      "path": "test/batch-transaction.ts"
-    },
-    {
-      "path": "test/codec.ts"
-    },
-    {
-      "path": "test/common/operation.ts"
-    },
-    {
-      "path": "test/common/service-object.ts"
-    },
-    {
-      "path": "test/common/service.ts"
-    },
-    {
-      "path": "test/data/streaming-read-acceptance-test.json"
-    },
-    {
-      "path": "test/database.ts"
-    },
-    {
-      "path": "test/gapic-v1-database-admin.ts"
-    },
-    {
-      "path": "test/gapic-v1-instance-admin.ts"
-    },
-    {
       "path": "test/gapic-v1.js"
-    },
-    {
-      "path": "test/index.ts"
-    },
-    {
-      "path": "test/instance.ts"
-    },
-    {
-      "path": "test/mocha.opts"
-    },
-    {
-      "path": "test/mockserver/mockdatabaseadmin.ts"
-    },
-    {
-      "path": "test/mockserver/mockinstanceadmin.ts"
-    },
-    {
-      "path": "test/mockserver/mockspanner.ts"
-    },
-    {
-      "path": "test/partial-result-stream.ts"
-    },
-    {
-      "path": "test/session-pool.ts"
-    },
-    {
-      "path": "test/session.ts"
-    },
-    {
-      "path": "test/spanner.ts"
-    },
-    {
-      "path": "test/table.ts"
-    },
-    {
-      "path": "test/transaction-runner.ts"
-    },
-    {
-      "path": "test/transaction.ts"
-    },
-    {
-      "path": "tsconfig.json"
-    },
-    {
-      "path": "tslint.json"
     },
     {
       "path": "webpack.config.js"

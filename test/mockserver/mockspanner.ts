@@ -597,7 +597,7 @@ export class MockSpanner {
     }
     const session = this.sessions.get(call.request.session);
     if (session) {
-      const buffer = Buffer.from(call.request.transactionId);
+      const buffer = Buffer.from(call.request.transactionId as string);
       const transactionId = buffer.toString();
       const fullTransactionId = session.name + '/transactions/' + transactionId;
       const transaction = this.transactions.get(fullTransactionId);
@@ -624,7 +624,7 @@ export class MockSpanner {
   ) {
     const session = this.sessions.get(call.request.session);
     if (session) {
-      const buffer = Buffer.from(call.request.transactionId);
+      const buffer = Buffer.from(call.request.transactionId as string);
       const transactionId = buffer.toString();
       const fullTransactionId = session.name + '/transactions/' + transactionId;
       const transaction = this.transactions.get(fullTransactionId);
