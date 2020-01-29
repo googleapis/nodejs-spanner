@@ -16,6 +16,7 @@
 
 const {Spanner} = require('../');
 const pLimit = require('p-limit');
+const {describe, it} = require('mocha');
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
 
 // Delete instances that are 1 hour old.
