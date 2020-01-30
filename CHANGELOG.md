@@ -4,6 +4,16 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.0...v4.6.1) (2020-01-29)
+
+
+### Bug Fixes
+
+* enum, bytes, and Long types now accept strings ([#816](https://www.github.com/googleapis/nodejs-spanner/issues/816)) ([e63914d](https://www.github.com/googleapis/nodejs-spanner/commit/e63914d19813400daa2b08abfba43e1d87abfe7b))
+* fixed wrong return type of Database.run(..) ([#810](https://www.github.com/googleapis/nodejs-spanner/issues/810)) ([10c31d8](https://www.github.com/googleapis/nodejs-spanner/commit/10c31d80fdde2b91f2498ffcbc90a20a83c1a454)), closes [#809](https://www.github.com/googleapis/nodejs-spanner/issues/809)
+* retry Session not found for Database.run(..) ([#812](https://www.github.com/googleapis/nodejs-spanner/issues/812)) ([6a48fd6](https://www.github.com/googleapis/nodejs-spanner/commit/6a48fd61bc6f424865e5a265bc1d7bac81454a7d))
+* use PreciseDate instead of Date for min read timestamp ([#807](https://www.github.com/googleapis/nodejs-spanner/issues/807)) ([da8c2f8](https://www.github.com/googleapis/nodejs-spanner/commit/da8c2f85b55346d99a9eacc4249e6d6cd1a14556))
+
 ## [4.6.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.2...v4.6.0) (2020-01-16)
 
 
