@@ -43,6 +43,7 @@ import {
   SessionPoolOptions,
   SessionPoolCloseCallback,
   SessionPoolInterface,
+  isSessionNotFoundError,
 } from './session-pool';
 import {Table, CreateTableCallback, CreateTableResponse} from './table';
 import {
@@ -1737,13 +1738,33 @@ class Database extends GrpcServiceObject {
 
       this._releaseOnEnd(session!, snapshot);
 
-      snapshot
-        .runStream(query)
+      let dataReceived = false;
+      let dataStream = snapshot.runStream(query);
+      const endListener = () => snapshot.end();
+      dataStream
+        .once('data', () => (dataReceived = true))
         .once('error', err => {
-          proxyStream.destroy(err);
-          snapshot.end();
+          if (!dataReceived && isSessionNotFoundError(err)) {
+            // If it is a 'Session not found' error and we have not yet received
+            // any data, we can safely retry the query on a new session.
+            // Register the error on the session so the pool can discard it.
+            if (session) {
+              session.lastError = err;
+            }
+            // Remove the current data stream from the end user stream.
+            dataStream.unpipe(proxyStream);
+            dataStream.removeListener('end', endListener);
+            dataStream.end();
+            snapshot.end();
+            // Create a new data stream and add it to the end user stream.
+            dataStream = this.runStream(query, options);
+            dataStream.pipe(proxyStream);
+          } else {
+            proxyStream.destroy(err);
+            snapshot.end();
+          }
         })
-        .once('end', () => snapshot.end())
+        .once('end', endListener)
         .pipe(proxyStream);
     });
 

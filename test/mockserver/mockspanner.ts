@@ -206,6 +206,7 @@ export class MockSpanner {
     this.createSession = this.createSession.bind(this);
     this.deleteSession = this.deleteSession.bind(this);
     this.getSession = this.getSession.bind(this);
+    this.listSessions = this.listSessions.bind(this);
 
     this.beginTransaction = this.beginTransaction.bind(this);
     this.commit = this.commit.bind(this);
@@ -394,7 +395,9 @@ export class MockSpanner {
       callback(
         null,
         protobuf.ListSessionsResponse.create({
-          sessions: Array.from(this.sessions.values()),
+          sessions: Array.from(this.sessions.values()).filter(session => {
+            return session.name.startsWith(call.request.database);
+          }),
         })
       );
     });
@@ -594,7 +597,7 @@ export class MockSpanner {
     }
     const session = this.sessions.get(call.request.session);
     if (session) {
-      const buffer = Buffer.from(call.request.transactionId);
+      const buffer = Buffer.from(call.request.transactionId as string);
       const transactionId = buffer.toString();
       const fullTransactionId = session.name + '/transactions/' + transactionId;
       const transaction = this.transactions.get(fullTransactionId);
@@ -621,7 +624,7 @@ export class MockSpanner {
   ) {
     const session = this.sessions.get(call.request.session);
     if (session) {
-      const buffer = Buffer.from(call.request.transactionId);
+      const buffer = Buffer.from(call.request.transactionId as string);
       const transactionId = buffer.toString();
       const fullTransactionId = session.name + '/transactions/' + transactionId;
       const transaction = this.transactions.get(fullTransactionId);

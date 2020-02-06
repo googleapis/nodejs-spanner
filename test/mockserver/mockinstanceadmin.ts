@@ -134,7 +134,7 @@ export class MockInstanceAdmin {
     call: grpc.ServerUnaryCall<v1.ListInstancesRequest>,
     callback: v1.InstanceAdmin.ListInstancesCallback
   ) {
-    let instances: IInstance[] = [];
+    let instances: google.spanner.admin.instance.v1.IInstance[] = [];
     if (
       !call.request.filter ||
       call.request.filter.includes(
