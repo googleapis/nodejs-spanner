@@ -41,6 +41,7 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
+import {PERMISSION_DENIED_WARNING_MESSAGE} from './common';
 
 const grpc = require('grpc');
 
@@ -306,7 +307,8 @@ class Spanner extends GrpcService {
     this.options.enableResourceBasedRouting =
       typeof options!.enableResourceBasedRouting === 'boolean'
         ? options.enableResourceBasedRouting
-        : process.env.GOOGLE_CLOUD_ENABLE_RESOURCE_BASED_ROUTING === 'true';
+        : process.env.GOOGLE_CLOUD_SPANNER_ENABLE_RESOURCE_BASED_ROUTING ===
+          'true';
     /**
      * Get a list of {@link Instance} objects as a readable object stream.
      *
@@ -805,6 +807,7 @@ class Spanner extends GrpcService {
     let clientName = config.client;
     if (
       clientName !== 'SpannerClient' ||
+      this.options.apiEndpoint ||
       !this.options.enableResourceBasedRouting
     ) {
       if (!this.clients_.has(clientName)) {
@@ -830,15 +833,8 @@ class Spanner extends GrpcService {
         },
         (err, instance) => {
           if (err) {
-            const PERMISSION_DENIED_MESSAGE = `The client library attempted to connect to 
-an endpoint closer to your Cloud Spanner data but was unable to 
-do so. The client library will fallback to the API endpoint given 
-in the client options, which may result in increased latency.
-We recommend including the scope 
-https://www.googleapis.com/auth/spanner.admin 
-so that the client library can get an instance-specific endpoint and efficiently route requests.`;
             if (err.code === status.PERMISSION_DENIED) {
-              process.emitWarning(PERMISSION_DENIED_MESSAGE);
+              process.emitWarning(PERMISSION_DENIED_WARNING_MESSAGE);
               this.setSpannerClient(clientName, config, this.options);
               callback(null, this.clients_.get(clientName)!);
               return;
@@ -860,7 +856,7 @@ so that the client library can get an instance-specific endpoint and efficiently
     }
   }
   /**
-   * Cache the GAX client accordingly.
+   * Cache the GAX client with given name and configuration.
    *
    * @private
    *

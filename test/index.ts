@@ -27,6 +27,7 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import {ServiceError} from '@grpc/grpc-js';
+import {PERMISSION_DENIED_WARNING_MESSAGE} from '../src/common';
 
 const grpc = require('grpc');
 
@@ -983,13 +984,6 @@ describe('Spanner', () => {
     });
 
     it('should continue if a permission error is returned for the instance.', done => {
-      const PERMISSION_DENIED_MESSAGE = `The client library attempted to connect to 
-an endpoint closer to your Cloud Spanner data but was unable to 
-do so. The client library will fallback to the API endpoint given 
-in the client options, which may result in increased latency.
-We recommend including the scope 
-https://www.googleapis.com/auth/spanner.admin 
-so that the client library can get an instance-specific endpoint and efficiently route requests.`;
       sandbox.stub(process, 'emitWarning');
       const error = new Error('Error.') as ServiceError;
       error.code = 7;
@@ -1005,7 +999,7 @@ so that the client library can get an instance-specific endpoint and efficiently
         assert.ifError(err);
         assert.ok(
           (process.emitWarning as sinon.SinonStub).calledWith(
-            PERMISSION_DENIED_MESSAGE
+            PERMISSION_DENIED_WARNING_MESSAGE
           )
         );
         done();
