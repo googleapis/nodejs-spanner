@@ -661,9 +661,7 @@ describe('Spanner with mock server', () => {
               const [rows] = response;
               assert.strictEqual(rows.length, 3);
               snapshot.end();
-              db.close()
-                .then(() => done())
-                .catch(done);
+              db.close(done);
             })
             .catch(done);
         })
