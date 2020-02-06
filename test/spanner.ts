@@ -615,6 +615,58 @@ describe('Spanner with mock server', () => {
         done();
       });
     });
+
+    it('should retry "Session not found" errors for Database.getSnapshot() with callbacks', done => {
+      const db = newTestDatabase();
+      const sessionNotFound = {
+        code: status.NOT_FOUND,
+        message: 'Session not found',
+      } as MockError;
+      // The beginTransaction call will fail 3 times with 'Session not found'
+      // before succeeding.
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofErrors([
+          sessionNotFound,
+          sessionNotFound,
+          sessionNotFound,
+        ])
+      );
+      db.getSnapshot((err, snapshot) => {
+        assert.ifError(err);
+        snapshot!.run(selectSql, (err, rows) => {
+          assert.ifError(err);
+          assert.strictEqual(rows.length, 3);
+          snapshot!.end();
+          db.close(done);
+        });
+      });
+    });
+
+    it('should retry "Session not found" errors for Database.getSnapshot()', done => {
+      const db = newTestDatabase();
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError({
+          code: status.NOT_FOUND,
+          message: 'Session not found',
+        } as MockError)
+      );
+      db.getSnapshot()
+        .then(response => {
+          const [snapshot] = response;
+          snapshot
+            .run(selectSql)
+            .then(response => {
+              const [rows] = response;
+              assert.strictEqual(rows.length, 3);
+              snapshot.end();
+              db.close(done);
+            })
+            .catch(done);
+        })
+        .catch(done);
+    });
   });
 
   describe('session-pool', () => {
