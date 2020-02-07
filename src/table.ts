@@ -27,7 +27,7 @@ import {
   ReadCallback,
   CommitCallback,
 } from './transaction';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 
 export type Key = string | string[];
@@ -35,7 +35,7 @@ export type Key = string | string[];
 export type CreateTableResponse = [
   Table,
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  google.longrunning.IOperation
 ];
 export type CreateTableCallback = LongRunningCallback<Table>;
 

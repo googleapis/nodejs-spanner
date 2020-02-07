@@ -21,9 +21,8 @@ import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-
+import {google} from '../protos/protos';
 import {codec} from '../src/codec';
-import {SpannerClient as s} from '../src/v1';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -804,8 +803,8 @@ describe('Transaction', () => {
       it('should encode param types', () => {
         const fakeTypes = {a: 'string', b: 'number'};
         const expectedTypes = {
-          a: {code: s.TypeCode.STRING},
-          b: {code: s.TypeCode.INT64},
+          a: google.spanner.v1.Type.fromObject({code: google.spanner.v1.TypeCode.STRING}),
+          b: google.spanner.v1.Type.fromObject({code: google.spanner.v1.TypeCode.INT64}),
         };
 
         const stub = sandbox.stub(codec, 'createTypeObject');
@@ -822,7 +821,7 @@ describe('Transaction', () => {
         const fakeParams = {a: 'foo', b: 3};
         const fakeTypes = {b: 'number'};
         const fakeMissingType = {type: 'string'};
-        const expectedType = {code: s.TypeCode.STRING};
+        const expectedType = google.spanner.v1.Type.fromObject({code: google.spanner.v1.TypeCode.STRING});
 
         sandbox
           .stub(codec, 'getType')

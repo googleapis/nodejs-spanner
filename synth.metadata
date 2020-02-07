@@ -1,19 +1,12 @@
 {
-  "updateTime": "2020-01-29T04:19:01.160832Z",
+  "updateTime": "2020-02-07T22:57:53.882875Z",
   "sources": [
-    {
-      "generator": {
-        "name": "artman",
-        "version": "0.44.4",
-        "dockerImage": "googleapis/artman@sha256:19e945954fc960a4bdfee6cb34695898ab21a8cf0bac063ee39b91f00a1faec8"
-      }
-    },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "cf3b61102ed5f36b827bc82ec39be09525f018c8",
-        "internalRef": "292034635"
+        "sha": "1b83c92462b14d67a7644e2980f723112472e03a",
+        "internalRef": "293893514"
       }
     },
     {
@@ -30,9 +23,8 @@
         "source": "googleapis",
         "apiName": "spanner",
         "apiVersion": "v1",
-        "language": "nodejs",
-        "generator": "gapic",
-        "config": "google/spanner/artman_spanner.yaml"
+        "language": "typescript",
+        "generator": "gapic-generator-typescript"
       }
     },
     {
@@ -40,9 +32,8 @@
         "source": "googleapis",
         "apiName": "spanner-admin-database",
         "apiVersion": "v1",
-        "language": "nodejs",
-        "generator": "gapic",
-        "config": "google/spanner/admin/database/artman_spanner_admin_database.yaml"
+        "language": "typescript",
+        "generator": "gapic-generator-typescript"
       }
     },
     {
@@ -50,9 +41,8 @@
         "source": "googleapis",
         "apiName": "spanner-admin-instance",
         "apiVersion": "v1",
-        "language": "nodejs",
-        "generator": "gapic",
-        "config": "google/spanner/admin/instance/artman_spanner_admin_instance.yaml"
+        "language": "typescript",
+        "generator": "gapic-generator-typescript"
       }
     }
   ],
@@ -77,6 +67,9 @@
     },
     {
       "path": ".github/release-please.yml"
+    },
+    {
+      "path": ".gitignore"
     },
     {
       "path": ".jsdoc.js"
@@ -184,6 +177,9 @@
       "path": ".kokoro/trampoline.sh"
     },
     {
+      "path": ".mocharc.json"
+    },
+    {
       "path": ".nycrc"
     },
     {
@@ -206,6 +202,9 @@
     },
     {
       "path": "codecov.yaml"
+    },
+    {
+      "path": "linkinator.config.json"
     },
     {
       "path": "protos/google/spanner/admin/database/v1/spanner_database_admin.proto"
@@ -235,25 +234,13 @@
       "path": "protos/google/spanner/v1/type.proto"
     },
     {
-      "path": "protos/protos.d.ts"
-    },
-    {
-      "path": "protos/protos.js"
-    },
-    {
-      "path": "protos/protos.json"
-    },
-    {
       "path": "renovate.json"
     },
     {
       "path": "samples/README.md"
     },
     {
-      "path": "src/browser.js"
-    },
-    {
-      "path": "src/v1/database_admin_client.js"
+      "path": "src/v1/database_admin_client.ts"
     },
     {
       "path": "src/v1/database_admin_client_config.json"
@@ -262,73 +249,7 @@
       "path": "src/v1/database_admin_proto_list.json"
     },
     {
-      "path": "src/v1/doc/google/iam/v1/doc_iam_policy.js"
-    },
-    {
-      "path": "src/v1/doc/google/iam/v1/doc_options.js"
-    },
-    {
-      "path": "src/v1/doc/google/iam/v1/doc_policy.js"
-    },
-    {
-      "path": "src/v1/doc/google/longrunning/doc_operations.js"
-    },
-    {
-      "path": "src/v1/doc/google/protobuf/doc_any.js"
-    },
-    {
-      "path": "src/v1/doc/google/protobuf/doc_duration.js"
-    },
-    {
-      "path": "src/v1/doc/google/protobuf/doc_empty.js"
-    },
-    {
-      "path": "src/v1/doc/google/protobuf/doc_field_mask.js"
-    },
-    {
-      "path": "src/v1/doc/google/protobuf/doc_struct.js"
-    },
-    {
-      "path": "src/v1/doc/google/protobuf/doc_timestamp.js"
-    },
-    {
-      "path": "src/v1/doc/google/rpc/doc_status.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/admin/database/v1/doc_spanner_database_admin.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/admin/instance/v1/doc_spanner_instance_admin.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_keys.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_mutation.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_query_plan.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_result_set.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_spanner.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_transaction.js"
-    },
-    {
-      "path": "src/v1/doc/google/spanner/v1/doc_type.js"
-    },
-    {
-      "path": "src/v1/doc/google/type/doc_expr.js"
-    },
-    {
-      "path": "src/v1/index.js"
-    },
-    {
-      "path": "src/v1/instance_admin_client.js"
+      "path": "src/v1/instance_admin_client.ts"
     },
     {
       "path": "src/v1/instance_admin_client_config.json"
@@ -337,7 +258,7 @@
       "path": "src/v1/instance_admin_proto_list.json"
     },
     {
-      "path": "src/v1/spanner_client.js"
+      "path": "src/v1/spanner_client.ts"
     },
     {
       "path": "src/v1/spanner_client_config.json"
@@ -346,7 +267,28 @@
       "path": "src/v1/spanner_proto_list.json"
     },
     {
-      "path": "test/gapic-v1.js"
+      "path": "system-test/fixtures/sample/src/index.js"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/index.ts"
+    },
+    {
+      "path": "system-test/install.ts"
+    },
+    {
+      "path": "test/gapic-database_admin-v1.ts"
+    },
+    {
+      "path": "test/gapic-instance_admin-v1.ts"
+    },
+    {
+      "path": "test/gapic-spanner-v1.ts"
+    },
+    {
+      "path": "tsconfig.json"
+    },
+    {
+      "path": "tslint.json"
     },
     {
       "path": "webpack.config.js"

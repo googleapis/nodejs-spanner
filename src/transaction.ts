@@ -19,7 +19,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
 import {CallOptions} from 'google-gax';
-import {ServiceError} from 'grpc';
+import {ServiceError, status as grpcStatus} from 'grpc';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
@@ -33,18 +33,17 @@ import {
 } from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
-import {SpannerClient as s} from './v1';
-import {google as spannerClient} from '../proto/spanner';
+import {google} from '../protos/protos';
 import {NormalCallback} from './common';
 
 export type Rows = Array<Row | Json>;
 
 export interface TimestampBounds {
   strong?: boolean;
-  minReadTimestamp?: PreciseDate | spannerClient.protobuf.ITimestamp;
-  maxStaleness?: number | spannerClient.protobuf.IDuration;
-  readTimestamp?: PreciseDate | spannerClient.protobuf.ITimestamp;
-  exactStaleness?: number | spannerClient.protobuf.IDuration;
+  minReadTimestamp?: PreciseDate | google.protobuf.ITimestamp;
+  maxStaleness?: number | google.protobuf.IDuration;
+  readTimestamp?: PreciseDate | google.protobuf.ITimestamp;
+  exactStaleness?: number | google.protobuf.IDuration;
   returnReadTimestamp?: boolean;
 }
 
@@ -62,7 +61,7 @@ export interface Statement {
 
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
   resumeToken?: ResumeToken;
-  queryMode?: s.QueryMode;
+  queryMode?: google.spanner.v1.ExecuteSqlRequest.QueryMode;
   partitionToken?: Uint8Array | string;
   seqno?: number;
 }
@@ -80,7 +79,7 @@ export interface ReadRequest extends RequestOptions {
   columns?: string[] | null;
   keys?: string[];
   ranges?: KeyRange[];
-  keySet?: spannerClient.spanner.v1.IKeySet | null;
+  keySet?: google.spanner.v1.IKeySet | null;
   limit?: number | Long | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
@@ -90,25 +89,28 @@ export interface BatchUpdateError extends ServiceError {
   rowCounts: number[];
 }
 
-export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
+export type CommitRequest = google.spanner.v1.ICommitRequest;
 
-export type BatchUpdateResponse = [number[], s.ExecuteBatchDmlResponse];
-export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
+export type BatchUpdateResponse = [
+  number[],
+  google.spanner.v1.IExecuteBatchDmlResponse
+];
+export type BeginResponse = [google.spanner.v1.ITransaction];
 
 export type BeginTransactionCallback = NormalCallback<
-  spannerClient.spanner.v1.ITransaction
+  google.spanner.v1.ITransaction
 >;
-export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
+export type CommitResponse = [google.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
-export type RunResponse = [Rows, spannerClient.spanner.v1.ResultSetStats];
+export type RunResponse = [Rows, google.spanner.v1.ResultSetStats];
 export type RunUpdateResponse = [number];
 
 export interface BatchUpdateCallback {
   (
     err: null | BatchUpdateError,
     rowCounts: number[],
-    response?: s.ExecuteBatchDmlResponse
+    response?: google.spanner.v1.ExecuteBatchDmlResponse
   ): void;
 }
 
@@ -118,7 +120,7 @@ export interface RunCallback {
   (
     err: null | ServiceError,
     rows: Rows,
-    stats: spannerClient.spanner.v1.ResultSetStats
+    stats: google.spanner.v1.ResultSetStats
   ): void;
 }
 
@@ -126,9 +128,7 @@ export interface RunUpdateCallback {
   (err: null | ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback = NormalCallback<
-  spannerClient.spanner.v1.ICommitResponse
->;
+export type CommitCallback = NormalCallback<google.spanner.v1.ICommitResponse>;
 
 /**
  * @typedef {object} TimestampBounds
@@ -163,7 +163,7 @@ export type CommitCallback = NormalCallback<
  * @see [Timestamp Bounds API Documentation](https://cloud.google.com/spanner/docs/timestamp-bounds)
  *
  * @example
- * const {Spanner} = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google.spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
@@ -183,13 +183,13 @@ export type CommitCallback = NormalCallback<
  * });
  */
 export class Snapshot extends EventEmitter {
-  protected _options!: spannerClient.spanner.v1.ITransactionOptions;
+  protected _options!: google.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
   id?: Uint8Array | string;
   ended: boolean;
-  metadata?: spannerClient.spanner.v1.ITransaction;
+  metadata?: google.spanner.v1.ITransaction;
   readTimestamp?: PreciseDate;
-  readTimestampProto?: spannerClient.protobuf.ITimestamp;
+  readTimestampProto?: google.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
@@ -290,7 +290,7 @@ export class Snapshot extends EventEmitter {
   begin(callback?: BeginTransactionCallback): void | Promise<BeginResponse> {
     const session = this.session.formattedName_!;
     const options = this._options;
-    const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
+    const reqOpts: google.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
     };
@@ -301,10 +301,7 @@ export class Snapshot extends EventEmitter {
         method: 'beginTransaction',
         reqOpts,
       },
-      (
-        err: null | ServiceError,
-        resp: spannerClient.spanner.v1.ITransaction
-      ) => {
+      (err: null | ServiceError, resp: google.spanner.v1.ITransaction) => {
         if (err) {
           callback!(err, resp);
           return;
@@ -471,7 +468,7 @@ export class Snapshot extends EventEmitter {
   ): PartialResultStream {
     const {gaxOptions, json, jsonOptions} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    const transaction: google.spanner.v1.ITransactionSelector = {};
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
@@ -862,7 +859,7 @@ export class Snapshot extends EventEmitter {
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
-    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    const transaction: google.spanner.v1.ITransactionSelector = {};
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
@@ -904,8 +901,8 @@ export class Snapshot extends EventEmitter {
    * @param {ReadRequest} request The read request.
    * @returns {object}
    */
-  static encodeKeySet(request: ReadRequest): spannerClient.spanner.v1.IKeySet {
-    const keySet: spannerClient.spanner.v1.IKeySet = request.keySet || {};
+  static encodeKeySet(request: ReadRequest): google.spanner.v1.IKeySet {
+    const keySet: google.spanner.v1.IKeySet = request.keySet || {};
 
     if (request.keys) {
       keySet.keys = arrify(request.keys).map(codec.convertToListValue);
@@ -913,7 +910,7 @@ export class Snapshot extends EventEmitter {
 
     if (request.ranges) {
       keySet.ranges = arrify(request.ranges).map(range => {
-        const encodedRange: spannerClient.spanner.v1.IKeyRange = {};
+        const encodedRange: google.spanner.v1.IKeyRange = {};
 
         Object.keys(range).forEach(bound => {
           encodedRange[bound] = codec.convertToListValue(range[bound]);
@@ -941,8 +938,8 @@ export class Snapshot extends EventEmitter {
    */
   static encodeTimestampBounds(
     options: TimestampBounds
-  ): spannerClient.spanner.v1.TransactionOptions.IReadOnly {
-    const readOnly: spannerClient.spanner.v1.TransactionOptions.IReadOnly = {};
+  ): google.spanner.v1.TransactionOptions.IReadOnly {
+    const readOnly: google.spanner.v1.TransactionOptions.IReadOnly = {};
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
@@ -988,7 +985,7 @@ export class Snapshot extends EventEmitter {
     const typeMap = request.types || {};
 
     const params: p.IStruct = {};
-    const paramTypes: {[field: string]: s.Type} = {};
+    const paramTypes: {[field: string]: google.spanner.v1.IType} = {};
 
     if (request.params) {
       const fields = {};
@@ -1075,7 +1072,7 @@ export class Dml extends Snapshot {
       (
         err: null | ServiceError,
         rows: Rows,
-        stats: spannerClient.spanner.v1.ResultSetStats
+        stats: google.spanner.v1.ResultSetStats
       ) => {
         let rowCount = 0;
 
@@ -1121,7 +1118,7 @@ promisifyAll(Dml);
  * @param {Session} session The parent Session object.
  *
  * @example
- * const {Spanner} = require('@google-cloud/spanner');
+ * const {Spanner} = require('@google.spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
@@ -1139,8 +1136,8 @@ promisifyAll(Dml);
  */
 export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
-  commitTimestampProto?: spannerClient.protobuf.ITimestamp;
-  private _queuedMutations: s.Mutation[];
+  commitTimestampProto?: google.protobuf.ITimestamp;
+  private _queuedMutations: google.spanner.v1.IMutation[];
 
   /**
    * Timestamp at which the transaction was committed. Will be populated once
@@ -1180,7 +1177,10 @@ export class Transaction extends Dml {
    *   }
    * });
    */
-  constructor(session: Session, options = {} as s.ReadWrite) {
+  constructor(
+    session: Session,
+    options = {} as google.spanner.v1.TransactionOptions.ReadWrite
+  ) {
     super(session);
 
     this._queuedMutations = [];
@@ -1260,16 +1260,22 @@ export class Transaction extends Dml {
       return;
     }
 
-    const statements: s.Statement[] = queries.map(query => {
+    const statements = queries.map(query => {
       if (typeof query === 'string') {
-        return {sql: query};
+        return {
+          sql: query,
+        };
       }
       const {sql} = query;
       const {params, paramTypes} = Snapshot.encodeParams(query);
-      return {sql, params, paramTypes};
+      return {
+        sql,
+        params,
+        paramTypes,
+      };
     });
 
-    const reqOpts: s.ExecuteBatchDmlRequest = {
+    const reqOpts = {
       session: this.session.formattedName_!,
       transaction: {id: this.id!},
       seqno: this._seqno++,
@@ -1282,7 +1288,10 @@ export class Transaction extends Dml {
         method: 'executeBatchDml',
         reqOpts,
       },
-      (err: null | ServiceError, resp: s.ExecuteBatchDmlResponse) => {
+      (
+        err: null | ServiceError,
+        resp: google.spanner.v1.ExecuteBatchDmlResponse
+      ) => {
         let batchUpdateError: BatchUpdateError;
 
         if (err) {
@@ -1294,14 +1303,14 @@ export class Transaction extends Dml {
 
         const {resultSets, status} = resp;
         const rowCounts: number[] = resultSets.map(({stats}) => {
-          return (stats && Number(stats[stats.rowCount])) || 0;
+          return (stats && Number(stats[stats.rowCountExact as number])) || 0;
         });
 
         if (status && status.code !== 0) {
-          const error = new Error(status.details);
+          const error = new Error(status.message!);
           batchUpdateError = Object.assign(error, {
-            code: status.code,
-            metadata: status.metadata,
+            code: status.code! as grpcStatus,
+            details: status.message!,
             rowCounts,
           });
         }
@@ -1376,7 +1385,7 @@ export class Transaction extends Dml {
         method: 'commit',
         reqOpts,
       },
-      (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
+      (err: null | Error, resp: google.spanner.v1.ICommitResponse) => {
         this.end();
 
         if (resp && resp.commitTimestamp) {
@@ -1435,8 +1444,12 @@ export class Transaction extends Dml {
    * ];
    */
   deleteRows(table: string, keys: Key[]): void {
-    const keySet: s.KeySet = {keys: arrify(keys).map(codec.convertToListValue)};
-    const mutation: s.Mutation = {delete: {table, keySet}};
+    const keySet = {
+      keys: arrify(keys).map(codec.convertToListValue),
+    };
+    const mutation = {
+      delete: {table, keySet},
+    };
 
     this._queuedMutations.push(mutation);
   }
@@ -1540,7 +1553,7 @@ export class Transaction extends Dml {
   }
 
   rollback(): Promise<void>;
-  rollback(callback: s.RollbackCallback): void;
+  rollback(callback: google.spanner.v1.Spanner.RollbackCallback): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -1567,7 +1580,9 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: s.RollbackCallback): void | Promise<void> {
+  rollback(
+    callback?: google.spanner.v1.Spanner.RollbackCallback
+  ): void | Promise<void> {
     if (!this.id) {
       callback!(
         new Error(
@@ -1579,7 +1594,10 @@ export class Transaction extends Dml {
 
     const session = this.session.formattedName_!;
     const transactionId = this.id;
-    const reqOpts: s.RollbackRequest = {session, transactionId};
+    const reqOpts = {
+      session,
+      transactionId,
+    };
 
     this.request(
       {
@@ -1702,7 +1720,7 @@ export class Transaction extends Dml {
       return codec.convertToListValue(values);
     });
 
-    const mutation: s.Mutation = {
+    const mutation = {
       [method]: {table, columns, values},
     };
 
@@ -1749,7 +1767,10 @@ promisifyAll(Transaction, {
  * @see Database#runPartitionedUpdate
  */
 export class PartitionedDml extends Dml {
-  constructor(session: Session, options = {} as s.PartitionedDml) {
+  constructor(
+    session: Session,
+    options = {} as google.spanner.v1.TransactionOptions.PartitionedDml
+  ) {
     super(session);
     this._options = {partitionedDml: options};
   }

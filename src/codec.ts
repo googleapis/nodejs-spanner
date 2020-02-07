@@ -18,8 +18,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-import {google as spannerClient} from '../proto/spanner';
-import {SpannerClient as s} from './v1';
+import {google} from '../protos/protos';
 
 // tslint:disable-next-line no-any
 export type Value = any;
@@ -279,7 +278,7 @@ function convertValueToJson(value: Value, options: JSONOptions): Value {
  * @param {object[]} type Value type object.
  * @returns {*}
  */
-function decode(value: Value, type: s.Type): Value {
+function decode(value: Value, type: google.spanner.v1.IType): Value {
   if (is.null(value)) {
     return null;
   }
@@ -287,31 +286,31 @@ function decode(value: Value, type: s.Type): Value {
   let decoded = value;
 
   switch (type.code) {
-    case s.TypeCode.BYTES:
+    case google.spanner.v1.TypeCode.BYTES:
       decoded = Buffer.from(decoded, 'base64');
       break;
-    case s.TypeCode.FLOAT64:
+    case google.spanner.v1.TypeCode.FLOAT64:
       decoded = new Float(decoded);
       break;
-    case s.TypeCode.INT64:
+    case google.spanner.v1.TypeCode.INT64:
       decoded = new Int(decoded);
       break;
-    case s.TypeCode.TIMESTAMP:
+    case google.spanner.v1.TypeCode.TIMESTAMP:
       decoded = new PreciseDate(decoded);
       break;
-    case s.TypeCode.DATE:
+    case google.spanner.v1.TypeCode.DATE:
       decoded = new SpannerDate(decoded);
       break;
-    case s.TypeCode.ARRAY:
+    case google.spanner.v1.TypeCode.ARRAY:
       decoded = decoded.map(value => {
         return decode(value, type.arrayElementType!);
       });
       break;
-    case s.TypeCode.STRUCT:
-      const fields = type.structType!.fields.map(({name, type}, index) => {
-        const value = decode(decoded[name] || decoded[index], type!);
+    case google.spanner.v1.TypeCode.STRUCT:
+      const fields = type.structType!.fields!.map(({name, type}, index) => {
+        const value = decode(decoded[name!] || decoded[index], type!);
         return {name, value};
-      });
+      }) as Field[];
       decoded = Struct.fromArray(fields);
       break;
     default:
@@ -378,16 +377,16 @@ function encodeValue(value: Value): Value {
  * @enum {string}
  */
 enum TypeCode {
-  unspecified = s.TypeCode.TYPE_CODE_UNSPECIFIED,
-  bool = s.TypeCode.BOOL,
-  int64 = s.TypeCode.INT64,
-  float64 = s.TypeCode.FLOAT64,
-  timestamp = s.TypeCode.TIMESTAMP,
-  date = s.TypeCode.DATE,
-  string = s.TypeCode.STRING,
-  bytes = s.TypeCode.BYTES,
-  array = s.TypeCode.ARRAY,
-  struct = s.TypeCode.STRUCT,
+  unspecified = google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED,
+  bool = google.spanner.v1.TypeCode.BOOL,
+  int64 = google.spanner.v1.TypeCode.INT64,
+  float64 = google.spanner.v1.TypeCode.FLOAT64,
+  timestamp = google.spanner.v1.TypeCode.TIMESTAMP,
+  date = google.spanner.v1.TypeCode.DATE,
+  string = google.spanner.v1.TypeCode.STRING,
+  bytes = google.spanner.v1.TypeCode.BYTES,
+  array = google.spanner.v1.TypeCode.ARRAY,
+  struct = google.spanner.v1.TypeCode.STRUCT,
 }
 
 /**
@@ -402,7 +401,7 @@ export interface Type {
   child?: Type;
 }
 
-interface FieldType extends Type {
+interface FieldType extends google.spanner.v1.IType {
   name: string;
 }
 
@@ -475,7 +474,8 @@ function getType(value: Value): Type {
     return {
       type: 'struct',
       fields: Array.from(value).map(({name, value}) => {
-        return Object.assign({name}, getType(value));
+        const type = getType(value);
+        return Object.assign({name}, type);
       }),
     };
   }
@@ -521,9 +521,7 @@ function convertToListValue<T>(value: T): p.IListValue {
  * @param {number} ms The milliseconds to convert.
  * @returns {object}
  */
-function convertMsToProtoTimestamp(
-  ms: number
-): spannerClient.protobuf.ITimestamp {
+function convertMsToProtoTimestamp(ms: number): google.protobuf.ITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
   const nanos = Math.round((rawSeconds - seconds) * 1e9);
@@ -555,7 +553,9 @@ function convertProtoTimestampToDate({
  * @param {object|string} [config='unspecified'] Type config.
  * @return {object}
  */
-function createTypeObject(friendlyType?: string | Type): s.Type {
+function createTypeObject(
+  friendlyType?: string | Type | FieldType
+): google.spanner.v1.IType {
   if (!friendlyType) {
     friendlyType = 'unspecified';
   }
@@ -565,14 +565,15 @@ function createTypeObject(friendlyType?: string | Type): s.Type {
   }
 
   const config: Type = friendlyType as Type;
-  const code: s.TypeCode = TypeCode[config.type] || TypeCode.unspecified;
-  const type: s.Type = {code};
+  const code: google.spanner.v1.TypeCode =
+    TypeCode[config.type] || TypeCode.unspecified;
+  const type = {code} as google.spanner.v1.IType;
 
-  if (code === s.TypeCode.ARRAY) {
+  if (code === google.spanner.v1.TypeCode.ARRAY) {
     type.arrayElementType = codec.createTypeObject(config.child);
   }
 
-  if (code === s.TypeCode.STRUCT) {
+  if (code === google.spanner.v1.TypeCode.STRUCT) {
     type.structType = {
       fields: arrify(config.fields!).map(field => {
         return {name: field.name, type: codec.createTypeObject(field)};

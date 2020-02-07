@@ -19836,6 +19836,5818 @@
                  */
                 var v1 = {};
     
+                v1.KeyRange = (function() {
+    
+                    /**
+                     * Properties of a KeyRange.
+                     * @memberof google.spanner.v1
+                     * @interface IKeyRange
+                     * @property {google.protobuf.IListValue|null} [startClosed] KeyRange startClosed
+                     * @property {google.protobuf.IListValue|null} [startOpen] KeyRange startOpen
+                     * @property {google.protobuf.IListValue|null} [endClosed] KeyRange endClosed
+                     * @property {google.protobuf.IListValue|null} [endOpen] KeyRange endOpen
+                     */
+    
+                    /**
+                     * Constructs a new KeyRange.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a KeyRange.
+                     * @implements IKeyRange
+                     * @constructor
+                     * @param {google.spanner.v1.IKeyRange=} [properties] Properties to set
+                     */
+                    function KeyRange(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * KeyRange startClosed.
+                     * @member {google.protobuf.IListValue|null|undefined} startClosed
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     */
+                    KeyRange.prototype.startClosed = null;
+    
+                    /**
+                     * KeyRange startOpen.
+                     * @member {google.protobuf.IListValue|null|undefined} startOpen
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     */
+                    KeyRange.prototype.startOpen = null;
+    
+                    /**
+                     * KeyRange endClosed.
+                     * @member {google.protobuf.IListValue|null|undefined} endClosed
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     */
+                    KeyRange.prototype.endClosed = null;
+    
+                    /**
+                     * KeyRange endOpen.
+                     * @member {google.protobuf.IListValue|null|undefined} endOpen
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     */
+                    KeyRange.prototype.endOpen = null;
+    
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+    
+                    /**
+                     * KeyRange startKeyType.
+                     * @member {"startClosed"|"startOpen"|undefined} startKeyType
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     */
+                    Object.defineProperty(KeyRange.prototype, "startKeyType", {
+                        get: $util.oneOfGetter($oneOfFields = ["startClosed", "startOpen"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * KeyRange endKeyType.
+                     * @member {"endClosed"|"endOpen"|undefined} endKeyType
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     */
+                    Object.defineProperty(KeyRange.prototype, "endKeyType", {
+                        get: $util.oneOfGetter($oneOfFields = ["endClosed", "endOpen"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * Creates a new KeyRange instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {google.spanner.v1.IKeyRange=} [properties] Properties to set
+                     * @returns {google.spanner.v1.KeyRange} KeyRange instance
+                     */
+                    KeyRange.create = function create(properties) {
+                        return new KeyRange(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified KeyRange message. Does not implicitly {@link google.spanner.v1.KeyRange.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {google.spanner.v1.IKeyRange} message KeyRange message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    KeyRange.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.startClosed != null && message.hasOwnProperty("startClosed"))
+                            $root.google.protobuf.ListValue.encode(message.startClosed, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.startOpen != null && message.hasOwnProperty("startOpen"))
+                            $root.google.protobuf.ListValue.encode(message.startOpen, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.endClosed != null && message.hasOwnProperty("endClosed"))
+                            $root.google.protobuf.ListValue.encode(message.endClosed, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        if (message.endOpen != null && message.hasOwnProperty("endOpen"))
+                            $root.google.protobuf.ListValue.encode(message.endOpen, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified KeyRange message, length delimited. Does not implicitly {@link google.spanner.v1.KeyRange.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {google.spanner.v1.IKeyRange} message KeyRange message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    KeyRange.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a KeyRange message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.KeyRange} KeyRange
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    KeyRange.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.KeyRange();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.startClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.startOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.endClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                break;
+                            case 4:
+                                message.endOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a KeyRange message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.KeyRange} KeyRange
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    KeyRange.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a KeyRange message.
+                     * @function verify
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    KeyRange.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.startClosed != null && message.hasOwnProperty("startClosed")) {
+                            properties.startKeyType = 1;
+                            {
+                                var error = $root.google.protobuf.ListValue.verify(message.startClosed);
+                                if (error)
+                                    return "startClosed." + error;
+                            }
+                        }
+                        if (message.startOpen != null && message.hasOwnProperty("startOpen")) {
+                            if (properties.startKeyType === 1)
+                                return "startKeyType: multiple values";
+                            properties.startKeyType = 1;
+                            {
+                                var error = $root.google.protobuf.ListValue.verify(message.startOpen);
+                                if (error)
+                                    return "startOpen." + error;
+                            }
+                        }
+                        if (message.endClosed != null && message.hasOwnProperty("endClosed")) {
+                            properties.endKeyType = 1;
+                            {
+                                var error = $root.google.protobuf.ListValue.verify(message.endClosed);
+                                if (error)
+                                    return "endClosed." + error;
+                            }
+                        }
+                        if (message.endOpen != null && message.hasOwnProperty("endOpen")) {
+                            if (properties.endKeyType === 1)
+                                return "endKeyType: multiple values";
+                            properties.endKeyType = 1;
+                            {
+                                var error = $root.google.protobuf.ListValue.verify(message.endOpen);
+                                if (error)
+                                    return "endOpen." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a KeyRange message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.KeyRange} KeyRange
+                     */
+                    KeyRange.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.KeyRange)
+                            return object;
+                        var message = new $root.google.spanner.v1.KeyRange();
+                        if (object.startClosed != null) {
+                            if (typeof object.startClosed !== "object")
+                                throw TypeError(".google.spanner.v1.KeyRange.startClosed: object expected");
+                            message.startClosed = $root.google.protobuf.ListValue.fromObject(object.startClosed);
+                        }
+                        if (object.startOpen != null) {
+                            if (typeof object.startOpen !== "object")
+                                throw TypeError(".google.spanner.v1.KeyRange.startOpen: object expected");
+                            message.startOpen = $root.google.protobuf.ListValue.fromObject(object.startOpen);
+                        }
+                        if (object.endClosed != null) {
+                            if (typeof object.endClosed !== "object")
+                                throw TypeError(".google.spanner.v1.KeyRange.endClosed: object expected");
+                            message.endClosed = $root.google.protobuf.ListValue.fromObject(object.endClosed);
+                        }
+                        if (object.endOpen != null) {
+                            if (typeof object.endOpen !== "object")
+                                throw TypeError(".google.spanner.v1.KeyRange.endOpen: object expected");
+                            message.endOpen = $root.google.protobuf.ListValue.fromObject(object.endOpen);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a KeyRange message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {google.spanner.v1.KeyRange} message KeyRange
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    KeyRange.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.startClosed != null && message.hasOwnProperty("startClosed")) {
+                            object.startClosed = $root.google.protobuf.ListValue.toObject(message.startClosed, options);
+                            if (options.oneofs)
+                                object.startKeyType = "startClosed";
+                        }
+                        if (message.startOpen != null && message.hasOwnProperty("startOpen")) {
+                            object.startOpen = $root.google.protobuf.ListValue.toObject(message.startOpen, options);
+                            if (options.oneofs)
+                                object.startKeyType = "startOpen";
+                        }
+                        if (message.endClosed != null && message.hasOwnProperty("endClosed")) {
+                            object.endClosed = $root.google.protobuf.ListValue.toObject(message.endClosed, options);
+                            if (options.oneofs)
+                                object.endKeyType = "endClosed";
+                        }
+                        if (message.endOpen != null && message.hasOwnProperty("endOpen")) {
+                            object.endOpen = $root.google.protobuf.ListValue.toObject(message.endOpen, options);
+                            if (options.oneofs)
+                                object.endKeyType = "endOpen";
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this KeyRange to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.KeyRange
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    KeyRange.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return KeyRange;
+                })();
+    
+                v1.KeySet = (function() {
+    
+                    /**
+                     * Properties of a KeySet.
+                     * @memberof google.spanner.v1
+                     * @interface IKeySet
+                     * @property {Array.<google.protobuf.IListValue>|null} [keys] KeySet keys
+                     * @property {Array.<google.spanner.v1.IKeyRange>|null} [ranges] KeySet ranges
+                     * @property {boolean|null} [all] KeySet all
+                     */
+    
+                    /**
+                     * Constructs a new KeySet.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a KeySet.
+                     * @implements IKeySet
+                     * @constructor
+                     * @param {google.spanner.v1.IKeySet=} [properties] Properties to set
+                     */
+                    function KeySet(properties) {
+                        this.keys = [];
+                        this.ranges = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * KeySet keys.
+                     * @member {Array.<google.protobuf.IListValue>} keys
+                     * @memberof google.spanner.v1.KeySet
+                     * @instance
+                     */
+                    KeySet.prototype.keys = $util.emptyArray;
+    
+                    /**
+                     * KeySet ranges.
+                     * @member {Array.<google.spanner.v1.IKeyRange>} ranges
+                     * @memberof google.spanner.v1.KeySet
+                     * @instance
+                     */
+                    KeySet.prototype.ranges = $util.emptyArray;
+    
+                    /**
+                     * KeySet all.
+                     * @member {boolean} all
+                     * @memberof google.spanner.v1.KeySet
+                     * @instance
+                     */
+                    KeySet.prototype.all = false;
+    
+                    /**
+                     * Creates a new KeySet instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {google.spanner.v1.IKeySet=} [properties] Properties to set
+                     * @returns {google.spanner.v1.KeySet} KeySet instance
+                     */
+                    KeySet.create = function create(properties) {
+                        return new KeySet(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified KeySet message. Does not implicitly {@link google.spanner.v1.KeySet.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {google.spanner.v1.IKeySet} message KeySet message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    KeySet.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.keys != null && message.keys.length)
+                            for (var i = 0; i < message.keys.length; ++i)
+                                $root.google.protobuf.ListValue.encode(message.keys[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.ranges != null && message.ranges.length)
+                            for (var i = 0; i < message.ranges.length; ++i)
+                                $root.google.spanner.v1.KeyRange.encode(message.ranges[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.all != null && message.hasOwnProperty("all"))
+                            writer.uint32(/* id 3, wireType 0 =*/24).bool(message.all);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified KeySet message, length delimited. Does not implicitly {@link google.spanner.v1.KeySet.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {google.spanner.v1.IKeySet} message KeySet message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    KeySet.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a KeySet message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.KeySet} KeySet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    KeySet.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.KeySet();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                if (!(message.keys && message.keys.length))
+                                    message.keys = [];
+                                message.keys.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
+                                break;
+                            case 2:
+                                if (!(message.ranges && message.ranges.length))
+                                    message.ranges = [];
+                                message.ranges.push($root.google.spanner.v1.KeyRange.decode(reader, reader.uint32()));
+                                break;
+                            case 3:
+                                message.all = reader.bool();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a KeySet message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.KeySet} KeySet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    KeySet.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a KeySet message.
+                     * @function verify
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    KeySet.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.keys != null && message.hasOwnProperty("keys")) {
+                            if (!Array.isArray(message.keys))
+                                return "keys: array expected";
+                            for (var i = 0; i < message.keys.length; ++i) {
+                                var error = $root.google.protobuf.ListValue.verify(message.keys[i]);
+                                if (error)
+                                    return "keys." + error;
+                            }
+                        }
+                        if (message.ranges != null && message.hasOwnProperty("ranges")) {
+                            if (!Array.isArray(message.ranges))
+                                return "ranges: array expected";
+                            for (var i = 0; i < message.ranges.length; ++i) {
+                                var error = $root.google.spanner.v1.KeyRange.verify(message.ranges[i]);
+                                if (error)
+                                    return "ranges." + error;
+                            }
+                        }
+                        if (message.all != null && message.hasOwnProperty("all"))
+                            if (typeof message.all !== "boolean")
+                                return "all: boolean expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a KeySet message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.KeySet} KeySet
+                     */
+                    KeySet.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.KeySet)
+                            return object;
+                        var message = new $root.google.spanner.v1.KeySet();
+                        if (object.keys) {
+                            if (!Array.isArray(object.keys))
+                                throw TypeError(".google.spanner.v1.KeySet.keys: array expected");
+                            message.keys = [];
+                            for (var i = 0; i < object.keys.length; ++i) {
+                                if (typeof object.keys[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.KeySet.keys: object expected");
+                                message.keys[i] = $root.google.protobuf.ListValue.fromObject(object.keys[i]);
+                            }
+                        }
+                        if (object.ranges) {
+                            if (!Array.isArray(object.ranges))
+                                throw TypeError(".google.spanner.v1.KeySet.ranges: array expected");
+                            message.ranges = [];
+                            for (var i = 0; i < object.ranges.length; ++i) {
+                                if (typeof object.ranges[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.KeySet.ranges: object expected");
+                                message.ranges[i] = $root.google.spanner.v1.KeyRange.fromObject(object.ranges[i]);
+                            }
+                        }
+                        if (object.all != null)
+                            message.all = Boolean(object.all);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a KeySet message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {google.spanner.v1.KeySet} message KeySet
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    KeySet.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults) {
+                            object.keys = [];
+                            object.ranges = [];
+                        }
+                        if (options.defaults)
+                            object.all = false;
+                        if (message.keys && message.keys.length) {
+                            object.keys = [];
+                            for (var j = 0; j < message.keys.length; ++j)
+                                object.keys[j] = $root.google.protobuf.ListValue.toObject(message.keys[j], options);
+                        }
+                        if (message.ranges && message.ranges.length) {
+                            object.ranges = [];
+                            for (var j = 0; j < message.ranges.length; ++j)
+                                object.ranges[j] = $root.google.spanner.v1.KeyRange.toObject(message.ranges[j], options);
+                        }
+                        if (message.all != null && message.hasOwnProperty("all"))
+                            object.all = message.all;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this KeySet to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.KeySet
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    KeySet.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return KeySet;
+                })();
+    
+                v1.Mutation = (function() {
+    
+                    /**
+                     * Properties of a Mutation.
+                     * @memberof google.spanner.v1
+                     * @interface IMutation
+                     * @property {google.spanner.v1.Mutation.IWrite|null} [insert] Mutation insert
+                     * @property {google.spanner.v1.Mutation.IWrite|null} [update] Mutation update
+                     * @property {google.spanner.v1.Mutation.IWrite|null} [insertOrUpdate] Mutation insertOrUpdate
+                     * @property {google.spanner.v1.Mutation.IWrite|null} [replace] Mutation replace
+                     * @property {google.spanner.v1.Mutation.IDelete|null} ["delete"] Mutation delete
+                     */
+    
+                    /**
+                     * Constructs a new Mutation.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a Mutation.
+                     * @implements IMutation
+                     * @constructor
+                     * @param {google.spanner.v1.IMutation=} [properties] Properties to set
+                     */
+                    function Mutation(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Mutation insert.
+                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} insert
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     */
+                    Mutation.prototype.insert = null;
+    
+                    /**
+                     * Mutation update.
+                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} update
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     */
+                    Mutation.prototype.update = null;
+    
+                    /**
+                     * Mutation insertOrUpdate.
+                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} insertOrUpdate
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     */
+                    Mutation.prototype.insertOrUpdate = null;
+    
+                    /**
+                     * Mutation replace.
+                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} replace
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     */
+                    Mutation.prototype.replace = null;
+    
+                    /**
+                     * Mutation delete.
+                     * @member {google.spanner.v1.Mutation.IDelete|null|undefined} delete
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     */
+                    Mutation.prototype["delete"] = null;
+    
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+    
+                    /**
+                     * Mutation operation.
+                     * @member {"insert"|"update"|"insertOrUpdate"|"replace"|"delete"|undefined} operation
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     */
+                    Object.defineProperty(Mutation.prototype, "operation", {
+                        get: $util.oneOfGetter($oneOfFields = ["insert", "update", "insertOrUpdate", "replace", "delete"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * Creates a new Mutation instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {google.spanner.v1.IMutation=} [properties] Properties to set
+                     * @returns {google.spanner.v1.Mutation} Mutation instance
+                     */
+                    Mutation.create = function create(properties) {
+                        return new Mutation(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified Mutation message. Does not implicitly {@link google.spanner.v1.Mutation.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {google.spanner.v1.IMutation} message Mutation message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Mutation.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.insert != null && message.hasOwnProperty("insert"))
+                            $root.google.spanner.v1.Mutation.Write.encode(message.insert, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.update != null && message.hasOwnProperty("update"))
+                            $root.google.spanner.v1.Mutation.Write.encode(message.update, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.insertOrUpdate != null && message.hasOwnProperty("insertOrUpdate"))
+                            $root.google.spanner.v1.Mutation.Write.encode(message.insertOrUpdate, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        if (message.replace != null && message.hasOwnProperty("replace"))
+                            $root.google.spanner.v1.Mutation.Write.encode(message.replace, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message["delete"] != null && message.hasOwnProperty("delete"))
+                            $root.google.spanner.v1.Mutation.Delete.encode(message["delete"], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified Mutation message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {google.spanner.v1.IMutation} message Mutation message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Mutation.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a Mutation message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.Mutation} Mutation
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Mutation.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Mutation();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.insert = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.update = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                break;
+                            case 4:
+                                message.replace = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                break;
+                            case 5:
+                                message["delete"] = $root.google.spanner.v1.Mutation.Delete.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a Mutation message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.Mutation} Mutation
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Mutation.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a Mutation message.
+                     * @function verify
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    Mutation.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.insert != null && message.hasOwnProperty("insert")) {
+                            properties.operation = 1;
+                            {
+                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.insert);
+                                if (error)
+                                    return "insert." + error;
+                            }
+                        }
+                        if (message.update != null && message.hasOwnProperty("update")) {
+                            if (properties.operation === 1)
+                                return "operation: multiple values";
+                            properties.operation = 1;
+                            {
+                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.update);
+                                if (error)
+                                    return "update." + error;
+                            }
+                        }
+                        if (message.insertOrUpdate != null && message.hasOwnProperty("insertOrUpdate")) {
+                            if (properties.operation === 1)
+                                return "operation: multiple values";
+                            properties.operation = 1;
+                            {
+                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.insertOrUpdate);
+                                if (error)
+                                    return "insertOrUpdate." + error;
+                            }
+                        }
+                        if (message.replace != null && message.hasOwnProperty("replace")) {
+                            if (properties.operation === 1)
+                                return "operation: multiple values";
+                            properties.operation = 1;
+                            {
+                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.replace);
+                                if (error)
+                                    return "replace." + error;
+                            }
+                        }
+                        if (message["delete"] != null && message.hasOwnProperty("delete")) {
+                            if (properties.operation === 1)
+                                return "operation: multiple values";
+                            properties.operation = 1;
+                            {
+                                var error = $root.google.spanner.v1.Mutation.Delete.verify(message["delete"]);
+                                if (error)
+                                    return "delete." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a Mutation message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.Mutation} Mutation
+                     */
+                    Mutation.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.Mutation)
+                            return object;
+                        var message = new $root.google.spanner.v1.Mutation();
+                        if (object.insert != null) {
+                            if (typeof object.insert !== "object")
+                                throw TypeError(".google.spanner.v1.Mutation.insert: object expected");
+                            message.insert = $root.google.spanner.v1.Mutation.Write.fromObject(object.insert);
+                        }
+                        if (object.update != null) {
+                            if (typeof object.update !== "object")
+                                throw TypeError(".google.spanner.v1.Mutation.update: object expected");
+                            message.update = $root.google.spanner.v1.Mutation.Write.fromObject(object.update);
+                        }
+                        if (object.insertOrUpdate != null) {
+                            if (typeof object.insertOrUpdate !== "object")
+                                throw TypeError(".google.spanner.v1.Mutation.insertOrUpdate: object expected");
+                            message.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.fromObject(object.insertOrUpdate);
+                        }
+                        if (object.replace != null) {
+                            if (typeof object.replace !== "object")
+                                throw TypeError(".google.spanner.v1.Mutation.replace: object expected");
+                            message.replace = $root.google.spanner.v1.Mutation.Write.fromObject(object.replace);
+                        }
+                        if (object["delete"] != null) {
+                            if (typeof object["delete"] !== "object")
+                                throw TypeError(".google.spanner.v1.Mutation.delete: object expected");
+                            message["delete"] = $root.google.spanner.v1.Mutation.Delete.fromObject(object["delete"]);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a Mutation message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {google.spanner.v1.Mutation} message Mutation
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    Mutation.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.insert != null && message.hasOwnProperty("insert")) {
+                            object.insert = $root.google.spanner.v1.Mutation.Write.toObject(message.insert, options);
+                            if (options.oneofs)
+                                object.operation = "insert";
+                        }
+                        if (message.update != null && message.hasOwnProperty("update")) {
+                            object.update = $root.google.spanner.v1.Mutation.Write.toObject(message.update, options);
+                            if (options.oneofs)
+                                object.operation = "update";
+                        }
+                        if (message.insertOrUpdate != null && message.hasOwnProperty("insertOrUpdate")) {
+                            object.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.toObject(message.insertOrUpdate, options);
+                            if (options.oneofs)
+                                object.operation = "insertOrUpdate";
+                        }
+                        if (message.replace != null && message.hasOwnProperty("replace")) {
+                            object.replace = $root.google.spanner.v1.Mutation.Write.toObject(message.replace, options);
+                            if (options.oneofs)
+                                object.operation = "replace";
+                        }
+                        if (message["delete"] != null && message.hasOwnProperty("delete")) {
+                            object["delete"] = $root.google.spanner.v1.Mutation.Delete.toObject(message["delete"], options);
+                            if (options.oneofs)
+                                object.operation = "delete";
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this Mutation to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.Mutation
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    Mutation.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    Mutation.Write = (function() {
+    
+                        /**
+                         * Properties of a Write.
+                         * @memberof google.spanner.v1.Mutation
+                         * @interface IWrite
+                         * @property {string|null} [table] Write table
+                         * @property {Array.<string>|null} [columns] Write columns
+                         * @property {Array.<google.protobuf.IListValue>|null} [values] Write values
+                         */
+    
+                        /**
+                         * Constructs a new Write.
+                         * @memberof google.spanner.v1.Mutation
+                         * @classdesc Represents a Write.
+                         * @implements IWrite
+                         * @constructor
+                         * @param {google.spanner.v1.Mutation.IWrite=} [properties] Properties to set
+                         */
+                        function Write(properties) {
+                            this.columns = [];
+                            this.values = [];
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Write table.
+                         * @member {string} table
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @instance
+                         */
+                        Write.prototype.table = "";
+    
+                        /**
+                         * Write columns.
+                         * @member {Array.<string>} columns
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @instance
+                         */
+                        Write.prototype.columns = $util.emptyArray;
+    
+                        /**
+                         * Write values.
+                         * @member {Array.<google.protobuf.IListValue>} values
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @instance
+                         */
+                        Write.prototype.values = $util.emptyArray;
+    
+                        /**
+                         * Creates a new Write instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {google.spanner.v1.Mutation.IWrite=} [properties] Properties to set
+                         * @returns {google.spanner.v1.Mutation.Write} Write instance
+                         */
+                        Write.create = function create(properties) {
+                            return new Write(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified Write message. Does not implicitly {@link google.spanner.v1.Mutation.Write.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {google.spanner.v1.Mutation.IWrite} message Write message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Write.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.table != null && message.hasOwnProperty("table"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.table);
+                            if (message.columns != null && message.columns.length)
+                                for (var i = 0; i < message.columns.length; ++i)
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.columns[i]);
+                            if (message.values != null && message.values.length)
+                                for (var i = 0; i < message.values.length; ++i)
+                                    $root.google.protobuf.ListValue.encode(message.values[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified Write message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Write.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {google.spanner.v1.Mutation.IWrite} message Write message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Write.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a Write message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.Mutation.Write} Write
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Write.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Mutation.Write();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.table = reader.string();
+                                    break;
+                                case 2:
+                                    if (!(message.columns && message.columns.length))
+                                        message.columns = [];
+                                    message.columns.push(reader.string());
+                                    break;
+                                case 3:
+                                    if (!(message.values && message.values.length))
+                                        message.values = [];
+                                    message.values.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a Write message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.Mutation.Write} Write
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Write.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a Write message.
+                         * @function verify
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        Write.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.table != null && message.hasOwnProperty("table"))
+                                if (!$util.isString(message.table))
+                                    return "table: string expected";
+                            if (message.columns != null && message.hasOwnProperty("columns")) {
+                                if (!Array.isArray(message.columns))
+                                    return "columns: array expected";
+                                for (var i = 0; i < message.columns.length; ++i)
+                                    if (!$util.isString(message.columns[i]))
+                                        return "columns: string[] expected";
+                            }
+                            if (message.values != null && message.hasOwnProperty("values")) {
+                                if (!Array.isArray(message.values))
+                                    return "values: array expected";
+                                for (var i = 0; i < message.values.length; ++i) {
+                                    var error = $root.google.protobuf.ListValue.verify(message.values[i]);
+                                    if (error)
+                                        return "values." + error;
+                                }
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a Write message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.Mutation.Write} Write
+                         */
+                        Write.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.Mutation.Write)
+                                return object;
+                            var message = new $root.google.spanner.v1.Mutation.Write();
+                            if (object.table != null)
+                                message.table = String(object.table);
+                            if (object.columns) {
+                                if (!Array.isArray(object.columns))
+                                    throw TypeError(".google.spanner.v1.Mutation.Write.columns: array expected");
+                                message.columns = [];
+                                for (var i = 0; i < object.columns.length; ++i)
+                                    message.columns[i] = String(object.columns[i]);
+                            }
+                            if (object.values) {
+                                if (!Array.isArray(object.values))
+                                    throw TypeError(".google.spanner.v1.Mutation.Write.values: array expected");
+                                message.values = [];
+                                for (var i = 0; i < object.values.length; ++i) {
+                                    if (typeof object.values[i] !== "object")
+                                        throw TypeError(".google.spanner.v1.Mutation.Write.values: object expected");
+                                    message.values[i] = $root.google.protobuf.ListValue.fromObject(object.values[i]);
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a Write message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {google.spanner.v1.Mutation.Write} message Write
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        Write.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.arrays || options.defaults) {
+                                object.columns = [];
+                                object.values = [];
+                            }
+                            if (options.defaults)
+                                object.table = "";
+                            if (message.table != null && message.hasOwnProperty("table"))
+                                object.table = message.table;
+                            if (message.columns && message.columns.length) {
+                                object.columns = [];
+                                for (var j = 0; j < message.columns.length; ++j)
+                                    object.columns[j] = message.columns[j];
+                            }
+                            if (message.values && message.values.length) {
+                                object.values = [];
+                                for (var j = 0; j < message.values.length; ++j)
+                                    object.values[j] = $root.google.protobuf.ListValue.toObject(message.values[j], options);
+                            }
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this Write to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        Write.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return Write;
+                    })();
+    
+                    Mutation.Delete = (function() {
+    
+                        /**
+                         * Properties of a Delete.
+                         * @memberof google.spanner.v1.Mutation
+                         * @interface IDelete
+                         * @property {string|null} [table] Delete table
+                         * @property {google.spanner.v1.IKeySet|null} [keySet] Delete keySet
+                         */
+    
+                        /**
+                         * Constructs a new Delete.
+                         * @memberof google.spanner.v1.Mutation
+                         * @classdesc Represents a Delete.
+                         * @implements IDelete
+                         * @constructor
+                         * @param {google.spanner.v1.Mutation.IDelete=} [properties] Properties to set
+                         */
+                        function Delete(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Delete table.
+                         * @member {string} table
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @instance
+                         */
+                        Delete.prototype.table = "";
+    
+                        /**
+                         * Delete keySet.
+                         * @member {google.spanner.v1.IKeySet|null|undefined} keySet
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @instance
+                         */
+                        Delete.prototype.keySet = null;
+    
+                        /**
+                         * Creates a new Delete instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {google.spanner.v1.Mutation.IDelete=} [properties] Properties to set
+                         * @returns {google.spanner.v1.Mutation.Delete} Delete instance
+                         */
+                        Delete.create = function create(properties) {
+                            return new Delete(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified Delete message. Does not implicitly {@link google.spanner.v1.Mutation.Delete.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {google.spanner.v1.Mutation.IDelete} message Delete message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Delete.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.table != null && message.hasOwnProperty("table"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.table);
+                            if (message.keySet != null && message.hasOwnProperty("keySet"))
+                                $root.google.spanner.v1.KeySet.encode(message.keySet, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified Delete message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Delete.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {google.spanner.v1.Mutation.IDelete} message Delete message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Delete.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a Delete message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.Mutation.Delete} Delete
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Delete.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Mutation.Delete();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.table = reader.string();
+                                    break;
+                                case 2:
+                                    message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a Delete message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.Mutation.Delete} Delete
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Delete.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a Delete message.
+                         * @function verify
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        Delete.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.table != null && message.hasOwnProperty("table"))
+                                if (!$util.isString(message.table))
+                                    return "table: string expected";
+                            if (message.keySet != null && message.hasOwnProperty("keySet")) {
+                                var error = $root.google.spanner.v1.KeySet.verify(message.keySet);
+                                if (error)
+                                    return "keySet." + error;
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a Delete message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.Mutation.Delete} Delete
+                         */
+                        Delete.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.Mutation.Delete)
+                                return object;
+                            var message = new $root.google.spanner.v1.Mutation.Delete();
+                            if (object.table != null)
+                                message.table = String(object.table);
+                            if (object.keySet != null) {
+                                if (typeof object.keySet !== "object")
+                                    throw TypeError(".google.spanner.v1.Mutation.Delete.keySet: object expected");
+                                message.keySet = $root.google.spanner.v1.KeySet.fromObject(object.keySet);
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a Delete message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {google.spanner.v1.Mutation.Delete} message Delete
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        Delete.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.table = "";
+                                object.keySet = null;
+                            }
+                            if (message.table != null && message.hasOwnProperty("table"))
+                                object.table = message.table;
+                            if (message.keySet != null && message.hasOwnProperty("keySet"))
+                                object.keySet = $root.google.spanner.v1.KeySet.toObject(message.keySet, options);
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this Delete to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        Delete.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return Delete;
+                    })();
+    
+                    return Mutation;
+                })();
+    
+                v1.PlanNode = (function() {
+    
+                    /**
+                     * Properties of a PlanNode.
+                     * @memberof google.spanner.v1
+                     * @interface IPlanNode
+                     * @property {number|null} [index] PlanNode index
+                     * @property {google.spanner.v1.PlanNode.Kind|null} [kind] PlanNode kind
+                     * @property {string|null} [displayName] PlanNode displayName
+                     * @property {Array.<google.spanner.v1.PlanNode.IChildLink>|null} [childLinks] PlanNode childLinks
+                     * @property {google.spanner.v1.PlanNode.IShortRepresentation|null} [shortRepresentation] PlanNode shortRepresentation
+                     * @property {google.protobuf.IStruct|null} [metadata] PlanNode metadata
+                     * @property {google.protobuf.IStruct|null} [executionStats] PlanNode executionStats
+                     */
+    
+                    /**
+                     * Constructs a new PlanNode.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a PlanNode.
+                     * @implements IPlanNode
+                     * @constructor
+                     * @param {google.spanner.v1.IPlanNode=} [properties] Properties to set
+                     */
+                    function PlanNode(properties) {
+                        this.childLinks = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * PlanNode index.
+                     * @member {number} index
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.index = 0;
+    
+                    /**
+                     * PlanNode kind.
+                     * @member {google.spanner.v1.PlanNode.Kind} kind
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.kind = 0;
+    
+                    /**
+                     * PlanNode displayName.
+                     * @member {string} displayName
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.displayName = "";
+    
+                    /**
+                     * PlanNode childLinks.
+                     * @member {Array.<google.spanner.v1.PlanNode.IChildLink>} childLinks
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.childLinks = $util.emptyArray;
+    
+                    /**
+                     * PlanNode shortRepresentation.
+                     * @member {google.spanner.v1.PlanNode.IShortRepresentation|null|undefined} shortRepresentation
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.shortRepresentation = null;
+    
+                    /**
+                     * PlanNode metadata.
+                     * @member {google.protobuf.IStruct|null|undefined} metadata
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.metadata = null;
+    
+                    /**
+                     * PlanNode executionStats.
+                     * @member {google.protobuf.IStruct|null|undefined} executionStats
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     */
+                    PlanNode.prototype.executionStats = null;
+    
+                    /**
+                     * Creates a new PlanNode instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {google.spanner.v1.IPlanNode=} [properties] Properties to set
+                     * @returns {google.spanner.v1.PlanNode} PlanNode instance
+                     */
+                    PlanNode.create = function create(properties) {
+                        return new PlanNode(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified PlanNode message. Does not implicitly {@link google.spanner.v1.PlanNode.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {google.spanner.v1.IPlanNode} message PlanNode message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    PlanNode.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.index != null && message.hasOwnProperty("index"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.index);
+                        if (message.kind != null && message.hasOwnProperty("kind"))
+                            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.kind);
+                        if (message.displayName != null && message.hasOwnProperty("displayName"))
+                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.displayName);
+                        if (message.childLinks != null && message.childLinks.length)
+                            for (var i = 0; i < message.childLinks.length; ++i)
+                                $root.google.spanner.v1.PlanNode.ChildLink.encode(message.childLinks[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.shortRepresentation != null && message.hasOwnProperty("shortRepresentation"))
+                            $root.google.spanner.v1.PlanNode.ShortRepresentation.encode(message.shortRepresentation, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                        if (message.metadata != null && message.hasOwnProperty("metadata"))
+                            $root.google.protobuf.Struct.encode(message.metadata, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                        if (message.executionStats != null && message.hasOwnProperty("executionStats"))
+                            $root.google.protobuf.Struct.encode(message.executionStats, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified PlanNode message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {google.spanner.v1.IPlanNode} message PlanNode message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    PlanNode.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a PlanNode message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.PlanNode} PlanNode
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    PlanNode.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.index = reader.int32();
+                                break;
+                            case 2:
+                                message.kind = reader.int32();
+                                break;
+                            case 3:
+                                message.displayName = reader.string();
+                                break;
+                            case 4:
+                                if (!(message.childLinks && message.childLinks.length))
+                                    message.childLinks = [];
+                                message.childLinks.push($root.google.spanner.v1.PlanNode.ChildLink.decode(reader, reader.uint32()));
+                                break;
+                            case 5:
+                                message.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.decode(reader, reader.uint32());
+                                break;
+                            case 6:
+                                message.metadata = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                break;
+                            case 7:
+                                message.executionStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a PlanNode message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.PlanNode} PlanNode
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    PlanNode.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a PlanNode message.
+                     * @function verify
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    PlanNode.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.index != null && message.hasOwnProperty("index"))
+                            if (!$util.isInteger(message.index))
+                                return "index: integer expected";
+                        if (message.kind != null && message.hasOwnProperty("kind"))
+                            switch (message.kind) {
+                            default:
+                                return "kind: enum value expected";
+                            case 0:
+                            case 1:
+                            case 2:
+                                break;
+                            }
+                        if (message.displayName != null && message.hasOwnProperty("displayName"))
+                            if (!$util.isString(message.displayName))
+                                return "displayName: string expected";
+                        if (message.childLinks != null && message.hasOwnProperty("childLinks")) {
+                            if (!Array.isArray(message.childLinks))
+                                return "childLinks: array expected";
+                            for (var i = 0; i < message.childLinks.length; ++i) {
+                                var error = $root.google.spanner.v1.PlanNode.ChildLink.verify(message.childLinks[i]);
+                                if (error)
+                                    return "childLinks." + error;
+                            }
+                        }
+                        if (message.shortRepresentation != null && message.hasOwnProperty("shortRepresentation")) {
+                            var error = $root.google.spanner.v1.PlanNode.ShortRepresentation.verify(message.shortRepresentation);
+                            if (error)
+                                return "shortRepresentation." + error;
+                        }
+                        if (message.metadata != null && message.hasOwnProperty("metadata")) {
+                            var error = $root.google.protobuf.Struct.verify(message.metadata);
+                            if (error)
+                                return "metadata." + error;
+                        }
+                        if (message.executionStats != null && message.hasOwnProperty("executionStats")) {
+                            var error = $root.google.protobuf.Struct.verify(message.executionStats);
+                            if (error)
+                                return "executionStats." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a PlanNode message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.PlanNode} PlanNode
+                     */
+                    PlanNode.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.PlanNode)
+                            return object;
+                        var message = new $root.google.spanner.v1.PlanNode();
+                        if (object.index != null)
+                            message.index = object.index | 0;
+                        switch (object.kind) {
+                        case "KIND_UNSPECIFIED":
+                        case 0:
+                            message.kind = 0;
+                            break;
+                        case "RELATIONAL":
+                        case 1:
+                            message.kind = 1;
+                            break;
+                        case "SCALAR":
+                        case 2:
+                            message.kind = 2;
+                            break;
+                        }
+                        if (object.displayName != null)
+                            message.displayName = String(object.displayName);
+                        if (object.childLinks) {
+                            if (!Array.isArray(object.childLinks))
+                                throw TypeError(".google.spanner.v1.PlanNode.childLinks: array expected");
+                            message.childLinks = [];
+                            for (var i = 0; i < object.childLinks.length; ++i) {
+                                if (typeof object.childLinks[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.PlanNode.childLinks: object expected");
+                                message.childLinks[i] = $root.google.spanner.v1.PlanNode.ChildLink.fromObject(object.childLinks[i]);
+                            }
+                        }
+                        if (object.shortRepresentation != null) {
+                            if (typeof object.shortRepresentation !== "object")
+                                throw TypeError(".google.spanner.v1.PlanNode.shortRepresentation: object expected");
+                            message.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.fromObject(object.shortRepresentation);
+                        }
+                        if (object.metadata != null) {
+                            if (typeof object.metadata !== "object")
+                                throw TypeError(".google.spanner.v1.PlanNode.metadata: object expected");
+                            message.metadata = $root.google.protobuf.Struct.fromObject(object.metadata);
+                        }
+                        if (object.executionStats != null) {
+                            if (typeof object.executionStats !== "object")
+                                throw TypeError(".google.spanner.v1.PlanNode.executionStats: object expected");
+                            message.executionStats = $root.google.protobuf.Struct.fromObject(object.executionStats);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a PlanNode message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {google.spanner.v1.PlanNode} message PlanNode
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    PlanNode.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.childLinks = [];
+                        if (options.defaults) {
+                            object.index = 0;
+                            object.kind = options.enums === String ? "KIND_UNSPECIFIED" : 0;
+                            object.displayName = "";
+                            object.shortRepresentation = null;
+                            object.metadata = null;
+                            object.executionStats = null;
+                        }
+                        if (message.index != null && message.hasOwnProperty("index"))
+                            object.index = message.index;
+                        if (message.kind != null && message.hasOwnProperty("kind"))
+                            object.kind = options.enums === String ? $root.google.spanner.v1.PlanNode.Kind[message.kind] : message.kind;
+                        if (message.displayName != null && message.hasOwnProperty("displayName"))
+                            object.displayName = message.displayName;
+                        if (message.childLinks && message.childLinks.length) {
+                            object.childLinks = [];
+                            for (var j = 0; j < message.childLinks.length; ++j)
+                                object.childLinks[j] = $root.google.spanner.v1.PlanNode.ChildLink.toObject(message.childLinks[j], options);
+                        }
+                        if (message.shortRepresentation != null && message.hasOwnProperty("shortRepresentation"))
+                            object.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.toObject(message.shortRepresentation, options);
+                        if (message.metadata != null && message.hasOwnProperty("metadata"))
+                            object.metadata = $root.google.protobuf.Struct.toObject(message.metadata, options);
+                        if (message.executionStats != null && message.hasOwnProperty("executionStats"))
+                            object.executionStats = $root.google.protobuf.Struct.toObject(message.executionStats, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this PlanNode to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.PlanNode
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    PlanNode.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    PlanNode.ChildLink = (function() {
+    
+                        /**
+                         * Properties of a ChildLink.
+                         * @memberof google.spanner.v1.PlanNode
+                         * @interface IChildLink
+                         * @property {number|null} [childIndex] ChildLink childIndex
+                         * @property {string|null} [type] ChildLink type
+                         * @property {string|null} [variable] ChildLink variable
+                         */
+    
+                        /**
+                         * Constructs a new ChildLink.
+                         * @memberof google.spanner.v1.PlanNode
+                         * @classdesc Represents a ChildLink.
+                         * @implements IChildLink
+                         * @constructor
+                         * @param {google.spanner.v1.PlanNode.IChildLink=} [properties] Properties to set
+                         */
+                        function ChildLink(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ChildLink childIndex.
+                         * @member {number} childIndex
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @instance
+                         */
+                        ChildLink.prototype.childIndex = 0;
+    
+                        /**
+                         * ChildLink type.
+                         * @member {string} type
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @instance
+                         */
+                        ChildLink.prototype.type = "";
+    
+                        /**
+                         * ChildLink variable.
+                         * @member {string} variable
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @instance
+                         */
+                        ChildLink.prototype.variable = "";
+    
+                        /**
+                         * Creates a new ChildLink instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.IChildLink=} [properties] Properties to set
+                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink instance
+                         */
+                        ChildLink.create = function create(properties) {
+                            return new ChildLink(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified ChildLink message. Does not implicitly {@link google.spanner.v1.PlanNode.ChildLink.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.IChildLink} message ChildLink message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ChildLink.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.childIndex != null && message.hasOwnProperty("childIndex"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.childIndex);
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.type);
+                            if (message.variable != null && message.hasOwnProperty("variable"))
+                                writer.uint32(/* id 3, wireType 2 =*/26).string(message.variable);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ChildLink message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.ChildLink.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.IChildLink} message ChildLink message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ChildLink.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ChildLink message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ChildLink.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode.ChildLink();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.childIndex = reader.int32();
+                                    break;
+                                case 2:
+                                    message.type = reader.string();
+                                    break;
+                                case 3:
+                                    message.variable = reader.string();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ChildLink message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ChildLink.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ChildLink message.
+                         * @function verify
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ChildLink.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.childIndex != null && message.hasOwnProperty("childIndex"))
+                                if (!$util.isInteger(message.childIndex))
+                                    return "childIndex: integer expected";
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                if (!$util.isString(message.type))
+                                    return "type: string expected";
+                            if (message.variable != null && message.hasOwnProperty("variable"))
+                                if (!$util.isString(message.variable))
+                                    return "variable: string expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ChildLink message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink
+                         */
+                        ChildLink.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.PlanNode.ChildLink)
+                                return object;
+                            var message = new $root.google.spanner.v1.PlanNode.ChildLink();
+                            if (object.childIndex != null)
+                                message.childIndex = object.childIndex | 0;
+                            if (object.type != null)
+                                message.type = String(object.type);
+                            if (object.variable != null)
+                                message.variable = String(object.variable);
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ChildLink message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.ChildLink} message ChildLink
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ChildLink.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.childIndex = 0;
+                                object.type = "";
+                                object.variable = "";
+                            }
+                            if (message.childIndex != null && message.hasOwnProperty("childIndex"))
+                                object.childIndex = message.childIndex;
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                object.type = message.type;
+                            if (message.variable != null && message.hasOwnProperty("variable"))
+                                object.variable = message.variable;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ChildLink to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ChildLink.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ChildLink;
+                    })();
+    
+                    PlanNode.ShortRepresentation = (function() {
+    
+                        /**
+                         * Properties of a ShortRepresentation.
+                         * @memberof google.spanner.v1.PlanNode
+                         * @interface IShortRepresentation
+                         * @property {string|null} [description] ShortRepresentation description
+                         * @property {Object.<string,number>|null} [subqueries] ShortRepresentation subqueries
+                         */
+    
+                        /**
+                         * Constructs a new ShortRepresentation.
+                         * @memberof google.spanner.v1.PlanNode
+                         * @classdesc Represents a ShortRepresentation.
+                         * @implements IShortRepresentation
+                         * @constructor
+                         * @param {google.spanner.v1.PlanNode.IShortRepresentation=} [properties] Properties to set
+                         */
+                        function ShortRepresentation(properties) {
+                            this.subqueries = {};
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ShortRepresentation description.
+                         * @member {string} description
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @instance
+                         */
+                        ShortRepresentation.prototype.description = "";
+    
+                        /**
+                         * ShortRepresentation subqueries.
+                         * @member {Object.<string,number>} subqueries
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @instance
+                         */
+                        ShortRepresentation.prototype.subqueries = $util.emptyObject;
+    
+                        /**
+                         * Creates a new ShortRepresentation instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.IShortRepresentation=} [properties] Properties to set
+                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation instance
+                         */
+                        ShortRepresentation.create = function create(properties) {
+                            return new ShortRepresentation(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified ShortRepresentation message. Does not implicitly {@link google.spanner.v1.PlanNode.ShortRepresentation.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.IShortRepresentation} message ShortRepresentation message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ShortRepresentation.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.description);
+                            if (message.subqueries != null && message.hasOwnProperty("subqueries"))
+                                for (var keys = Object.keys(message.subqueries), i = 0; i < keys.length; ++i)
+                                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 0 =*/16).int32(message.subqueries[keys[i]]).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ShortRepresentation message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.ShortRepresentation.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.IShortRepresentation} message ShortRepresentation message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ShortRepresentation.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ShortRepresentation message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ShortRepresentation.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode.ShortRepresentation(), key;
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.description = reader.string();
+                                    break;
+                                case 2:
+                                    reader.skip().pos++;
+                                    if (message.subqueries === $util.emptyObject)
+                                        message.subqueries = {};
+                                    key = reader.string();
+                                    reader.pos++;
+                                    message.subqueries[key] = reader.int32();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ShortRepresentation message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ShortRepresentation.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ShortRepresentation message.
+                         * @function verify
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ShortRepresentation.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                if (!$util.isString(message.description))
+                                    return "description: string expected";
+                            if (message.subqueries != null && message.hasOwnProperty("subqueries")) {
+                                if (!$util.isObject(message.subqueries))
+                                    return "subqueries: object expected";
+                                var key = Object.keys(message.subqueries);
+                                for (var i = 0; i < key.length; ++i)
+                                    if (!$util.isInteger(message.subqueries[key[i]]))
+                                        return "subqueries: integer{k:string} expected";
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ShortRepresentation message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation
+                         */
+                        ShortRepresentation.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.PlanNode.ShortRepresentation)
+                                return object;
+                            var message = new $root.google.spanner.v1.PlanNode.ShortRepresentation();
+                            if (object.description != null)
+                                message.description = String(object.description);
+                            if (object.subqueries) {
+                                if (typeof object.subqueries !== "object")
+                                    throw TypeError(".google.spanner.v1.PlanNode.ShortRepresentation.subqueries: object expected");
+                                message.subqueries = {};
+                                for (var keys = Object.keys(object.subqueries), i = 0; i < keys.length; ++i)
+                                    message.subqueries[keys[i]] = object.subqueries[keys[i]] | 0;
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ShortRepresentation message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {google.spanner.v1.PlanNode.ShortRepresentation} message ShortRepresentation
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ShortRepresentation.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.objects || options.defaults)
+                                object.subqueries = {};
+                            if (options.defaults)
+                                object.description = "";
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                object.description = message.description;
+                            var keys2;
+                            if (message.subqueries && (keys2 = Object.keys(message.subqueries)).length) {
+                                object.subqueries = {};
+                                for (var j = 0; j < keys2.length; ++j)
+                                    object.subqueries[keys2[j]] = message.subqueries[keys2[j]];
+                            }
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ShortRepresentation to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ShortRepresentation.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ShortRepresentation;
+                    })();
+    
+                    /**
+                     * Kind enum.
+                     * @name google.spanner.v1.PlanNode.Kind
+                     * @enum {string}
+                     * @property {number} KIND_UNSPECIFIED=0 KIND_UNSPECIFIED value
+                     * @property {number} RELATIONAL=1 RELATIONAL value
+                     * @property {number} SCALAR=2 SCALAR value
+                     */
+                    PlanNode.Kind = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "KIND_UNSPECIFIED"] = 0;
+                        values[valuesById[1] = "RELATIONAL"] = 1;
+                        values[valuesById[2] = "SCALAR"] = 2;
+                        return values;
+                    })();
+    
+                    return PlanNode;
+                })();
+    
+                v1.QueryPlan = (function() {
+    
+                    /**
+                     * Properties of a QueryPlan.
+                     * @memberof google.spanner.v1
+                     * @interface IQueryPlan
+                     * @property {Array.<google.spanner.v1.IPlanNode>|null} [planNodes] QueryPlan planNodes
+                     */
+    
+                    /**
+                     * Constructs a new QueryPlan.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a QueryPlan.
+                     * @implements IQueryPlan
+                     * @constructor
+                     * @param {google.spanner.v1.IQueryPlan=} [properties] Properties to set
+                     */
+                    function QueryPlan(properties) {
+                        this.planNodes = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * QueryPlan planNodes.
+                     * @member {Array.<google.spanner.v1.IPlanNode>} planNodes
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @instance
+                     */
+                    QueryPlan.prototype.planNodes = $util.emptyArray;
+    
+                    /**
+                     * Creates a new QueryPlan instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {google.spanner.v1.IQueryPlan=} [properties] Properties to set
+                     * @returns {google.spanner.v1.QueryPlan} QueryPlan instance
+                     */
+                    QueryPlan.create = function create(properties) {
+                        return new QueryPlan(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified QueryPlan message. Does not implicitly {@link google.spanner.v1.QueryPlan.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {google.spanner.v1.IQueryPlan} message QueryPlan message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryPlan.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.planNodes != null && message.planNodes.length)
+                            for (var i = 0; i < message.planNodes.length; ++i)
+                                $root.google.spanner.v1.PlanNode.encode(message.planNodes[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryPlan message, length delimited. Does not implicitly {@link google.spanner.v1.QueryPlan.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {google.spanner.v1.IQueryPlan} message QueryPlan message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryPlan.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryPlan message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.QueryPlan} QueryPlan
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryPlan.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.QueryPlan();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                if (!(message.planNodes && message.planNodes.length))
+                                    message.planNodes = [];
+                                message.planNodes.push($root.google.spanner.v1.PlanNode.decode(reader, reader.uint32()));
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryPlan message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.QueryPlan} QueryPlan
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryPlan.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryPlan message.
+                     * @function verify
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryPlan.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.planNodes != null && message.hasOwnProperty("planNodes")) {
+                            if (!Array.isArray(message.planNodes))
+                                return "planNodes: array expected";
+                            for (var i = 0; i < message.planNodes.length; ++i) {
+                                var error = $root.google.spanner.v1.PlanNode.verify(message.planNodes[i]);
+                                if (error)
+                                    return "planNodes." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryPlan message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.QueryPlan} QueryPlan
+                     */
+                    QueryPlan.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.QueryPlan)
+                            return object;
+                        var message = new $root.google.spanner.v1.QueryPlan();
+                        if (object.planNodes) {
+                            if (!Array.isArray(object.planNodes))
+                                throw TypeError(".google.spanner.v1.QueryPlan.planNodes: array expected");
+                            message.planNodes = [];
+                            for (var i = 0; i < object.planNodes.length; ++i) {
+                                if (typeof object.planNodes[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.QueryPlan.planNodes: object expected");
+                                message.planNodes[i] = $root.google.spanner.v1.PlanNode.fromObject(object.planNodes[i]);
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryPlan message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {google.spanner.v1.QueryPlan} message QueryPlan
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryPlan.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.planNodes = [];
+                        if (message.planNodes && message.planNodes.length) {
+                            object.planNodes = [];
+                            for (var j = 0; j < message.planNodes.length; ++j)
+                                object.planNodes[j] = $root.google.spanner.v1.PlanNode.toObject(message.planNodes[j], options);
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this QueryPlan to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryPlan.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryPlan;
+                })();
+    
+                v1.ResultSet = (function() {
+    
+                    /**
+                     * Properties of a ResultSet.
+                     * @memberof google.spanner.v1
+                     * @interface IResultSet
+                     * @property {google.spanner.v1.IResultSetMetadata|null} [metadata] ResultSet metadata
+                     * @property {Array.<google.protobuf.IListValue>|null} [rows] ResultSet rows
+                     * @property {google.spanner.v1.IResultSetStats|null} [stats] ResultSet stats
+                     */
+    
+                    /**
+                     * Constructs a new ResultSet.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a ResultSet.
+                     * @implements IResultSet
+                     * @constructor
+                     * @param {google.spanner.v1.IResultSet=} [properties] Properties to set
+                     */
+                    function ResultSet(properties) {
+                        this.rows = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * ResultSet metadata.
+                     * @member {google.spanner.v1.IResultSetMetadata|null|undefined} metadata
+                     * @memberof google.spanner.v1.ResultSet
+                     * @instance
+                     */
+                    ResultSet.prototype.metadata = null;
+    
+                    /**
+                     * ResultSet rows.
+                     * @member {Array.<google.protobuf.IListValue>} rows
+                     * @memberof google.spanner.v1.ResultSet
+                     * @instance
+                     */
+                    ResultSet.prototype.rows = $util.emptyArray;
+    
+                    /**
+                     * ResultSet stats.
+                     * @member {google.spanner.v1.IResultSetStats|null|undefined} stats
+                     * @memberof google.spanner.v1.ResultSet
+                     * @instance
+                     */
+                    ResultSet.prototype.stats = null;
+    
+                    /**
+                     * Creates a new ResultSet instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {google.spanner.v1.IResultSet=} [properties] Properties to set
+                     * @returns {google.spanner.v1.ResultSet} ResultSet instance
+                     */
+                    ResultSet.create = function create(properties) {
+                        return new ResultSet(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified ResultSet message. Does not implicitly {@link google.spanner.v1.ResultSet.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {google.spanner.v1.IResultSet} message ResultSet message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    ResultSet.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.metadata != null && message.hasOwnProperty("metadata"))
+                            $root.google.spanner.v1.ResultSetMetadata.encode(message.metadata, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.rows != null && message.rows.length)
+                            for (var i = 0; i < message.rows.length; ++i)
+                                $root.google.protobuf.ListValue.encode(message.rows[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.stats != null && message.hasOwnProperty("stats"))
+                            $root.google.spanner.v1.ResultSetStats.encode(message.stats, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified ResultSet message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSet.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {google.spanner.v1.IResultSet} message ResultSet message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    ResultSet.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a ResultSet message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.ResultSet} ResultSet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    ResultSet.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ResultSet();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                if (!(message.rows && message.rows.length))
+                                    message.rows = [];
+                                message.rows.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
+                                break;
+                            case 3:
+                                message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a ResultSet message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.ResultSet} ResultSet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    ResultSet.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a ResultSet message.
+                     * @function verify
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    ResultSet.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.metadata != null && message.hasOwnProperty("metadata")) {
+                            var error = $root.google.spanner.v1.ResultSetMetadata.verify(message.metadata);
+                            if (error)
+                                return "metadata." + error;
+                        }
+                        if (message.rows != null && message.hasOwnProperty("rows")) {
+                            if (!Array.isArray(message.rows))
+                                return "rows: array expected";
+                            for (var i = 0; i < message.rows.length; ++i) {
+                                var error = $root.google.protobuf.ListValue.verify(message.rows[i]);
+                                if (error)
+                                    return "rows." + error;
+                            }
+                        }
+                        if (message.stats != null && message.hasOwnProperty("stats")) {
+                            var error = $root.google.spanner.v1.ResultSetStats.verify(message.stats);
+                            if (error)
+                                return "stats." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a ResultSet message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.ResultSet} ResultSet
+                     */
+                    ResultSet.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.ResultSet)
+                            return object;
+                        var message = new $root.google.spanner.v1.ResultSet();
+                        if (object.metadata != null) {
+                            if (typeof object.metadata !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSet.metadata: object expected");
+                            message.metadata = $root.google.spanner.v1.ResultSetMetadata.fromObject(object.metadata);
+                        }
+                        if (object.rows) {
+                            if (!Array.isArray(object.rows))
+                                throw TypeError(".google.spanner.v1.ResultSet.rows: array expected");
+                            message.rows = [];
+                            for (var i = 0; i < object.rows.length; ++i) {
+                                if (typeof object.rows[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.ResultSet.rows: object expected");
+                                message.rows[i] = $root.google.protobuf.ListValue.fromObject(object.rows[i]);
+                            }
+                        }
+                        if (object.stats != null) {
+                            if (typeof object.stats !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSet.stats: object expected");
+                            message.stats = $root.google.spanner.v1.ResultSetStats.fromObject(object.stats);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a ResultSet message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {google.spanner.v1.ResultSet} message ResultSet
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    ResultSet.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.rows = [];
+                        if (options.defaults) {
+                            object.metadata = null;
+                            object.stats = null;
+                        }
+                        if (message.metadata != null && message.hasOwnProperty("metadata"))
+                            object.metadata = $root.google.spanner.v1.ResultSetMetadata.toObject(message.metadata, options);
+                        if (message.rows && message.rows.length) {
+                            object.rows = [];
+                            for (var j = 0; j < message.rows.length; ++j)
+                                object.rows[j] = $root.google.protobuf.ListValue.toObject(message.rows[j], options);
+                        }
+                        if (message.stats != null && message.hasOwnProperty("stats"))
+                            object.stats = $root.google.spanner.v1.ResultSetStats.toObject(message.stats, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this ResultSet to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.ResultSet
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    ResultSet.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return ResultSet;
+                })();
+    
+                v1.PartialResultSet = (function() {
+    
+                    /**
+                     * Properties of a PartialResultSet.
+                     * @memberof google.spanner.v1
+                     * @interface IPartialResultSet
+                     * @property {google.spanner.v1.IResultSetMetadata|null} [metadata] PartialResultSet metadata
+                     * @property {Array.<google.protobuf.IValue>|null} [values] PartialResultSet values
+                     * @property {boolean|null} [chunkedValue] PartialResultSet chunkedValue
+                     * @property {Uint8Array|null} [resumeToken] PartialResultSet resumeToken
+                     * @property {google.spanner.v1.IResultSetStats|null} [stats] PartialResultSet stats
+                     */
+    
+                    /**
+                     * Constructs a new PartialResultSet.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a PartialResultSet.
+                     * @implements IPartialResultSet
+                     * @constructor
+                     * @param {google.spanner.v1.IPartialResultSet=} [properties] Properties to set
+                     */
+                    function PartialResultSet(properties) {
+                        this.values = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * PartialResultSet metadata.
+                     * @member {google.spanner.v1.IResultSetMetadata|null|undefined} metadata
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @instance
+                     */
+                    PartialResultSet.prototype.metadata = null;
+    
+                    /**
+                     * PartialResultSet values.
+                     * @member {Array.<google.protobuf.IValue>} values
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @instance
+                     */
+                    PartialResultSet.prototype.values = $util.emptyArray;
+    
+                    /**
+                     * PartialResultSet chunkedValue.
+                     * @member {boolean} chunkedValue
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @instance
+                     */
+                    PartialResultSet.prototype.chunkedValue = false;
+    
+                    /**
+                     * PartialResultSet resumeToken.
+                     * @member {Uint8Array} resumeToken
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @instance
+                     */
+                    PartialResultSet.prototype.resumeToken = $util.newBuffer([]);
+    
+                    /**
+                     * PartialResultSet stats.
+                     * @member {google.spanner.v1.IResultSetStats|null|undefined} stats
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @instance
+                     */
+                    PartialResultSet.prototype.stats = null;
+    
+                    /**
+                     * Creates a new PartialResultSet instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {google.spanner.v1.IPartialResultSet=} [properties] Properties to set
+                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet instance
+                     */
+                    PartialResultSet.create = function create(properties) {
+                        return new PartialResultSet(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified PartialResultSet message. Does not implicitly {@link google.spanner.v1.PartialResultSet.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {google.spanner.v1.IPartialResultSet} message PartialResultSet message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    PartialResultSet.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.metadata != null && message.hasOwnProperty("metadata"))
+                            $root.google.spanner.v1.ResultSetMetadata.encode(message.metadata, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.values != null && message.values.length)
+                            for (var i = 0; i < message.values.length; ++i)
+                                $root.google.protobuf.Value.encode(message.values[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.chunkedValue != null && message.hasOwnProperty("chunkedValue"))
+                            writer.uint32(/* id 3, wireType 0 =*/24).bool(message.chunkedValue);
+                        if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
+                            writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.resumeToken);
+                        if (message.stats != null && message.hasOwnProperty("stats"))
+                            $root.google.spanner.v1.ResultSetStats.encode(message.stats, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified PartialResultSet message, length delimited. Does not implicitly {@link google.spanner.v1.PartialResultSet.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {google.spanner.v1.IPartialResultSet} message PartialResultSet message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    PartialResultSet.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a PartialResultSet message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    PartialResultSet.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PartialResultSet();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                if (!(message.values && message.values.length))
+                                    message.values = [];
+                                message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
+                                break;
+                            case 3:
+                                message.chunkedValue = reader.bool();
+                                break;
+                            case 4:
+                                message.resumeToken = reader.bytes();
+                                break;
+                            case 5:
+                                message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a PartialResultSet message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    PartialResultSet.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a PartialResultSet message.
+                     * @function verify
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    PartialResultSet.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.metadata != null && message.hasOwnProperty("metadata")) {
+                            var error = $root.google.spanner.v1.ResultSetMetadata.verify(message.metadata);
+                            if (error)
+                                return "metadata." + error;
+                        }
+                        if (message.values != null && message.hasOwnProperty("values")) {
+                            if (!Array.isArray(message.values))
+                                return "values: array expected";
+                            for (var i = 0; i < message.values.length; ++i) {
+                                var error = $root.google.protobuf.Value.verify(message.values[i]);
+                                if (error)
+                                    return "values." + error;
+                            }
+                        }
+                        if (message.chunkedValue != null && message.hasOwnProperty("chunkedValue"))
+                            if (typeof message.chunkedValue !== "boolean")
+                                return "chunkedValue: boolean expected";
+                        if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
+                            if (!(message.resumeToken && typeof message.resumeToken.length === "number" || $util.isString(message.resumeToken)))
+                                return "resumeToken: buffer expected";
+                        if (message.stats != null && message.hasOwnProperty("stats")) {
+                            var error = $root.google.spanner.v1.ResultSetStats.verify(message.stats);
+                            if (error)
+                                return "stats." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a PartialResultSet message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet
+                     */
+                    PartialResultSet.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.PartialResultSet)
+                            return object;
+                        var message = new $root.google.spanner.v1.PartialResultSet();
+                        if (object.metadata != null) {
+                            if (typeof object.metadata !== "object")
+                                throw TypeError(".google.spanner.v1.PartialResultSet.metadata: object expected");
+                            message.metadata = $root.google.spanner.v1.ResultSetMetadata.fromObject(object.metadata);
+                        }
+                        if (object.values) {
+                            if (!Array.isArray(object.values))
+                                throw TypeError(".google.spanner.v1.PartialResultSet.values: array expected");
+                            message.values = [];
+                            for (var i = 0; i < object.values.length; ++i) {
+                                if (typeof object.values[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.PartialResultSet.values: object expected");
+                                message.values[i] = $root.google.protobuf.Value.fromObject(object.values[i]);
+                            }
+                        }
+                        if (object.chunkedValue != null)
+                            message.chunkedValue = Boolean(object.chunkedValue);
+                        if (object.resumeToken != null)
+                            if (typeof object.resumeToken === "string")
+                                $util.base64.decode(object.resumeToken, message.resumeToken = $util.newBuffer($util.base64.length(object.resumeToken)), 0);
+                            else if (object.resumeToken.length)
+                                message.resumeToken = object.resumeToken;
+                        if (object.stats != null) {
+                            if (typeof object.stats !== "object")
+                                throw TypeError(".google.spanner.v1.PartialResultSet.stats: object expected");
+                            message.stats = $root.google.spanner.v1.ResultSetStats.fromObject(object.stats);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a PartialResultSet message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {google.spanner.v1.PartialResultSet} message PartialResultSet
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    PartialResultSet.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.values = [];
+                        if (options.defaults) {
+                            object.metadata = null;
+                            object.chunkedValue = false;
+                            if (options.bytes === String)
+                                object.resumeToken = "";
+                            else {
+                                object.resumeToken = [];
+                                if (options.bytes !== Array)
+                                    object.resumeToken = $util.newBuffer(object.resumeToken);
+                            }
+                            object.stats = null;
+                        }
+                        if (message.metadata != null && message.hasOwnProperty("metadata"))
+                            object.metadata = $root.google.spanner.v1.ResultSetMetadata.toObject(message.metadata, options);
+                        if (message.values && message.values.length) {
+                            object.values = [];
+                            for (var j = 0; j < message.values.length; ++j)
+                                object.values[j] = $root.google.protobuf.Value.toObject(message.values[j], options);
+                        }
+                        if (message.chunkedValue != null && message.hasOwnProperty("chunkedValue"))
+                            object.chunkedValue = message.chunkedValue;
+                        if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
+                            object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
+                        if (message.stats != null && message.hasOwnProperty("stats"))
+                            object.stats = $root.google.spanner.v1.ResultSetStats.toObject(message.stats, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this PartialResultSet to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    PartialResultSet.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return PartialResultSet;
+                })();
+    
+                v1.ResultSetMetadata = (function() {
+    
+                    /**
+                     * Properties of a ResultSetMetadata.
+                     * @memberof google.spanner.v1
+                     * @interface IResultSetMetadata
+                     * @property {google.spanner.v1.IStructType|null} [rowType] ResultSetMetadata rowType
+                     * @property {google.spanner.v1.ITransaction|null} [transaction] ResultSetMetadata transaction
+                     */
+    
+                    /**
+                     * Constructs a new ResultSetMetadata.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a ResultSetMetadata.
+                     * @implements IResultSetMetadata
+                     * @constructor
+                     * @param {google.spanner.v1.IResultSetMetadata=} [properties] Properties to set
+                     */
+                    function ResultSetMetadata(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * ResultSetMetadata rowType.
+                     * @member {google.spanner.v1.IStructType|null|undefined} rowType
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @instance
+                     */
+                    ResultSetMetadata.prototype.rowType = null;
+    
+                    /**
+                     * ResultSetMetadata transaction.
+                     * @member {google.spanner.v1.ITransaction|null|undefined} transaction
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @instance
+                     */
+                    ResultSetMetadata.prototype.transaction = null;
+    
+                    /**
+                     * Creates a new ResultSetMetadata instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {google.spanner.v1.IResultSetMetadata=} [properties] Properties to set
+                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata instance
+                     */
+                    ResultSetMetadata.create = function create(properties) {
+                        return new ResultSetMetadata(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified ResultSetMetadata message. Does not implicitly {@link google.spanner.v1.ResultSetMetadata.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {google.spanner.v1.IResultSetMetadata} message ResultSetMetadata message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    ResultSetMetadata.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.rowType != null && message.hasOwnProperty("rowType"))
+                            $root.google.spanner.v1.StructType.encode(message.rowType, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.transaction != null && message.hasOwnProperty("transaction"))
+                            $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified ResultSetMetadata message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSetMetadata.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {google.spanner.v1.IResultSetMetadata} message ResultSetMetadata message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    ResultSetMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a ResultSetMetadata message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    ResultSetMetadata.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ResultSetMetadata();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.rowType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a ResultSetMetadata message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    ResultSetMetadata.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a ResultSetMetadata message.
+                     * @function verify
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    ResultSetMetadata.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.rowType != null && message.hasOwnProperty("rowType")) {
+                            var error = $root.google.spanner.v1.StructType.verify(message.rowType);
+                            if (error)
+                                return "rowType." + error;
+                        }
+                        if (message.transaction != null && message.hasOwnProperty("transaction")) {
+                            var error = $root.google.spanner.v1.Transaction.verify(message.transaction);
+                            if (error)
+                                return "transaction." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a ResultSetMetadata message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata
+                     */
+                    ResultSetMetadata.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.ResultSetMetadata)
+                            return object;
+                        var message = new $root.google.spanner.v1.ResultSetMetadata();
+                        if (object.rowType != null) {
+                            if (typeof object.rowType !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetMetadata.rowType: object expected");
+                            message.rowType = $root.google.spanner.v1.StructType.fromObject(object.rowType);
+                        }
+                        if (object.transaction != null) {
+                            if (typeof object.transaction !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetMetadata.transaction: object expected");
+                            message.transaction = $root.google.spanner.v1.Transaction.fromObject(object.transaction);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a ResultSetMetadata message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {google.spanner.v1.ResultSetMetadata} message ResultSetMetadata
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    ResultSetMetadata.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.rowType = null;
+                            object.transaction = null;
+                        }
+                        if (message.rowType != null && message.hasOwnProperty("rowType"))
+                            object.rowType = $root.google.spanner.v1.StructType.toObject(message.rowType, options);
+                        if (message.transaction != null && message.hasOwnProperty("transaction"))
+                            object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this ResultSetMetadata to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    ResultSetMetadata.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return ResultSetMetadata;
+                })();
+    
+                v1.ResultSetStats = (function() {
+    
+                    /**
+                     * Properties of a ResultSetStats.
+                     * @memberof google.spanner.v1
+                     * @interface IResultSetStats
+                     * @property {google.spanner.v1.IQueryPlan|null} [queryPlan] ResultSetStats queryPlan
+                     * @property {google.protobuf.IStruct|null} [queryStats] ResultSetStats queryStats
+                     * @property {number|Long|null} [rowCountExact] ResultSetStats rowCountExact
+                     * @property {number|Long|null} [rowCountLowerBound] ResultSetStats rowCountLowerBound
+                     */
+    
+                    /**
+                     * Constructs a new ResultSetStats.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a ResultSetStats.
+                     * @implements IResultSetStats
+                     * @constructor
+                     * @param {google.spanner.v1.IResultSetStats=} [properties] Properties to set
+                     */
+                    function ResultSetStats(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * ResultSetStats queryPlan.
+                     * @member {google.spanner.v1.IQueryPlan|null|undefined} queryPlan
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @instance
+                     */
+                    ResultSetStats.prototype.queryPlan = null;
+    
+                    /**
+                     * ResultSetStats queryStats.
+                     * @member {google.protobuf.IStruct|null|undefined} queryStats
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @instance
+                     */
+                    ResultSetStats.prototype.queryStats = null;
+    
+                    /**
+                     * ResultSetStats rowCountExact.
+                     * @member {number|Long} rowCountExact
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @instance
+                     */
+                    ResultSetStats.prototype.rowCountExact = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    
+                    /**
+                     * ResultSetStats rowCountLowerBound.
+                     * @member {number|Long} rowCountLowerBound
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @instance
+                     */
+                    ResultSetStats.prototype.rowCountLowerBound = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+    
+                    /**
+                     * ResultSetStats rowCount.
+                     * @member {"rowCountExact"|"rowCountLowerBound"|undefined} rowCount
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @instance
+                     */
+                    Object.defineProperty(ResultSetStats.prototype, "rowCount", {
+                        get: $util.oneOfGetter($oneOfFields = ["rowCountExact", "rowCountLowerBound"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * Creates a new ResultSetStats instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {google.spanner.v1.IResultSetStats=} [properties] Properties to set
+                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats instance
+                     */
+                    ResultSetStats.create = function create(properties) {
+                        return new ResultSetStats(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified ResultSetStats message. Does not implicitly {@link google.spanner.v1.ResultSetStats.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {google.spanner.v1.IResultSetStats} message ResultSetStats message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    ResultSetStats.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.queryPlan != null && message.hasOwnProperty("queryPlan"))
+                            $root.google.spanner.v1.QueryPlan.encode(message.queryPlan, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.queryStats != null && message.hasOwnProperty("queryStats"))
+                            $root.google.protobuf.Struct.encode(message.queryStats, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.rowCountExact != null && message.hasOwnProperty("rowCountExact"))
+                            writer.uint32(/* id 3, wireType 0 =*/24).int64(message.rowCountExact);
+                        if (message.rowCountLowerBound != null && message.hasOwnProperty("rowCountLowerBound"))
+                            writer.uint32(/* id 4, wireType 0 =*/32).int64(message.rowCountLowerBound);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified ResultSetStats message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSetStats.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {google.spanner.v1.IResultSetStats} message ResultSetStats message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    ResultSetStats.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a ResultSetStats message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    ResultSetStats.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ResultSetStats();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.queryPlan = $root.google.spanner.v1.QueryPlan.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.queryStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.rowCountExact = reader.int64();
+                                break;
+                            case 4:
+                                message.rowCountLowerBound = reader.int64();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a ResultSetStats message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    ResultSetStats.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a ResultSetStats message.
+                     * @function verify
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    ResultSetStats.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.queryPlan != null && message.hasOwnProperty("queryPlan")) {
+                            var error = $root.google.spanner.v1.QueryPlan.verify(message.queryPlan);
+                            if (error)
+                                return "queryPlan." + error;
+                        }
+                        if (message.queryStats != null && message.hasOwnProperty("queryStats")) {
+                            var error = $root.google.protobuf.Struct.verify(message.queryStats);
+                            if (error)
+                                return "queryStats." + error;
+                        }
+                        if (message.rowCountExact != null && message.hasOwnProperty("rowCountExact")) {
+                            properties.rowCount = 1;
+                            if (!$util.isInteger(message.rowCountExact) && !(message.rowCountExact && $util.isInteger(message.rowCountExact.low) && $util.isInteger(message.rowCountExact.high)))
+                                return "rowCountExact: integer|Long expected";
+                        }
+                        if (message.rowCountLowerBound != null && message.hasOwnProperty("rowCountLowerBound")) {
+                            if (properties.rowCount === 1)
+                                return "rowCount: multiple values";
+                            properties.rowCount = 1;
+                            if (!$util.isInteger(message.rowCountLowerBound) && !(message.rowCountLowerBound && $util.isInteger(message.rowCountLowerBound.low) && $util.isInteger(message.rowCountLowerBound.high)))
+                                return "rowCountLowerBound: integer|Long expected";
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a ResultSetStats message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats
+                     */
+                    ResultSetStats.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.ResultSetStats)
+                            return object;
+                        var message = new $root.google.spanner.v1.ResultSetStats();
+                        if (object.queryPlan != null) {
+                            if (typeof object.queryPlan !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetStats.queryPlan: object expected");
+                            message.queryPlan = $root.google.spanner.v1.QueryPlan.fromObject(object.queryPlan);
+                        }
+                        if (object.queryStats != null) {
+                            if (typeof object.queryStats !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetStats.queryStats: object expected");
+                            message.queryStats = $root.google.protobuf.Struct.fromObject(object.queryStats);
+                        }
+                        if (object.rowCountExact != null)
+                            if ($util.Long)
+                                (message.rowCountExact = $util.Long.fromValue(object.rowCountExact)).unsigned = false;
+                            else if (typeof object.rowCountExact === "string")
+                                message.rowCountExact = parseInt(object.rowCountExact, 10);
+                            else if (typeof object.rowCountExact === "number")
+                                message.rowCountExact = object.rowCountExact;
+                            else if (typeof object.rowCountExact === "object")
+                                message.rowCountExact = new $util.LongBits(object.rowCountExact.low >>> 0, object.rowCountExact.high >>> 0).toNumber();
+                        if (object.rowCountLowerBound != null)
+                            if ($util.Long)
+                                (message.rowCountLowerBound = $util.Long.fromValue(object.rowCountLowerBound)).unsigned = false;
+                            else if (typeof object.rowCountLowerBound === "string")
+                                message.rowCountLowerBound = parseInt(object.rowCountLowerBound, 10);
+                            else if (typeof object.rowCountLowerBound === "number")
+                                message.rowCountLowerBound = object.rowCountLowerBound;
+                            else if (typeof object.rowCountLowerBound === "object")
+                                message.rowCountLowerBound = new $util.LongBits(object.rowCountLowerBound.low >>> 0, object.rowCountLowerBound.high >>> 0).toNumber();
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a ResultSetStats message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {google.spanner.v1.ResultSetStats} message ResultSetStats
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    ResultSetStats.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.queryPlan = null;
+                            object.queryStats = null;
+                        }
+                        if (message.queryPlan != null && message.hasOwnProperty("queryPlan"))
+                            object.queryPlan = $root.google.spanner.v1.QueryPlan.toObject(message.queryPlan, options);
+                        if (message.queryStats != null && message.hasOwnProperty("queryStats"))
+                            object.queryStats = $root.google.protobuf.Struct.toObject(message.queryStats, options);
+                        if (message.rowCountExact != null && message.hasOwnProperty("rowCountExact")) {
+                            if (typeof message.rowCountExact === "number")
+                                object.rowCountExact = options.longs === String ? String(message.rowCountExact) : message.rowCountExact;
+                            else
+                                object.rowCountExact = options.longs === String ? $util.Long.prototype.toString.call(message.rowCountExact) : options.longs === Number ? new $util.LongBits(message.rowCountExact.low >>> 0, message.rowCountExact.high >>> 0).toNumber() : message.rowCountExact;
+                            if (options.oneofs)
+                                object.rowCount = "rowCountExact";
+                        }
+                        if (message.rowCountLowerBound != null && message.hasOwnProperty("rowCountLowerBound")) {
+                            if (typeof message.rowCountLowerBound === "number")
+                                object.rowCountLowerBound = options.longs === String ? String(message.rowCountLowerBound) : message.rowCountLowerBound;
+                            else
+                                object.rowCountLowerBound = options.longs === String ? $util.Long.prototype.toString.call(message.rowCountLowerBound) : options.longs === Number ? new $util.LongBits(message.rowCountLowerBound.low >>> 0, message.rowCountLowerBound.high >>> 0).toNumber() : message.rowCountLowerBound;
+                            if (options.oneofs)
+                                object.rowCount = "rowCountLowerBound";
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this ResultSetStats to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    ResultSetStats.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return ResultSetStats;
+                })();
+    
+                v1.TransactionOptions = (function() {
+    
+                    /**
+                     * Properties of a TransactionOptions.
+                     * @memberof google.spanner.v1
+                     * @interface ITransactionOptions
+                     * @property {google.spanner.v1.TransactionOptions.IReadWrite|null} [readWrite] TransactionOptions readWrite
+                     * @property {google.spanner.v1.TransactionOptions.IPartitionedDml|null} [partitionedDml] TransactionOptions partitionedDml
+                     * @property {google.spanner.v1.TransactionOptions.IReadOnly|null} [readOnly] TransactionOptions readOnly
+                     */
+    
+                    /**
+                     * Constructs a new TransactionOptions.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a TransactionOptions.
+                     * @implements ITransactionOptions
+                     * @constructor
+                     * @param {google.spanner.v1.ITransactionOptions=} [properties] Properties to set
+                     */
+                    function TransactionOptions(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * TransactionOptions readWrite.
+                     * @member {google.spanner.v1.TransactionOptions.IReadWrite|null|undefined} readWrite
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @instance
+                     */
+                    TransactionOptions.prototype.readWrite = null;
+    
+                    /**
+                     * TransactionOptions partitionedDml.
+                     * @member {google.spanner.v1.TransactionOptions.IPartitionedDml|null|undefined} partitionedDml
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @instance
+                     */
+                    TransactionOptions.prototype.partitionedDml = null;
+    
+                    /**
+                     * TransactionOptions readOnly.
+                     * @member {google.spanner.v1.TransactionOptions.IReadOnly|null|undefined} readOnly
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @instance
+                     */
+                    TransactionOptions.prototype.readOnly = null;
+    
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+    
+                    /**
+                     * TransactionOptions mode.
+                     * @member {"readWrite"|"partitionedDml"|"readOnly"|undefined} mode
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @instance
+                     */
+                    Object.defineProperty(TransactionOptions.prototype, "mode", {
+                        get: $util.oneOfGetter($oneOfFields = ["readWrite", "partitionedDml", "readOnly"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * Creates a new TransactionOptions instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {google.spanner.v1.ITransactionOptions=} [properties] Properties to set
+                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions instance
+                     */
+                    TransactionOptions.create = function create(properties) {
+                        return new TransactionOptions(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified TransactionOptions message. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {google.spanner.v1.ITransactionOptions} message TransactionOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    TransactionOptions.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.readWrite != null && message.hasOwnProperty("readWrite"))
+                            $root.google.spanner.v1.TransactionOptions.ReadWrite.encode(message.readWrite, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.readOnly != null && message.hasOwnProperty("readOnly"))
+                            $root.google.spanner.v1.TransactionOptions.ReadOnly.encode(message.readOnly, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.partitionedDml != null && message.hasOwnProperty("partitionedDml"))
+                            $root.google.spanner.v1.TransactionOptions.PartitionedDml.encode(message.partitionedDml, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified TransactionOptions message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {google.spanner.v1.ITransactionOptions} message TransactionOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    TransactionOptions.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a TransactionOptions message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    TransactionOptions.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a TransactionOptions message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    TransactionOptions.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a TransactionOptions message.
+                     * @function verify
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    TransactionOptions.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.readWrite != null && message.hasOwnProperty("readWrite")) {
+                            properties.mode = 1;
+                            {
+                                var error = $root.google.spanner.v1.TransactionOptions.ReadWrite.verify(message.readWrite);
+                                if (error)
+                                    return "readWrite." + error;
+                            }
+                        }
+                        if (message.partitionedDml != null && message.hasOwnProperty("partitionedDml")) {
+                            if (properties.mode === 1)
+                                return "mode: multiple values";
+                            properties.mode = 1;
+                            {
+                                var error = $root.google.spanner.v1.TransactionOptions.PartitionedDml.verify(message.partitionedDml);
+                                if (error)
+                                    return "partitionedDml." + error;
+                            }
+                        }
+                        if (message.readOnly != null && message.hasOwnProperty("readOnly")) {
+                            if (properties.mode === 1)
+                                return "mode: multiple values";
+                            properties.mode = 1;
+                            {
+                                var error = $root.google.spanner.v1.TransactionOptions.ReadOnly.verify(message.readOnly);
+                                if (error)
+                                    return "readOnly." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a TransactionOptions message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions
+                     */
+                    TransactionOptions.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.TransactionOptions)
+                            return object;
+                        var message = new $root.google.spanner.v1.TransactionOptions();
+                        if (object.readWrite != null) {
+                            if (typeof object.readWrite !== "object")
+                                throw TypeError(".google.spanner.v1.TransactionOptions.readWrite: object expected");
+                            message.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.fromObject(object.readWrite);
+                        }
+                        if (object.partitionedDml != null) {
+                            if (typeof object.partitionedDml !== "object")
+                                throw TypeError(".google.spanner.v1.TransactionOptions.partitionedDml: object expected");
+                            message.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.fromObject(object.partitionedDml);
+                        }
+                        if (object.readOnly != null) {
+                            if (typeof object.readOnly !== "object")
+                                throw TypeError(".google.spanner.v1.TransactionOptions.readOnly: object expected");
+                            message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.fromObject(object.readOnly);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a TransactionOptions message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {google.spanner.v1.TransactionOptions} message TransactionOptions
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    TransactionOptions.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.readWrite != null && message.hasOwnProperty("readWrite")) {
+                            object.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.toObject(message.readWrite, options);
+                            if (options.oneofs)
+                                object.mode = "readWrite";
+                        }
+                        if (message.readOnly != null && message.hasOwnProperty("readOnly")) {
+                            object.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.toObject(message.readOnly, options);
+                            if (options.oneofs)
+                                object.mode = "readOnly";
+                        }
+                        if (message.partitionedDml != null && message.hasOwnProperty("partitionedDml")) {
+                            object.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.toObject(message.partitionedDml, options);
+                            if (options.oneofs)
+                                object.mode = "partitionedDml";
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this TransactionOptions to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    TransactionOptions.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    TransactionOptions.ReadWrite = (function() {
+    
+                        /**
+                         * Properties of a ReadWrite.
+                         * @memberof google.spanner.v1.TransactionOptions
+                         * @interface IReadWrite
+                         */
+    
+                        /**
+                         * Constructs a new ReadWrite.
+                         * @memberof google.spanner.v1.TransactionOptions
+                         * @classdesc Represents a ReadWrite.
+                         * @implements IReadWrite
+                         * @constructor
+                         * @param {google.spanner.v1.TransactionOptions.IReadWrite=} [properties] Properties to set
+                         */
+                        function ReadWrite(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Creates a new ReadWrite instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IReadWrite=} [properties] Properties to set
+                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite instance
+                         */
+                        ReadWrite.create = function create(properties) {
+                            return new ReadWrite(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified ReadWrite message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IReadWrite} message ReadWrite message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ReadWrite.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ReadWrite message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IReadWrite} message ReadWrite message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ReadWrite.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ReadWrite message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ReadWrite.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions.ReadWrite();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ReadWrite message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ReadWrite.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ReadWrite message.
+                         * @function verify
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ReadWrite.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ReadWrite message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite
+                         */
+                        ReadWrite.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.TransactionOptions.ReadWrite)
+                                return object;
+                            return new $root.google.spanner.v1.TransactionOptions.ReadWrite();
+                        };
+    
+                        /**
+                         * Creates a plain object from a ReadWrite message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.ReadWrite} message ReadWrite
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ReadWrite.toObject = function toObject() {
+                            return {};
+                        };
+    
+                        /**
+                         * Converts this ReadWrite to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ReadWrite.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ReadWrite;
+                    })();
+    
+                    TransactionOptions.PartitionedDml = (function() {
+    
+                        /**
+                         * Properties of a PartitionedDml.
+                         * @memberof google.spanner.v1.TransactionOptions
+                         * @interface IPartitionedDml
+                         */
+    
+                        /**
+                         * Constructs a new PartitionedDml.
+                         * @memberof google.spanner.v1.TransactionOptions
+                         * @classdesc Represents a PartitionedDml.
+                         * @implements IPartitionedDml
+                         * @constructor
+                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml=} [properties] Properties to set
+                         */
+                        function PartitionedDml(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Creates a new PartitionedDml instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml=} [properties] Properties to set
+                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml instance
+                         */
+                        PartitionedDml.create = function create(properties) {
+                            return new PartitionedDml(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified PartitionedDml message. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml} message PartitionedDml message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        PartitionedDml.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified PartitionedDml message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml} message PartitionedDml message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        PartitionedDml.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a PartitionedDml message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        PartitionedDml.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions.PartitionedDml();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a PartitionedDml message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        PartitionedDml.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a PartitionedDml message.
+                         * @function verify
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        PartitionedDml.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a PartitionedDml message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml
+                         */
+                        PartitionedDml.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.TransactionOptions.PartitionedDml)
+                                return object;
+                            return new $root.google.spanner.v1.TransactionOptions.PartitionedDml();
+                        };
+    
+                        /**
+                         * Creates a plain object from a PartitionedDml message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.PartitionedDml} message PartitionedDml
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        PartitionedDml.toObject = function toObject() {
+                            return {};
+                        };
+    
+                        /**
+                         * Converts this PartitionedDml to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        PartitionedDml.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return PartitionedDml;
+                    })();
+    
+                    TransactionOptions.ReadOnly = (function() {
+    
+                        /**
+                         * Properties of a ReadOnly.
+                         * @memberof google.spanner.v1.TransactionOptions
+                         * @interface IReadOnly
+                         * @property {boolean|null} [strong] ReadOnly strong
+                         * @property {google.protobuf.ITimestamp|null} [minReadTimestamp] ReadOnly minReadTimestamp
+                         * @property {google.protobuf.IDuration|null} [maxStaleness] ReadOnly maxStaleness
+                         * @property {google.protobuf.ITimestamp|null} [readTimestamp] ReadOnly readTimestamp
+                         * @property {google.protobuf.IDuration|null} [exactStaleness] ReadOnly exactStaleness
+                         * @property {boolean|null} [returnReadTimestamp] ReadOnly returnReadTimestamp
+                         */
+    
+                        /**
+                         * Constructs a new ReadOnly.
+                         * @memberof google.spanner.v1.TransactionOptions
+                         * @classdesc Represents a ReadOnly.
+                         * @implements IReadOnly
+                         * @constructor
+                         * @param {google.spanner.v1.TransactionOptions.IReadOnly=} [properties] Properties to set
+                         */
+                        function ReadOnly(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ReadOnly strong.
+                         * @member {boolean} strong
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        ReadOnly.prototype.strong = false;
+    
+                        /**
+                         * ReadOnly minReadTimestamp.
+                         * @member {google.protobuf.ITimestamp|null|undefined} minReadTimestamp
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        ReadOnly.prototype.minReadTimestamp = null;
+    
+                        /**
+                         * ReadOnly maxStaleness.
+                         * @member {google.protobuf.IDuration|null|undefined} maxStaleness
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        ReadOnly.prototype.maxStaleness = null;
+    
+                        /**
+                         * ReadOnly readTimestamp.
+                         * @member {google.protobuf.ITimestamp|null|undefined} readTimestamp
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        ReadOnly.prototype.readTimestamp = null;
+    
+                        /**
+                         * ReadOnly exactStaleness.
+                         * @member {google.protobuf.IDuration|null|undefined} exactStaleness
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        ReadOnly.prototype.exactStaleness = null;
+    
+                        /**
+                         * ReadOnly returnReadTimestamp.
+                         * @member {boolean} returnReadTimestamp
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        ReadOnly.prototype.returnReadTimestamp = false;
+    
+                        // OneOf field names bound to virtual getters and setters
+                        var $oneOfFields;
+    
+                        /**
+                         * ReadOnly timestampBound.
+                         * @member {"strong"|"minReadTimestamp"|"maxStaleness"|"readTimestamp"|"exactStaleness"|undefined} timestampBound
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         */
+                        Object.defineProperty(ReadOnly.prototype, "timestampBound", {
+                            get: $util.oneOfGetter($oneOfFields = ["strong", "minReadTimestamp", "maxStaleness", "readTimestamp", "exactStaleness"]),
+                            set: $util.oneOfSetter($oneOfFields)
+                        });
+    
+                        /**
+                         * Creates a new ReadOnly instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IReadOnly=} [properties] Properties to set
+                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly instance
+                         */
+                        ReadOnly.create = function create(properties) {
+                            return new ReadOnly(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified ReadOnly message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IReadOnly} message ReadOnly message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ReadOnly.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.strong != null && message.hasOwnProperty("strong"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).bool(message.strong);
+                            if (message.minReadTimestamp != null && message.hasOwnProperty("minReadTimestamp"))
+                                $root.google.protobuf.Timestamp.encode(message.minReadTimestamp, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                            if (message.maxStaleness != null && message.hasOwnProperty("maxStaleness"))
+                                $root.google.protobuf.Duration.encode(message.maxStaleness, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                            if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp"))
+                                $root.google.protobuf.Timestamp.encode(message.readTimestamp, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                            if (message.exactStaleness != null && message.hasOwnProperty("exactStaleness"))
+                                $root.google.protobuf.Duration.encode(message.exactStaleness, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                            if (message.returnReadTimestamp != null && message.hasOwnProperty("returnReadTimestamp"))
+                                writer.uint32(/* id 6, wireType 0 =*/48).bool(message.returnReadTimestamp);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ReadOnly message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.IReadOnly} message ReadOnly message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ReadOnly.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ReadOnly message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ReadOnly.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions.ReadOnly();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.strong = reader.bool();
+                                    break;
+                                case 2:
+                                    message.minReadTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                case 3:
+                                    message.maxStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
+                                    break;
+                                case 4:
+                                    message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                case 5:
+                                    message.exactStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
+                                    break;
+                                case 6:
+                                    message.returnReadTimestamp = reader.bool();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ReadOnly message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ReadOnly.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ReadOnly message.
+                         * @function verify
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ReadOnly.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            var properties = {};
+                            if (message.strong != null && message.hasOwnProperty("strong")) {
+                                properties.timestampBound = 1;
+                                if (typeof message.strong !== "boolean")
+                                    return "strong: boolean expected";
+                            }
+                            if (message.minReadTimestamp != null && message.hasOwnProperty("minReadTimestamp")) {
+                                if (properties.timestampBound === 1)
+                                    return "timestampBound: multiple values";
+                                properties.timestampBound = 1;
+                                {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.minReadTimestamp);
+                                    if (error)
+                                        return "minReadTimestamp." + error;
+                                }
+                            }
+                            if (message.maxStaleness != null && message.hasOwnProperty("maxStaleness")) {
+                                if (properties.timestampBound === 1)
+                                    return "timestampBound: multiple values";
+                                properties.timestampBound = 1;
+                                {
+                                    var error = $root.google.protobuf.Duration.verify(message.maxStaleness);
+                                    if (error)
+                                        return "maxStaleness." + error;
+                                }
+                            }
+                            if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp")) {
+                                if (properties.timestampBound === 1)
+                                    return "timestampBound: multiple values";
+                                properties.timestampBound = 1;
+                                {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.readTimestamp);
+                                    if (error)
+                                        return "readTimestamp." + error;
+                                }
+                            }
+                            if (message.exactStaleness != null && message.hasOwnProperty("exactStaleness")) {
+                                if (properties.timestampBound === 1)
+                                    return "timestampBound: multiple values";
+                                properties.timestampBound = 1;
+                                {
+                                    var error = $root.google.protobuf.Duration.verify(message.exactStaleness);
+                                    if (error)
+                                        return "exactStaleness." + error;
+                                }
+                            }
+                            if (message.returnReadTimestamp != null && message.hasOwnProperty("returnReadTimestamp"))
+                                if (typeof message.returnReadTimestamp !== "boolean")
+                                    return "returnReadTimestamp: boolean expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ReadOnly message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly
+                         */
+                        ReadOnly.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.TransactionOptions.ReadOnly)
+                                return object;
+                            var message = new $root.google.spanner.v1.TransactionOptions.ReadOnly();
+                            if (object.strong != null)
+                                message.strong = Boolean(object.strong);
+                            if (object.minReadTimestamp != null) {
+                                if (typeof object.minReadTimestamp !== "object")
+                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.minReadTimestamp: object expected");
+                                message.minReadTimestamp = $root.google.protobuf.Timestamp.fromObject(object.minReadTimestamp);
+                            }
+                            if (object.maxStaleness != null) {
+                                if (typeof object.maxStaleness !== "object")
+                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.maxStaleness: object expected");
+                                message.maxStaleness = $root.google.protobuf.Duration.fromObject(object.maxStaleness);
+                            }
+                            if (object.readTimestamp != null) {
+                                if (typeof object.readTimestamp !== "object")
+                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.readTimestamp: object expected");
+                                message.readTimestamp = $root.google.protobuf.Timestamp.fromObject(object.readTimestamp);
+                            }
+                            if (object.exactStaleness != null) {
+                                if (typeof object.exactStaleness !== "object")
+                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.exactStaleness: object expected");
+                                message.exactStaleness = $root.google.protobuf.Duration.fromObject(object.exactStaleness);
+                            }
+                            if (object.returnReadTimestamp != null)
+                                message.returnReadTimestamp = Boolean(object.returnReadTimestamp);
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ReadOnly message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {google.spanner.v1.TransactionOptions.ReadOnly} message ReadOnly
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ReadOnly.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults)
+                                object.returnReadTimestamp = false;
+                            if (message.strong != null && message.hasOwnProperty("strong")) {
+                                object.strong = message.strong;
+                                if (options.oneofs)
+                                    object.timestampBound = "strong";
+                            }
+                            if (message.minReadTimestamp != null && message.hasOwnProperty("minReadTimestamp")) {
+                                object.minReadTimestamp = $root.google.protobuf.Timestamp.toObject(message.minReadTimestamp, options);
+                                if (options.oneofs)
+                                    object.timestampBound = "minReadTimestamp";
+                            }
+                            if (message.maxStaleness != null && message.hasOwnProperty("maxStaleness")) {
+                                object.maxStaleness = $root.google.protobuf.Duration.toObject(message.maxStaleness, options);
+                                if (options.oneofs)
+                                    object.timestampBound = "maxStaleness";
+                            }
+                            if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp")) {
+                                object.readTimestamp = $root.google.protobuf.Timestamp.toObject(message.readTimestamp, options);
+                                if (options.oneofs)
+                                    object.timestampBound = "readTimestamp";
+                            }
+                            if (message.exactStaleness != null && message.hasOwnProperty("exactStaleness")) {
+                                object.exactStaleness = $root.google.protobuf.Duration.toObject(message.exactStaleness, options);
+                                if (options.oneofs)
+                                    object.timestampBound = "exactStaleness";
+                            }
+                            if (message.returnReadTimestamp != null && message.hasOwnProperty("returnReadTimestamp"))
+                                object.returnReadTimestamp = message.returnReadTimestamp;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ReadOnly to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ReadOnly.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ReadOnly;
+                    })();
+    
+                    return TransactionOptions;
+                })();
+    
+                v1.Transaction = (function() {
+    
+                    /**
+                     * Properties of a Transaction.
+                     * @memberof google.spanner.v1
+                     * @interface ITransaction
+                     * @property {Uint8Array|null} [id] Transaction id
+                     * @property {google.protobuf.ITimestamp|null} [readTimestamp] Transaction readTimestamp
+                     */
+    
+                    /**
+                     * Constructs a new Transaction.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a Transaction.
+                     * @implements ITransaction
+                     * @constructor
+                     * @param {google.spanner.v1.ITransaction=} [properties] Properties to set
+                     */
+                    function Transaction(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Transaction id.
+                     * @member {Uint8Array} id
+                     * @memberof google.spanner.v1.Transaction
+                     * @instance
+                     */
+                    Transaction.prototype.id = $util.newBuffer([]);
+    
+                    /**
+                     * Transaction readTimestamp.
+                     * @member {google.protobuf.ITimestamp|null|undefined} readTimestamp
+                     * @memberof google.spanner.v1.Transaction
+                     * @instance
+                     */
+                    Transaction.prototype.readTimestamp = null;
+    
+                    /**
+                     * Creates a new Transaction instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {google.spanner.v1.ITransaction=} [properties] Properties to set
+                     * @returns {google.spanner.v1.Transaction} Transaction instance
+                     */
+                    Transaction.create = function create(properties) {
+                        return new Transaction(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified Transaction message. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {google.spanner.v1.ITransaction} message Transaction message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Transaction.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.id != null && message.hasOwnProperty("id"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.id);
+                        if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp"))
+                            $root.google.protobuf.Timestamp.encode(message.readTimestamp, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified Transaction message, length delimited. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {google.spanner.v1.ITransaction} message Transaction message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Transaction.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a Transaction message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.Transaction} Transaction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Transaction.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Transaction();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.id = reader.bytes();
+                                break;
+                            case 2:
+                                message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a Transaction message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.Transaction} Transaction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Transaction.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a Transaction message.
+                     * @function verify
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    Transaction.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.id != null && message.hasOwnProperty("id"))
+                            if (!(message.id && typeof message.id.length === "number" || $util.isString(message.id)))
+                                return "id: buffer expected";
+                        if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp")) {
+                            var error = $root.google.protobuf.Timestamp.verify(message.readTimestamp);
+                            if (error)
+                                return "readTimestamp." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.Transaction} Transaction
+                     */
+                    Transaction.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.Transaction)
+                            return object;
+                        var message = new $root.google.spanner.v1.Transaction();
+                        if (object.id != null)
+                            if (typeof object.id === "string")
+                                $util.base64.decode(object.id, message.id = $util.newBuffer($util.base64.length(object.id)), 0);
+                            else if (object.id.length)
+                                message.id = object.id;
+                        if (object.readTimestamp != null) {
+                            if (typeof object.readTimestamp !== "object")
+                                throw TypeError(".google.spanner.v1.Transaction.readTimestamp: object expected");
+                            message.readTimestamp = $root.google.protobuf.Timestamp.fromObject(object.readTimestamp);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a Transaction message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {google.spanner.v1.Transaction} message Transaction
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    Transaction.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            if (options.bytes === String)
+                                object.id = "";
+                            else {
+                                object.id = [];
+                                if (options.bytes !== Array)
+                                    object.id = $util.newBuffer(object.id);
+                            }
+                            object.readTimestamp = null;
+                        }
+                        if (message.id != null && message.hasOwnProperty("id"))
+                            object.id = options.bytes === String ? $util.base64.encode(message.id, 0, message.id.length) : options.bytes === Array ? Array.prototype.slice.call(message.id) : message.id;
+                        if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp"))
+                            object.readTimestamp = $root.google.protobuf.Timestamp.toObject(message.readTimestamp, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this Transaction to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.Transaction
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    Transaction.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return Transaction;
+                })();
+    
+                v1.TransactionSelector = (function() {
+    
+                    /**
+                     * Properties of a TransactionSelector.
+                     * @memberof google.spanner.v1
+                     * @interface ITransactionSelector
+                     * @property {google.spanner.v1.ITransactionOptions|null} [singleUse] TransactionSelector singleUse
+                     * @property {Uint8Array|null} [id] TransactionSelector id
+                     * @property {google.spanner.v1.ITransactionOptions|null} [begin] TransactionSelector begin
+                     */
+    
+                    /**
+                     * Constructs a new TransactionSelector.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a TransactionSelector.
+                     * @implements ITransactionSelector
+                     * @constructor
+                     * @param {google.spanner.v1.ITransactionSelector=} [properties] Properties to set
+                     */
+                    function TransactionSelector(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * TransactionSelector singleUse.
+                     * @member {google.spanner.v1.ITransactionOptions|null|undefined} singleUse
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @instance
+                     */
+                    TransactionSelector.prototype.singleUse = null;
+    
+                    /**
+                     * TransactionSelector id.
+                     * @member {Uint8Array} id
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @instance
+                     */
+                    TransactionSelector.prototype.id = $util.newBuffer([]);
+    
+                    /**
+                     * TransactionSelector begin.
+                     * @member {google.spanner.v1.ITransactionOptions|null|undefined} begin
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @instance
+                     */
+                    TransactionSelector.prototype.begin = null;
+    
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+    
+                    /**
+                     * TransactionSelector selector.
+                     * @member {"singleUse"|"id"|"begin"|undefined} selector
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @instance
+                     */
+                    Object.defineProperty(TransactionSelector.prototype, "selector", {
+                        get: $util.oneOfGetter($oneOfFields = ["singleUse", "id", "begin"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * Creates a new TransactionSelector instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {google.spanner.v1.ITransactionSelector=} [properties] Properties to set
+                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector instance
+                     */
+                    TransactionSelector.create = function create(properties) {
+                        return new TransactionSelector(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified TransactionSelector message. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {google.spanner.v1.ITransactionSelector} message TransactionSelector message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    TransactionSelector.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.singleUse != null && message.hasOwnProperty("singleUse"))
+                            $root.google.spanner.v1.TransactionOptions.encode(message.singleUse, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.id != null && message.hasOwnProperty("id"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.id);
+                        if (message.begin != null && message.hasOwnProperty("begin"))
+                            $root.google.spanner.v1.TransactionOptions.encode(message.begin, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified TransactionSelector message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {google.spanner.v1.ITransactionSelector} message TransactionSelector message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    TransactionSelector.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a TransactionSelector message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    TransactionSelector.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionSelector();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.singleUse = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.id = reader.bytes();
+                                break;
+                            case 3:
+                                message.begin = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a TransactionSelector message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    TransactionSelector.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a TransactionSelector message.
+                     * @function verify
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    TransactionSelector.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.singleUse != null && message.hasOwnProperty("singleUse")) {
+                            properties.selector = 1;
+                            {
+                                var error = $root.google.spanner.v1.TransactionOptions.verify(message.singleUse);
+                                if (error)
+                                    return "singleUse." + error;
+                            }
+                        }
+                        if (message.id != null && message.hasOwnProperty("id")) {
+                            if (properties.selector === 1)
+                                return "selector: multiple values";
+                            properties.selector = 1;
+                            if (!(message.id && typeof message.id.length === "number" || $util.isString(message.id)))
+                                return "id: buffer expected";
+                        }
+                        if (message.begin != null && message.hasOwnProperty("begin")) {
+                            if (properties.selector === 1)
+                                return "selector: multiple values";
+                            properties.selector = 1;
+                            {
+                                var error = $root.google.spanner.v1.TransactionOptions.verify(message.begin);
+                                if (error)
+                                    return "begin." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a TransactionSelector message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector
+                     */
+                    TransactionSelector.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.TransactionSelector)
+                            return object;
+                        var message = new $root.google.spanner.v1.TransactionSelector();
+                        if (object.singleUse != null) {
+                            if (typeof object.singleUse !== "object")
+                                throw TypeError(".google.spanner.v1.TransactionSelector.singleUse: object expected");
+                            message.singleUse = $root.google.spanner.v1.TransactionOptions.fromObject(object.singleUse);
+                        }
+                        if (object.id != null)
+                            if (typeof object.id === "string")
+                                $util.base64.decode(object.id, message.id = $util.newBuffer($util.base64.length(object.id)), 0);
+                            else if (object.id.length)
+                                message.id = object.id;
+                        if (object.begin != null) {
+                            if (typeof object.begin !== "object")
+                                throw TypeError(".google.spanner.v1.TransactionSelector.begin: object expected");
+                            message.begin = $root.google.spanner.v1.TransactionOptions.fromObject(object.begin);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a TransactionSelector message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {google.spanner.v1.TransactionSelector} message TransactionSelector
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    TransactionSelector.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.singleUse != null && message.hasOwnProperty("singleUse")) {
+                            object.singleUse = $root.google.spanner.v1.TransactionOptions.toObject(message.singleUse, options);
+                            if (options.oneofs)
+                                object.selector = "singleUse";
+                        }
+                        if (message.id != null && message.hasOwnProperty("id")) {
+                            object.id = options.bytes === String ? $util.base64.encode(message.id, 0, message.id.length) : options.bytes === Array ? Array.prototype.slice.call(message.id) : message.id;
+                            if (options.oneofs)
+                                object.selector = "id";
+                        }
+                        if (message.begin != null && message.hasOwnProperty("begin")) {
+                            object.begin = $root.google.spanner.v1.TransactionOptions.toObject(message.begin, options);
+                            if (options.oneofs)
+                                object.selector = "begin";
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this TransactionSelector to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    TransactionSelector.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return TransactionSelector;
+                })();
+    
+                /**
+                 * TypeCode enum.
+                 * @name google.spanner.v1.TypeCode
+                 * @enum {string}
+                 * @property {number} TYPE_CODE_UNSPECIFIED=0 TYPE_CODE_UNSPECIFIED value
+                 * @property {number} BOOL=1 BOOL value
+                 * @property {number} INT64=2 INT64 value
+                 * @property {number} FLOAT64=3 FLOAT64 value
+                 * @property {number} TIMESTAMP=4 TIMESTAMP value
+                 * @property {number} DATE=5 DATE value
+                 * @property {number} STRING=6 STRING value
+                 * @property {number} BYTES=7 BYTES value
+                 * @property {number} ARRAY=8 ARRAY value
+                 * @property {number} STRUCT=9 STRUCT value
+                 */
+                v1.TypeCode = (function() {
+                    var valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "TYPE_CODE_UNSPECIFIED"] = 0;
+                    values[valuesById[1] = "BOOL"] = 1;
+                    values[valuesById[2] = "INT64"] = 2;
+                    values[valuesById[3] = "FLOAT64"] = 3;
+                    values[valuesById[4] = "TIMESTAMP"] = 4;
+                    values[valuesById[5] = "DATE"] = 5;
+                    values[valuesById[6] = "STRING"] = 6;
+                    values[valuesById[7] = "BYTES"] = 7;
+                    values[valuesById[8] = "ARRAY"] = 8;
+                    values[valuesById[9] = "STRUCT"] = 9;
+                    return values;
+                })();
+    
+                v1.Type = (function() {
+    
+                    /**
+                     * Properties of a Type.
+                     * @memberof google.spanner.v1
+                     * @interface IType
+                     * @property {google.spanner.v1.TypeCode|null} [code] Type code
+                     * @property {google.spanner.v1.IType|null} [arrayElementType] Type arrayElementType
+                     * @property {google.spanner.v1.IStructType|null} [structType] Type structType
+                     */
+    
+                    /**
+                     * Constructs a new Type.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a Type.
+                     * @implements IType
+                     * @constructor
+                     * @param {google.spanner.v1.IType=} [properties] Properties to set
+                     */
+                    function Type(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Type code.
+                     * @member {google.spanner.v1.TypeCode} code
+                     * @memberof google.spanner.v1.Type
+                     * @instance
+                     */
+                    Type.prototype.code = 0;
+    
+                    /**
+                     * Type arrayElementType.
+                     * @member {google.spanner.v1.IType|null|undefined} arrayElementType
+                     * @memberof google.spanner.v1.Type
+                     * @instance
+                     */
+                    Type.prototype.arrayElementType = null;
+    
+                    /**
+                     * Type structType.
+                     * @member {google.spanner.v1.IStructType|null|undefined} structType
+                     * @memberof google.spanner.v1.Type
+                     * @instance
+                     */
+                    Type.prototype.structType = null;
+    
+                    /**
+                     * Creates a new Type instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {google.spanner.v1.IType=} [properties] Properties to set
+                     * @returns {google.spanner.v1.Type} Type instance
+                     */
+                    Type.create = function create(properties) {
+                        return new Type(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified Type message. Does not implicitly {@link google.spanner.v1.Type.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {google.spanner.v1.IType} message Type message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Type.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.code != null && message.hasOwnProperty("code"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.code);
+                        if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType"))
+                            $root.google.spanner.v1.Type.encode(message.arrayElementType, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.structType != null && message.hasOwnProperty("structType"))
+                            $root.google.spanner.v1.StructType.encode(message.structType, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified Type message, length delimited. Does not implicitly {@link google.spanner.v1.Type.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {google.spanner.v1.IType} message Type message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Type.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a Type message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.Type} Type
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Type.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Type();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.code = reader.int32();
+                                break;
+                            case 2:
+                                message.arrayElementType = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.structType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a Type message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.Type} Type
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Type.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a Type message.
+                     * @function verify
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    Type.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.code != null && message.hasOwnProperty("code"))
+                            switch (message.code) {
+                            default:
+                                return "code: enum value expected";
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                                break;
+                            }
+                        if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType")) {
+                            var error = $root.google.spanner.v1.Type.verify(message.arrayElementType);
+                            if (error)
+                                return "arrayElementType." + error;
+                        }
+                        if (message.structType != null && message.hasOwnProperty("structType")) {
+                            var error = $root.google.spanner.v1.StructType.verify(message.structType);
+                            if (error)
+                                return "structType." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a Type message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.Type} Type
+                     */
+                    Type.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.Type)
+                            return object;
+                        var message = new $root.google.spanner.v1.Type();
+                        switch (object.code) {
+                        case "TYPE_CODE_UNSPECIFIED":
+                        case 0:
+                            message.code = 0;
+                            break;
+                        case "BOOL":
+                        case 1:
+                            message.code = 1;
+                            break;
+                        case "INT64":
+                        case 2:
+                            message.code = 2;
+                            break;
+                        case "FLOAT64":
+                        case 3:
+                            message.code = 3;
+                            break;
+                        case "TIMESTAMP":
+                        case 4:
+                            message.code = 4;
+                            break;
+                        case "DATE":
+                        case 5:
+                            message.code = 5;
+                            break;
+                        case "STRING":
+                        case 6:
+                            message.code = 6;
+                            break;
+                        case "BYTES":
+                        case 7:
+                            message.code = 7;
+                            break;
+                        case "ARRAY":
+                        case 8:
+                            message.code = 8;
+                            break;
+                        case "STRUCT":
+                        case 9:
+                            message.code = 9;
+                            break;
+                        }
+                        if (object.arrayElementType != null) {
+                            if (typeof object.arrayElementType !== "object")
+                                throw TypeError(".google.spanner.v1.Type.arrayElementType: object expected");
+                            message.arrayElementType = $root.google.spanner.v1.Type.fromObject(object.arrayElementType);
+                        }
+                        if (object.structType != null) {
+                            if (typeof object.structType !== "object")
+                                throw TypeError(".google.spanner.v1.Type.structType: object expected");
+                            message.structType = $root.google.spanner.v1.StructType.fromObject(object.structType);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a Type message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {google.spanner.v1.Type} message Type
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    Type.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.code = options.enums === String ? "TYPE_CODE_UNSPECIFIED" : 0;
+                            object.arrayElementType = null;
+                            object.structType = null;
+                        }
+                        if (message.code != null && message.hasOwnProperty("code"))
+                            object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] : message.code;
+                        if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType"))
+                            object.arrayElementType = $root.google.spanner.v1.Type.toObject(message.arrayElementType, options);
+                        if (message.structType != null && message.hasOwnProperty("structType"))
+                            object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this Type to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.Type
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    Type.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return Type;
+                })();
+    
+                v1.StructType = (function() {
+    
+                    /**
+                     * Properties of a StructType.
+                     * @memberof google.spanner.v1
+                     * @interface IStructType
+                     * @property {Array.<google.spanner.v1.StructType.IField>|null} [fields] StructType fields
+                     */
+    
+                    /**
+                     * Constructs a new StructType.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a StructType.
+                     * @implements IStructType
+                     * @constructor
+                     * @param {google.spanner.v1.IStructType=} [properties] Properties to set
+                     */
+                    function StructType(properties) {
+                        this.fields = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * StructType fields.
+                     * @member {Array.<google.spanner.v1.StructType.IField>} fields
+                     * @memberof google.spanner.v1.StructType
+                     * @instance
+                     */
+                    StructType.prototype.fields = $util.emptyArray;
+    
+                    /**
+                     * Creates a new StructType instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {google.spanner.v1.IStructType=} [properties] Properties to set
+                     * @returns {google.spanner.v1.StructType} StructType instance
+                     */
+                    StructType.create = function create(properties) {
+                        return new StructType(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified StructType message. Does not implicitly {@link google.spanner.v1.StructType.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {google.spanner.v1.IStructType} message StructType message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    StructType.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.fields != null && message.fields.length)
+                            for (var i = 0; i < message.fields.length; ++i)
+                                $root.google.spanner.v1.StructType.Field.encode(message.fields[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified StructType message, length delimited. Does not implicitly {@link google.spanner.v1.StructType.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {google.spanner.v1.IStructType} message StructType message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    StructType.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a StructType message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.StructType} StructType
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    StructType.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.StructType();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                if (!(message.fields && message.fields.length))
+                                    message.fields = [];
+                                message.fields.push($root.google.spanner.v1.StructType.Field.decode(reader, reader.uint32()));
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a StructType message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.StructType} StructType
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    StructType.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a StructType message.
+                     * @function verify
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    StructType.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.fields != null && message.hasOwnProperty("fields")) {
+                            if (!Array.isArray(message.fields))
+                                return "fields: array expected";
+                            for (var i = 0; i < message.fields.length; ++i) {
+                                var error = $root.google.spanner.v1.StructType.Field.verify(message.fields[i]);
+                                if (error)
+                                    return "fields." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a StructType message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.StructType} StructType
+                     */
+                    StructType.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.StructType)
+                            return object;
+                        var message = new $root.google.spanner.v1.StructType();
+                        if (object.fields) {
+                            if (!Array.isArray(object.fields))
+                                throw TypeError(".google.spanner.v1.StructType.fields: array expected");
+                            message.fields = [];
+                            for (var i = 0; i < object.fields.length; ++i) {
+                                if (typeof object.fields[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.StructType.fields: object expected");
+                                message.fields[i] = $root.google.spanner.v1.StructType.Field.fromObject(object.fields[i]);
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a StructType message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {google.spanner.v1.StructType} message StructType
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    StructType.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.fields = [];
+                        if (message.fields && message.fields.length) {
+                            object.fields = [];
+                            for (var j = 0; j < message.fields.length; ++j)
+                                object.fields[j] = $root.google.spanner.v1.StructType.Field.toObject(message.fields[j], options);
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this StructType to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.StructType
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    StructType.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    StructType.Field = (function() {
+    
+                        /**
+                         * Properties of a Field.
+                         * @memberof google.spanner.v1.StructType
+                         * @interface IField
+                         * @property {string|null} [name] Field name
+                         * @property {google.spanner.v1.IType|null} [type] Field type
+                         */
+    
+                        /**
+                         * Constructs a new Field.
+                         * @memberof google.spanner.v1.StructType
+                         * @classdesc Represents a Field.
+                         * @implements IField
+                         * @constructor
+                         * @param {google.spanner.v1.StructType.IField=} [properties] Properties to set
+                         */
+                        function Field(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Field name.
+                         * @member {string} name
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @instance
+                         */
+                        Field.prototype.name = "";
+    
+                        /**
+                         * Field type.
+                         * @member {google.spanner.v1.IType|null|undefined} type
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @instance
+                         */
+                        Field.prototype.type = null;
+    
+                        /**
+                         * Creates a new Field instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {google.spanner.v1.StructType.IField=} [properties] Properties to set
+                         * @returns {google.spanner.v1.StructType.Field} Field instance
+                         */
+                        Field.create = function create(properties) {
+                            return new Field(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified Field message. Does not implicitly {@link google.spanner.v1.StructType.Field.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {google.spanner.v1.StructType.IField} message Field message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Field.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.name != null && message.hasOwnProperty("name"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                $root.google.spanner.v1.Type.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified Field message, length delimited. Does not implicitly {@link google.spanner.v1.StructType.Field.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {google.spanner.v1.StructType.IField} message Field message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Field.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a Field message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.StructType.Field} Field
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Field.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.StructType.Field();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.name = reader.string();
+                                    break;
+                                case 2:
+                                    message.type = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a Field message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.StructType.Field} Field
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Field.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a Field message.
+                         * @function verify
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        Field.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.name != null && message.hasOwnProperty("name"))
+                                if (!$util.isString(message.name))
+                                    return "name: string expected";
+                            if (message.type != null && message.hasOwnProperty("type")) {
+                                var error = $root.google.spanner.v1.Type.verify(message.type);
+                                if (error)
+                                    return "type." + error;
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a Field message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.StructType.Field} Field
+                         */
+                        Field.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.StructType.Field)
+                                return object;
+                            var message = new $root.google.spanner.v1.StructType.Field();
+                            if (object.name != null)
+                                message.name = String(object.name);
+                            if (object.type != null) {
+                                if (typeof object.type !== "object")
+                                    throw TypeError(".google.spanner.v1.StructType.Field.type: object expected");
+                                message.type = $root.google.spanner.v1.Type.fromObject(object.type);
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a Field message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {google.spanner.v1.StructType.Field} message Field
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        Field.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.name = "";
+                                object.type = null;
+                            }
+                            if (message.name != null && message.hasOwnProperty("name"))
+                                object.name = message.name;
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                object.type = $root.google.spanner.v1.Type.toObject(message.type, options);
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this Field to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        Field.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return Field;
+                    })();
+    
+                    return StructType;
+                })();
+    
                 v1.Spanner = (function() {
     
                     /**
@@ -26157,5818 +31969,6 @@
                     };
     
                     return RollbackRequest;
-                })();
-    
-                v1.KeyRange = (function() {
-    
-                    /**
-                     * Properties of a KeyRange.
-                     * @memberof google.spanner.v1
-                     * @interface IKeyRange
-                     * @property {google.protobuf.IListValue|null} [startClosed] KeyRange startClosed
-                     * @property {google.protobuf.IListValue|null} [startOpen] KeyRange startOpen
-                     * @property {google.protobuf.IListValue|null} [endClosed] KeyRange endClosed
-                     * @property {google.protobuf.IListValue|null} [endOpen] KeyRange endOpen
-                     */
-    
-                    /**
-                     * Constructs a new KeyRange.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a KeyRange.
-                     * @implements IKeyRange
-                     * @constructor
-                     * @param {google.spanner.v1.IKeyRange=} [properties] Properties to set
-                     */
-                    function KeyRange(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * KeyRange startClosed.
-                     * @member {google.protobuf.IListValue|null|undefined} startClosed
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     */
-                    KeyRange.prototype.startClosed = null;
-    
-                    /**
-                     * KeyRange startOpen.
-                     * @member {google.protobuf.IListValue|null|undefined} startOpen
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     */
-                    KeyRange.prototype.startOpen = null;
-    
-                    /**
-                     * KeyRange endClosed.
-                     * @member {google.protobuf.IListValue|null|undefined} endClosed
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     */
-                    KeyRange.prototype.endClosed = null;
-    
-                    /**
-                     * KeyRange endOpen.
-                     * @member {google.protobuf.IListValue|null|undefined} endOpen
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     */
-                    KeyRange.prototype.endOpen = null;
-    
-                    // OneOf field names bound to virtual getters and setters
-                    var $oneOfFields;
-    
-                    /**
-                     * KeyRange startKeyType.
-                     * @member {"startClosed"|"startOpen"|undefined} startKeyType
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     */
-                    Object.defineProperty(KeyRange.prototype, "startKeyType", {
-                        get: $util.oneOfGetter($oneOfFields = ["startClosed", "startOpen"]),
-                        set: $util.oneOfSetter($oneOfFields)
-                    });
-    
-                    /**
-                     * KeyRange endKeyType.
-                     * @member {"endClosed"|"endOpen"|undefined} endKeyType
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     */
-                    Object.defineProperty(KeyRange.prototype, "endKeyType", {
-                        get: $util.oneOfGetter($oneOfFields = ["endClosed", "endOpen"]),
-                        set: $util.oneOfSetter($oneOfFields)
-                    });
-    
-                    /**
-                     * Creates a new KeyRange instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {google.spanner.v1.IKeyRange=} [properties] Properties to set
-                     * @returns {google.spanner.v1.KeyRange} KeyRange instance
-                     */
-                    KeyRange.create = function create(properties) {
-                        return new KeyRange(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified KeyRange message. Does not implicitly {@link google.spanner.v1.KeyRange.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {google.spanner.v1.IKeyRange} message KeyRange message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    KeyRange.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.startClosed != null && message.hasOwnProperty("startClosed"))
-                            $root.google.protobuf.ListValue.encode(message.startClosed, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.startOpen != null && message.hasOwnProperty("startOpen"))
-                            $root.google.protobuf.ListValue.encode(message.startOpen, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.endClosed != null && message.hasOwnProperty("endClosed"))
-                            $root.google.protobuf.ListValue.encode(message.endClosed, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                        if (message.endOpen != null && message.hasOwnProperty("endOpen"))
-                            $root.google.protobuf.ListValue.encode(message.endOpen, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified KeyRange message, length delimited. Does not implicitly {@link google.spanner.v1.KeyRange.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {google.spanner.v1.IKeyRange} message KeyRange message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    KeyRange.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a KeyRange message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.KeyRange} KeyRange
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    KeyRange.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.KeyRange();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.startClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.startOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.endClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                message.endOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a KeyRange message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.KeyRange} KeyRange
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    KeyRange.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a KeyRange message.
-                     * @function verify
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    KeyRange.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        var properties = {};
-                        if (message.startClosed != null && message.hasOwnProperty("startClosed")) {
-                            properties.startKeyType = 1;
-                            {
-                                var error = $root.google.protobuf.ListValue.verify(message.startClosed);
-                                if (error)
-                                    return "startClosed." + error;
-                            }
-                        }
-                        if (message.startOpen != null && message.hasOwnProperty("startOpen")) {
-                            if (properties.startKeyType === 1)
-                                return "startKeyType: multiple values";
-                            properties.startKeyType = 1;
-                            {
-                                var error = $root.google.protobuf.ListValue.verify(message.startOpen);
-                                if (error)
-                                    return "startOpen." + error;
-                            }
-                        }
-                        if (message.endClosed != null && message.hasOwnProperty("endClosed")) {
-                            properties.endKeyType = 1;
-                            {
-                                var error = $root.google.protobuf.ListValue.verify(message.endClosed);
-                                if (error)
-                                    return "endClosed." + error;
-                            }
-                        }
-                        if (message.endOpen != null && message.hasOwnProperty("endOpen")) {
-                            if (properties.endKeyType === 1)
-                                return "endKeyType: multiple values";
-                            properties.endKeyType = 1;
-                            {
-                                var error = $root.google.protobuf.ListValue.verify(message.endOpen);
-                                if (error)
-                                    return "endOpen." + error;
-                            }
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a KeyRange message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.KeyRange} KeyRange
-                     */
-                    KeyRange.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.KeyRange)
-                            return object;
-                        var message = new $root.google.spanner.v1.KeyRange();
-                        if (object.startClosed != null) {
-                            if (typeof object.startClosed !== "object")
-                                throw TypeError(".google.spanner.v1.KeyRange.startClosed: object expected");
-                            message.startClosed = $root.google.protobuf.ListValue.fromObject(object.startClosed);
-                        }
-                        if (object.startOpen != null) {
-                            if (typeof object.startOpen !== "object")
-                                throw TypeError(".google.spanner.v1.KeyRange.startOpen: object expected");
-                            message.startOpen = $root.google.protobuf.ListValue.fromObject(object.startOpen);
-                        }
-                        if (object.endClosed != null) {
-                            if (typeof object.endClosed !== "object")
-                                throw TypeError(".google.spanner.v1.KeyRange.endClosed: object expected");
-                            message.endClosed = $root.google.protobuf.ListValue.fromObject(object.endClosed);
-                        }
-                        if (object.endOpen != null) {
-                            if (typeof object.endOpen !== "object")
-                                throw TypeError(".google.spanner.v1.KeyRange.endOpen: object expected");
-                            message.endOpen = $root.google.protobuf.ListValue.fromObject(object.endOpen);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a KeyRange message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.KeyRange
-                     * @static
-                     * @param {google.spanner.v1.KeyRange} message KeyRange
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    KeyRange.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (message.startClosed != null && message.hasOwnProperty("startClosed")) {
-                            object.startClosed = $root.google.protobuf.ListValue.toObject(message.startClosed, options);
-                            if (options.oneofs)
-                                object.startKeyType = "startClosed";
-                        }
-                        if (message.startOpen != null && message.hasOwnProperty("startOpen")) {
-                            object.startOpen = $root.google.protobuf.ListValue.toObject(message.startOpen, options);
-                            if (options.oneofs)
-                                object.startKeyType = "startOpen";
-                        }
-                        if (message.endClosed != null && message.hasOwnProperty("endClosed")) {
-                            object.endClosed = $root.google.protobuf.ListValue.toObject(message.endClosed, options);
-                            if (options.oneofs)
-                                object.endKeyType = "endClosed";
-                        }
-                        if (message.endOpen != null && message.hasOwnProperty("endOpen")) {
-                            object.endOpen = $root.google.protobuf.ListValue.toObject(message.endOpen, options);
-                            if (options.oneofs)
-                                object.endKeyType = "endOpen";
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this KeyRange to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.KeyRange
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    KeyRange.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return KeyRange;
-                })();
-    
-                v1.KeySet = (function() {
-    
-                    /**
-                     * Properties of a KeySet.
-                     * @memberof google.spanner.v1
-                     * @interface IKeySet
-                     * @property {Array.<google.protobuf.IListValue>|null} [keys] KeySet keys
-                     * @property {Array.<google.spanner.v1.IKeyRange>|null} [ranges] KeySet ranges
-                     * @property {boolean|null} [all] KeySet all
-                     */
-    
-                    /**
-                     * Constructs a new KeySet.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a KeySet.
-                     * @implements IKeySet
-                     * @constructor
-                     * @param {google.spanner.v1.IKeySet=} [properties] Properties to set
-                     */
-                    function KeySet(properties) {
-                        this.keys = [];
-                        this.ranges = [];
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * KeySet keys.
-                     * @member {Array.<google.protobuf.IListValue>} keys
-                     * @memberof google.spanner.v1.KeySet
-                     * @instance
-                     */
-                    KeySet.prototype.keys = $util.emptyArray;
-    
-                    /**
-                     * KeySet ranges.
-                     * @member {Array.<google.spanner.v1.IKeyRange>} ranges
-                     * @memberof google.spanner.v1.KeySet
-                     * @instance
-                     */
-                    KeySet.prototype.ranges = $util.emptyArray;
-    
-                    /**
-                     * KeySet all.
-                     * @member {boolean} all
-                     * @memberof google.spanner.v1.KeySet
-                     * @instance
-                     */
-                    KeySet.prototype.all = false;
-    
-                    /**
-                     * Creates a new KeySet instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {google.spanner.v1.IKeySet=} [properties] Properties to set
-                     * @returns {google.spanner.v1.KeySet} KeySet instance
-                     */
-                    KeySet.create = function create(properties) {
-                        return new KeySet(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified KeySet message. Does not implicitly {@link google.spanner.v1.KeySet.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {google.spanner.v1.IKeySet} message KeySet message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    KeySet.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.keys != null && message.keys.length)
-                            for (var i = 0; i < message.keys.length; ++i)
-                                $root.google.protobuf.ListValue.encode(message.keys[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.ranges != null && message.ranges.length)
-                            for (var i = 0; i < message.ranges.length; ++i)
-                                $root.google.spanner.v1.KeyRange.encode(message.ranges[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.all != null && message.hasOwnProperty("all"))
-                            writer.uint32(/* id 3, wireType 0 =*/24).bool(message.all);
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified KeySet message, length delimited. Does not implicitly {@link google.spanner.v1.KeySet.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {google.spanner.v1.IKeySet} message KeySet message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    KeySet.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a KeySet message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.KeySet} KeySet
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    KeySet.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.KeySet();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.keys && message.keys.length))
-                                    message.keys = [];
-                                message.keys.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
-                                break;
-                            case 2:
-                                if (!(message.ranges && message.ranges.length))
-                                    message.ranges = [];
-                                message.ranges.push($root.google.spanner.v1.KeyRange.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.all = reader.bool();
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a KeySet message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.KeySet} KeySet
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    KeySet.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a KeySet message.
-                     * @function verify
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    KeySet.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.keys != null && message.hasOwnProperty("keys")) {
-                            if (!Array.isArray(message.keys))
-                                return "keys: array expected";
-                            for (var i = 0; i < message.keys.length; ++i) {
-                                var error = $root.google.protobuf.ListValue.verify(message.keys[i]);
-                                if (error)
-                                    return "keys." + error;
-                            }
-                        }
-                        if (message.ranges != null && message.hasOwnProperty("ranges")) {
-                            if (!Array.isArray(message.ranges))
-                                return "ranges: array expected";
-                            for (var i = 0; i < message.ranges.length; ++i) {
-                                var error = $root.google.spanner.v1.KeyRange.verify(message.ranges[i]);
-                                if (error)
-                                    return "ranges." + error;
-                            }
-                        }
-                        if (message.all != null && message.hasOwnProperty("all"))
-                            if (typeof message.all !== "boolean")
-                                return "all: boolean expected";
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a KeySet message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.KeySet} KeySet
-                     */
-                    KeySet.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.KeySet)
-                            return object;
-                        var message = new $root.google.spanner.v1.KeySet();
-                        if (object.keys) {
-                            if (!Array.isArray(object.keys))
-                                throw TypeError(".google.spanner.v1.KeySet.keys: array expected");
-                            message.keys = [];
-                            for (var i = 0; i < object.keys.length; ++i) {
-                                if (typeof object.keys[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.KeySet.keys: object expected");
-                                message.keys[i] = $root.google.protobuf.ListValue.fromObject(object.keys[i]);
-                            }
-                        }
-                        if (object.ranges) {
-                            if (!Array.isArray(object.ranges))
-                                throw TypeError(".google.spanner.v1.KeySet.ranges: array expected");
-                            message.ranges = [];
-                            for (var i = 0; i < object.ranges.length; ++i) {
-                                if (typeof object.ranges[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.KeySet.ranges: object expected");
-                                message.ranges[i] = $root.google.spanner.v1.KeyRange.fromObject(object.ranges[i]);
-                            }
-                        }
-                        if (object.all != null)
-                            message.all = Boolean(object.all);
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a KeySet message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.KeySet
-                     * @static
-                     * @param {google.spanner.v1.KeySet} message KeySet
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    KeySet.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.arrays || options.defaults) {
-                            object.keys = [];
-                            object.ranges = [];
-                        }
-                        if (options.defaults)
-                            object.all = false;
-                        if (message.keys && message.keys.length) {
-                            object.keys = [];
-                            for (var j = 0; j < message.keys.length; ++j)
-                                object.keys[j] = $root.google.protobuf.ListValue.toObject(message.keys[j], options);
-                        }
-                        if (message.ranges && message.ranges.length) {
-                            object.ranges = [];
-                            for (var j = 0; j < message.ranges.length; ++j)
-                                object.ranges[j] = $root.google.spanner.v1.KeyRange.toObject(message.ranges[j], options);
-                        }
-                        if (message.all != null && message.hasOwnProperty("all"))
-                            object.all = message.all;
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this KeySet to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.KeySet
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    KeySet.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return KeySet;
-                })();
-    
-                v1.Mutation = (function() {
-    
-                    /**
-                     * Properties of a Mutation.
-                     * @memberof google.spanner.v1
-                     * @interface IMutation
-                     * @property {google.spanner.v1.Mutation.IWrite|null} [insert] Mutation insert
-                     * @property {google.spanner.v1.Mutation.IWrite|null} [update] Mutation update
-                     * @property {google.spanner.v1.Mutation.IWrite|null} [insertOrUpdate] Mutation insertOrUpdate
-                     * @property {google.spanner.v1.Mutation.IWrite|null} [replace] Mutation replace
-                     * @property {google.spanner.v1.Mutation.IDelete|null} ["delete"] Mutation delete
-                     */
-    
-                    /**
-                     * Constructs a new Mutation.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a Mutation.
-                     * @implements IMutation
-                     * @constructor
-                     * @param {google.spanner.v1.IMutation=} [properties] Properties to set
-                     */
-                    function Mutation(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * Mutation insert.
-                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} insert
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     */
-                    Mutation.prototype.insert = null;
-    
-                    /**
-                     * Mutation update.
-                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} update
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     */
-                    Mutation.prototype.update = null;
-    
-                    /**
-                     * Mutation insertOrUpdate.
-                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} insertOrUpdate
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     */
-                    Mutation.prototype.insertOrUpdate = null;
-    
-                    /**
-                     * Mutation replace.
-                     * @member {google.spanner.v1.Mutation.IWrite|null|undefined} replace
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     */
-                    Mutation.prototype.replace = null;
-    
-                    /**
-                     * Mutation delete.
-                     * @member {google.spanner.v1.Mutation.IDelete|null|undefined} delete
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     */
-                    Mutation.prototype["delete"] = null;
-    
-                    // OneOf field names bound to virtual getters and setters
-                    var $oneOfFields;
-    
-                    /**
-                     * Mutation operation.
-                     * @member {"insert"|"update"|"insertOrUpdate"|"replace"|"delete"|undefined} operation
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     */
-                    Object.defineProperty(Mutation.prototype, "operation", {
-                        get: $util.oneOfGetter($oneOfFields = ["insert", "update", "insertOrUpdate", "replace", "delete"]),
-                        set: $util.oneOfSetter($oneOfFields)
-                    });
-    
-                    /**
-                     * Creates a new Mutation instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {google.spanner.v1.IMutation=} [properties] Properties to set
-                     * @returns {google.spanner.v1.Mutation} Mutation instance
-                     */
-                    Mutation.create = function create(properties) {
-                        return new Mutation(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified Mutation message. Does not implicitly {@link google.spanner.v1.Mutation.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {google.spanner.v1.IMutation} message Mutation message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    Mutation.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.insert != null && message.hasOwnProperty("insert"))
-                            $root.google.spanner.v1.Mutation.Write.encode(message.insert, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.update != null && message.hasOwnProperty("update"))
-                            $root.google.spanner.v1.Mutation.Write.encode(message.update, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.insertOrUpdate != null && message.hasOwnProperty("insertOrUpdate"))
-                            $root.google.spanner.v1.Mutation.Write.encode(message.insertOrUpdate, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                        if (message.replace != null && message.hasOwnProperty("replace"))
-                            $root.google.spanner.v1.Mutation.Write.encode(message.replace, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-                        if (message["delete"] != null && message.hasOwnProperty("delete"))
-                            $root.google.spanner.v1.Mutation.Delete.encode(message["delete"], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified Mutation message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {google.spanner.v1.IMutation} message Mutation message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    Mutation.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a Mutation message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.Mutation} Mutation
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    Mutation.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Mutation();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.insert = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.update = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                message.replace = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 5:
-                                message["delete"] = $root.google.spanner.v1.Mutation.Delete.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a Mutation message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.Mutation} Mutation
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    Mutation.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a Mutation message.
-                     * @function verify
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    Mutation.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        var properties = {};
-                        if (message.insert != null && message.hasOwnProperty("insert")) {
-                            properties.operation = 1;
-                            {
-                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.insert);
-                                if (error)
-                                    return "insert." + error;
-                            }
-                        }
-                        if (message.update != null && message.hasOwnProperty("update")) {
-                            if (properties.operation === 1)
-                                return "operation: multiple values";
-                            properties.operation = 1;
-                            {
-                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.update);
-                                if (error)
-                                    return "update." + error;
-                            }
-                        }
-                        if (message.insertOrUpdate != null && message.hasOwnProperty("insertOrUpdate")) {
-                            if (properties.operation === 1)
-                                return "operation: multiple values";
-                            properties.operation = 1;
-                            {
-                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.insertOrUpdate);
-                                if (error)
-                                    return "insertOrUpdate." + error;
-                            }
-                        }
-                        if (message.replace != null && message.hasOwnProperty("replace")) {
-                            if (properties.operation === 1)
-                                return "operation: multiple values";
-                            properties.operation = 1;
-                            {
-                                var error = $root.google.spanner.v1.Mutation.Write.verify(message.replace);
-                                if (error)
-                                    return "replace." + error;
-                            }
-                        }
-                        if (message["delete"] != null && message.hasOwnProperty("delete")) {
-                            if (properties.operation === 1)
-                                return "operation: multiple values";
-                            properties.operation = 1;
-                            {
-                                var error = $root.google.spanner.v1.Mutation.Delete.verify(message["delete"]);
-                                if (error)
-                                    return "delete." + error;
-                            }
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a Mutation message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.Mutation} Mutation
-                     */
-                    Mutation.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.Mutation)
-                            return object;
-                        var message = new $root.google.spanner.v1.Mutation();
-                        if (object.insert != null) {
-                            if (typeof object.insert !== "object")
-                                throw TypeError(".google.spanner.v1.Mutation.insert: object expected");
-                            message.insert = $root.google.spanner.v1.Mutation.Write.fromObject(object.insert);
-                        }
-                        if (object.update != null) {
-                            if (typeof object.update !== "object")
-                                throw TypeError(".google.spanner.v1.Mutation.update: object expected");
-                            message.update = $root.google.spanner.v1.Mutation.Write.fromObject(object.update);
-                        }
-                        if (object.insertOrUpdate != null) {
-                            if (typeof object.insertOrUpdate !== "object")
-                                throw TypeError(".google.spanner.v1.Mutation.insertOrUpdate: object expected");
-                            message.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.fromObject(object.insertOrUpdate);
-                        }
-                        if (object.replace != null) {
-                            if (typeof object.replace !== "object")
-                                throw TypeError(".google.spanner.v1.Mutation.replace: object expected");
-                            message.replace = $root.google.spanner.v1.Mutation.Write.fromObject(object.replace);
-                        }
-                        if (object["delete"] != null) {
-                            if (typeof object["delete"] !== "object")
-                                throw TypeError(".google.spanner.v1.Mutation.delete: object expected");
-                            message["delete"] = $root.google.spanner.v1.Mutation.Delete.fromObject(object["delete"]);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a Mutation message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.Mutation
-                     * @static
-                     * @param {google.spanner.v1.Mutation} message Mutation
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    Mutation.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (message.insert != null && message.hasOwnProperty("insert")) {
-                            object.insert = $root.google.spanner.v1.Mutation.Write.toObject(message.insert, options);
-                            if (options.oneofs)
-                                object.operation = "insert";
-                        }
-                        if (message.update != null && message.hasOwnProperty("update")) {
-                            object.update = $root.google.spanner.v1.Mutation.Write.toObject(message.update, options);
-                            if (options.oneofs)
-                                object.operation = "update";
-                        }
-                        if (message.insertOrUpdate != null && message.hasOwnProperty("insertOrUpdate")) {
-                            object.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.toObject(message.insertOrUpdate, options);
-                            if (options.oneofs)
-                                object.operation = "insertOrUpdate";
-                        }
-                        if (message.replace != null && message.hasOwnProperty("replace")) {
-                            object.replace = $root.google.spanner.v1.Mutation.Write.toObject(message.replace, options);
-                            if (options.oneofs)
-                                object.operation = "replace";
-                        }
-                        if (message["delete"] != null && message.hasOwnProperty("delete")) {
-                            object["delete"] = $root.google.spanner.v1.Mutation.Delete.toObject(message["delete"], options);
-                            if (options.oneofs)
-                                object.operation = "delete";
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this Mutation to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.Mutation
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    Mutation.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    Mutation.Write = (function() {
-    
-                        /**
-                         * Properties of a Write.
-                         * @memberof google.spanner.v1.Mutation
-                         * @interface IWrite
-                         * @property {string|null} [table] Write table
-                         * @property {Array.<string>|null} [columns] Write columns
-                         * @property {Array.<google.protobuf.IListValue>|null} [values] Write values
-                         */
-    
-                        /**
-                         * Constructs a new Write.
-                         * @memberof google.spanner.v1.Mutation
-                         * @classdesc Represents a Write.
-                         * @implements IWrite
-                         * @constructor
-                         * @param {google.spanner.v1.Mutation.IWrite=} [properties] Properties to set
-                         */
-                        function Write(properties) {
-                            this.columns = [];
-                            this.values = [];
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Write table.
-                         * @member {string} table
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @instance
-                         */
-                        Write.prototype.table = "";
-    
-                        /**
-                         * Write columns.
-                         * @member {Array.<string>} columns
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @instance
-                         */
-                        Write.prototype.columns = $util.emptyArray;
-    
-                        /**
-                         * Write values.
-                         * @member {Array.<google.protobuf.IListValue>} values
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @instance
-                         */
-                        Write.prototype.values = $util.emptyArray;
-    
-                        /**
-                         * Creates a new Write instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {google.spanner.v1.Mutation.IWrite=} [properties] Properties to set
-                         * @returns {google.spanner.v1.Mutation.Write} Write instance
-                         */
-                        Write.create = function create(properties) {
-                            return new Write(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified Write message. Does not implicitly {@link google.spanner.v1.Mutation.Write.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {google.spanner.v1.Mutation.IWrite} message Write message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Write.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.table != null && message.hasOwnProperty("table"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.table);
-                            if (message.columns != null && message.columns.length)
-                                for (var i = 0; i < message.columns.length; ++i)
-                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.columns[i]);
-                            if (message.values != null && message.values.length)
-                                for (var i = 0; i < message.values.length; ++i)
-                                    $root.google.protobuf.ListValue.encode(message.values[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified Write message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Write.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {google.spanner.v1.Mutation.IWrite} message Write message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Write.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a Write message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.Mutation.Write} Write
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Write.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Mutation.Write();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.table = reader.string();
-                                    break;
-                                case 2:
-                                    if (!(message.columns && message.columns.length))
-                                        message.columns = [];
-                                    message.columns.push(reader.string());
-                                    break;
-                                case 3:
-                                    if (!(message.values && message.values.length))
-                                        message.values = [];
-                                    message.values.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a Write message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.Mutation.Write} Write
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Write.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a Write message.
-                         * @function verify
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        Write.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.table != null && message.hasOwnProperty("table"))
-                                if (!$util.isString(message.table))
-                                    return "table: string expected";
-                            if (message.columns != null && message.hasOwnProperty("columns")) {
-                                if (!Array.isArray(message.columns))
-                                    return "columns: array expected";
-                                for (var i = 0; i < message.columns.length; ++i)
-                                    if (!$util.isString(message.columns[i]))
-                                        return "columns: string[] expected";
-                            }
-                            if (message.values != null && message.hasOwnProperty("values")) {
-                                if (!Array.isArray(message.values))
-                                    return "values: array expected";
-                                for (var i = 0; i < message.values.length; ++i) {
-                                    var error = $root.google.protobuf.ListValue.verify(message.values[i]);
-                                    if (error)
-                                        return "values." + error;
-                                }
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a Write message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.Mutation.Write} Write
-                         */
-                        Write.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.Mutation.Write)
-                                return object;
-                            var message = new $root.google.spanner.v1.Mutation.Write();
-                            if (object.table != null)
-                                message.table = String(object.table);
-                            if (object.columns) {
-                                if (!Array.isArray(object.columns))
-                                    throw TypeError(".google.spanner.v1.Mutation.Write.columns: array expected");
-                                message.columns = [];
-                                for (var i = 0; i < object.columns.length; ++i)
-                                    message.columns[i] = String(object.columns[i]);
-                            }
-                            if (object.values) {
-                                if (!Array.isArray(object.values))
-                                    throw TypeError(".google.spanner.v1.Mutation.Write.values: array expected");
-                                message.values = [];
-                                for (var i = 0; i < object.values.length; ++i) {
-                                    if (typeof object.values[i] !== "object")
-                                        throw TypeError(".google.spanner.v1.Mutation.Write.values: object expected");
-                                    message.values[i] = $root.google.protobuf.ListValue.fromObject(object.values[i]);
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a Write message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @static
-                         * @param {google.spanner.v1.Mutation.Write} message Write
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        Write.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.arrays || options.defaults) {
-                                object.columns = [];
-                                object.values = [];
-                            }
-                            if (options.defaults)
-                                object.table = "";
-                            if (message.table != null && message.hasOwnProperty("table"))
-                                object.table = message.table;
-                            if (message.columns && message.columns.length) {
-                                object.columns = [];
-                                for (var j = 0; j < message.columns.length; ++j)
-                                    object.columns[j] = message.columns[j];
-                            }
-                            if (message.values && message.values.length) {
-                                object.values = [];
-                                for (var j = 0; j < message.values.length; ++j)
-                                    object.values[j] = $root.google.protobuf.ListValue.toObject(message.values[j], options);
-                            }
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this Write to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.Mutation.Write
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        Write.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return Write;
-                    })();
-    
-                    Mutation.Delete = (function() {
-    
-                        /**
-                         * Properties of a Delete.
-                         * @memberof google.spanner.v1.Mutation
-                         * @interface IDelete
-                         * @property {string|null} [table] Delete table
-                         * @property {google.spanner.v1.IKeySet|null} [keySet] Delete keySet
-                         */
-    
-                        /**
-                         * Constructs a new Delete.
-                         * @memberof google.spanner.v1.Mutation
-                         * @classdesc Represents a Delete.
-                         * @implements IDelete
-                         * @constructor
-                         * @param {google.spanner.v1.Mutation.IDelete=} [properties] Properties to set
-                         */
-                        function Delete(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Delete table.
-                         * @member {string} table
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @instance
-                         */
-                        Delete.prototype.table = "";
-    
-                        /**
-                         * Delete keySet.
-                         * @member {google.spanner.v1.IKeySet|null|undefined} keySet
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @instance
-                         */
-                        Delete.prototype.keySet = null;
-    
-                        /**
-                         * Creates a new Delete instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {google.spanner.v1.Mutation.IDelete=} [properties] Properties to set
-                         * @returns {google.spanner.v1.Mutation.Delete} Delete instance
-                         */
-                        Delete.create = function create(properties) {
-                            return new Delete(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified Delete message. Does not implicitly {@link google.spanner.v1.Mutation.Delete.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {google.spanner.v1.Mutation.IDelete} message Delete message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Delete.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.table != null && message.hasOwnProperty("table"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.table);
-                            if (message.keySet != null && message.hasOwnProperty("keySet"))
-                                $root.google.spanner.v1.KeySet.encode(message.keySet, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified Delete message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Delete.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {google.spanner.v1.Mutation.IDelete} message Delete message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Delete.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a Delete message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.Mutation.Delete} Delete
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Delete.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Mutation.Delete();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.table = reader.string();
-                                    break;
-                                case 2:
-                                    message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a Delete message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.Mutation.Delete} Delete
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Delete.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a Delete message.
-                         * @function verify
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        Delete.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.table != null && message.hasOwnProperty("table"))
-                                if (!$util.isString(message.table))
-                                    return "table: string expected";
-                            if (message.keySet != null && message.hasOwnProperty("keySet")) {
-                                var error = $root.google.spanner.v1.KeySet.verify(message.keySet);
-                                if (error)
-                                    return "keySet." + error;
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a Delete message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.Mutation.Delete} Delete
-                         */
-                        Delete.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.Mutation.Delete)
-                                return object;
-                            var message = new $root.google.spanner.v1.Mutation.Delete();
-                            if (object.table != null)
-                                message.table = String(object.table);
-                            if (object.keySet != null) {
-                                if (typeof object.keySet !== "object")
-                                    throw TypeError(".google.spanner.v1.Mutation.Delete.keySet: object expected");
-                                message.keySet = $root.google.spanner.v1.KeySet.fromObject(object.keySet);
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a Delete message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @static
-                         * @param {google.spanner.v1.Mutation.Delete} message Delete
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        Delete.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.table = "";
-                                object.keySet = null;
-                            }
-                            if (message.table != null && message.hasOwnProperty("table"))
-                                object.table = message.table;
-                            if (message.keySet != null && message.hasOwnProperty("keySet"))
-                                object.keySet = $root.google.spanner.v1.KeySet.toObject(message.keySet, options);
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this Delete to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.Mutation.Delete
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        Delete.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return Delete;
-                    })();
-    
-                    return Mutation;
-                })();
-    
-                v1.ResultSet = (function() {
-    
-                    /**
-                     * Properties of a ResultSet.
-                     * @memberof google.spanner.v1
-                     * @interface IResultSet
-                     * @property {google.spanner.v1.IResultSetMetadata|null} [metadata] ResultSet metadata
-                     * @property {Array.<google.protobuf.IListValue>|null} [rows] ResultSet rows
-                     * @property {google.spanner.v1.IResultSetStats|null} [stats] ResultSet stats
-                     */
-    
-                    /**
-                     * Constructs a new ResultSet.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a ResultSet.
-                     * @implements IResultSet
-                     * @constructor
-                     * @param {google.spanner.v1.IResultSet=} [properties] Properties to set
-                     */
-                    function ResultSet(properties) {
-                        this.rows = [];
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * ResultSet metadata.
-                     * @member {google.spanner.v1.IResultSetMetadata|null|undefined} metadata
-                     * @memberof google.spanner.v1.ResultSet
-                     * @instance
-                     */
-                    ResultSet.prototype.metadata = null;
-    
-                    /**
-                     * ResultSet rows.
-                     * @member {Array.<google.protobuf.IListValue>} rows
-                     * @memberof google.spanner.v1.ResultSet
-                     * @instance
-                     */
-                    ResultSet.prototype.rows = $util.emptyArray;
-    
-                    /**
-                     * ResultSet stats.
-                     * @member {google.spanner.v1.IResultSetStats|null|undefined} stats
-                     * @memberof google.spanner.v1.ResultSet
-                     * @instance
-                     */
-                    ResultSet.prototype.stats = null;
-    
-                    /**
-                     * Creates a new ResultSet instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {google.spanner.v1.IResultSet=} [properties] Properties to set
-                     * @returns {google.spanner.v1.ResultSet} ResultSet instance
-                     */
-                    ResultSet.create = function create(properties) {
-                        return new ResultSet(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified ResultSet message. Does not implicitly {@link google.spanner.v1.ResultSet.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {google.spanner.v1.IResultSet} message ResultSet message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    ResultSet.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.metadata != null && message.hasOwnProperty("metadata"))
-                            $root.google.spanner.v1.ResultSetMetadata.encode(message.metadata, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.rows != null && message.rows.length)
-                            for (var i = 0; i < message.rows.length; ++i)
-                                $root.google.protobuf.ListValue.encode(message.rows[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.stats != null && message.hasOwnProperty("stats"))
-                            $root.google.spanner.v1.ResultSetStats.encode(message.stats, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified ResultSet message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSet.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {google.spanner.v1.IResultSet} message ResultSet message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    ResultSet.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a ResultSet message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.ResultSet} ResultSet
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    ResultSet.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ResultSet();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                if (!(message.rows && message.rows.length))
-                                    message.rows = [];
-                                message.rows.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a ResultSet message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.ResultSet} ResultSet
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    ResultSet.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a ResultSet message.
-                     * @function verify
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    ResultSet.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.metadata != null && message.hasOwnProperty("metadata")) {
-                            var error = $root.google.spanner.v1.ResultSetMetadata.verify(message.metadata);
-                            if (error)
-                                return "metadata." + error;
-                        }
-                        if (message.rows != null && message.hasOwnProperty("rows")) {
-                            if (!Array.isArray(message.rows))
-                                return "rows: array expected";
-                            for (var i = 0; i < message.rows.length; ++i) {
-                                var error = $root.google.protobuf.ListValue.verify(message.rows[i]);
-                                if (error)
-                                    return "rows." + error;
-                            }
-                        }
-                        if (message.stats != null && message.hasOwnProperty("stats")) {
-                            var error = $root.google.spanner.v1.ResultSetStats.verify(message.stats);
-                            if (error)
-                                return "stats." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a ResultSet message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.ResultSet} ResultSet
-                     */
-                    ResultSet.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.ResultSet)
-                            return object;
-                        var message = new $root.google.spanner.v1.ResultSet();
-                        if (object.metadata != null) {
-                            if (typeof object.metadata !== "object")
-                                throw TypeError(".google.spanner.v1.ResultSet.metadata: object expected");
-                            message.metadata = $root.google.spanner.v1.ResultSetMetadata.fromObject(object.metadata);
-                        }
-                        if (object.rows) {
-                            if (!Array.isArray(object.rows))
-                                throw TypeError(".google.spanner.v1.ResultSet.rows: array expected");
-                            message.rows = [];
-                            for (var i = 0; i < object.rows.length; ++i) {
-                                if (typeof object.rows[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.ResultSet.rows: object expected");
-                                message.rows[i] = $root.google.protobuf.ListValue.fromObject(object.rows[i]);
-                            }
-                        }
-                        if (object.stats != null) {
-                            if (typeof object.stats !== "object")
-                                throw TypeError(".google.spanner.v1.ResultSet.stats: object expected");
-                            message.stats = $root.google.spanner.v1.ResultSetStats.fromObject(object.stats);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a ResultSet message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.ResultSet
-                     * @static
-                     * @param {google.spanner.v1.ResultSet} message ResultSet
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    ResultSet.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.arrays || options.defaults)
-                            object.rows = [];
-                        if (options.defaults) {
-                            object.metadata = null;
-                            object.stats = null;
-                        }
-                        if (message.metadata != null && message.hasOwnProperty("metadata"))
-                            object.metadata = $root.google.spanner.v1.ResultSetMetadata.toObject(message.metadata, options);
-                        if (message.rows && message.rows.length) {
-                            object.rows = [];
-                            for (var j = 0; j < message.rows.length; ++j)
-                                object.rows[j] = $root.google.protobuf.ListValue.toObject(message.rows[j], options);
-                        }
-                        if (message.stats != null && message.hasOwnProperty("stats"))
-                            object.stats = $root.google.spanner.v1.ResultSetStats.toObject(message.stats, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this ResultSet to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.ResultSet
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    ResultSet.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return ResultSet;
-                })();
-    
-                v1.PartialResultSet = (function() {
-    
-                    /**
-                     * Properties of a PartialResultSet.
-                     * @memberof google.spanner.v1
-                     * @interface IPartialResultSet
-                     * @property {google.spanner.v1.IResultSetMetadata|null} [metadata] PartialResultSet metadata
-                     * @property {Array.<google.protobuf.IValue>|null} [values] PartialResultSet values
-                     * @property {boolean|null} [chunkedValue] PartialResultSet chunkedValue
-                     * @property {Uint8Array|null} [resumeToken] PartialResultSet resumeToken
-                     * @property {google.spanner.v1.IResultSetStats|null} [stats] PartialResultSet stats
-                     */
-    
-                    /**
-                     * Constructs a new PartialResultSet.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a PartialResultSet.
-                     * @implements IPartialResultSet
-                     * @constructor
-                     * @param {google.spanner.v1.IPartialResultSet=} [properties] Properties to set
-                     */
-                    function PartialResultSet(properties) {
-                        this.values = [];
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * PartialResultSet metadata.
-                     * @member {google.spanner.v1.IResultSetMetadata|null|undefined} metadata
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @instance
-                     */
-                    PartialResultSet.prototype.metadata = null;
-    
-                    /**
-                     * PartialResultSet values.
-                     * @member {Array.<google.protobuf.IValue>} values
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @instance
-                     */
-                    PartialResultSet.prototype.values = $util.emptyArray;
-    
-                    /**
-                     * PartialResultSet chunkedValue.
-                     * @member {boolean} chunkedValue
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @instance
-                     */
-                    PartialResultSet.prototype.chunkedValue = false;
-    
-                    /**
-                     * PartialResultSet resumeToken.
-                     * @member {Uint8Array} resumeToken
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @instance
-                     */
-                    PartialResultSet.prototype.resumeToken = $util.newBuffer([]);
-    
-                    /**
-                     * PartialResultSet stats.
-                     * @member {google.spanner.v1.IResultSetStats|null|undefined} stats
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @instance
-                     */
-                    PartialResultSet.prototype.stats = null;
-    
-                    /**
-                     * Creates a new PartialResultSet instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {google.spanner.v1.IPartialResultSet=} [properties] Properties to set
-                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet instance
-                     */
-                    PartialResultSet.create = function create(properties) {
-                        return new PartialResultSet(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified PartialResultSet message. Does not implicitly {@link google.spanner.v1.PartialResultSet.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {google.spanner.v1.IPartialResultSet} message PartialResultSet message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    PartialResultSet.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.metadata != null && message.hasOwnProperty("metadata"))
-                            $root.google.spanner.v1.ResultSetMetadata.encode(message.metadata, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.values != null && message.values.length)
-                            for (var i = 0; i < message.values.length; ++i)
-                                $root.google.protobuf.Value.encode(message.values[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.chunkedValue != null && message.hasOwnProperty("chunkedValue"))
-                            writer.uint32(/* id 3, wireType 0 =*/24).bool(message.chunkedValue);
-                        if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
-                            writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.resumeToken);
-                        if (message.stats != null && message.hasOwnProperty("stats"))
-                            $root.google.spanner.v1.ResultSetStats.encode(message.stats, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified PartialResultSet message, length delimited. Does not implicitly {@link google.spanner.v1.PartialResultSet.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {google.spanner.v1.IPartialResultSet} message PartialResultSet message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    PartialResultSet.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a PartialResultSet message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    PartialResultSet.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PartialResultSet();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                if (!(message.values && message.values.length))
-                                    message.values = [];
-                                message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.chunkedValue = reader.bool();
-                                break;
-                            case 4:
-                                message.resumeToken = reader.bytes();
-                                break;
-                            case 5:
-                                message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a PartialResultSet message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    PartialResultSet.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a PartialResultSet message.
-                     * @function verify
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    PartialResultSet.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.metadata != null && message.hasOwnProperty("metadata")) {
-                            var error = $root.google.spanner.v1.ResultSetMetadata.verify(message.metadata);
-                            if (error)
-                                return "metadata." + error;
-                        }
-                        if (message.values != null && message.hasOwnProperty("values")) {
-                            if (!Array.isArray(message.values))
-                                return "values: array expected";
-                            for (var i = 0; i < message.values.length; ++i) {
-                                var error = $root.google.protobuf.Value.verify(message.values[i]);
-                                if (error)
-                                    return "values." + error;
-                            }
-                        }
-                        if (message.chunkedValue != null && message.hasOwnProperty("chunkedValue"))
-                            if (typeof message.chunkedValue !== "boolean")
-                                return "chunkedValue: boolean expected";
-                        if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
-                            if (!(message.resumeToken && typeof message.resumeToken.length === "number" || $util.isString(message.resumeToken)))
-                                return "resumeToken: buffer expected";
-                        if (message.stats != null && message.hasOwnProperty("stats")) {
-                            var error = $root.google.spanner.v1.ResultSetStats.verify(message.stats);
-                            if (error)
-                                return "stats." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a PartialResultSet message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.PartialResultSet} PartialResultSet
-                     */
-                    PartialResultSet.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.PartialResultSet)
-                            return object;
-                        var message = new $root.google.spanner.v1.PartialResultSet();
-                        if (object.metadata != null) {
-                            if (typeof object.metadata !== "object")
-                                throw TypeError(".google.spanner.v1.PartialResultSet.metadata: object expected");
-                            message.metadata = $root.google.spanner.v1.ResultSetMetadata.fromObject(object.metadata);
-                        }
-                        if (object.values) {
-                            if (!Array.isArray(object.values))
-                                throw TypeError(".google.spanner.v1.PartialResultSet.values: array expected");
-                            message.values = [];
-                            for (var i = 0; i < object.values.length; ++i) {
-                                if (typeof object.values[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.PartialResultSet.values: object expected");
-                                message.values[i] = $root.google.protobuf.Value.fromObject(object.values[i]);
-                            }
-                        }
-                        if (object.chunkedValue != null)
-                            message.chunkedValue = Boolean(object.chunkedValue);
-                        if (object.resumeToken != null)
-                            if (typeof object.resumeToken === "string")
-                                $util.base64.decode(object.resumeToken, message.resumeToken = $util.newBuffer($util.base64.length(object.resumeToken)), 0);
-                            else if (object.resumeToken.length)
-                                message.resumeToken = object.resumeToken;
-                        if (object.stats != null) {
-                            if (typeof object.stats !== "object")
-                                throw TypeError(".google.spanner.v1.PartialResultSet.stats: object expected");
-                            message.stats = $root.google.spanner.v1.ResultSetStats.fromObject(object.stats);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a PartialResultSet message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @static
-                     * @param {google.spanner.v1.PartialResultSet} message PartialResultSet
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    PartialResultSet.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.arrays || options.defaults)
-                            object.values = [];
-                        if (options.defaults) {
-                            object.metadata = null;
-                            object.chunkedValue = false;
-                            if (options.bytes === String)
-                                object.resumeToken = "";
-                            else {
-                                object.resumeToken = [];
-                                if (options.bytes !== Array)
-                                    object.resumeToken = $util.newBuffer(object.resumeToken);
-                            }
-                            object.stats = null;
-                        }
-                        if (message.metadata != null && message.hasOwnProperty("metadata"))
-                            object.metadata = $root.google.spanner.v1.ResultSetMetadata.toObject(message.metadata, options);
-                        if (message.values && message.values.length) {
-                            object.values = [];
-                            for (var j = 0; j < message.values.length; ++j)
-                                object.values[j] = $root.google.protobuf.Value.toObject(message.values[j], options);
-                        }
-                        if (message.chunkedValue != null && message.hasOwnProperty("chunkedValue"))
-                            object.chunkedValue = message.chunkedValue;
-                        if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
-                            object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
-                        if (message.stats != null && message.hasOwnProperty("stats"))
-                            object.stats = $root.google.spanner.v1.ResultSetStats.toObject(message.stats, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this PartialResultSet to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.PartialResultSet
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    PartialResultSet.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return PartialResultSet;
-                })();
-    
-                v1.ResultSetMetadata = (function() {
-    
-                    /**
-                     * Properties of a ResultSetMetadata.
-                     * @memberof google.spanner.v1
-                     * @interface IResultSetMetadata
-                     * @property {google.spanner.v1.IStructType|null} [rowType] ResultSetMetadata rowType
-                     * @property {google.spanner.v1.ITransaction|null} [transaction] ResultSetMetadata transaction
-                     */
-    
-                    /**
-                     * Constructs a new ResultSetMetadata.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a ResultSetMetadata.
-                     * @implements IResultSetMetadata
-                     * @constructor
-                     * @param {google.spanner.v1.IResultSetMetadata=} [properties] Properties to set
-                     */
-                    function ResultSetMetadata(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * ResultSetMetadata rowType.
-                     * @member {google.spanner.v1.IStructType|null|undefined} rowType
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @instance
-                     */
-                    ResultSetMetadata.prototype.rowType = null;
-    
-                    /**
-                     * ResultSetMetadata transaction.
-                     * @member {google.spanner.v1.ITransaction|null|undefined} transaction
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @instance
-                     */
-                    ResultSetMetadata.prototype.transaction = null;
-    
-                    /**
-                     * Creates a new ResultSetMetadata instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {google.spanner.v1.IResultSetMetadata=} [properties] Properties to set
-                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata instance
-                     */
-                    ResultSetMetadata.create = function create(properties) {
-                        return new ResultSetMetadata(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified ResultSetMetadata message. Does not implicitly {@link google.spanner.v1.ResultSetMetadata.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {google.spanner.v1.IResultSetMetadata} message ResultSetMetadata message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    ResultSetMetadata.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.rowType != null && message.hasOwnProperty("rowType"))
-                            $root.google.spanner.v1.StructType.encode(message.rowType, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.transaction != null && message.hasOwnProperty("transaction"))
-                            $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified ResultSetMetadata message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSetMetadata.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {google.spanner.v1.IResultSetMetadata} message ResultSetMetadata message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    ResultSetMetadata.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a ResultSetMetadata message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    ResultSetMetadata.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ResultSetMetadata();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.rowType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a ResultSetMetadata message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    ResultSetMetadata.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a ResultSetMetadata message.
-                     * @function verify
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    ResultSetMetadata.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.rowType != null && message.hasOwnProperty("rowType")) {
-                            var error = $root.google.spanner.v1.StructType.verify(message.rowType);
-                            if (error)
-                                return "rowType." + error;
-                        }
-                        if (message.transaction != null && message.hasOwnProperty("transaction")) {
-                            var error = $root.google.spanner.v1.Transaction.verify(message.transaction);
-                            if (error)
-                                return "transaction." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a ResultSetMetadata message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.ResultSetMetadata} ResultSetMetadata
-                     */
-                    ResultSetMetadata.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.ResultSetMetadata)
-                            return object;
-                        var message = new $root.google.spanner.v1.ResultSetMetadata();
-                        if (object.rowType != null) {
-                            if (typeof object.rowType !== "object")
-                                throw TypeError(".google.spanner.v1.ResultSetMetadata.rowType: object expected");
-                            message.rowType = $root.google.spanner.v1.StructType.fromObject(object.rowType);
-                        }
-                        if (object.transaction != null) {
-                            if (typeof object.transaction !== "object")
-                                throw TypeError(".google.spanner.v1.ResultSetMetadata.transaction: object expected");
-                            message.transaction = $root.google.spanner.v1.Transaction.fromObject(object.transaction);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a ResultSetMetadata message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @static
-                     * @param {google.spanner.v1.ResultSetMetadata} message ResultSetMetadata
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    ResultSetMetadata.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.defaults) {
-                            object.rowType = null;
-                            object.transaction = null;
-                        }
-                        if (message.rowType != null && message.hasOwnProperty("rowType"))
-                            object.rowType = $root.google.spanner.v1.StructType.toObject(message.rowType, options);
-                        if (message.transaction != null && message.hasOwnProperty("transaction"))
-                            object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this ResultSetMetadata to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.ResultSetMetadata
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    ResultSetMetadata.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return ResultSetMetadata;
-                })();
-    
-                v1.ResultSetStats = (function() {
-    
-                    /**
-                     * Properties of a ResultSetStats.
-                     * @memberof google.spanner.v1
-                     * @interface IResultSetStats
-                     * @property {google.spanner.v1.IQueryPlan|null} [queryPlan] ResultSetStats queryPlan
-                     * @property {google.protobuf.IStruct|null} [queryStats] ResultSetStats queryStats
-                     * @property {number|Long|null} [rowCountExact] ResultSetStats rowCountExact
-                     * @property {number|Long|null} [rowCountLowerBound] ResultSetStats rowCountLowerBound
-                     */
-    
-                    /**
-                     * Constructs a new ResultSetStats.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a ResultSetStats.
-                     * @implements IResultSetStats
-                     * @constructor
-                     * @param {google.spanner.v1.IResultSetStats=} [properties] Properties to set
-                     */
-                    function ResultSetStats(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * ResultSetStats queryPlan.
-                     * @member {google.spanner.v1.IQueryPlan|null|undefined} queryPlan
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @instance
-                     */
-                    ResultSetStats.prototype.queryPlan = null;
-    
-                    /**
-                     * ResultSetStats queryStats.
-                     * @member {google.protobuf.IStruct|null|undefined} queryStats
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @instance
-                     */
-                    ResultSetStats.prototype.queryStats = null;
-    
-                    /**
-                     * ResultSetStats rowCountExact.
-                     * @member {number|Long} rowCountExact
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @instance
-                     */
-                    ResultSetStats.prototype.rowCountExact = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-    
-                    /**
-                     * ResultSetStats rowCountLowerBound.
-                     * @member {number|Long} rowCountLowerBound
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @instance
-                     */
-                    ResultSetStats.prototype.rowCountLowerBound = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-    
-                    // OneOf field names bound to virtual getters and setters
-                    var $oneOfFields;
-    
-                    /**
-                     * ResultSetStats rowCount.
-                     * @member {"rowCountExact"|"rowCountLowerBound"|undefined} rowCount
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @instance
-                     */
-                    Object.defineProperty(ResultSetStats.prototype, "rowCount", {
-                        get: $util.oneOfGetter($oneOfFields = ["rowCountExact", "rowCountLowerBound"]),
-                        set: $util.oneOfSetter($oneOfFields)
-                    });
-    
-                    /**
-                     * Creates a new ResultSetStats instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {google.spanner.v1.IResultSetStats=} [properties] Properties to set
-                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats instance
-                     */
-                    ResultSetStats.create = function create(properties) {
-                        return new ResultSetStats(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified ResultSetStats message. Does not implicitly {@link google.spanner.v1.ResultSetStats.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {google.spanner.v1.IResultSetStats} message ResultSetStats message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    ResultSetStats.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.queryPlan != null && message.hasOwnProperty("queryPlan"))
-                            $root.google.spanner.v1.QueryPlan.encode(message.queryPlan, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.queryStats != null && message.hasOwnProperty("queryStats"))
-                            $root.google.protobuf.Struct.encode(message.queryStats, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.rowCountExact != null && message.hasOwnProperty("rowCountExact"))
-                            writer.uint32(/* id 3, wireType 0 =*/24).int64(message.rowCountExact);
-                        if (message.rowCountLowerBound != null && message.hasOwnProperty("rowCountLowerBound"))
-                            writer.uint32(/* id 4, wireType 0 =*/32).int64(message.rowCountLowerBound);
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified ResultSetStats message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSetStats.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {google.spanner.v1.IResultSetStats} message ResultSetStats message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    ResultSetStats.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a ResultSetStats message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    ResultSetStats.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ResultSetStats();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.queryPlan = $root.google.spanner.v1.QueryPlan.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.queryStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.rowCountExact = reader.int64();
-                                break;
-                            case 4:
-                                message.rowCountLowerBound = reader.int64();
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a ResultSetStats message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    ResultSetStats.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a ResultSetStats message.
-                     * @function verify
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    ResultSetStats.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        var properties = {};
-                        if (message.queryPlan != null && message.hasOwnProperty("queryPlan")) {
-                            var error = $root.google.spanner.v1.QueryPlan.verify(message.queryPlan);
-                            if (error)
-                                return "queryPlan." + error;
-                        }
-                        if (message.queryStats != null && message.hasOwnProperty("queryStats")) {
-                            var error = $root.google.protobuf.Struct.verify(message.queryStats);
-                            if (error)
-                                return "queryStats." + error;
-                        }
-                        if (message.rowCountExact != null && message.hasOwnProperty("rowCountExact")) {
-                            properties.rowCount = 1;
-                            if (!$util.isInteger(message.rowCountExact) && !(message.rowCountExact && $util.isInteger(message.rowCountExact.low) && $util.isInteger(message.rowCountExact.high)))
-                                return "rowCountExact: integer|Long expected";
-                        }
-                        if (message.rowCountLowerBound != null && message.hasOwnProperty("rowCountLowerBound")) {
-                            if (properties.rowCount === 1)
-                                return "rowCount: multiple values";
-                            properties.rowCount = 1;
-                            if (!$util.isInteger(message.rowCountLowerBound) && !(message.rowCountLowerBound && $util.isInteger(message.rowCountLowerBound.low) && $util.isInteger(message.rowCountLowerBound.high)))
-                                return "rowCountLowerBound: integer|Long expected";
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a ResultSetStats message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.ResultSetStats} ResultSetStats
-                     */
-                    ResultSetStats.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.ResultSetStats)
-                            return object;
-                        var message = new $root.google.spanner.v1.ResultSetStats();
-                        if (object.queryPlan != null) {
-                            if (typeof object.queryPlan !== "object")
-                                throw TypeError(".google.spanner.v1.ResultSetStats.queryPlan: object expected");
-                            message.queryPlan = $root.google.spanner.v1.QueryPlan.fromObject(object.queryPlan);
-                        }
-                        if (object.queryStats != null) {
-                            if (typeof object.queryStats !== "object")
-                                throw TypeError(".google.spanner.v1.ResultSetStats.queryStats: object expected");
-                            message.queryStats = $root.google.protobuf.Struct.fromObject(object.queryStats);
-                        }
-                        if (object.rowCountExact != null)
-                            if ($util.Long)
-                                (message.rowCountExact = $util.Long.fromValue(object.rowCountExact)).unsigned = false;
-                            else if (typeof object.rowCountExact === "string")
-                                message.rowCountExact = parseInt(object.rowCountExact, 10);
-                            else if (typeof object.rowCountExact === "number")
-                                message.rowCountExact = object.rowCountExact;
-                            else if (typeof object.rowCountExact === "object")
-                                message.rowCountExact = new $util.LongBits(object.rowCountExact.low >>> 0, object.rowCountExact.high >>> 0).toNumber();
-                        if (object.rowCountLowerBound != null)
-                            if ($util.Long)
-                                (message.rowCountLowerBound = $util.Long.fromValue(object.rowCountLowerBound)).unsigned = false;
-                            else if (typeof object.rowCountLowerBound === "string")
-                                message.rowCountLowerBound = parseInt(object.rowCountLowerBound, 10);
-                            else if (typeof object.rowCountLowerBound === "number")
-                                message.rowCountLowerBound = object.rowCountLowerBound;
-                            else if (typeof object.rowCountLowerBound === "object")
-                                message.rowCountLowerBound = new $util.LongBits(object.rowCountLowerBound.low >>> 0, object.rowCountLowerBound.high >>> 0).toNumber();
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a ResultSetStats message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @static
-                     * @param {google.spanner.v1.ResultSetStats} message ResultSetStats
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    ResultSetStats.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.defaults) {
-                            object.queryPlan = null;
-                            object.queryStats = null;
-                        }
-                        if (message.queryPlan != null && message.hasOwnProperty("queryPlan"))
-                            object.queryPlan = $root.google.spanner.v1.QueryPlan.toObject(message.queryPlan, options);
-                        if (message.queryStats != null && message.hasOwnProperty("queryStats"))
-                            object.queryStats = $root.google.protobuf.Struct.toObject(message.queryStats, options);
-                        if (message.rowCountExact != null && message.hasOwnProperty("rowCountExact")) {
-                            if (typeof message.rowCountExact === "number")
-                                object.rowCountExact = options.longs === String ? String(message.rowCountExact) : message.rowCountExact;
-                            else
-                                object.rowCountExact = options.longs === String ? $util.Long.prototype.toString.call(message.rowCountExact) : options.longs === Number ? new $util.LongBits(message.rowCountExact.low >>> 0, message.rowCountExact.high >>> 0).toNumber() : message.rowCountExact;
-                            if (options.oneofs)
-                                object.rowCount = "rowCountExact";
-                        }
-                        if (message.rowCountLowerBound != null && message.hasOwnProperty("rowCountLowerBound")) {
-                            if (typeof message.rowCountLowerBound === "number")
-                                object.rowCountLowerBound = options.longs === String ? String(message.rowCountLowerBound) : message.rowCountLowerBound;
-                            else
-                                object.rowCountLowerBound = options.longs === String ? $util.Long.prototype.toString.call(message.rowCountLowerBound) : options.longs === Number ? new $util.LongBits(message.rowCountLowerBound.low >>> 0, message.rowCountLowerBound.high >>> 0).toNumber() : message.rowCountLowerBound;
-                            if (options.oneofs)
-                                object.rowCount = "rowCountLowerBound";
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this ResultSetStats to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.ResultSetStats
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    ResultSetStats.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return ResultSetStats;
-                })();
-    
-                v1.PlanNode = (function() {
-    
-                    /**
-                     * Properties of a PlanNode.
-                     * @memberof google.spanner.v1
-                     * @interface IPlanNode
-                     * @property {number|null} [index] PlanNode index
-                     * @property {google.spanner.v1.PlanNode.Kind|null} [kind] PlanNode kind
-                     * @property {string|null} [displayName] PlanNode displayName
-                     * @property {Array.<google.spanner.v1.PlanNode.IChildLink>|null} [childLinks] PlanNode childLinks
-                     * @property {google.spanner.v1.PlanNode.IShortRepresentation|null} [shortRepresentation] PlanNode shortRepresentation
-                     * @property {google.protobuf.IStruct|null} [metadata] PlanNode metadata
-                     * @property {google.protobuf.IStruct|null} [executionStats] PlanNode executionStats
-                     */
-    
-                    /**
-                     * Constructs a new PlanNode.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a PlanNode.
-                     * @implements IPlanNode
-                     * @constructor
-                     * @param {google.spanner.v1.IPlanNode=} [properties] Properties to set
-                     */
-                    function PlanNode(properties) {
-                        this.childLinks = [];
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * PlanNode index.
-                     * @member {number} index
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.index = 0;
-    
-                    /**
-                     * PlanNode kind.
-                     * @member {google.spanner.v1.PlanNode.Kind} kind
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.kind = 0;
-    
-                    /**
-                     * PlanNode displayName.
-                     * @member {string} displayName
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.displayName = "";
-    
-                    /**
-                     * PlanNode childLinks.
-                     * @member {Array.<google.spanner.v1.PlanNode.IChildLink>} childLinks
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.childLinks = $util.emptyArray;
-    
-                    /**
-                     * PlanNode shortRepresentation.
-                     * @member {google.spanner.v1.PlanNode.IShortRepresentation|null|undefined} shortRepresentation
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.shortRepresentation = null;
-    
-                    /**
-                     * PlanNode metadata.
-                     * @member {google.protobuf.IStruct|null|undefined} metadata
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.metadata = null;
-    
-                    /**
-                     * PlanNode executionStats.
-                     * @member {google.protobuf.IStruct|null|undefined} executionStats
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     */
-                    PlanNode.prototype.executionStats = null;
-    
-                    /**
-                     * Creates a new PlanNode instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {google.spanner.v1.IPlanNode=} [properties] Properties to set
-                     * @returns {google.spanner.v1.PlanNode} PlanNode instance
-                     */
-                    PlanNode.create = function create(properties) {
-                        return new PlanNode(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified PlanNode message. Does not implicitly {@link google.spanner.v1.PlanNode.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {google.spanner.v1.IPlanNode} message PlanNode message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    PlanNode.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.index != null && message.hasOwnProperty("index"))
-                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.index);
-                        if (message.kind != null && message.hasOwnProperty("kind"))
-                            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.kind);
-                        if (message.displayName != null && message.hasOwnProperty("displayName"))
-                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.displayName);
-                        if (message.childLinks != null && message.childLinks.length)
-                            for (var i = 0; i < message.childLinks.length; ++i)
-                                $root.google.spanner.v1.PlanNode.ChildLink.encode(message.childLinks[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-                        if (message.shortRepresentation != null && message.hasOwnProperty("shortRepresentation"))
-                            $root.google.spanner.v1.PlanNode.ShortRepresentation.encode(message.shortRepresentation, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
-                        if (message.metadata != null && message.hasOwnProperty("metadata"))
-                            $root.google.protobuf.Struct.encode(message.metadata, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
-                        if (message.executionStats != null && message.hasOwnProperty("executionStats"))
-                            $root.google.protobuf.Struct.encode(message.executionStats, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified PlanNode message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {google.spanner.v1.IPlanNode} message PlanNode message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    PlanNode.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a PlanNode message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.PlanNode} PlanNode
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    PlanNode.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.index = reader.int32();
-                                break;
-                            case 2:
-                                message.kind = reader.int32();
-                                break;
-                            case 3:
-                                message.displayName = reader.string();
-                                break;
-                            case 4:
-                                if (!(message.childLinks && message.childLinks.length))
-                                    message.childLinks = [];
-                                message.childLinks.push($root.google.spanner.v1.PlanNode.ChildLink.decode(reader, reader.uint32()));
-                                break;
-                            case 5:
-                                message.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.decode(reader, reader.uint32());
-                                break;
-                            case 6:
-                                message.metadata = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            case 7:
-                                message.executionStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a PlanNode message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.PlanNode} PlanNode
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    PlanNode.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a PlanNode message.
-                     * @function verify
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    PlanNode.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.index != null && message.hasOwnProperty("index"))
-                            if (!$util.isInteger(message.index))
-                                return "index: integer expected";
-                        if (message.kind != null && message.hasOwnProperty("kind"))
-                            switch (message.kind) {
-                            default:
-                                return "kind: enum value expected";
-                            case 0:
-                            case 1:
-                            case 2:
-                                break;
-                            }
-                        if (message.displayName != null && message.hasOwnProperty("displayName"))
-                            if (!$util.isString(message.displayName))
-                                return "displayName: string expected";
-                        if (message.childLinks != null && message.hasOwnProperty("childLinks")) {
-                            if (!Array.isArray(message.childLinks))
-                                return "childLinks: array expected";
-                            for (var i = 0; i < message.childLinks.length; ++i) {
-                                var error = $root.google.spanner.v1.PlanNode.ChildLink.verify(message.childLinks[i]);
-                                if (error)
-                                    return "childLinks." + error;
-                            }
-                        }
-                        if (message.shortRepresentation != null && message.hasOwnProperty("shortRepresentation")) {
-                            var error = $root.google.spanner.v1.PlanNode.ShortRepresentation.verify(message.shortRepresentation);
-                            if (error)
-                                return "shortRepresentation." + error;
-                        }
-                        if (message.metadata != null && message.hasOwnProperty("metadata")) {
-                            var error = $root.google.protobuf.Struct.verify(message.metadata);
-                            if (error)
-                                return "metadata." + error;
-                        }
-                        if (message.executionStats != null && message.hasOwnProperty("executionStats")) {
-                            var error = $root.google.protobuf.Struct.verify(message.executionStats);
-                            if (error)
-                                return "executionStats." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a PlanNode message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.PlanNode} PlanNode
-                     */
-                    PlanNode.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.PlanNode)
-                            return object;
-                        var message = new $root.google.spanner.v1.PlanNode();
-                        if (object.index != null)
-                            message.index = object.index | 0;
-                        switch (object.kind) {
-                        case "KIND_UNSPECIFIED":
-                        case 0:
-                            message.kind = 0;
-                            break;
-                        case "RELATIONAL":
-                        case 1:
-                            message.kind = 1;
-                            break;
-                        case "SCALAR":
-                        case 2:
-                            message.kind = 2;
-                            break;
-                        }
-                        if (object.displayName != null)
-                            message.displayName = String(object.displayName);
-                        if (object.childLinks) {
-                            if (!Array.isArray(object.childLinks))
-                                throw TypeError(".google.spanner.v1.PlanNode.childLinks: array expected");
-                            message.childLinks = [];
-                            for (var i = 0; i < object.childLinks.length; ++i) {
-                                if (typeof object.childLinks[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.PlanNode.childLinks: object expected");
-                                message.childLinks[i] = $root.google.spanner.v1.PlanNode.ChildLink.fromObject(object.childLinks[i]);
-                            }
-                        }
-                        if (object.shortRepresentation != null) {
-                            if (typeof object.shortRepresentation !== "object")
-                                throw TypeError(".google.spanner.v1.PlanNode.shortRepresentation: object expected");
-                            message.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.fromObject(object.shortRepresentation);
-                        }
-                        if (object.metadata != null) {
-                            if (typeof object.metadata !== "object")
-                                throw TypeError(".google.spanner.v1.PlanNode.metadata: object expected");
-                            message.metadata = $root.google.protobuf.Struct.fromObject(object.metadata);
-                        }
-                        if (object.executionStats != null) {
-                            if (typeof object.executionStats !== "object")
-                                throw TypeError(".google.spanner.v1.PlanNode.executionStats: object expected");
-                            message.executionStats = $root.google.protobuf.Struct.fromObject(object.executionStats);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a PlanNode message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.PlanNode
-                     * @static
-                     * @param {google.spanner.v1.PlanNode} message PlanNode
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    PlanNode.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.arrays || options.defaults)
-                            object.childLinks = [];
-                        if (options.defaults) {
-                            object.index = 0;
-                            object.kind = options.enums === String ? "KIND_UNSPECIFIED" : 0;
-                            object.displayName = "";
-                            object.shortRepresentation = null;
-                            object.metadata = null;
-                            object.executionStats = null;
-                        }
-                        if (message.index != null && message.hasOwnProperty("index"))
-                            object.index = message.index;
-                        if (message.kind != null && message.hasOwnProperty("kind"))
-                            object.kind = options.enums === String ? $root.google.spanner.v1.PlanNode.Kind[message.kind] : message.kind;
-                        if (message.displayName != null && message.hasOwnProperty("displayName"))
-                            object.displayName = message.displayName;
-                        if (message.childLinks && message.childLinks.length) {
-                            object.childLinks = [];
-                            for (var j = 0; j < message.childLinks.length; ++j)
-                                object.childLinks[j] = $root.google.spanner.v1.PlanNode.ChildLink.toObject(message.childLinks[j], options);
-                        }
-                        if (message.shortRepresentation != null && message.hasOwnProperty("shortRepresentation"))
-                            object.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.toObject(message.shortRepresentation, options);
-                        if (message.metadata != null && message.hasOwnProperty("metadata"))
-                            object.metadata = $root.google.protobuf.Struct.toObject(message.metadata, options);
-                        if (message.executionStats != null && message.hasOwnProperty("executionStats"))
-                            object.executionStats = $root.google.protobuf.Struct.toObject(message.executionStats, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this PlanNode to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.PlanNode
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    PlanNode.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    PlanNode.ChildLink = (function() {
-    
-                        /**
-                         * Properties of a ChildLink.
-                         * @memberof google.spanner.v1.PlanNode
-                         * @interface IChildLink
-                         * @property {number|null} [childIndex] ChildLink childIndex
-                         * @property {string|null} [type] ChildLink type
-                         * @property {string|null} [variable] ChildLink variable
-                         */
-    
-                        /**
-                         * Constructs a new ChildLink.
-                         * @memberof google.spanner.v1.PlanNode
-                         * @classdesc Represents a ChildLink.
-                         * @implements IChildLink
-                         * @constructor
-                         * @param {google.spanner.v1.PlanNode.IChildLink=} [properties] Properties to set
-                         */
-                        function ChildLink(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * ChildLink childIndex.
-                         * @member {number} childIndex
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @instance
-                         */
-                        ChildLink.prototype.childIndex = 0;
-    
-                        /**
-                         * ChildLink type.
-                         * @member {string} type
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @instance
-                         */
-                        ChildLink.prototype.type = "";
-    
-                        /**
-                         * ChildLink variable.
-                         * @member {string} variable
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @instance
-                         */
-                        ChildLink.prototype.variable = "";
-    
-                        /**
-                         * Creates a new ChildLink instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.IChildLink=} [properties] Properties to set
-                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink instance
-                         */
-                        ChildLink.create = function create(properties) {
-                            return new ChildLink(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified ChildLink message. Does not implicitly {@link google.spanner.v1.PlanNode.ChildLink.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.IChildLink} message ChildLink message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ChildLink.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.childIndex != null && message.hasOwnProperty("childIndex"))
-                                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.childIndex);
-                            if (message.type != null && message.hasOwnProperty("type"))
-                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.type);
-                            if (message.variable != null && message.hasOwnProperty("variable"))
-                                writer.uint32(/* id 3, wireType 2 =*/26).string(message.variable);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ChildLink message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.ChildLink.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.IChildLink} message ChildLink message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ChildLink.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ChildLink message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ChildLink.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode.ChildLink();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.childIndex = reader.int32();
-                                    break;
-                                case 2:
-                                    message.type = reader.string();
-                                    break;
-                                case 3:
-                                    message.variable = reader.string();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ChildLink message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ChildLink.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ChildLink message.
-                         * @function verify
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ChildLink.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.childIndex != null && message.hasOwnProperty("childIndex"))
-                                if (!$util.isInteger(message.childIndex))
-                                    return "childIndex: integer expected";
-                            if (message.type != null && message.hasOwnProperty("type"))
-                                if (!$util.isString(message.type))
-                                    return "type: string expected";
-                            if (message.variable != null && message.hasOwnProperty("variable"))
-                                if (!$util.isString(message.variable))
-                                    return "variable: string expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ChildLink message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.PlanNode.ChildLink} ChildLink
-                         */
-                        ChildLink.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.PlanNode.ChildLink)
-                                return object;
-                            var message = new $root.google.spanner.v1.PlanNode.ChildLink();
-                            if (object.childIndex != null)
-                                message.childIndex = object.childIndex | 0;
-                            if (object.type != null)
-                                message.type = String(object.type);
-                            if (object.variable != null)
-                                message.variable = String(object.variable);
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a ChildLink message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.ChildLink} message ChildLink
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ChildLink.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.childIndex = 0;
-                                object.type = "";
-                                object.variable = "";
-                            }
-                            if (message.childIndex != null && message.hasOwnProperty("childIndex"))
-                                object.childIndex = message.childIndex;
-                            if (message.type != null && message.hasOwnProperty("type"))
-                                object.type = message.type;
-                            if (message.variable != null && message.hasOwnProperty("variable"))
-                                object.variable = message.variable;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this ChildLink to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.PlanNode.ChildLink
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ChildLink.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ChildLink;
-                    })();
-    
-                    PlanNode.ShortRepresentation = (function() {
-    
-                        /**
-                         * Properties of a ShortRepresentation.
-                         * @memberof google.spanner.v1.PlanNode
-                         * @interface IShortRepresentation
-                         * @property {string|null} [description] ShortRepresentation description
-                         * @property {Object.<string,number>|null} [subqueries] ShortRepresentation subqueries
-                         */
-    
-                        /**
-                         * Constructs a new ShortRepresentation.
-                         * @memberof google.spanner.v1.PlanNode
-                         * @classdesc Represents a ShortRepresentation.
-                         * @implements IShortRepresentation
-                         * @constructor
-                         * @param {google.spanner.v1.PlanNode.IShortRepresentation=} [properties] Properties to set
-                         */
-                        function ShortRepresentation(properties) {
-                            this.subqueries = {};
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * ShortRepresentation description.
-                         * @member {string} description
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @instance
-                         */
-                        ShortRepresentation.prototype.description = "";
-    
-                        /**
-                         * ShortRepresentation subqueries.
-                         * @member {Object.<string,number>} subqueries
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @instance
-                         */
-                        ShortRepresentation.prototype.subqueries = $util.emptyObject;
-    
-                        /**
-                         * Creates a new ShortRepresentation instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.IShortRepresentation=} [properties] Properties to set
-                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation instance
-                         */
-                        ShortRepresentation.create = function create(properties) {
-                            return new ShortRepresentation(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified ShortRepresentation message. Does not implicitly {@link google.spanner.v1.PlanNode.ShortRepresentation.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.IShortRepresentation} message ShortRepresentation message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ShortRepresentation.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.description);
-                            if (message.subqueries != null && message.hasOwnProperty("subqueries"))
-                                for (var keys = Object.keys(message.subqueries), i = 0; i < keys.length; ++i)
-                                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 0 =*/16).int32(message.subqueries[keys[i]]).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ShortRepresentation message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.ShortRepresentation.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.IShortRepresentation} message ShortRepresentation message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ShortRepresentation.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ShortRepresentation message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ShortRepresentation.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode.ShortRepresentation(), key;
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.description = reader.string();
-                                    break;
-                                case 2:
-                                    reader.skip().pos++;
-                                    if (message.subqueries === $util.emptyObject)
-                                        message.subqueries = {};
-                                    key = reader.string();
-                                    reader.pos++;
-                                    message.subqueries[key] = reader.int32();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ShortRepresentation message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ShortRepresentation.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ShortRepresentation message.
-                         * @function verify
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ShortRepresentation.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                if (!$util.isString(message.description))
-                                    return "description: string expected";
-                            if (message.subqueries != null && message.hasOwnProperty("subqueries")) {
-                                if (!$util.isObject(message.subqueries))
-                                    return "subqueries: object expected";
-                                var key = Object.keys(message.subqueries);
-                                for (var i = 0; i < key.length; ++i)
-                                    if (!$util.isInteger(message.subqueries[key[i]]))
-                                        return "subqueries: integer{k:string} expected";
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ShortRepresentation message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.PlanNode.ShortRepresentation} ShortRepresentation
-                         */
-                        ShortRepresentation.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.PlanNode.ShortRepresentation)
-                                return object;
-                            var message = new $root.google.spanner.v1.PlanNode.ShortRepresentation();
-                            if (object.description != null)
-                                message.description = String(object.description);
-                            if (object.subqueries) {
-                                if (typeof object.subqueries !== "object")
-                                    throw TypeError(".google.spanner.v1.PlanNode.ShortRepresentation.subqueries: object expected");
-                                message.subqueries = {};
-                                for (var keys = Object.keys(object.subqueries), i = 0; i < keys.length; ++i)
-                                    message.subqueries[keys[i]] = object.subqueries[keys[i]] | 0;
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a ShortRepresentation message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @static
-                         * @param {google.spanner.v1.PlanNode.ShortRepresentation} message ShortRepresentation
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ShortRepresentation.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.objects || options.defaults)
-                                object.subqueries = {};
-                            if (options.defaults)
-                                object.description = "";
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                object.description = message.description;
-                            var keys2;
-                            if (message.subqueries && (keys2 = Object.keys(message.subqueries)).length) {
-                                object.subqueries = {};
-                                for (var j = 0; j < keys2.length; ++j)
-                                    object.subqueries[keys2[j]] = message.subqueries[keys2[j]];
-                            }
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this ShortRepresentation to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ShortRepresentation.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ShortRepresentation;
-                    })();
-    
-                    /**
-                     * Kind enum.
-                     * @name google.spanner.v1.PlanNode.Kind
-                     * @enum {string}
-                     * @property {number} KIND_UNSPECIFIED=0 KIND_UNSPECIFIED value
-                     * @property {number} RELATIONAL=1 RELATIONAL value
-                     * @property {number} SCALAR=2 SCALAR value
-                     */
-                    PlanNode.Kind = (function() {
-                        var valuesById = {}, values = Object.create(valuesById);
-                        values[valuesById[0] = "KIND_UNSPECIFIED"] = 0;
-                        values[valuesById[1] = "RELATIONAL"] = 1;
-                        values[valuesById[2] = "SCALAR"] = 2;
-                        return values;
-                    })();
-    
-                    return PlanNode;
-                })();
-    
-                v1.QueryPlan = (function() {
-    
-                    /**
-                     * Properties of a QueryPlan.
-                     * @memberof google.spanner.v1
-                     * @interface IQueryPlan
-                     * @property {Array.<google.spanner.v1.IPlanNode>|null} [planNodes] QueryPlan planNodes
-                     */
-    
-                    /**
-                     * Constructs a new QueryPlan.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a QueryPlan.
-                     * @implements IQueryPlan
-                     * @constructor
-                     * @param {google.spanner.v1.IQueryPlan=} [properties] Properties to set
-                     */
-                    function QueryPlan(properties) {
-                        this.planNodes = [];
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * QueryPlan planNodes.
-                     * @member {Array.<google.spanner.v1.IPlanNode>} planNodes
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @instance
-                     */
-                    QueryPlan.prototype.planNodes = $util.emptyArray;
-    
-                    /**
-                     * Creates a new QueryPlan instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {google.spanner.v1.IQueryPlan=} [properties] Properties to set
-                     * @returns {google.spanner.v1.QueryPlan} QueryPlan instance
-                     */
-                    QueryPlan.create = function create(properties) {
-                        return new QueryPlan(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified QueryPlan message. Does not implicitly {@link google.spanner.v1.QueryPlan.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {google.spanner.v1.IQueryPlan} message QueryPlan message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    QueryPlan.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.planNodes != null && message.planNodes.length)
-                            for (var i = 0; i < message.planNodes.length; ++i)
-                                $root.google.spanner.v1.PlanNode.encode(message.planNodes[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified QueryPlan message, length delimited. Does not implicitly {@link google.spanner.v1.QueryPlan.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {google.spanner.v1.IQueryPlan} message QueryPlan message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    QueryPlan.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a QueryPlan message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.QueryPlan} QueryPlan
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    QueryPlan.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.QueryPlan();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.planNodes && message.planNodes.length))
-                                    message.planNodes = [];
-                                message.planNodes.push($root.google.spanner.v1.PlanNode.decode(reader, reader.uint32()));
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a QueryPlan message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.QueryPlan} QueryPlan
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    QueryPlan.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a QueryPlan message.
-                     * @function verify
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    QueryPlan.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.planNodes != null && message.hasOwnProperty("planNodes")) {
-                            if (!Array.isArray(message.planNodes))
-                                return "planNodes: array expected";
-                            for (var i = 0; i < message.planNodes.length; ++i) {
-                                var error = $root.google.spanner.v1.PlanNode.verify(message.planNodes[i]);
-                                if (error)
-                                    return "planNodes." + error;
-                            }
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a QueryPlan message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.QueryPlan} QueryPlan
-                     */
-                    QueryPlan.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.QueryPlan)
-                            return object;
-                        var message = new $root.google.spanner.v1.QueryPlan();
-                        if (object.planNodes) {
-                            if (!Array.isArray(object.planNodes))
-                                throw TypeError(".google.spanner.v1.QueryPlan.planNodes: array expected");
-                            message.planNodes = [];
-                            for (var i = 0; i < object.planNodes.length; ++i) {
-                                if (typeof object.planNodes[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.QueryPlan.planNodes: object expected");
-                                message.planNodes[i] = $root.google.spanner.v1.PlanNode.fromObject(object.planNodes[i]);
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a QueryPlan message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @static
-                     * @param {google.spanner.v1.QueryPlan} message QueryPlan
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    QueryPlan.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.arrays || options.defaults)
-                            object.planNodes = [];
-                        if (message.planNodes && message.planNodes.length) {
-                            object.planNodes = [];
-                            for (var j = 0; j < message.planNodes.length; ++j)
-                                object.planNodes[j] = $root.google.spanner.v1.PlanNode.toObject(message.planNodes[j], options);
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this QueryPlan to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.QueryPlan
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    QueryPlan.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return QueryPlan;
-                })();
-    
-                v1.TransactionOptions = (function() {
-    
-                    /**
-                     * Properties of a TransactionOptions.
-                     * @memberof google.spanner.v1
-                     * @interface ITransactionOptions
-                     * @property {google.spanner.v1.TransactionOptions.IReadWrite|null} [readWrite] TransactionOptions readWrite
-                     * @property {google.spanner.v1.TransactionOptions.IPartitionedDml|null} [partitionedDml] TransactionOptions partitionedDml
-                     * @property {google.spanner.v1.TransactionOptions.IReadOnly|null} [readOnly] TransactionOptions readOnly
-                     */
-    
-                    /**
-                     * Constructs a new TransactionOptions.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a TransactionOptions.
-                     * @implements ITransactionOptions
-                     * @constructor
-                     * @param {google.spanner.v1.ITransactionOptions=} [properties] Properties to set
-                     */
-                    function TransactionOptions(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * TransactionOptions readWrite.
-                     * @member {google.spanner.v1.TransactionOptions.IReadWrite|null|undefined} readWrite
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @instance
-                     */
-                    TransactionOptions.prototype.readWrite = null;
-    
-                    /**
-                     * TransactionOptions partitionedDml.
-                     * @member {google.spanner.v1.TransactionOptions.IPartitionedDml|null|undefined} partitionedDml
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @instance
-                     */
-                    TransactionOptions.prototype.partitionedDml = null;
-    
-                    /**
-                     * TransactionOptions readOnly.
-                     * @member {google.spanner.v1.TransactionOptions.IReadOnly|null|undefined} readOnly
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @instance
-                     */
-                    TransactionOptions.prototype.readOnly = null;
-    
-                    // OneOf field names bound to virtual getters and setters
-                    var $oneOfFields;
-    
-                    /**
-                     * TransactionOptions mode.
-                     * @member {"readWrite"|"partitionedDml"|"readOnly"|undefined} mode
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @instance
-                     */
-                    Object.defineProperty(TransactionOptions.prototype, "mode", {
-                        get: $util.oneOfGetter($oneOfFields = ["readWrite", "partitionedDml", "readOnly"]),
-                        set: $util.oneOfSetter($oneOfFields)
-                    });
-    
-                    /**
-                     * Creates a new TransactionOptions instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {google.spanner.v1.ITransactionOptions=} [properties] Properties to set
-                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions instance
-                     */
-                    TransactionOptions.create = function create(properties) {
-                        return new TransactionOptions(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified TransactionOptions message. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {google.spanner.v1.ITransactionOptions} message TransactionOptions message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    TransactionOptions.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.readWrite != null && message.hasOwnProperty("readWrite"))
-                            $root.google.spanner.v1.TransactionOptions.ReadWrite.encode(message.readWrite, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.readOnly != null && message.hasOwnProperty("readOnly"))
-                            $root.google.spanner.v1.TransactionOptions.ReadOnly.encode(message.readOnly, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.partitionedDml != null && message.hasOwnProperty("partitionedDml"))
-                            $root.google.spanner.v1.TransactionOptions.PartitionedDml.encode(message.partitionedDml, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified TransactionOptions message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {google.spanner.v1.ITransactionOptions} message TransactionOptions message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    TransactionOptions.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a TransactionOptions message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    TransactionOptions.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a TransactionOptions message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    TransactionOptions.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a TransactionOptions message.
-                     * @function verify
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    TransactionOptions.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        var properties = {};
-                        if (message.readWrite != null && message.hasOwnProperty("readWrite")) {
-                            properties.mode = 1;
-                            {
-                                var error = $root.google.spanner.v1.TransactionOptions.ReadWrite.verify(message.readWrite);
-                                if (error)
-                                    return "readWrite." + error;
-                            }
-                        }
-                        if (message.partitionedDml != null && message.hasOwnProperty("partitionedDml")) {
-                            if (properties.mode === 1)
-                                return "mode: multiple values";
-                            properties.mode = 1;
-                            {
-                                var error = $root.google.spanner.v1.TransactionOptions.PartitionedDml.verify(message.partitionedDml);
-                                if (error)
-                                    return "partitionedDml." + error;
-                            }
-                        }
-                        if (message.readOnly != null && message.hasOwnProperty("readOnly")) {
-                            if (properties.mode === 1)
-                                return "mode: multiple values";
-                            properties.mode = 1;
-                            {
-                                var error = $root.google.spanner.v1.TransactionOptions.ReadOnly.verify(message.readOnly);
-                                if (error)
-                                    return "readOnly." + error;
-                            }
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a TransactionOptions message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.TransactionOptions} TransactionOptions
-                     */
-                    TransactionOptions.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.TransactionOptions)
-                            return object;
-                        var message = new $root.google.spanner.v1.TransactionOptions();
-                        if (object.readWrite != null) {
-                            if (typeof object.readWrite !== "object")
-                                throw TypeError(".google.spanner.v1.TransactionOptions.readWrite: object expected");
-                            message.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.fromObject(object.readWrite);
-                        }
-                        if (object.partitionedDml != null) {
-                            if (typeof object.partitionedDml !== "object")
-                                throw TypeError(".google.spanner.v1.TransactionOptions.partitionedDml: object expected");
-                            message.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.fromObject(object.partitionedDml);
-                        }
-                        if (object.readOnly != null) {
-                            if (typeof object.readOnly !== "object")
-                                throw TypeError(".google.spanner.v1.TransactionOptions.readOnly: object expected");
-                            message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.fromObject(object.readOnly);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a TransactionOptions message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @static
-                     * @param {google.spanner.v1.TransactionOptions} message TransactionOptions
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    TransactionOptions.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (message.readWrite != null && message.hasOwnProperty("readWrite")) {
-                            object.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.toObject(message.readWrite, options);
-                            if (options.oneofs)
-                                object.mode = "readWrite";
-                        }
-                        if (message.readOnly != null && message.hasOwnProperty("readOnly")) {
-                            object.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.toObject(message.readOnly, options);
-                            if (options.oneofs)
-                                object.mode = "readOnly";
-                        }
-                        if (message.partitionedDml != null && message.hasOwnProperty("partitionedDml")) {
-                            object.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.toObject(message.partitionedDml, options);
-                            if (options.oneofs)
-                                object.mode = "partitionedDml";
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this TransactionOptions to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.TransactionOptions
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    TransactionOptions.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    TransactionOptions.ReadWrite = (function() {
-    
-                        /**
-                         * Properties of a ReadWrite.
-                         * @memberof google.spanner.v1.TransactionOptions
-                         * @interface IReadWrite
-                         */
-    
-                        /**
-                         * Constructs a new ReadWrite.
-                         * @memberof google.spanner.v1.TransactionOptions
-                         * @classdesc Represents a ReadWrite.
-                         * @implements IReadWrite
-                         * @constructor
-                         * @param {google.spanner.v1.TransactionOptions.IReadWrite=} [properties] Properties to set
-                         */
-                        function ReadWrite(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Creates a new ReadWrite instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IReadWrite=} [properties] Properties to set
-                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite instance
-                         */
-                        ReadWrite.create = function create(properties) {
-                            return new ReadWrite(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified ReadWrite message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IReadWrite} message ReadWrite message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ReadWrite.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ReadWrite message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IReadWrite} message ReadWrite message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ReadWrite.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ReadWrite message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ReadWrite.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions.ReadWrite();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ReadWrite message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ReadWrite.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ReadWrite message.
-                         * @function verify
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ReadWrite.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ReadWrite message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.TransactionOptions.ReadWrite} ReadWrite
-                         */
-                        ReadWrite.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.TransactionOptions.ReadWrite)
-                                return object;
-                            return new $root.google.spanner.v1.TransactionOptions.ReadWrite();
-                        };
-    
-                        /**
-                         * Creates a plain object from a ReadWrite message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.ReadWrite} message ReadWrite
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ReadWrite.toObject = function toObject() {
-                            return {};
-                        };
-    
-                        /**
-                         * Converts this ReadWrite to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ReadWrite.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ReadWrite;
-                    })();
-    
-                    TransactionOptions.PartitionedDml = (function() {
-    
-                        /**
-                         * Properties of a PartitionedDml.
-                         * @memberof google.spanner.v1.TransactionOptions
-                         * @interface IPartitionedDml
-                         */
-    
-                        /**
-                         * Constructs a new PartitionedDml.
-                         * @memberof google.spanner.v1.TransactionOptions
-                         * @classdesc Represents a PartitionedDml.
-                         * @implements IPartitionedDml
-                         * @constructor
-                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml=} [properties] Properties to set
-                         */
-                        function PartitionedDml(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Creates a new PartitionedDml instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml=} [properties] Properties to set
-                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml instance
-                         */
-                        PartitionedDml.create = function create(properties) {
-                            return new PartitionedDml(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified PartitionedDml message. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml} message PartitionedDml message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        PartitionedDml.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified PartitionedDml message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IPartitionedDml} message PartitionedDml message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        PartitionedDml.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a PartitionedDml message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        PartitionedDml.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions.PartitionedDml();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a PartitionedDml message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        PartitionedDml.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a PartitionedDml message.
-                         * @function verify
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        PartitionedDml.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a PartitionedDml message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.TransactionOptions.PartitionedDml} PartitionedDml
-                         */
-                        PartitionedDml.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.TransactionOptions.PartitionedDml)
-                                return object;
-                            return new $root.google.spanner.v1.TransactionOptions.PartitionedDml();
-                        };
-    
-                        /**
-                         * Creates a plain object from a PartitionedDml message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.PartitionedDml} message PartitionedDml
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        PartitionedDml.toObject = function toObject() {
-                            return {};
-                        };
-    
-                        /**
-                         * Converts this PartitionedDml to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        PartitionedDml.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return PartitionedDml;
-                    })();
-    
-                    TransactionOptions.ReadOnly = (function() {
-    
-                        /**
-                         * Properties of a ReadOnly.
-                         * @memberof google.spanner.v1.TransactionOptions
-                         * @interface IReadOnly
-                         * @property {boolean|null} [strong] ReadOnly strong
-                         * @property {google.protobuf.ITimestamp|null} [minReadTimestamp] ReadOnly minReadTimestamp
-                         * @property {google.protobuf.IDuration|null} [maxStaleness] ReadOnly maxStaleness
-                         * @property {google.protobuf.ITimestamp|null} [readTimestamp] ReadOnly readTimestamp
-                         * @property {google.protobuf.IDuration|null} [exactStaleness] ReadOnly exactStaleness
-                         * @property {boolean|null} [returnReadTimestamp] ReadOnly returnReadTimestamp
-                         */
-    
-                        /**
-                         * Constructs a new ReadOnly.
-                         * @memberof google.spanner.v1.TransactionOptions
-                         * @classdesc Represents a ReadOnly.
-                         * @implements IReadOnly
-                         * @constructor
-                         * @param {google.spanner.v1.TransactionOptions.IReadOnly=} [properties] Properties to set
-                         */
-                        function ReadOnly(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * ReadOnly strong.
-                         * @member {boolean} strong
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        ReadOnly.prototype.strong = false;
-    
-                        /**
-                         * ReadOnly minReadTimestamp.
-                         * @member {google.protobuf.ITimestamp|null|undefined} minReadTimestamp
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        ReadOnly.prototype.minReadTimestamp = null;
-    
-                        /**
-                         * ReadOnly maxStaleness.
-                         * @member {google.protobuf.IDuration|null|undefined} maxStaleness
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        ReadOnly.prototype.maxStaleness = null;
-    
-                        /**
-                         * ReadOnly readTimestamp.
-                         * @member {google.protobuf.ITimestamp|null|undefined} readTimestamp
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        ReadOnly.prototype.readTimestamp = null;
-    
-                        /**
-                         * ReadOnly exactStaleness.
-                         * @member {google.protobuf.IDuration|null|undefined} exactStaleness
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        ReadOnly.prototype.exactStaleness = null;
-    
-                        /**
-                         * ReadOnly returnReadTimestamp.
-                         * @member {boolean} returnReadTimestamp
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        ReadOnly.prototype.returnReadTimestamp = false;
-    
-                        // OneOf field names bound to virtual getters and setters
-                        var $oneOfFields;
-    
-                        /**
-                         * ReadOnly timestampBound.
-                         * @member {"strong"|"minReadTimestamp"|"maxStaleness"|"readTimestamp"|"exactStaleness"|undefined} timestampBound
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         */
-                        Object.defineProperty(ReadOnly.prototype, "timestampBound", {
-                            get: $util.oneOfGetter($oneOfFields = ["strong", "minReadTimestamp", "maxStaleness", "readTimestamp", "exactStaleness"]),
-                            set: $util.oneOfSetter($oneOfFields)
-                        });
-    
-                        /**
-                         * Creates a new ReadOnly instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IReadOnly=} [properties] Properties to set
-                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly instance
-                         */
-                        ReadOnly.create = function create(properties) {
-                            return new ReadOnly(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified ReadOnly message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IReadOnly} message ReadOnly message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ReadOnly.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.strong != null && message.hasOwnProperty("strong"))
-                                writer.uint32(/* id 1, wireType 0 =*/8).bool(message.strong);
-                            if (message.minReadTimestamp != null && message.hasOwnProperty("minReadTimestamp"))
-                                $root.google.protobuf.Timestamp.encode(message.minReadTimestamp, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                            if (message.maxStaleness != null && message.hasOwnProperty("maxStaleness"))
-                                $root.google.protobuf.Duration.encode(message.maxStaleness, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                            if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp"))
-                                $root.google.protobuf.Timestamp.encode(message.readTimestamp, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-                            if (message.exactStaleness != null && message.hasOwnProperty("exactStaleness"))
-                                $root.google.protobuf.Duration.encode(message.exactStaleness, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
-                            if (message.returnReadTimestamp != null && message.hasOwnProperty("returnReadTimestamp"))
-                                writer.uint32(/* id 6, wireType 0 =*/48).bool(message.returnReadTimestamp);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ReadOnly message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.IReadOnly} message ReadOnly message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ReadOnly.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ReadOnly message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ReadOnly.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionOptions.ReadOnly();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.strong = reader.bool();
-                                    break;
-                                case 2:
-                                    message.minReadTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                    break;
-                                case 3:
-                                    message.maxStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
-                                    break;
-                                case 4:
-                                    message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                    break;
-                                case 5:
-                                    message.exactStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
-                                    break;
-                                case 6:
-                                    message.returnReadTimestamp = reader.bool();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ReadOnly message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ReadOnly.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ReadOnly message.
-                         * @function verify
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ReadOnly.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            var properties = {};
-                            if (message.strong != null && message.hasOwnProperty("strong")) {
-                                properties.timestampBound = 1;
-                                if (typeof message.strong !== "boolean")
-                                    return "strong: boolean expected";
-                            }
-                            if (message.minReadTimestamp != null && message.hasOwnProperty("minReadTimestamp")) {
-                                if (properties.timestampBound === 1)
-                                    return "timestampBound: multiple values";
-                                properties.timestampBound = 1;
-                                {
-                                    var error = $root.google.protobuf.Timestamp.verify(message.minReadTimestamp);
-                                    if (error)
-                                        return "minReadTimestamp." + error;
-                                }
-                            }
-                            if (message.maxStaleness != null && message.hasOwnProperty("maxStaleness")) {
-                                if (properties.timestampBound === 1)
-                                    return "timestampBound: multiple values";
-                                properties.timestampBound = 1;
-                                {
-                                    var error = $root.google.protobuf.Duration.verify(message.maxStaleness);
-                                    if (error)
-                                        return "maxStaleness." + error;
-                                }
-                            }
-                            if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp")) {
-                                if (properties.timestampBound === 1)
-                                    return "timestampBound: multiple values";
-                                properties.timestampBound = 1;
-                                {
-                                    var error = $root.google.protobuf.Timestamp.verify(message.readTimestamp);
-                                    if (error)
-                                        return "readTimestamp." + error;
-                                }
-                            }
-                            if (message.exactStaleness != null && message.hasOwnProperty("exactStaleness")) {
-                                if (properties.timestampBound === 1)
-                                    return "timestampBound: multiple values";
-                                properties.timestampBound = 1;
-                                {
-                                    var error = $root.google.protobuf.Duration.verify(message.exactStaleness);
-                                    if (error)
-                                        return "exactStaleness." + error;
-                                }
-                            }
-                            if (message.returnReadTimestamp != null && message.hasOwnProperty("returnReadTimestamp"))
-                                if (typeof message.returnReadTimestamp !== "boolean")
-                                    return "returnReadTimestamp: boolean expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ReadOnly message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.TransactionOptions.ReadOnly} ReadOnly
-                         */
-                        ReadOnly.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.TransactionOptions.ReadOnly)
-                                return object;
-                            var message = new $root.google.spanner.v1.TransactionOptions.ReadOnly();
-                            if (object.strong != null)
-                                message.strong = Boolean(object.strong);
-                            if (object.minReadTimestamp != null) {
-                                if (typeof object.minReadTimestamp !== "object")
-                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.minReadTimestamp: object expected");
-                                message.minReadTimestamp = $root.google.protobuf.Timestamp.fromObject(object.minReadTimestamp);
-                            }
-                            if (object.maxStaleness != null) {
-                                if (typeof object.maxStaleness !== "object")
-                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.maxStaleness: object expected");
-                                message.maxStaleness = $root.google.protobuf.Duration.fromObject(object.maxStaleness);
-                            }
-                            if (object.readTimestamp != null) {
-                                if (typeof object.readTimestamp !== "object")
-                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.readTimestamp: object expected");
-                                message.readTimestamp = $root.google.protobuf.Timestamp.fromObject(object.readTimestamp);
-                            }
-                            if (object.exactStaleness != null) {
-                                if (typeof object.exactStaleness !== "object")
-                                    throw TypeError(".google.spanner.v1.TransactionOptions.ReadOnly.exactStaleness: object expected");
-                                message.exactStaleness = $root.google.protobuf.Duration.fromObject(object.exactStaleness);
-                            }
-                            if (object.returnReadTimestamp != null)
-                                message.returnReadTimestamp = Boolean(object.returnReadTimestamp);
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a ReadOnly message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @static
-                         * @param {google.spanner.v1.TransactionOptions.ReadOnly} message ReadOnly
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ReadOnly.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults)
-                                object.returnReadTimestamp = false;
-                            if (message.strong != null && message.hasOwnProperty("strong")) {
-                                object.strong = message.strong;
-                                if (options.oneofs)
-                                    object.timestampBound = "strong";
-                            }
-                            if (message.minReadTimestamp != null && message.hasOwnProperty("minReadTimestamp")) {
-                                object.minReadTimestamp = $root.google.protobuf.Timestamp.toObject(message.minReadTimestamp, options);
-                                if (options.oneofs)
-                                    object.timestampBound = "minReadTimestamp";
-                            }
-                            if (message.maxStaleness != null && message.hasOwnProperty("maxStaleness")) {
-                                object.maxStaleness = $root.google.protobuf.Duration.toObject(message.maxStaleness, options);
-                                if (options.oneofs)
-                                    object.timestampBound = "maxStaleness";
-                            }
-                            if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp")) {
-                                object.readTimestamp = $root.google.protobuf.Timestamp.toObject(message.readTimestamp, options);
-                                if (options.oneofs)
-                                    object.timestampBound = "readTimestamp";
-                            }
-                            if (message.exactStaleness != null && message.hasOwnProperty("exactStaleness")) {
-                                object.exactStaleness = $root.google.protobuf.Duration.toObject(message.exactStaleness, options);
-                                if (options.oneofs)
-                                    object.timestampBound = "exactStaleness";
-                            }
-                            if (message.returnReadTimestamp != null && message.hasOwnProperty("returnReadTimestamp"))
-                                object.returnReadTimestamp = message.returnReadTimestamp;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this ReadOnly to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ReadOnly.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ReadOnly;
-                    })();
-    
-                    return TransactionOptions;
-                })();
-    
-                v1.Transaction = (function() {
-    
-                    /**
-                     * Properties of a Transaction.
-                     * @memberof google.spanner.v1
-                     * @interface ITransaction
-                     * @property {Uint8Array|null} [id] Transaction id
-                     * @property {google.protobuf.ITimestamp|null} [readTimestamp] Transaction readTimestamp
-                     */
-    
-                    /**
-                     * Constructs a new Transaction.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a Transaction.
-                     * @implements ITransaction
-                     * @constructor
-                     * @param {google.spanner.v1.ITransaction=} [properties] Properties to set
-                     */
-                    function Transaction(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * Transaction id.
-                     * @member {Uint8Array} id
-                     * @memberof google.spanner.v1.Transaction
-                     * @instance
-                     */
-                    Transaction.prototype.id = $util.newBuffer([]);
-    
-                    /**
-                     * Transaction readTimestamp.
-                     * @member {google.protobuf.ITimestamp|null|undefined} readTimestamp
-                     * @memberof google.spanner.v1.Transaction
-                     * @instance
-                     */
-                    Transaction.prototype.readTimestamp = null;
-    
-                    /**
-                     * Creates a new Transaction instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {google.spanner.v1.ITransaction=} [properties] Properties to set
-                     * @returns {google.spanner.v1.Transaction} Transaction instance
-                     */
-                    Transaction.create = function create(properties) {
-                        return new Transaction(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified Transaction message. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {google.spanner.v1.ITransaction} message Transaction message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    Transaction.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.id != null && message.hasOwnProperty("id"))
-                            writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.id);
-                        if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp"))
-                            $root.google.protobuf.Timestamp.encode(message.readTimestamp, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified Transaction message, length delimited. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {google.spanner.v1.ITransaction} message Transaction message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    Transaction.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a Transaction message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.Transaction} Transaction
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    Transaction.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Transaction();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.id = reader.bytes();
-                                break;
-                            case 2:
-                                message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a Transaction message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.Transaction} Transaction
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    Transaction.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a Transaction message.
-                     * @function verify
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    Transaction.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.id != null && message.hasOwnProperty("id"))
-                            if (!(message.id && typeof message.id.length === "number" || $util.isString(message.id)))
-                                return "id: buffer expected";
-                        if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp")) {
-                            var error = $root.google.protobuf.Timestamp.verify(message.readTimestamp);
-                            if (error)
-                                return "readTimestamp." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.Transaction} Transaction
-                     */
-                    Transaction.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.Transaction)
-                            return object;
-                        var message = new $root.google.spanner.v1.Transaction();
-                        if (object.id != null)
-                            if (typeof object.id === "string")
-                                $util.base64.decode(object.id, message.id = $util.newBuffer($util.base64.length(object.id)), 0);
-                            else if (object.id.length)
-                                message.id = object.id;
-                        if (object.readTimestamp != null) {
-                            if (typeof object.readTimestamp !== "object")
-                                throw TypeError(".google.spanner.v1.Transaction.readTimestamp: object expected");
-                            message.readTimestamp = $root.google.protobuf.Timestamp.fromObject(object.readTimestamp);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a Transaction message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.Transaction
-                     * @static
-                     * @param {google.spanner.v1.Transaction} message Transaction
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    Transaction.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.defaults) {
-                            if (options.bytes === String)
-                                object.id = "";
-                            else {
-                                object.id = [];
-                                if (options.bytes !== Array)
-                                    object.id = $util.newBuffer(object.id);
-                            }
-                            object.readTimestamp = null;
-                        }
-                        if (message.id != null && message.hasOwnProperty("id"))
-                            object.id = options.bytes === String ? $util.base64.encode(message.id, 0, message.id.length) : options.bytes === Array ? Array.prototype.slice.call(message.id) : message.id;
-                        if (message.readTimestamp != null && message.hasOwnProperty("readTimestamp"))
-                            object.readTimestamp = $root.google.protobuf.Timestamp.toObject(message.readTimestamp, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this Transaction to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.Transaction
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    Transaction.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return Transaction;
-                })();
-    
-                v1.TransactionSelector = (function() {
-    
-                    /**
-                     * Properties of a TransactionSelector.
-                     * @memberof google.spanner.v1
-                     * @interface ITransactionSelector
-                     * @property {google.spanner.v1.ITransactionOptions|null} [singleUse] TransactionSelector singleUse
-                     * @property {Uint8Array|null} [id] TransactionSelector id
-                     * @property {google.spanner.v1.ITransactionOptions|null} [begin] TransactionSelector begin
-                     */
-    
-                    /**
-                     * Constructs a new TransactionSelector.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a TransactionSelector.
-                     * @implements ITransactionSelector
-                     * @constructor
-                     * @param {google.spanner.v1.ITransactionSelector=} [properties] Properties to set
-                     */
-                    function TransactionSelector(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * TransactionSelector singleUse.
-                     * @member {google.spanner.v1.ITransactionOptions|null|undefined} singleUse
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @instance
-                     */
-                    TransactionSelector.prototype.singleUse = null;
-    
-                    /**
-                     * TransactionSelector id.
-                     * @member {Uint8Array} id
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @instance
-                     */
-                    TransactionSelector.prototype.id = $util.newBuffer([]);
-    
-                    /**
-                     * TransactionSelector begin.
-                     * @member {google.spanner.v1.ITransactionOptions|null|undefined} begin
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @instance
-                     */
-                    TransactionSelector.prototype.begin = null;
-    
-                    // OneOf field names bound to virtual getters and setters
-                    var $oneOfFields;
-    
-                    /**
-                     * TransactionSelector selector.
-                     * @member {"singleUse"|"id"|"begin"|undefined} selector
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @instance
-                     */
-                    Object.defineProperty(TransactionSelector.prototype, "selector", {
-                        get: $util.oneOfGetter($oneOfFields = ["singleUse", "id", "begin"]),
-                        set: $util.oneOfSetter($oneOfFields)
-                    });
-    
-                    /**
-                     * Creates a new TransactionSelector instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {google.spanner.v1.ITransactionSelector=} [properties] Properties to set
-                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector instance
-                     */
-                    TransactionSelector.create = function create(properties) {
-                        return new TransactionSelector(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified TransactionSelector message. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {google.spanner.v1.ITransactionSelector} message TransactionSelector message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    TransactionSelector.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.singleUse != null && message.hasOwnProperty("singleUse"))
-                            $root.google.spanner.v1.TransactionOptions.encode(message.singleUse, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.id != null && message.hasOwnProperty("id"))
-                            writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.id);
-                        if (message.begin != null && message.hasOwnProperty("begin"))
-                            $root.google.spanner.v1.TransactionOptions.encode(message.begin, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified TransactionSelector message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {google.spanner.v1.ITransactionSelector} message TransactionSelector message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    TransactionSelector.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a TransactionSelector message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    TransactionSelector.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.TransactionSelector();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.singleUse = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.id = reader.bytes();
-                                break;
-                            case 3:
-                                message.begin = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a TransactionSelector message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    TransactionSelector.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a TransactionSelector message.
-                     * @function verify
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    TransactionSelector.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        var properties = {};
-                        if (message.singleUse != null && message.hasOwnProperty("singleUse")) {
-                            properties.selector = 1;
-                            {
-                                var error = $root.google.spanner.v1.TransactionOptions.verify(message.singleUse);
-                                if (error)
-                                    return "singleUse." + error;
-                            }
-                        }
-                        if (message.id != null && message.hasOwnProperty("id")) {
-                            if (properties.selector === 1)
-                                return "selector: multiple values";
-                            properties.selector = 1;
-                            if (!(message.id && typeof message.id.length === "number" || $util.isString(message.id)))
-                                return "id: buffer expected";
-                        }
-                        if (message.begin != null && message.hasOwnProperty("begin")) {
-                            if (properties.selector === 1)
-                                return "selector: multiple values";
-                            properties.selector = 1;
-                            {
-                                var error = $root.google.spanner.v1.TransactionOptions.verify(message.begin);
-                                if (error)
-                                    return "begin." + error;
-                            }
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a TransactionSelector message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.TransactionSelector} TransactionSelector
-                     */
-                    TransactionSelector.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.TransactionSelector)
-                            return object;
-                        var message = new $root.google.spanner.v1.TransactionSelector();
-                        if (object.singleUse != null) {
-                            if (typeof object.singleUse !== "object")
-                                throw TypeError(".google.spanner.v1.TransactionSelector.singleUse: object expected");
-                            message.singleUse = $root.google.spanner.v1.TransactionOptions.fromObject(object.singleUse);
-                        }
-                        if (object.id != null)
-                            if (typeof object.id === "string")
-                                $util.base64.decode(object.id, message.id = $util.newBuffer($util.base64.length(object.id)), 0);
-                            else if (object.id.length)
-                                message.id = object.id;
-                        if (object.begin != null) {
-                            if (typeof object.begin !== "object")
-                                throw TypeError(".google.spanner.v1.TransactionSelector.begin: object expected");
-                            message.begin = $root.google.spanner.v1.TransactionOptions.fromObject(object.begin);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a TransactionSelector message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @static
-                     * @param {google.spanner.v1.TransactionSelector} message TransactionSelector
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    TransactionSelector.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (message.singleUse != null && message.hasOwnProperty("singleUse")) {
-                            object.singleUse = $root.google.spanner.v1.TransactionOptions.toObject(message.singleUse, options);
-                            if (options.oneofs)
-                                object.selector = "singleUse";
-                        }
-                        if (message.id != null && message.hasOwnProperty("id")) {
-                            object.id = options.bytes === String ? $util.base64.encode(message.id, 0, message.id.length) : options.bytes === Array ? Array.prototype.slice.call(message.id) : message.id;
-                            if (options.oneofs)
-                                object.selector = "id";
-                        }
-                        if (message.begin != null && message.hasOwnProperty("begin")) {
-                            object.begin = $root.google.spanner.v1.TransactionOptions.toObject(message.begin, options);
-                            if (options.oneofs)
-                                object.selector = "begin";
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this TransactionSelector to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.TransactionSelector
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    TransactionSelector.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return TransactionSelector;
-                })();
-    
-                /**
-                 * TypeCode enum.
-                 * @name google.spanner.v1.TypeCode
-                 * @enum {string}
-                 * @property {number} TYPE_CODE_UNSPECIFIED=0 TYPE_CODE_UNSPECIFIED value
-                 * @property {number} BOOL=1 BOOL value
-                 * @property {number} INT64=2 INT64 value
-                 * @property {number} FLOAT64=3 FLOAT64 value
-                 * @property {number} TIMESTAMP=4 TIMESTAMP value
-                 * @property {number} DATE=5 DATE value
-                 * @property {number} STRING=6 STRING value
-                 * @property {number} BYTES=7 BYTES value
-                 * @property {number} ARRAY=8 ARRAY value
-                 * @property {number} STRUCT=9 STRUCT value
-                 */
-                v1.TypeCode = (function() {
-                    var valuesById = {}, values = Object.create(valuesById);
-                    values[valuesById[0] = "TYPE_CODE_UNSPECIFIED"] = 0;
-                    values[valuesById[1] = "BOOL"] = 1;
-                    values[valuesById[2] = "INT64"] = 2;
-                    values[valuesById[3] = "FLOAT64"] = 3;
-                    values[valuesById[4] = "TIMESTAMP"] = 4;
-                    values[valuesById[5] = "DATE"] = 5;
-                    values[valuesById[6] = "STRING"] = 6;
-                    values[valuesById[7] = "BYTES"] = 7;
-                    values[valuesById[8] = "ARRAY"] = 8;
-                    values[valuesById[9] = "STRUCT"] = 9;
-                    return values;
-                })();
-    
-                v1.Type = (function() {
-    
-                    /**
-                     * Properties of a Type.
-                     * @memberof google.spanner.v1
-                     * @interface IType
-                     * @property {google.spanner.v1.TypeCode|null} [code] Type code
-                     * @property {google.spanner.v1.IType|null} [arrayElementType] Type arrayElementType
-                     * @property {google.spanner.v1.IStructType|null} [structType] Type structType
-                     */
-    
-                    /**
-                     * Constructs a new Type.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a Type.
-                     * @implements IType
-                     * @constructor
-                     * @param {google.spanner.v1.IType=} [properties] Properties to set
-                     */
-                    function Type(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * Type code.
-                     * @member {google.spanner.v1.TypeCode} code
-                     * @memberof google.spanner.v1.Type
-                     * @instance
-                     */
-                    Type.prototype.code = 0;
-    
-                    /**
-                     * Type arrayElementType.
-                     * @member {google.spanner.v1.IType|null|undefined} arrayElementType
-                     * @memberof google.spanner.v1.Type
-                     * @instance
-                     */
-                    Type.prototype.arrayElementType = null;
-    
-                    /**
-                     * Type structType.
-                     * @member {google.spanner.v1.IStructType|null|undefined} structType
-                     * @memberof google.spanner.v1.Type
-                     * @instance
-                     */
-                    Type.prototype.structType = null;
-    
-                    /**
-                     * Creates a new Type instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {google.spanner.v1.IType=} [properties] Properties to set
-                     * @returns {google.spanner.v1.Type} Type instance
-                     */
-                    Type.create = function create(properties) {
-                        return new Type(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified Type message. Does not implicitly {@link google.spanner.v1.Type.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {google.spanner.v1.IType} message Type message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    Type.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.code != null && message.hasOwnProperty("code"))
-                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.code);
-                        if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType"))
-                            $root.google.spanner.v1.Type.encode(message.arrayElementType, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.structType != null && message.hasOwnProperty("structType"))
-                            $root.google.spanner.v1.StructType.encode(message.structType, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified Type message, length delimited. Does not implicitly {@link google.spanner.v1.Type.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {google.spanner.v1.IType} message Type message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    Type.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a Type message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.Type} Type
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    Type.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Type();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.code = reader.int32();
-                                break;
-                            case 2:
-                                message.arrayElementType = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.structType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a Type message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.Type} Type
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    Type.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a Type message.
-                     * @function verify
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    Type.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.code != null && message.hasOwnProperty("code"))
-                            switch (message.code) {
-                            default:
-                                return "code: enum value expected";
-                            case 0:
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                                break;
-                            }
-                        if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType")) {
-                            var error = $root.google.spanner.v1.Type.verify(message.arrayElementType);
-                            if (error)
-                                return "arrayElementType." + error;
-                        }
-                        if (message.structType != null && message.hasOwnProperty("structType")) {
-                            var error = $root.google.spanner.v1.StructType.verify(message.structType);
-                            if (error)
-                                return "structType." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a Type message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.Type} Type
-                     */
-                    Type.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.Type)
-                            return object;
-                        var message = new $root.google.spanner.v1.Type();
-                        switch (object.code) {
-                        case "TYPE_CODE_UNSPECIFIED":
-                        case 0:
-                            message.code = 0;
-                            break;
-                        case "BOOL":
-                        case 1:
-                            message.code = 1;
-                            break;
-                        case "INT64":
-                        case 2:
-                            message.code = 2;
-                            break;
-                        case "FLOAT64":
-                        case 3:
-                            message.code = 3;
-                            break;
-                        case "TIMESTAMP":
-                        case 4:
-                            message.code = 4;
-                            break;
-                        case "DATE":
-                        case 5:
-                            message.code = 5;
-                            break;
-                        case "STRING":
-                        case 6:
-                            message.code = 6;
-                            break;
-                        case "BYTES":
-                        case 7:
-                            message.code = 7;
-                            break;
-                        case "ARRAY":
-                        case 8:
-                            message.code = 8;
-                            break;
-                        case "STRUCT":
-                        case 9:
-                            message.code = 9;
-                            break;
-                        }
-                        if (object.arrayElementType != null) {
-                            if (typeof object.arrayElementType !== "object")
-                                throw TypeError(".google.spanner.v1.Type.arrayElementType: object expected");
-                            message.arrayElementType = $root.google.spanner.v1.Type.fromObject(object.arrayElementType);
-                        }
-                        if (object.structType != null) {
-                            if (typeof object.structType !== "object")
-                                throw TypeError(".google.spanner.v1.Type.structType: object expected");
-                            message.structType = $root.google.spanner.v1.StructType.fromObject(object.structType);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a Type message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.Type
-                     * @static
-                     * @param {google.spanner.v1.Type} message Type
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    Type.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.defaults) {
-                            object.code = options.enums === String ? "TYPE_CODE_UNSPECIFIED" : 0;
-                            object.arrayElementType = null;
-                            object.structType = null;
-                        }
-                        if (message.code != null && message.hasOwnProperty("code"))
-                            object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] : message.code;
-                        if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType"))
-                            object.arrayElementType = $root.google.spanner.v1.Type.toObject(message.arrayElementType, options);
-                        if (message.structType != null && message.hasOwnProperty("structType"))
-                            object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this Type to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.Type
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    Type.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    return Type;
-                })();
-    
-                v1.StructType = (function() {
-    
-                    /**
-                     * Properties of a StructType.
-                     * @memberof google.spanner.v1
-                     * @interface IStructType
-                     * @property {Array.<google.spanner.v1.StructType.IField>|null} [fields] StructType fields
-                     */
-    
-                    /**
-                     * Constructs a new StructType.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a StructType.
-                     * @implements IStructType
-                     * @constructor
-                     * @param {google.spanner.v1.IStructType=} [properties] Properties to set
-                     */
-                    function StructType(properties) {
-                        this.fields = [];
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * StructType fields.
-                     * @member {Array.<google.spanner.v1.StructType.IField>} fields
-                     * @memberof google.spanner.v1.StructType
-                     * @instance
-                     */
-                    StructType.prototype.fields = $util.emptyArray;
-    
-                    /**
-                     * Creates a new StructType instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {google.spanner.v1.IStructType=} [properties] Properties to set
-                     * @returns {google.spanner.v1.StructType} StructType instance
-                     */
-                    StructType.create = function create(properties) {
-                        return new StructType(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified StructType message. Does not implicitly {@link google.spanner.v1.StructType.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {google.spanner.v1.IStructType} message StructType message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    StructType.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.fields != null && message.fields.length)
-                            for (var i = 0; i < message.fields.length; ++i)
-                                $root.google.spanner.v1.StructType.Field.encode(message.fields[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified StructType message, length delimited. Does not implicitly {@link google.spanner.v1.StructType.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {google.spanner.v1.IStructType} message StructType message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    StructType.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a StructType message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.StructType} StructType
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    StructType.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.StructType();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.fields && message.fields.length))
-                                    message.fields = [];
-                                message.fields.push($root.google.spanner.v1.StructType.Field.decode(reader, reader.uint32()));
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a StructType message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.StructType} StructType
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    StructType.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a StructType message.
-                     * @function verify
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    StructType.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.fields != null && message.hasOwnProperty("fields")) {
-                            if (!Array.isArray(message.fields))
-                                return "fields: array expected";
-                            for (var i = 0; i < message.fields.length; ++i) {
-                                var error = $root.google.spanner.v1.StructType.Field.verify(message.fields[i]);
-                                if (error)
-                                    return "fields." + error;
-                            }
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a StructType message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.StructType} StructType
-                     */
-                    StructType.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.StructType)
-                            return object;
-                        var message = new $root.google.spanner.v1.StructType();
-                        if (object.fields) {
-                            if (!Array.isArray(object.fields))
-                                throw TypeError(".google.spanner.v1.StructType.fields: array expected");
-                            message.fields = [];
-                            for (var i = 0; i < object.fields.length; ++i) {
-                                if (typeof object.fields[i] !== "object")
-                                    throw TypeError(".google.spanner.v1.StructType.fields: object expected");
-                                message.fields[i] = $root.google.spanner.v1.StructType.Field.fromObject(object.fields[i]);
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a StructType message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.StructType
-                     * @static
-                     * @param {google.spanner.v1.StructType} message StructType
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    StructType.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.arrays || options.defaults)
-                            object.fields = [];
-                        if (message.fields && message.fields.length) {
-                            object.fields = [];
-                            for (var j = 0; j < message.fields.length; ++j)
-                                object.fields[j] = $root.google.spanner.v1.StructType.Field.toObject(message.fields[j], options);
-                        }
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this StructType to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.StructType
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    StructType.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    StructType.Field = (function() {
-    
-                        /**
-                         * Properties of a Field.
-                         * @memberof google.spanner.v1.StructType
-                         * @interface IField
-                         * @property {string|null} [name] Field name
-                         * @property {google.spanner.v1.IType|null} [type] Field type
-                         */
-    
-                        /**
-                         * Constructs a new Field.
-                         * @memberof google.spanner.v1.StructType
-                         * @classdesc Represents a Field.
-                         * @implements IField
-                         * @constructor
-                         * @param {google.spanner.v1.StructType.IField=} [properties] Properties to set
-                         */
-                        function Field(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Field name.
-                         * @member {string} name
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @instance
-                         */
-                        Field.prototype.name = "";
-    
-                        /**
-                         * Field type.
-                         * @member {google.spanner.v1.IType|null|undefined} type
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @instance
-                         */
-                        Field.prototype.type = null;
-    
-                        /**
-                         * Creates a new Field instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {google.spanner.v1.StructType.IField=} [properties] Properties to set
-                         * @returns {google.spanner.v1.StructType.Field} Field instance
-                         */
-                        Field.create = function create(properties) {
-                            return new Field(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified Field message. Does not implicitly {@link google.spanner.v1.StructType.Field.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {google.spanner.v1.StructType.IField} message Field message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Field.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.name != null && message.hasOwnProperty("name"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
-                            if (message.type != null && message.hasOwnProperty("type"))
-                                $root.google.spanner.v1.Type.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified Field message, length delimited. Does not implicitly {@link google.spanner.v1.StructType.Field.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {google.spanner.v1.StructType.IField} message Field message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Field.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a Field message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.StructType.Field} Field
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Field.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.StructType.Field();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.name = reader.string();
-                                    break;
-                                case 2:
-                                    message.type = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a Field message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.StructType.Field} Field
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Field.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a Field message.
-                         * @function verify
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        Field.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.name != null && message.hasOwnProperty("name"))
-                                if (!$util.isString(message.name))
-                                    return "name: string expected";
-                            if (message.type != null && message.hasOwnProperty("type")) {
-                                var error = $root.google.spanner.v1.Type.verify(message.type);
-                                if (error)
-                                    return "type." + error;
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a Field message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.StructType.Field} Field
-                         */
-                        Field.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.StructType.Field)
-                                return object;
-                            var message = new $root.google.spanner.v1.StructType.Field();
-                            if (object.name != null)
-                                message.name = String(object.name);
-                            if (object.type != null) {
-                                if (typeof object.type !== "object")
-                                    throw TypeError(".google.spanner.v1.StructType.Field.type: object expected");
-                                message.type = $root.google.spanner.v1.Type.fromObject(object.type);
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a Field message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @static
-                         * @param {google.spanner.v1.StructType.Field} message Field
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        Field.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.name = "";
-                                object.type = null;
-                            }
-                            if (message.name != null && message.hasOwnProperty("name"))
-                                object.name = message.name;
-                            if (message.type != null && message.hasOwnProperty("type"))
-                                object.type = $root.google.spanner.v1.Type.toObject(message.type, options);
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this Field to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.StructType.Field
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        Field.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return Field;
-                    })();
-    
-                    return StructType;
                 })();
     
                 return v1;

@@ -16,15 +16,14 @@
 
 import {ServiceError, CallOptions} from 'grpc';
 import {Operation as GaxOperation} from 'google-gax';
-import {google as instanceAdmin} from '../proto/spanner_instance_admin';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google} from '../protos/protos';
 
-export type IOperation = instanceAdmin.longrunning.IOperation;
+export type IOperation = google.longrunning.IOperation;
 
 export type Schema =
   | string
   | string[]
-  | databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest;
+  | google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest;
 
 export interface ResourceCallback<Resource, Response> {
   (

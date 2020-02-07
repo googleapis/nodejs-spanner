@@ -22,7 +22,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
-import {google as instanceAdmin} from '../proto/spanner_instance_admin';
+import {google} from '../protos/protos';
 import {Spanner, RequestConfig} from '.';
 import {ServiceError} from 'grpc';
 import {
@@ -35,13 +35,12 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
 
-export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
-export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
-export type IOperation = instanceAdmin.longrunning.IOperation;
+export type IDatabase = google.spanner.admin.database.v1.IDatabase;
+export type IInstance = google.spanner.admin.instance.v1.IInstance;
+export type IOperation = google.longrunning.IOperation;
 export type CreateDatabaseResponse = [Database, GaxOperation, IOperation];
-export type DeleteInstanceResponse = [instanceAdmin.protobuf.IEmpty];
+export type DeleteInstanceResponse = [google.protobuf.IEmpty];
 export type ExistsInstanceResponse = [boolean];
 export type GetInstanceResponse = [Instance, IInstance];
 export type GetInstanceMetadataResponse = [IInstance];
@@ -50,12 +49,12 @@ export interface GetInstanceMetadataOptions {
 }
 export type GetDatabasesResponse = PagedResponse<
   Database,
-  databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
+  google.spanner.admin.database.v1.IListDatabasesResponse
 >;
 export type SetInstanceMetadataResponse = [GaxOperation, IOperation];
 
 export interface CreateDatabaseOptions
-  extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
+  extends google.spanner.admin.database.v1.ICreateDatabaseRequest {
   poolOptions?: SessionPoolOptions;
   poolCtor?: SessionPool;
   schema?: string;
@@ -64,21 +63,19 @@ export interface CreateInstanceRequest extends IInstance {
   nodes: number;
 }
 export interface GetDatabasesRequest
-  extends databaseAdmin.spanner.admin.database.v1.IListDatabasesRequest {
+  extends google.spanner.admin.database.v1.IListDatabasesRequest {
   autoPaginate?: boolean;
   maxApiCalls?: number;
   maxResults?: number;
 }
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
-export type DeleteInstanceCallback = NormalCallback<
-  instanceAdmin.protobuf.IEmpty
->;
+export type DeleteInstanceCallback = NormalCallback<google.protobuf.IEmpty>;
 
 export type ExistsInstanceCallback = NormalCallback<boolean>;
 export type GetDatabasesCallback = RequestCallback<
   Database,
-  databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
+  google.spanner.admin.database.v1.IListDatabasesResponse
 >;
 export type GetInstanceCallback = ResourceCallback<Instance, IInstance>;
 export type GetInstanceMetadataCallback = NormalCallback<IInstance>;
@@ -425,7 +422,7 @@ class Instance extends common.GrpcServiceObject {
       .catch(() => {})
       .then(() => {
         this.databases_.clear();
-        this.request<instanceAdmin.protobuf.IEmpty>(
+        this.request<google.protobuf.IEmpty>(
           {
             client: 'InstanceAdminClient',
             method: 'deleteInstance',

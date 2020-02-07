@@ -30,7 +30,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google} from '../protos/protos';
 import {
   Instance,
   CreateDatabaseOptions,
@@ -62,7 +62,6 @@ import {
   TransactionRunner,
 } from './transaction-runner';
 
-import {google} from '../proto/spanner';
 import {
   Schema,
   RequestCallback,
@@ -74,7 +73,6 @@ import {
 import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {google as spannerClient} from '../proto/spanner';
 import {RequestConfig} from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<
@@ -102,33 +100,33 @@ export interface SessionPoolConstructor {
 
 export type UpdateSchemaCallback = ResourceCallback<
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  google.longrunning.IOperation
 >;
 
 export type UpdateSchemaResponse = [
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  google.longrunning.IOperation
 ];
 
 type PoolRequestCallback = RequestCallback<Session>;
 
 type RunCallback = RequestCallback<Row[]>;
-type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
+type ResultSetStats = google.spanner.v1.ResultSetStats;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 
-type GetMetadataResponse = [databaseAdmin.spanner.admin.database.v1.IDatabase];
+type GetMetadataResponse = [google.spanner.admin.database.v1.IDatabase];
 type GetMetadataCallback = RequestCallback<
-  databaseAdmin.spanner.admin.database.v1.IDatabase
+  google.spanner.admin.database.v1.IDatabase
 >;
 
 type GetSchemaCallback = RequestCallback<
   string,
-  databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
+  google.spanner.admin.database.v1.IGetDatabaseDdlResponse
 >;
 type GetSchemaResponse = [
   string[],
-  databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
+  google.spanner.admin.database.v1.IGetDatabaseDdlResponse
 ];
 
 type GetSessionsCallback = RequestCallback<
@@ -142,13 +140,10 @@ type GetSessionsResponse = PagedResponse<
 >;
 
 export type GetDatabaseConfig = GetConfig &
-  databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest;
+  google.spanner.admin.database.v1.GetDatabaseRequest;
 type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
-export type CreateSessionResponse = [
-  Session,
-  spannerClient.spanner.v1.ISession
-];
+export type CreateSessionResponse = [Session, google.spanner.v1.ISession];
 
 export interface CreateSessionOptions {
   name?: string | null;
@@ -157,7 +152,7 @@ export interface CreateSessionOptions {
 
 export type CreateSessionCallback = ResourceCallback<
   Session,
-  spannerClient.spanner.v1.ISession
+  google.spanner.v1.ISession
 >;
 
 export interface BatchCreateSessionsOptions extends CreateSessionOptions {
@@ -166,12 +161,12 @@ export interface BatchCreateSessionsOptions extends CreateSessionOptions {
 
 export type BatchCreateSessionsResponse = [
   Session[],
-  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+  google.spanner.v1.IBatchCreateSessionsResponse
 ];
 
 export type BatchCreateSessionsCallback = ResourceCallback<
   Session[],
-  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+  google.spanner.v1.IBatchCreateSessionsResponse
 >;
 
 export type DatabaseDeleteCallback = NormalCallback<r.Response>;
@@ -755,7 +750,7 @@ class Database extends GrpcServiceObject {
    * });
    */
   delete(callback?: DatabaseDeleteCallback): void | Promise<[r.Response]> {
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IDropDatabaseRequest = {
+    const reqOpts: google.spanner.admin.database.v1.IDropDatabaseRequest = {
       database: this.formattedName_,
     };
     this.close(() => {
@@ -948,7 +943,7 @@ class Database extends GrpcServiceObject {
   getMetadata(
     callback?: GetMetadataCallback
   ): void | Promise<GetMetadataResponse> {
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseRequest = {
+    const reqOpts: google.spanner.admin.database.v1.IGetDatabaseRequest = {
       name: this.formattedName_,
     };
     return this.request(
@@ -1003,12 +998,10 @@ class Database extends GrpcServiceObject {
    * });
    */
   getSchema(callback?: GetSchemaCallback): void | Promise<GetSchemaResponse> {
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
+    const reqOpts: google.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
-    this.request<
-      databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
-    >(
+    this.request<google.spanner.admin.database.v1.IGetDatabaseDdlResponse>(
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',
@@ -2099,7 +2092,7 @@ class Database extends GrpcServiceObject {
         statements: arrify(statements) as string[],
       };
     }
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest = extend(
+    const reqOpts: google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest = extend(
       {
         database: this.formattedName_,
       },

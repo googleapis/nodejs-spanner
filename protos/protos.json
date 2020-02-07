@@ -1879,14 +1879,457 @@
                 "csharp_namespace": "Google.Cloud.Spanner.V1",
                 "go_package": "google.golang.org/genproto/googleapis/spanner/v1;spanner",
                 "java_multiple_files": true,
-                "java_outer_classname": "TypeProto",
+                "java_outer_classname": "SpannerProto",
                 "java_package": "com.google.spanner.v1",
                 "php_namespace": "Google\\Cloud\\Spanner\\V1",
+                "cc_enable_arenas": true,
                 "(google.api.resource_definition).type": "spanner.googleapis.com/Database",
-                "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/databases/{database}",
-                "cc_enable_arenas": true
+                "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/databases/{database}"
               },
               "nested": {
+                "KeyRange": {
+                  "oneofs": {
+                    "startKeyType": {
+                      "oneof": [
+                        "startClosed",
+                        "startOpen"
+                      ]
+                    },
+                    "endKeyType": {
+                      "oneof": [
+                        "endClosed",
+                        "endOpen"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "startClosed": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 1
+                    },
+                    "startOpen": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 2
+                    },
+                    "endClosed": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 3
+                    },
+                    "endOpen": {
+                      "type": "google.protobuf.ListValue",
+                      "id": 4
+                    }
+                  }
+                },
+                "KeySet": {
+                  "fields": {
+                    "keys": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.ListValue",
+                      "id": 1
+                    },
+                    "ranges": {
+                      "rule": "repeated",
+                      "type": "KeyRange",
+                      "id": 2
+                    },
+                    "all": {
+                      "type": "bool",
+                      "id": 3
+                    }
+                  }
+                },
+                "Mutation": {
+                  "oneofs": {
+                    "operation": {
+                      "oneof": [
+                        "insert",
+                        "update",
+                        "insertOrUpdate",
+                        "replace",
+                        "delete"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "insert": {
+                      "type": "Write",
+                      "id": 1
+                    },
+                    "update": {
+                      "type": "Write",
+                      "id": 2
+                    },
+                    "insertOrUpdate": {
+                      "type": "Write",
+                      "id": 3
+                    },
+                    "replace": {
+                      "type": "Write",
+                      "id": 4
+                    },
+                    "delete": {
+                      "type": "Delete",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "Write": {
+                      "fields": {
+                        "table": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "columns": {
+                          "rule": "repeated",
+                          "type": "string",
+                          "id": 2
+                        },
+                        "values": {
+                          "rule": "repeated",
+                          "type": "google.protobuf.ListValue",
+                          "id": 3
+                        }
+                      }
+                    },
+                    "Delete": {
+                      "fields": {
+                        "table": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "keySet": {
+                          "type": "KeySet",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "PlanNode": {
+                  "fields": {
+                    "index": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "kind": {
+                      "type": "Kind",
+                      "id": 2
+                    },
+                    "displayName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "childLinks": {
+                      "rule": "repeated",
+                      "type": "ChildLink",
+                      "id": 4
+                    },
+                    "shortRepresentation": {
+                      "type": "ShortRepresentation",
+                      "id": 5
+                    },
+                    "metadata": {
+                      "type": "google.protobuf.Struct",
+                      "id": 6
+                    },
+                    "executionStats": {
+                      "type": "google.protobuf.Struct",
+                      "id": 7
+                    }
+                  },
+                  "nested": {
+                    "ChildLink": {
+                      "fields": {
+                        "childIndex": {
+                          "type": "int32",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "variable": {
+                          "type": "string",
+                          "id": 3
+                        }
+                      }
+                    },
+                    "ShortRepresentation": {
+                      "fields": {
+                        "description": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "subqueries": {
+                          "keyType": "string",
+                          "type": "int32",
+                          "id": 2
+                        }
+                      }
+                    },
+                    "Kind": {
+                      "values": {
+                        "KIND_UNSPECIFIED": 0,
+                        "RELATIONAL": 1,
+                        "SCALAR": 2
+                      }
+                    }
+                  }
+                },
+                "QueryPlan": {
+                  "fields": {
+                    "planNodes": {
+                      "rule": "repeated",
+                      "type": "PlanNode",
+                      "id": 1
+                    }
+                  }
+                },
+                "ResultSet": {
+                  "fields": {
+                    "metadata": {
+                      "type": "ResultSetMetadata",
+                      "id": 1
+                    },
+                    "rows": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.ListValue",
+                      "id": 2
+                    },
+                    "stats": {
+                      "type": "ResultSetStats",
+                      "id": 3
+                    }
+                  }
+                },
+                "PartialResultSet": {
+                  "fields": {
+                    "metadata": {
+                      "type": "ResultSetMetadata",
+                      "id": 1
+                    },
+                    "values": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.Value",
+                      "id": 2
+                    },
+                    "chunkedValue": {
+                      "type": "bool",
+                      "id": 3
+                    },
+                    "resumeToken": {
+                      "type": "bytes",
+                      "id": 4
+                    },
+                    "stats": {
+                      "type": "ResultSetStats",
+                      "id": 5
+                    }
+                  }
+                },
+                "ResultSetMetadata": {
+                  "fields": {
+                    "rowType": {
+                      "type": "StructType",
+                      "id": 1
+                    },
+                    "transaction": {
+                      "type": "Transaction",
+                      "id": 2
+                    }
+                  }
+                },
+                "ResultSetStats": {
+                  "oneofs": {
+                    "rowCount": {
+                      "oneof": [
+                        "rowCountExact",
+                        "rowCountLowerBound"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "queryPlan": {
+                      "type": "QueryPlan",
+                      "id": 1
+                    },
+                    "queryStats": {
+                      "type": "google.protobuf.Struct",
+                      "id": 2
+                    },
+                    "rowCountExact": {
+                      "type": "int64",
+                      "id": 3
+                    },
+                    "rowCountLowerBound": {
+                      "type": "int64",
+                      "id": 4
+                    }
+                  }
+                },
+                "TransactionOptions": {
+                  "oneofs": {
+                    "mode": {
+                      "oneof": [
+                        "readWrite",
+                        "partitionedDml",
+                        "readOnly"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "readWrite": {
+                      "type": "ReadWrite",
+                      "id": 1
+                    },
+                    "partitionedDml": {
+                      "type": "PartitionedDml",
+                      "id": 3
+                    },
+                    "readOnly": {
+                      "type": "ReadOnly",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "ReadWrite": {
+                      "fields": {}
+                    },
+                    "PartitionedDml": {
+                      "fields": {}
+                    },
+                    "ReadOnly": {
+                      "oneofs": {
+                        "timestampBound": {
+                          "oneof": [
+                            "strong",
+                            "minReadTimestamp",
+                            "maxStaleness",
+                            "readTimestamp",
+                            "exactStaleness"
+                          ]
+                        }
+                      },
+                      "fields": {
+                        "strong": {
+                          "type": "bool",
+                          "id": 1
+                        },
+                        "minReadTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 2
+                        },
+                        "maxStaleness": {
+                          "type": "google.protobuf.Duration",
+                          "id": 3
+                        },
+                        "readTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 4
+                        },
+                        "exactStaleness": {
+                          "type": "google.protobuf.Duration",
+                          "id": 5
+                        },
+                        "returnReadTimestamp": {
+                          "type": "bool",
+                          "id": 6
+                        }
+                      }
+                    }
+                  }
+                },
+                "Transaction": {
+                  "fields": {
+                    "id": {
+                      "type": "bytes",
+                      "id": 1
+                    },
+                    "readTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    }
+                  }
+                },
+                "TransactionSelector": {
+                  "oneofs": {
+                    "selector": {
+                      "oneof": [
+                        "singleUse",
+                        "id",
+                        "begin"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "singleUse": {
+                      "type": "TransactionOptions",
+                      "id": 1
+                    },
+                    "id": {
+                      "type": "bytes",
+                      "id": 2
+                    },
+                    "begin": {
+                      "type": "TransactionOptions",
+                      "id": 3
+                    }
+                  }
+                },
+                "TypeCode": {
+                  "values": {
+                    "TYPE_CODE_UNSPECIFIED": 0,
+                    "BOOL": 1,
+                    "INT64": 2,
+                    "FLOAT64": 3,
+                    "TIMESTAMP": 4,
+                    "DATE": 5,
+                    "STRING": 6,
+                    "BYTES": 7,
+                    "ARRAY": 8,
+                    "STRUCT": 9
+                  }
+                },
+                "Type": {
+                  "fields": {
+                    "code": {
+                      "type": "TypeCode",
+                      "id": 1
+                    },
+                    "arrayElementType": {
+                      "type": "Type",
+                      "id": 2
+                    },
+                    "structType": {
+                      "type": "StructType",
+                      "id": 3
+                    }
+                  }
+                },
+                "StructType": {
+                  "fields": {
+                    "fields": {
+                      "rule": "repeated",
+                      "type": "Field",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "Field": {
+                      "fields": {
+                        "name": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "Type",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
                 "Spanner": {
                   "options": {
                     "(google.api.default_host)": "spanner.googleapis.com",
@@ -2520,449 +2963,6 @@
                       "id": 2,
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
-                      }
-                    }
-                  }
-                },
-                "KeyRange": {
-                  "oneofs": {
-                    "startKeyType": {
-                      "oneof": [
-                        "startClosed",
-                        "startOpen"
-                      ]
-                    },
-                    "endKeyType": {
-                      "oneof": [
-                        "endClosed",
-                        "endOpen"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "startClosed": {
-                      "type": "google.protobuf.ListValue",
-                      "id": 1
-                    },
-                    "startOpen": {
-                      "type": "google.protobuf.ListValue",
-                      "id": 2
-                    },
-                    "endClosed": {
-                      "type": "google.protobuf.ListValue",
-                      "id": 3
-                    },
-                    "endOpen": {
-                      "type": "google.protobuf.ListValue",
-                      "id": 4
-                    }
-                  }
-                },
-                "KeySet": {
-                  "fields": {
-                    "keys": {
-                      "rule": "repeated",
-                      "type": "google.protobuf.ListValue",
-                      "id": 1
-                    },
-                    "ranges": {
-                      "rule": "repeated",
-                      "type": "KeyRange",
-                      "id": 2
-                    },
-                    "all": {
-                      "type": "bool",
-                      "id": 3
-                    }
-                  }
-                },
-                "Mutation": {
-                  "oneofs": {
-                    "operation": {
-                      "oneof": [
-                        "insert",
-                        "update",
-                        "insertOrUpdate",
-                        "replace",
-                        "delete"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "insert": {
-                      "type": "Write",
-                      "id": 1
-                    },
-                    "update": {
-                      "type": "Write",
-                      "id": 2
-                    },
-                    "insertOrUpdate": {
-                      "type": "Write",
-                      "id": 3
-                    },
-                    "replace": {
-                      "type": "Write",
-                      "id": 4
-                    },
-                    "delete": {
-                      "type": "Delete",
-                      "id": 5
-                    }
-                  },
-                  "nested": {
-                    "Write": {
-                      "fields": {
-                        "table": {
-                          "type": "string",
-                          "id": 1
-                        },
-                        "columns": {
-                          "rule": "repeated",
-                          "type": "string",
-                          "id": 2
-                        },
-                        "values": {
-                          "rule": "repeated",
-                          "type": "google.protobuf.ListValue",
-                          "id": 3
-                        }
-                      }
-                    },
-                    "Delete": {
-                      "fields": {
-                        "table": {
-                          "type": "string",
-                          "id": 1
-                        },
-                        "keySet": {
-                          "type": "KeySet",
-                          "id": 2
-                        }
-                      }
-                    }
-                  }
-                },
-                "ResultSet": {
-                  "fields": {
-                    "metadata": {
-                      "type": "ResultSetMetadata",
-                      "id": 1
-                    },
-                    "rows": {
-                      "rule": "repeated",
-                      "type": "google.protobuf.ListValue",
-                      "id": 2
-                    },
-                    "stats": {
-                      "type": "ResultSetStats",
-                      "id": 3
-                    }
-                  }
-                },
-                "PartialResultSet": {
-                  "fields": {
-                    "metadata": {
-                      "type": "ResultSetMetadata",
-                      "id": 1
-                    },
-                    "values": {
-                      "rule": "repeated",
-                      "type": "google.protobuf.Value",
-                      "id": 2
-                    },
-                    "chunkedValue": {
-                      "type": "bool",
-                      "id": 3
-                    },
-                    "resumeToken": {
-                      "type": "bytes",
-                      "id": 4
-                    },
-                    "stats": {
-                      "type": "ResultSetStats",
-                      "id": 5
-                    }
-                  }
-                },
-                "ResultSetMetadata": {
-                  "fields": {
-                    "rowType": {
-                      "type": "StructType",
-                      "id": 1
-                    },
-                    "transaction": {
-                      "type": "Transaction",
-                      "id": 2
-                    }
-                  }
-                },
-                "ResultSetStats": {
-                  "oneofs": {
-                    "rowCount": {
-                      "oneof": [
-                        "rowCountExact",
-                        "rowCountLowerBound"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "queryPlan": {
-                      "type": "QueryPlan",
-                      "id": 1
-                    },
-                    "queryStats": {
-                      "type": "google.protobuf.Struct",
-                      "id": 2
-                    },
-                    "rowCountExact": {
-                      "type": "int64",
-                      "id": 3
-                    },
-                    "rowCountLowerBound": {
-                      "type": "int64",
-                      "id": 4
-                    }
-                  }
-                },
-                "PlanNode": {
-                  "fields": {
-                    "index": {
-                      "type": "int32",
-                      "id": 1
-                    },
-                    "kind": {
-                      "type": "Kind",
-                      "id": 2
-                    },
-                    "displayName": {
-                      "type": "string",
-                      "id": 3
-                    },
-                    "childLinks": {
-                      "rule": "repeated",
-                      "type": "ChildLink",
-                      "id": 4
-                    },
-                    "shortRepresentation": {
-                      "type": "ShortRepresentation",
-                      "id": 5
-                    },
-                    "metadata": {
-                      "type": "google.protobuf.Struct",
-                      "id": 6
-                    },
-                    "executionStats": {
-                      "type": "google.protobuf.Struct",
-                      "id": 7
-                    }
-                  },
-                  "nested": {
-                    "ChildLink": {
-                      "fields": {
-                        "childIndex": {
-                          "type": "int32",
-                          "id": 1
-                        },
-                        "type": {
-                          "type": "string",
-                          "id": 2
-                        },
-                        "variable": {
-                          "type": "string",
-                          "id": 3
-                        }
-                      }
-                    },
-                    "ShortRepresentation": {
-                      "fields": {
-                        "description": {
-                          "type": "string",
-                          "id": 1
-                        },
-                        "subqueries": {
-                          "keyType": "string",
-                          "type": "int32",
-                          "id": 2
-                        }
-                      }
-                    },
-                    "Kind": {
-                      "values": {
-                        "KIND_UNSPECIFIED": 0,
-                        "RELATIONAL": 1,
-                        "SCALAR": 2
-                      }
-                    }
-                  }
-                },
-                "QueryPlan": {
-                  "fields": {
-                    "planNodes": {
-                      "rule": "repeated",
-                      "type": "PlanNode",
-                      "id": 1
-                    }
-                  }
-                },
-                "TransactionOptions": {
-                  "oneofs": {
-                    "mode": {
-                      "oneof": [
-                        "readWrite",
-                        "partitionedDml",
-                        "readOnly"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "readWrite": {
-                      "type": "ReadWrite",
-                      "id": 1
-                    },
-                    "partitionedDml": {
-                      "type": "PartitionedDml",
-                      "id": 3
-                    },
-                    "readOnly": {
-                      "type": "ReadOnly",
-                      "id": 2
-                    }
-                  },
-                  "nested": {
-                    "ReadWrite": {
-                      "fields": {}
-                    },
-                    "PartitionedDml": {
-                      "fields": {}
-                    },
-                    "ReadOnly": {
-                      "oneofs": {
-                        "timestampBound": {
-                          "oneof": [
-                            "strong",
-                            "minReadTimestamp",
-                            "maxStaleness",
-                            "readTimestamp",
-                            "exactStaleness"
-                          ]
-                        }
-                      },
-                      "fields": {
-                        "strong": {
-                          "type": "bool",
-                          "id": 1
-                        },
-                        "minReadTimestamp": {
-                          "type": "google.protobuf.Timestamp",
-                          "id": 2
-                        },
-                        "maxStaleness": {
-                          "type": "google.protobuf.Duration",
-                          "id": 3
-                        },
-                        "readTimestamp": {
-                          "type": "google.protobuf.Timestamp",
-                          "id": 4
-                        },
-                        "exactStaleness": {
-                          "type": "google.protobuf.Duration",
-                          "id": 5
-                        },
-                        "returnReadTimestamp": {
-                          "type": "bool",
-                          "id": 6
-                        }
-                      }
-                    }
-                  }
-                },
-                "Transaction": {
-                  "fields": {
-                    "id": {
-                      "type": "bytes",
-                      "id": 1
-                    },
-                    "readTimestamp": {
-                      "type": "google.protobuf.Timestamp",
-                      "id": 2
-                    }
-                  }
-                },
-                "TransactionSelector": {
-                  "oneofs": {
-                    "selector": {
-                      "oneof": [
-                        "singleUse",
-                        "id",
-                        "begin"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "singleUse": {
-                      "type": "TransactionOptions",
-                      "id": 1
-                    },
-                    "id": {
-                      "type": "bytes",
-                      "id": 2
-                    },
-                    "begin": {
-                      "type": "TransactionOptions",
-                      "id": 3
-                    }
-                  }
-                },
-                "TypeCode": {
-                  "values": {
-                    "TYPE_CODE_UNSPECIFIED": 0,
-                    "BOOL": 1,
-                    "INT64": 2,
-                    "FLOAT64": 3,
-                    "TIMESTAMP": 4,
-                    "DATE": 5,
-                    "STRING": 6,
-                    "BYTES": 7,
-                    "ARRAY": 8,
-                    "STRUCT": 9
-                  }
-                },
-                "Type": {
-                  "fields": {
-                    "code": {
-                      "type": "TypeCode",
-                      "id": 1
-                    },
-                    "arrayElementType": {
-                      "type": "Type",
-                      "id": 2
-                    },
-                    "structType": {
-                      "type": "StructType",
-                      "id": 3
-                    }
-                  }
-                },
-                "StructType": {
-                  "fields": {
-                    "fields": {
-                      "rule": "repeated",
-                      "type": "Field",
-                      "id": 1
-                    }
-                  },
-                  "nested": {
-                    "Field": {
-                      "fields": {
-                        "name": {
-                          "type": "string",
-                          "id": 1
-                        },
-                        "type": {
-                          "type": "Type",
-                          "id": 2
-                        }
                       }
                     }
                   }
