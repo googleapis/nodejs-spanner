@@ -153,7 +153,7 @@ export abstract class Runner<T> {
       return secondsInMs + nanosInMs;
     }
     // A 'Session not found' error without any specific retry info should not
-    // cause any delay between the retries.
+    // cause any delay between retries.
     if (isSessionNotFoundError(err)) {
       return 0;
     }
