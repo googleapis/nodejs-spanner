@@ -902,7 +902,7 @@ describe('Spanner', () => {
           FirstName STRING(1024),
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
-        ) PRIMARY KEY(SingerId)`;
+        ) PRIMARY KEY (SingerId)`;
 
       database.updateSchema(
         [createTableStatement],
