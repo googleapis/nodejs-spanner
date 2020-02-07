@@ -640,7 +640,7 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(rows.length, 3);
           snapshot!.end();
           db.close(done);
-        })
+        });
       });
     });
 
