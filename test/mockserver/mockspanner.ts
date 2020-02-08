@@ -23,8 +23,8 @@ import protobuf = google.spanner.v1;
 import Timestamp = google.protobuf.Timestamp;
 import RetryInfo = google.rpc.RetryInfo;
 import ExecuteBatchDmlResponse = google.spanner.v1.ExecuteBatchDmlResponse;
-import Status = google.rpc.Status;
 import ResultSet = google.spanner.v1.ResultSet;
+import Status = google.rpc.Status;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -296,7 +296,15 @@ export class MockSpanner {
   private static createTransactionAbortedError(
     name: string
   ): grpc.ServiceError {
-    const error = new Error(`Transaction aborted: ${name}`);
+    const error = Object.assign(new Error(`Transaction aborted: ${name}`), {
+      code: grpc.status.ABORTED,
+    });
+    return Object.assign(error, {
+      metadata: this.createMinimalRetryDelayMetadata(),
+    });
+  }
+
+  static createMinimalRetryDelayMetadata(): grpc.Metadata {
     const metadata = new grpc.Metadata();
     const retry = RetryInfo.encode({
       retryDelay: {
@@ -305,10 +313,7 @@ export class MockSpanner {
       },
     });
     metadata.add(RETRY_INFO, Buffer.from(retry.finish()));
-    return Object.assign(error, {
-      code: grpc.status.ABORTED,
-      metadata,
-    });
+    return metadata;
   }
 
   private static sleep(ms): Promise<void> {
@@ -557,15 +562,23 @@ export class MockSpanner {
             return;
           }
         }
-        const results = new Array<ResultSet>(call.request.statements.length);
-        results.fill(MockSpanner.toResultSet(0));
-        let statementStatus = new Status({code: status.OK});
+        const results: ResultSet[] = [];
+        let statementStatus = Status.create({code: status.OK});
         for (
           let i = 0;
           i < call.request.statements.length &&
           statementStatus.code === status.OK;
           i++
         ) {
+          const streamErr = this.shiftStreamError(this.executeBatchDml.name, i);
+          if (streamErr) {
+            //TODO: figure out how to include retry-info in Status.
+            statementStatus = Status.create({
+              code: streamErr.code,
+              message: streamErr.message,
+            });
+            continue;
+          }
           const statement = call.request.statements[i];
           const res = this.statementResults.get(statement.sql!);
           if (res) {
@@ -574,20 +587,20 @@ export class MockSpanner {
                 callback(new Error('Wrong result type for batch DML'));
                 break;
               case StatementResultType.UPDATE_COUNT:
-                results[i] = MockSpanner.toResultSet(res.updateCount);
+                results.push(MockSpanner.toResultSet(res.updateCount));
                 break;
               case StatementResultType.ERROR:
                 if ((res.error as ServiceError).code) {
                   const serviceError = res.error as ServiceError;
-                  statementStatus = new Status({
+                  statementStatus = {
                     code: serviceError.code,
                     message: serviceError.message,
-                  });
+                  } as Status;
                 } else {
-                  statementStatus = new Status({
+                  statementStatus = {
                     code: status.INTERNAL,
                     message: res.error.message,
-                  });
+                  } as Status;
                 }
                 break;
               default:
@@ -604,8 +617,8 @@ export class MockSpanner {
         callback(
           null,
           ExecuteBatchDmlResponse.create({
-            status: statementStatus,
             resultSets: results,
+            status: statementStatus,
           })
         );
       })
