@@ -25,6 +25,7 @@ import RetryInfo = google.rpc.RetryInfo;
 import ExecuteBatchDmlResponse = google.spanner.v1.ExecuteBatchDmlResponse;
 import ResultSet = google.spanner.v1.ResultSet;
 import Status = google.rpc.Status;
+import Any = google.protobuf.Any;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -43,7 +44,8 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const spannerProtoDescriptor = protoDescriptor['google']['spanner']['v1'];
-const RETRY_INFO = 'google.rpc.retryinfo-bin';
+const RETRY_INFO_BIN = 'google.rpc.retryinfo-bin';
+const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
 
 /**
  * The type of result for an SQL statement that the mock server should return.
@@ -312,7 +314,7 @@ export class MockSpanner {
         nanos: 1,
       },
     });
-    metadata.add(RETRY_INFO, Buffer.from(retry.finish()));
+    metadata.add(RETRY_INFO_BIN, Buffer.from(retry.finish()));
     return metadata;
   }
 
@@ -572,11 +574,19 @@ export class MockSpanner {
         ) {
           const streamErr = this.shiftStreamError(this.executeBatchDml.name, i);
           if (streamErr) {
-            //TODO: figure out how to include retry-info in Status.
             statementStatus = Status.create({
               code: streamErr.code,
               message: streamErr.message,
             });
+            if (streamErr.metadata && streamErr.metadata.get(RETRY_INFO_BIN)) {
+              const retryInfo = streamErr.metadata.get(RETRY_INFO_BIN)[0];
+              statementStatus.details = [
+                Any.create({
+                  type_url: RETRY_INFO_TYPE,
+                  value: retryInfo,
+                }),
+              ];
+            }
             continue;
           }
           const statement = call.request.statements[i];
