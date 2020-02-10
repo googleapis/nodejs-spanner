@@ -18,18 +18,17 @@ import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
-import {ApiError} from '@google-cloud/common';
+import {ApiError, util} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {Transform} from 'stream';
 import * as through from 'through2';
-import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import * as db from '../src/database';
 import {Instance} from '../src';
 import {TimestampBounds} from '../src/transaction';
 import {ServiceError, status} from 'grpc';
-import {isSessionNotFoundError} from '../src/session-pool';
+import {MockError} from './mockserver/mockspanner';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -1737,6 +1736,44 @@ describe('Database', () => {
       database.getSnapshot(err => {
         assert.strictEqual(err, fakeError);
         assert.strictEqual(releaseStub.callCount, 1);
+        done();
+      });
+    });
+
+    it('should retry if `begin` errors with `Session not found`', done => {
+      const fakeError = {
+        code: status.NOT_FOUND,
+        message: 'Session not found',
+      } as MockError;
+
+      const fakeSession2 = new FakeSession();
+      const fakeSnapshot2 = new FakeTransaction();
+      sandbox
+        .stub(fakeSnapshot2, 'begin')
+        .callsFake(callback => callback(null));
+      sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
+
+      getReadSessionStub
+        .onFirstCall()
+        .callsFake(callback => callback(null, fakeSession))
+        .onSecondCall()
+        .callsFake(callback => callback(null, fakeSession2));
+      beginSnapshotStub.callsFake(callback => callback(fakeError));
+
+      // The first session that was not found should be released back into the
+      // pool, so that the pool can remove it from its inventory.
+      const releaseStub = sandbox.stub(fakePool, 'release');
+
+      database.getSnapshot((err, snapshot) => {
+        assert.ifError(err);
+        assert.strictEqual(snapshot, fakeSnapshot2);
+        // The first session that error should already have been released back
+        // to the pool.
+        assert.strictEqual(releaseStub.callCount, 1);
+        // Ending the valid snapshot will release its session back into the
+        // pool.
+        snapshot.emit('end');
+        assert.strictEqual(releaseStub.callCount, 2);
         done();
       });
     });

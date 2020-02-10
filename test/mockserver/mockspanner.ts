@@ -556,30 +556,39 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.BeginTransactionRequest>,
     callback: protobuf.Spanner.BeginTransactionCallback
   ) {
-    const session = this.sessions.get(call.request.session);
-    if (session) {
-      let counter = this.transactionCounters.get(session.name);
-      if (!counter) {
-        counter = 0;
-      }
-      const id = ++counter;
-      this.transactionCounters.set(session.name, counter);
-      const transactionId = id.toString().padStart(12, '0');
-      const fullTransactionId = session.name + '/transactions/' + transactionId;
-      const readTimestamp =
-        call.request.options && call.request.options.readOnly
-          ? now()
-          : undefined;
-      const transaction = protobuf.Transaction.create({
-        id: Buffer.from(transactionId),
-        readTimestamp,
+    this.simulateExecutionTime(this.beginTransaction.name)
+      .then(() => {
+        const session = this.sessions.get(call.request.session);
+        if (session) {
+          let counter = this.transactionCounters.get(session.name);
+          if (!counter) {
+            counter = 0;
+          }
+          const id = ++counter;
+          this.transactionCounters.set(session.name, counter);
+          const transactionId = id.toString().padStart(12, '0');
+          const fullTransactionId =
+            session.name + '/transactions/' + transactionId;
+          const readTimestamp =
+            call.request.options && call.request.options.readOnly
+              ? now()
+              : undefined;
+          const transaction = protobuf.Transaction.create({
+            id: Buffer.from(transactionId),
+            readTimestamp,
+          });
+          this.transactions.set(fullTransactionId, transaction);
+          this.transactionOptions.set(fullTransactionId, call.request.options);
+          callback(null, transaction);
+        } else {
+          callback(
+            MockSpanner.createSessionNotFoundError(call.request.session)
+          );
+        }
+      })
+      .catch(err => {
+        callback(err);
       });
-      this.transactions.set(fullTransactionId, transaction);
-      this.transactionOptions.set(fullTransactionId, call.request.options);
-      callback(null, transaction);
-    } else {
-      callback(MockSpanner.createSessionNotFoundError(call.request.session));
-    }
   }
 
   commit(

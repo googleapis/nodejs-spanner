@@ -1226,8 +1226,14 @@ class Database extends GrpcServiceObject {
 
       snapshot.begin(err => {
         if (err) {
-          this.pool_.release(session!);
-          callback!(err);
+          if (isSessionNotFoundError(err)) {
+            session!.lastError = err;
+            this.pool_.release(session!);
+            this.getSnapshot(options, callback!);
+          } else {
+            this.pool_.release(session!);
+            callback!(err);
+          }
           return;
         }
 
