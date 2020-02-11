@@ -748,23 +748,27 @@ describe('Spanner', () => {
         );
     });
 
-    it('should update the metadata', done => {
-      const newData = {
-        displayName: 'new-display-name',
-      };
+    it('should update the metadata', function(done) {
+      if (!emulatorEnabled) {
+        const newData = {
+          displayName: 'new-display-name',
+        };
 
-      instance.setMetadata(
-        newData,
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
-
-          instance.getMetadata((err, metadata) => {
+        instance.setMetadata(
+          newData,
+          execAfterOperationComplete(err => {
             assert.ifError(err);
-            assert.strictEqual(metadata!.displayName, newData.displayName);
-            done();
-          });
-        })
-      );
+
+            instance.getMetadata((err, metadata) => {
+              assert.ifError(err);
+              assert.strictEqual(metadata!.displayName, newData.displayName);
+              done();
+            });
+          })
+        );
+      } else {
+        this.skip();
+      }
     });
 
     it('should return true for instances that exist', done => {
