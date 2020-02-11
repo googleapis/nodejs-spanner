@@ -685,20 +685,24 @@ describe('Spanner', () => {
       });
     });
 
-    it('should respect the FieldMask', async () => {
-      const fieldNames = ['name', 'displayName'];
+    it('should respect the FieldMask', async function() {
+      if (!emulatorEnabled) {
+        const fieldNames = ['name', 'displayName'];
 
-      const [metadata] = await instance.getMetadata({fieldNames});
-      assert.deepStrictEqual(metadata['endpointUris'], []);
-      assert.deepStrictEqual(metadata['labels'], {});
-      assert.strictEqual(metadata.name, instance.formattedName_);
-      assert.ok(!metadata['config']);
-      assert.strictEqual(
-        metadata['displayName'],
-        instance.formattedName_.split('/').pop()
-      );
-      assert.strictEqual(metadata['nodeCount'], 0);
-      assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
+        const [metadata] = await instance.getMetadata({fieldNames});
+        assert.deepStrictEqual(metadata['endpointUris'], []);
+        assert.deepStrictEqual(metadata['labels'], {});
+        assert.strictEqual(metadata.name, instance.formattedName_);
+        assert.ok(!metadata['config']);
+        assert.strictEqual(
+          metadata['displayName'],
+          instance.formattedName_.split('/').pop()
+        );
+        assert.strictEqual(metadata['nodeCount'], 0);
+        assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
+      } else {
+        this.skip();
+      }
     });
 
     it('should auto create an instance', done => {
