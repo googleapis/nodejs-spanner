@@ -4242,6 +4242,12 @@ describe('Spanner', () => {
     });
 
     describe('pdml', () => {
+      before(function() {
+        if (emulatorEnabled) {
+          this.skip();
+        }
+      });
+
       it('should execute a simple pdml statement', done => {
         database.runPartitionedUpdate(
           {
