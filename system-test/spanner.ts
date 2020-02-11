@@ -64,6 +64,10 @@ describe('Spanner', () => {
     },
   };
 
+  let emulatorEnabled: string | undefined;
+
+  beforeEach(() => (emulatorEnabled = process.env.SPANNER_EMULATOR_HOST));
+
   before(async () => {
     if (generateInstanceForTest) {
       await deleteOldTestInstances();
