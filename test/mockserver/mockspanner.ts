@@ -22,6 +22,9 @@ import {Transaction} from '../../src';
 import protobuf = google.spanner.v1;
 import Timestamp = google.protobuf.Timestamp;
 import RetryInfo = google.rpc.RetryInfo;
+import ExecuteBatchDmlResponse = google.spanner.v1.ExecuteBatchDmlResponse;
+import Status = google.rpc.Status;
+import ResultSet = google.spanner.v1.ResultSet;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -212,6 +215,7 @@ export class MockSpanner {
     this.commit = this.commit.bind(this);
     this.rollback = this.rollback.bind(this);
 
+    this.executeBatchDml = this.executeBatchDml.bind(this);
     this.executeStreamingSql = this.executeStreamingSql.bind(this);
   }
 
@@ -528,13 +532,86 @@ export class MockSpanner {
     });
   }
 
+  private static toResultSet(rowCount: number): protobuf.ResultSet {
+    const stats = {
+      rowCountExact: rowCount,
+      rowCount: 'rowCountExact',
+    };
+    return protobuf.ResultSet.create({
+      stats,
+    });
+  }
+
   executeBatchDml(
     call: grpc.ServerUnaryCall<protobuf.ExecuteBatchDmlRequest>,
     callback: protobuf.Spanner.ExecuteBatchDmlCallback
   ) {
-    callback(
-      createUnimplementedError('ExecuteBatchDml is not yet implemented')
-    );
+    this.simulateExecutionTime(this.executeBatchDml.name)
+      .then(() => {
+        if (call.request.transaction && call.request.transaction.id) {
+          const fullTransactionId = `${call.request.session}/transactions/${call.request.transaction.id}`;
+          if (this.abortedTransactions.has(fullTransactionId)) {
+            callback(
+              MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
+            );
+            return;
+          }
+        }
+        const results = new Array<ResultSet>(call.request.statements.length);
+        results.fill(MockSpanner.toResultSet(0));
+        let statementStatus = new Status({code: status.OK});
+        for (
+          let i = 0;
+          i < call.request.statements.length &&
+          statementStatus.code === status.OK;
+          i++
+        ) {
+          const statement = call.request.statements[i];
+          const res = this.statementResults.get(statement.sql!);
+          if (res) {
+            switch (res.type) {
+              case StatementResultType.RESULT_SET:
+                callback(new Error('Wrong result type for batch DML'));
+                break;
+              case StatementResultType.UPDATE_COUNT:
+                results[i] = MockSpanner.toResultSet(res.updateCount);
+                break;
+              case StatementResultType.ERROR:
+                if ((res.error as ServiceError).code) {
+                  const serviceError = res.error as ServiceError;
+                  statementStatus = new Status({
+                    code: serviceError.code,
+                    message: serviceError.message,
+                  });
+                } else {
+                  statementStatus = new Status({
+                    code: status.INTERNAL,
+                    message: res.error.message,
+                  });
+                }
+                break;
+              default:
+                callback(
+                  new Error(`Unknown StatementResult type: ${res.type}`)
+                );
+            }
+          } else {
+            callback(
+              new Error(`There is no result registered for ${statement.sql}`)
+            );
+          }
+        }
+        callback(
+          null,
+          ExecuteBatchDmlResponse.create({
+            status: statementStatus,
+            resultSets: results,
+          })
+        );
+      })
+      .catch(err => {
+        callback(err);
+      });
   }
 
   read(
@@ -595,36 +672,47 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CommitRequest>,
     callback: protobuf.Spanner.CommitCallback
   ) {
-    if (call.request.transactionId) {
-      const fullTransactionId = `${call.request.session}/transactions/${call.request.transactionId}`;
-      if (this.abortedTransactions.has(fullTransactionId)) {
-        callback(
-          MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
-        );
-        return;
-      }
-    }
-    const session = this.sessions.get(call.request.session);
-    if (session) {
-      const buffer = Buffer.from(call.request.transactionId as string);
-      const transactionId = buffer.toString();
-      const fullTransactionId = session.name + '/transactions/' + transactionId;
-      const transaction = this.transactions.get(fullTransactionId);
-      if (transaction) {
-        this.transactions.delete(fullTransactionId);
-        this.transactionOptions.delete(fullTransactionId);
-        callback(
-          null,
-          protobuf.CommitResponse.create({
-            commitTimestamp: now(),
-          })
-        );
-      } else {
-        callback(MockSpanner.createTransactionNotFoundError(fullTransactionId));
-      }
-    } else {
-      callback(MockSpanner.createSessionNotFoundError(call.request.session));
-    }
+    this.simulateExecutionTime(this.commit.name)
+      .then(() => {
+        if (call.request.transactionId) {
+          const fullTransactionId = `${call.request.session}/transactions/${call.request.transactionId}`;
+          if (this.abortedTransactions.has(fullTransactionId)) {
+            callback(
+              MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
+            );
+            return;
+          }
+        }
+        const session = this.sessions.get(call.request.session);
+        if (session) {
+          const buffer = Buffer.from(call.request.transactionId as string);
+          const transactionId = buffer.toString();
+          const fullTransactionId =
+            session.name + '/transactions/' + transactionId;
+          const transaction = this.transactions.get(fullTransactionId);
+          if (transaction) {
+            this.transactions.delete(fullTransactionId);
+            this.transactionOptions.delete(fullTransactionId);
+            callback(
+              null,
+              protobuf.CommitResponse.create({
+                commitTimestamp: now(),
+              })
+            );
+          } else {
+            callback(
+              MockSpanner.createTransactionNotFoundError(fullTransactionId)
+            );
+          }
+        } else {
+          callback(
+            MockSpanner.createSessionNotFoundError(call.request.session)
+          );
+        }
+      })
+      .catch(err => {
+        callback(err);
+      });
   }
 
   rollback(

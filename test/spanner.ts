@@ -36,6 +36,7 @@ import {
 } from '../src/session-pool';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import {Json} from '../src/codec';
+import Done = Mocha.Done;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -644,6 +645,89 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    it('should retry "Session not found" errors on BeginTransaction during Database.runTransaction()', done => {
+      // Create a session pool with 1 read-only session.
+      const db = newTestDatabase({min: 1, writes: 0.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one read-only session has been created.
+      pool.once('available', () => {
+        spannerMock.setExecutionTime(
+          spannerMock.beginTransaction,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        runTransactionWithExpectedSessionRetry(db, done);
+      });
+    });
+
+    it('should retry "Session not found" errors for a query on a write-session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        runTransactionWithExpectedSessionRetry(db, done);
+      });
+    });
+
+    function runTransactionWithExpectedSessionRetry(db: Database, done: Done) {
+      db.runTransaction((err, transaction) => {
+        assert.ifError(err);
+        transaction!.run(selectSql, (err, rows) => {
+          assert.ifError(err);
+          assert.strictEqual(rows.length, 3);
+          // Verify that the server has two sessions: The first one was marked
+          // as 'not found' by the client because of the mocked error, and a
+          // second one that was created as a result of the retry.
+          db.getSessions((err, sessions) => {
+            assert.ifError(err);
+            assert.strictEqual(sessions!.length, 2);
+            transaction!.commit(err => {
+              assert.ifError(err);
+              db.close(done);
+            });
+          });
+        });
+      });
+    }
+
+    it('should retry "Session not found" errors for Commit on a write-session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.commit,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        db.runTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.insert('FOO', {Id: 1, Name: 'foo'});
+          transaction!.commit(err => {
+            assert.ifError(err);
+            db.getSessions((err, sessions) => {
+              assert.ifError(err);
+              assert.strictEqual(sessions!.length, 2);
+              db.close(done);
+            });
+          });
+        });
+      });
+    });
+
     it('should retry "Session not found" errors for Database.getSnapshot()', done => {
       const db = newTestDatabase();
       spannerMock.setExecutionTime(
@@ -667,6 +751,235 @@ describe('Spanner with mock server', () => {
             .catch(done);
         })
         .catch(done);
+    });
+
+    it('should retry "Session not found" errors for runUpdate on a write-session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        db.runTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.runUpdate(insertSql, (err, updateCount) => {
+            assert.ifError(err);
+            assert.strictEqual(updateCount, 1);
+            transaction!.commit(err => {
+              assert.ifError(err);
+              db.getSessions((err, sessions) => {
+                assert.ifError(err);
+                assert.strictEqual(sessions!.length, 2);
+                db.close(done);
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('should retry "Session not found" errors for executeBatchDml on a write-session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.executeBatchDml,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        db.runTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.batchUpdate(
+            [insertSql, insertSql],
+            (err, updateCounts) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(updateCounts, [1, 1]);
+              transaction!.commit(err => {
+                assert.ifError(err);
+                db.getSessions((err, sessions) => {
+                  assert.ifError(err);
+                  assert.strictEqual(sessions!.length, 2);
+                  db.close(done);
+                });
+              });
+            }
+          );
+        });
+      });
+    });
+
+    it('should retry "Session not found" errors on BeginTransaction during Database.runTransactionAsync()', done => {
+      // Create a session pool with 1 read-only session.
+      const db = newTestDatabase({min: 1, writes: 0.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one read-only session has been created.
+      pool.once('available', async () => {
+        spannerMock.setExecutionTime(
+          spannerMock.beginTransaction,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        runAsyncTransactionWithExpectedSessionRetry(db)
+          .then(done)
+          .catch(done);
+      });
+    });
+
+    it('should retry "Session not found" errors for a query on a write-session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        runAsyncTransactionWithExpectedSessionRetry(db)
+          .then(done)
+          .catch(done);
+      });
+    });
+
+    async function runAsyncTransactionWithExpectedSessionRetry(db: Database) {
+      try {
+        await db.runTransactionAsync(
+          async (transaction): Promise<void> => {
+            try {
+              const [rows] = await transaction.run(selectSql);
+              assert.strictEqual(rows.length, 3);
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+              await transaction.commit();
+              return Promise.resolve();
+            } catch (e) {
+              return Promise.reject(e);
+            }
+          }
+        );
+        await db.close();
+      } catch (e) {
+        assert.fail(e);
+      }
+    }
+
+    it('should retry "Session not found" errors for Commit on a write-session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', async () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.commit,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        try {
+          await db
+            .runTransactionAsync(
+              async (transaction): Promise<void> => {
+                transaction.insert('FOO', {Id: 1, Name: 'foo'});
+                await transaction.commit();
+                const [sessions] = await db.getSessions();
+                assert.strictEqual(sessions!.length, 2);
+              }
+            )
+            .catch(assert.ifError);
+          await db.close();
+        } catch (e) {
+          done(e);
+          return;
+        }
+        done();
+      });
+    });
+
+    it('should retry "Session not found" errors for runUpdate on a write-session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', async () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        try {
+          await db
+            .runTransactionAsync(
+              async (transaction): Promise<void> => {
+                const [updateCount] = await transaction.runUpdate(insertSql);
+                assert.strictEqual(updateCount, 1);
+                await transaction.commit();
+                const [sessions] = await db.getSessions();
+                assert.strictEqual(sessions!.length, 2);
+              }
+            )
+            .catch(assert.ifError);
+          await db.close();
+        } catch (e) {
+          done(e);
+          return;
+        }
+        done();
+      });
+    });
+
+    it('should retry "Session not found" errors for executeBatchDml on a write-session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, writes: 1.0});
+      const pool = db.pool_ as SessionPool;
+      // Wait until one session with a transaction has been created.
+      pool.once('available', async () => {
+        assert.strictEqual(pool.writes, 1);
+        spannerMock.setExecutionTime(
+          spannerMock.executeBatchDml,
+          SimulatedExecutionTime.ofError({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          } as MockError)
+        );
+        try {
+          await db
+            .runTransactionAsync(
+              async (transaction): Promise<void> => {
+                const [updateCounts] = await transaction.batchUpdate([
+                  insertSql,
+                  insertSql,
+                ]);
+                assert.deepStrictEqual(updateCounts, [1, 1]);
+                await transaction.commit();
+                const [sessions] = await db.getSessions();
+                assert.strictEqual(sessions!.length, 2);
+              }
+            )
+            .catch(assert.ifError);
+          await db.close();
+        } catch (e) {
+          done(e);
+          return;
+        }
+        done();
+      });
     });
   });
 
