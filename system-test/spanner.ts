@@ -4420,12 +4420,50 @@ describe('Spanner', () => {
       spanner.options.enableResourceBasedRouting = false;
     });
 
-    it('should list the session while resource based routing is enabled', done => {
-      database.getSessions((err, session) => {
-        assert.ifError(err);
-        assert.equal(session!.length, 0);
-        done();
-      });
+    it('should use resolved endpoint while resource based routing is enabled', done => {
+      instance.getMetadata(
+        {fieldNames: ['endpointUris']},
+        (err, instanceMetadata) => {
+          assert.ifError(err);
+          // tslint:disable-next-line: no-any
+          const resolvedEndpoint: string[] = (instanceMetadata as any)
+            .endpointUris;
+          if (resolvedEndpoint.length === 0) {
+            done(); //no resolved endpoint.
+          }
+          database.getSessions((err, session) => {
+            assert.ifError(err);
+            assert.strictEqual(
+              spanner.clients_.has(`SpannerClient-${instance.id}`),
+              true
+            );
+            done();
+          });
+        }
+      );
+    });
+
+    it('should use user-specified endpoint when resource based routing is enabled.', done => {
+      instance.getMetadata(
+        {fieldNames: ['endpointUris']},
+        (err, instanceMetadata) => {
+          assert.ifError(err);
+          // tslint:disable-next-line: no-any
+          const resolvedEndpoint: string[] = (instanceMetadata as any)
+            .endpointUris;
+          if (resolvedEndpoint.length === 0) {
+            done(); //no resolved endpoint.
+          }
+          //user specific apiEndpoint
+          spanner.options.apiEndpoint = resolvedEndpoint[0];
+          spanner.options.enableResourceBasedRouting = true;
+          database.getSessions((err, session) => {
+            assert.ifError(err);
+            assert.strictEqual(spanner.clients_.has('SpannerClient'), true);
+            done();
+          });
+        }
+      );
     });
   });
 });

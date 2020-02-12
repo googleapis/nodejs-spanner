@@ -1039,16 +1039,12 @@ describe('Spanner', () => {
       spanner.prepareGapicRequest_(CONFIG, assert.ifError);
     });
 
-    it('should use user-specified endpoint when GetInstance response is empty.', done => {
+    it('should use user-specified endpoint when resource based routing is enabled.', done => {
       const instanceId = 'instance-id';
       const customEndpoint = 'us-central1-spanner.googleapis.com';
       asAny(CONFIG).instanceId = instanceId;
+      asAny(spanner.options).apiEndpoint = customEndpoint;
       spanner.options.enableResourceBasedRouting = true;
-
-      asAny(spanner).instance(instanceId).getMetadata = (options, callback) => {
-        asAny(spanner.options).apiEndpoint = customEndpoint;
-        callback!(null, {endpointUris: []});
-      };
 
       fakeV1[CONFIG.client] = class {
         constructor(options) {
