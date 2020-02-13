@@ -28,7 +28,6 @@ import {Instance} from '../src';
 import {TimestampBounds} from '../src/transaction';
 import {ServiceError, status} from 'grpc';
 import {MockError} from './mockserver/mockspanner';
-import extend = require('extend');
 
 let promisified = false;
 const fakePfy = Object.assign({}, pfy, {
