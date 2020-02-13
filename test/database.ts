@@ -17,7 +17,6 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
-import * as extend from 'extend';
 import {ApiError, util} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -29,9 +28,10 @@ import {Instance} from '../src';
 import {TimestampBounds} from '../src/transaction';
 import {ServiceError, status} from 'grpc';
 import {MockError} from './mockserver/mockspanner';
+import extend = require('extend');
 
 let promisified = false;
-const fakePfy = extend({}, pfy, {
+const fakePfy = Object.assign({}, pfy, {
   promisifyAll(klass, options) {
     if (klass.name !== 'Database') {
       return;
@@ -210,12 +210,12 @@ describe('Database', () => {
         AsyncTransactionRunner: FakeAsyncTransactionRunner,
       },
     }).Database;
-    DatabaseCached = extend({}, Database);
+    DatabaseCached = Object.assign({}, Database);
   });
 
   beforeEach(() => {
     fakeCodec.encode = util.noop;
-    extend(Database, DatabaseCached);
+    Object.assign(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
   });
@@ -294,7 +294,7 @@ describe('Database', () => {
     it('should inherit from ServiceObject', done => {
       const options = {};
 
-      const instanceInstance = extend({}, INSTANCE, {
+      const instanceInstance = Object.assign({}, INSTANCE, {
         createDatabase(name, options_, callback) {
           assert.strictEqual(name, database.formattedName_);
           assert.strictEqual(options_, options);
@@ -1034,7 +1034,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts,
-          extend({}, CONFIG.reqOpts, {
+          Object.assign({}, CONFIG.reqOpts, {
             session: SESSION.formattedName_,
           })
         );
@@ -1541,7 +1541,7 @@ describe('Database', () => {
         otherConfiguration: {},
       };
 
-      const expectedReqOpts = extend({}, config, {
+      const expectedReqOpts = Object.assign({}, config, {
         database: database.formattedName_,
       });
 
@@ -1590,7 +1590,7 @@ describe('Database', () => {
     it('should send labels correctly', done => {
       const labels = {a: 'b'};
       const options = {a: 'b', labels};
-      const originalOptions = extend(true, {}, options);
+      const originalOptions = Object.assign({}, options, labels);
 
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts.session, {labels});
@@ -1876,7 +1876,7 @@ describe('Database', () => {
       const gaxOpts = {};
       const options = {a: 'a', gaxOptions: gaxOpts};
 
-      const expectedReqOpts = extend({}, options, {
+      const expectedReqOpts = Object.assign({}, options, {
         database: database.formattedName_,
       });
 
