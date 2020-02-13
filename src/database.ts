@@ -1223,8 +1223,14 @@ class Database extends GrpcServiceObject {
 
       snapshot.begin(err => {
         if (err) {
-          this.pool_.release(session!);
-          callback!(err);
+          if (isSessionNotFoundError(err)) {
+            session!.lastError = err;
+            this.pool_.release(session!);
+            this.getSnapshot(options, callback!);
+          } else {
+            this.pool_.release(session!);
+            callback!(err);
+          }
           return;
         }
 
@@ -1863,6 +1869,10 @@ class Database extends GrpcServiceObject {
         : {};
 
     this.pool_.getWriteSession((err, session?, transaction?) => {
+      if (err && isSessionNotFoundError(err)) {
+        this.runTransaction(options, runFn!);
+        return;
+      }
       if (err) {
         runFn!(err);
         return;
@@ -1877,8 +1887,13 @@ class Database extends GrpcServiceObject {
       );
 
       runner.run().then(release, err => {
-        setImmediate(runFn!, err);
-        release();
+        if (isSessionNotFoundError(err)) {
+          release();
+          this.runTransaction(options, runFn!);
+        } else {
+          setImmediate(runFn!, err);
+          release();
+        }
       });
     });
   }
@@ -1956,18 +1971,27 @@ class Database extends GrpcServiceObject {
         : {};
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
-    const [session, transaction] = await promisify(getWriteSession)();
-    const runner = new AsyncTransactionRunner<T>(
-      session,
-      transaction,
-      runFn,
-      options
-    );
+    // Loop to retry 'Session not found' errors.
+    while (true) {
+      try {
+        const [session, transaction] = await promisify(getWriteSession)();
+        const runner = new AsyncTransactionRunner<T>(
+          session,
+          transaction,
+          runFn,
+          options
+        );
 
-    try {
-      return await runner.run();
-    } finally {
-      this.pool_.release(session);
+        try {
+          return await runner.run();
+        } finally {
+          this.pool_.release(session);
+        }
+      } catch (e) {
+        if (!isSessionNotFoundError(e)) {
+          throw e;
+        }
+      }
     }
   }
   /**

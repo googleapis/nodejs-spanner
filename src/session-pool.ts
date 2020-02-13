@@ -475,6 +475,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       this._traces.delete(session.id);
       return;
     }
+    session.lastError = undefined;
 
     if (session.type === types.ReadOnly) {
       this._release(session);
@@ -537,7 +538,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       try {
         await this._prepareTransaction(session);
       } catch (e) {
-        this._release(session);
+        if (isSessionNotFoundError(e)) {
+          this._inventory.borrowed.delete(session);
+        } else {
+          this._release(session);
+        }
         throw e;
       }
     }
