@@ -48,7 +48,8 @@
     "proto:spanner_database_admin": "pbjs -t static-module -w commonjs -p node_modules/google-proto-files google/spanner/admin/database/v1/spanner_database_admin.proto | pbts -o proto/spanner_database_admin.d.ts -",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
-    "benchwrapper": "node bin/benchwrapper.js"
+    "benchwrapper": "node bin/benchwrapper.js",
+    "prelint": "cd samples; npm link ../; npm i"
   },
   "dependencies": {
     "@google-cloud/common": "^2.2.2",
