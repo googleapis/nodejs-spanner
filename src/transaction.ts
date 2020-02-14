@@ -19,7 +19,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
 import {CallOptions} from 'google-gax';
-import {ServiceError} from 'grpc';
+import {Metadata, ServiceError} from 'grpc';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
@@ -36,8 +36,13 @@ import {Key} from './table';
 import {SpannerClient as s} from './v1';
 import {google as spannerClient} from '../proto/spanner';
 import {NormalCallback} from './common';
+import {google} from '../protos/protos';
+import IAny = google.protobuf.IAny;
+import * as grpc from 'grpc';
 
 export type Rows = Array<Row | Json>;
+const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
+const RETRY_INFO_BIN = 'google.rpc.retryinfo-bin';
 
 export interface TimestampBounds {
   strong?: boolean;
@@ -1298,10 +1303,10 @@ export class Transaction extends Dml {
         });
 
         if (status && status.code !== 0) {
-          const error = new Error(status.details);
+          const error = new Error(status.message);
           batchUpdateError = Object.assign(error, {
             code: status.code,
-            metadata: status.metadata,
+            metadata: Transaction.extractKnownMetadata(status.details),
             rowCounts,
           });
         }
@@ -1309,6 +1314,19 @@ export class Transaction extends Dml {
         callback!(batchUpdateError!, rowCounts, resp);
       }
     );
+  }
+
+  private static extractKnownMetadata(details: IAny[]): Metadata | undefined {
+    if (details && typeof details[Symbol.iterator] === 'function') {
+      const metadata = new grpc.Metadata();
+      for (const detail of details) {
+        if (detail.type_url === RETRY_INFO_TYPE && detail.value) {
+          metadata.add(RETRY_INFO_BIN, detail.value as string);
+        }
+      }
+      return metadata;
+    }
+    return undefined;
   }
 
   commit(): Promise<CommitResponse>;

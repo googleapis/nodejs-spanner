@@ -1141,7 +1141,7 @@ describe('Transaction', () => {
             {stats: {rowCount: 'a', a: '6'}},
             {stats: {rowCount: 'b', b: '8'}},
           ],
-          status: {code: 3, details: 'Err'},
+          status: {code: 3, message: 'Err'},
         };
 
         transaction.batchUpdate(
@@ -1149,7 +1149,7 @@ describe('Transaction', () => {
           (err, rowCounts, apiResponse) => {
             assert(err instanceof Error);
             assert.strictEqual(err.code, fakeResponse.status.code);
-            assert.strictEqual(err.message, fakeResponse.status.details);
+            assert.strictEqual(err.message, fakeResponse.status.message);
             assert.deepStrictEqual(err.rowCounts, expectedRowCounts);
             assert.deepStrictEqual(rowCounts, expectedRowCounts);
             assert.deepStrictEqual(apiResponse, fakeResponse);
