@@ -210,7 +210,9 @@ describe('Database', () => {
         AsyncTransactionRunner: FakeAsyncTransactionRunner,
       },
     }).Database;
-    DatabaseCached = extend({}, Database);
+    // The following commented out line is the one that will trigger the error.
+    // DatabaseCached = extend({}, Database);
+    DatabaseCached = Object.assign({}, Database);
   });
 
   beforeEach(() => {
