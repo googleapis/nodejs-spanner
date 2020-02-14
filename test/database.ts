@@ -1592,7 +1592,7 @@ describe('Database', () => {
     it('should send labels correctly', done => {
       const labels = {a: 'b'};
       const options = {a: 'b', labels};
-      const originalOptions = extend({}, options, labels);
+      const originalOptions = extend(true, {}, options);
 
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts.session, {labels});
@@ -1878,7 +1878,7 @@ describe('Database', () => {
       const gaxOpts = {};
       const options = {a: 'a', gaxOptions: gaxOpts};
 
-      const expectedReqOpts = Object.assign({}, options, {
+      const expectedReqOpts = extend({}, options, {
         database: database.formattedName_,
       });
 
