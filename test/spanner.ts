@@ -19,7 +19,11 @@ import * as grpc from 'grpc';
 import {status} from 'grpc';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
-import {MockError, SimulatedExecutionTime} from './mockserver/mockspanner';
+import {
+  MockError,
+  MockSpanner,
+  SimulatedExecutionTime,
+} from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
 import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
@@ -56,6 +60,7 @@ describe('Spanner with mock server', () => {
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
   const invalidSql = 'SELECT * FROM FOO';
   const insertSql = `INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')`;
+  const updateSql = `UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)`;
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
@@ -89,6 +94,10 @@ describe('Spanner with mock server', () => {
     spannerMock.putStatementResult(
       insertSql,
       mock.StatementResult.updateCount(1)
+    );
+    spannerMock.putStatementResult(
+      updateSql,
+      mock.StatementResult.updateCount(2)
     );
 
     // TODO(loite): Enable when SPANNER_EMULATOR_HOST is supported.
@@ -1422,6 +1431,30 @@ describe('Spanner with mock server', () => {
           });
         });
       });
+    });
+
+    it('should retry on aborted batch DML statement', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      spannerMock.setExecutionTime(
+        spannerMock.executeBatchDml,
+        SimulatedExecutionTime.ofError({
+          code: status.ABORTED,
+          message: 'Transaction aborted',
+          metadata: MockSpanner.createMinimalRetryDelayMetadata(),
+          streamIndex: 1,
+        } as MockError)
+      );
+      const response = await database.runTransactionAsync(transaction => {
+        attempts++;
+        return transaction
+          .batchUpdate([insertSql, updateSql])
+          .then(response => transaction.commit().then(_ => response));
+      });
+      const updateCounts = response[0];
+      assert.deepStrictEqual(updateCounts, [1, 2]);
+      assert.strictEqual(attempts, 2);
+      await database.close();
     });
 
     it('should retry on aborted commit', async () => {

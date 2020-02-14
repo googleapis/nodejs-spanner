@@ -15,8 +15,9 @@
  */
 
 import {CallOptions, GrpcClientOptions} from 'google-gax';
-import {ClientReadableStream, ServiceError, StatusObject} from 'grpc';
+import {ClientReadableStream, ServiceError} from 'grpc';
 import {common as protobuf} from 'protobufjs';
+import {google} from '../../protos/protos';
 
 declare class SpannerClient {
   static servicePath: string;
@@ -101,6 +102,8 @@ declare class SpannerClient {
 }
 
 declare namespace SpannerClient {
+  import Status = google.rpc.Status;
+
   interface CancelablePromise<T> extends Promise<T> {
     cancel(): void;
   }
@@ -175,7 +178,7 @@ declare namespace SpannerClient {
 
   interface ExecuteBatchDmlResponse {
     resultSets: ResultSet[];
-    status: StatusObject;
+    status: Status;
   }
 
   interface ExecuteBatchDmlCallback {

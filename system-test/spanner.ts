@@ -32,6 +32,7 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
+import {status} from 'grpc';
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -3984,6 +3985,10 @@ describe('Spanner', () => {
           try {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
+            // Re-throw if the transaction was aborted to trigger a retry.
+            if (e.code === status.ABORTED) {
+              throw e;
+            }
             err = e;
           }
 
@@ -3991,7 +3996,7 @@ describe('Spanner', () => {
           return err;
         });
 
-        assert.strictEqual(err.code, 3);
+        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
         assert.deepStrictEqual(err.rowCounts, [1]);
       });
 
