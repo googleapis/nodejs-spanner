@@ -210,13 +210,15 @@ describe('Database', () => {
         AsyncTransactionRunner: FakeAsyncTransactionRunner,
       },
     }).Database;
-    // The following commented out line is the one that will trigger the error.
-    // DatabaseCached = extend({}, Database);
-    DatabaseCached = Object.assign({}, Database);
+    DatabaseCached = extend({}, Database);
   });
 
   beforeEach(() => {
     fakeCodec.encode = util.noop;
+    // Set EventEmitter.errorMonitor to undefined to prevent extend from trying
+    // to set it, as it is a read-only field.
+    // tslint:disable-next-line:no-any
+    (DatabaseCached as any).errorMonitor = undefined;
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
