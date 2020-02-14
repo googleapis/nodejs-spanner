@@ -17,6 +17,7 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
+import * as extend from 'extend';
 import {ApiError, util} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -30,7 +31,7 @@ import {ServiceError, status} from 'grpc';
 import {MockError} from './mockserver/mockspanner';
 
 let promisified = false;
-const fakePfy = Object.assign({}, pfy, {
+const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
     if (klass.name !== 'Database') {
       return;
@@ -209,12 +210,14 @@ describe('Database', () => {
         AsyncTransactionRunner: FakeAsyncTransactionRunner,
       },
     }).Database;
+    // The following commented out line is the one that will trigger the error.
+    // DatabaseCached = extend({}, Database);
     DatabaseCached = Object.assign({}, Database);
   });
 
   beforeEach(() => {
     fakeCodec.encode = util.noop;
-    Object.assign(Database, DatabaseCached);
+    extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
   });
@@ -293,7 +296,7 @@ describe('Database', () => {
     it('should inherit from ServiceObject', done => {
       const options = {};
 
-      const instanceInstance = Object.assign({}, INSTANCE, {
+      const instanceInstance = extend({}, INSTANCE, {
         createDatabase(name, options_, callback) {
           assert.strictEqual(name, database.formattedName_);
           assert.strictEqual(options_, options);
@@ -1033,7 +1036,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts,
-          Object.assign({}, CONFIG.reqOpts, {
+          extend({}, CONFIG.reqOpts, {
             session: SESSION.formattedName_,
           })
         );
@@ -1540,7 +1543,7 @@ describe('Database', () => {
         otherConfiguration: {},
       };
 
-      const expectedReqOpts = Object.assign({}, config, {
+      const expectedReqOpts = extend({}, config, {
         database: database.formattedName_,
       });
 
@@ -1589,7 +1592,7 @@ describe('Database', () => {
     it('should send labels correctly', done => {
       const labels = {a: 'b'};
       const options = {a: 'b', labels};
-      const originalOptions = Object.assign({}, options, labels);
+      const originalOptions = extend({}, options, labels);
 
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts.session, {labels});
