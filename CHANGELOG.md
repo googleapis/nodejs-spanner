@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [4.6.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.1...v4.6.2) (2020-02-14)
+
+
+### Bug Fixes
+
+* Correctly parse metadata from BatchDML response + fix flaky system test ([#825](https://www.github.com/googleapis/nodejs-spanner/issues/825)) ([8b95da7](https://www.github.com/googleapis/nodejs-spanner/commit/8b95da7c68694d7a4ce5644e82d8485d01efb434))
+* retry 'Session not found' errors on getSnapshot ([#819](https://www.github.com/googleapis/nodejs-spanner/issues/819)) ([59bafbf](https://www.github.com/googleapis/nodejs-spanner/commit/59bafbfbcfe1fc3c45291a6fab6a343299123905))
+* retry 'Session not found' for r/w tx ([#824](https://www.github.com/googleapis/nodejs-spanner/issues/824)) ([1b393c4](https://www.github.com/googleapis/nodejs-spanner/commit/1b393c4c940d196232f8fc6ac99dbb5d1fd61e4d))
+
 ### [4.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.0...v4.6.1) (2020-01-29)
 
 
