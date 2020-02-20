@@ -21,7 +21,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import { Database, Spanner } from '../src';
+import { Backup, Database, Spanner } from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -903,342 +903,6 @@ describe('Spanner', () => {
         })
       );
     });
-  });
-
-  describe('Backups', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-      // New database name per test because there can only be one pending backup per database.
-      database = instance.database(generateName('database'));
-      const [, operation] = await database.create({
-        schema: `
-              CREATE TABLE Singers (
-                SingerId STRING(1024) NOT NULL,
-                Name STRING(1024),
-              ) PRIMARY KEY(SingerId)`,
-      });
-      await operation.promise();
-
-      await database.table('Singers').insert({
-        SingerId: generateName('id'),
-        Name: generateName('name'),
-      });
-    });
-
-    afterEach(async () => {
-      await database.delete();
-    });
-
-    function futureDateByHours(futureHours: number): PreciseDate {
-      return new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
-    }
-
-    it('should create multiple backups', async () => {
-      // Create a second database so backups can be done concurrently.
-      const database2 = instance.database(generateName('database'));
-      const [, database2CreateOperation] = await database2.create({
-        schema: `
-              CREATE TABLE Albums (
-                AlbumId STRING(1024) NOT NULL,
-                AlbumTitle STRING(1024) NOT NULL,
-              ) PRIMARY KEY(AlbumId)`,
-      });
-      await database2CreateOperation.promise();
-
-      // Create backups.
-      const backup1Name = generateName('backup');
-      const backup2Name = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
-      const backup1 = instance.backup(backup1Name, database.formattedName_, backupExpiryDate);
-      const [backup1Operation] = await backup1.create();
-      const backup2 = instance.backup(backup2Name, database2.formattedName_, backupExpiryDate);
-      const [backup2Operation] = await backup2.create();
-
-      // Check state of backups.
-      assert.strictEqual(backup1Operation.metadata!.name, `${instance.formattedName_}/backups/${backup1Name}`);
-      assert.strictEqual(backup2Operation.metadata!.name, `${instance.formattedName_}/backups/${backup2Name}`);
-      assert.strictEqual(backup1Operation.metadata!.database, database.formattedName_);
-      assert.strictEqual(backup2Operation.metadata!.database, database2.formattedName_);
-      assert.ifError(backup1Operation.error);
-      assert.ifError(backup2Operation.error);
-    });
-
-    it('should return error for backup expiration time in the past', async () => {
-      // Create backup.
-      const backupName = generateName('backup');
-      const backupExpiryDate = futureDateByHours(-12);
-      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
-      try {
-        const [backupOperation] = await backup.create();
-        assert.fail('Backup should have failed for expiration time in the past');
-      } catch (err) {
-        // Expect to get invalid argument error indicating the expiry date
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
-      }
-    });
-
-    it('should return false for a backup that does not exist', async() => {
-      // This backup won't exist, we're just generating the name without creating the backup itself.
-      const backupName = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
-      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
-
-      const exists = await backup.exists();
-      assert.strictEqual(exists, false);
-    });
-
-    it('should create and complete a backup', async () => {
-      // Create backup.
-      const backupName = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
-      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
-      const [backupOperation] = await backup.create();
-      assert.strictEqual(backupOperation.metadata!.name, `${instance.formattedName_}/backups/${backupName}`);
-      assert.strictEqual(backupOperation.metadata!.database, database.formattedName_);
-
-      // Wait until the backup is complete.
-      await backupOperation.promise();
-
-      // Validate backup has completed.
-      const [backupInfo] = await backup.getBackupInfo();
-      assert.strictEqual(backupInfo.state, 'READY');
-      assert.strictEqual(backupInfo.name, `${instance.formattedName_}/backups/${backupName}`);
-      assert.strictEqual(backupInfo.database, database.formattedName_);
-      assert.ok(backupInfo.createTime);
-      assert.deepStrictEqual(Number(backupInfo.expireTime!.seconds), backupExpiryDate.toStruct().seconds);
-      assert.ok(backupInfo.sizeBytes! > 0);
-
-      // Validate additional metadata functions on backup.
-      const backupState = await backup.getState();
-      assert.strictEqual(backupState, 'READY');
-      const expireTime = await backup.getExpireTime();
-      assert.deepStrictEqual(expireTime!.getFullTime(), backupExpiryDate.getFullTime());
-      const exists = await backup.exists();
-      assert.strictEqual(exists, true);
-    });
-
-    it('should list backups', async () => {
-      // Create a backup so we are guaranteed to have one in the list.
-      const newBackupName = generateName('backup');
-      const newBackupExpiryDate = futureDateByHours(12);
-      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      const [backupOperation] = await newBackup.create();
-
-      // Wait for backup to complete.
-      await backupOperation.promise();
-
-      // The backup doesn't need to have finished to appear in the list.
-      const [backups] = await instance.listBackups();
-      assert.ok(backups.length > 0);
-      const newBackupFromList = backups.find(backup => backup.formattedName_ === newBackup.formattedName_);
-      assert.ok(newBackupFromList);
-    });
-
-    it('should list backups with pagination', async done => {
-      // Create a second database so backups can be done concurrently.
-      const database2 = instance.database(generateName('database'));
-      const [, database2CreateOperation] = await database2.create({
-        schema: `
-              CREATE TABLE Albums (
-                AlbumId STRING(1024) NOT NULL,
-                AlbumTitle STRING(1024) NOT NULL,
-              ) PRIMARY KEY(AlbumId)`,
-      });
-      await database2CreateOperation.promise();
-
-      // Create backups.
-      const backup1Name = generateName('backup');
-      const backup2Name = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
-      const backup1 = instance.backup(backup1Name, database.formattedName_, backupExpiryDate);
-      const backup2 = instance.backup(backup2Name, database2.formattedName_, backupExpiryDate);
-      const [backup1Operation] = await backup1.create();
-      const [backup2Operation] = await backup2.create();
-      const [backups1,, resp1] = await instance.listBackups({pageSize: 1, autoPaginate: false});
-      const [backups2] = await instance.listBackups({pageSize: 1, autoPaginate: false, pageToken: resp1!.nextPageToken});
-      const [backups3] = await instance.listBackups({pageSize: 2, autoPaginate: false});
-      assert.strictEqual(backups1.length, 1);
-      assert.strictEqual(backups2.length, 1);
-      assert.strictEqual(backups3.length, 2);
-      assert.notStrictEqual(backups2[0].formattedName_, backups1[0].formattedName_);
-      assert.deepStrictEqual(backups3, [...backups1, ...backups2]);
-
-      // Finally wait for backups to finish at end of test.
-      await backup1Operation.promise();
-      await backup2Operation.promise();
-    });
-
-    it('should restore a backup', async () => {
-      // Create a backup that will be restored later.
-      const backupName = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
-      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
-      const [backupOperation] = await backup.create();
-
-      // Wait for backup to complete.
-      await backupOperation.promise();
-
-      // Look up the backup full name from the operation response to expand any {{projectId}} tokens.
-      const backupFullName = backupOperation.metadata.name;
-
-      // Perform restore to a different database.
-      const restoreDatabase = instance.database(generateName('database'));
-      const [restoreOperation] = await restoreDatabase.restore(backup.formattedName_);
-
-      // Wait for restore to complete.
-      await restoreOperation.promise();
-
-      const [databaseMetadata] = await restoreDatabase.getMetadata();
-      assert.ok(databaseMetadata.state === 'READY' || databaseMetadata.state === 'READY_OPTIMIZING');
-
-      // Validate restore state of database directly.
-      const restoreState = await restoreDatabase.getState();
-      assert.ok(restoreState === 'READY' || restoreState === 'READY_OPTIMIZING');
-
-      // Validate new database has restored data.
-      const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
-      const results = rows.map(row => row.toJSON);
-      assert.strictEqual(results.length, 1);
-
-      // Validate restore info of database.
-      const restoreInfo = await restoreDatabase.getRestoreInfo();
-      assert.strictEqual(restoreInfo!.backupInfo!.backup, backupFullName);
-      const [originalDatabaseMetadata] = await database.getMetadata();
-      assert.strictEqual(restoreInfo!.backupInfo!.sourceDatabase, originalDatabaseMetadata.name);
-      assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
-
-      // Check that restore operation ends up in the operations list.
-      const [restoreOperations] = await restoreDatabase.listDatabaseOperations({filter: 'metadata.@type:RestoreDatabaseMetadata'});
-      assert.strictEqual(restoreOperations.length, 1);
-    });
-
-    it('should not be able to restore to an existing database', async () => {
-      // Create a backup.
-      const backupName = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
-      const backup = instance.backup(backupName, database.formattedName_, backupExpiryDate);
-      const [backupOperation] = await backup.create();
-
-      // Wait for backup to complete.
-      await backupOperation.promise();
-
-      // Perform restore to the same database - should fail.
-      try {
-        await database.restore(backup.formattedName_);
-        assert.fail('Should not have restored backup over existing database');
-      } catch (err) {
-        // Expect to get error indicating database already exists.
-        assert.strictEqual(err.code, status.ALREADY_EXISTS);
-      }
-    });
-
-    it('should update backup expiry', async () => {
-      // Create a backup that will be updated later.
-      const newBackupName = generateName('backup');
-      const newBackupExpiryDate = futureDateByHours(12);
-      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      const [newBackupCreateOperation] = await newBackup.create();
-
-      // Read metadata, verify expiry date.
-      const [newBackupInfo] = await newBackup.getBackupInfo();
-      const expiryDateFromMetadataBeforeUpdate = new PreciseDate(newBackupInfo.expireTime as DateStruct);
-
-      assert.deepStrictEqual(expiryDateFromMetadataBeforeUpdate, newBackupExpiryDate);
-
-      // Update backup expiry date.
-      const updatedBackupExpiryDate = futureDateByHours(24);
-      await newBackup.updateExpireTime(updatedBackupExpiryDate);
-
-      // Read metadata, verify expiry date was updated.
-      const [updatedBackupInfo] = await newBackup.getBackupInfo();
-      const expiryDateFromMetadataAfterUpdate = new PreciseDate(updatedBackupInfo.expireTime as DateStruct);
-
-      assert.deepStrictEqual(expiryDateFromMetadataAfterUpdate, updatedBackupExpiryDate);
-
-      // Attempt to update expiry date to the past.
-      const expiryDateInPast = futureDateByHours(-24);
-      try {
-        await newBackup.updateExpireTime(expiryDateInPast);
-        assert.fail('Backup should have failed for expiration time in the past');
-      } catch (err) {
-        // Expect to get invalid argument error indicating the expiry date.
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
-      }
-
-      // Finally wait for the backup to complete.
-      await newBackupCreateOperation.promise();
-    });
-
-    it('should delete backup', async () => {
-      // Create a backup that will be deleted later.
-      const newBackupName = generateName('backup');
-      const newBackupExpiryDate = futureDateByHours(12);
-      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      await newBackup.create();
-
-      // Verify backup exists by querying metadata (might not have finished though).
-      const [newBackupInfo] = await newBackup.getBackupInfo();
-      assert.ok(newBackupInfo);
-
-      // Delete backup.
-      await newBackup.deleteBackup();
-
-      // Verify backup is gone by querying metadata.
-      // Expect backup not to be found.
-      try {
-        const [deletedBackupInfo] = await newBackup.getBackupInfo();
-        assert.fail('Backup was not deleted: ' + deletedBackupInfo.name)
-      } catch (err) {
-        assert.strictEqual(err.code, status.NOT_FOUND);
-      }
-    });
-
-    it('should be able to delete non-existent backup', async () => {
-      // Get a reference to a backup that doesn't already exist.
-      const notExistingBackupName = generateName('backup');
-      const notExistingBackupExpiryDate = futureDateByHours(12);
-      const notExistingBackup = instance.backup(notExistingBackupName, database.formattedName_, notExistingBackupExpiryDate);
-
-      // Verify backup does not exist.
-      const nonExistingBackupExists = await notExistingBackup.exists();
-      assert.strictEqual(nonExistingBackupExists, false);
-
-      // Attempt to delete backup - should not fail since backup is already gone.
-      await notExistingBackup.deleteBackup();
-    });
-
-    it('should list backup operations', async () => {
-      // Create a backup.
-      const newBackupName = generateName('backup');
-      const newBackupExpiryDate = futureDateByHours(12);
-      const newBackup = instance.backup(newBackupName, database.formattedName_, newBackupExpiryDate);
-      const [newBackupCreateResponse] = await newBackup.create();
-
-      // Look up the backup full name from the operation response to expand any {{projectId}} tokens.
-      const newBackupFullName = newBackupCreateResponse.metadata.name;
-
-      // List operations and ensure operation for current backup exists.
-      // Without a filter.
-      const [operationsWithoutFilter] = await instance.listBackupOperations();
-      const operationForCurrentBackup =
-        operationsWithoutFilter.find(operation => operation.name && operation.name.startsWith(newBackupFullName));
-      assert.ok(operationForCurrentBackup);
-      assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
-
-      // With a filter.
-      const [operationsWithFilter] = await instance.listBackupOperations(
-        { filter: `(metadata.@type:CreateBackupMetadata AND metadata.name:${newBackupFullName})`}
-      );
-      const operationForCurrentBackupWithFilter = operationsWithFilter[0];
-      assert.ok(operationForCurrentBackupWithFilter);
-      assert.strictEqual(operationForCurrentBackupWithFilter!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
-      const operationForCurrentBackupWithFilterMetadata = CreateBackupMetadata.decode(operationForCurrentBackupWithFilter!.metadata!.value!);
-      assert.strictEqual(operationForCurrentBackupWithFilterMetadata.database, database.formattedName_);
-
-      // Wait for the backup to complete before finishing the test.
-      await newBackupCreateResponse.promise();
-    });
 
     it('should list database operations on an instance', async () => {
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
@@ -1247,7 +911,7 @@ describe('Spanner', () => {
 
       // List operations and ensure operation for creation of test database exists.
       const [databaseCreateOperations] = await instance.listDatabaseOperations({
-        filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata) AND 
+        filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata) AND
                  (metadata.database:${database.formattedName_})`
       });
 
@@ -1274,6 +938,244 @@ describe('Spanner', () => {
         databaseOperations.find(op => op.metadata!.type_url === 'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata');
       const createMeta = CreateDatabaseMetadata.decode(databaseCreateOperation!.metadata!.value!);
       assert.strictEqual(createMeta.database, databaseFullName);
+    });
+  });
+
+  describe('Backups', () => {
+    let database1: Database;
+    let database2: Database;
+
+    let backup1: Backup;
+    let backup2: Backup;
+
+    const backup1Name = generateName('backup');
+    const backup2Name = generateName('backup');
+    const backupExpiryDate = futureDateByHours(12);
+
+    before(async () => {
+      // New database name per test because there can only be one pending backup
+      // per database.
+      database1 = instance.database(generateName('database'));
+      const [, operation] = await database1.create({
+        schema: `
+              CREATE TABLE Singers (
+                SingerId STRING(1024) NOT NULL,
+                Name STRING(1024),
+              ) PRIMARY KEY(SingerId)`,
+      });
+      await operation.promise();
+
+      await database1.table('Singers').insert({
+        SingerId: generateName('id'),
+        Name: generateName('name'),
+      });
+
+      // Create a second database since only one pending backup can be created
+      // per database.
+      database2 = instance.database(generateName('database'));
+      const [, database2CreateOperation] = await database2.create({
+        schema: `
+              CREATE TABLE Albums (
+                AlbumId STRING(1024) NOT NULL,
+                AlbumTitle STRING(1024) NOT NULL,
+              ) PRIMARY KEY(AlbumId)`,
+      });
+      await database2CreateOperation.promise();
+
+      // Create backups.
+      backup1 = instance.backup(backup1Name, database1.formattedName_, backupExpiryDate);
+      backup2 = instance.backup(backup2Name, database2.formattedName_, backupExpiryDate);
+      const [backup1Operation] = await backup1.create();
+      const [backup2Operation] = await backup2.create();
+
+      assert.strictEqual(backup1Operation.metadata!.name, `${instance.formattedName_}/backups/${backup1Name}`);
+      assert.strictEqual(backup1Operation.metadata!.database, database1.formattedName_);
+
+      assert.strictEqual(backup2Operation.metadata!.name, `${instance.formattedName_}/backups/${backup2Name}`);
+      assert.strictEqual(backup2Operation.metadata!.database, database2.formattedName_);
+
+      // Wait for backups to finish.
+      await backup1Operation.promise();
+      await backup2Operation.promise();
+    });
+
+    after(async () => {
+      await backup1.deleteBackup();
+      await backup2.deleteBackup();
+
+      await database1.delete();
+      await database2.delete();
+    });
+
+
+    function futureDateByHours(futureHours: number): PreciseDate {
+      return new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+    }
+
+    it('should have completed a backup', async () => {
+      // Validate backup has completed.
+      const [backupInfo] = await backup1.getBackupInfo();
+      assert.strictEqual(backupInfo.state, 'READY');
+      assert.strictEqual(backupInfo.name, `${instance.formattedName_}/backups/${backup1Name}`);
+      assert.strictEqual(backupInfo.database, database1.formattedName_);
+      assert.ok(backupInfo.createTime);
+      assert.deepStrictEqual(Number(backupInfo.expireTime!.seconds), backupExpiryDate.toStruct().seconds);
+      assert.ok(backupInfo.sizeBytes! > 0);
+
+      // Validate additional metadata functions on backup.
+      const backupState = await backup1.getState();
+      assert.strictEqual(backupState, 'READY');
+      const expireTime = await backup1.getExpireTime();
+      assert.deepStrictEqual(expireTime!.getFullTime(), backupExpiryDate.getFullTime());
+      const exists = await backup1.exists();
+      assert.strictEqual(exists, true);
+    });
+
+    it('should return error for backup expiration time in the past', async () => {
+      // Create backup.
+      const backupName = generateName('backup');
+      const backupExpiryDate = futureDateByHours(-12);
+      const backup = instance.backup(backupName, database1.formattedName_, backupExpiryDate);
+      try {
+        const [backupOperation] = await backup.create();
+        assert.fail('Backup should have failed for expiration time in the past');
+      } catch (err) {
+        // Expect to get invalid argument error indicating the expiry date
+        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+      }
+    });
+
+    it('should return false for a backup that does not exist', async() => {
+      // This backup won't exist, we're just generating the name without creating the backup itself.
+      const backupName = generateName('backup');
+      const backupExpiryDate = futureDateByHours(12);
+      const backup = instance.backup(backupName, database1.formattedName_, backupExpiryDate);
+
+      const exists = await backup.exists();
+      assert.strictEqual(exists, false);
+    });
+
+    it('should list backups', async () => {
+      const [backups] = await instance.listBackups();
+      assert.ok(backups.length > 0);
+      const newBackupFromList = backups.find(backup => backup.formattedName_ === backup1.formattedName_);
+      assert.ok(newBackupFromList);
+    });
+
+    // tslint:disable-next-line ban
+    it.skip('should list backups with pagination', async done => {
+      const [backups1,, resp1] = await instance.listBackups({pageSize: 1, autoPaginate: false});
+      const [backups2] = await instance.listBackups({pageSize: 1, autoPaginate: false, pageToken: resp1!.nextPageToken});
+      const [backups3] = await instance.listBackups({pageSize: 2, autoPaginate: false});
+      assert.strictEqual(backups1.length, 1);
+      assert.strictEqual(backups2.length, 1);
+      assert.strictEqual(backups3.length, 2);
+      assert.notStrictEqual(backups2[0].formattedName_, backups1[0].formattedName_);
+      assert.deepStrictEqual(backups3, [...backups1, ...backups2]);
+    });
+
+    it('should restore a backup', async () => {
+      // Perform restore to a different database.
+      const restoreDatabase = instance.database(generateName('database'));
+      const [restoreOperation] = await restoreDatabase.restore(backup1.formattedName_);
+
+      // Wait for restore to complete.
+      await restoreOperation.promise();
+
+      const [databaseMetadata] = await restoreDatabase.getMetadata();
+      assert.ok(databaseMetadata.state === 'READY' || databaseMetadata.state === 'READY_OPTIMIZING');
+
+      // Validate restore state of database directly.
+      const restoreState = await restoreDatabase.getState();
+      assert.ok(restoreState === 'READY' || restoreState === 'READY_OPTIMIZING');
+
+      // Validate new database has restored data.
+      const [rows] = await restoreDatabase.table('Singers').read({columns: ['SingerId', 'Name']});
+      const results = rows.map(row => row.toJSON);
+      assert.strictEqual(results.length, 1);
+
+      // Validate restore info of database.
+      const restoreInfo = await restoreDatabase.getRestoreInfo();
+      // assert.strictEqual(restoreInfo!.backupInfo!.backup, backupFullName);
+      const [originalDatabaseMetadata] = await database1.getMetadata();
+      assert.strictEqual(restoreInfo!.backupInfo!.sourceDatabase, originalDatabaseMetadata.name);
+      assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
+
+      // Check that restore operation ends up in the operations list.
+      const [restoreOperations] = await restoreDatabase.listDatabaseOperations({filter: 'metadata.@type:RestoreDatabaseMetadata'});
+      assert.strictEqual(restoreOperations.length, 1);
+    });
+
+    it('should not be able to restore to an existing database', async () => {
+      // Perform restore to the same database - should fail.
+      try {
+        await database1.restore(backup1.formattedName_);
+        assert.fail('Should not have restored backup over existing database');
+      } catch (err) {
+        // Expect to get error indicating database already exists.
+        assert.strictEqual(err.code, status.ALREADY_EXISTS);
+      }
+    });
+
+    it('should update backup expiry', async () => {
+      // Update backup expiry date.
+      const updatedBackupExpiryDate = futureDateByHours(24);
+      await backup1.updateExpireTime(updatedBackupExpiryDate);
+
+      // Read metadata, verify expiry date was updated.
+      const [updatedBackupInfo] = await backup1.getBackupInfo();
+      const expiryDateFromMetadataAfterUpdate = new PreciseDate(updatedBackupInfo.expireTime as DateStruct);
+
+      assert.deepStrictEqual(expiryDateFromMetadataAfterUpdate, updatedBackupExpiryDate);
+    });
+
+    it('should not update backup expiry to the past', async () => {
+      // Attempt to update expiry date to the past.
+      const expiryDateInPast = futureDateByHours(-24);
+      try {
+        await backup1.updateExpireTime(expiryDateInPast);
+        assert.fail('Backup should have failed for expiration time in the past');
+      } catch (err) {
+        // Expect to get invalid argument error indicating the expiry date.
+        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+      }
+    });
+
+    it('should delete backup', async () => {
+      // Delete backup.
+      await backup2.deleteBackup();
+
+      // Verify backup is gone by querying metadata.
+      // Expect backup not to be found.
+      try {
+        const [deletedBackupInfo] = await backup2.getBackupInfo();
+        assert.fail('Backup was not deleted: ' + deletedBackupInfo.name)
+      } catch (err) {
+        assert.strictEqual(err.code, status.NOT_FOUND);
+      }
+    });
+
+    it('should list backup operations', async () => {
+      // List operations and ensure operation for current backup exists.
+      // Without a filter.
+      const [operationsWithoutFilter] = await instance.listBackupOperations();
+      const operationForCurrentBackup =
+        operationsWithoutFilter.find(operation => operation.name &&
+                                     operation.name.includes(backup1.formattedName_));
+      assert.ok(operationForCurrentBackup);
+      assert.strictEqual(operationForCurrentBackup!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
+
+      // With a filter.
+      const [operationsWithFilter] = await instance.listBackupOperations(
+        { filter: `(metadata.@type:CreateBackupMetadata AND
+                    metadata.name:${backup1.formattedName_})`}
+      );
+      const operationForCurrentBackupWithFilter = operationsWithFilter[0];
+      assert.ok(operationForCurrentBackupWithFilter);
+      assert.strictEqual(operationForCurrentBackupWithFilter!.metadata!.type_url, 'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata');
+      const operationForCurrentBackupWithFilterMetadata = CreateBackupMetadata.decode(operationForCurrentBackupWithFilter!.metadata!.value!);
+      assert.strictEqual(operationForCurrentBackupWithFilterMetadata.database,
+                         database1.formattedName_);
     });
   });
 
