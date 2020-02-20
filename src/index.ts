@@ -28,6 +28,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
 import {codec} from './codec';
+import {Backup} from './backup';
 import {Database} from './database';
 import {Instance} from './instance';
 import {Session} from './session';
@@ -1007,6 +1008,15 @@ export {Instance};
  * @type {Constructor}
  */
 export {Database};
+
+/**
+ * {@link Backup} class.
+ *
+ * @name Spanner.Backup
+ * @see Backup
+ * @type {Constructor}
+ */
+export {Backup};
 
 /**
  * {@link Session} class.
