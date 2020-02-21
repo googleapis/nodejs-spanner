@@ -1058,20 +1058,19 @@ describe('Spanner', () => {
     it('should list backups', async () => {
       const [backups] = await instance.listBackups();
       assert.ok(backups.length > 0);
-      const newBackupFromList = backups.find(backup => backup.formattedName_ === backup1.formattedName_);
-      assert.ok(newBackupFromList);
+      assert.ok(backups.find(backup => backup.formattedName_ === backup1.formattedName_));
     });
 
-    // tslint:disable-next-line ban
-    it.skip('should list backups with pagination', async done => {
-      const [backups1,, resp1] = await instance.listBackups({pageSize: 1, autoPaginate: false});
-      const [backups2] = await instance.listBackups({pageSize: 1, autoPaginate: false, pageToken: resp1!.nextPageToken});
-      const [backups3] = await instance.listBackups({pageSize: 2, autoPaginate: false});
-      assert.strictEqual(backups1.length, 1);
-      assert.strictEqual(backups2.length, 1);
-      assert.strictEqual(backups3.length, 2);
-      assert.notStrictEqual(backups2[0].formattedName_, backups1[0].formattedName_);
-      assert.deepStrictEqual(backups3, [...backups1, ...backups2]);
+    it('should list backups with pagination', async () => {
+      const [page1,, resp1] = await instance.listBackups({pageSize: 1, autoPaginate: false});
+      const [page2] = await instance.listBackups({pageSize: 1, autoPaginate: false, pageToken: resp1!.nextPageToken});
+      const [page3] = await instance.listBackups({pageSize: 2, autoPaginate: false});
+      assert.strictEqual(page1.length, 1);
+      assert.strictEqual(page2.length, 1);
+      assert.strictEqual(page3.length, 2);
+      assert.notStrictEqual(page2[0].formattedName_, page1[0].formattedName_);
+      assert.ok(page3.find(backup => backup.formattedName_ === backup1.formattedName_));
+      assert.ok(page3.find(backup => backup.formattedName_ === backup2.formattedName_));
     });
 
     it('should restore a backup', async () => {
