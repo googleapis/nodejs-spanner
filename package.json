@@ -89,7 +89,7 @@
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.9",
     "@types/through2": "^2.0.34",
-    "@types/uuid": "^3.4.4",
+    "@types/uuid": "^7.0.0",
     "binary-search-bounds": "^2.0.4",
     "c8": "^7.0.0",
     "codecov": "^3.0.2",
@@ -114,7 +114,7 @@
     "stats-lite": "^2.1.1",
     "time-span": "^3.0.0",
     "typescript": "3.6.4",
-    "uuid": "^3.3.2",
+    "uuid": "^7.0.0",
     "yargs": "^15.0.0"
   }
 }
