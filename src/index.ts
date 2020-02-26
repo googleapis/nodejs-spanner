@@ -1100,3 +1100,5 @@ module.exports.v1 = gapic.v1;
 
 // Alias `module.exports` as `module.exports.default`, for future-proofing.
 module.exports.default = Object.assign({}, module.exports);
+import * as protos from '../protos/protos';
+export {protos};
