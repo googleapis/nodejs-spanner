@@ -279,9 +279,9 @@ const GetInstanceConfigRequest = {
  *   `projects/<project>/instances/<instance>`.
  *
  * @property {Object} fieldMask
- *   If field_mask is present, specifies the subset of [][google.spanner.admin.instance.v1.Instance] fields that
+ *   If field_mask is present, specifies the subset of Instance fields that
  *   should be returned.
- *   If absent, all [][google.spanner.admin.instance.v1.Instance] fields are returned.
+ *   If absent, all Instance fields are returned.
  *
  *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
  *
@@ -390,14 +390,14 @@ const ListInstancesResponse = {
  *
  * @property {Object} instance
  *   Required. The instance to update, which must always include the instance
- *   name.  Otherwise, only fields mentioned in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be included.
+ *   name.  Otherwise, only fields mentioned in field_mask need be included.
  *
  *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
  *
  * @property {Object} fieldMask
- *   Required. A mask specifying which fields in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should be updated.
+ *   Required. A mask specifying which fields in Instance should be updated.
  *   The field mask must always be specified; this prevents any future fields in
- *   [][google.spanner.admin.instance.v1.Instance] from being erased accidentally by clients that do not know
+ *   Instance from being erased accidentally by clients that do not know
  *   about them.
  *
  *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}

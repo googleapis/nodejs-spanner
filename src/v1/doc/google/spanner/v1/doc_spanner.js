@@ -35,8 +35,7 @@ const CreateSessionRequest = {
 };
 
 /**
- * The request for
- * BatchCreateSessions.
+ * The request for BatchCreateSessions.
  *
  * @property {string} database
  *   Required. The database in which the new sessions are created.
@@ -51,8 +50,7 @@ const CreateSessionRequest = {
  *   The API may return fewer than the requested number of sessions. If a
  *   specific number of sessions are desired, the client can make additional
  *   calls to BatchCreateSessions (adjusting
- *   session_count
- *   as necessary).
+ *   session_count as necessary).
  *
  * @typedef BatchCreateSessionsRequest
  * @memberof google.spanner.v1
@@ -63,8 +61,7 @@ const BatchCreateSessionsRequest = {
 };
 
 /**
- * The response for
- * BatchCreateSessions.
+ * The response for BatchCreateSessions.
  *
  * @property {Object[]} session
  *   The freshly created sessions.
@@ -142,8 +139,7 @@ const GetSessionRequest = {
  *
  * @property {string} pageToken
  *   If non-empty, `page_token` should contain a
- *   next_page_token
- *   from a previous
+ *   next_page_token from a previous
  *   ListSessionsResponse.
  *
  * @property {string} filter
@@ -176,8 +172,8 @@ const ListSessionsRequest = {
  *
  * @property {string} nextPageToken
  *   `next_page_token` can be sent in a subsequent
- *   ListSessions call to fetch more
- *   of the matching sessions.
+ *   ListSessions call to fetch more of the matching
+ *   sessions.
  *
  * @typedef ListSessionsResponse
  * @memberof google.spanner.v1
@@ -244,8 +240,7 @@ const DeleteSessionRequest = {
  * @property {Object.<string, Object>} paramTypes
  *   It is not always possible for Cloud Spanner to infer the right SQL type
  *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in
- *   params as JSON strings.
+ *   of type `STRING` both appear in params as JSON strings.
  *
  *   In these cases, `param_types` can be used to specify the exact
  *   SQL type for some or all of the SQL statement parameters. See the
@@ -255,18 +250,15 @@ const DeleteSessionRequest = {
  * @property {Buffer} resumeToken
  *   If this request is resuming a previously interrupted SQL statement
  *   execution, `resume_token` should be copied from the last
- *   PartialResultSet yielded before the
- *   interruption. Doing this enables the new SQL statement execution to resume
- *   where the last one left off. The rest of the request parameters must
- *   exactly match the request that yielded this token.
+ *   PartialResultSet yielded before the interruption. Doing this
+ *   enables the new SQL statement execution to resume where the last one left
+ *   off. The rest of the request parameters must exactly match the
+ *   request that yielded this token.
  *
  * @property {number} queryMode
  *   Used to control the amount of debugging information returned in
- *   ResultSetStats. If
- *   partition_token is
- *   set, query_mode can only
- *   be set to
- *   QueryMode.NORMAL.
+ *   ResultSetStats. If partition_token is set, query_mode can only
+ *   be set to QueryMode.NORMAL.
  *
  *   The number should be among the values of [QueryMode]{@link google.spanner.v1.QueryMode}
  *
@@ -288,12 +280,46 @@ const DeleteSessionRequest = {
  *
  *   Required for DML statements. Ignored for queries.
  *
+ * @property {Object} queryOptions
+ *   Query optimizer configuration to use for the given query.
+ *
+ *   This object should have the same structure as [QueryOptions]{@link google.spanner.v1.QueryOptions}
+ *
  * @typedef ExecuteSqlRequest
  * @memberof google.spanner.v1
  * @see [google.spanner.v1.ExecuteSqlRequest definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
  */
 const ExecuteSqlRequest = {
   // This is for documentation. Actual contents will be loaded by gRPC.
+
+  /**
+   * Query optimizer configuration.
+   *
+   * @property {string} optimizerVersion
+   *   An option to control the selection of optimizer version.
+   *
+   *   This parameter allows individual queries to pick different query
+   *   optimizer versions.
+   *
+   *   Specifying "latest" as a value instructs Cloud Spanner to use the
+   *   latest supported query optimizer version. If not specified, Cloud Spanner
+   *   uses optimizer version set at the database level options. Any other
+   *   positive integer (from the list of supported optimizer versions)
+   *   overrides the default optimizer version for query execution.
+   *   The list of supported optimizer versions can be queried from
+   *   SPANNER_SYS.SUPPORTED_OPTIMIZER_VERSIONS. Executing a SQL statement
+   *   with an invalid optimizer version will fail with a syntax error
+   *   (`INVALID_ARGUMENT`) status.
+   *
+   *   The `optimizer_version` statement hint has precedence over this setting.
+   *
+   * @typedef QueryOptions
+   * @memberof google.spanner.v1
+   * @see [google.spanner.v1.ExecuteSqlRequest.QueryOptions definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto}
+   */
+  QueryOptions: {
+    // This is for documentation. Actual contents will be loaded by gRPC.
+  },
 
   /**
    * Mode in which the statement must be processed.
@@ -338,19 +364,19 @@ const ExecuteSqlRequest = {
  *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
  *
  * @property {Object[]} statements
- *   Required. The list of statements to execute in this batch. Statements are
- *   executed serially, such that the effects of statement `i` are visible to
- *   statement `i+1`. Each statement must be a DML statement. Execution stops at
- *   the first failed statement; the remaining statements are not executed.
+ *   Required. The list of statements to execute in this batch. Statements are executed
+ *   serially, such that the effects of statement `i` are visible to statement
+ *   `i+1`. Each statement must be a DML statement. Execution stops at the
+ *   first failed statement; the remaining statements are not executed.
  *
  *   Callers must provide at least one statement.
  *
  *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
  *
  * @property {number} seqno
- *   Required. A per-transaction sequence number used to identify this request.
- *   This field makes each request idempotent such that if the request is
- *   received multiple times, at most one will succeed.
+ *   Required. A per-transaction sequence number used to identify this request. This field
+ *   makes each request idempotent such that if the request is received multiple
+ *   times, at most one will succeed.
  *
  *   The sequence number must be monotonically increasing within the
  *   transaction. If a request arrives for the first time with an out-of-order
@@ -389,9 +415,7 @@ const ExecuteBatchDmlRequest = {
    * @property {Object.<string, Object>} paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in
-   *   params as
-   *   JSON strings.
+   *   of type `STRING` both appear in params as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -408,48 +432,39 @@ const ExecuteBatchDmlRequest = {
 };
 
 /**
- * The response for
- * ExecuteBatchDml. Contains a list
- * of ResultSet messages, one for each DML
- * statement that has successfully executed, in the same order as the statements
- * in the request. If a statement fails, the status in the response body
- * identifies the cause of the failure.
+ * The response for ExecuteBatchDml. Contains a list
+ * of ResultSet messages, one for each DML statement that has successfully
+ * executed, in the same order as the statements in the request. If a statement
+ * fails, the status in the response body identifies the cause of the failure.
  *
  * To check for DML statements that failed, use the following approach:
  *
- * 1. Check the status in the response message. The
- * google.rpc.Code enum
+ * 1. Check the status in the response message. The google.rpc.Code enum
  *    value `OK` indicates that all statements were executed successfully.
  * 2. If the status was not `OK`, check the number of result sets in the
- *    response. If the response contains `N`
- *    ResultSet messages, then statement `N+1` in
- *    the request failed.
+ *    response. If the response contains `N` ResultSet messages, then
+ *    statement `N+1` in the request failed.
  *
  * Example 1:
  *
  * * Request: 5 DML statements, all executed successfully.
- * * Response: 5 ResultSet messages, with the
- * status `OK`.
+ * * Response: 5 ResultSet messages, with the status `OK`.
  *
  * Example 2:
  *
  * * Request: 5 DML statements. The third statement has a syntax error.
- * * Response: 2 ResultSet messages, and a syntax
- * error (`INVALID_ARGUMENT`)
- *   status. The number of ResultSet messages
- *   indicates that the third statement failed, and the fourth and fifth
- *   statements were not executed.
+ * * Response: 2 ResultSet messages, and a syntax error (`INVALID_ARGUMENT`)
+ *   status. The number of ResultSet messages indicates that the third
+ *   statement failed, and the fourth and fifth statements were not executed.
  *
  * @property {Object[]} resultSets
- *   One ResultSet for each statement in the
- *   request that ran successfully, in the same order as the statements in the
- *   request. Each ResultSet does not contain any
- *   rows. The ResultSetStats in each
- *   ResultSet contain the number of rows
- *   modified by the statement.
+ *   One ResultSet for each statement in the request that ran successfully,
+ *   in the same order as the statements in the request. Each ResultSet does
+ *   not contain any rows. The ResultSetStats in each ResultSet contain
+ *   the number of rows modified by the statement.
  *
- *   Only the first ResultSet in the response
- *   contains valid ResultSetMetadata.
+ *   Only the first ResultSet in the response contains valid
+ *   ResultSetMetadata.
  *
  *   This object should have the same structure as [ResultSet]{@link google.spanner.v1.ResultSet}
  *
@@ -510,16 +525,15 @@ const PartitionOptions = {
  *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
  *
  * @property {string} sql
- *   Required. The query request to generate partitions for. The request will
- *   fail if the query is not root partitionable. The query plan of a root
+ *   Required. The query request to generate partitions for. The request will fail if
+ *   the query is not root partitionable. The query plan of a root
  *   partitionable query has a single distributed union operator. A distributed
  *   union operator conceptually divides one or more tables into multiple
  *   splits, remotely evaluates a subquery independently on each split, and
  *   then unions all results.
  *
  *   This must not contain DML commands, such as INSERT, UPDATE, or
- *   DELETE. Use
- *   ExecuteStreamingSql with a
+ *   DELETE. Use ExecuteStreamingSql with a
  *   PartitionedDml transaction for large, partition-friendly DML operations.
  *
  * @property {Object} params
@@ -541,8 +555,7 @@ const PartitionOptions = {
  * @property {Object.<string, Object>} paramTypes
  *   It is not always possible for Cloud Spanner to infer the right SQL type
  *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in
- *   params as JSON strings.
+ *   of type `STRING` both appear in params as JSON strings.
  *
  *   In these cases, `param_types` can be used to specify the exact
  *   SQL type for some or all of the SQL query parameters. See the
@@ -578,24 +591,18 @@ const PartitionQueryRequest = {
  *   Required. The name of the table in the database to be read.
  *
  * @property {string} index
- *   If non-empty, the name of an index on
- *   table. This index is used
- *   instead of the table primary key when interpreting
- *   key_set and sorting
- *   result rows. See key_set
- *   for further information.
+ *   If non-empty, the name of an index on table. This index is
+ *   used instead of the table primary key when interpreting key_set
+ *   and sorting result rows. See key_set for further information.
  *
  * @property {string[]} columns
- *   The columns of table to be
- *   returned for each row matching this request.
+ *   The columns of table to be returned for each row matching
+ *   this request.
  *
  * @property {Object} keySet
  *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in
- *   table to be yielded, unless
- *   index is present. If
- *   index is present, then
- *   key_set instead names
+ *   primary keys of the rows in table to be yielded, unless index
+ *   is present. If index is present, then key_set instead names
  *   index keys in index.
  *
  *   It is not an error for the `key_set` to name rows that do not
@@ -672,31 +679,24 @@ const PartitionResponse = {
  *   Required. The name of the table in the database to be read.
  *
  * @property {string} index
- *   If non-empty, the name of an index on
- *   table. This index is used instead of
- *   the table primary key when interpreting
- *   key_set and sorting result rows.
- *   See key_set for further
- *   information.
+ *   If non-empty, the name of an index on table. This index is
+ *   used instead of the table primary key when interpreting key_set
+ *   and sorting result rows. See key_set for further information.
  *
  * @property {string[]} columns
- *   Required. The columns of table to be
- *   returned for each row matching this request.
+ *   Required. The columns of table to be returned for each row matching
+ *   this request.
  *
  * @property {Object} keySet
  *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in table to
- *   be yielded, unless index is present.
- *   If index is present, then
- *   key_set instead names index keys
- *   in index.
+ *   primary keys of the rows in table to be yielded, unless index
+ *   is present. If index is present, then key_set instead names
+ *   index keys in index.
  *
- *   If the partition_token
- *   field is empty, rows are yielded in table primary key order (if
- *   index is empty) or index key order
- *   (if index is non-empty).  If the
- *   partition_token field is
- *   not empty, rows will be yielded in an unspecified order.
+ *   If the partition_token field is empty, rows are yielded
+ *   in table primary key order (if index is empty) or index key order
+ *   (if index is non-empty).  If the partition_token field is not
+ *   empty, rows will be yielded in an unspecified order.
  *
  *   It is not an error for the `key_set` to name rows that do not
  *   exist in the database. Read yields nothing for nonexistent rows.
@@ -711,9 +711,9 @@ const PartitionResponse = {
  * @property {Buffer} resumeToken
  *   If this request is resuming a previously interrupted read,
  *   `resume_token` should be copied from the last
- *   PartialResultSet yielded before the
- *   interruption. Doing this enables the new read to resume where the last read
- *   left off. The rest of the request parameters must exactly match the request
+ *   PartialResultSet yielded before the interruption. Doing this
+ *   enables the new read to resume where the last read left off. The
+ *   rest of the request parameters must exactly match the request
  *   that yielded this token.
  *
  * @property {Buffer} partitionToken
@@ -731,8 +731,7 @@ const ReadRequest = {
 };
 
 /**
- * The request for
- * BeginTransaction.
+ * The request for BeginTransaction.
  *
  * @property {string} session
  *   Required. The session in which the transaction runs.
