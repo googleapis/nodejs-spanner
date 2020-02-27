@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.2...v4.7.0) (2020-02-27)
+
+
+### Features
+
+* export protos in src/index.ts ([0fa0f93](https://www.github.com/googleapis/nodejs-spanner/commit/0fa0f933ac9655278a4684bfa9e07cc912442fbf))
+
 ### [4.6.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.1...v4.6.2) (2020-02-14)
 
 
