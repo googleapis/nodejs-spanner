@@ -9197,6 +9197,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest seqno */
                 seqno?: (number|Long|string|null);
+
+                /** ExecuteSqlRequest queryOptions */
+                queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -9234,6 +9237,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest seqno. */
                 public seqno: (number|Long|string);
+
+                /** ExecuteSqlRequest queryOptions. */
+                public queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -9307,6 +9313,96 @@ export namespace google {
             }
 
             namespace ExecuteSqlRequest {
+
+                /** Properties of a QueryOptions. */
+                interface IQueryOptions {
+
+                    /** QueryOptions optimizerVersion */
+                    optimizerVersion?: (string|null);
+                }
+
+                /** Represents a QueryOptions. */
+                class QueryOptions implements IQueryOptions {
+
+                    /**
+                     * Constructs a new QueryOptions.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions);
+
+                    /** QueryOptions optimizerVersion. */
+                    public optimizerVersion: string;
+
+                    /**
+                     * Creates a new QueryOptions instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns QueryOptions instance
+                     */
+                    public static create(properties?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Encodes the specified QueryOptions message. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                     * @param message QueryOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ExecuteSqlRequest.IQueryOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryOptions message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                     * @param message QueryOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ExecuteSqlRequest.IQueryOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryOptions message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Decodes a QueryOptions message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Verifies a QueryOptions message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryOptions message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryOptions
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Creates a plain object from a QueryOptions message. Also converts values to other types if specified.
+                     * @param message QueryOptions
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ExecuteSqlRequest.QueryOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryOptions to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
 
                 /** QueryMode enum. */
                 enum QueryMode {
