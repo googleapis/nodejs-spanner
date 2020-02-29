@@ -2201,9 +2201,21 @@
                     "seqno": {
                       "type": "int64",
                       "id": 9
+                    },
+                    "queryOptions": {
+                      "type": "QueryOptions",
+                      "id": 10
                     }
                   },
                   "nested": {
+                    "QueryOptions": {
+                      "fields": {
+                        "optimizerVersion": {
+                          "type": "string",
+                          "id": 1
+                        }
+                      }
+                    },
                     "QueryMode": {
                       "values": {
                         "NORMAL": 0,

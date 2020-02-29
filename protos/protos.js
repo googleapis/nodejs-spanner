@@ -22186,6 +22186,7 @@
                      * @property {google.spanner.v1.ExecuteSqlRequest.QueryMode|null} [queryMode] ExecuteSqlRequest queryMode
                      * @property {Uint8Array|null} [partitionToken] ExecuteSqlRequest partitionToken
                      * @property {number|Long|null} [seqno] ExecuteSqlRequest seqno
+                     * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null} [queryOptions] ExecuteSqlRequest queryOptions
                      */
     
                     /**
@@ -22277,6 +22278,14 @@
                     ExecuteSqlRequest.prototype.seqno = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
     
                     /**
+                     * ExecuteSqlRequest queryOptions.
+                     * @member {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null|undefined} queryOptions
+                     * @memberof google.spanner.v1.ExecuteSqlRequest
+                     * @instance
+                     */
+                    ExecuteSqlRequest.prototype.queryOptions = null;
+    
+                    /**
                      * Creates a new ExecuteSqlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -22321,6 +22330,8 @@
                             writer.uint32(/* id 8, wireType 2 =*/66).bytes(message.partitionToken);
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
                             writer.uint32(/* id 9, wireType 0 =*/72).int64(message.seqno);
+                        if (message.queryOptions != null && message.hasOwnProperty("queryOptions"))
+                            $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.encode(message.queryOptions, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                         return writer;
                     };
     
@@ -22386,6 +22397,9 @@
                                 break;
                             case 9:
                                 message.seqno = reader.int64();
+                                break;
+                            case 10:
+                                message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -22466,6 +22480,11 @@
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
                             if (!$util.isInteger(message.seqno) && !(message.seqno && $util.isInteger(message.seqno.low) && $util.isInteger(message.seqno.high)))
                                 return "seqno: integer|Long expected";
+                        if (message.queryOptions != null && message.hasOwnProperty("queryOptions")) {
+                            var error = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify(message.queryOptions);
+                            if (error)
+                                return "queryOptions." + error;
+                        }
                         return null;
                     };
     
@@ -22538,6 +22557,11 @@
                                 message.seqno = object.seqno;
                             else if (typeof object.seqno === "object")
                                 message.seqno = new $util.LongBits(object.seqno.low >>> 0, object.seqno.high >>> 0).toNumber();
+                        if (object.queryOptions != null) {
+                            if (typeof object.queryOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ExecuteSqlRequest.queryOptions: object expected");
+                            message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.fromObject(object.queryOptions);
+                        }
                         return message;
                     };
     
@@ -22581,6 +22605,7 @@
                                 object.seqno = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
+                            object.queryOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -22607,6 +22632,8 @@
                                 object.seqno = options.longs === String ? String(message.seqno) : message.seqno;
                             else
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
+                        if (message.queryOptions != null && message.hasOwnProperty("queryOptions"))
+                            object.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.toObject(message.queryOptions, options);
                         return object;
                     };
     
@@ -22620,6 +22647,193 @@
                     ExecuteSqlRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
+    
+                    ExecuteSqlRequest.QueryOptions = (function() {
+    
+                        /**
+                         * Properties of a QueryOptions.
+                         * @memberof google.spanner.v1.ExecuteSqlRequest
+                         * @interface IQueryOptions
+                         * @property {string|null} [optimizerVersion] QueryOptions optimizerVersion
+                         */
+    
+                        /**
+                         * Constructs a new QueryOptions.
+                         * @memberof google.spanner.v1.ExecuteSqlRequest
+                         * @classdesc Represents a QueryOptions.
+                         * @implements IQueryOptions
+                         * @constructor
+                         * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions=} [properties] Properties to set
+                         */
+                        function QueryOptions(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * QueryOptions optimizerVersion.
+                         * @member {string} optimizerVersion
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @instance
+                         */
+                        QueryOptions.prototype.optimizerVersion = "";
+    
+                        /**
+                         * Creates a new QueryOptions instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions=} [properties] Properties to set
+                         * @returns {google.spanner.v1.ExecuteSqlRequest.QueryOptions} QueryOptions instance
+                         */
+                        QueryOptions.create = function create(properties) {
+                            return new QueryOptions(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified QueryOptions message. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} message QueryOptions message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        QueryOptions.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.optimizerVersion != null && message.hasOwnProperty("optimizerVersion"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.optimizerVersion);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified QueryOptions message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} message QueryOptions message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        QueryOptions.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a QueryOptions message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.ExecuteSqlRequest.QueryOptions} QueryOptions
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        QueryOptions.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.optimizerVersion = reader.string();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a QueryOptions message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.ExecuteSqlRequest.QueryOptions} QueryOptions
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        QueryOptions.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a QueryOptions message.
+                         * @function verify
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        QueryOptions.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.optimizerVersion != null && message.hasOwnProperty("optimizerVersion"))
+                                if (!$util.isString(message.optimizerVersion))
+                                    return "optimizerVersion: string expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a QueryOptions message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.ExecuteSqlRequest.QueryOptions} QueryOptions
+                         */
+                        QueryOptions.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions)
+                                return object;
+                            var message = new $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions();
+                            if (object.optimizerVersion != null)
+                                message.optimizerVersion = String(object.optimizerVersion);
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a QueryOptions message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} message QueryOptions
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        QueryOptions.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults)
+                                object.optimizerVersion = "";
+                            if (message.optimizerVersion != null && message.hasOwnProperty("optimizerVersion"))
+                                object.optimizerVersion = message.optimizerVersion;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this QueryOptions to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        QueryOptions.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return QueryOptions;
+                    })();
     
                     /**
                      * QueryMode enum.
