@@ -36,6 +36,7 @@ import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google as spannerClient} from '../proto/spanner';
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -340,6 +341,10 @@ class Instance extends common.GrpcServiceObject {
    * @param {string} name The name of the instance.
    * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
    *     configuration options.
+   * @param {spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
+   *     Default query options to use with the database. These options will be
+   *     overridden by any query options set in environment variables or that
+   *     are specified on a per-query basis.
    * @return {Database} A Database object.
    *
    * @example
@@ -351,19 +356,28 @@ class Instance extends common.GrpcServiceObject {
    */
   database(
     name: string,
-    poolOptions?: SessionPoolOptions | SessionPoolConstructor
+    poolOptions?: SessionPoolOptions | SessionPoolConstructor,
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ): Database {
     if (!name) {
       throw new Error('A name is required to access a Database object.');
     }
-    // Only add an additional key for SessionPoolOptions if an options object with at least one value was passed in.
-    const optionsKey =
+    // Only add an additional key for SessionPoolOptions and QueryOptions if an
+    // options object with at least one value was passed in.
+    let optionsKey =
       poolOptions && Object.keys(poolOptions).length > 0
         ? '/' + JSON.stringify(Object.entries(poolOptions).sort())
         : '';
+    if (queryOptions && Object.keys(queryOptions).length > 0) {
+      optionsKey =
+        optionsKey + '/' + JSON.stringify(Object.entries(queryOptions!).sort());
+    }
     const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
-      this.databases_.set(key!, new Database(this, name, poolOptions));
+      this.databases_.set(
+        key!,
+        new Database(this, name, poolOptions, queryOptions)
+      );
     }
     return this.databases_.get(key!)!;
   }

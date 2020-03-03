@@ -70,6 +70,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryMode?: s.QueryMode;
   partitionToken?: Uint8Array | string;
   seqno?: number;
+  queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 }
 
 export interface KeyRange {
@@ -198,6 +199,7 @@ export class Snapshot extends EventEmitter {
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
+  queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
   /**
    * The transaction ID.
@@ -239,12 +241,19 @@ export class Snapshot extends EventEmitter {
    *
    * @param {Session} session The parent Session object.
    * @param {TimestampBounds} [options] Snapshot timestamp bounds.
+   * @param {QueryOptions} [queryOptions] Default query options to use when none
+   *        are specified for a query.
    */
-  constructor(session: Session, options?: TimestampBounds) {
+  constructor(
+    session: Session,
+    options?: TimestampBounds,
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+  ) {
     super();
 
     this.ended = false;
     this.session = session;
+    this.queryOptions = Object.assign({}, queryOptions);
     this.request = session.request.bind(session);
     this.requestStream = session.requestStream.bind(session);
 
@@ -864,6 +873,10 @@ export class Snapshot extends EventEmitter {
     }
 
     query = Object.assign({}, query) as ExecuteSqlRequest;
+    query.queryOptions = Object.assign(
+      Object.assign({}, this.queryOptions),
+      query.queryOptions
+    );
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);

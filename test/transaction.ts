@@ -511,6 +511,7 @@ describe('Transaction', () => {
           params: {a: 'b'},
           types: {a: 'string'},
           seqno: 1,
+          queryOptions: {},
         });
 
         const expectedRequest = {
@@ -520,6 +521,7 @@ describe('Transaction', () => {
           params: fakeParams,
           paramTypes: fakeParamTypes,
           seqno: 1,
+          queryOptions: {},
           resumeToken: undefined,
         };
 

@@ -201,6 +201,7 @@ declare namespace SpannerClient {
     queryMode?: QueryMode;
     partitionToken?: Uint8Array | string;
     seqno?: number;
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   }
 
   interface ExecuteSqlCallback {
