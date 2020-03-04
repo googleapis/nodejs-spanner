@@ -23,6 +23,7 @@ import {Session} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
+import {Database} from './database';
 
 const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
@@ -182,7 +183,9 @@ export abstract class Runner<T> {
       return transaction;
     }
 
-    const transaction = this.session.transaction();
+    const transaction = this.session.transaction(
+      (this.session.parent as Database).queryOptions_
+    );
     await transaction.begin();
     return transaction;
   }

@@ -40,6 +40,7 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import * as grpc from 'grpc';
 import {Database} from './database';
+import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -254,8 +255,7 @@ export class Snapshot extends EventEmitter {
 
     this.ended = false;
     this.session = session;
-    const parentQueryOptions = Object.assign({}, (this.session.parent as Database).queryOptions_);
-    this.queryOptions = Object.assign({}, Object.assign(parentQueryOptions, queryOptions));
+    this.queryOptions = Object.assign({}, queryOptions);
     this.request = session.request.bind(session);
     this.requestStream = session.requestStream.bind(session);
 
@@ -1200,8 +1200,12 @@ export class Transaction extends Dml {
    *   }
    * });
    */
-  constructor(session: Session, options = {} as s.ReadWrite) {
-    super(session);
+  constructor(
+    session: Session,
+    options = {} as s.ReadWrite,
+    queryOptions?: IQueryOptions
+  ) {
+    super(session, undefined, queryOptions);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};

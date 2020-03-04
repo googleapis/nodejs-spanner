@@ -47,6 +47,7 @@ describe('TransactionRunner', () => {
   const FROM_JSON = sandbox.stub().returns({lookup: LOOKUP});
 
   const SESSION = {
+    parent: {},
     transaction: () => fakeTransaction,
   };
 

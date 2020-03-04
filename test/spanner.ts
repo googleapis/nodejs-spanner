@@ -530,9 +530,7 @@ describe('Spanner with mock server', () => {
 
   describe('queryOptions', () => {
     /** Common verify method for QueryOptions tests. */
-    function verifyQueryOptions(
-      optimizerVersion: string,
-    ) {
+    function verifyQueryOptions(optimizerVersion: string) {
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteSqlRequest).sql;
       }) as v1.ExecuteSqlRequest;
@@ -629,7 +627,11 @@ describe('Spanner with mock server', () => {
         options?: SessionPoolOptions,
         queryOptions?: IQueryOptions
       ): Database {
-        return instanceWithEnvVar.database(`database-${dbCounter++}`, options, queryOptions);
+        return instanceWithEnvVar.database(
+          `database-${dbCounter++}`,
+          options,
+          queryOptions
+        );
       }
 
       before(() => {
