@@ -26,7 +26,6 @@ import ExecuteBatchDmlResponse = google.spanner.v1.ExecuteBatchDmlResponse;
 import ResultSet = google.spanner.v1.ResultSet;
 import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
-import {RequestType} from 'google-gax/build/src/apitypes';
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';

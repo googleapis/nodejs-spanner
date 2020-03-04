@@ -1894,7 +1894,6 @@ class Database extends GrpcServiceObject {
         return;
       }
 
-      transaction!.queryOptions = this.queryOptions_;
       const release = this.pool_.release.bind(this.pool_, session!);
       const runner = new TransactionRunner(
         session!,

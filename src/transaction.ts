@@ -72,7 +72,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryMode?: s.QueryMode;
   partitionToken?: Uint8Array | string;
   seqno?: number;
-  queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+  queryOptions?: IQueryOptions;
 }
 
 export interface KeyRange {
@@ -201,7 +201,7 @@ export class Snapshot extends EventEmitter {
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
-  queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+  queryOptions?: IQueryOptions;
 
   /**
    * The transaction ID.
@@ -249,7 +249,7 @@ export class Snapshot extends EventEmitter {
   constructor(
     session: Session,
     options?: TimestampBounds,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: IQueryOptions
   ) {
     super();
 
