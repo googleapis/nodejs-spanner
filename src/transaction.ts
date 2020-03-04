@@ -39,6 +39,7 @@ import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import * as grpc from 'grpc';
+import {Database} from './database';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -253,7 +254,8 @@ export class Snapshot extends EventEmitter {
 
     this.ended = false;
     this.session = session;
-    this.queryOptions = Object.assign({}, queryOptions);
+    const parentQueryOptions = Object.assign({}, (this.session.parent as Database).queryOptions_);
+    this.queryOptions = Object.assign({}, Object.assign(parentQueryOptions, queryOptions));
     this.request = session.request.bind(session);
     this.requestStream = session.requestStream.bind(session);
 

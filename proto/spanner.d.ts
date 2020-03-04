@@ -1146,16 +1146,19 @@ export namespace google {
                 paramTypes?: ({ [k: string]: google.spanner.v1.IType }|null);
 
                 /** ExecuteSqlRequest resumeToken */
-                resumeToken?: (Uint8Array|null);
+                resumeToken?: (Uint8Array|string|null);
 
                 /** ExecuteSqlRequest queryMode */
-                queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
+                queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
 
                 /** ExecuteSqlRequest partitionToken */
-                partitionToken?: (Uint8Array|null);
+                partitionToken?: (Uint8Array|string|null);
 
                 /** ExecuteSqlRequest seqno */
-                seqno?: (number|Long|null);
+                seqno?: (number|Long|string|null);
+
+                /** ExecuteSqlRequest queryOptions */
+                queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -1183,16 +1186,19 @@ export namespace google {
                 public paramTypes: { [k: string]: google.spanner.v1.IType };
 
                 /** ExecuteSqlRequest resumeToken. */
-                public resumeToken: Uint8Array;
+                public resumeToken: (Uint8Array|string);
 
                 /** ExecuteSqlRequest queryMode. */
-                public queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode;
+                public queryMode: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode);
 
                 /** ExecuteSqlRequest partitionToken. */
-                public partitionToken: Uint8Array;
+                public partitionToken: (Uint8Array|string);
 
                 /** ExecuteSqlRequest seqno. */
-                public seqno: (number|Long);
+                public seqno: (number|Long|string);
+
+                /** ExecuteSqlRequest queryOptions. */
+                public queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -1267,6 +1273,96 @@ export namespace google {
 
             namespace ExecuteSqlRequest {
 
+                /** Properties of a QueryOptions. */
+                interface IQueryOptions {
+
+                    /** QueryOptions optimizerVersion */
+                    optimizerVersion?: (string|null);
+                }
+
+                /** Represents a QueryOptions. */
+                class QueryOptions implements IQueryOptions {
+
+                    /**
+                     * Constructs a new QueryOptions.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions);
+
+                    /** QueryOptions optimizerVersion. */
+                    public optimizerVersion: string;
+
+                    /**
+                     * Creates a new QueryOptions instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns QueryOptions instance
+                     */
+                    public static create(properties?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Encodes the specified QueryOptions message. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                     * @param message QueryOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ExecuteSqlRequest.IQueryOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryOptions message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                     * @param message QueryOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ExecuteSqlRequest.IQueryOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryOptions message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Decodes a QueryOptions message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Verifies a QueryOptions message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryOptions message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryOptions
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Creates a plain object from a QueryOptions message. Also converts values to other types if specified.
+                     * @param message QueryOptions
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ExecuteSqlRequest.QueryOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryOptions to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
                 /** QueryMode enum. */
                 enum QueryMode {
                     NORMAL = 0,
@@ -1288,7 +1384,7 @@ export namespace google {
                 statements?: (google.spanner.v1.ExecuteBatchDmlRequest.IStatement[]|null);
 
                 /** ExecuteBatchDmlRequest seqno */
-                seqno?: (number|Long|null);
+                seqno?: (number|Long|string|null);
             }
 
             /** Represents an ExecuteBatchDmlRequest. */
@@ -1310,7 +1406,7 @@ export namespace google {
                 public statements: google.spanner.v1.ExecuteBatchDmlRequest.IStatement[];
 
                 /** ExecuteBatchDmlRequest seqno. */
-                public seqno: (number|Long);
+                public seqno: (number|Long|string);
 
                 /**
                  * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
@@ -1588,10 +1684,10 @@ export namespace google {
             interface IPartitionOptions {
 
                 /** PartitionOptions partitionSizeBytes */
-                partitionSizeBytes?: (number|Long|null);
+                partitionSizeBytes?: (number|Long|string|null);
 
                 /** PartitionOptions maxPartitions */
-                maxPartitions?: (number|Long|null);
+                maxPartitions?: (number|Long|string|null);
             }
 
             /** Represents a PartitionOptions. */
@@ -1604,10 +1700,10 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartitionOptions);
 
                 /** PartitionOptions partitionSizeBytes. */
-                public partitionSizeBytes: (number|Long);
+                public partitionSizeBytes: (number|Long|string);
 
                 /** PartitionOptions maxPartitions. */
-                public maxPartitions: (number|Long);
+                public maxPartitions: (number|Long|string);
 
                 /**
                  * Creates a new PartitionOptions instance using the specified properties.
@@ -1930,7 +2026,7 @@ export namespace google {
             interface IPartition {
 
                 /** Partition partitionToken */
-                partitionToken?: (Uint8Array|null);
+                partitionToken?: (Uint8Array|string|null);
             }
 
             /** Represents a Partition. */
@@ -1943,7 +2039,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartition);
 
                 /** Partition partitionToken. */
-                public partitionToken: Uint8Array;
+                public partitionToken: (Uint8Array|string);
 
                 /**
                  * Creates a new Partition instance using the specified properties.
@@ -2134,13 +2230,13 @@ export namespace google {
                 keySet?: (google.spanner.v1.IKeySet|null);
 
                 /** ReadRequest limit */
-                limit?: (number|Long|null);
+                limit?: (number|Long|string|null);
 
                 /** ReadRequest resumeToken */
-                resumeToken?: (Uint8Array|null);
+                resumeToken?: (Uint8Array|string|null);
 
                 /** ReadRequest partitionToken */
-                partitionToken?: (Uint8Array|null);
+                partitionToken?: (Uint8Array|string|null);
             }
 
             /** Represents a ReadRequest. */
@@ -2171,13 +2267,13 @@ export namespace google {
                 public keySet?: (google.spanner.v1.IKeySet|null);
 
                 /** ReadRequest limit. */
-                public limit: (number|Long);
+                public limit: (number|Long|string);
 
                 /** ReadRequest resumeToken. */
-                public resumeToken: Uint8Array;
+                public resumeToken: (Uint8Array|string);
 
                 /** ReadRequest partitionToken. */
-                public partitionToken: Uint8Array;
+                public partitionToken: (Uint8Array|string);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
@@ -2353,7 +2449,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** CommitRequest transactionId */
-                transactionId?: (Uint8Array|null);
+                transactionId?: (Uint8Array|string|null);
 
                 /** CommitRequest singleUseTransaction */
                 singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -2375,7 +2471,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId: Uint8Array;
+                public transactionId: (Uint8Array|string);
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -2554,7 +2650,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** RollbackRequest transactionId */
-                transactionId?: (Uint8Array|null);
+                transactionId?: (Uint8Array|string|null);
             }
 
             /** Represents a RollbackRequest. */
@@ -2570,7 +2666,7 @@ export namespace google {
                 public session: string;
 
                 /** RollbackRequest transactionId. */
-                public transactionId: Uint8Array;
+                public transactionId: (Uint8Array|string);
 
                 /**
                  * Creates a new RollbackRequest instance using the specified properties.
@@ -3292,7 +3388,7 @@ export namespace google {
                 chunkedValue?: (boolean|null);
 
                 /** PartialResultSet resumeToken */
-                resumeToken?: (Uint8Array|null);
+                resumeToken?: (Uint8Array|string|null);
 
                 /** PartialResultSet stats */
                 stats?: (google.spanner.v1.IResultSetStats|null);
@@ -3317,7 +3413,7 @@ export namespace google {
                 public chunkedValue: boolean;
 
                 /** PartialResultSet resumeToken. */
-                public resumeToken: Uint8Array;
+                public resumeToken: (Uint8Array|string);
 
                 /** PartialResultSet stats. */
                 public stats?: (google.spanner.v1.IResultSetStats|null);
@@ -3499,10 +3595,10 @@ export namespace google {
                 queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact */
-                rowCountExact?: (number|Long|null);
+                rowCountExact?: (number|Long|string|null);
 
                 /** ResultSetStats rowCountLowerBound */
-                rowCountLowerBound?: (number|Long|null);
+                rowCountLowerBound?: (number|Long|string|null);
             }
 
             /** Represents a ResultSetStats. */
@@ -3521,10 +3617,10 @@ export namespace google {
                 public queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact. */
-                public rowCountExact: (number|Long);
+                public rowCountExact: (number|Long|string);
 
                 /** ResultSetStats rowCountLowerBound. */
-                public rowCountLowerBound: (number|Long);
+                public rowCountLowerBound: (number|Long|string);
 
                 /** ResultSetStats rowCount. */
                 public rowCount?: ("rowCountExact"|"rowCountLowerBound");
@@ -3607,7 +3703,7 @@ export namespace google {
                 index?: (number|null);
 
                 /** PlanNode kind */
-                kind?: (google.spanner.v1.PlanNode.Kind|null);
+                kind?: (google.spanner.v1.PlanNode.Kind|keyof typeof google.spanner.v1.PlanNode.Kind|null);
 
                 /** PlanNode displayName */
                 displayName?: (string|null);
@@ -3638,7 +3734,7 @@ export namespace google {
                 public index: number;
 
                 /** PlanNode kind. */
-                public kind: google.spanner.v1.PlanNode.Kind;
+                public kind: (google.spanner.v1.PlanNode.Kind|keyof typeof google.spanner.v1.PlanNode.Kind);
 
                 /** PlanNode displayName. */
                 public displayName: string;
@@ -4427,7 +4523,7 @@ export namespace google {
             interface ITransaction {
 
                 /** Transaction id */
-                id?: (Uint8Array|null);
+                id?: (Uint8Array|string|null);
 
                 /** Transaction readTimestamp */
                 readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -4443,7 +4539,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.ITransaction);
 
                 /** Transaction id. */
-                public id: Uint8Array;
+                public id: (Uint8Array|string);
 
                 /** Transaction readTimestamp. */
                 public readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -4526,7 +4622,7 @@ export namespace google {
                 singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id */
-                id?: (Uint8Array|null);
+                id?: (Uint8Array|string|null);
 
                 /** TransactionSelector begin */
                 begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -4545,7 +4641,7 @@ export namespace google {
                 public singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id. */
-                public id: Uint8Array;
+                public id: (Uint8Array|string);
 
                 /** TransactionSelector begin. */
                 public begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -4624,11 +4720,25 @@ export namespace google {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** TypeCode enum. */
+            enum TypeCode {
+                TYPE_CODE_UNSPECIFIED = 0,
+                BOOL = 1,
+                INT64 = 2,
+                FLOAT64 = 3,
+                TIMESTAMP = 4,
+                DATE = 5,
+                STRING = 6,
+                BYTES = 7,
+                ARRAY = 8,
+                STRUCT = 9
+            }
+
             /** Properties of a Type. */
             interface IType {
 
                 /** Type code */
-                code?: (google.spanner.v1.TypeCode|null);
+                code?: (google.spanner.v1.TypeCode|keyof typeof google.spanner.v1.TypeCode|null);
 
                 /** Type arrayElementType */
                 arrayElementType?: (google.spanner.v1.IType|null);
@@ -4647,7 +4757,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IType);
 
                 /** Type code. */
-                public code: google.spanner.v1.TypeCode;
+                public code: (google.spanner.v1.TypeCode|keyof typeof google.spanner.v1.TypeCode);
 
                 /** Type arrayElementType. */
                 public arrayElementType?: (google.spanner.v1.IType|null);
@@ -4913,20 +5023,6 @@ export namespace google {
                      */
                     public toJSON(): { [k: string]: any };
                 }
-            }
-
-            /** TypeCode enum. */
-            enum TypeCode {
-                TYPE_CODE_UNSPECIFIED = 0,
-                BOOL = 1,
-                INT64 = 2,
-                FLOAT64 = 3,
-                TIMESTAMP = 4,
-                DATE = 5,
-                STRING = 6,
-                BYTES = 7,
-                ARRAY = 8,
-                STRUCT = 9
             }
         }
     }

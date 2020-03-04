@@ -290,10 +290,6 @@ class Database extends GrpcServiceObject {
     if (process.env.SPANNER_OPTIMIZER_VERSION) {
       options.optimizerVersion = process.env.SPANNER_OPTIMIZER_VERSION;
     }
-    if (process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE) {
-      options.optimizerStatisticsPackage =
-        process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE;
-    }
     return options;
   }
 

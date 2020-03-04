@@ -28,11 +28,13 @@ import {SpannerClient as s} from '../src/v1';
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
 
+  const PARENT = {};
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
 
   const SESSION = {
+    parent: PARENT,
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,

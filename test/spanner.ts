@@ -629,7 +629,7 @@ describe('Spanner with mock server', () => {
         options?: SessionPoolOptions,
         queryOptions?: IQueryOptions
       ): Database {
-        return instanceWithEnvVar.database(`database-${dbCounter++}`, options);
+        return instanceWithEnvVar.database(`database-${dbCounter++}`, options, queryOptions);
       }
 
       before(() => {
@@ -658,7 +658,7 @@ describe('Spanner with mock server', () => {
         }
       });
 
-      it('database-with-query-options database.run', async () => {
+      it('database.run with database-with-query-options', async () => {
         // The options that are given in the database options will not be used
         // as they are overridden by the environment variable.
         const database = newTestDatabase(undefined, {
@@ -716,7 +716,7 @@ describe('Spanner with mock server', () => {
         }
       });
 
-      it('database-with-query-options snapshot.run', async () => {
+      it('snapshot.run with database-with-query-options', async () => {
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
         });
@@ -759,7 +759,7 @@ describe('Spanner with mock server', () => {
         });
       });
 
-      it('database-with-query-options transaction.run', done => {
+      it('transaction.run with database-with-query-options', done => {
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
         });
@@ -804,7 +804,7 @@ describe('Spanner with mock server', () => {
         }
       });
 
-      it('database-with-query-options async transaction.run', async () => {
+      it('async transaction.run with database-with-query-options', async () => {
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
         });
