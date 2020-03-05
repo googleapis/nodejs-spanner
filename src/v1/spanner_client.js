@@ -17,6 +17,7 @@
 const gapicConfig = require('./spanner_client_config.json');
 const gax = require('google-gax');
 const path = require('path');
+const snapshot = require('../transaction').Snapshot;
 
 const VERSION = require('../../../package.json').version;
 
@@ -832,6 +833,9 @@ class SpannerClient {
       session: request.session,
     });
 
+    const {params, paramTypes} = snapshot.encodeParams(request);
+    request.params = params;
+    request.paramTypes = paramTypes;
     return this._innerApiCalls.executeSql(request, options, callback);
   }
 
