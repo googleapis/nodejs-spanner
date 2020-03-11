@@ -34,6 +34,9 @@ import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
 import {status} from 'grpc';
 
+const spannerModule = require('../src');
+const v1Client = new spannerModule.v1.SpannerClient();
+
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `gcloud-tests-${RUN_ID}`;
@@ -4396,6 +4399,87 @@ describe('Spanner', () => {
             });
           });
         }
+      });
+    });
+  });
+
+  describe('executeSql', () => {
+    const database = instance.database(generateName('database'));
+    const table = database.table('User');
+
+    before(() => {
+      return database
+        .create()
+        .then(onPromiseOperationComplete)
+        .then(() => {
+          return table.create(`
+            CREATE TABLE User (
+              UserId STRING(1024) NOT NULL,
+              Name STRING(1024),
+            ) PRIMARY KEY(UserId)`);
+        })
+        .then(onPromiseOperationComplete);
+    });
+
+    after(() => {
+      return table
+        .delete()
+        .then(onPromiseOperationComplete)
+        .then(() => {
+          return database.delete();
+        });
+    });
+
+    it('should filter data using `params` with v1 client', done => {
+      const id1 = generateName('id1');
+      const name1 = generateName('name');
+
+      const id2 = generateName('id2');
+      const name2 = generateName('name');
+      const rowsToInsert = [
+        {
+          UserId: id1,
+          Name: name1,
+        },
+        {
+          UserId: id2,
+          Name: name2,
+        },
+      ];
+
+      table.insert(rowsToInsert, err => {
+        assert.ifError(err);
+
+        v1Client.createSession(
+          {database: database.formattedName_},
+          (err, response) => {
+            assert.ifError(err);
+
+            const session = response.name;
+            const sql = `SELECT * FROM User where Name=@name`;
+            const request = {
+              session,
+              sql,
+              params: {
+                name: name2,
+              },
+            };
+
+            v1Client.executeSql(request, (err, ressponse) => {
+              assert.ifError(err);
+              assert.equal(ressponse.rows.length, 1);
+              assert.strictEqual(
+                ressponse.rows[0]!.values[0]!.stringValue,
+                id2
+              );
+              assert.strictEqual(
+                ressponse.rows[0]!.values[1]!.stringValue,
+                name2
+              );
+              done();
+            });
+          }
+        );
       });
     });
   });

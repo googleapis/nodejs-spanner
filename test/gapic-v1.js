@@ -761,6 +761,42 @@ describe('InstanceAdminClient', () => {
       });
     });
   });
+
+  describe('executeSql', () => {
+    it('shloud filter data using params', done => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const sql = 'SELECT * FROM User Where Name =@name';
+      const request = {
+        sql: sql,
+        params: {
+          name: 'Grace',
+        },
+      };
+
+      // Mock response
+      const expectedResponse = {
+        id: '1',
+        name: 'Grace',
+      };
+
+      // Mock Grpc layer
+      client._innerApiCalls.executeSql = mockSimpleGrpcMethod(
+        request,
+        expectedResponse
+      );
+
+      client.executeSql(request, (err, response) => {
+        assert.ifError(err);
+        assert.deepStrictEqual(response, expectedResponse);
+        done();
+      });
+    });
+  });
 });
 
 function mockSimpleGrpcMethod(expectedRequest, response, error) {
