@@ -13538,7 +13538,518 @@
                              * @variation 2
                              */
     
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createBackup}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef CreateBackupCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls CreateBackup.
+                             * @function createBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.ICreateBackupRequest} request CreateBackupRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.CreateBackupCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.createBackup = function createBackup(request, callback) {
+                                return this.rpcCall(createBackup, $root.google.spanner.admin.database.v1.CreateBackupRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "CreateBackup" });
+    
+                            /**
+                             * Calls CreateBackup.
+                             * @function createBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.ICreateBackupRequest} request CreateBackupRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getBackup}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef GetBackupCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.Backup} [response] Backup
+                             */
+    
+                            /**
+                             * Calls GetBackup.
+                             * @function getBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IGetBackupRequest} request GetBackupRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.GetBackupCallback} callback Node-style callback called with the error, if any, and Backup
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.getBackup = function getBackup(request, callback) {
+                                return this.rpcCall(getBackup, $root.google.spanner.admin.database.v1.GetBackupRequest, $root.google.spanner.admin.database.v1.Backup, request, callback);
+                            }, "name", { value: "GetBackup" });
+    
+                            /**
+                             * Calls GetBackup.
+                             * @function getBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IGetBackupRequest} request GetBackupRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.Backup>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateBackup}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef UpdateBackupCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.Backup} [response] Backup
+                             */
+    
+                            /**
+                             * Calls UpdateBackup.
+                             * @function updateBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IUpdateBackupRequest} request UpdateBackupRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackupCallback} callback Node-style callback called with the error, if any, and Backup
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.updateBackup = function updateBackup(request, callback) {
+                                return this.rpcCall(updateBackup, $root.google.spanner.admin.database.v1.UpdateBackupRequest, $root.google.spanner.admin.database.v1.Backup, request, callback);
+                            }, "name", { value: "UpdateBackup" });
+    
+                            /**
+                             * Calls UpdateBackup.
+                             * @function updateBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IUpdateBackupRequest} request UpdateBackupRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.Backup>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#deleteBackup}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef DeleteBackupCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.protobuf.Empty} [response] Empty
+                             */
+    
+                            /**
+                             * Calls DeleteBackup.
+                             * @function deleteBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IDeleteBackupRequest} request DeleteBackupRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.DeleteBackupCallback} callback Node-style callback called with the error, if any, and Empty
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.deleteBackup = function deleteBackup(request, callback) {
+                                return this.rpcCall(deleteBackup, $root.google.spanner.admin.database.v1.DeleteBackupRequest, $root.google.protobuf.Empty, request, callback);
+                            }, "name", { value: "DeleteBackup" });
+    
+                            /**
+                             * Calls DeleteBackup.
+                             * @function deleteBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IDeleteBackupRequest} request DeleteBackupRequest message or plain object
+                             * @returns {Promise<google.protobuf.Empty>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackups}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef ListBackupsCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.ListBackupsResponse} [response] ListBackupsResponse
+                             */
+    
+                            /**
+                             * Calls ListBackups.
+                             * @function listBackups
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListBackupsRequest} request ListBackupsRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.ListBackupsCallback} callback Node-style callback called with the error, if any, and ListBackupsResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.listBackups = function listBackups(request, callback) {
+                                return this.rpcCall(listBackups, $root.google.spanner.admin.database.v1.ListBackupsRequest, $root.google.spanner.admin.database.v1.ListBackupsResponse, request, callback);
+                            }, "name", { value: "ListBackups" });
+    
+                            /**
+                             * Calls ListBackups.
+                             * @function listBackups
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListBackupsRequest} request ListBackupsRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.ListBackupsResponse>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#restoreDatabase}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef RestoreDatabaseCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls RestoreDatabase.
+                             * @function restoreDatabase
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseRequest} request RestoreDatabaseRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.RestoreDatabaseCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.restoreDatabase = function restoreDatabase(request, callback) {
+                                return this.rpcCall(restoreDatabase, $root.google.spanner.admin.database.v1.RestoreDatabaseRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "RestoreDatabase" });
+    
+                            /**
+                             * Calls RestoreDatabase.
+                             * @function restoreDatabase
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseRequest} request RestoreDatabaseRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseOperations}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef ListDatabaseOperationsCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} [response] ListDatabaseOperationsResponse
+                             */
+    
+                            /**
+                             * Calls ListDatabaseOperations.
+                             * @function listDatabaseOperations
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsRequest} request ListDatabaseOperationsRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseOperationsCallback} callback Node-style callback called with the error, if any, and ListDatabaseOperationsResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.listDatabaseOperations = function listDatabaseOperations(request, callback) {
+                                return this.rpcCall(listDatabaseOperations, $root.google.spanner.admin.database.v1.ListDatabaseOperationsRequest, $root.google.spanner.admin.database.v1.ListDatabaseOperationsResponse, request, callback);
+                            }, "name", { value: "ListDatabaseOperations" });
+    
+                            /**
+                             * Calls ListDatabaseOperations.
+                             * @function listDatabaseOperations
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsRequest} request ListDatabaseOperationsRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.ListDatabaseOperationsResponse>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackupOperations}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef ListBackupOperationsCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.ListBackupOperationsResponse} [response] ListBackupOperationsResponse
+                             */
+    
+                            /**
+                             * Calls ListBackupOperations.
+                             * @function listBackupOperations
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest} request ListBackupOperationsRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.ListBackupOperationsCallback} callback Node-style callback called with the error, if any, and ListBackupOperationsResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.listBackupOperations = function listBackupOperations(request, callback) {
+                                return this.rpcCall(listBackupOperations, $root.google.spanner.admin.database.v1.ListBackupOperationsRequest, $root.google.spanner.admin.database.v1.ListBackupOperationsResponse, request, callback);
+                            }, "name", { value: "ListBackupOperations" });
+    
+                            /**
+                             * Calls ListBackupOperations.
+                             * @function listBackupOperations
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest} request ListBackupOperationsRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.ListBackupOperationsResponse>} Promise
+                             * @variation 2
+                             */
+    
                             return DatabaseAdmin;
+                        })();
+    
+                        v1.RestoreInfo = (function() {
+    
+                            /**
+                             * Properties of a RestoreInfo.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IRestoreInfo
+                             * @property {google.spanner.admin.database.v1.RestoreSourceType|null} [sourceType] RestoreInfo sourceType
+                             * @property {google.spanner.admin.database.v1.IBackupInfo|null} [backupInfo] RestoreInfo backupInfo
+                             */
+    
+                            /**
+                             * Constructs a new RestoreInfo.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a RestoreInfo.
+                             * @implements IRestoreInfo
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IRestoreInfo=} [properties] Properties to set
+                             */
+                            function RestoreInfo(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * RestoreInfo sourceType.
+                             * @member {google.spanner.admin.database.v1.RestoreSourceType} sourceType
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @instance
+                             */
+                            RestoreInfo.prototype.sourceType = 0;
+    
+                            /**
+                             * RestoreInfo backupInfo.
+                             * @member {google.spanner.admin.database.v1.IBackupInfo|null|undefined} backupInfo
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @instance
+                             */
+                            RestoreInfo.prototype.backupInfo = null;
+    
+                            // OneOf field names bound to virtual getters and setters
+                            var $oneOfFields;
+    
+                            /**
+                             * RestoreInfo sourceInfo.
+                             * @member {"backupInfo"|undefined} sourceInfo
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @instance
+                             */
+                            Object.defineProperty(RestoreInfo.prototype, "sourceInfo", {
+                                get: $util.oneOfGetter($oneOfFields = ["backupInfo"]),
+                                set: $util.oneOfSetter($oneOfFields)
+                            });
+    
+                            /**
+                             * Creates a new RestoreInfo instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreInfo=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.RestoreInfo} RestoreInfo instance
+                             */
+                            RestoreInfo.create = function create(properties) {
+                                return new RestoreInfo(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified RestoreInfo message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreInfo.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreInfo} message RestoreInfo message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            RestoreInfo.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.sourceType != null && message.hasOwnProperty("sourceType"))
+                                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.sourceType);
+                                if (message.backupInfo != null && message.hasOwnProperty("backupInfo"))
+                                    $root.google.spanner.admin.database.v1.BackupInfo.encode(message.backupInfo, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified RestoreInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreInfo.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreInfo} message RestoreInfo message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            RestoreInfo.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a RestoreInfo message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.RestoreInfo} RestoreInfo
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            RestoreInfo.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.RestoreInfo();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.sourceType = reader.int32();
+                                        break;
+                                    case 2:
+                                        message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a RestoreInfo message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.RestoreInfo} RestoreInfo
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            RestoreInfo.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a RestoreInfo message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            RestoreInfo.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                var properties = {};
+                                if (message.sourceType != null && message.hasOwnProperty("sourceType"))
+                                    switch (message.sourceType) {
+                                    default:
+                                        return "sourceType: enum value expected";
+                                    case 0:
+                                    case 1:
+                                        break;
+                                    }
+                                if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
+                                    properties.sourceInfo = 1;
+                                    {
+                                        var error = $root.google.spanner.admin.database.v1.BackupInfo.verify(message.backupInfo);
+                                        if (error)
+                                            return "backupInfo." + error;
+                                    }
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a RestoreInfo message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.RestoreInfo} RestoreInfo
+                             */
+                            RestoreInfo.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.RestoreInfo)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.RestoreInfo();
+                                switch (object.sourceType) {
+                                case "TYPE_UNSPECIFIED":
+                                case 0:
+                                    message.sourceType = 0;
+                                    break;
+                                case "BACKUP":
+                                case 1:
+                                    message.sourceType = 1;
+                                    break;
+                                }
+                                if (object.backupInfo != null) {
+                                    if (typeof object.backupInfo !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.RestoreInfo.backupInfo: object expected");
+                                    message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.fromObject(object.backupInfo);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a RestoreInfo message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.RestoreInfo} message RestoreInfo
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            RestoreInfo.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults)
+                                    object.sourceType = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
+                                if (message.sourceType != null && message.hasOwnProperty("sourceType"))
+                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
+                                if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
+                                    object.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.toObject(message.backupInfo, options);
+                                    if (options.oneofs)
+                                        object.sourceInfo = "backupInfo";
+                                }
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this RestoreInfo to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            RestoreInfo.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return RestoreInfo;
                         })();
     
                         v1.Database = (function() {
@@ -13549,6 +14060,8 @@
                              * @interface IDatabase
                              * @property {string|null} [name] Database name
                              * @property {google.spanner.admin.database.v1.Database.State|null} [state] Database state
+                             * @property {google.protobuf.ITimestamp|null} [createTime] Database createTime
+                             * @property {google.spanner.admin.database.v1.IRestoreInfo|null} [restoreInfo] Database restoreInfo
                              */
     
                             /**
@@ -13583,6 +14096,22 @@
                             Database.prototype.state = 0;
     
                             /**
+                             * Database createTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} createTime
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.createTime = null;
+    
+                            /**
+                             * Database restoreInfo.
+                             * @member {google.spanner.admin.database.v1.IRestoreInfo|null|undefined} restoreInfo
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.restoreInfo = null;
+    
+                            /**
                              * Creates a new Database instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Database
@@ -13610,6 +14139,10 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                                 if (message.state != null && message.hasOwnProperty("state"))
                                     writer.uint32(/* id 2, wireType 0 =*/16).int32(message.state);
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.restoreInfo != null && message.hasOwnProperty("restoreInfo"))
+                                    $root.google.spanner.admin.database.v1.RestoreInfo.encode(message.restoreInfo, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
     
@@ -13649,6 +14182,12 @@
                                         break;
                                     case 2:
                                         message.state = reader.int32();
+                                        break;
+                                    case 3:
+                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 4:
+                                        message.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -13695,8 +14234,19 @@
                                     case 0:
                                     case 1:
                                     case 2:
+                                    case 3:
                                         break;
                                     }
+                                if (message.createTime != null && message.hasOwnProperty("createTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.createTime);
+                                    if (error)
+                                        return "createTime." + error;
+                                }
+                                if (message.restoreInfo != null && message.hasOwnProperty("restoreInfo")) {
+                                    var error = $root.google.spanner.admin.database.v1.RestoreInfo.verify(message.restoreInfo);
+                                    if (error)
+                                        return "restoreInfo." + error;
+                                }
                                 return null;
                             };
     
@@ -13727,6 +14277,20 @@
                                 case 2:
                                     message.state = 2;
                                     break;
+                                case "READY_OPTIMIZING":
+                                case 3:
+                                    message.state = 3;
+                                    break;
+                                }
+                                if (object.createTime != null) {
+                                    if (typeof object.createTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Database.createTime: object expected");
+                                    message.createTime = $root.google.protobuf.Timestamp.fromObject(object.createTime);
+                                }
+                                if (object.restoreInfo != null) {
+                                    if (typeof object.restoreInfo !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Database.restoreInfo: object expected");
+                                    message.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.fromObject(object.restoreInfo);
                                 }
                                 return message;
                             };
@@ -13747,11 +14311,17 @@
                                 if (options.defaults) {
                                     object.name = "";
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
+                                    object.createTime = null;
+                                    object.restoreInfo = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
                                 if (message.state != null && message.hasOwnProperty("state"))
                                     object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Database.State[message.state] : message.state;
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
+                                if (message.restoreInfo != null && message.hasOwnProperty("restoreInfo"))
+                                    object.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.toObject(message.restoreInfo, options);
                                 return object;
                             };
     
@@ -13773,12 +14343,14 @@
                              * @property {number} STATE_UNSPECIFIED=0 STATE_UNSPECIFIED value
                              * @property {number} CREATING=1 CREATING value
                              * @property {number} READY=2 READY value
+                             * @property {number} READY_OPTIMIZING=3 READY_OPTIMIZING value
                              */
                             Database.State = (function() {
                                 var valuesById = {}, values = Object.create(valuesById);
                                 values[valuesById[0] = "STATE_UNSPECIFIED"] = 0;
                                 values[valuesById[1] = "CREATING"] = 1;
                                 values[valuesById[2] = "READY"] = 2;
+                                values[valuesById[3] = "READY_OPTIMIZING"] = 3;
                                 return values;
                             })();
     
@@ -15965,6 +16537,4256 @@
                             };
     
                             return GetDatabaseDdlResponse;
+                        })();
+    
+                        v1.ListDatabaseOperationsRequest = (function() {
+    
+                            /**
+                             * Properties of a ListDatabaseOperationsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListDatabaseOperationsRequest
+                             * @property {string|null} [parent] ListDatabaseOperationsRequest parent
+                             * @property {string|null} [filter] ListDatabaseOperationsRequest filter
+                             * @property {number|null} [pageSize] ListDatabaseOperationsRequest pageSize
+                             * @property {string|null} [pageToken] ListDatabaseOperationsRequest pageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListDatabaseOperationsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListDatabaseOperationsRequest.
+                             * @implements IListDatabaseOperationsRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsRequest=} [properties] Properties to set
+                             */
+                            function ListDatabaseOperationsRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListDatabaseOperationsRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @instance
+                             */
+                            ListDatabaseOperationsRequest.prototype.parent = "";
+    
+                            /**
+                             * ListDatabaseOperationsRequest filter.
+                             * @member {string} filter
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @instance
+                             */
+                            ListDatabaseOperationsRequest.prototype.filter = "";
+    
+                            /**
+                             * ListDatabaseOperationsRequest pageSize.
+                             * @member {number} pageSize
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @instance
+                             */
+                            ListDatabaseOperationsRequest.prototype.pageSize = 0;
+    
+                            /**
+                             * ListDatabaseOperationsRequest pageToken.
+                             * @member {string} pageToken
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @instance
+                             */
+                            ListDatabaseOperationsRequest.prototype.pageToken = "";
+    
+                            /**
+                             * Creates a new ListDatabaseOperationsRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsRequest} ListDatabaseOperationsRequest instance
+                             */
+                            ListDatabaseOperationsRequest.create = function create(properties) {
+                                return new ListDatabaseOperationsRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseOperationsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsRequest} message ListDatabaseOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseOperationsRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.filter);
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).int32(message.pageSize);
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsRequest} message ListDatabaseOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseOperationsRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsRequest} ListDatabaseOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseOperationsRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListDatabaseOperationsRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.filter = reader.string();
+                                        break;
+                                    case 3:
+                                        message.pageSize = reader.int32();
+                                        break;
+                                    case 4:
+                                        message.pageToken = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseOperationsRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsRequest} ListDatabaseOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseOperationsRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListDatabaseOperationsRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListDatabaseOperationsRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    if (!$util.isString(message.filter))
+                                        return "filter: string expected";
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    if (!$util.isInteger(message.pageSize))
+                                        return "pageSize: integer expected";
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    if (!$util.isString(message.pageToken))
+                                        return "pageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListDatabaseOperationsRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsRequest} ListDatabaseOperationsRequest
+                             */
+                            ListDatabaseOperationsRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListDatabaseOperationsRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListDatabaseOperationsRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.filter != null)
+                                    message.filter = String(object.filter);
+                                if (object.pageSize != null)
+                                    message.pageSize = object.pageSize | 0;
+                                if (object.pageToken != null)
+                                    message.pageToken = String(object.pageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListDatabaseOperationsRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListDatabaseOperationsRequest} message ListDatabaseOperationsRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListDatabaseOperationsRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.filter = "";
+                                    object.pageSize = 0;
+                                    object.pageToken = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    object.filter = message.filter;
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    object.pageSize = message.pageSize;
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    object.pageToken = message.pageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListDatabaseOperationsRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListDatabaseOperationsRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return ListDatabaseOperationsRequest;
+                        })();
+    
+                        v1.ListDatabaseOperationsResponse = (function() {
+    
+                            /**
+                             * Properties of a ListDatabaseOperationsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListDatabaseOperationsResponse
+                             * @property {Array.<google.longrunning.IOperation>|null} [operations] ListDatabaseOperationsResponse operations
+                             * @property {string|null} [nextPageToken] ListDatabaseOperationsResponse nextPageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListDatabaseOperationsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListDatabaseOperationsResponse.
+                             * @implements IListDatabaseOperationsResponse
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsResponse=} [properties] Properties to set
+                             */
+                            function ListDatabaseOperationsResponse(properties) {
+                                this.operations = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListDatabaseOperationsResponse operations.
+                             * @member {Array.<google.longrunning.IOperation>} operations
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @instance
+                             */
+                            ListDatabaseOperationsResponse.prototype.operations = $util.emptyArray;
+    
+                            /**
+                             * ListDatabaseOperationsResponse nextPageToken.
+                             * @member {string} nextPageToken
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @instance
+                             */
+                            ListDatabaseOperationsResponse.prototype.nextPageToken = "";
+    
+                            /**
+                             * Creates a new ListDatabaseOperationsResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} ListDatabaseOperationsResponse instance
+                             */
+                            ListDatabaseOperationsResponse.create = function create(properties) {
+                                return new ListDatabaseOperationsResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseOperationsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsResponse} message ListDatabaseOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseOperationsResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.operations != null && message.operations.length)
+                                    for (var i = 0; i < message.operations.length; ++i)
+                                        $root.google.longrunning.Operation.encode(message.operations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseOperationsResponse} message ListDatabaseOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseOperationsResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} ListDatabaseOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseOperationsResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListDatabaseOperationsResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        if (!(message.operations && message.operations.length))
+                                            message.operations = [];
+                                        message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                        break;
+                                    case 2:
+                                        message.nextPageToken = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseOperationsResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} ListDatabaseOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseOperationsResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListDatabaseOperationsResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListDatabaseOperationsResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.operations != null && message.hasOwnProperty("operations")) {
+                                    if (!Array.isArray(message.operations))
+                                        return "operations: array expected";
+                                    for (var i = 0; i < message.operations.length; ++i) {
+                                        var error = $root.google.longrunning.Operation.verify(message.operations[i]);
+                                        if (error)
+                                            return "operations." + error;
+                                    }
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    if (!$util.isString(message.nextPageToken))
+                                        return "nextPageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListDatabaseOperationsResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} ListDatabaseOperationsResponse
+                             */
+                            ListDatabaseOperationsResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListDatabaseOperationsResponse)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListDatabaseOperationsResponse();
+                                if (object.operations) {
+                                    if (!Array.isArray(object.operations))
+                                        throw TypeError(".google.spanner.admin.database.v1.ListDatabaseOperationsResponse.operations: array expected");
+                                    message.operations = [];
+                                    for (var i = 0; i < object.operations.length; ++i) {
+                                        if (typeof object.operations[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.ListDatabaseOperationsResponse.operations: object expected");
+                                        message.operations[i] = $root.google.longrunning.Operation.fromObject(object.operations[i]);
+                                    }
+                                }
+                                if (object.nextPageToken != null)
+                                    message.nextPageToken = String(object.nextPageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListDatabaseOperationsResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} message ListDatabaseOperationsResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListDatabaseOperationsResponse.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.operations = [];
+                                if (options.defaults)
+                                    object.nextPageToken = "";
+                                if (message.operations && message.operations.length) {
+                                    object.operations = [];
+                                    for (var j = 0; j < message.operations.length; ++j)
+                                        object.operations[j] = $root.google.longrunning.Operation.toObject(message.operations[j], options);
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    object.nextPageToken = message.nextPageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListDatabaseOperationsResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListDatabaseOperationsResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return ListDatabaseOperationsResponse;
+                        })();
+    
+                        v1.RestoreDatabaseRequest = (function() {
+    
+                            /**
+                             * Properties of a RestoreDatabaseRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IRestoreDatabaseRequest
+                             * @property {string|null} [parent] RestoreDatabaseRequest parent
+                             * @property {string|null} [databaseId] RestoreDatabaseRequest databaseId
+                             * @property {string|null} [backup] RestoreDatabaseRequest backup
+                             */
+    
+                            /**
+                             * Constructs a new RestoreDatabaseRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a RestoreDatabaseRequest.
+                             * @implements IRestoreDatabaseRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseRequest=} [properties] Properties to set
+                             */
+                            function RestoreDatabaseRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * RestoreDatabaseRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @instance
+                             */
+                            RestoreDatabaseRequest.prototype.parent = "";
+    
+                            /**
+                             * RestoreDatabaseRequest databaseId.
+                             * @member {string} databaseId
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @instance
+                             */
+                            RestoreDatabaseRequest.prototype.databaseId = "";
+    
+                            /**
+                             * RestoreDatabaseRequest backup.
+                             * @member {string} backup
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @instance
+                             */
+                            RestoreDatabaseRequest.prototype.backup = "";
+    
+                            // OneOf field names bound to virtual getters and setters
+                            var $oneOfFields;
+    
+                            /**
+                             * RestoreDatabaseRequest source.
+                             * @member {"backup"|undefined} source
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @instance
+                             */
+                            Object.defineProperty(RestoreDatabaseRequest.prototype, "source", {
+                                get: $util.oneOfGetter($oneOfFields = ["backup"]),
+                                set: $util.oneOfSetter($oneOfFields)
+                            });
+    
+                            /**
+                             * Creates a new RestoreDatabaseRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseRequest} RestoreDatabaseRequest instance
+                             */
+                            RestoreDatabaseRequest.create = function create(properties) {
+                                return new RestoreDatabaseRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified RestoreDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseRequest} message RestoreDatabaseRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            RestoreDatabaseRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.databaseId != null && message.hasOwnProperty("databaseId"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.databaseId);
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.backup);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified RestoreDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseRequest} message RestoreDatabaseRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            RestoreDatabaseRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a RestoreDatabaseRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseRequest} RestoreDatabaseRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            RestoreDatabaseRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.RestoreDatabaseRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.databaseId = reader.string();
+                                        break;
+                                    case 3:
+                                        message.backup = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a RestoreDatabaseRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseRequest} RestoreDatabaseRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            RestoreDatabaseRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a RestoreDatabaseRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            RestoreDatabaseRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                var properties = {};
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.databaseId != null && message.hasOwnProperty("databaseId"))
+                                    if (!$util.isString(message.databaseId))
+                                        return "databaseId: string expected";
+                                if (message.backup != null && message.hasOwnProperty("backup")) {
+                                    properties.source = 1;
+                                    if (!$util.isString(message.backup))
+                                        return "backup: string expected";
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a RestoreDatabaseRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseRequest} RestoreDatabaseRequest
+                             */
+                            RestoreDatabaseRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.RestoreDatabaseRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.RestoreDatabaseRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.databaseId != null)
+                                    message.databaseId = String(object.databaseId);
+                                if (object.backup != null)
+                                    message.backup = String(object.backup);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a RestoreDatabaseRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.RestoreDatabaseRequest} message RestoreDatabaseRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            RestoreDatabaseRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.databaseId = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.databaseId != null && message.hasOwnProperty("databaseId"))
+                                    object.databaseId = message.databaseId;
+                                if (message.backup != null && message.hasOwnProperty("backup")) {
+                                    object.backup = message.backup;
+                                    if (options.oneofs)
+                                        object.source = "backup";
+                                }
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this RestoreDatabaseRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            RestoreDatabaseRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return RestoreDatabaseRequest;
+                        })();
+    
+                        v1.RestoreDatabaseMetadata = (function() {
+    
+                            /**
+                             * Properties of a RestoreDatabaseMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IRestoreDatabaseMetadata
+                             * @property {string|null} [name] RestoreDatabaseMetadata name
+                             * @property {google.spanner.admin.database.v1.RestoreSourceType|null} [sourceType] RestoreDatabaseMetadata sourceType
+                             * @property {google.spanner.admin.database.v1.IBackupInfo|null} [backupInfo] RestoreDatabaseMetadata backupInfo
+                             * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] RestoreDatabaseMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] RestoreDatabaseMetadata cancelTime
+                             * @property {string|null} [optimizeDatabaseOperationName] RestoreDatabaseMetadata optimizeDatabaseOperationName
+                             */
+    
+                            /**
+                             * Constructs a new RestoreDatabaseMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a RestoreDatabaseMetadata.
+                             * @implements IRestoreDatabaseMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseMetadata=} [properties] Properties to set
+                             */
+                            function RestoreDatabaseMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * RestoreDatabaseMetadata name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            RestoreDatabaseMetadata.prototype.name = "";
+    
+                            /**
+                             * RestoreDatabaseMetadata sourceType.
+                             * @member {google.spanner.admin.database.v1.RestoreSourceType} sourceType
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            RestoreDatabaseMetadata.prototype.sourceType = 0;
+    
+                            /**
+                             * RestoreDatabaseMetadata backupInfo.
+                             * @member {google.spanner.admin.database.v1.IBackupInfo|null|undefined} backupInfo
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            RestoreDatabaseMetadata.prototype.backupInfo = null;
+    
+                            /**
+                             * RestoreDatabaseMetadata progress.
+                             * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            RestoreDatabaseMetadata.prototype.progress = null;
+    
+                            /**
+                             * RestoreDatabaseMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            RestoreDatabaseMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * RestoreDatabaseMetadata optimizeDatabaseOperationName.
+                             * @member {string} optimizeDatabaseOperationName
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            RestoreDatabaseMetadata.prototype.optimizeDatabaseOperationName = "";
+    
+                            // OneOf field names bound to virtual getters and setters
+                            var $oneOfFields;
+    
+                            /**
+                             * RestoreDatabaseMetadata sourceInfo.
+                             * @member {"backupInfo"|undefined} sourceInfo
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             */
+                            Object.defineProperty(RestoreDatabaseMetadata.prototype, "sourceInfo", {
+                                get: $util.oneOfGetter($oneOfFields = ["backupInfo"]),
+                                set: $util.oneOfSetter($oneOfFields)
+                            });
+    
+                            /**
+                             * Creates a new RestoreDatabaseMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseMetadata} RestoreDatabaseMetadata instance
+                             */
+                            RestoreDatabaseMetadata.create = function create(properties) {
+                                return new RestoreDatabaseMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified RestoreDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseMetadata} message RestoreDatabaseMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            RestoreDatabaseMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.sourceType != null && message.hasOwnProperty("sourceType"))
+                                    writer.uint32(/* id 2, wireType 0 =*/16).int32(message.sourceType);
+                                if (message.backupInfo != null && message.hasOwnProperty("backupInfo"))
+                                    $root.google.spanner.admin.database.v1.BackupInfo.encode(message.backupInfo, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                                if (message.optimizeDatabaseOperationName != null && message.hasOwnProperty("optimizeDatabaseOperationName"))
+                                    writer.uint32(/* id 6, wireType 2 =*/50).string(message.optimizeDatabaseOperationName);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified RestoreDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IRestoreDatabaseMetadata} message RestoreDatabaseMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            RestoreDatabaseMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a RestoreDatabaseMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseMetadata} RestoreDatabaseMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            RestoreDatabaseMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.RestoreDatabaseMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.sourceType = reader.int32();
+                                        break;
+                                    case 3:
+                                        message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.decode(reader, reader.uint32());
+                                        break;
+                                    case 4:
+                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                        break;
+                                    case 5:
+                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 6:
+                                        message.optimizeDatabaseOperationName = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a RestoreDatabaseMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseMetadata} RestoreDatabaseMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            RestoreDatabaseMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a RestoreDatabaseMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            RestoreDatabaseMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                var properties = {};
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.sourceType != null && message.hasOwnProperty("sourceType"))
+                                    switch (message.sourceType) {
+                                    default:
+                                        return "sourceType: enum value expected";
+                                    case 0:
+                                    case 1:
+                                        break;
+                                    }
+                                if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
+                                    properties.sourceInfo = 1;
+                                    {
+                                        var error = $root.google.spanner.admin.database.v1.BackupInfo.verify(message.backupInfo);
+                                        if (error)
+                                            return "backupInfo." + error;
+                                    }
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                if (message.optimizeDatabaseOperationName != null && message.hasOwnProperty("optimizeDatabaseOperationName"))
+                                    if (!$util.isString(message.optimizeDatabaseOperationName))
+                                        return "optimizeDatabaseOperationName: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a RestoreDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.RestoreDatabaseMetadata} RestoreDatabaseMetadata
+                             */
+                            RestoreDatabaseMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.RestoreDatabaseMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.RestoreDatabaseMetadata();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                switch (object.sourceType) {
+                                case "TYPE_UNSPECIFIED":
+                                case 0:
+                                    message.sourceType = 0;
+                                    break;
+                                case "BACKUP":
+                                case 1:
+                                    message.sourceType = 1;
+                                    break;
+                                }
+                                if (object.backupInfo != null) {
+                                    if (typeof object.backupInfo !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.RestoreDatabaseMetadata.backupInfo: object expected");
+                                    message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.fromObject(object.backupInfo);
+                                }
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.RestoreDatabaseMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.RestoreDatabaseMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                if (object.optimizeDatabaseOperationName != null)
+                                    message.optimizeDatabaseOperationName = String(object.optimizeDatabaseOperationName);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a RestoreDatabaseMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.RestoreDatabaseMetadata} message RestoreDatabaseMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            RestoreDatabaseMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.sourceType = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                    object.optimizeDatabaseOperationName = "";
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.sourceType != null && message.hasOwnProperty("sourceType"))
+                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
+                                if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
+                                    object.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.toObject(message.backupInfo, options);
+                                    if (options.oneofs)
+                                        object.sourceInfo = "backupInfo";
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                if (message.optimizeDatabaseOperationName != null && message.hasOwnProperty("optimizeDatabaseOperationName"))
+                                    object.optimizeDatabaseOperationName = message.optimizeDatabaseOperationName;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this RestoreDatabaseMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            RestoreDatabaseMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return RestoreDatabaseMetadata;
+                        })();
+    
+                        v1.OptimizeRestoredDatabaseMetadata = (function() {
+    
+                            /**
+                             * Properties of an OptimizeRestoredDatabaseMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IOptimizeRestoredDatabaseMetadata
+                             * @property {string|null} [name] OptimizeRestoredDatabaseMetadata name
+                             * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] OptimizeRestoredDatabaseMetadata progress
+                             */
+    
+                            /**
+                             * Constructs a new OptimizeRestoredDatabaseMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an OptimizeRestoredDatabaseMetadata.
+                             * @implements IOptimizeRestoredDatabaseMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata=} [properties] Properties to set
+                             */
+                            function OptimizeRestoredDatabaseMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * OptimizeRestoredDatabaseMetadata name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @instance
+                             */
+                            OptimizeRestoredDatabaseMetadata.prototype.name = "";
+    
+                            /**
+                             * OptimizeRestoredDatabaseMetadata progress.
+                             * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @instance
+                             */
+                            OptimizeRestoredDatabaseMetadata.prototype.progress = null;
+    
+                            /**
+                             * Creates a new OptimizeRestoredDatabaseMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata} OptimizeRestoredDatabaseMetadata instance
+                             */
+                            OptimizeRestoredDatabaseMetadata.create = function create(properties) {
+                                return new OptimizeRestoredDatabaseMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified OptimizeRestoredDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata} message OptimizeRestoredDatabaseMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OptimizeRestoredDatabaseMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified OptimizeRestoredDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata} message OptimizeRestoredDatabaseMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OptimizeRestoredDatabaseMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an OptimizeRestoredDatabaseMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata} OptimizeRestoredDatabaseMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OptimizeRestoredDatabaseMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an OptimizeRestoredDatabaseMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata} OptimizeRestoredDatabaseMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OptimizeRestoredDatabaseMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an OptimizeRestoredDatabaseMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            OptimizeRestoredDatabaseMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an OptimizeRestoredDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata} OptimizeRestoredDatabaseMetadata
+                             */
+                            OptimizeRestoredDatabaseMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an OptimizeRestoredDatabaseMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata} message OptimizeRestoredDatabaseMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            OptimizeRestoredDatabaseMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.progress = null;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this OptimizeRestoredDatabaseMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            OptimizeRestoredDatabaseMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return OptimizeRestoredDatabaseMetadata;
+                        })();
+    
+                        /**
+                         * RestoreSourceType enum.
+                         * @name google.spanner.admin.database.v1.RestoreSourceType
+                         * @enum {string}
+                         * @property {number} TYPE_UNSPECIFIED=0 TYPE_UNSPECIFIED value
+                         * @property {number} BACKUP=1 BACKUP value
+                         */
+                        v1.RestoreSourceType = (function() {
+                            var valuesById = {}, values = Object.create(valuesById);
+                            values[valuesById[0] = "TYPE_UNSPECIFIED"] = 0;
+                            values[valuesById[1] = "BACKUP"] = 1;
+                            return values;
+                        })();
+    
+                        v1.Backup = (function() {
+    
+                            /**
+                             * Properties of a Backup.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IBackup
+                             * @property {string|null} [database] Backup database
+                             * @property {google.protobuf.ITimestamp|null} [expireTime] Backup expireTime
+                             * @property {string|null} [name] Backup name
+                             * @property {google.protobuf.ITimestamp|null} [createTime] Backup createTime
+                             * @property {number|Long|null} [sizeBytes] Backup sizeBytes
+                             * @property {google.spanner.admin.database.v1.Backup.State|null} [state] Backup state
+                             * @property {Array.<string>|null} [referencingDatabases] Backup referencingDatabases
+                             */
+    
+                            /**
+                             * Constructs a new Backup.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a Backup.
+                             * @implements IBackup
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IBackup=} [properties] Properties to set
+                             */
+                            function Backup(properties) {
+                                this.referencingDatabases = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * Backup database.
+                             * @member {string} database
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.database = "";
+    
+                            /**
+                             * Backup expireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} expireTime
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.expireTime = null;
+    
+                            /**
+                             * Backup name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.name = "";
+    
+                            /**
+                             * Backup createTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} createTime
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.createTime = null;
+    
+                            /**
+                             * Backup sizeBytes.
+                             * @member {number|Long} sizeBytes
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.sizeBytes = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    
+                            /**
+                             * Backup state.
+                             * @member {google.spanner.admin.database.v1.Backup.State} state
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.state = 0;
+    
+                            /**
+                             * Backup referencingDatabases.
+                             * @member {Array.<string>} referencingDatabases
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.referencingDatabases = $util.emptyArray;
+    
+                            /**
+                             * Creates a new Backup instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IBackup=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.Backup} Backup instance
+                             */
+                            Backup.create = function create(properties) {
+                                return new Backup(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified Backup message. Does not implicitly {@link google.spanner.admin.database.v1.Backup.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IBackup} message Backup message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            Backup.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.database);
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.expireTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                if (message.sizeBytes != null && message.hasOwnProperty("sizeBytes"))
+                                    writer.uint32(/* id 5, wireType 0 =*/40).int64(message.sizeBytes);
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    writer.uint32(/* id 6, wireType 0 =*/48).int32(message.state);
+                                if (message.referencingDatabases != null && message.referencingDatabases.length)
+                                    for (var i = 0; i < message.referencingDatabases.length; ++i)
+                                        writer.uint32(/* id 7, wireType 2 =*/58).string(message.referencingDatabases[i]);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified Backup message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.Backup.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IBackup} message Backup message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            Backup.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a Backup message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.Backup} Backup
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            Backup.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.Backup();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 2:
+                                        message.database = reader.string();
+                                        break;
+                                    case 3:
+                                        message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    case 4:
+                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 5:
+                                        message.sizeBytes = reader.int64();
+                                        break;
+                                    case 6:
+                                        message.state = reader.int32();
+                                        break;
+                                    case 7:
+                                        if (!(message.referencingDatabases && message.referencingDatabases.length))
+                                            message.referencingDatabases = [];
+                                        message.referencingDatabases.push(reader.string());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a Backup message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.Backup} Backup
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            Backup.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a Backup message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            Backup.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    if (!$util.isString(message.database))
+                                        return "database: string expected";
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.expireTime);
+                                    if (error)
+                                        return "expireTime." + error;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.createTime != null && message.hasOwnProperty("createTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.createTime);
+                                    if (error)
+                                        return "createTime." + error;
+                                }
+                                if (message.sizeBytes != null && message.hasOwnProperty("sizeBytes"))
+                                    if (!$util.isInteger(message.sizeBytes) && !(message.sizeBytes && $util.isInteger(message.sizeBytes.low) && $util.isInteger(message.sizeBytes.high)))
+                                        return "sizeBytes: integer|Long expected";
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    switch (message.state) {
+                                    default:
+                                        return "state: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
+                                if (message.referencingDatabases != null && message.hasOwnProperty("referencingDatabases")) {
+                                    if (!Array.isArray(message.referencingDatabases))
+                                        return "referencingDatabases: array expected";
+                                    for (var i = 0; i < message.referencingDatabases.length; ++i)
+                                        if (!$util.isString(message.referencingDatabases[i]))
+                                            return "referencingDatabases: string[] expected";
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a Backup message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.Backup} Backup
+                             */
+                            Backup.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.Backup)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.Backup();
+                                if (object.database != null)
+                                    message.database = String(object.database);
+                                if (object.expireTime != null) {
+                                    if (typeof object.expireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.expireTime: object expected");
+                                    message.expireTime = $root.google.protobuf.Timestamp.fromObject(object.expireTime);
+                                }
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.createTime != null) {
+                                    if (typeof object.createTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.createTime: object expected");
+                                    message.createTime = $root.google.protobuf.Timestamp.fromObject(object.createTime);
+                                }
+                                if (object.sizeBytes != null)
+                                    if ($util.Long)
+                                        (message.sizeBytes = $util.Long.fromValue(object.sizeBytes)).unsigned = false;
+                                    else if (typeof object.sizeBytes === "string")
+                                        message.sizeBytes = parseInt(object.sizeBytes, 10);
+                                    else if (typeof object.sizeBytes === "number")
+                                        message.sizeBytes = object.sizeBytes;
+                                    else if (typeof object.sizeBytes === "object")
+                                        message.sizeBytes = new $util.LongBits(object.sizeBytes.low >>> 0, object.sizeBytes.high >>> 0).toNumber();
+                                switch (object.state) {
+                                case "STATE_UNSPECIFIED":
+                                case 0:
+                                    message.state = 0;
+                                    break;
+                                case "CREATING":
+                                case 1:
+                                    message.state = 1;
+                                    break;
+                                case "READY":
+                                case 2:
+                                    message.state = 2;
+                                    break;
+                                }
+                                if (object.referencingDatabases) {
+                                    if (!Array.isArray(object.referencingDatabases))
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.referencingDatabases: array expected");
+                                    message.referencingDatabases = [];
+                                    for (var i = 0; i < object.referencingDatabases.length; ++i)
+                                        message.referencingDatabases[i] = String(object.referencingDatabases[i]);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a Backup message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {google.spanner.admin.database.v1.Backup} message Backup
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            Backup.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.referencingDatabases = [];
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.database = "";
+                                    object.expireTime = null;
+                                    object.createTime = null;
+                                    if ($util.Long) {
+                                        var long = new $util.Long(0, 0, false);
+                                        object.sizeBytes = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                                    } else
+                                        object.sizeBytes = options.longs === String ? "0" : 0;
+                                    object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    object.database = message.database;
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime"))
+                                    object.expireTime = $root.google.protobuf.Timestamp.toObject(message.expireTime, options);
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
+                                if (message.sizeBytes != null && message.hasOwnProperty("sizeBytes"))
+                                    if (typeof message.sizeBytes === "number")
+                                        object.sizeBytes = options.longs === String ? String(message.sizeBytes) : message.sizeBytes;
+                                    else
+                                        object.sizeBytes = options.longs === String ? $util.Long.prototype.toString.call(message.sizeBytes) : options.longs === Number ? new $util.LongBits(message.sizeBytes.low >>> 0, message.sizeBytes.high >>> 0).toNumber() : message.sizeBytes;
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Backup.State[message.state] : message.state;
+                                if (message.referencingDatabases && message.referencingDatabases.length) {
+                                    object.referencingDatabases = [];
+                                    for (var j = 0; j < message.referencingDatabases.length; ++j)
+                                        object.referencingDatabases[j] = message.referencingDatabases[j];
+                                }
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this Backup to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            Backup.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * State enum.
+                             * @name google.spanner.admin.database.v1.Backup.State
+                             * @enum {string}
+                             * @property {number} STATE_UNSPECIFIED=0 STATE_UNSPECIFIED value
+                             * @property {number} CREATING=1 CREATING value
+                             * @property {number} READY=2 READY value
+                             */
+                            Backup.State = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "STATE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "CREATING"] = 1;
+                                values[valuesById[2] = "READY"] = 2;
+                                return values;
+                            })();
+    
+                            return Backup;
+                        })();
+    
+                        v1.CreateBackupRequest = (function() {
+    
+                            /**
+                             * Properties of a CreateBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICreateBackupRequest
+                             * @property {string|null} [parent] CreateBackupRequest parent
+                             * @property {string|null} [backupId] CreateBackupRequest backupId
+                             * @property {google.spanner.admin.database.v1.IBackup|null} [backup] CreateBackupRequest backup
+                             */
+    
+                            /**
+                             * Constructs a new CreateBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CreateBackupRequest.
+                             * @implements ICreateBackupRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICreateBackupRequest=} [properties] Properties to set
+                             */
+                            function CreateBackupRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CreateBackupRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @instance
+                             */
+                            CreateBackupRequest.prototype.parent = "";
+    
+                            /**
+                             * CreateBackupRequest backupId.
+                             * @member {string} backupId
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @instance
+                             */
+                            CreateBackupRequest.prototype.backupId = "";
+    
+                            /**
+                             * CreateBackupRequest backup.
+                             * @member {google.spanner.admin.database.v1.IBackup|null|undefined} backup
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @instance
+                             */
+                            CreateBackupRequest.prototype.backup = null;
+    
+                            /**
+                             * Creates a new CreateBackupRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICreateBackupRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CreateBackupRequest} CreateBackupRequest instance
+                             */
+                            CreateBackupRequest.create = function create(properties) {
+                                return new CreateBackupRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CreateBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICreateBackupRequest} message CreateBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateBackupRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.backupId);
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    $root.google.spanner.admin.database.v1.Backup.encode(message.backup, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CreateBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICreateBackupRequest} message CreateBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CreateBackupRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CreateBackupRequest} CreateBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateBackupRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CreateBackupRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.backupId = reader.string();
+                                        break;
+                                    case 3:
+                                        message.backup = $root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CreateBackupRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CreateBackupRequest} CreateBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateBackupRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CreateBackupRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CreateBackupRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    if (!$util.isString(message.backupId))
+                                        return "backupId: string expected";
+                                if (message.backup != null && message.hasOwnProperty("backup")) {
+                                    var error = $root.google.spanner.admin.database.v1.Backup.verify(message.backup);
+                                    if (error)
+                                        return "backup." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CreateBackupRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CreateBackupRequest} CreateBackupRequest
+                             */
+                            CreateBackupRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CreateBackupRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CreateBackupRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.backupId != null)
+                                    message.backupId = String(object.backupId);
+                                if (object.backup != null) {
+                                    if (typeof object.backup !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CreateBackupRequest.backup: object expected");
+                                    message.backup = $root.google.spanner.admin.database.v1.Backup.fromObject(object.backup);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CreateBackupRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CreateBackupRequest} message CreateBackupRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CreateBackupRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.backupId = "";
+                                    object.backup = null;
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    object.backupId = message.backupId;
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    object.backup = $root.google.spanner.admin.database.v1.Backup.toObject(message.backup, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CreateBackupRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CreateBackupRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return CreateBackupRequest;
+                        })();
+    
+                        v1.CreateBackupMetadata = (function() {
+    
+                            /**
+                             * Properties of a CreateBackupMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICreateBackupMetadata
+                             * @property {string|null} [name] CreateBackupMetadata name
+                             * @property {string|null} [database] CreateBackupMetadata database
+                             * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] CreateBackupMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] CreateBackupMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new CreateBackupMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CreateBackupMetadata.
+                             * @implements ICreateBackupMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICreateBackupMetadata=} [properties] Properties to set
+                             */
+                            function CreateBackupMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CreateBackupMetadata name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @instance
+                             */
+                            CreateBackupMetadata.prototype.name = "";
+    
+                            /**
+                             * CreateBackupMetadata database.
+                             * @member {string} database
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @instance
+                             */
+                            CreateBackupMetadata.prototype.database = "";
+    
+                            /**
+                             * CreateBackupMetadata progress.
+                             * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @instance
+                             */
+                            CreateBackupMetadata.prototype.progress = null;
+    
+                            /**
+                             * CreateBackupMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @instance
+                             */
+                            CreateBackupMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new CreateBackupMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICreateBackupMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CreateBackupMetadata} CreateBackupMetadata instance
+                             */
+                            CreateBackupMetadata.create = function create(properties) {
+                                return new CreateBackupMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CreateBackupMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICreateBackupMetadata} message CreateBackupMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateBackupMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.database);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CreateBackupMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICreateBackupMetadata} message CreateBackupMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateBackupMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CreateBackupMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CreateBackupMetadata} CreateBackupMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateBackupMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CreateBackupMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.database = reader.string();
+                                        break;
+                                    case 3:
+                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                        break;
+                                    case 4:
+                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CreateBackupMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CreateBackupMetadata} CreateBackupMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateBackupMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CreateBackupMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CreateBackupMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    if (!$util.isString(message.database))
+                                        return "database: string expected";
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CreateBackupMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CreateBackupMetadata} CreateBackupMetadata
+                             */
+                            CreateBackupMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CreateBackupMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CreateBackupMetadata();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.database != null)
+                                    message.database = String(object.database);
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CreateBackupMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CreateBackupMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CreateBackupMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CreateBackupMetadata} message CreateBackupMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CreateBackupMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.database = "";
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    object.database = message.database;
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CreateBackupMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CreateBackupMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return CreateBackupMetadata;
+                        })();
+    
+                        v1.UpdateBackupRequest = (function() {
+    
+                            /**
+                             * Properties of an UpdateBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IUpdateBackupRequest
+                             * @property {google.spanner.admin.database.v1.IBackup|null} [backup] UpdateBackupRequest backup
+                             * @property {google.protobuf.IFieldMask|null} [updateMask] UpdateBackupRequest updateMask
+                             */
+    
+                            /**
+                             * Constructs a new UpdateBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an UpdateBackupRequest.
+                             * @implements IUpdateBackupRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IUpdateBackupRequest=} [properties] Properties to set
+                             */
+                            function UpdateBackupRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateBackupRequest backup.
+                             * @member {google.spanner.admin.database.v1.IBackup|null|undefined} backup
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @instance
+                             */
+                            UpdateBackupRequest.prototype.backup = null;
+    
+                            /**
+                             * UpdateBackupRequest updateMask.
+                             * @member {google.protobuf.IFieldMask|null|undefined} updateMask
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @instance
+                             */
+                            UpdateBackupRequest.prototype.updateMask = null;
+    
+                            /**
+                             * Creates a new UpdateBackupRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateBackupRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.UpdateBackupRequest} UpdateBackupRequest instance
+                             */
+                            UpdateBackupRequest.create = function create(properties) {
+                                return new UpdateBackupRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateBackupRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateBackupRequest} message UpdateBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateBackupRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    $root.google.spanner.admin.database.v1.Backup.encode(message.backup, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask"))
+                                    $root.google.protobuf.FieldMask.encode(message.updateMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateBackupRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateBackupRequest} message UpdateBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateBackupRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.UpdateBackupRequest} UpdateBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateBackupRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.UpdateBackupRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.backup = $root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32());
+                                        break;
+                                    case 2:
+                                        message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateBackupRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.UpdateBackupRequest} UpdateBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateBackupRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateBackupRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateBackupRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.backup != null && message.hasOwnProperty("backup")) {
+                                    var error = $root.google.spanner.admin.database.v1.Backup.verify(message.backup);
+                                    if (error)
+                                        return "backup." + error;
+                                }
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask")) {
+                                    var error = $root.google.protobuf.FieldMask.verify(message.updateMask);
+                                    if (error)
+                                        return "updateMask." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateBackupRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.UpdateBackupRequest} UpdateBackupRequest
+                             */
+                            UpdateBackupRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.UpdateBackupRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.UpdateBackupRequest();
+                                if (object.backup != null) {
+                                    if (typeof object.backup !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateBackupRequest.backup: object expected");
+                                    message.backup = $root.google.spanner.admin.database.v1.Backup.fromObject(object.backup);
+                                }
+                                if (object.updateMask != null) {
+                                    if (typeof object.updateMask !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateBackupRequest.updateMask: object expected");
+                                    message.updateMask = $root.google.protobuf.FieldMask.fromObject(object.updateMask);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateBackupRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.UpdateBackupRequest} message UpdateBackupRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateBackupRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.backup = null;
+                                    object.updateMask = null;
+                                }
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    object.backup = $root.google.spanner.admin.database.v1.Backup.toObject(message.backup, options);
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask"))
+                                    object.updateMask = $root.google.protobuf.FieldMask.toObject(message.updateMask, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateBackupRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateBackupRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return UpdateBackupRequest;
+                        })();
+    
+                        v1.GetBackupRequest = (function() {
+    
+                            /**
+                             * Properties of a GetBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IGetBackupRequest
+                             * @property {string|null} [name] GetBackupRequest name
+                             */
+    
+                            /**
+                             * Constructs a new GetBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a GetBackupRequest.
+                             * @implements IGetBackupRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IGetBackupRequest=} [properties] Properties to set
+                             */
+                            function GetBackupRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * GetBackupRequest name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @instance
+                             */
+                            GetBackupRequest.prototype.name = "";
+    
+                            /**
+                             * Creates a new GetBackupRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IGetBackupRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.GetBackupRequest} GetBackupRequest instance
+                             */
+                            GetBackupRequest.create = function create(properties) {
+                                return new GetBackupRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified GetBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetBackupRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IGetBackupRequest} message GetBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            GetBackupRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified GetBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetBackupRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IGetBackupRequest} message GetBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            GetBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a GetBackupRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.GetBackupRequest} GetBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            GetBackupRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.GetBackupRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a GetBackupRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.GetBackupRequest} GetBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            GetBackupRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a GetBackupRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            GetBackupRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a GetBackupRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.GetBackupRequest} GetBackupRequest
+                             */
+                            GetBackupRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.GetBackupRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.GetBackupRequest();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a GetBackupRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.GetBackupRequest} message GetBackupRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            GetBackupRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults)
+                                    object.name = "";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this GetBackupRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            GetBackupRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return GetBackupRequest;
+                        })();
+    
+                        v1.DeleteBackupRequest = (function() {
+    
+                            /**
+                             * Properties of a DeleteBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IDeleteBackupRequest
+                             * @property {string|null} [name] DeleteBackupRequest name
+                             */
+    
+                            /**
+                             * Constructs a new DeleteBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a DeleteBackupRequest.
+                             * @implements IDeleteBackupRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IDeleteBackupRequest=} [properties] Properties to set
+                             */
+                            function DeleteBackupRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * DeleteBackupRequest name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @instance
+                             */
+                            DeleteBackupRequest.prototype.name = "";
+    
+                            /**
+                             * Creates a new DeleteBackupRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDeleteBackupRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.DeleteBackupRequest} DeleteBackupRequest instance
+                             */
+                            DeleteBackupRequest.create = function create(properties) {
+                                return new DeleteBackupRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified DeleteBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.DeleteBackupRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDeleteBackupRequest} message DeleteBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DeleteBackupRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified DeleteBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DeleteBackupRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDeleteBackupRequest} message DeleteBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DeleteBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a DeleteBackupRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.DeleteBackupRequest} DeleteBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DeleteBackupRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.DeleteBackupRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a DeleteBackupRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.DeleteBackupRequest} DeleteBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DeleteBackupRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a DeleteBackupRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            DeleteBackupRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a DeleteBackupRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.DeleteBackupRequest} DeleteBackupRequest
+                             */
+                            DeleteBackupRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.DeleteBackupRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.DeleteBackupRequest();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a DeleteBackupRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.DeleteBackupRequest} message DeleteBackupRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            DeleteBackupRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults)
+                                    object.name = "";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this DeleteBackupRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            DeleteBackupRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return DeleteBackupRequest;
+                        })();
+    
+                        v1.ListBackupsRequest = (function() {
+    
+                            /**
+                             * Properties of a ListBackupsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListBackupsRequest
+                             * @property {string|null} [parent] ListBackupsRequest parent
+                             * @property {string|null} [filter] ListBackupsRequest filter
+                             * @property {number|null} [pageSize] ListBackupsRequest pageSize
+                             * @property {string|null} [pageToken] ListBackupsRequest pageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListBackupsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListBackupsRequest.
+                             * @implements IListBackupsRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListBackupsRequest=} [properties] Properties to set
+                             */
+                            function ListBackupsRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListBackupsRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @instance
+                             */
+                            ListBackupsRequest.prototype.parent = "";
+    
+                            /**
+                             * ListBackupsRequest filter.
+                             * @member {string} filter
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @instance
+                             */
+                            ListBackupsRequest.prototype.filter = "";
+    
+                            /**
+                             * ListBackupsRequest pageSize.
+                             * @member {number} pageSize
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @instance
+                             */
+                            ListBackupsRequest.prototype.pageSize = 0;
+    
+                            /**
+                             * ListBackupsRequest pageToken.
+                             * @member {string} pageToken
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @instance
+                             */
+                            ListBackupsRequest.prototype.pageToken = "";
+    
+                            /**
+                             * Creates a new ListBackupsRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupsRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListBackupsRequest} ListBackupsRequest instance
+                             */
+                            ListBackupsRequest.create = function create(properties) {
+                                return new ListBackupsRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupsRequest} message ListBackupsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupsRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.filter);
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).int32(message.pageSize);
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupsRequest} message ListBackupsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListBackupsRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListBackupsRequest} ListBackupsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupsRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListBackupsRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.filter = reader.string();
+                                        break;
+                                    case 3:
+                                        message.pageSize = reader.int32();
+                                        break;
+                                    case 4:
+                                        message.pageToken = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListBackupsRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListBackupsRequest} ListBackupsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupsRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListBackupsRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListBackupsRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    if (!$util.isString(message.filter))
+                                        return "filter: string expected";
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    if (!$util.isInteger(message.pageSize))
+                                        return "pageSize: integer expected";
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    if (!$util.isString(message.pageToken))
+                                        return "pageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListBackupsRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListBackupsRequest} ListBackupsRequest
+                             */
+                            ListBackupsRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListBackupsRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListBackupsRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.filter != null)
+                                    message.filter = String(object.filter);
+                                if (object.pageSize != null)
+                                    message.pageSize = object.pageSize | 0;
+                                if (object.pageToken != null)
+                                    message.pageToken = String(object.pageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListBackupsRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListBackupsRequest} message ListBackupsRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListBackupsRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.filter = "";
+                                    object.pageSize = 0;
+                                    object.pageToken = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    object.filter = message.filter;
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    object.pageSize = message.pageSize;
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    object.pageToken = message.pageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListBackupsRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListBackupsRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return ListBackupsRequest;
+                        })();
+    
+                        v1.ListBackupsResponse = (function() {
+    
+                            /**
+                             * Properties of a ListBackupsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListBackupsResponse
+                             * @property {Array.<google.spanner.admin.database.v1.IBackup>|null} [backups] ListBackupsResponse backups
+                             * @property {string|null} [nextPageToken] ListBackupsResponse nextPageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListBackupsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListBackupsResponse.
+                             * @implements IListBackupsResponse
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListBackupsResponse=} [properties] Properties to set
+                             */
+                            function ListBackupsResponse(properties) {
+                                this.backups = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListBackupsResponse backups.
+                             * @member {Array.<google.spanner.admin.database.v1.IBackup>} backups
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @instance
+                             */
+                            ListBackupsResponse.prototype.backups = $util.emptyArray;
+    
+                            /**
+                             * ListBackupsResponse nextPageToken.
+                             * @member {string} nextPageToken
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @instance
+                             */
+                            ListBackupsResponse.prototype.nextPageToken = "";
+    
+                            /**
+                             * Creates a new ListBackupsResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupsResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListBackupsResponse} ListBackupsResponse instance
+                             */
+                            ListBackupsResponse.create = function create(properties) {
+                                return new ListBackupsResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupsResponse} message ListBackupsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupsResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.backups != null && message.backups.length)
+                                    for (var i = 0; i < message.backups.length; ++i)
+                                        $root.google.spanner.admin.database.v1.Backup.encode(message.backups[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupsResponse} message ListBackupsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListBackupsResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListBackupsResponse} ListBackupsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupsResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListBackupsResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        if (!(message.backups && message.backups.length))
+                                            message.backups = [];
+                                        message.backups.push($root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32()));
+                                        break;
+                                    case 2:
+                                        message.nextPageToken = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListBackupsResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListBackupsResponse} ListBackupsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupsResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListBackupsResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListBackupsResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.backups != null && message.hasOwnProperty("backups")) {
+                                    if (!Array.isArray(message.backups))
+                                        return "backups: array expected";
+                                    for (var i = 0; i < message.backups.length; ++i) {
+                                        var error = $root.google.spanner.admin.database.v1.Backup.verify(message.backups[i]);
+                                        if (error)
+                                            return "backups." + error;
+                                    }
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    if (!$util.isString(message.nextPageToken))
+                                        return "nextPageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListBackupsResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListBackupsResponse} ListBackupsResponse
+                             */
+                            ListBackupsResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListBackupsResponse)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListBackupsResponse();
+                                if (object.backups) {
+                                    if (!Array.isArray(object.backups))
+                                        throw TypeError(".google.spanner.admin.database.v1.ListBackupsResponse.backups: array expected");
+                                    message.backups = [];
+                                    for (var i = 0; i < object.backups.length; ++i) {
+                                        if (typeof object.backups[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.ListBackupsResponse.backups: object expected");
+                                        message.backups[i] = $root.google.spanner.admin.database.v1.Backup.fromObject(object.backups[i]);
+                                    }
+                                }
+                                if (object.nextPageToken != null)
+                                    message.nextPageToken = String(object.nextPageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListBackupsResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListBackupsResponse} message ListBackupsResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListBackupsResponse.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.backups = [];
+                                if (options.defaults)
+                                    object.nextPageToken = "";
+                                if (message.backups && message.backups.length) {
+                                    object.backups = [];
+                                    for (var j = 0; j < message.backups.length; ++j)
+                                        object.backups[j] = $root.google.spanner.admin.database.v1.Backup.toObject(message.backups[j], options);
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    object.nextPageToken = message.nextPageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListBackupsResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListBackupsResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return ListBackupsResponse;
+                        })();
+    
+                        v1.ListBackupOperationsRequest = (function() {
+    
+                            /**
+                             * Properties of a ListBackupOperationsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListBackupOperationsRequest
+                             * @property {string|null} [parent] ListBackupOperationsRequest parent
+                             * @property {string|null} [filter] ListBackupOperationsRequest filter
+                             * @property {number|null} [pageSize] ListBackupOperationsRequest pageSize
+                             * @property {string|null} [pageToken] ListBackupOperationsRequest pageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListBackupOperationsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListBackupOperationsRequest.
+                             * @implements IListBackupOperationsRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest=} [properties] Properties to set
+                             */
+                            function ListBackupOperationsRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListBackupOperationsRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @instance
+                             */
+                            ListBackupOperationsRequest.prototype.parent = "";
+    
+                            /**
+                             * ListBackupOperationsRequest filter.
+                             * @member {string} filter
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @instance
+                             */
+                            ListBackupOperationsRequest.prototype.filter = "";
+    
+                            /**
+                             * ListBackupOperationsRequest pageSize.
+                             * @member {number} pageSize
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @instance
+                             */
+                            ListBackupOperationsRequest.prototype.pageSize = 0;
+    
+                            /**
+                             * ListBackupOperationsRequest pageToken.
+                             * @member {string} pageToken
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @instance
+                             */
+                            ListBackupOperationsRequest.prototype.pageToken = "";
+    
+                            /**
+                             * Creates a new ListBackupOperationsRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsRequest} ListBackupOperationsRequest instance
+                             */
+                            ListBackupOperationsRequest.create = function create(properties) {
+                                return new ListBackupOperationsRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupOperationsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest} message ListBackupOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupOperationsRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.filter);
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).int32(message.pageSize);
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest} message ListBackupOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListBackupOperationsRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsRequest} ListBackupOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupOperationsRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListBackupOperationsRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.filter = reader.string();
+                                        break;
+                                    case 3:
+                                        message.pageSize = reader.int32();
+                                        break;
+                                    case 4:
+                                        message.pageToken = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListBackupOperationsRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsRequest} ListBackupOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupOperationsRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListBackupOperationsRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListBackupOperationsRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    if (!$util.isString(message.filter))
+                                        return "filter: string expected";
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    if (!$util.isInteger(message.pageSize))
+                                        return "pageSize: integer expected";
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    if (!$util.isString(message.pageToken))
+                                        return "pageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListBackupOperationsRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsRequest} ListBackupOperationsRequest
+                             */
+                            ListBackupOperationsRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListBackupOperationsRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListBackupOperationsRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.filter != null)
+                                    message.filter = String(object.filter);
+                                if (object.pageSize != null)
+                                    message.pageSize = object.pageSize | 0;
+                                if (object.pageToken != null)
+                                    message.pageToken = String(object.pageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListBackupOperationsRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListBackupOperationsRequest} message ListBackupOperationsRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListBackupOperationsRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.filter = "";
+                                    object.pageSize = 0;
+                                    object.pageToken = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    object.filter = message.filter;
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    object.pageSize = message.pageSize;
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    object.pageToken = message.pageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListBackupOperationsRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListBackupOperationsRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return ListBackupOperationsRequest;
+                        })();
+    
+                        v1.ListBackupOperationsResponse = (function() {
+    
+                            /**
+                             * Properties of a ListBackupOperationsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListBackupOperationsResponse
+                             * @property {Array.<google.longrunning.IOperation>|null} [operations] ListBackupOperationsResponse operations
+                             * @property {string|null} [nextPageToken] ListBackupOperationsResponse nextPageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListBackupOperationsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListBackupOperationsResponse.
+                             * @implements IListBackupOperationsResponse
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsResponse=} [properties] Properties to set
+                             */
+                            function ListBackupOperationsResponse(properties) {
+                                this.operations = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListBackupOperationsResponse operations.
+                             * @member {Array.<google.longrunning.IOperation>} operations
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @instance
+                             */
+                            ListBackupOperationsResponse.prototype.operations = $util.emptyArray;
+    
+                            /**
+                             * ListBackupOperationsResponse nextPageToken.
+                             * @member {string} nextPageToken
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @instance
+                             */
+                            ListBackupOperationsResponse.prototype.nextPageToken = "";
+    
+                            /**
+                             * Creates a new ListBackupOperationsResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsResponse} ListBackupOperationsResponse instance
+                             */
+                            ListBackupOperationsResponse.create = function create(properties) {
+                                return new ListBackupOperationsResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupOperationsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsResponse} message ListBackupOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupOperationsResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.operations != null && message.operations.length)
+                                    for (var i = 0; i < message.operations.length; ++i)
+                                        $root.google.longrunning.Operation.encode(message.operations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListBackupOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListBackupOperationsResponse} message ListBackupOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListBackupOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListBackupOperationsResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsResponse} ListBackupOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupOperationsResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListBackupOperationsResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        if (!(message.operations && message.operations.length))
+                                            message.operations = [];
+                                        message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                        break;
+                                    case 2:
+                                        message.nextPageToken = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListBackupOperationsResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsResponse} ListBackupOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListBackupOperationsResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListBackupOperationsResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListBackupOperationsResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.operations != null && message.hasOwnProperty("operations")) {
+                                    if (!Array.isArray(message.operations))
+                                        return "operations: array expected";
+                                    for (var i = 0; i < message.operations.length; ++i) {
+                                        var error = $root.google.longrunning.Operation.verify(message.operations[i]);
+                                        if (error)
+                                            return "operations." + error;
+                                    }
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    if (!$util.isString(message.nextPageToken))
+                                        return "nextPageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListBackupOperationsResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListBackupOperationsResponse} ListBackupOperationsResponse
+                             */
+                            ListBackupOperationsResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListBackupOperationsResponse)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListBackupOperationsResponse();
+                                if (object.operations) {
+                                    if (!Array.isArray(object.operations))
+                                        throw TypeError(".google.spanner.admin.database.v1.ListBackupOperationsResponse.operations: array expected");
+                                    message.operations = [];
+                                    for (var i = 0; i < object.operations.length; ++i) {
+                                        if (typeof object.operations[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.ListBackupOperationsResponse.operations: object expected");
+                                        message.operations[i] = $root.google.longrunning.Operation.fromObject(object.operations[i]);
+                                    }
+                                }
+                                if (object.nextPageToken != null)
+                                    message.nextPageToken = String(object.nextPageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListBackupOperationsResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListBackupOperationsResponse} message ListBackupOperationsResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListBackupOperationsResponse.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.operations = [];
+                                if (options.defaults)
+                                    object.nextPageToken = "";
+                                if (message.operations && message.operations.length) {
+                                    object.operations = [];
+                                    for (var j = 0; j < message.operations.length; ++j)
+                                        object.operations[j] = $root.google.longrunning.Operation.toObject(message.operations[j], options);
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    object.nextPageToken = message.nextPageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListBackupOperationsResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListBackupOperationsResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return ListBackupOperationsResponse;
+                        })();
+    
+                        v1.BackupInfo = (function() {
+    
+                            /**
+                             * Properties of a BackupInfo.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IBackupInfo
+                             * @property {string|null} [backup] BackupInfo backup
+                             * @property {google.protobuf.ITimestamp|null} [createTime] BackupInfo createTime
+                             * @property {string|null} [sourceDatabase] BackupInfo sourceDatabase
+                             */
+    
+                            /**
+                             * Constructs a new BackupInfo.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a BackupInfo.
+                             * @implements IBackupInfo
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IBackupInfo=} [properties] Properties to set
+                             */
+                            function BackupInfo(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * BackupInfo backup.
+                             * @member {string} backup
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @instance
+                             */
+                            BackupInfo.prototype.backup = "";
+    
+                            /**
+                             * BackupInfo createTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} createTime
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @instance
+                             */
+                            BackupInfo.prototype.createTime = null;
+    
+                            /**
+                             * BackupInfo sourceDatabase.
+                             * @member {string} sourceDatabase
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @instance
+                             */
+                            BackupInfo.prototype.sourceDatabase = "";
+    
+                            /**
+                             * Creates a new BackupInfo instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IBackupInfo=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.BackupInfo} BackupInfo instance
+                             */
+                            BackupInfo.create = function create(properties) {
+                                return new BackupInfo(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified BackupInfo message. Does not implicitly {@link google.spanner.admin.database.v1.BackupInfo.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IBackupInfo} message BackupInfo message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            BackupInfo.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.backup);
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.sourceDatabase != null && message.hasOwnProperty("sourceDatabase"))
+                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.sourceDatabase);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified BackupInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupInfo.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IBackupInfo} message BackupInfo message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            BackupInfo.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a BackupInfo message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.BackupInfo} BackupInfo
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            BackupInfo.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.BackupInfo();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.backup = reader.string();
+                                        break;
+                                    case 2:
+                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 3:
+                                        message.sourceDatabase = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a BackupInfo message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.BackupInfo} BackupInfo
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            BackupInfo.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a BackupInfo message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            BackupInfo.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    if (!$util.isString(message.backup))
+                                        return "backup: string expected";
+                                if (message.createTime != null && message.hasOwnProperty("createTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.createTime);
+                                    if (error)
+                                        return "createTime." + error;
+                                }
+                                if (message.sourceDatabase != null && message.hasOwnProperty("sourceDatabase"))
+                                    if (!$util.isString(message.sourceDatabase))
+                                        return "sourceDatabase: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a BackupInfo message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.BackupInfo} BackupInfo
+                             */
+                            BackupInfo.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.BackupInfo)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.BackupInfo();
+                                if (object.backup != null)
+                                    message.backup = String(object.backup);
+                                if (object.createTime != null) {
+                                    if (typeof object.createTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.BackupInfo.createTime: object expected");
+                                    message.createTime = $root.google.protobuf.Timestamp.fromObject(object.createTime);
+                                }
+                                if (object.sourceDatabase != null)
+                                    message.sourceDatabase = String(object.sourceDatabase);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a BackupInfo message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.BackupInfo} message BackupInfo
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            BackupInfo.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.backup = "";
+                                    object.createTime = null;
+                                    object.sourceDatabase = "";
+                                }
+                                if (message.backup != null && message.hasOwnProperty("backup"))
+                                    object.backup = message.backup;
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
+                                if (message.sourceDatabase != null && message.hasOwnProperty("sourceDatabase"))
+                                    object.sourceDatabase = message.sourceDatabase;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this BackupInfo to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            BackupInfo.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return BackupInfo;
+                        })();
+    
+                        v1.OperationProgress = (function() {
+    
+                            /**
+                             * Properties of an OperationProgress.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IOperationProgress
+                             * @property {number|null} [progressPercent] OperationProgress progressPercent
+                             * @property {google.protobuf.ITimestamp|null} [startTime] OperationProgress startTime
+                             * @property {google.protobuf.ITimestamp|null} [endTime] OperationProgress endTime
+                             */
+    
+                            /**
+                             * Constructs a new OperationProgress.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an OperationProgress.
+                             * @implements IOperationProgress
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IOperationProgress=} [properties] Properties to set
+                             */
+                            function OperationProgress(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * OperationProgress progressPercent.
+                             * @member {number} progressPercent
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.progressPercent = 0;
+    
+                            /**
+                             * OperationProgress startTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} startTime
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.startTime = null;
+    
+                            /**
+                             * OperationProgress endTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} endTime
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.endTime = null;
+    
+                            /**
+                             * Creates a new OperationProgress instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IOperationProgress=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.OperationProgress} OperationProgress instance
+                             */
+                            OperationProgress.create = function create(properties) {
+                                return new OperationProgress(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified OperationProgress message. Does not implicitly {@link google.spanner.admin.database.v1.OperationProgress.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IOperationProgress} message OperationProgress message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OperationProgress.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.progressPercent);
+                                if (message.startTime != null && message.hasOwnProperty("startTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.startTime, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.endTime != null && message.hasOwnProperty("endTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.endTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified OperationProgress message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.OperationProgress.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IOperationProgress} message OperationProgress message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OperationProgress.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an OperationProgress message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.OperationProgress} OperationProgress
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OperationProgress.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.OperationProgress();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.progressPercent = reader.int32();
+                                        break;
+                                    case 2:
+                                        message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 3:
+                                        message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an OperationProgress message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.OperationProgress} OperationProgress
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OperationProgress.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an OperationProgress message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            OperationProgress.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    if (!$util.isInteger(message.progressPercent))
+                                        return "progressPercent: integer expected";
+                                if (message.startTime != null && message.hasOwnProperty("startTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.startTime);
+                                    if (error)
+                                        return "startTime." + error;
+                                }
+                                if (message.endTime != null && message.hasOwnProperty("endTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.endTime);
+                                    if (error)
+                                        return "endTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an OperationProgress message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.OperationProgress} OperationProgress
+                             */
+                            OperationProgress.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.OperationProgress)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.OperationProgress();
+                                if (object.progressPercent != null)
+                                    message.progressPercent = object.progressPercent | 0;
+                                if (object.startTime != null) {
+                                    if (typeof object.startTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.OperationProgress.startTime: object expected");
+                                    message.startTime = $root.google.protobuf.Timestamp.fromObject(object.startTime);
+                                }
+                                if (object.endTime != null) {
+                                    if (typeof object.endTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.OperationProgress.endTime: object expected");
+                                    message.endTime = $root.google.protobuf.Timestamp.fromObject(object.endTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an OperationProgress message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.database.v1.OperationProgress} message OperationProgress
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            OperationProgress.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.progressPercent = 0;
+                                    object.startTime = null;
+                                    object.endTime = null;
+                                }
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    object.progressPercent = message.progressPercent;
+                                if (message.startTime != null && message.hasOwnProperty("startTime"))
+                                    object.startTime = $root.google.protobuf.Timestamp.toObject(message.startTime, options);
+                                if (message.endTime != null && message.hasOwnProperty("endTime"))
+                                    object.endTime = $root.google.protobuf.Timestamp.toObject(message.endTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this OperationProgress to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            OperationProgress.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return OperationProgress;
                         })();
     
                         return v1;
