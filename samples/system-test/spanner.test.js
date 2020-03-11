@@ -277,11 +277,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
-    );
-    assert.notMatch(
-      output,
-      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
     );
   });
 
@@ -292,11 +288,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
-    );
-    assert.notMatch(
-      output,
-      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
     );
   });
 
