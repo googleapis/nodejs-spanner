@@ -17,12 +17,13 @@
 import {EventEmitter} from 'events';
 import * as is from 'is';
 import PQueue from 'p-queue';
-import trace = require('stack-trace');
 
 import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
+import {ServiceError, status} from 'grpc';
+import trace = require('stack-trace');
 
 /**
  * @callback SessionPoolCloseCallback
@@ -178,8 +179,38 @@ export class SessionLeakError extends Error {
   messages: string[];
   constructor(leaks: string[]) {
     super(`${leaks.length} session leak(s) detected.`);
+    // Restore error name that was overwritten by the super constructor call.
+    this.name = SessionLeakError.name;
     this.messages = leaks;
   }
+}
+
+/**
+ * Error to be thrown when the session pool is exhausted.
+ */
+export class SessionPoolExhaustedError extends Error {
+  messages: string[];
+  constructor(leaks: string[]) {
+    super(errors.Exhausted);
+    // Restore error name that was overwritten by the super constructor call.
+    this.name = SessionPoolExhaustedError.name;
+    this.messages = leaks;
+  }
+}
+
+/**
+ * Checks whether the given error is a 'Session not found' error.
+ * @param error the error to check
+ * @return true if the error is a 'Session not found' error, and otherwise false.
+ */
+export function isSessionNotFoundError(
+  error: ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.code === status.NOT_FOUND &&
+    error.message.includes('Session not found')
+  );
 }
 
 /**
@@ -188,12 +219,18 @@ export class SessionLeakError extends Error {
 const enum errors {
   Closed = 'Database is closed.',
   Timeout = 'Timeout occurred while acquiring session.',
+  Exhausted = 'No resources available.',
 }
 
 interface SessionInventory {
   [types.ReadOnly]: Session[];
   [types.ReadWrite]: Session[];
   borrowed: Set<Session>;
+}
+
+export interface CreateSessionsOptions {
+  writes?: number;
+  reads?: number;
 }
 
 /**
@@ -213,6 +250,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _evictHandle!: NodeJS.Timer;
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
+  _pending = 0;
+  _pendingPrepare = 0;
+  _numWaiters = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -252,7 +292,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get borrowed(): number {
-    return this._inventory.borrowed.size;
+    return this._inventory.borrowed.size + this._pending;
   }
 
   /**
@@ -428,14 +468,31 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     delete session.txn;
     session.lastUsed = Date.now();
 
+    if (isSessionNotFoundError(session.lastError)) {
+      // Remove the session from the pool. It is not necessary to call _destroy,
+      // as the session is already removed from the backend.
+      this._inventory.borrowed.delete(session);
+      this._traces.delete(session.id);
+      return;
+    }
+    session.lastError = undefined;
+
     if (session.type === types.ReadOnly) {
       this._release(session);
       return;
     }
 
+    // Delete the trace associated with this session to mark the session as checked
+    // back into the pool. This will prevent the session to be marked as leaked if
+    // the pool is closed while the session is being prepared.
+    this._traces.delete(session.id);
+    this._pendingPrepare++;
     this._prepareTransaction(session)
       .catch(() => (session.type = types.ReadOnly))
-      .then(() => this._release(session));
+      .then(() => {
+        this._pendingPrepare--;
+        this._release(session);
+      });
   }
 
   /**
@@ -451,6 +508,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new Error(errors.Closed);
     }
 
+    // Get the stacktrace of the caller before we call any async methods, as calling an async method will break the stacktrace.
+    const frames = trace.get();
     const startTime = Date.now();
     const timeout = this.options.acquireTimeout;
 
@@ -479,12 +538,16 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       try {
         await this._prepareTransaction(session);
       } catch (e) {
-        this._release(session);
+        if (isSessionNotFoundError(e)) {
+          this._inventory.borrowed.delete(session);
+        } else {
+          this._release(session);
+        }
         throw e;
       }
     }
 
-    this._traces.set(session.id, trace.get());
+    this._traces.set(session.id, frames);
     return session;
   }
 
@@ -504,7 +567,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Borrows session from specific group.
+   * Borrows the first session from specific group. This method may only be called if the inventory
+   * actually contains a session of the desired type.
    *
    * @private
    *
@@ -512,8 +576,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Session}
    */
   _borrowFrom(type: types): Session {
-    const session = this._inventory[type][0];
-    this._borrow(session);
+    const session = this._inventory[type].pop()!;
+    this._inventory.borrowed.add(session);
     return session;
   }
 
@@ -542,61 +606,62 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Attempts to create a session of a certain type.
+   * Attempts to create a single session of a certain type.
    *
    * @private
    *
    * @param {string} type The desired type to create.
    * @returns {Promise}
    */
-  async _createSession(type: types): Promise<void> {
-    const session = this.database.session();
-    const labels = this.options.labels!;
+  _createSession(type: types): Promise<void> {
+    const kind = type === types.ReadOnly ? 'reads' : 'writes';
+    const options = {[kind]: 1};
 
-    this._inventory.borrowed.add(session);
-
-    const createSession = async (): Promise<void> => {
-      await session.create({labels});
-
-      if (type === types.ReadWrite) {
-        try {
-          await this._prepareTransaction(session);
-        } catch (e) {
-          type = types.ReadOnly;
-        }
-      }
-    };
-
-    try {
-      await this._requests.add(createSession);
-    } catch (e) {
-      this._inventory.borrowed.delete(session);
-      throw e;
-    }
-
-    session.type = type;
-    session.lastUsed = Date.now();
-
-    this._inventory[type].push(session);
-    this._inventory.borrowed.delete(session);
+    return this._createSessions(options);
   }
 
   /**
-   * Attempts to create a session but emits any errors that occur.
+   * Batch creates sessions and prepares any necessary transactions.
    *
    * @private
    *
-   * @emits SessionPool#available
-   * @emits SessionPool#error
-   * @param {string} type The desired type to create.
+   * @param {object} [options] Config specifying how many sessions to create.
    * @returns {Promise}
    */
-  async _createSessionInBackground(type: types): Promise<void> {
-    try {
-      await this._createSession(type);
-      this.emit('available');
-    } catch (e) {
-      this.emit('error', e);
+  async _createSessions({
+    reads = 0,
+    writes = 0,
+  }: CreateSessionsOptions): Promise<void> {
+    const labels = this.options.labels!;
+
+    let needed = reads + writes;
+    this._pending += needed;
+
+    // while we can request as many sessions be created as we want, the backend
+    // will return at most 100 at a time. hence the need for a while loop
+    while (needed > 0) {
+      let sessions: Session[] | null = null;
+
+      try {
+        [sessions] = await this.database.batchCreateSessions({
+          count: needed,
+          labels,
+        });
+
+        needed -= sessions.length;
+      } catch (e) {
+        this._pending -= needed;
+        throw e;
+      }
+
+      sessions.forEach((session: Session) => {
+        session.type = writes-- > 0 ? types.ReadWrite : types.ReadOnly;
+
+        this._inventory.borrowed.add(session);
+        this._pending -= 1;
+
+        this.release(session);
+      });
     }
   }
 
@@ -652,22 +717,21 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Promise}
    */
   async _fill(): Promise<void> {
-    const requests: Array<Promise<void>> = [];
     const minReadWrite = Math.floor(this.options.min! * this.options.writes!);
-    const neededReadWrite = Math.max(minReadWrite - this.writes, 0);
-
-    for (let i = 0; i < neededReadWrite; i++) {
-      requests.push(this._createSessionInBackground(types.ReadWrite));
-    }
-
+    const writes = Math.max(minReadWrite - this.writes, 0);
     const minReadOnly = Math.ceil(this.options.min! - minReadWrite);
-    const neededReadOnly = Math.max(minReadOnly - this.reads, 0);
+    const reads = Math.max(minReadOnly - this.reads, 0);
+    const totalNeeded = writes + reads;
 
-    for (let i = 0; i < neededReadOnly; i++) {
-      requests.push(this._createSessionInBackground(types.ReadOnly));
+    if (totalNeeded === 0) {
+      return;
     }
 
-    await Promise.all(requests);
+    try {
+      await this._createSessions({reads, writes});
+    } catch (e) {
+      this.emit('error', e);
+    }
   }
 
   /**
@@ -713,8 +777,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return this._borrowNextAvailableSession(type);
     }
 
-    if (this.options.fail!) {
-      throw new Error('No resources available.');
+    if (this.isFull && this.options.fail!) {
+      throw new SessionPoolExhaustedError(this._getLeaks());
     }
 
     let removeListener: Function;
@@ -743,19 +807,27 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       );
     }
 
-    if (!this.isFull) {
+    // Only create a new session if there are more waiters than sessions already
+    // being created. The current requester will be waiter number _numWaiters+1.
+    if (
+      !this.isFull &&
+      this._pending + this._pendingPrepare <= this._numWaiters
+    ) {
       promises.push(
-        new Promise((resolve, reject) => {
-          this._createSession(type).then(() => this.emit('available'), reject);
+        new Promise((_, reject) => {
+          this._createSession(type).catch(reject);
         })
       );
     }
 
     try {
+      this._numWaiters++;
       await Promise.race(promises);
     } catch (e) {
       removeListener!();
       throw e;
+    } finally {
+      this._numWaiters--;
     }
 
     return this._borrowNextAvailableSession(type);
@@ -824,7 +896,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise}
    */
   async _prepareTransaction(session: Session): Promise<void> {
-    const transaction = session.transaction();
+    const transaction = session.transaction(
+      (session.parent as Database).queryOptions_
+    );
     await transaction.begin();
     session.txn = transaction;
   }
@@ -840,7 +914,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _release(session: Session): void {
     const type = session.type!;
 
-    this._inventory[type].unshift(session);
+    this._inventory[type].push(session);
     this._inventory.borrowed.delete(session);
     this._traces.delete(session.id);
 

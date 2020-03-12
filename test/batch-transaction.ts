@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {util} from '@google-cloud/common-grpc';
+import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -24,12 +25,6 @@ import * as sinon from 'sinon';
 import {Session} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
-
-function getFake(obj: {}) {
-  return obj as {
-    calledWith_: IArguments;
-  };
-}
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {

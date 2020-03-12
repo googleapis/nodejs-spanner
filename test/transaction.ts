@@ -16,6 +16,7 @@
 
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
@@ -27,11 +28,13 @@ import {SpannerClient as s} from '../src/v1';
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
 
+  const PARENT = {};
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
 
   const SESSION = {
+    parent: PARENT,
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
@@ -510,6 +513,7 @@ describe('Transaction', () => {
           params: {a: 'b'},
           types: {a: 'string'},
           seqno: 1,
+          queryOptions: {},
         });
 
         const expectedRequest = {
@@ -519,6 +523,7 @@ describe('Transaction', () => {
           params: fakeParams,
           paramTypes: fakeParamTypes,
           seqno: 1,
+          queryOptions: {},
           resumeToken: undefined,
         };
 
@@ -1140,7 +1145,7 @@ describe('Transaction', () => {
             {stats: {rowCount: 'a', a: '6'}},
             {stats: {rowCount: 'b', b: '8'}},
           ],
-          status: {code: 3, details: 'Err'},
+          status: {code: 3, message: 'Err'},
         };
 
         transaction.batchUpdate(
@@ -1148,7 +1153,7 @@ describe('Transaction', () => {
           (err, rowCounts, apiResponse) => {
             assert(err instanceof Error);
             assert.strictEqual(err.code, fakeResponse.status.code);
-            assert.strictEqual(err.message, fakeResponse.status.details);
+            assert.strictEqual(err.message, fakeResponse.status.message);
             assert.deepStrictEqual(err.rowCounts, expectedRowCounts);
             assert.deepStrictEqual(rowCounts, expectedRowCounts);
             assert.deepStrictEqual(apiResponse, fakeResponse);
@@ -1471,7 +1476,10 @@ describe('Transaction', () => {
         const stub = sandbox.stub(transaction, 'request');
 
         const fakeTable = 'my-table-123';
-        const rows = [{name: 'dave', id: '1'}, {name: 'stephen', id: '2'}];
+        const rows = [
+          {name: 'dave', id: '1'},
+          {name: 'stephen', id: '2'},
+        ];
 
         const expectedColumns = Object.keys(rows[0]).sort();
         const expectedValues = rows.map(row => {

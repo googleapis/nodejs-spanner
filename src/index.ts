@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Service, Operation} from '@google-cloud/common-grpc';
+import {GrpcService, GrpcServiceConfig} from './common-grpc/service';
+import {GrpcOperation} from './common-grpc/operation';
 import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
@@ -26,7 +27,6 @@ import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {GrpcServiceConfig} from '@google-cloud/common-grpc/build/src/service';
 import {codec} from './codec';
 import {Database} from './database';
 import {Instance} from './instance';
@@ -215,7 +215,7 @@ export type TranslateEnumKeys<T, U extends keyof T, E extends {[index: string]: 
  *
  * @param {ClientConfig} [options] Configuration options.
  */
-class Spanner extends Service {
+class Spanner extends GrpcService {
   options: GoogleAuthOptions;
   auth: GoogleAuth;
   clients_: Map<string, {}>;
@@ -230,6 +230,39 @@ class Spanner extends Service {
    * @type {string}
    */
   static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
+
+  /**
+   * Gets the configured Spanner emulator host from an environment variable.
+   */
+  static getSpannerEmulatorHost():
+    | {endpoint: string; port?: number}
+    | undefined {
+    const endpointWithPort = process.env.SPANNER_EMULATOR_HOST;
+    if (endpointWithPort) {
+      if (
+        endpointWithPort.startsWith('http:') ||
+        endpointWithPort.startsWith('https:')
+      ) {
+        throw new Error(
+          'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
+        );
+      }
+      const index = endpointWithPort.indexOf(':');
+      if (index > -1) {
+        const portName = endpointWithPort.substring(index + 1);
+        const port = +portName;
+        if (!port || port < 1 || port > 65535) {
+          throw new Error(`Invalid port number: ${portName}`);
+        }
+        return {
+          endpoint: endpointWithPort.substring(0, index),
+          port: +endpointWithPort.substring(index + 1),
+        };
+      }
+      return {endpoint: endpointWithPort};
+    }
+    return undefined;
+  }
 
   constructor(options?: SpannerOptions) {
     const scopes: Array<{}> = [];
@@ -258,6 +291,16 @@ class Spanner extends Service {
       },
       options || {}
     ) as {}) as SpannerOptions;
+    const emulatorHost = Spanner.getSpannerEmulatorHost();
+    if (
+      emulatorHost &&
+      emulatorHost.endpoint &&
+      emulatorHost.endpoint.length > 0
+    ) {
+      options.servicePath = emulatorHost.endpoint;
+      options.port = emulatorHost.port;
+      options.sslCreds = grpc.credentials.createInsecure();
+    }
     const config = ({
       baseUrl:
         options.apiEndpoint ||
@@ -391,7 +434,8 @@ class Spanner extends Service {
    *     // Instance created successfully.
    *   });
    */
-  createInstance(name: string, config?, callback?) {
+  // tslint:disable-next-line no-any
+  createInstance(name: string, config?, callback?): any {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
@@ -728,7 +772,7 @@ class Spanner extends Service {
       throw new Error('A name is required to access an Operation object.');
     }
     // tslint:disable-next-line no-any
-    return new Operation(this as any, name);
+    return new GrpcOperation(this as any, name);
   }
 
   /**
@@ -1075,3 +1119,5 @@ module.exports.v1 = gapic.v1;
 
 // Alias `module.exports` as `module.exports.default`, for future-proofing.
 module.exports.default = Object.assign({}, module.exports);
+import * as protos from '../protos/protos';
+export {protos};

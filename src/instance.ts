@@ -15,8 +15,8 @@
  */
 
 import arrify = require('arrify');
-const common = require('@google-cloud/common-grpc');
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
+const common = require('./common-grpc/service-object');
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
@@ -36,6 +36,7 @@ import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
 import { google, google as databaseAdmin } from '../proto/spanner_database_admin';
+import {google as spannerClient} from '../proto/spanner';
 import { Backup } from './backup';
 import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import IBackup = google.spanner.admin.database.v1.IBackup;
@@ -48,6 +49,9 @@ export type DeleteInstanceResponse = [instanceAdmin.protobuf.IEmpty];
 export type ExistsInstanceResponse = [boolean];
 export type GetInstanceResponse = [Instance, IInstance];
 export type GetInstanceMetadataResponse = [IInstance];
+export interface GetInstanceMetadataOptions {
+  fieldNames?: string | string[];
+}
 export type GetDatabasesResponse = PagedResponse<
   Database,
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
@@ -128,7 +132,9 @@ export type ListDatabaseOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
 >;
-export interface GetInstanceConfig extends GetConfig {}
+export interface GetInstanceConfig
+  extends GetConfig,
+    GetInstanceMetadataOptions {}
 
 interface InstanceRequest {
   (
@@ -153,7 +159,7 @@ interface InstanceRequest {
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  */
-class Instance extends common.ServiceObject {
+class Instance extends common.GrpcServiceObject {
   formattedName_: string;
   request: InstanceRequest;
   requestStream: (config?: RequestConfig) => Duplex;
@@ -600,6 +606,10 @@ class Instance extends common.ServiceObject {
    * @param {string} name The name of the instance.
    * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
    *     configuration options.
+   * @param {spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
+   *     Default query options to use with the database. These options will be
+   *     overridden by any query options set in environment variables or that
+   *     are specified on a per-query basis.
    * @return {Database} A Database object.
    *
    * @example
@@ -611,14 +621,28 @@ class Instance extends common.ServiceObject {
    */
   database(
     name: string,
-    poolOptions?: SessionPoolOptions | SessionPoolConstructor
+    poolOptions?: SessionPoolOptions | SessionPoolConstructor,
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ): Database {
     if (!name) {
       throw new Error('A name is required to access a Database object.');
     }
-    const key = name.split('/').pop();
+    // Only add an additional key for SessionPoolOptions and QueryOptions if an
+    // options object with at least one value was passed in.
+    let optionsKey =
+      poolOptions && Object.keys(poolOptions).length > 0
+        ? '/' + JSON.stringify(Object.entries(poolOptions).sort())
+        : '';
+    if (queryOptions && Object.keys(queryOptions).length > 0) {
+      optionsKey =
+        optionsKey + '/' + JSON.stringify(Object.entries(queryOptions!).sort());
+    }
+    const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
-      this.databases_.set(key!, new Database(this, name, poolOptions));
+      this.databases_.set(
+        key!,
+        new Database(this, name, poolOptions, queryOptions)
+      );
     }
     return this.databases_.get(key!)!;
   }
@@ -677,7 +701,7 @@ class Instance extends common.ServiceObject {
         return database.close();
       })
     )
-      .catch(common.util.noop)
+      .catch(() => {})
       .then(() => {
         this.databases_.clear();
         this.request<instanceAdmin.protobuf.IEmpty>(
@@ -770,6 +794,9 @@ class Instance extends common.ServiceObject {
    * @param {options} [options] Configuration object.
    * @param {boolean} [options.autoCreate=false] Automatically create the
    *     object if it does not exist.
+   * @param {string | string[]} [options.fieldNames] A list of `Instance` field
+   *     names to be requested. Eligible values are: `name`, `displayName`,
+   *     `endpointUris`, `labels`, `config`, `nodeCount`, `state`.
    * @param {GetInstanceCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceResponse>}
    *
@@ -802,7 +829,13 @@ class Instance extends common.ServiceObject {
         ? optionsOrCallback
         : ({} as GetInstanceConfig);
 
-    this.getMetadata((err, metadata) => {
+    const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
+    if (options.fieldNames) {
+      getMetadataOptions.fieldNames = options['fieldNames'];
+      delete options.fieldNames;
+    }
+
+    this.getMetadata(getMetadataOptions, (err, metadata) => {
       if (err) {
         if (err.code === 5 && options.autoCreate) {
           this.create(
@@ -941,8 +974,14 @@ class Instance extends common.ServiceObject {
       }
     );
   }
-  getMetadata(): Promise<GetInstanceMetadataResponse>;
+  getMetadata(
+    options?: GetInstanceMetadataOptions
+  ): Promise<GetInstanceMetadataResponse>;
   getMetadata(callback: GetInstanceMetadataCallback): void;
+  getMetadata(
+    options: GetInstanceMetadataOptions,
+    callback: GetInstanceMetadataCallback
+  ): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -962,6 +1001,10 @@ class Instance extends common.ServiceObject {
    * @see {@link v1.InstanceAdminClient#getInstance}
    * @see [GetInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstance)
    *
+   * @param {GetInstanceMetadataOptions} [options] Configuration object
+   * @param {string | string[]} [options.fieldNames] A list of `Instance` field
+   *     names to be requested. Eligible values are: `name`, `displayName`,
+   *     `endpointUris`, `labels`, `config`, `nodeCount`, `state`.
    * @param {GetInstanceMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceMetadataResponse>}
    *
@@ -974,6 +1017,23 @@ class Instance extends common.ServiceObject {
    * instance.getMetadata(function(err, metadata, apiResponse) {});
    *
    * //-
+   * // Request only `displayName`.
+   * //-
+   * instance.getMetadata({fieldNames: 'displayName'}, (err, metadata, apiResponse) => {
+   *   // metadata will only contain value for `displayName`
+   *   const displayName = metadata['displayName'];
+   * })
+   *
+   * //-
+   * // Request multiple specific field names.
+   * //-
+   * instance.getMetadata({fieldNames: ['displayName', 'nodeCount']}, (err, metadata, apiResponse) => {
+   *   // metadata will only contain value for `displayName` and 'nodeCount'
+   *   const displayName = metadata['displayName'];
+   *   const nodeCount = metadata['nodeCount'];
+   * });
+   *
+   * //-
    * // If the callback is omitted, we'll return a Promise.
    * //-
    * instance.getMetadata().then(function(data) {
@@ -982,11 +1042,23 @@ class Instance extends common.ServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetInstanceMetadataCallback
+    optionsOrCallback?:
+      | GetInstanceMetadataOptions
+      | GetInstanceMetadataCallback,
+    cb?: GetInstanceMetadataCallback
   ): Promise<GetInstanceMetadataResponse> | void {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const reqOpts = {
       name: this.formattedName_,
     };
+    if (options.fieldNames) {
+      reqOpts['fieldMask'] = {
+        paths: arrify(options['fieldNames']!).map(snakeCase),
+      };
+    }
     return this.request<IInstance>(
       {
         client: 'InstanceAdminClient',

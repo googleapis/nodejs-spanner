@@ -18,9 +18,7 @@
  * @module spanner/session
  */
 
-'use strict';
-
-import {ServiceObject} from '@google-cloud/common-grpc';
+import {GrpcServiceObject} from './common-grpc/service-object';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as r from 'teeny-request';
@@ -38,6 +36,7 @@ import {
 } from './database';
 import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
 import {NormalCallback} from './common';
+import {ServiceError} from 'grpc';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -95,12 +94,13 @@ export type DeleteResponse = [r.Response];
  * //-
  * const session = database.session('session-name');
  */
-export class Session extends ServiceObject {
+export class Session extends GrpcServiceObject {
   id!: string;
   formattedName_?: string;
   type?: types;
   txn?: Transaction;
   lastUsed?: number;
+  lastError?: ServiceError;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -374,24 +374,31 @@ export class Session extends ServiceObject {
    * Create a Snapshot transaction.
    *
    * @param {TimestampBounds} [options] The timestamp bounds.
+   * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions] The default query options to use.
    * @returns {Snapshot}
    *
    * @example
    * const snapshot = session.snapshot({strong: false});
    */
-  snapshot(options?: TimestampBounds) {
-    return new Snapshot(this, options);
+  snapshot(
+    options?: TimestampBounds,
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+  ) {
+    return new Snapshot(this, options, queryOptions);
   }
   /**
    * Create a read write Transaction.
    *
+   * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions] The default query options to use.
    * @return {Transaction}
    *
    * @example
    * const transaction = session.transaction();
    */
-  transaction() {
-    return new Transaction(this);
+  transaction(
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+  ) {
+    return new Transaction(this, undefined, queryOptions);
   }
   /**
    * Format the session name to include the parent database's name.

@@ -19,7 +19,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
 import {CallOptions} from 'google-gax';
-import {ServiceError} from 'grpc';
+import {Metadata, ServiceError} from 'grpc';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
@@ -36,8 +36,15 @@ import {Key} from './table';
 import {SpannerClient as s} from './v1';
 import {google as spannerClient} from '../proto/spanner';
 import {NormalCallback} from './common';
+import {google} from '../protos/protos';
+import IAny = google.protobuf.IAny;
+import * as grpc from 'grpc';
+import {Database} from './database';
+import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
 export type Rows = Array<Row | Json>;
+const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
+const RETRY_INFO_BIN = 'google.rpc.retryinfo-bin';
 
 export interface TimestampBounds {
   strong?: boolean;
@@ -65,6 +72,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryMode?: s.QueryMode;
   partitionToken?: Uint8Array | string;
   seqno?: number;
+  queryOptions?: IQueryOptions;
 }
 
 export interface KeyRange {
@@ -112,9 +120,7 @@ export interface BatchUpdateCallback {
   ): void;
 }
 
-export interface ReadCallback {
-  (err: null | ServiceError, rows: Rows): void;
-}
+export type ReadCallback = NormalCallback<Rows>;
 
 export interface RunCallback {
   (
@@ -195,6 +201,7 @@ export class Snapshot extends EventEmitter {
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
+  queryOptions?: IQueryOptions;
 
   /**
    * The transaction ID.
@@ -236,12 +243,19 @@ export class Snapshot extends EventEmitter {
    *
    * @param {Session} session The parent Session object.
    * @param {TimestampBounds} [options] Snapshot timestamp bounds.
+   * @param {QueryOptions} [queryOptions] Default query options to use when none
+   *        are specified for a query.
    */
-  constructor(session: Session, options?: TimestampBounds) {
+  constructor(
+    session: Session,
+    options?: TimestampBounds,
+    queryOptions?: IQueryOptions
+  ) {
     super();
 
     this.ended = false;
     this.session = session;
+    this.queryOptions = Object.assign({}, queryOptions);
     this.request = session.request.bind(session);
     this.requestStream = session.requestStream.bind(session);
 
@@ -861,6 +875,10 @@ export class Snapshot extends EventEmitter {
     }
 
     query = Object.assign({}, query) as ExecuteSqlRequest;
+    query.queryOptions = Object.assign(
+      Object.assign({}, this.queryOptions),
+      query.queryOptions
+    );
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
@@ -1182,8 +1200,12 @@ export class Transaction extends Dml {
    *   }
    * });
    */
-  constructor(session: Session, options = {} as s.ReadWrite) {
-    super(session);
+  constructor(
+    session: Session,
+    options = {} as s.ReadWrite,
+    queryOptions?: IQueryOptions
+  ) {
+    super(session, undefined, queryOptions);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
@@ -1300,10 +1322,10 @@ export class Transaction extends Dml {
         });
 
         if (status && status.code !== 0) {
-          const error = new Error(status.details);
+          const error = new Error(status.message);
           batchUpdateError = Object.assign(error, {
             code: status.code,
-            metadata: status.metadata,
+            metadata: Transaction.extractKnownMetadata(status.details),
             rowCounts,
           });
         }
@@ -1311,6 +1333,19 @@ export class Transaction extends Dml {
         callback!(batchUpdateError!, rowCounts, resp);
       }
     );
+  }
+
+  private static extractKnownMetadata(details: IAny[]): Metadata | undefined {
+    if (details && typeof details[Symbol.iterator] === 'function') {
+      const metadata = new grpc.Metadata();
+      for (const detail of details) {
+        if (detail.type_url === RETRY_INFO_TYPE && detail.value) {
+          metadata.add(RETRY_INFO_BIN, detail.value as string);
+        }
+      }
+      return metadata;
+    }
+    return undefined;
   }
 
   commit(): Promise<CommitResponse>;
@@ -1571,9 +1606,11 @@ export class Transaction extends Dml {
    */
   rollback(callback?: s.RollbackCallback): void | Promise<void> {
     if (!this.id) {
-      callback!(new Error(
-        'Transaction ID is unknown, nothing to rollback.'
-      ) as ServiceError);
+      callback!(
+        new Error(
+          'Transaction ID is unknown, nothing to rollback.'
+        ) as ServiceError
+      );
       return;
     }
 

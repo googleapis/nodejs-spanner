@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {ApiError} from '@google-cloud/common';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
-import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
-import * as inst from '../src/instance';
-import {Spanner, Database} from '../src';
 import {ServiceError} from 'grpc';
 import * as sinon from 'sinon';
+import snakeCase = require('lodash.snakecase');
+
+import * as inst from '../src/instance';
+import {Spanner, Database} from '../src';
+import arrify = require('arrify');
+import {SessionPoolOptions} from '../src/session-pool';
 import { Backup } from '../src/backup';
 import { PreciseDate } from '@google-cloud/precise-date';
 
@@ -69,8 +71,8 @@ describe('Instance', () => {
   const sandbox = sinon.createSandbox();
 
   const SPANNER = ({
-    request: util.noop,
-    requestStream: util.noop,
+    request: () => {},
+    requestStream: () => {},
     projectId: 'project-id',
     instances_: new Map(),
   } as {}) as Spanner;
@@ -79,8 +81,8 @@ describe('Instance', () => {
 
   before(() => {
     Instance = proxyquire('../src/instance.js', {
-      '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject,
+      './common-grpc/service-object': {
+        GrpcServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/paginator': fakePaginator,
@@ -374,6 +376,54 @@ describe('Instance', () => {
 
       assert.strictEqual(database, fakeDatabase);
     });
+
+    it('should create and cache different objects when called with different session pool options', () => {
+      const cache = instance.databases_;
+      const fakeDatabase = {} as Database;
+      const fakeDatabaseWithSessionPoolOptions = {} as Database;
+      const emptySessionPoolOptions = {} as SessionPoolOptions;
+      const fakeSessionPoolOptions = {
+        min: 1000,
+        max: 1000,
+      } as SessionPoolOptions;
+      const fakeSessionPoolOptionsInOtherOrder = {
+        max: 1000,
+        min: 1000,
+      } as SessionPoolOptions;
+
+      cache.set(NAME, fakeDatabase);
+      cache.set(
+        NAME +
+          '/' +
+          JSON.stringify(Object.entries(fakeSessionPoolOptions).sort()),
+        fakeDatabaseWithSessionPoolOptions
+      );
+
+      const database = instance.database(NAME);
+      const databaseWithEmptyOptions = instance.database(
+        NAME,
+        emptySessionPoolOptions
+      );
+      const databaseWithOptions = instance.database(
+        NAME,
+        fakeSessionPoolOptions
+      );
+      const databaseWithOptionsInOtherOrder = instance.database(
+        NAME,
+        fakeSessionPoolOptionsInOtherOrder
+      );
+
+      assert.strictEqual(database, fakeDatabase);
+      assert.strictEqual(databaseWithEmptyOptions, fakeDatabase);
+      assert.strictEqual(
+        databaseWithOptions,
+        fakeDatabaseWithSessionPoolOptions
+      );
+      assert.strictEqual(
+        databaseWithOptionsInOtherOrder,
+        fakeDatabaseWithSessionPoolOptions
+      );
+    });
   });
 
   describe('delete', () => {
@@ -453,7 +503,17 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(cb => cb(error as ServiceError));
+        .callsFake(
+          (
+            opts_:
+              | inst.GetInstanceMetadataOptions
+              | inst.GetInstanceMetadataCallback,
+            cb
+          ) => {
+            cb = typeof opts_ === 'function' ? opts_ : cb;
+            cb(error as ServiceError);
+          }
+        );
 
       instance.exists((err, exists) => {
         assert.strictEqual(err, error);
@@ -463,7 +523,19 @@ describe('Instance', () => {
     });
 
     it('should return true if error is absent', done => {
-      sandbox.stub(instance, 'getMetadata').callsFake(cb => cb(null));
+      sandbox
+        .stub(instance, 'getMetadata')
+        .callsFake(
+          (
+            opts_:
+              | inst.GetInstanceMetadataOptions
+              | inst.GetInstanceMetadataCallback,
+            cb
+          ) => {
+            cb = typeof opts_ === 'function' ? opts_ : cb;
+            cb(null);
+          }
+        );
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -477,7 +549,18 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error as ServiceError));
+        .callsFake(
+          (
+            opts_:
+              | inst.GetInstanceMetadataOptions
+              | inst.GetInstanceMetadataCallback,
+            callback
+          ) => {
+            callback = typeof opts_ === 'function' ? opts_ : callback;
+
+            callback(error as ServiceError);
+          }
+        );
 
       instance.exists((err, exists) => {
         assert.ifError(err);
@@ -502,6 +585,24 @@ describe('Instance', () => {
       instance.get(assert.ifError);
     });
 
+    it('should accept and pass `fields` string as is', () => {
+      const fieldNames = 'nodeCount';
+      const spyMetadata = sandbox.spy(instance, 'getMetadata');
+
+      instance.get({fieldNames}, assert.ifError);
+
+      assert.ok(spyMetadata.calledWith({fieldNames}));
+    });
+
+    it('should accept and pass `fields` array as is', () => {
+      const fieldNames = ['name', 'labels', 'nodeCount'];
+      const spyMetadata = sandbox.stub(instance, 'getMetadata');
+
+      instance.get({fieldNames}, assert.ifError);
+
+      assert.ok(spyMetadata.calledWith({fieldNames}));
+    });
+
     describe('autoCreate', () => {
       const error = new ApiError('Error.') as ServiceError;
       error.code = 5;
@@ -523,7 +624,7 @@ describe('Instance', () => {
 
         sandbox
           .stub(instance, 'getMetadata')
-          .callsFake(callback => callback!(error));
+          .callsFake((opts_: {}, callback) => callback!(error));
 
         instance.create = (options, callback) => {
           callback(null, null, OPERATION);
@@ -593,7 +694,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error));
+        .callsFake((opts_: {}, callback) => callback!(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -611,7 +712,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error));
+        .callsFake((opts_: {}, callback) => callback!(error));
 
       instance.create = () => {
         throw new Error('Should not create.');
@@ -628,7 +729,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(error));
+        .callsFake((opts_: {}, callback) => callback!(error));
 
       instance.get(err => {
         assert.strictEqual(err, error);
@@ -641,7 +742,7 @@ describe('Instance', () => {
 
       sandbox
         .stub(instance, 'getMetadata')
-        .callsFake(callback => callback!(null, apiResponse));
+        .callsFake((opts_: {}, callback) => callback!(null, apiResponse));
 
       instance.get((err, instance_, apiResponse_) => {
         assert.ifError(err);
@@ -765,6 +866,36 @@ describe('Instance', () => {
 
       const returnValue = instance.getMetadata(callback);
       assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept `fieldNames` as string', done => {
+      const fieldNames = 'nodeCount';
+
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          fieldMask: {
+            paths: arrify(fieldNames).map(snakeCase),
+          },
+          name: instance.formattedName_,
+        });
+        done();
+      };
+      instance.getMetadata({fieldNames}, assert.ifError);
+    });
+
+    it('should accept `fieldNames` as string array', done => {
+      const fieldNames = ['name', 'labels', 'nodeCount'];
+
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          fieldMask: {
+            paths: fieldNames.map(snakeCase),
+          },
+          name: instance.formattedName_,
+        });
+        done();
+      };
+      instance.getMetadata({fieldNames}, assert.ifError);
     });
   });
 

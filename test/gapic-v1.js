@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 'use strict';
 
 const assert = require('assert');
+const {describe, it} = require('mocha');
 
 const spannerAdminInstanceModule = require('../src');
 
@@ -584,10 +585,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const policy = {};
       const request = {
-        resource: formattedResource,
+        resource: resource,
         policy: policy,
       };
 
@@ -619,10 +620,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const policy = {};
       const request = {
-        resource: formattedResource,
+        resource: resource,
         policy: policy,
       };
 
@@ -650,9 +651,9 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const request = {
-        resource: formattedResource,
+        resource: resource,
       };
 
       // Mock response
@@ -683,9 +684,9 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const request = {
-        resource: formattedResource,
+        resource: resource,
       };
 
       // Mock Grpc layer
@@ -712,10 +713,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const permissions = [];
       const request = {
-        resource: formattedResource,
+        resource: resource,
         permissions: permissions,
       };
 
@@ -742,10 +743,10 @@ describe('InstanceAdminClient', () => {
       });
 
       // Mock request
-      const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+      const resource = 'resource-341064690';
       const permissions = [];
       const request = {
-        resource: formattedResource,
+        resource: resource,
         permissions: permissions,
       };
 

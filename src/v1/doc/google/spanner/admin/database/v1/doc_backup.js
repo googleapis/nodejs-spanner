@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,7 @@
 // to be loaded as the JS file.
 
 /**
- * @property {string} name
- *   Output only. A globally unique identifier for the backup which cannot be
- *   changed. Values are of the form
- *   `projects/<project>/instances/<instance>/backups/[a-z][a-z0-9_\-]*[a-z0-9]`
- *   The final segment of the name must be between 2 and 60 characters
- *   in length.
- *
- *   The backup is stored in the location(s) specified in the instance
- *   configuration of the instance containing the backup, identified
- *   by the prefix of the backup name of the form
- *   `projects/<project>/instances/<instance>`.
+ * A backup of a Cloud Spanner database.
  *
  * @property {string} database
  *   Required for the CreateBackup operation.
@@ -39,11 +29,26 @@
  *   Required for the CreateBackup
  *   operation. The expiration time of the backup, with microseconds
  *   granularity that must be at least 6 hours and at most 366 days
- *   from the time the request is received. Once the `expire_time`
- *   has passed, Cloud Spanner will delete the backup and free the
- *   resources used by the backup.
+ *   from the time the CreateBackup request is processed. Once the `expire_time`
+ *   has passed, the backup is eligible to be automatically deleted by Cloud
+ *   Spanner to free the resources used by the backup.
  *
  *   This object should have the same structure as [Timestamp]{@link google.protobuf.Timestamp}
+ *
+ * @property {string} name
+ *   Output only for the CreateBackup operation.
+ *   Required for the UpdateBackup operation.
+ *
+ *   A globally unique identifier for the backup which cannot be
+ *   changed. Values are of the form
+ *   `projects/<project>/instances/<instance>/backups/[a-z][a-z0-9_\-]*[a-z0-9]`
+ *   The final segment of the name must be between 2 and 60 characters
+ *   in length.
+ *
+ *   The backup is stored in the location(s) specified in the instance
+ *   configuration of the instance containing the backup, identified
+ *   by the prefix of the backup name of the form
+ *   `projects/<project>/instances/<instance>`.
  *
  * @property {Object} createTime
  *   Output only. The backup will contain an externally consistent
@@ -104,6 +109,8 @@ const Backup = {
 };
 
 /**
+ * The request for CreateBackup.
+ *
  * @property {string} parent
  *   Required. The name of the instance in which the backup will be
  *   created. This must be the same instance that contains the database the
@@ -131,6 +138,9 @@ const CreateBackupRequest = {
 };
 
 /**
+ * Metadata type for the operation returned by
+ * CreateBackup.
+ *
  * @property {string} name
  *   The name of the backup being created.
  *
@@ -144,9 +154,17 @@ const CreateBackupRequest = {
  *   This object should have the same structure as [OperationProgress]{@link google.spanner.admin.database.v1.OperationProgress}
  *
  * @property {Object} cancelTime
- *   The time at which this operation was cancelled. If set, this operation is
- *   in the process of undoing itself (which is guaranteed to succeed) and
- *   cannot be cancelled again.
+ *   The time at which cancellation of this operation was received.
+ *   Operations.CancelOperation
+ *   starts asynchronous cancellation on a long-running operation. The server
+ *   makes a best effort to cancel the operation, but success is not guaranteed.
+ *   Clients can use
+ *   Operations.GetOperation or
+ *   other methods to check whether the cancellation succeeded or whether the
+ *   operation completed despite cancellation. On successful cancellation,
+ *   the operation is not deleted; instead, it becomes an operation with
+ *   an Operation.error value with a google.rpc.Status.code of 1,
+ *   corresponding to `Code.CANCELLED`.
  *
  *   This object should have the same structure as [Timestamp]{@link google.protobuf.Timestamp}
  *
@@ -159,6 +177,8 @@ const CreateBackupMetadata = {
 };
 
 /**
+ * The request for UpdateBackup.
+ *
  * @property {Object} backup
  *   Required. The backup to update. `backup.name`, and the fields to be updated
  *   as specified by `update_mask` are required. Other fields are ignored.
@@ -168,7 +188,7 @@ const CreateBackupMetadata = {
  *   This object should have the same structure as [Backup]{@link google.spanner.admin.database.v1.Backup}
  *
  * @property {Object} updateMask
- *   Required. A mask specifying which fields (e.g. `backup.expire_time`) in the
+ *   Required. A mask specifying which fields (e.g. `expire_time`) in the
  *   Backup resource should be updated. This mask is relative to the Backup
  *   resource, not to the request message. The field mask must always be
  *   specified; this prevents any future fields from being erased accidentally
@@ -185,6 +205,8 @@ const UpdateBackupRequest = {
 };
 
 /**
+ * The request for GetBackup.
+ *
  * @property {string} name
  *   Required. Name of the backup.
  *   Values are of the form
@@ -199,6 +221,8 @@ const GetBackupRequest = {
 };
 
 /**
+ * The request for DeleteBackup.
+ *
  * @property {string} name
  *   Required. Name of the backup to delete.
  *   Values are of the form
@@ -213,19 +237,23 @@ const DeleteBackupRequest = {
 };
 
 /**
+ * The request for ListBackups.
+ *
  * @property {string} parent
  *   Required. The instance to list backups from.  Values are of the
  *   form `projects/<project>/instances/<instance>`.
  *
  * @property {string} filter
- *   A filter expression that filters backups listed in the response.
- *   The expression must specify the field name, a comparison operator,
- *   and the value that you want to use for filtering. The value must be a
- *   string, a number, or a boolean. The comparison operator must be
- *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
- *   roughly synonymous with equality. Filter rules are case insensitive.
+ *   An expression that filters the list of returned backups.
  *
- *   The fields eligible for filtering are:
+ *   A filter expression consists of a field name, a comparison operator, and a
+ *   value for filtering.
+ *   The value must be a string, a number, or a boolean. The comparison operator
+ *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+ *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+ *
+ *   The following fields in the Backup are eligible for filtering:
+ *
  *     * `name`
  *     * `database`
  *     * `state`
@@ -233,23 +261,23 @@ const DeleteBackupRequest = {
  *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
  *     * `size_bytes`
  *
- *   To filter on multiple expressions, provide each separate expression within
- *   parentheses. By default, each expression is an AND expression. However,
- *   you can include AND, OR, and NOT expressions explicitly.
+ *   You can combine multiple expressions by enclosing each expression in
+ *   parentheses. By default, expressions are combined with AND logic, but
+ *   you can specify AND, OR, and NOT logic explicitly.
  *
- *   Some examples of using filters are:
+ *   Here are a few examples:
  *
- *     * `name:Howl` --> The backup's name contains the string "howl".
+ *     * `name:Howl` - The backup's name contains the string "howl".
  *     * `database:prod`
- *            --> The database's name contains the string "prod".
- *     * `state:CREATING` --> The backup is pending creation.
- *     * `state:READY` --> The backup is fully created and ready for use.
+ *            - The database's name contains the string "prod".
+ *     * `state:CREATING` - The backup is pending creation.
+ *     * `state:READY` - The backup is fully created and ready for use.
  *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
- *            --> The backup name contains the string "howl" and `create_time`
+ *            - The backup name contains the string "howl" and `create_time`
  *                of the backup is before 2018-03-28T14:50:00Z.
  *     * `expire_time < \"2018-03-28T14:50:00Z\"`
- *            --> The backup `expire_time` is before 2018-03-28T14:50:00Z.
- *     * `size_bytes > 10000000000` --> The backup's size is greater than 10GB
+ *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
+ *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
  *
  * @property {number} pageSize
  *   Number of backups to be returned in the response. If 0 or
@@ -270,6 +298,8 @@ const ListBackupsRequest = {
 };
 
 /**
+ * The response for ListBackups.
+ *
  * @property {Object[]} backups
  *   The list of matching backups. Backups returned are ordered by `create_time`
  *   in descending order, starting from the most recent `create_time`.
@@ -290,58 +320,52 @@ const ListBackupsResponse = {
 };
 
 /**
+ * The request for
+ * ListBackupOperations.
+ *
  * @property {string} parent
  *   Required. The instance of the backup operations. Values are of
  *   the form `projects/<project>/instances/<instance>`.
  *
  * @property {string} filter
- *   A filter expression that filters what operations are returned in the
- *   response.
+ *   An expression that filters the list of returned backup operations.
  *
- *   The response returns a list of
- *   long-running operations whose names are
- *   prefixed by a backup name within the specified instance. The long-running
- *   operation metadata field type
- *   `metadata.type_url` describes the type of the metadata.
- *
- *   The filter expression must specify the field name of an operation, a
- *   comparison operator, and the value that you want to use for filtering.
+ *   A filter expression consists of a field name, a
+ *   comparison operator, and a value for filtering.
  *   The value must be a string, a number, or a boolean. The comparison operator
- *   must be
- *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
- *   roughly synonymous with equality. Filter rules are case insensitive.
+ *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+ *   Colon `:` is the contains operator. Filter rules are not case sensitive.
  *
- *   The long-running operation fields eligible for filtering are:
- *     * `name` --> The name of the long-running operation
- *     * `done` --> False if the operation is in progress, else true.
- *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
- *        in `metadata.value` (using filter string `metadata.<field_name>`,
- *        where <field_name> is a field in metadata.value) are eligible for
- *        filtering.
- *     * `error` --> Error associated with the long-running operation.
- *     * `response.type_url` (using filter string `response.@type`) and fields
- *        in `response.value` (using filter string `response.<field_name>`,
- *        where <field_name> is a field in response.value) are eligible for
- *        filtering.
+ *   The following fields in the operation
+ *   are eligible for filtering:
  *
- *   To filter on multiple expressions, provide each separate expression within
- *   parentheses. By default, each expression is an AND expression. However,
- *   you can include AND, OR, and NOT expressions explicitly.
+ *     * `name` - The name of the long-running operation
+ *     * `done` - False if the operation is in progress, else true.
+ *     * `metadata.@type` - the type of metadata. For example, the type string
+ *        for CreateBackupMetadata is
+ *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
+ *     * `metadata.<field_name>` - any field in metadata.value.
+ *     * `error` - Error associated with the long-running operation.
+ *     * `response.@type` - the type of response.
+ *     * `response.<field_name>` - any field in response.value.
  *
- *   Some examples of using filters are:
+ *   You can combine multiple expressions by enclosing each expression in
+ *   parentheses. By default, expressions are combined with AND logic, but
+ *   you can specify AND, OR, and NOT logic explicitly.
  *
- *     * `done:true` --> The operation is complete.
- *     * `metadata.database:prod`
- *            --> The database the backup was taken from has a name containing
- *                the string "prod".
- *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)
- *        AND (metadata.name:howl)
- *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
- *        AND (error:*)`
- *            --> Return CreateBackup operations where the created backup name
- *                contains the string "howl", the progress.start_time of the
- *                backup operation is before 2018-03-28T14:50:00Z, and the
- *                operation returned an error.
+ *   Here are a few examples:
+ *
+ *     * `done:true` - The operation is complete.
+ *     * `metadata.database:prod` - The database the backup was taken from has
+ *        a name containing the string "prod".
+ *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
+ *       `(metadata.name:howl) AND` <br/>
+ *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+ *       `(error:*)` - Returns operations where:
+ *       * The operation's metadata type is CreateBackupMetadata.
+ *       * The backup name contains the string "howl".
+ *       * The operation started before 2018-03-28T14:50:00Z.
+ *       * The operation resulted in an error.
  *
  * @property {number} pageSize
  *   Number of operations to be returned in the response. If 0 or
@@ -362,14 +386,17 @@ const ListBackupOperationsRequest = {
 };
 
 /**
+ * The response for
+ * ListBackupOperations.
+ *
  * @property {Object[]} operations
- *   The list of matching
- *   long-running operations
- *   whose names are prefixed by a backup name. The long-running operation
- *   metadata field type
- *   `metadata.type_url` describes the type of the metadata. Operations returned
- *   include those that have completed/failed/canceled within the last 7 days,
- *   and pending operations. Operations returned are ordered by
+ *   The list of matching backup long-running
+ *   operations. Each operation's name will be
+ *   prefixed by the backup's name and the operation's
+ *   metadata will be of type
+ *   CreateBackupMetadata. Operations returned include those that are
+ *   pending or have completed/failed/canceled within the last 7 days.
+ *   Operations returned are ordered by
  *   `operation.metadata.value.progress.start_time` in descending order starting
  *   from the most recently started operation.
  *
@@ -389,6 +416,8 @@ const ListBackupOperationsResponse = {
 };
 
 /**
+ * Information about a backup.
+ *
  * @property {string} backup
  *   Name of the backup.
  *

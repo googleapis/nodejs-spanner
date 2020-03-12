@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -189,8 +189,8 @@ class SpannerClient {
       'listSessions',
       'deleteSession',
       'executeSql',
-      'executeBatchDml',
       'executeStreamingSql',
+      'executeBatchDml',
       'read',
       'streamingRead',
       'beginTransaction',
@@ -246,7 +246,6 @@ class SpannerClient {
   static get scopes() {
     return [
       'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/spanner.admin',
       'https://www.googleapis.com/auth/spanner.data',
     ];
   }
@@ -276,9 +275,9 @@ class SpannerClient {
    * transaction internally, and count toward the one transaction
    * limit.
    *
-   * Cloud Spanner limits the number of sessions that can exist at any given
-   * time; thus, it is a good idea to delete idle and/or unneeded sessions.
-   * Aside from explicit deletes, Cloud Spanner can delete sessions for which no
+   * Active sessions use additional server resources, so it is a good idea to
+   * delete idle and unneeded sessions.
+   * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
    * operations are sent for more than an hour. If a session is deleted,
    * requests to it return `NOT_FOUND`.
    *
@@ -341,9 +340,7 @@ class SpannerClient {
   }
 
   /**
-   * Creates multiple new sessions. If the requested number of sessions would
-   * cause the database to exceed its session limit, returns a
-   * RESOURCE_EXHAUSTED error.
+   * Creates multiple new sessions.
    *
    * This API can be used to initialize a session cache on the clients.
    * See https://goo.gl/TgSFN2 for best practices on session cache management.
@@ -352,17 +349,16 @@ class SpannerClient {
    *   The request object that will be sent.
    * @param {string} request.database
    *   Required. The database in which the new sessions are created.
-   * @param {Object} [request.sessionTemplate]
-   *   Parameters to be applied to each created session.
-   *
-   *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
-   * @param {number} [request.sessionCount]
+   * @param {number} request.sessionCount
    *   Required. The number of sessions to be created in this batch call.
    *   The API may return fewer than the requested number of sessions. If a
    *   specific number of sessions are desired, the client can make additional
    *   calls to BatchCreateSessions (adjusting
    *   session_count as necessary).
-   *   The maximum allowed sessions are documented at https://goo.gl/hBUQED.
+   * @param {Object} [request.sessionTemplate]
+   *   Parameters to be applied to each created session.
+   *
+   *   This object should have the same structure as [Session]{@link google.spanner.v1.Session}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -383,7 +379,12 @@ class SpannerClient {
    * });
    *
    * const formattedDatabase = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * client.batchCreateSessions({database: formattedDatabase})
+   * const sessionCount = 0;
+   * const request = {
+   *   database: formattedDatabase,
+   *   sessionCount: sessionCount,
+   * };
+   * client.batchCreateSessions(request)
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -713,36 +714,31 @@ class SpannerClient {
    * @param {string} request.sql
    *   Required. The SQL string.
    * @param {Object} [request.transaction]
-   *   The transaction to use. If none is provided, the default is a
-   *   temporary read-only transaction with strong concurrency.
-   *
    *   The transaction to use.
    *
    *   For queries, if none is provided, the default is a temporary read-only
    *   transaction with strong concurrency.
    *
-   *   Standard DML statements require a ReadWrite transaction. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must
-   *   either supply an existing transaction ID or begin a new transaction.
+   *   Standard DML statements require a read-write transaction. To protect
+   *   against replays, single-use transactions are not supported.  The caller
+   *   must either supply an existing transaction ID or begin a new transaction.
    *
-   *   Partitioned DML requires an existing PartitionedDml transaction ID.
+   *   Partitioned DML requires an existing Partitioned DML transaction ID.
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL string can contain parameter placeholders. A parameter
-   *   placeholder consists of `'@'` followed by the parameter
-   *   name. Parameter names consist of any combination of letters,
-   *   numbers, and underscores.
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
-   *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL statement with unbound parameters.
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   Parameter values are specified using `params`, which is a JSON
-   *   object whose keys are parameter names, and whose values are the
-   *   corresponding parameter values.
+   *   It is an error to execute a SQL statement with unbound parameters.
    *
    *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
    * @param {Object.<string, Object>} [request.paramTypes]
@@ -773,7 +769,7 @@ class SpannerClient {
    *   match for the values of fields common to this message and the
    *   PartitionQueryRequest message used to create this partition_token.
    * @param {number} [request.seqno]
-   *   A per-transaction sequence number used to identify this request. This
+   *   A per-transaction sequence number used to identify this request. This field
    *   makes each request idempotent such that if the request is received multiple
    *   times, at most one will succeed.
    *
@@ -783,6 +779,10 @@ class SpannerClient {
    *   handled requests will yield the same response as the first execution.
    *
    *   Required for DML statements. Ignored for queries.
+   * @param {Object} [request.queryOptions]
+   *   Query optimizer configuration to use for the given query.
+   *
+   *   This object should have the same structure as [QueryOptions]{@link google.spanner.v1.QueryOptions}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -836,103 +836,6 @@ class SpannerClient {
   }
 
   /**
-   * Executes a batch of SQL DML statements. This method allows many statements
-   * to be run with lower latency than submitting them sequentially with
-   * ExecuteSql.
-   *
-   * Statements are executed in order, sequentially.
-   * ExecuteBatchDmlResponse will contain a
-   * ResultSet for each DML statement that has successfully executed. If a
-   * statement fails, its error status will be returned as part of the
-   * ExecuteBatchDmlResponse. Execution will
-   * stop at the first failed statement; the remaining statements will not run.
-   *
-   * ExecuteBatchDml is expected to return an OK status with a response even if
-   * there was an error while processing one of the DML statements. Clients must
-   * inspect response.status to determine if there were any errors while
-   * processing the request.
-   *
-   * See more details in
-   * ExecuteBatchDmlRequest and
-   * ExecuteBatchDmlResponse.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.session
-   *   Required. The session in which the DML statements should be performed.
-   * @param {Object[]} request.statements
-   *   The list of statements to execute in this batch. Statements are executed
-   *   serially, such that the effects of statement i are visible to statement
-   *   i+1. Each statement must be a DML statement. Execution will stop at the
-   *   first failed statement; the remaining statements will not run.
-   *
-   *   REQUIRES: `statements_size()` > 0.
-   *
-   *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
-   * @param {Object} [request.transaction]
-   *   The transaction to use. A ReadWrite transaction is required. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must either
-   *   supply an existing transaction ID or begin a new transaction.
-   *
-   *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
-   * @param {number} [request.seqno]
-   *   A per-transaction sequence number used to identify this request. This is
-   *   used in the same space as the seqno in
-   *   ExecuteSqlRequest. See more details
-   *   in ExecuteSqlRequest.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spanner = require('@google-cloud/spanner');
-   *
-   * const client = new spanner.v1.SpannerClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * const statements = [];
-   * const request = {
-   *   session: formattedSession,
-   *   statements: statements,
-   * };
-   * client.executeBatchDml(request)
-   *   .then(responses => {
-   *     const response = responses[0];
-   *     // doThingsWith(response)
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   */
-  executeBatchDml(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session,
-    });
-
-    return this._innerApiCalls.executeBatchDml(request, options, callback);
-  }
-
-  /**
    * Like ExecuteSql, except returns the result
    * set as a stream. Unlike ExecuteSql, there
    * is no limit on the size of the returned result set. However, no
@@ -946,36 +849,31 @@ class SpannerClient {
    * @param {string} request.sql
    *   Required. The SQL string.
    * @param {Object} [request.transaction]
-   *   The transaction to use. If none is provided, the default is a
-   *   temporary read-only transaction with strong concurrency.
-   *
    *   The transaction to use.
    *
    *   For queries, if none is provided, the default is a temporary read-only
    *   transaction with strong concurrency.
    *
-   *   Standard DML statements require a ReadWrite transaction. Single-use
-   *   transactions are not supported (to avoid replay).  The caller must
-   *   either supply an existing transaction ID or begin a new transaction.
+   *   Standard DML statements require a read-write transaction. To protect
+   *   against replays, single-use transactions are not supported.  The caller
+   *   must either supply an existing transaction ID or begin a new transaction.
    *
-   *   Partitioned DML requires an existing PartitionedDml transaction ID.
+   *   Partitioned DML requires an existing Partitioned DML transaction ID.
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL string can contain parameter placeholders. A parameter
-   *   placeholder consists of `'@'` followed by the parameter
-   *   name. Parameter names consist of any combination of letters,
-   *   numbers, and underscores.
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
-   *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL statement with unbound parameters.
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   Parameter values are specified using `params`, which is a JSON
-   *   object whose keys are parameter names, and whose values are the
-   *   corresponding parameter values.
+   *   It is an error to execute a SQL statement with unbound parameters.
    *
    *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
    * @param {Object.<string, Object>} [request.paramTypes]
@@ -1006,7 +904,7 @@ class SpannerClient {
    *   match for the values of fields common to this message and the
    *   PartitionQueryRequest message used to create this partition_token.
    * @param {number} [request.seqno]
-   *   A per-transaction sequence number used to identify this request. This
+   *   A per-transaction sequence number used to identify this request. This field
    *   makes each request idempotent such that if the request is received multiple
    *   times, at most one will succeed.
    *
@@ -1016,6 +914,10 @@ class SpannerClient {
    *   handled requests will yield the same response as the first execution.
    *
    *   Required for DML statements. Ignored for queries.
+   * @param {Object} [request.queryOptions]
+   *   Query optimizer configuration to use for the given query.
+   *
+   *   This object should have the same structure as [QueryOptions]{@link google.spanner.v1.QueryOptions}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -1055,6 +957,105 @@ class SpannerClient {
   }
 
   /**
+   * Executes a batch of SQL DML statements. This method allows many statements
+   * to be run with lower latency than submitting them sequentially with
+   * ExecuteSql.
+   *
+   * Statements are executed in sequential order. A request can succeed even if
+   * a statement fails. The ExecuteBatchDmlResponse.status field in the
+   * response provides information about the statement that failed. Clients must
+   * inspect this field to determine whether an error occurred.
+   *
+   * Execution stops after the first failed statement; the remaining statements
+   * are not executed.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the DML statements should be performed.
+   * @param {Object} request.transaction
+   *   Required. The transaction to use. Must be a read-write transaction.
+   *
+   *   To protect against replays, single-use transactions are not supported. The
+   *   caller must either supply an existing transaction ID or begin a new
+   *   transaction.
+   *
+   *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
+   * @param {Object[]} request.statements
+   *   Required. The list of statements to execute in this batch. Statements are executed
+   *   serially, such that the effects of statement `i` are visible to statement
+   *   `i+1`. Each statement must be a DML statement. Execution stops at the
+   *   first failed statement; the remaining statements are not executed.
+   *
+   *   Callers must provide at least one statement.
+   *
+   *   This object should have the same structure as [Statement]{@link google.spanner.v1.Statement}
+   * @param {number} request.seqno
+   *   Required. A per-transaction sequence number used to identify this request. This field
+   *   makes each request idempotent such that if the request is received multiple
+   *   times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.SpannerClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
+   * const transaction = {};
+   * const statements = [];
+   * const seqno = 0;
+   * const request = {
+   *   session: formattedSession,
+   *   transaction: transaction,
+   *   statements: statements,
+   *   seqno: seqno,
+   * };
+   * client.executeBatchDml(request)
+   *   .then(responses => {
+   *     const response = responses[0];
+   *     // doThingsWith(response)
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  executeBatchDml(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      session: request.session,
+    });
+
+    return this._innerApiCalls.executeBatchDml(request, options, callback);
+  }
+
+  /**
    * Reads rows from the database using key lookups and scans, as a
    * simple key/value style alternative to
    * ExecuteSql.  This method cannot be used to
@@ -1076,7 +1077,7 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned for each row matching
+   *   Required. The columns of table to be returned for each row matching
    *   this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
@@ -1188,7 +1189,7 @@ class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string[]} request.columns
-   *   The columns of table to be returned for each row matching
+   *   Required. The columns of table to be returned for each row matching
    *   this request.
    * @param {Object} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
@@ -1352,12 +1353,6 @@ class SpannerClient {
    *   The request object that will be sent.
    * @param {string} request.session
    *   Required. The session in which the transaction to be committed is running.
-   * @param {Object[]} request.mutations
-   *   The mutations to be executed when this transaction commits. All
-   *   mutations are applied atomically, in the order they appear in
-   *   this list.
-   *
-   *   This object should have the same structure as [Mutation]{@link google.spanner.v1.Mutation}
    * @param {Buffer} [request.transactionId]
    *   Commit a previously-started transaction.
    * @param {Object} [request.singleUseTransaction]
@@ -1372,6 +1367,12 @@ class SpannerClient {
    *   Commit instead.
    *
    *   This object should have the same structure as [TransactionOptions]{@link google.spanner.v1.TransactionOptions}
+   * @param {Object[]} [request.mutations]
+   *   The mutations to be executed when this transaction commits. All
+   *   mutations are applied atomically, in the order they appear in
+   *   this list.
+   *
+   *   This object should have the same structure as [Mutation]{@link google.spanner.v1.Mutation}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -1392,12 +1393,7 @@ class SpannerClient {
    * });
    *
    * const formattedSession = client.sessionPath('[PROJECT]', '[INSTANCE]', '[DATABASE]', '[SESSION]');
-   * const mutations = [];
-   * const request = {
-   *   session: formattedSession,
-   *   mutations: mutations,
-   * };
-   * client.commit(request)
+   * client.commit({session: formattedSession})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -1502,7 +1498,7 @@ class SpannerClient {
    * @param {string} request.session
    *   Required. The session used to create the partitions.
    * @param {string} request.sql
-   *   The query request to generate partitions for. The request will fail if
+   *   Required. The query request to generate partitions for. The request will fail if
    *   the query is not root partitionable. The query plan of a root
    *   partitionable query has a single distributed union operator. A distributed
    *   union operator conceptually divides one or more tables into multiple
@@ -1518,20 +1514,18 @@ class SpannerClient {
    *
    *   This object should have the same structure as [TransactionSelector]{@link google.spanner.v1.TransactionSelector}
    * @param {Object} [request.params]
-   *   The SQL query string can contain parameter placeholders. A parameter
-   *   placeholder consists of `'@'` followed by the parameter
-   *   name. Parameter names consist of any combination of letters,
-   *   numbers, and underscores.
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
-   *     `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   It is an error to execute an SQL query with unbound parameters.
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
-   *   Parameter values are specified using `params`, which is a JSON
-   *   object whose keys are parameter names, and whose values are the
-   *   corresponding parameter values.
+   *   It is an error to execute a SQL statement with unbound parameters.
    *
    *   This object should have the same structure as [Struct]{@link google.protobuf.Struct}
    * @param {Object.<string, Object>} [request.paramTypes]

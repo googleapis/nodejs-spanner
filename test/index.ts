@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
+import {util} from '@google-cloud/common';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
@@ -146,9 +145,11 @@ describe('Spanner', () => {
 
   before(() => {
     Spanner = proxyquire('../src', {
-      '@google-cloud/common-grpc': {
-        Operation: FakeGrpcOperation,
-        Service: FakeGrpcService,
+      './common-grpc/operation': {
+        GrpcOperation: FakeGrpcOperation,
+      },
+      './common-grpc/service': {
+        GrpcService: FakeGrpcService,
       },
       '@google-cloud/paginator': fakePaginator,
       '@google-cloud/promisify': fakePfy,
@@ -268,6 +269,80 @@ describe('Spanner', () => {
       const config = getFake(spanner).calledWith_[0];
 
       assert.strictEqual(config.baseUrl, SERVICE_PATH);
+    });
+
+    describe('SPANNER_EMULATOR_HOST', () => {
+      let currentEmulator: string | undefined;
+
+      beforeEach(() => (currentEmulator = process.env.SPANNER_EMULATOR_HOST));
+
+      afterEach(() => {
+        if (currentEmulator) {
+          process.env.SPANNER_EMULATOR_HOST = currentEmulator;
+        } else {
+          delete process.env.SPANNER_EMULATOR_HOST;
+        }
+      });
+
+      it('should parse emulator host without port correctly', () => {
+        const EMULATOR_HOST = 'somehost.local';
+        process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
+
+        const emulator = Spanner.getSpannerEmulatorHost();
+
+        assert.deepStrictEqual(emulator, {endpoint: EMULATOR_HOST});
+      });
+
+      it('should parse emulator host with port correctly', () => {
+        const EMULATOR_HOST = 'somehost.local';
+        const EMULATOR_PORT = 1610;
+        process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}:${EMULATOR_PORT}`;
+
+        const emulator = Spanner.getSpannerEmulatorHost();
+
+        assert.deepStrictEqual(emulator, {
+          endpoint: EMULATOR_HOST,
+          port: EMULATOR_PORT,
+        });
+      });
+
+      it('should reject emulator host with protocol', () => {
+        try {
+          const EMULATOR_HOST = 'https://somehost.local:1234';
+          process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
+          Spanner.getSpannerEmulatorHost();
+          assert.fail('Missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
+          );
+        }
+      });
+
+      it('should reject emulator host with invalid port number', () => {
+        try {
+          const EMULATOR_HOST = 'somehost.local:not_a_port';
+          process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}`;
+          Spanner.getSpannerEmulatorHost();
+          assert.fail('Missing expected error');
+        } catch (e) {
+          assert.strictEqual(e.message, 'Invalid port number: not_a_port');
+        }
+      });
+
+      it('should use SPANNER_EMULATOR_HOST', () => {
+        const EMULATOR_HOST = 'somehost.local';
+        const EMULATOR_PORT = 1610;
+        process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}:${EMULATOR_PORT}`;
+        const spanner = new Spanner();
+
+        const config = getFake(spanner).calledWith_[0];
+        const options = getFake(spanner).calledWith_[1];
+
+        assert.strictEqual(config.baseUrl, EMULATOR_HOST);
+        assert.strictEqual(options.port, EMULATOR_PORT);
+      });
     });
   });
 

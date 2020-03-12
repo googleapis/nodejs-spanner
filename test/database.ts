@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
-import {ApiError} from '@google-cloud/common';
+import {ApiError, util} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {Transform} from 'stream';
 import * as through from 'through2';
-import {util} from '@google-cloud/common-grpc';
 import * as pfy from '@google-cloud/promisify';
 import * as db from '../src/database';
 import {Instance} from '../src';
 import {TimestampBounds} from '../src/transaction';
-import { IOperation } from '../src/instance';
+import {ServiceError, status} from 'grpc';
+import {MockError} from './mockserver/mockspanner';
+import {IOperation} from '../src/instance';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -198,8 +198,8 @@ describe('Database', () => {
 
   before(() => {
     Database = proxyquire('../src/database.js', {
-      '@google-cloud/common-grpc': {
-        ServiceObject: FakeGrpcServiceObject,
+      './common-grpc/service-object': {
+        GrpcServiceObject: FakeGrpcServiceObject,
       },
       '@google-cloud/promisify': fakePfy,
       'p-retry': fakeRetry,
@@ -214,7 +214,9 @@ describe('Database', () => {
         AsyncTransactionRunner: FakeAsyncTransactionRunner,
       },
     }).Database;
-    DatabaseCached = extend({}, Database);
+    // The following commented out line is the one that will trigger the error.
+    // DatabaseCached = extend({}, Database);
+    DatabaseCached = Object.assign({}, Database);
   });
 
   beforeEach(() => {
@@ -334,6 +336,82 @@ describe('Database', () => {
         NAME
       );
       assert.strictEqual(formattedName_, DATABASE_FORMATTED_NAME);
+    });
+  });
+
+  describe('batchCreateSessions', () => {
+    it('should make the correct request', () => {
+      const stub = sandbox.stub(database, 'request');
+      const count = 10;
+
+      database.batchCreateSessions({count}, assert.ifError);
+
+      const {client, method, reqOpts} = stub.lastCall.args[0];
+
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'batchCreateSessions');
+      assert.strictEqual(reqOpts.database, DATABASE_FORMATTED_NAME);
+      assert.strictEqual(reqOpts.sessionCount, count);
+    });
+
+    it('should accept just a count number', () => {
+      const stub = sandbox.stub(database, 'request');
+      const count = 10;
+
+      database.batchCreateSessions(count, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+      assert.strictEqual(reqOpts.sessionCount, count);
+    });
+
+    it('should accept session labels', () => {
+      const stub = sandbox.stub(database, 'request');
+      const labels = {foo: 'bar'};
+
+      database.batchCreateSessions({count: 10, labels}, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(reqOpts.sessionTemplate, {labels});
+    });
+
+    it('should return any request errors', done => {
+      const error = new Error('err');
+      const response = {};
+
+      sandbox.stub(database, 'request').callsFake((_, cb) => {
+        cb(error, response);
+      });
+
+      database.batchCreateSessions({count: 10}, (err, sessions, resp) => {
+        assert.strictEqual(err, error);
+        assert.strictEqual(sessions, null);
+        assert.strictEqual(resp, response);
+        done();
+      });
+    });
+
+    it('should create session objects from the response', done => {
+      const stub = sandbox.stub(database, 'session');
+      const fakeSessions = [{}, {}, {}];
+      const response = {
+        session: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
+      };
+
+      response.session.forEach((session, i) => {
+        stub.withArgs(session.name).returns(fakeSessions[i]);
+      });
+
+      sandbox.stub(database, 'request').callsFake((_, cb) => {
+        cb(null, response);
+      });
+
+      database.batchCreateSessions({count: 10}, (err, sessions, resp) => {
+        assert.strictEqual(err, null);
+        assert.deepStrictEqual(sessions, fakeSessions);
+        assert.strictEqual(resp, response);
+        done();
+      });
     });
   });
 
@@ -1265,30 +1343,49 @@ describe('Database', () => {
 
     let fakePool: FakeSessionPool;
     let fakeSession: FakeSession;
+    let fakeSession2: FakeSession;
     let fakeSnapshot: FakeTransaction;
+    let fakeSnapshot2: FakeTransaction;
     let fakeStream: Transform;
+    let fakeStream2: Transform;
 
     let getReadSessionStub: sinon.SinonStub<[ReadSessionCallback], void>;
     let snapshotStub: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
+    let snapshotStub2: sinon.SinonStub<[TimestampBounds?], FakeTransaction>;
     let runStreamStub: sinon.SinonStub<[string | {}], Transform>;
+    let runStreamStub2: sinon.SinonStub<[string | {}], Transform>;
 
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
+      fakeSession2 = new FakeSession();
       fakeSnapshot = new FakeTransaction();
+      fakeSnapshot2 = new FakeTransaction();
       fakeStream = through.obj();
+      fakeStream2 = through.obj();
 
       getReadSessionStub = sandbox
         .stub(fakePool, 'getReadSession')
-        .callsFake(callback => callback(null, fakeSession));
+        .onFirstCall()
+        .callsFake(callback => callback(null, fakeSession))
+        .onSecondCall()
+        .callsFake(callback => callback(null, fakeSession2));
 
       snapshotStub = sandbox
         .stub(fakeSession, 'snapshot')
         .returns(fakeSnapshot);
 
+      snapshotStub2 = sandbox
+        .stub(fakeSession2, 'snapshot')
+        .returns(fakeSnapshot2);
+
       runStreamStub = sandbox
         .stub(fakeSnapshot, 'runStream')
         .returns(fakeStream);
+
+      runStreamStub2 = sandbox
+        .stub(fakeSnapshot2, 'runStream')
+        .returns(fakeStream2);
     });
 
     it('should get a read session via `getReadSession`', () => {
@@ -1301,7 +1398,9 @@ describe('Database', () => {
     it('should destroy the stream if `getReadSession` errors', done => {
       const fakeError = new Error('err');
 
-      getReadSessionStub.callsFake(callback => callback(fakeError));
+      getReadSessionStub
+        .onFirstCall()
+        .callsFake(callback => callback(fakeError));
 
       database.runStream(QUERY).on('error', err => {
         assert.strictEqual(err, fakeError);
@@ -1363,6 +1462,34 @@ describe('Database', () => {
 
       const session = releaseStub.lastCall.args[0];
       assert.strictEqual(session, fakeSession);
+    });
+
+    it('should retry "Session not found" error', done => {
+      const sessionNotFoundError = {
+        code: status.NOT_FOUND,
+        message: 'Session not found',
+      } as ServiceError;
+      const endStub = sandbox.stub(fakeSnapshot, 'end');
+      const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
+      let rows = 0;
+
+      database
+        .runStream(QUERY)
+        .on('data', () => rows++)
+        .on('error', err => {
+          assert.fail(err);
+          done();
+        })
+        .on('end', () => {
+          assert.strictEqual(endStub.callCount, 1);
+          assert.strictEqual(endStub2.callCount, 1);
+          assert.strictEqual(rows, 1);
+          done();
+        });
+
+      fakeStream.emit('error', sessionNotFoundError);
+      fakeStream2.push('row1');
+      fakeStream2.push(null);
     });
   });
 
@@ -1608,6 +1735,44 @@ describe('Database', () => {
       database.getSnapshot(err => {
         assert.strictEqual(err, fakeError);
         assert.strictEqual(releaseStub.callCount, 1);
+        done();
+      });
+    });
+
+    it('should retry if `begin` errors with `Session not found`', done => {
+      const fakeError = {
+        code: status.NOT_FOUND,
+        message: 'Session not found',
+      } as MockError;
+
+      const fakeSession2 = new FakeSession();
+      const fakeSnapshot2 = new FakeTransaction();
+      sandbox
+        .stub(fakeSnapshot2, 'begin')
+        .callsFake(callback => callback(null));
+      sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
+
+      getReadSessionStub
+        .onFirstCall()
+        .callsFake(callback => callback(null, fakeSession))
+        .onSecondCall()
+        .callsFake(callback => callback(null, fakeSession2));
+      beginSnapshotStub.callsFake(callback => callback(fakeError));
+
+      // The first session that was not found should be released back into the
+      // pool, so that the pool can remove it from its inventory.
+      const releaseStub = sandbox.stub(fakePool, 'release');
+
+      database.getSnapshot((err, snapshot) => {
+        assert.ifError(err);
+        assert.strictEqual(snapshot, fakeSnapshot2);
+        // The first session that error should already have been released back
+        // to the pool.
+        assert.strictEqual(releaseStub.callCount, 1);
+        // Ending the valid snapshot will release its session back into the
+        // pool.
+        snapshot.emit('end');
+        assert.strictEqual(releaseStub.callCount, 2);
         done();
       });
     });

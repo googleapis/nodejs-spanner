@@ -1,3 +1,18 @@
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import * as Long from "long";
 import * as $protobuf from "protobufjs";
 /** Namespace google. */
 export namespace google {
@@ -9,7 +24,7 @@ export namespace google {
         interface IDuration {
 
             /** Duration seconds */
-            seconds?: (number|Long|null);
+            seconds?: (number|Long|string|null);
 
             /** Duration nanos */
             nanos?: (number|null);
@@ -25,7 +40,7 @@ export namespace google {
             constructor(properties?: google.protobuf.IDuration);
 
             /** Duration seconds. */
-            public seconds: (number|Long);
+            public seconds: (number|Long|string);
 
             /** Duration nanos. */
             public nanos: number;
@@ -792,10 +807,10 @@ export namespace google {
             number?: (number|null);
 
             /** FieldDescriptorProto label */
-            label?: (google.protobuf.FieldDescriptorProto.Label|null);
+            label?: (google.protobuf.FieldDescriptorProto.Label|keyof typeof google.protobuf.FieldDescriptorProto.Label|null);
 
             /** FieldDescriptorProto type */
-            type?: (google.protobuf.FieldDescriptorProto.Type|null);
+            type?: (google.protobuf.FieldDescriptorProto.Type|keyof typeof google.protobuf.FieldDescriptorProto.Type|null);
 
             /** FieldDescriptorProto typeName */
             typeName?: (string|null);
@@ -832,10 +847,10 @@ export namespace google {
             public number: number;
 
             /** FieldDescriptorProto label. */
-            public label: google.protobuf.FieldDescriptorProto.Label;
+            public label: (google.protobuf.FieldDescriptorProto.Label|keyof typeof google.protobuf.FieldDescriptorProto.Label);
 
             /** FieldDescriptorProto type. */
-            public type: google.protobuf.FieldDescriptorProto.Type;
+            public type: (google.protobuf.FieldDescriptorProto.Type|keyof typeof google.protobuf.FieldDescriptorProto.Type);
 
             /** FieldDescriptorProto typeName. */
             public typeName: string;
@@ -1610,7 +1625,7 @@ export namespace google {
             javaStringCheckUtf8?: (boolean|null);
 
             /** FileOptions optimizeFor */
-            optimizeFor?: (google.protobuf.FileOptions.OptimizeMode|null);
+            optimizeFor?: (google.protobuf.FileOptions.OptimizeMode|keyof typeof google.protobuf.FileOptions.OptimizeMode|null);
 
             /** FileOptions goPackage */
             goPackage?: (string|null);
@@ -1656,6 +1671,9 @@ export namespace google {
 
             /** FileOptions uninterpretedOption */
             uninterpretedOption?: (google.protobuf.IUninterpretedOption[]|null);
+
+            /** FileOptions .google.api.resourceDefinition */
+            ".google.api.resourceDefinition"?: (google.api.IResourceDescriptor[]|null);
         }
 
         /** Represents a FileOptions. */
@@ -1683,7 +1701,7 @@ export namespace google {
             public javaStringCheckUtf8: boolean;
 
             /** FileOptions optimizeFor. */
-            public optimizeFor: google.protobuf.FileOptions.OptimizeMode;
+            public optimizeFor: (google.protobuf.FileOptions.OptimizeMode|keyof typeof google.protobuf.FileOptions.OptimizeMode);
 
             /** FileOptions goPackage. */
             public goPackage: string;
@@ -1828,6 +1846,9 @@ export namespace google {
 
             /** MessageOptions uninterpretedOption */
             uninterpretedOption?: (google.protobuf.IUninterpretedOption[]|null);
+
+            /** MessageOptions .google.api.resource */
+            ".google.api.resource"?: (google.api.IResourceDescriptor|null);
         }
 
         /** Represents a MessageOptions. */
@@ -1929,13 +1950,13 @@ export namespace google {
         interface IFieldOptions {
 
             /** FieldOptions ctype */
-            ctype?: (google.protobuf.FieldOptions.CType|null);
+            ctype?: (google.protobuf.FieldOptions.CType|keyof typeof google.protobuf.FieldOptions.CType|null);
 
             /** FieldOptions packed */
             packed?: (boolean|null);
 
             /** FieldOptions jstype */
-            jstype?: (google.protobuf.FieldOptions.JSType|null);
+            jstype?: (google.protobuf.FieldOptions.JSType|keyof typeof google.protobuf.FieldOptions.JSType|null);
 
             /** FieldOptions lazy */
             lazy?: (boolean|null);
@@ -1948,6 +1969,12 @@ export namespace google {
 
             /** FieldOptions uninterpretedOption */
             uninterpretedOption?: (google.protobuf.IUninterpretedOption[]|null);
+
+            /** FieldOptions .google.api.fieldBehavior */
+            ".google.api.fieldBehavior"?: (google.api.FieldBehavior[]|null);
+
+            /** FieldOptions .google.api.resourceReference */
+            ".google.api.resourceReference"?: (google.api.IResourceReference|null);
         }
 
         /** Represents a FieldOptions. */
@@ -1960,13 +1987,13 @@ export namespace google {
             constructor(properties?: google.protobuf.IFieldOptions);
 
             /** FieldOptions ctype. */
-            public ctype: google.protobuf.FieldOptions.CType;
+            public ctype: (google.protobuf.FieldOptions.CType|keyof typeof google.protobuf.FieldOptions.CType);
 
             /** FieldOptions packed. */
             public packed: boolean;
 
             /** FieldOptions jstype. */
-            public jstype: google.protobuf.FieldOptions.JSType;
+            public jstype: (google.protobuf.FieldOptions.JSType|keyof typeof google.protobuf.FieldOptions.JSType);
 
             /** FieldOptions lazy. */
             public lazy: boolean;
@@ -2465,7 +2492,7 @@ export namespace google {
             deprecated?: (boolean|null);
 
             /** MethodOptions idempotencyLevel */
-            idempotencyLevel?: (google.protobuf.MethodOptions.IdempotencyLevel|null);
+            idempotencyLevel?: (google.protobuf.MethodOptions.IdempotencyLevel|keyof typeof google.protobuf.MethodOptions.IdempotencyLevel|null);
 
             /** MethodOptions uninterpretedOption */
             uninterpretedOption?: (google.protobuf.IUninterpretedOption[]|null);
@@ -2493,7 +2520,7 @@ export namespace google {
             public deprecated: boolean;
 
             /** MethodOptions idempotencyLevel. */
-            public idempotencyLevel: google.protobuf.MethodOptions.IdempotencyLevel;
+            public idempotencyLevel: (google.protobuf.MethodOptions.IdempotencyLevel|keyof typeof google.protobuf.MethodOptions.IdempotencyLevel);
 
             /** MethodOptions uninterpretedOption. */
             public uninterpretedOption: google.protobuf.IUninterpretedOption[];
@@ -2589,16 +2616,16 @@ export namespace google {
             identifierValue?: (string|null);
 
             /** UninterpretedOption positiveIntValue */
-            positiveIntValue?: (number|Long|null);
+            positiveIntValue?: (number|Long|string|null);
 
             /** UninterpretedOption negativeIntValue */
-            negativeIntValue?: (number|Long|null);
+            negativeIntValue?: (number|Long|string|null);
 
             /** UninterpretedOption doubleValue */
             doubleValue?: (number|null);
 
             /** UninterpretedOption stringValue */
-            stringValue?: (Uint8Array|null);
+            stringValue?: (Uint8Array|string|null);
 
             /** UninterpretedOption aggregateValue */
             aggregateValue?: (string|null);
@@ -2620,16 +2647,16 @@ export namespace google {
             public identifierValue: string;
 
             /** UninterpretedOption positiveIntValue. */
-            public positiveIntValue: (number|Long);
+            public positiveIntValue: (number|Long|string);
 
             /** UninterpretedOption negativeIntValue. */
-            public negativeIntValue: (number|Long);
+            public negativeIntValue: (number|Long|string);
 
             /** UninterpretedOption doubleValue. */
             public doubleValue: number;
 
             /** UninterpretedOption stringValue. */
-            public stringValue: Uint8Array;
+            public stringValue: (Uint8Array|string);
 
             /** UninterpretedOption aggregateValue. */
             public aggregateValue: string;
@@ -3219,7 +3246,7 @@ export namespace google {
             type_url?: (string|null);
 
             /** Any value */
-            value?: (Uint8Array|null);
+            value?: (Uint8Array|string|null);
         }
 
         /** Represents an Any. */
@@ -3235,7 +3262,7 @@ export namespace google {
             public type_url: string;
 
             /** Any value. */
-            public value: Uint8Array;
+            public value: (Uint8Array|string);
 
             /**
              * Creates a new Any instance using the specified properties.
@@ -3396,7 +3423,7 @@ export namespace google {
         interface ITimestamp {
 
             /** Timestamp seconds */
-            seconds?: (number|Long|null);
+            seconds?: (number|Long|string|null);
 
             /** Timestamp nanos */
             nanos?: (number|null);
@@ -3412,7 +3439,7 @@ export namespace google {
             constructor(properties?: google.protobuf.ITimestamp);
 
             /** Timestamp seconds. */
-            public seconds: (number|Long);
+            public seconds: (number|Long|string);
 
             /** Timestamp nanos. */
             public nanos: number;
@@ -3672,7 +3699,7 @@ export namespace google {
         interface IValue {
 
             /** Value nullValue */
-            nullValue?: (google.protobuf.NullValue|null);
+            nullValue?: (google.protobuf.NullValue|keyof typeof google.protobuf.NullValue|null);
 
             /** Value numberValue */
             numberValue?: (number|null);
@@ -3700,7 +3727,7 @@ export namespace google {
             constructor(properties?: google.protobuf.IValue);
 
             /** Value nullValue. */
-            public nullValue: google.protobuf.NullValue;
+            public nullValue: (google.protobuf.NullValue|keyof typeof google.protobuf.NullValue);
 
             /** Value numberValue. */
             public numberValue: number;
@@ -5443,7 +5470,7 @@ export namespace google {
                     interface IRestoreInfo {
 
                         /** RestoreInfo sourceType */
-                        sourceType?: (google.spanner.admin.database.v1.RestoreSourceType|null);
+                        sourceType?: (google.spanner.admin.database.v1.RestoreSourceType|keyof typeof google.spanner.admin.database.v1.RestoreSourceType|null);
 
                         /** RestoreInfo backupInfo */
                         backupInfo?: (google.spanner.admin.database.v1.IBackupInfo|null);
@@ -5459,7 +5486,7 @@ export namespace google {
                         constructor(properties?: google.spanner.admin.database.v1.IRestoreInfo);
 
                         /** RestoreInfo sourceType. */
-                        public sourceType: google.spanner.admin.database.v1.RestoreSourceType;
+                        public sourceType: (google.spanner.admin.database.v1.RestoreSourceType|keyof typeof google.spanner.admin.database.v1.RestoreSourceType);
 
                         /** RestoreInfo backupInfo. */
                         public backupInfo?: (google.spanner.admin.database.v1.IBackupInfo|null);
@@ -5545,7 +5572,7 @@ export namespace google {
                         name?: (string|null);
 
                         /** Database state */
-                        state?: (google.spanner.admin.database.v1.Database.State|null);
+                        state?: (google.spanner.admin.database.v1.Database.State|keyof typeof google.spanner.admin.database.v1.Database.State|null);
 
                         /** Database createTime */
                         createTime?: (google.protobuf.ITimestamp|null);
@@ -5567,7 +5594,7 @@ export namespace google {
                         public name: string;
 
                         /** Database state. */
-                        public state: google.spanner.admin.database.v1.Database.State;
+                        public state: (google.spanner.admin.database.v1.Database.State|keyof typeof google.spanner.admin.database.v1.Database.State);
 
                         /** Database createTime. */
                         public createTime?: (google.protobuf.ITimestamp|null);
@@ -6927,7 +6954,7 @@ export namespace google {
                         name?: (string|null);
 
                         /** RestoreDatabaseMetadata sourceType */
-                        sourceType?: (google.spanner.admin.database.v1.RestoreSourceType|null);
+                        sourceType?: (google.spanner.admin.database.v1.RestoreSourceType|keyof typeof google.spanner.admin.database.v1.RestoreSourceType|null);
 
                         /** RestoreDatabaseMetadata backupInfo */
                         backupInfo?: (google.spanner.admin.database.v1.IBackupInfo|null);
@@ -6955,7 +6982,7 @@ export namespace google {
                         public name: string;
 
                         /** RestoreDatabaseMetadata sourceType. */
-                        public sourceType: google.spanner.admin.database.v1.RestoreSourceType;
+                        public sourceType: (google.spanner.admin.database.v1.RestoreSourceType|keyof typeof google.spanner.admin.database.v1.RestoreSourceType);
 
                         /** RestoreDatabaseMetadata backupInfo. */
                         public backupInfo?: (google.spanner.admin.database.v1.IBackupInfo|null);
@@ -7043,6 +7070,102 @@ export namespace google {
                         public toJSON(): { [k: string]: any };
                     }
 
+                    /** Properties of an OptimizeRestoredDatabaseMetadata. */
+                    interface IOptimizeRestoredDatabaseMetadata {
+
+                        /** OptimizeRestoredDatabaseMetadata name */
+                        name?: (string|null);
+
+                        /** OptimizeRestoredDatabaseMetadata progress */
+                        progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+                    }
+
+                    /** Represents an OptimizeRestoredDatabaseMetadata. */
+                    class OptimizeRestoredDatabaseMetadata implements IOptimizeRestoredDatabaseMetadata {
+
+                        /**
+                         * Constructs a new OptimizeRestoredDatabaseMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata);
+
+                        /** OptimizeRestoredDatabaseMetadata name. */
+                        public name: string;
+
+                        /** OptimizeRestoredDatabaseMetadata progress. */
+                        public progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /**
+                         * Creates a new OptimizeRestoredDatabaseMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns OptimizeRestoredDatabaseMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata): google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
+
+                        /**
+                         * Encodes the specified OptimizeRestoredDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.verify|verify} messages.
+                         * @param message OptimizeRestoredDatabaseMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified OptimizeRestoredDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.verify|verify} messages.
+                         * @param message OptimizeRestoredDatabaseMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an OptimizeRestoredDatabaseMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns OptimizeRestoredDatabaseMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
+
+                        /**
+                         * Decodes an OptimizeRestoredDatabaseMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns OptimizeRestoredDatabaseMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
+
+                        /**
+                         * Verifies an OptimizeRestoredDatabaseMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an OptimizeRestoredDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns OptimizeRestoredDatabaseMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
+
+                        /**
+                         * Creates a plain object from an OptimizeRestoredDatabaseMetadata message. Also converts values to other types if specified.
+                         * @param message OptimizeRestoredDatabaseMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this OptimizeRestoredDatabaseMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
                     /** RestoreSourceType enum. */
                     enum RestoreSourceType {
                         TYPE_UNSPECIFIED = 0,
@@ -7052,23 +7175,23 @@ export namespace google {
                     /** Properties of a Backup. */
                     interface IBackup {
 
-                        /** Backup name */
-                        name?: (string|null);
-
                         /** Backup database */
                         database?: (string|null);
 
                         /** Backup expireTime */
                         expireTime?: (google.protobuf.ITimestamp|null);
 
+                        /** Backup name */
+                        name?: (string|null);
+
                         /** Backup createTime */
                         createTime?: (google.protobuf.ITimestamp|null);
 
                         /** Backup sizeBytes */
-                        sizeBytes?: (number|Long|null);
+                        sizeBytes?: (number|Long|string|null);
 
                         /** Backup state */
-                        state?: (google.spanner.admin.database.v1.Backup.State|null);
+                        state?: (google.spanner.admin.database.v1.Backup.State|keyof typeof google.spanner.admin.database.v1.Backup.State|null);
 
                         /** Backup referencingDatabases */
                         referencingDatabases?: (string[]|null);
@@ -7083,23 +7206,23 @@ export namespace google {
                          */
                         constructor(properties?: google.spanner.admin.database.v1.IBackup);
 
-                        /** Backup name. */
-                        public name: string;
-
                         /** Backup database. */
                         public database: string;
 
                         /** Backup expireTime. */
                         public expireTime?: (google.protobuf.ITimestamp|null);
 
+                        /** Backup name. */
+                        public name: string;
+
                         /** Backup createTime. */
                         public createTime?: (google.protobuf.ITimestamp|null);
 
                         /** Backup sizeBytes. */
-                        public sizeBytes: (number|Long);
+                        public sizeBytes: (number|Long|string);
 
                         /** Backup state. */
-                        public state: google.spanner.admin.database.v1.Backup.State;
+                        public state: (google.spanner.admin.database.v1.Backup.State|keyof typeof google.spanner.admin.database.v1.Backup.State);
 
                         /** Backup referencingDatabases. */
                         public referencingDatabases: string[];
@@ -8525,6 +8648,119 @@ export namespace google {
                         type TestIamPermissionsCallback = (error: (Error|null), response?: google.iam.v1.TestIamPermissionsResponse) => void;
                     }
 
+                    /** Properties of a ReplicaInfo. */
+                    interface IReplicaInfo {
+
+                        /** ReplicaInfo location */
+                        location?: (string|null);
+
+                        /** ReplicaInfo type */
+                        type?: (google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType|keyof typeof google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType|null);
+
+                        /** ReplicaInfo defaultLeaderLocation */
+                        defaultLeaderLocation?: (boolean|null);
+                    }
+
+                    /** Represents a ReplicaInfo. */
+                    class ReplicaInfo implements IReplicaInfo {
+
+                        /**
+                         * Constructs a new ReplicaInfo.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IReplicaInfo);
+
+                        /** ReplicaInfo location. */
+                        public location: string;
+
+                        /** ReplicaInfo type. */
+                        public type: (google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType|keyof typeof google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType);
+
+                        /** ReplicaInfo defaultLeaderLocation. */
+                        public defaultLeaderLocation: boolean;
+
+                        /**
+                         * Creates a new ReplicaInfo instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ReplicaInfo instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IReplicaInfo): google.spanner.admin.instance.v1.ReplicaInfo;
+
+                        /**
+                         * Encodes the specified ReplicaInfo message. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaInfo.verify|verify} messages.
+                         * @param message ReplicaInfo message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IReplicaInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ReplicaInfo message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaInfo.verify|verify} messages.
+                         * @param message ReplicaInfo message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IReplicaInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ReplicaInfo message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ReplicaInfo
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ReplicaInfo;
+
+                        /**
+                         * Decodes a ReplicaInfo message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ReplicaInfo
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ReplicaInfo;
+
+                        /**
+                         * Verifies a ReplicaInfo message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ReplicaInfo message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ReplicaInfo
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ReplicaInfo;
+
+                        /**
+                         * Creates a plain object from a ReplicaInfo message. Also converts values to other types if specified.
+                         * @param message ReplicaInfo
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ReplicaInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ReplicaInfo to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace ReplicaInfo {
+
+                        /** ReplicaType enum. */
+                        enum ReplicaType {
+                            TYPE_UNSPECIFIED = 0,
+                            READ_WRITE = 1,
+                            READ_ONLY = 2,
+                            WITNESS = 3
+                        }
+                    }
+
                     /** Properties of an InstanceConfig. */
                     interface IInstanceConfig {
 
@@ -8533,6 +8769,9 @@ export namespace google {
 
                         /** InstanceConfig displayName */
                         displayName?: (string|null);
+
+                        /** InstanceConfig replicas */
+                        replicas?: (google.spanner.admin.instance.v1.IReplicaInfo[]|null);
                     }
 
                     /** Represents an InstanceConfig. */
@@ -8549,6 +8788,9 @@ export namespace google {
 
                         /** InstanceConfig displayName. */
                         public displayName: string;
+
+                        /** InstanceConfig replicas. */
+                        public replicas: google.spanner.admin.instance.v1.IReplicaInfo[];
 
                         /**
                          * Creates a new InstanceConfig instance using the specified properties.
@@ -8637,13 +8879,13 @@ export namespace google {
                         nodeCount?: (number|null);
 
                         /** Instance state */
-                        state?: (google.spanner.admin.instance.v1.Instance.State|null);
+                        state?: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State|null);
 
                         /** Instance labels */
                         labels?: ({ [k: string]: string }|null);
 
-                        /** Instance endpointUrls */
-                        endpointUrls?: (string[]|null);
+                        /** Instance endpointUris */
+                        endpointUris?: (string[]|null);
                     }
 
                     /** Represents an Instance. */
@@ -8668,13 +8910,13 @@ export namespace google {
                         public nodeCount: number;
 
                         /** Instance state. */
-                        public state: google.spanner.admin.instance.v1.Instance.State;
+                        public state: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State);
 
                         /** Instance labels. */
                         public labels: { [k: string]: string };
 
-                        /** Instance endpointUrls. */
-                        public endpointUrls: string[];
+                        /** Instance endpointUris. */
+                        public endpointUris: string[];
 
                         /**
                          * Creates a new Instance instance using the specified properties.
@@ -10993,16 +11235,19 @@ export namespace google {
                 paramTypes?: ({ [k: string]: google.spanner.v1.IType }|null);
 
                 /** ExecuteSqlRequest resumeToken */
-                resumeToken?: (Uint8Array|null);
+                resumeToken?: (Uint8Array|string|null);
 
                 /** ExecuteSqlRequest queryMode */
-                queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
+                queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
 
                 /** ExecuteSqlRequest partitionToken */
-                partitionToken?: (Uint8Array|null);
+                partitionToken?: (Uint8Array|string|null);
 
                 /** ExecuteSqlRequest seqno */
-                seqno?: (number|Long|null);
+                seqno?: (number|Long|string|null);
+
+                /** ExecuteSqlRequest queryOptions */
+                queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -11030,16 +11275,19 @@ export namespace google {
                 public paramTypes: { [k: string]: google.spanner.v1.IType };
 
                 /** ExecuteSqlRequest resumeToken. */
-                public resumeToken: Uint8Array;
+                public resumeToken: (Uint8Array|string);
 
                 /** ExecuteSqlRequest queryMode. */
-                public queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode;
+                public queryMode: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode);
 
                 /** ExecuteSqlRequest partitionToken. */
-                public partitionToken: Uint8Array;
+                public partitionToken: (Uint8Array|string);
 
                 /** ExecuteSqlRequest seqno. */
-                public seqno: (number|Long);
+                public seqno: (number|Long|string);
+
+                /** ExecuteSqlRequest queryOptions. */
+                public queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -11114,6 +11362,96 @@ export namespace google {
 
             namespace ExecuteSqlRequest {
 
+                /** Properties of a QueryOptions. */
+                interface IQueryOptions {
+
+                    /** QueryOptions optimizerVersion */
+                    optimizerVersion?: (string|null);
+                }
+
+                /** Represents a QueryOptions. */
+                class QueryOptions implements IQueryOptions {
+
+                    /**
+                     * Constructs a new QueryOptions.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions);
+
+                    /** QueryOptions optimizerVersion. */
+                    public optimizerVersion: string;
+
+                    /**
+                     * Creates a new QueryOptions instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns QueryOptions instance
+                     */
+                    public static create(properties?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Encodes the specified QueryOptions message. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                     * @param message QueryOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ExecuteSqlRequest.IQueryOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryOptions message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
+                     * @param message QueryOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ExecuteSqlRequest.IQueryOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryOptions message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Decodes a QueryOptions message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Verifies a QueryOptions message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryOptions message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryOptions
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+
+                    /**
+                     * Creates a plain object from a QueryOptions message. Also converts values to other types if specified.
+                     * @param message QueryOptions
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ExecuteSqlRequest.QueryOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryOptions to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
                 /** QueryMode enum. */
                 enum QueryMode {
                     NORMAL = 0,
@@ -11135,7 +11473,7 @@ export namespace google {
                 statements?: (google.spanner.v1.ExecuteBatchDmlRequest.IStatement[]|null);
 
                 /** ExecuteBatchDmlRequest seqno */
-                seqno?: (number|Long|null);
+                seqno?: (number|Long|string|null);
             }
 
             /** Represents an ExecuteBatchDmlRequest. */
@@ -11157,7 +11495,7 @@ export namespace google {
                 public statements: google.spanner.v1.ExecuteBatchDmlRequest.IStatement[];
 
                 /** ExecuteBatchDmlRequest seqno. */
-                public seqno: (number|Long);
+                public seqno: (number|Long|string);
 
                 /**
                  * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
@@ -11435,10 +11773,10 @@ export namespace google {
             interface IPartitionOptions {
 
                 /** PartitionOptions partitionSizeBytes */
-                partitionSizeBytes?: (number|Long|null);
+                partitionSizeBytes?: (number|Long|string|null);
 
                 /** PartitionOptions maxPartitions */
-                maxPartitions?: (number|Long|null);
+                maxPartitions?: (number|Long|string|null);
             }
 
             /** Represents a PartitionOptions. */
@@ -11451,10 +11789,10 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartitionOptions);
 
                 /** PartitionOptions partitionSizeBytes. */
-                public partitionSizeBytes: (number|Long);
+                public partitionSizeBytes: (number|Long|string);
 
                 /** PartitionOptions maxPartitions. */
-                public maxPartitions: (number|Long);
+                public maxPartitions: (number|Long|string);
 
                 /**
                  * Creates a new PartitionOptions instance using the specified properties.
@@ -11777,7 +12115,7 @@ export namespace google {
             interface IPartition {
 
                 /** Partition partitionToken */
-                partitionToken?: (Uint8Array|null);
+                partitionToken?: (Uint8Array|string|null);
             }
 
             /** Represents a Partition. */
@@ -11790,7 +12128,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartition);
 
                 /** Partition partitionToken. */
-                public partitionToken: Uint8Array;
+                public partitionToken: (Uint8Array|string);
 
                 /**
                  * Creates a new Partition instance using the specified properties.
@@ -11981,13 +12319,13 @@ export namespace google {
                 keySet?: (google.spanner.v1.IKeySet|null);
 
                 /** ReadRequest limit */
-                limit?: (number|Long|null);
+                limit?: (number|Long|string|null);
 
                 /** ReadRequest resumeToken */
-                resumeToken?: (Uint8Array|null);
+                resumeToken?: (Uint8Array|string|null);
 
                 /** ReadRequest partitionToken */
-                partitionToken?: (Uint8Array|null);
+                partitionToken?: (Uint8Array|string|null);
             }
 
             /** Represents a ReadRequest. */
@@ -12018,13 +12356,13 @@ export namespace google {
                 public keySet?: (google.spanner.v1.IKeySet|null);
 
                 /** ReadRequest limit. */
-                public limit: (number|Long);
+                public limit: (number|Long|string);
 
                 /** ReadRequest resumeToken. */
-                public resumeToken: Uint8Array;
+                public resumeToken: (Uint8Array|string);
 
                 /** ReadRequest partitionToken. */
-                public partitionToken: Uint8Array;
+                public partitionToken: (Uint8Array|string);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
@@ -12200,7 +12538,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** CommitRequest transactionId */
-                transactionId?: (Uint8Array|null);
+                transactionId?: (Uint8Array|string|null);
 
                 /** CommitRequest singleUseTransaction */
                 singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -12222,7 +12560,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId: Uint8Array;
+                public transactionId: (Uint8Array|string);
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -12401,7 +12739,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** RollbackRequest transactionId */
-                transactionId?: (Uint8Array|null);
+                transactionId?: (Uint8Array|string|null);
             }
 
             /** Represents a RollbackRequest. */
@@ -12417,7 +12755,7 @@ export namespace google {
                 public session: string;
 
                 /** RollbackRequest transactionId. */
-                public transactionId: Uint8Array;
+                public transactionId: (Uint8Array|string);
 
                 /**
                  * Creates a new RollbackRequest instance using the specified properties.
@@ -13139,7 +13477,7 @@ export namespace google {
                 chunkedValue?: (boolean|null);
 
                 /** PartialResultSet resumeToken */
-                resumeToken?: (Uint8Array|null);
+                resumeToken?: (Uint8Array|string|null);
 
                 /** PartialResultSet stats */
                 stats?: (google.spanner.v1.IResultSetStats|null);
@@ -13164,7 +13502,7 @@ export namespace google {
                 public chunkedValue: boolean;
 
                 /** PartialResultSet resumeToken. */
-                public resumeToken: Uint8Array;
+                public resumeToken: (Uint8Array|string);
 
                 /** PartialResultSet stats. */
                 public stats?: (google.spanner.v1.IResultSetStats|null);
@@ -13346,10 +13684,10 @@ export namespace google {
                 queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact */
-                rowCountExact?: (number|Long|null);
+                rowCountExact?: (number|Long|string|null);
 
                 /** ResultSetStats rowCountLowerBound */
-                rowCountLowerBound?: (number|Long|null);
+                rowCountLowerBound?: (number|Long|string|null);
             }
 
             /** Represents a ResultSetStats. */
@@ -13368,10 +13706,10 @@ export namespace google {
                 public queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact. */
-                public rowCountExact: (number|Long);
+                public rowCountExact: (number|Long|string);
 
                 /** ResultSetStats rowCountLowerBound. */
-                public rowCountLowerBound: (number|Long);
+                public rowCountLowerBound: (number|Long|string);
 
                 /** ResultSetStats rowCount. */
                 public rowCount?: ("rowCountExact"|"rowCountLowerBound");
@@ -13454,7 +13792,7 @@ export namespace google {
                 index?: (number|null);
 
                 /** PlanNode kind */
-                kind?: (google.spanner.v1.PlanNode.Kind|null);
+                kind?: (google.spanner.v1.PlanNode.Kind|keyof typeof google.spanner.v1.PlanNode.Kind|null);
 
                 /** PlanNode displayName */
                 displayName?: (string|null);
@@ -13485,7 +13823,7 @@ export namespace google {
                 public index: number;
 
                 /** PlanNode kind. */
-                public kind: google.spanner.v1.PlanNode.Kind;
+                public kind: (google.spanner.v1.PlanNode.Kind|keyof typeof google.spanner.v1.PlanNode.Kind);
 
                 /** PlanNode displayName. */
                 public displayName: string;
@@ -14274,7 +14612,7 @@ export namespace google {
             interface ITransaction {
 
                 /** Transaction id */
-                id?: (Uint8Array|null);
+                id?: (Uint8Array|string|null);
 
                 /** Transaction readTimestamp */
                 readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -14290,7 +14628,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.ITransaction);
 
                 /** Transaction id. */
-                public id: Uint8Array;
+                public id: (Uint8Array|string);
 
                 /** Transaction readTimestamp. */
                 public readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -14373,7 +14711,7 @@ export namespace google {
                 singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id */
-                id?: (Uint8Array|null);
+                id?: (Uint8Array|string|null);
 
                 /** TransactionSelector begin */
                 begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -14392,7 +14730,7 @@ export namespace google {
                 public singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id. */
-                public id: Uint8Array;
+                public id: (Uint8Array|string);
 
                 /** TransactionSelector begin. */
                 public begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -14471,11 +14809,25 @@ export namespace google {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** TypeCode enum. */
+            enum TypeCode {
+                TYPE_CODE_UNSPECIFIED = 0,
+                BOOL = 1,
+                INT64 = 2,
+                FLOAT64 = 3,
+                TIMESTAMP = 4,
+                DATE = 5,
+                STRING = 6,
+                BYTES = 7,
+                ARRAY = 8,
+                STRUCT = 9
+            }
+
             /** Properties of a Type. */
             interface IType {
 
                 /** Type code */
-                code?: (google.spanner.v1.TypeCode|null);
+                code?: (google.spanner.v1.TypeCode|keyof typeof google.spanner.v1.TypeCode|null);
 
                 /** Type arrayElementType */
                 arrayElementType?: (google.spanner.v1.IType|null);
@@ -14494,7 +14846,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IType);
 
                 /** Type code. */
-                public code: google.spanner.v1.TypeCode;
+                public code: (google.spanner.v1.TypeCode|keyof typeof google.spanner.v1.TypeCode);
 
                 /** Type arrayElementType. */
                 public arrayElementType?: (google.spanner.v1.IType|null);
@@ -14760,20 +15112,6 @@ export namespace google {
                      */
                     public toJSON(): { [k: string]: any };
                 }
-            }
-
-            /** TypeCode enum. */
-            enum TypeCode {
-                TYPE_CODE_UNSPECIFIED = 0,
-                BOOL = 1,
-                INT64 = 2,
-                FLOAT64 = 3,
-                TIMESTAMP = 4,
-                DATE = 5,
-                STRING = 6,
-                BYTES = 7,
-                ARRAY = 8,
-                STRUCT = 9
             }
         }
     }
@@ -15115,6 +15453,242 @@ export namespace google {
 
             /**
              * Converts this CustomHttpPattern to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** FieldBehavior enum. */
+        enum FieldBehavior {
+            FIELD_BEHAVIOR_UNSPECIFIED = 0,
+            OPTIONAL = 1,
+            REQUIRED = 2,
+            OUTPUT_ONLY = 3,
+            INPUT_ONLY = 4,
+            IMMUTABLE = 5
+        }
+
+        /** Properties of a ResourceDescriptor. */
+        interface IResourceDescriptor {
+
+            /** ResourceDescriptor type */
+            type?: (string|null);
+
+            /** ResourceDescriptor pattern */
+            pattern?: (string[]|null);
+
+            /** ResourceDescriptor nameField */
+            nameField?: (string|null);
+
+            /** ResourceDescriptor history */
+            history?: (google.api.ResourceDescriptor.History|keyof typeof google.api.ResourceDescriptor.History|null);
+
+            /** ResourceDescriptor plural */
+            plural?: (string|null);
+
+            /** ResourceDescriptor singular */
+            singular?: (string|null);
+        }
+
+        /** Represents a ResourceDescriptor. */
+        class ResourceDescriptor implements IResourceDescriptor {
+
+            /**
+             * Constructs a new ResourceDescriptor.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.api.IResourceDescriptor);
+
+            /** ResourceDescriptor type. */
+            public type: string;
+
+            /** ResourceDescriptor pattern. */
+            public pattern: string[];
+
+            /** ResourceDescriptor nameField. */
+            public nameField: string;
+
+            /** ResourceDescriptor history. */
+            public history: (google.api.ResourceDescriptor.History|keyof typeof google.api.ResourceDescriptor.History);
+
+            /** ResourceDescriptor plural. */
+            public plural: string;
+
+            /** ResourceDescriptor singular. */
+            public singular: string;
+
+            /**
+             * Creates a new ResourceDescriptor instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns ResourceDescriptor instance
+             */
+            public static create(properties?: google.api.IResourceDescriptor): google.api.ResourceDescriptor;
+
+            /**
+             * Encodes the specified ResourceDescriptor message. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
+             * @param message ResourceDescriptor message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.api.IResourceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified ResourceDescriptor message, length delimited. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
+             * @param message ResourceDescriptor message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.api.IResourceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a ResourceDescriptor message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ResourceDescriptor
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.api.ResourceDescriptor;
+
+            /**
+             * Decodes a ResourceDescriptor message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns ResourceDescriptor
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.api.ResourceDescriptor;
+
+            /**
+             * Verifies a ResourceDescriptor message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a ResourceDescriptor message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns ResourceDescriptor
+             */
+            public static fromObject(object: { [k: string]: any }): google.api.ResourceDescriptor;
+
+            /**
+             * Creates a plain object from a ResourceDescriptor message. Also converts values to other types if specified.
+             * @param message ResourceDescriptor
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.api.ResourceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this ResourceDescriptor to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        namespace ResourceDescriptor {
+
+            /** History enum. */
+            enum History {
+                HISTORY_UNSPECIFIED = 0,
+                ORIGINALLY_SINGLE_PATTERN = 1,
+                FUTURE_MULTI_PATTERN = 2
+            }
+        }
+
+        /** Properties of a ResourceReference. */
+        interface IResourceReference {
+
+            /** ResourceReference type */
+            type?: (string|null);
+
+            /** ResourceReference childType */
+            childType?: (string|null);
+        }
+
+        /** Represents a ResourceReference. */
+        class ResourceReference implements IResourceReference {
+
+            /**
+             * Constructs a new ResourceReference.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.api.IResourceReference);
+
+            /** ResourceReference type. */
+            public type: string;
+
+            /** ResourceReference childType. */
+            public childType: string;
+
+            /**
+             * Creates a new ResourceReference instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns ResourceReference instance
+             */
+            public static create(properties?: google.api.IResourceReference): google.api.ResourceReference;
+
+            /**
+             * Encodes the specified ResourceReference message. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
+             * @param message ResourceReference message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.api.IResourceReference, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified ResourceReference message, length delimited. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
+             * @param message ResourceReference message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.api.IResourceReference, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a ResourceReference message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ResourceReference
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.api.ResourceReference;
+
+            /**
+             * Decodes a ResourceReference message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns ResourceReference
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.api.ResourceReference;
+
+            /**
+             * Verifies a ResourceReference message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a ResourceReference message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns ResourceReference
+             */
+            public static fromObject(object: { [k: string]: any }): google.api.ResourceReference;
+
+            /**
+             * Creates a plain object from a ResourceReference message. Also converts values to other types if specified.
+             * @param message ResourceReference
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.api.ResourceReference, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this ResourceReference to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
@@ -15692,7 +16266,7 @@ export namespace google {
                 bindings?: (google.iam.v1.IBinding[]|null);
 
                 /** Policy etag */
-                etag?: (Uint8Array|null);
+                etag?: (Uint8Array|string|null);
             }
 
             /** Represents a Policy. */
@@ -15711,7 +16285,7 @@ export namespace google {
                 public bindings: google.iam.v1.IBinding[];
 
                 /** Policy etag. */
-                public etag: Uint8Array;
+                public etag: (Uint8Array|string);
 
                 /**
                  * Creates a new Policy instance using the specified properties.
@@ -15986,7 +16560,7 @@ export namespace google {
             interface IBindingDelta {
 
                 /** BindingDelta action */
-                action?: (google.iam.v1.BindingDelta.Action|null);
+                action?: (google.iam.v1.BindingDelta.Action|keyof typeof google.iam.v1.BindingDelta.Action|null);
 
                 /** BindingDelta role */
                 role?: (string|null);
@@ -16008,7 +16582,7 @@ export namespace google {
                 constructor(properties?: google.iam.v1.IBindingDelta);
 
                 /** BindingDelta action. */
-                public action: google.iam.v1.BindingDelta.Action;
+                public action: (google.iam.v1.BindingDelta.Action|keyof typeof google.iam.v1.BindingDelta.Action);
 
                 /** BindingDelta role. */
                 public role: string;
@@ -16104,7 +16678,7 @@ export namespace google {
             interface IAuditConfigDelta {
 
                 /** AuditConfigDelta action */
-                action?: (google.iam.v1.AuditConfigDelta.Action|null);
+                action?: (google.iam.v1.AuditConfigDelta.Action|keyof typeof google.iam.v1.AuditConfigDelta.Action|null);
 
                 /** AuditConfigDelta service */
                 service?: (string|null);
@@ -16126,7 +16700,7 @@ export namespace google {
                 constructor(properties?: google.iam.v1.IAuditConfigDelta);
 
                 /** AuditConfigDelta action. */
-                public action: google.iam.v1.AuditConfigDelta.Action;
+                public action: (google.iam.v1.AuditConfigDelta.Action|keyof typeof google.iam.v1.AuditConfigDelta.Action);
 
                 /** AuditConfigDelta service. */
                 public service: string;

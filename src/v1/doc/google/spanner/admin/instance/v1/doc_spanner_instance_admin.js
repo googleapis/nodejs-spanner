@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,77 @@
 // to be loaded as the JS file.
 
 /**
+ * @property {string} location
+ *   The location of the serving resources, e.g. "us-central1".
+ *
+ * @property {number} type
+ *   The type of replica.
+ *
+ *   The number should be among the values of [ReplicaType]{@link google.spanner.admin.instance.v1.ReplicaType}
+ *
+ * @property {boolean} defaultLeaderLocation
+ *   If true, this location is designated as the default leader location where
+ *   leader replicas are placed. See the [region types
+ *   documentation](https://cloud.google.com/spanner/docs/instances#region_types)
+ *   for more details.
+ *
+ * @typedef ReplicaInfo
+ * @memberof google.spanner.admin.instance.v1
+ * @see [google.spanner.admin.instance.v1.ReplicaInfo definition in proto format]{@link https://github.com/googleapis/googleapis/blob/master/google/spanner/admin/instance/v1/spanner_instance_admin.proto}
+ */
+const ReplicaInfo = {
+  // This is for documentation. Actual contents will be loaded by gRPC.
+
+  /**
+   * Indicates the type of replica.  See the [replica types
+   * documentation](https://cloud.google.com/spanner/docs/replication#replica_types)
+   * for more details.
+   *
+   * @enum {number}
+   * @memberof google.spanner.admin.instance.v1
+   */
+  ReplicaType: {
+
+    /**
+     * Not specified.
+     */
+    TYPE_UNSPECIFIED: 0,
+
+    /**
+     * Read-write replicas support both reads and writes. These replicas:
+     *
+     * * Maintain a full copy of your data.
+     * * Serve reads.
+     * * Can vote whether to commit a write.
+     * * Participate in leadership election.
+     * * Are eligible to become a leader.
+     */
+    READ_WRITE: 1,
+
+    /**
+     * Read-only replicas only support reads (not writes). Read-only replicas:
+     *
+     * * Maintain a full copy of your data.
+     * * Serve reads.
+     * * Do not participate in voting to commit writes.
+     * * Are not eligible to become a leader.
+     */
+    READ_ONLY: 2,
+
+    /**
+     * Witness replicas don't support reads but do participate in voting to
+     * commit writes. Witness replicas:
+     *
+     * * Do not maintain a full copy of data.
+     * * Do not serve reads.
+     * * Vote whether to commit writes.
+     * * Participate in leader election but are not eligible to become leader.
+     */
+    WITNESS: 3
+  }
+};
+
+/**
  * A possible configuration for a Cloud Spanner instance. Configurations
  * define the geographic placement of nodes and their replication.
  *
@@ -26,6 +97,12 @@
  *
  * @property {string} displayName
  *   The name of this instance configuration as it appears in UIs.
+ *
+ * @property {Object[]} replicas
+ *   The geographic placement of nodes in this instance configuration and their
+ *   replication properties.
+ *
+ *   This object should have the same structure as [ReplicaInfo]{@link google.spanner.admin.instance.v1.ReplicaInfo}
  *
  * @typedef InstanceConfig
  * @memberof google.spanner.admin.instance.v1
@@ -42,7 +119,7 @@ const InstanceConfig = {
  *   Required. A unique identifier for the instance, which cannot be changed
  *   after the instance is created. Values are of the form
  *   `projects/<project>/instances/[a-z][-a-z0-9]*[a-z0-9]`. The final
- *   segment of the name must be between 6 and 30 characters in length.
+ *   segment of the name must be between 2 and 64 characters in length.
  *
  * @property {string} config
  *   Required. The name of the instance's configuration. Values are of the form
@@ -58,7 +135,8 @@ const InstanceConfig = {
  *   Required. The number of nodes allocated to this instance. This may be zero
  *   in API responses for instances that are not yet in state `READY`.
  *
- *   See [the documentation](https://cloud.google.com/spanner/docs/instances#node_count)
+ *   See [the
+ *   documentation](https://cloud.google.com/spanner/docs/instances#node_count)
  *   for more information about nodes.
  *
  * @property {number} state
@@ -93,15 +171,8 @@ const InstanceConfig = {
  *   as the string:  name + "_" + value  would prove problematic if we were to
  *   allow "_" in a future release.
  *
- * @property {string[]} endpointUrls
- *   Output only. The endpoint URLs based on the instance config.
- *   For example, instances located in a specific cloud region (or multi region)
- *   such as nam3, would have a nam3 specific endpoint URL.
- *   This URL is to be used implictly by SDK clients, with fallback to default
- *   URL. These endpoints are intended to optimize the network routing between
- *   the client and the instance's serving resources.
- *   If multiple endpoints are present,
- *   client may establish connections using any of the given URLs.
+ * @property {string[]} endpointUris
+ *   Deprecated. This field is not populated.
  *
  * @typedef Instance
  * @memberof google.spanner.admin.instance.v1
@@ -208,9 +279,9 @@ const GetInstanceConfigRequest = {
  *   `projects/<project>/instances/<instance>`.
  *
  * @property {Object} fieldMask
- *   If field_mask is present, specifies the subset of [][google.spanner.admin.instance.v1.Instance] fields that
+ *   If field_mask is present, specifies the subset of Instance fields that
  *   should be returned.
- *   If absent, all [][google.spanner.admin.instance.v1.Instance] fields are returned.
+ *   If absent, all Instance fields are returned.
  *
  *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
  *
@@ -319,14 +390,14 @@ const ListInstancesResponse = {
  *
  * @property {Object} instance
  *   Required. The instance to update, which must always include the instance
- *   name.  Otherwise, only fields mentioned in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be included.
+ *   name.  Otherwise, only fields mentioned in field_mask need be included.
  *
  *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
  *
  * @property {Object} fieldMask
- *   Required. A mask specifying which fields in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should be updated.
+ *   Required. A mask specifying which fields in Instance should be updated.
  *   The field mask must always be specified; this prevents any future fields in
- *   [][google.spanner.admin.instance.v1.Instance] from being erased accidentally by clients that do not know
+ *   Instance from being erased accidentally by clients that do not know
  *   about them.
  *
  *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}

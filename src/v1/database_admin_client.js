@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ const VERSION = require('../../../package.json').version;
  *
  * The Cloud Spanner Database Admin API can be used to create, drop, and
  * list databases. It also enables updating the schema of pre-existing
- * databases.
+ * databases. It can be also used to create, delete and list backups for a
+ * database and to restore from an existing backup.
  *
  * @class
  * @memberof v1
@@ -138,7 +139,6 @@ class DatabaseAdminClient {
       instancePathTemplate: new gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}'
       ),
-      projectPathTemplate: new gaxModule.PathTemplate('projects/{project}'),
     };
 
     // Some of the methods on this service return "paged" results,
@@ -252,7 +252,6 @@ class DatabaseAdminClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const databaseAdminStubMethods = [
-      'listDatabases',
       'createDatabase',
       'getDatabase',
       'updateDatabaseDdl',
@@ -261,6 +260,7 @@ class DatabaseAdminClient {
       'setIamPolicy',
       'getIamPolicy',
       'testIamPermissions',
+      'listDatabases',
       'createBackup',
       'getBackup',
       'updateBackup',
@@ -335,165 +335,6 @@ class DatabaseAdminClient {
   // -------------------
 
   /**
-   * Lists Cloud Spanner databases.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The instance whose databases should be listed.
-   *   Values are of the form `projects/<project>/instances/<instance>`.
-   * @param {number} [request.pageSize]
-   *   The maximum number of resources contained in the underlying API
-   *   response. If page streaming is performed per-resource, this
-   *   parameter does not affect the return value. If page streaming is
-   *   performed per-page, this determines the maximum number of
-   *   resources in a page.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @param {function(?Error, ?Array, ?Object, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is Array of [Database]{@link google.spanner.admin.database.v1.Database}.
-   *
-   *   When autoPaginate: false is specified through options, it contains the result
-   *   in a single response. If the response indicates the next page exists, the third
-   *   parameter is set to be used for the next request object. The fourth parameter keeps
-   *   the raw response object of an object representing [ListDatabasesResponse]{@link google.spanner.admin.database.v1.ListDatabasesResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Database]{@link google.spanner.admin.database.v1.Database}.
-   *
-   *   When autoPaginate: false is specified through options, the array has three elements.
-   *   The first element is Array of [Database]{@link google.spanner.admin.database.v1.Database} in a single response.
-   *   The second element is the next request object if the response
-   *   indicates the next page exists, or null. The third element is
-   *   an object representing [ListDatabasesResponse]{@link google.spanner.admin.database.v1.ListDatabasesResponse}.
-   *
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   * @example
-   *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
-   *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * // Iterate over all elements.
-   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   *
-   * client.listDatabases({parent: formattedParent})
-   *   .then(responses => {
-   *     const resources = responses[0];
-   *     for (const resource of resources) {
-   *       // doThingsWith(resource)
-   *     }
-   *   })
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   *
-   * // Or obtain the paged response.
-   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   *
-   *
-   * const options = {autoPaginate: false};
-   * const callback = responses => {
-   *   // The actual resources in a response.
-   *   const resources = responses[0];
-   *   // The next request if the response shows that there are more responses.
-   *   const nextRequest = responses[1];
-   *   // The actual response object, if necessary.
-   *   // const rawResponse = responses[2];
-   *   for (const resource of resources) {
-   *     // doThingsWith(resource);
-   *   }
-   *   if (nextRequest) {
-   *     // Fetch the next page.
-   *     return client.listDatabases(nextRequest, options).then(callback);
-   *   }
-   * }
-   * client.listDatabases({parent: formattedParent}, options)
-   *   .then(callback)
-   *   .catch(err => {
-   *     console.error(err);
-   *   });
-   */
-  listDatabases(request, options, callback) {
-    if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
-    }
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent,
-    });
-
-    return this._innerApiCalls.listDatabases(request, options, callback);
-  }
-
-  /**
-   * Equivalent to {@link listDatabases}, but returns a NodeJS Stream object.
-   *
-   * This fetches the paged responses for {@link listDatabases} continuously
-   * and invokes the callback registered for 'data' event for each element in the
-   * responses.
-   *
-   * The returned object has 'end' method when no more elements are required.
-   *
-   * autoPaginate option will be ignored.
-   *
-   * @see {@link https://nodejs.org/api/stream.html}
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The instance whose databases should be listed.
-   *   Values are of the form `projects/<project>/instances/<instance>`.
-   * @param {number} [request.pageSize]
-   *   The maximum number of resources contained in the underlying API
-   *   response. If page streaming is performed per-resource, this
-   *   parameter does not affect the return value. If page streaming is
-   *   performed per-page, this determines the maximum number of
-   *   resources in a page.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
-   * @returns {Stream}
-   *   An object stream which emits an object representing [Database]{@link google.spanner.admin.database.v1.Database} on 'data' event.
-   *
-   * @example
-   *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
-   *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
-   *   // optional auth parameters.
-   * });
-   *
-   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * client.listDatabasesStream({parent: formattedParent})
-   *   .on('data', element => {
-   *     // doThingsWith(element)
-   *   }).on('error', err => {
-   *     console.log(err);
-   *   });
-   */
-  listDatabasesStream(request, options) {
-    options = options || {};
-
-    return this._descriptors.page.listDatabases.createStream(
-      this._innerApiCalls.listDatabases,
-      request,
-      options
-    );
-  }
-
-  /**
    * Creates a new Cloud Spanner database and starts to prepare it for serving.
    * The returned long-running operation will
    * have a name of the format `<database_name>/operations/<operation_id>` and
@@ -515,7 +356,7 @@ class DatabaseAdminClient {
    *   If the database ID is a reserved word or if it contains a hyphen, the
    *   database ID must be enclosed in backticks (`` ` ``).
    * @param {string[]} [request.extraStatements]
-   *   An optional list of DDL statements to run inside the newly created
+   *   Optional. A list of DDL statements to run inside the newly created
    *   database. Statements can create tables, indexes, etc. These
    *   statements execute atomically with the creation of the database:
    *   if there is an error in any statement, the database is not created.
@@ -532,9 +373,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -646,9 +487,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -694,7 +535,7 @@ class DatabaseAdminClient {
    * @param {string} request.database
    *   Required. The database to update.
    * @param {string[]} request.statements
-   *   DDL statements to be applied to the database.
+   *   Required. DDL statements to be applied to the database.
    * @param {string} [request.operationId]
    *   If empty, the new update request is assigned an
    *   automatically-generated operation ID. Otherwise, `operation_id`
@@ -728,9 +569,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -823,6 +664,8 @@ class DatabaseAdminClient {
 
   /**
    * Drops (aka deletes) a Cloud Spanner database.
+   * Completed backups for the database will be retained according to their
+   * `expire_time`.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -838,9 +681,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -889,9 +732,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -924,18 +767,19 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Sets the access control policy on a database resource.
+   * Sets the access control policy on a database or backup resource.
    * Replaces any existing policy.
    *
    * Authorization requires `spanner.databases.setIamPolicy`
+   * permission on resource.
+   * For backups, authorization requires `spanner.backups.setIamPolicy`
    * permission on resource.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being specified.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {Object} request.policy
    *   REQUIRED: The complete policy to be applied to the `resource`. The size of
    *   the policy is limited to a few 10s of KB. An empty policy is a
@@ -956,16 +800,16 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const resource = '';
    * const policy = {};
    * const request = {
-   *   resource: formattedResource,
+   *   resource: resource,
    *   policy: policy,
    * };
    * client.setIamPolicy(request)
@@ -996,19 +840,25 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Gets the access control policy for a database resource.
-   * Returns an empty policy if a database exists but does
-   * not have a policy set.
+   * Gets the access control policy for a database or backup resource.
+   * Returns an empty policy if a database or backup exists but does not have a
+   * policy set.
    *
    * Authorization requires `spanner.databases.getIamPolicy` permission on
    * resource.
+   * For backups, authorization requires `spanner.backups.getIamPolicy`
+   * permission on resource.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being requested.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {Object} [request.options]
+   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+   *   `GetIamPolicy`. This field is only used by Cloud IAM.
+   *
+   *   This object should have the same structure as [GetPolicyOptions]{@link google.iam.v1.GetPolicyOptions}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -1022,14 +872,14 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
-   * client.getIamPolicy({resource: formattedResource})
+   * const resource = '';
+   * client.getIamPolicy({resource: resource})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -1057,19 +907,22 @@ class DatabaseAdminClient {
   }
 
   /**
-   * Returns permissions that the caller has on the specified database resource.
+   * Returns permissions that the caller has on the specified database or backup
+   * resource.
    *
    * Attempting this RPC on a non-existent Cloud Spanner database will
    * result in a NOT_FOUND error if the user has
    * `spanner.databases.list` permission on the containing Cloud
    * Spanner instance. Otherwise returns an empty set of permissions.
+   * Calling this method on a backup that does not exist will
+   * result in a NOT_FOUND error if the user has
+   * `spanner.backups.list` permission on the containing instance.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy detail is being requested.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {string[]} request.permissions
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
@@ -1088,16 +941,16 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.databasePath('[PROJECT]', '[INSTANCE]', '[DATABASE]');
+   * const resource = '';
    * const permissions = [];
    * const request = {
-   *   resource: formattedResource,
+   *   resource: resource,
    *   permissions: permissions,
    * };
    * client.testIamPermissions(request)
@@ -1128,6 +981,178 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Lists Cloud Spanner databases.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance whose databases should be listed.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @param {function(?Error, ?Array, ?Object, ?Object)} [callback]
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is Array of [Database]{@link google.spanner.admin.database.v1.Database}.
+   *
+   *   When autoPaginate: false is specified through options, it contains the result
+   *   in a single response. If the response indicates the next page exists, the third
+   *   parameter is set to be used for the next request object. The fourth parameter keeps
+   *   the raw response object of an object representing [ListDatabasesResponse]{@link google.spanner.admin.database.v1.ListDatabasesResponse}.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Database]{@link google.spanner.admin.database.v1.Database}.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Database]{@link google.spanner.admin.database.v1.Database} in a single response.
+   *   The second element is the next request object if the response
+   *   indicates the next page exists, or null. The third element is
+   *   an object representing [ListDatabasesResponse]{@link google.spanner.admin.database.v1.ListDatabasesResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * // Iterate over all elements.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   *
+   * client.listDatabases({parent: formattedParent})
+   *   .then(responses => {
+   *     const resources = responses[0];
+   *     for (const resource of resources) {
+   *       // doThingsWith(resource)
+   *     }
+   *   })
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   *
+   * // Or obtain the paged response.
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   *
+   *
+   * const options = {autoPaginate: false};
+   * const callback = responses => {
+   *   // The actual resources in a response.
+   *   const resources = responses[0];
+   *   // The next request if the response shows that there are more responses.
+   *   const nextRequest = responses[1];
+   *   // The actual response object, if necessary.
+   *   // const rawResponse = responses[2];
+   *   for (const resource of resources) {
+   *     // doThingsWith(resource);
+   *   }
+   *   if (nextRequest) {
+   *     // Fetch the next page.
+   *     return client.listDatabases(nextRequest, options).then(callback);
+   *   }
+   * }
+   * client.listDatabases({parent: formattedParent}, options)
+   *   .then(callback)
+   *   .catch(err => {
+   *     console.error(err);
+   *   });
+   */
+  listDatabases(request, options, callback) {
+    if (options instanceof Function && callback === undefined) {
+      callback = options;
+      options = {};
+    }
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent,
+    });
+
+    return this._innerApiCalls.listDatabases(request, options, callback);
+  }
+
+  /**
+   * Equivalent to {@link listDatabases}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listDatabases} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance whose databases should be listed.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {number} [request.pageSize]
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object} [options]
+   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Database]{@link google.spanner.admin.database.v1.Database} on 'data' event.
+   *
+   * @example
+   *
+   * const spanner = require('@google-cloud/spanner');
+   *
+   * const client = new spanner.v1.DatabaseAdminClient({
+   *   // optional auth parameters.
+   * });
+   *
+   * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * client.listDatabasesStream({parent: formattedParent})
+   *   .on('data', element => {
+   *     // doThingsWith(element)
+   *   }).on('error', err => {
+   *     console.log(err);
+   *   });
+   */
+  listDatabasesStream(request, options) {
+    options = options || {};
+
+    return this._descriptors.page.listDatabases.createStream(
+      this._innerApiCalls.listDatabases,
+      request,
+      options
+    );
+  }
+
+  /**
+   * Starts creating a new Cloud Spanner Backup.
+   * The returned backup long-running operation
+   * will have a name of the format
+   * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation_id>`
+   * and can be used to track creation of the backup. The
+   * metadata field type is
+   * CreateBackupMetadata. The
+   * response field type is
+   * Backup, if successful. Cancelling the returned operation will stop the
+   * creation and delete the backup.
+   * There can be only one pending backup creation per database. Backup creation
+   * of different databases can run concurrently.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -1158,9 +1183,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1258,6 +1283,8 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Gets metadata on a pending or completed Backup.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.name
@@ -1277,9 +1304,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1312,6 +1339,8 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Updates a pending or completed Backup.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {Object} request.backup
@@ -1322,7 +1351,7 @@ class DatabaseAdminClient {
    *
    *   This object should have the same structure as [Backup]{@link google.spanner.admin.database.v1.Backup}
    * @param {Object} request.updateMask
-   *   Required. A mask specifying which fields (e.g. `backup.expire_time`) in the
+   *   Required. A mask specifying which fields (e.g. `expire_time`) in the
    *   Backup resource should be updated. This mask is relative to the Backup
    *   resource, not to the request message. The field mask must always be
    *   specified; this prevents any future fields from being erased accidentally
@@ -1342,9 +1371,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1382,6 +1411,8 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Deletes a pending or completed Backup.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.name
@@ -1398,9 +1429,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1428,20 +1459,26 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Lists completed and pending backups.
+   * Backups returned are ordered by `create_time` in descending order,
+   * starting from the most recent `create_time`.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
    *   Required. The instance to list backups from.  Values are of the
    *   form `projects/<project>/instances/<instance>`.
-   * @param {string} request.filter
-   *   A filter expression that filters backups listed in the response.
-   *   The expression must specify the field name, a comparison operator,
-   *   and the value that you want to use for filtering. The value must be a
-   *   string, a number, or a boolean. The comparison operator must be
-   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
-   *   roughly synonymous with equality. Filter rules are case insensitive.
+   * @param {string} [request.filter]
+   *   An expression that filters the list of returned backups.
    *
-   *   The fields eligible for filtering are:
+   *   A filter expression consists of a field name, a comparison operator, and a
+   *   value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the Backup are eligible for filtering:
+   *
    *     * `name`
    *     * `database`
    *     * `state`
@@ -1449,23 +1486,23 @@ class DatabaseAdminClient {
    *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
-   *   To filter on multiple expressions, provide each separate expression within
-   *   parentheses. By default, each expression is an AND expression. However,
-   *   you can include AND, OR, and NOT expressions explicitly.
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
    *
-   *   Some examples of using filters are:
+   *   Here are a few examples:
    *
-   *     * `name:Howl` --> The backup's name contains the string "howl".
+   *     * `name:Howl` - The backup's name contains the string "howl".
    *     * `database:prod`
-   *            --> The database's name contains the string "prod".
-   *     * `state:CREATING` --> The backup is pending creation.
-   *     * `state:READY` --> The backup is fully created and ready for use.
+   *            - The database's name contains the string "prod".
+   *     * `state:CREATING` - The backup is pending creation.
+   *     * `state:READY` - The backup is fully created and ready for use.
    *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
-   *            --> The backup name contains the string "howl" and `create_time`
+   *            - The backup name contains the string "howl" and `create_time`
    *                of the backup is before 2018-03-28T14:50:00Z.
    *     * `expire_time < \"2018-03-28T14:50:00Z\"`
-   *            --> The backup `expire_time` is before 2018-03-28T14:50:00Z.
-   *     * `size_bytes > 10000000000` --> The backup's size is greater than 10GB
+   *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
    * @param {number} [request.pageSize]
    *   The maximum number of resources contained in the underlying API
    *   response. If page streaming is performed per-resource, this
@@ -1497,21 +1534,16 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * // Iterate over all elements.
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
    *
-   * client.listBackups(request)
+   * client.listBackups({parent: formattedParent})
    *   .then(responses => {
    *     const resources = responses[0];
    *     for (const resource of resources) {
@@ -1524,11 +1556,6 @@ class DatabaseAdminClient {
    *
    * // Or obtain the paged response.
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
    *
    *
    * const options = {autoPaginate: false};
@@ -1547,7 +1574,7 @@ class DatabaseAdminClient {
    *     return client.listBackups(nextRequest, options).then(callback);
    *   }
    * }
-   * client.listBackups(request, options)
+   * client.listBackups({parent: formattedParent}, options)
    *   .then(callback)
    *   .catch(err => {
    *     console.error(err);
@@ -1589,15 +1616,17 @@ class DatabaseAdminClient {
    * @param {string} request.parent
    *   Required. The instance to list backups from.  Values are of the
    *   form `projects/<project>/instances/<instance>`.
-   * @param {string} request.filter
-   *   A filter expression that filters backups listed in the response.
-   *   The expression must specify the field name, a comparison operator,
-   *   and the value that you want to use for filtering. The value must be a
-   *   string, a number, or a boolean. The comparison operator must be
-   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
-   *   roughly synonymous with equality. Filter rules are case insensitive.
+   * @param {string} [request.filter]
+   *   An expression that filters the list of returned backups.
    *
-   *   The fields eligible for filtering are:
+   *   A filter expression consists of a field name, a comparison operator, and a
+   *   value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the Backup are eligible for filtering:
+   *
    *     * `name`
    *     * `database`
    *     * `state`
@@ -1605,23 +1634,23 @@ class DatabaseAdminClient {
    *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
-   *   To filter on multiple expressions, provide each separate expression within
-   *   parentheses. By default, each expression is an AND expression. However,
-   *   you can include AND, OR, and NOT expressions explicitly.
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
    *
-   *   Some examples of using filters are:
+   *   Here are a few examples:
    *
-   *     * `name:Howl` --> The backup's name contains the string "howl".
+   *     * `name:Howl` - The backup's name contains the string "howl".
    *     * `database:prod`
-   *            --> The database's name contains the string "prod".
-   *     * `state:CREATING` --> The backup is pending creation.
-   *     * `state:READY` --> The backup is fully created and ready for use.
+   *            - The database's name contains the string "prod".
+   *     * `state:CREATING` - The backup is pending creation.
+   *     * `state:READY` - The backup is fully created and ready for use.
    *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
-   *            --> The backup name contains the string "howl" and `create_time`
+   *            - The backup name contains the string "howl" and `create_time`
    *                of the backup is before 2018-03-28T14:50:00Z.
    *     * `expire_time < \"2018-03-28T14:50:00Z\"`
-   *            --> The backup `expire_time` is before 2018-03-28T14:50:00Z.
-   *     * `size_bytes > 10000000000` --> The backup's size is greater than 10GB
+   *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
    * @param {number} [request.pageSize]
    *   The maximum number of resources contained in the underlying API
    *   response. If page streaming is performed per-resource, this
@@ -1636,19 +1665,14 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
-   * client.listBackupsStream(request)
+   * client.listBackupsStream({parent: formattedParent})
    *   .on('data', element => {
    *     // doThingsWith(element)
    *   }).on('error', err => {
@@ -1666,6 +1690,24 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Create a new database by restoring from a completed backup. The new
+   * database must be in the same project and in an instance with the same
+   * instance configuration as the instance containing
+   * the backup. The returned database long-running
+   * operation has a name of the format
+   * `projects/<project>/instances/<instance>/databases/<database>/operations/<operation_id>`,
+   * and can be used to track the progress of the operation, and to cancel it.
+   * The metadata field type is
+   * RestoreDatabaseMetadata.
+   * The response type
+   * is Database, if
+   * successful. Cancelling the returned operation will stop the restore and
+   * delete the database.
+   * There can be only one database being restored into an instance at a time.
+   * Once the restore operation completes, a new restore operation can be
+   * initiated, without waiting for the optimize operation associated with the
+   * first restore to complete.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -1673,7 +1715,7 @@ class DatabaseAdminClient {
    *   restored database. This instance must be in the same project and
    *   have the same instance configuration as the instance containing
    *   the source backup. Values are of the form
-   *   `projects/<project>/instances/<instance>.
+   *   `projects/<project>/instances/<instance>`.
    * @param {string} request.databaseId
    *   Required. The id of the database to create and restore to. This
    *   database must not already exist. The `database_id` appended to
@@ -1695,9 +1737,9 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1789,58 +1831,61 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Lists database longrunning-operations.
+   * A database operation has a name of the form
+   * `projects/<project>/instances/<instance>/databases/<database>/operations/<operation>`.
+   * The long-running operation
+   * metadata field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned
+   * include those that have completed/failed/canceled within the last 7 days,
+   * and pending operations.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
    *   Required. The instance of the database operations.
    *   Values are of the form `projects/<project>/instances/<instance>`.
-   * @param {string} request.filter
-   *   A filter expression that filters what operations are returned in the
-   *   response.
+   * @param {string} [request.filter]
+   *   An expression that filters the list of returned operations.
    *
-   *   The response returns a list of
-   *   long-running operations whose names are
-   *   prefixed by a database name within the specified instance. The long-running
-   *   operation metadata field type
-   *   `metadata.type_url` describes the type of the metadata.
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The filter expression must specify the field name, a comparison operator,
-   *   and the value that you want to use for filtering. The value must be a
-   *   string, a number, or a boolean. The comparison operator must be
-   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
-   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *   The following fields in the Operation
+   *   are eligible for filtering:
    *
-   *   The long-running operation fields eligible for filtering are:
-   *     * `name` --> The name of the long-running operation
-   *     * `done` --> False if the operation is in progress, else true.
-   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
-   *        in `metadata.value` (using filter string `metadata.<field_name>`,
-   *        where <field_name> is a field in metadata.value) are eligible for
-   *        filtering.
-   *     * `error` --> Error associated with the long-running operation.
-   *     * `response.type_url` (using filter string `response.@type`) and fields
-   *        in `response.value` (using filter string `response.<field_name>`,
-   *        where <field_name> is a field in response.value) are eligible for
-   *        filtering.
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for RestoreDatabaseMetadata is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
    *
-   *   To filter on multiple expressions, provide each separate expression within
-   *   parentheses. By default, each expression is an AND expression. However,
-   *   you can include AND, OR, and NOT expressions explicitly.
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic. However,
+   *   you can specify AND, OR, and NOT logic explicitly.
    *
-   *   Some examples of using filters are:
+   *   Here are a few examples:
    *
-   *     * `done:true` --> The operation is complete.
-   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata)
-   *        AND (metadata.source_type:BACKUP)
-   *        AND (metadata.backup_info.backup:backup_howl)
-   *        AND (metadata.name:restored_howl)
-   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
-   *        AND (error:*)`
-   *            --> Return RestoreDatabase operations from backups whose name
-   *                contains "backup_howl", where the created database name
-   *                contains the string "restored_howl", the start_time of the
-   *                restore operation is before 2018-03-28T14:50:00Z,
-   *                and the operation returned an error.
+   *     * `done:true` - The operation is complete.
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
+   *       `(metadata.source_type:BACKUP) AND` <br/>
+   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
+   *       `(metadata.name:restored_howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Return operations where:
+   *       * The operation's metadata type is RestoreDatabaseMetadata.
+   *       * The database is restored from a backup.
+   *       * The backup name contains "backup_howl".
+   *       * The restored database's name contains "restored_howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
    * @param {number} [request.pageSize]
    *   The maximum number of resources contained in the underlying API
    *   response. If page streaming is performed per-resource, this
@@ -1872,21 +1917,16 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * // Iterate over all elements.
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
    *
-   * client.listDatabaseOperations(request)
+   * client.listDatabaseOperations({parent: formattedParent})
    *   .then(responses => {
    *     const resources = responses[0];
    *     for (const resource of resources) {
@@ -1899,11 +1939,6 @@ class DatabaseAdminClient {
    *
    * // Or obtain the paged response.
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
    *
    *
    * const options = {autoPaginate: false};
@@ -1922,7 +1957,7 @@ class DatabaseAdminClient {
    *     return client.listDatabaseOperations(nextRequest, options).then(callback);
    *   }
    * }
-   * client.listDatabaseOperations(request, options)
+   * client.listDatabaseOperations({parent: formattedParent}, options)
    *   .then(callback)
    *   .catch(err => {
    *     console.error(err);
@@ -1968,53 +2003,47 @@ class DatabaseAdminClient {
    * @param {string} request.parent
    *   Required. The instance of the database operations.
    *   Values are of the form `projects/<project>/instances/<instance>`.
-   * @param {string} request.filter
-   *   A filter expression that filters what operations are returned in the
-   *   response.
+   * @param {string} [request.filter]
+   *   An expression that filters the list of returned operations.
    *
-   *   The response returns a list of
-   *   long-running operations whose names are
-   *   prefixed by a database name within the specified instance. The long-running
-   *   operation metadata field type
-   *   `metadata.type_url` describes the type of the metadata.
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The filter expression must specify the field name, a comparison operator,
-   *   and the value that you want to use for filtering. The value must be a
-   *   string, a number, or a boolean. The comparison operator must be
-   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
-   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *   The following fields in the Operation
+   *   are eligible for filtering:
    *
-   *   The long-running operation fields eligible for filtering are:
-   *     * `name` --> The name of the long-running operation
-   *     * `done` --> False if the operation is in progress, else true.
-   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
-   *        in `metadata.value` (using filter string `metadata.<field_name>`,
-   *        where <field_name> is a field in metadata.value) are eligible for
-   *        filtering.
-   *     * `error` --> Error associated with the long-running operation.
-   *     * `response.type_url` (using filter string `response.@type`) and fields
-   *        in `response.value` (using filter string `response.<field_name>`,
-   *        where <field_name> is a field in response.value) are eligible for
-   *        filtering.
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for RestoreDatabaseMetadata is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
    *
-   *   To filter on multiple expressions, provide each separate expression within
-   *   parentheses. By default, each expression is an AND expression. However,
-   *   you can include AND, OR, and NOT expressions explicitly.
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic. However,
+   *   you can specify AND, OR, and NOT logic explicitly.
    *
-   *   Some examples of using filters are:
+   *   Here are a few examples:
    *
-   *     * `done:true` --> The operation is complete.
-   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata)
-   *        AND (metadata.source_type:BACKUP)
-   *        AND (metadata.backup_info.backup:backup_howl)
-   *        AND (metadata.name:restored_howl)
-   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
-   *        AND (error:*)`
-   *            --> Return RestoreDatabase operations from backups whose name
-   *                contains "backup_howl", where the created database name
-   *                contains the string "restored_howl", the start_time of the
-   *                restore operation is before 2018-03-28T14:50:00Z,
-   *                and the operation returned an error.
+   *     * `done:true` - The operation is complete.
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
+   *       `(metadata.source_type:BACKUP) AND` <br/>
+   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
+   *       `(metadata.name:restored_howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Return operations where:
+   *       * The operation's metadata type is RestoreDatabaseMetadata.
+   *       * The database is restored from a backup.
+   *       * The backup name contains "backup_howl".
+   *       * The restored database's name contains "restored_howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
    * @param {number} [request.pageSize]
    *   The maximum number of resources contained in the underlying API
    *   response. If page streaming is performed per-resource, this
@@ -2029,19 +2058,14 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
-   * client.listDatabaseOperationsStream(request)
+   * client.listDatabaseOperationsStream({parent: formattedParent})
    *   .on('data', element => {
    *     // doThingsWith(element)
    *   }).on('error', err => {
@@ -2059,59 +2083,61 @@ class DatabaseAdminClient {
   }
 
   /**
+   * Lists the backup long-running operations in
+   * the given instance. A backup operation has a name of the form
+   * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation>`.
+   * The long-running operation
+   * metadata field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned
+   * include those that have completed/failed/canceled within the last 7 days,
+   * and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.progress.start_time` in descending order starting
+   * from the most recently started operation.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
    *   Required. The instance of the backup operations. Values are of
    *   the form `projects/<project>/instances/<instance>`.
-   * @param {string} request.filter
-   *   A filter expression that filters what operations are returned in the
-   *   response.
+   * @param {string} [request.filter]
+   *   An expression that filters the list of returned backup operations.
    *
-   *   The response returns a list of
-   *   long-running operations whose names are
-   *   prefixed by a backup name within the specified instance. The long-running
-   *   operation metadata field type
-   *   `metadata.type_url` describes the type of the metadata.
-   *
-   *   The filter expression must specify the field name of an operation, a
-   *   comparison operator, and the value that you want to use for filtering.
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
    *   The value must be a string, a number, or a boolean. The comparison operator
-   *   must be
-   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
-   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The long-running operation fields eligible for filtering are:
-   *     * `name` --> The name of the long-running operation
-   *     * `done` --> False if the operation is in progress, else true.
-   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
-   *        in `metadata.value` (using filter string `metadata.<field_name>`,
-   *        where <field_name> is a field in metadata.value) are eligible for
-   *        filtering.
-   *     * `error` --> Error associated with the long-running operation.
-   *     * `response.type_url` (using filter string `response.@type`) and fields
-   *        in `response.value` (using filter string `response.<field_name>`,
-   *        where <field_name> is a field in response.value) are eligible for
-   *        filtering.
+   *   The following fields in the operation
+   *   are eligible for filtering:
    *
-   *   To filter on multiple expressions, provide each separate expression within
-   *   parentheses. By default, each expression is an AND expression. However,
-   *   you can include AND, OR, and NOT expressions explicitly.
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for CreateBackupMetadata is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
    *
-   *   Some examples of using filters are:
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
    *
-   *     * `done:true` --> The operation is complete.
-   *     * `metadata.database:prod`
-   *            --> The database the backup was taken from has a name containing
-   *                the string "prod".
-   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)
-   *        AND (metadata.name:howl)
-   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
-   *        AND (error:*)`
-   *            --> Return CreateBackup operations where the created backup name
-   *                contains the string "howl", the progress.start_time of the
-   *                backup operation is before 2018-03-28T14:50:00Z, and the
-   *                operation returned an error.
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `metadata.database:prod` - The database the backup was taken from has
+   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
+   *       `(metadata.name:howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is CreateBackupMetadata.
+   *       * The backup name contains the string "howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
    * @param {number} [request.pageSize]
    *   The maximum number of resources contained in the underlying API
    *   response. If page streaming is performed per-resource, this
@@ -2143,21 +2169,16 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * // Iterate over all elements.
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
    *
-   * client.listBackupOperations(request)
+   * client.listBackupOperations({parent: formattedParent})
    *   .then(responses => {
    *     const resources = responses[0];
    *     for (const resource of resources) {
@@ -2170,11 +2191,6 @@ class DatabaseAdminClient {
    *
    * // Or obtain the paged response.
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
    *
    *
    * const options = {autoPaginate: false};
@@ -2193,7 +2209,7 @@ class DatabaseAdminClient {
    *     return client.listBackupOperations(nextRequest, options).then(callback);
    *   }
    * }
-   * client.listBackupOperations(request, options)
+   * client.listBackupOperations({parent: formattedParent}, options)
    *   .then(callback)
    *   .catch(err => {
    *     console.error(err);
@@ -2235,54 +2251,45 @@ class DatabaseAdminClient {
    * @param {string} request.parent
    *   Required. The instance of the backup operations. Values are of
    *   the form `projects/<project>/instances/<instance>`.
-   * @param {string} request.filter
-   *   A filter expression that filters what operations are returned in the
-   *   response.
+   * @param {string} [request.filter]
+   *   An expression that filters the list of returned backup operations.
    *
-   *   The response returns a list of
-   *   long-running operations whose names are
-   *   prefixed by a backup name within the specified instance. The long-running
-   *   operation metadata field type
-   *   `metadata.type_url` describes the type of the metadata.
-   *
-   *   The filter expression must specify the field name of an operation, a
-   *   comparison operator, and the value that you want to use for filtering.
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
    *   The value must be a string, a number, or a boolean. The comparison operator
-   *   must be
-   *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
-   *   roughly synonymous with equality. Filter rules are case insensitive.
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The long-running operation fields eligible for filtering are:
-   *     * `name` --> The name of the long-running operation
-   *     * `done` --> False if the operation is in progress, else true.
-   *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
-   *        in `metadata.value` (using filter string `metadata.<field_name>`,
-   *        where <field_name> is a field in metadata.value) are eligible for
-   *        filtering.
-   *     * `error` --> Error associated with the long-running operation.
-   *     * `response.type_url` (using filter string `response.@type`) and fields
-   *        in `response.value` (using filter string `response.<field_name>`,
-   *        where <field_name> is a field in response.value) are eligible for
-   *        filtering.
+   *   The following fields in the operation
+   *   are eligible for filtering:
    *
-   *   To filter on multiple expressions, provide each separate expression within
-   *   parentheses. By default, each expression is an AND expression. However,
-   *   you can include AND, OR, and NOT expressions explicitly.
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for CreateBackupMetadata is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
    *
-   *   Some examples of using filters are:
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
    *
-   *     * `done:true` --> The operation is complete.
-   *     * `metadata.database:prod`
-   *            --> The database the backup was taken from has a name containing
-   *                the string "prod".
-   *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)
-   *        AND (metadata.name:howl)
-   *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
-   *        AND (error:*)`
-   *            --> Return CreateBackup operations where the created backup name
-   *                contains the string "howl", the progress.start_time of the
-   *                backup operation is before 2018-03-28T14:50:00Z, and the
-   *                operation returned an error.
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `metadata.database:prod` - The database the backup was taken from has
+   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
+   *       `(metadata.name:howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is CreateBackupMetadata.
+   *       * The backup name contains the string "howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
    * @param {number} [request.pageSize]
    *   The maximum number of resources contained in the underlying API
    *   response. If page streaming is performed per-resource, this
@@ -2297,19 +2304,14 @@ class DatabaseAdminClient {
    *
    * @example
    *
-   * const spannerAdminDatabase = require('@google-cloud/spanner-admin-database');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminDatabase.v1.DatabaseAdminClient({
+   * const client = new spanner.v1.DatabaseAdminClient({
    *   // optional auth parameters.
    * });
    *
    * const formattedParent = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * const filter = '';
-   * const request = {
-   *   parent: formattedParent,
-   *   filter: filter,
-   * };
-   * client.listBackupOperationsStream(request)
+   * client.listBackupOperationsStream({parent: formattedParent})
    *   .on('data', element => {
    *     // doThingsWith(element)
    *   }).on('error', err => {
@@ -2373,18 +2375,6 @@ class DatabaseAdminClient {
     return this._pathTemplates.instancePathTemplate.render({
       project: project,
       instance: instance,
-    });
-  }
-
-  /**
-   * Return a fully-qualified project resource name string.
-   *
-   * @param {String} project
-   * @returns {String}
-   */
-  projectPath(project) {
-    return this._pathTemplates.projectPathTemplate.render({
-      project: project,
     });
   }
 
@@ -2477,17 +2467,6 @@ class DatabaseAdminClient {
   matchInstanceFromInstanceName(instanceName) {
     return this._pathTemplates.instancePathTemplate.match(instanceName)
       .instance;
-  }
-
-  /**
-   * Parse the projectName from a project resource.
-   *
-   * @param {String} projectName
-   *   A fully-qualified path representing a project resources.
-   * @returns {String} - A string representing the project.
-   */
-  matchProjectFromProjectName(projectName) {
-    return this._pathTemplates.projectPathTemplate.match(projectName).project;
   }
 }
 

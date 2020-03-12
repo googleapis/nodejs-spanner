@@ -1,4 +1,4 @@
-// Copyright 2018 Google LLC.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,21 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 syntax = "proto3";
 
 package google.spanner.admin.database.v1;
 
-import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 option csharp_namespace = "Google.Cloud.Spanner.Admin.Database.V1";
 option go_package = "google.golang.org/genproto/googleapis/spanner/admin/database/v1;database";
-option java_package = "com.google.spanner.admin.database.v1";
 option java_multiple_files = true;
+option java_outer_classname = "CommonProto";
+option java_package = "com.google.spanner.admin.database.v1";
+option php_namespace = "Google\\Cloud\\Spanner\\Admin\\Database\\V1";
 
-
+// Encapsulates progress related information for a Cloud Spanner long
+// running operation.
 message OperationProgress {
   // Percent completion of the operation.
   // Values are between 0 and 100 inclusive.

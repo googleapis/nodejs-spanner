@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import pLimit from 'p-limit';
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
@@ -676,6 +678,22 @@ describe('Spanner', () => {
       });
     });
 
+    it('should respect the FieldMask', async () => {
+      const fieldNames = ['name', 'displayName'];
+
+      const [metadata] = await instance.getMetadata({fieldNames});
+      assert.deepStrictEqual(metadata['endpointUris'], []);
+      assert.deepStrictEqual(metadata['labels'], {});
+      assert.strictEqual(metadata.name, instance.formattedName_);
+      assert.ok(!metadata['config']);
+      assert.strictEqual(
+        metadata['displayName'],
+        instance.formattedName_.split('/').pop()
+      );
+      assert.strictEqual(metadata['nodeCount'], 0);
+      assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
+    });
+
     it('should auto create an instance', done => {
       const instance = spanner.instance(generateName('instance'));
 
@@ -1322,6 +1340,15 @@ describe('Spanner', () => {
     it('should keep the session alive', done => {
       session.keepAlive(done);
     });
+
+    it('should batch create sessions', async () => {
+      const count = 5;
+      const [sessions] = await database.batchCreateSessions({count});
+
+      assert.strictEqual(sessions.length, count);
+
+      await Promise.all(sessions.map(session => session.delete()));
+    });
   });
 
   describe('Tables', () => {
@@ -1583,7 +1610,10 @@ describe('Spanner', () => {
 
       const table = database.table('SingersComposite');
 
-      const keys = ([[id1, name1], [id2, name2]] as {}) as string[];
+      const keys = ([
+        [id1, name1],
+        [id2, name2],
+      ] as {}) as string[];
 
       return table
         .create(
@@ -1697,7 +1727,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
 
               assert.strictEqual(row.SingerId, replacedRow.SingerId);
               assert.strictEqual(row.Name, null);
@@ -1734,7 +1764,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
 
               assert.strictEqual(row.SingerId, updatedRow.SingerId);
               assert.strictEqual(row.Name, updatedRow.Name);
@@ -3104,7 +3134,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              const row = rows[0].toJSON();
+              const row = rows![0].toJSON();
 
               assert.strictEqual(row.Key, expectedRow.Key);
               assert.strictEqual(row.StringValue, expectedRow.StringValue);
@@ -3175,7 +3205,7 @@ describe('Spanner', () => {
               },
               (err, rows) => {
                 assert.ifError(err);
-                assert.deepStrictEqual(rows[0].toJSON(), ROW);
+                assert.deepStrictEqual(rows![0].toJSON(), ROW);
                 done();
               }
             );
@@ -3194,7 +3224,7 @@ describe('Spanner', () => {
             },
             (err, rows) => {
               assert.ifError(err);
-              assert.deepStrictEqual(rows[0].toJSON(), ROW);
+              assert.deepStrictEqual(rows![0].toJSON(), ROW);
               done();
             }
           );
@@ -3698,7 +3728,7 @@ describe('Spanner', () => {
             (err, rows) => {
               assert.ifError(err);
 
-              rows = rows.map(x => x.toJSON());
+              rows = rows!.map(x => x.toJSON());
 
               assert.deepStrictEqual(rows, [
                 {
@@ -3783,7 +3813,7 @@ describe('Spanner', () => {
 
           transaction!.read(table.name, query, (err, rows) => {
             assert.ifError(err);
-            assert.strictEqual(rows.length, records.length);
+            assert.strictEqual(rows!.length, records.length);
 
             transaction!.end();
             done();
@@ -3819,7 +3849,7 @@ describe('Spanner', () => {
         const query = 'SELECT * FROM TxnTable';
 
         const options = {
-          minReadTimestamp: new Date(),
+          minReadTimestamp: new PreciseDate(),
         } as TimestampBounds;
 
         // minTimestamp can only be used in single use transactions
@@ -3990,7 +4020,7 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.runUpdate(
+          transaction!.runUpdate(
             {
               sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
               params: {
@@ -4000,7 +4030,7 @@ describe('Spanner', () => {
             },
             err => {
               assert.ifError(err);
-              transaction.commit(done);
+              transaction!.commit(done);
             }
           );
         });
@@ -4010,7 +4040,7 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.runUpdate(
+          transaction!.runUpdate(
             {
               sql:
                 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
@@ -4022,7 +4052,7 @@ describe('Spanner', () => {
             (err, rowCount) => {
               assert.ifError(err);
               assert.strictEqual(rowCount, 1);
-              transaction.rollback(done);
+              transaction!.rollback(done);
             }
           );
         });
@@ -4032,7 +4062,7 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.run(
+          transaction!.run(
             {
               sql:
                 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
@@ -4044,10 +4074,10 @@ describe('Spanner', () => {
             (err, row, stats) => {
               assert.ifError(err);
 
-              const rowCount = Math.floor(stats[stats.rowCount]);
+              const rowCount = Math.floor(stats[stats.rowCount!] as number);
               assert.strictEqual(rowCount, 1);
 
-              transaction.rollback(done);
+              transaction!.rollback(done);
             }
           );
         });
@@ -4061,7 +4091,7 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction
+          transaction!
             .runUpdate({
               sql:
                 'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
@@ -4071,7 +4101,7 @@ describe('Spanner', () => {
               const rowCount = data[0];
               assert.strictEqual(rowCount, 1);
 
-              return transaction.runUpdate({
+              return transaction!.runUpdate({
                 sql:
                   'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
                 params: {key, num},
@@ -4081,7 +4111,7 @@ describe('Spanner', () => {
               const rowCount = data[0];
               assert.strictEqual(rowCount, 1);
 
-              return transaction.run({
+              return transaction!.run({
                 sql: 'SELECT * FROM TxnTable WHERE Key = @key',
                 params: {key},
               });
@@ -4096,7 +4126,7 @@ describe('Spanner', () => {
                 NumberValue: num,
               });
 
-              return transaction.rollback();
+              return transaction!.rollback();
             })
             .then(() => done(), done);
         });
@@ -4109,14 +4139,14 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction
+          transaction!
             .runUpdate({
               sql:
                 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
               params: {key, str},
             })
             .then(() => {
-              return transaction.run({
+              return transaction!.run({
                 sql: 'SELECT * FROM TxnTable WHERE Key = @key',
                 params: {key},
               });
@@ -4127,7 +4157,7 @@ describe('Spanner', () => {
               assert.strictEqual(rows.length, 1);
               assert.strictEqual(rows[0].StringValue, str);
             })
-            .then(() => transaction.rollback(done), done);
+            .then(() => transaction!.rollback(done), done);
         });
       });
 
@@ -4138,13 +4168,13 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction
+          transaction!
             .runUpdate({
               sql:
                 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
               params: {key, str},
             })
-            .then(() => transaction.rollback())
+            .then(() => transaction!.rollback())
             .then(() => {
               return database.run({
                 sql: 'SELECT * FROM TxnTable WHERE Key = @key',
@@ -4152,7 +4182,8 @@ describe('Spanner', () => {
               });
             })
             .then(data => {
-              const rows = data[0].map(row => row.toJSON());
+              // tslint:disable-next-line: no-any
+              const rows = data[0].map(row => (row as any).toJSON());
               assert.notStrictEqual(rows[0].StringValue, str);
               done();
             })
@@ -4166,7 +4197,7 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction
+          transaction!
             .runUpdate({
               sql:
                 'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
@@ -4176,12 +4207,12 @@ describe('Spanner', () => {
               },
             })
             .then(() => {
-              transaction.insert('TxnTable', {
+              transaction!.insert('TxnTable', {
                 Key: 'k1002',
                 StringValue: str,
               });
 
-              return transaction.commit();
+              return transaction!.commit();
             })
             .then(() => {
               return database.run({
@@ -4344,6 +4375,10 @@ describe('Spanner', () => {
           try {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
+            // Re-throw if the transaction was aborted to trigger a retry.
+            if (e.code === status.ABORTED) {
+              throw e;
+            }
             err = e;
           }
 
@@ -4351,7 +4386,7 @@ describe('Spanner', () => {
           return err;
         });
 
-        assert.strictEqual(err.code, 3);
+        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
         assert.deepStrictEqual(err.rowCounts, [1]);
       });
 
@@ -4396,13 +4431,13 @@ describe('Spanner', () => {
           ].join('\n\n');
           let caughtErrorMessage;
           try {
-            transaction.insert(table.name, rows);
+            transaction!.insert(table.name, rows);
           } catch (e) {
             caughtErrorMessage = e.message;
           }
           assert.strictEqual(caughtErrorMessage, expectedErrorMessage);
 
-          transaction.end();
+          transaction!.end();
           done();
         });
       });
@@ -4411,12 +4446,12 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.insert(table.name, {
+          transaction!.insert(table.name, {
             Key: 'k5',
             StringValue: 'v5',
           });
 
-          transaction.commit(done);
+          transaction!.commit(done);
         });
       });
 
@@ -4424,9 +4459,9 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.run('SELECT * FROM TxnTable', err => {
+          transaction!.run('SELECT * FROM TxnTable', err => {
             assert.ifError(err);
-            transaction.rollback(done);
+            transaction!.rollback(done);
           });
         });
       });
@@ -4466,12 +4501,12 @@ describe('Spanner', () => {
                   return;
                 }
 
-                transaction.update(table.name, {
+                transaction!.update(table.name, {
                   Key: defaultRowValues.Key,
                   NumberValue: value + 1,
                 });
 
-                transaction.commit(callback);
+                transaction!.commit(callback);
               });
             });
           }
@@ -4521,12 +4556,12 @@ describe('Spanner', () => {
                   return;
                 }
 
-                transaction.update(table.name, {
+                transaction!.update(table.name, {
                   Key: defaultRowValues.Key,
                   NumberValue: value + 1,
                 });
 
-                transaction.commit(callback);
+                transaction!.commit(callback);
               });
             });
           }
@@ -4568,7 +4603,7 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.run(query, err => {
+          transaction!.run(query, err => {
             assert.ifError(err);
 
             const action = attempts++ === 0 ? runOtherTransaction : wrap;
@@ -4576,21 +4611,24 @@ describe('Spanner', () => {
             action(err => {
               assert.ifError(err);
 
-              transaction.run(query, (err, rows) => {
+              transaction!.run(query, (err, rows) => {
                 assert.ifError(err);
 
-                transaction.insert(table.name, {
+                transaction!.insert(table.name, {
                   Key: generateName('key'),
                   StringValue: generateName('val'),
                 });
 
-                transaction.commit(err => {
+                transaction!.commit(err => {
                   assert.ifError(err);
 
-                  const lastRow = rows.pop().toJSON();
+                  const lastRow = rows!.pop()!.toJSON();
 
                   assert.deepStrictEqual(lastRow, expectedRow);
-                  assert.strictEqual(attempts, 2);
+                  // The transaction should have been tried at least twice, but
+                  // there could be more attempts, as the backend could abort
+                  // any subsequent retry attempts as well.
+                  assert.ok(attempts >= 2);
 
                   done();
                 });
@@ -4606,14 +4644,14 @@ describe('Spanner', () => {
               return;
             }
 
-            transaction.run(query, err => {
+            transaction!.run(query, err => {
               if (err) {
                 callback(err);
                 return;
               }
 
-              transaction.insert(table.name, expectedRow);
-              transaction.commit(callback);
+              transaction!.insert(table.name, expectedRow);
+              transaction!.commit(callback);
             });
           });
         }
@@ -4637,10 +4675,10 @@ describe('Spanner', () => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction.run(query, (err, rows) => {
+          transaction!.run(query, (err, rows) => {
             assert.ifError(err);
 
-            transaction.insert(table.name, {
+            transaction!.insert(table.name, {
               Key: generateName('key'),
               StringValue: generateName('val'),
             });
@@ -4648,18 +4686,21 @@ describe('Spanner', () => {
             if (attempts++ === 0) {
               runOtherTransaction(err => {
                 assert.ifError(err);
-                transaction.commit(done); // should not execute callback
+                transaction!.commit(done); // should not execute callback
               });
               return;
             }
 
-            transaction.commit(err => {
+            transaction!.commit(err => {
               assert.ifError(err);
 
-              const lastRow = rows.pop().toJSON();
+              const lastRow = rows!.pop()!.toJSON();
 
               assert.deepStrictEqual(lastRow, expectedRow);
-              assert.strictEqual(attempts, 2);
+              // The transaction should have been tried at least twice, but
+              // there could be more attempts, as the backend could abort any
+              // subsequent retry attempts as well.
+              assert.ok(attempts >= 2);
 
               done();
             });
@@ -4673,14 +4714,14 @@ describe('Spanner', () => {
               return;
             }
 
-            transaction.run(query, err => {
+            transaction!.run(query, err => {
               if (err) {
                 callback(err);
                 return;
               }
 
-              transaction.insert(table.name, expectedRow);
-              transaction.commit(callback);
+              transaction!.insert(table.name, expectedRow);
+              transaction!.commit(callback);
             });
           });
         }
@@ -4696,9 +4737,9 @@ describe('Spanner', () => {
 
         database.runTransaction(options, (err, transaction) => {
           if (attempts++ === 1) {
-            assert.strictEqual(err.code, 4);
+            assert.strictEqual(err!.code, 4);
             assert(
-              err.message.startsWith('Deadline for Transaction exceeded.')
+              err!.message.startsWith('Deadline for Transaction exceeded.')
             );
 
             done();
@@ -4707,17 +4748,17 @@ describe('Spanner', () => {
 
           assert.ifError(err);
 
-          transaction.run(query, err => {
+          transaction!.run(query, err => {
             assert.ifError(err);
 
-            transaction.insert(table.name, {
+            transaction!.insert(table.name, {
               Key: generateName('key'),
             });
 
             runOtherTransaction(err => {
               assert.ifError(err);
 
-              transaction.commit(() => {
+              transaction!.commit(() => {
                 done(new Error('Should not have been called.'));
               });
             });
@@ -4731,17 +4772,17 @@ describe('Spanner', () => {
               return;
             }
 
-            transaction.run(query, err => {
+            transaction!.run(query, err => {
               if (err) {
                 callback(err);
                 return;
               }
 
-              transaction.insert(table.name, {
+              transaction!.insert(table.name, {
                 Key: generateName('key'),
               });
 
-              transaction.commit(callback);
+              transaction!.commit(callback);
             });
           });
         }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {Service} from '@google-cloud/common-grpc';
+import {GrpcService} from '../src/common-grpc/service';
 
 import {SpannerClient as s} from '../src/v1';
 
@@ -31,13 +30,13 @@ describe('codec', () => {
 
   before(() => {
     codec = proxyquire('../src/codec.js', {
-      '@google-cloud/common-grpc': {Service},
+      './common-grpc/service': {GrpcService},
     }).codec;
   });
 
   beforeEach(() => {
-    sandbox.stub(Service, 'encodeValue_').callsFake(value => value);
-    sandbox.stub(Service, 'decodeValue_').callsFake(value => value);
+    sandbox.stub(GrpcService, 'encodeValue_').callsFake(value => value);
+    sandbox.stub(GrpcService, 'decodeValue_').callsFake(value => value);
   });
 
   afterEach(() => sandbox.restore());
@@ -74,6 +73,15 @@ describe('codec', () => {
         const json = date.toJSON();
 
         assert.strictEqual(json, '1986-03-22');
+      });
+
+      it('should accept year zero in y/m/d number values', () => {
+        const d = new codec.SpannerDate(null!);
+        const date = new codec.SpannerDate(0, 2, 22);
+        const json = date.toJSON();
+
+        assert.ok(d);
+        assert.strictEqual(json, '1900-03-22');
       });
 
       it('should truncate additional date fields', () => {
@@ -188,7 +196,10 @@ describe('codec', () => {
     describe('fromJSON', () => {
       it('should covert json to a struct', () => {
         const json = {a: 'b', c: 'd'};
-        const expected = [{name: 'a', value: 'b'}, {name: 'c', value: 'd'}];
+        const expected = [
+          {name: 'a', value: 'b'},
+          {name: 'c', value: 'd'},
+        ];
         const struct = codec.Struct.fromJSON(json);
 
         assert(struct instanceof codec.Struct);
@@ -365,7 +376,7 @@ describe('codec', () => {
     });
 
     it('should return null values as null', () => {
-      (Service.decodeValue_ as sinon.SinonStub).returns(null);
+      (GrpcService.decodeValue_ as sinon.SinonStub).returns(null);
       const decoded = codec.decode(null, BYPASS_FIELD);
       assert.strictEqual(decoded, null);
     });
@@ -470,7 +481,7 @@ describe('codec', () => {
       const value = {};
       const defaultEncodedValue = {};
 
-      (Service.encodeValue_ as sinon.SinonStub)
+      (GrpcService.encodeValue_ as sinon.SinonStub)
         .withArgs(value)
         .returns(defaultEncodedValue);
 

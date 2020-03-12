@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -348,9 +348,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -445,9 +445,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -490,9 +490,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -583,9 +583,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -699,9 +699,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -732,9 +732,9 @@ class InstanceAdminClient {
    *   Required. The name of the requested instance. Values are of the form
    *   `projects/<project>/instances/<instance>`.
    * @param {Object} [request.fieldMask]
-   *   If field_mask is present, specifies the subset of [][google.spanner.admin.instance.v1.Instance] fields that
+   *   If field_mask is present, specifies the subset of Instance fields that
    *   should be returned.
-   *   If absent, all [][google.spanner.admin.instance.v1.Instance] fields are returned.
+   *   If absent, all Instance fields are returned.
    *
    *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
    * @param {Object} [options]
@@ -750,9 +750,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -847,9 +847,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -992,13 +992,13 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {Object} request.instance
    *   Required. The instance to update, which must always include the instance
-   *   name.  Otherwise, only fields mentioned in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask] need be included.
+   *   name.  Otherwise, only fields mentioned in field_mask need be included.
    *
    *   This object should have the same structure as [Instance]{@link google.spanner.admin.instance.v1.Instance}
    * @param {Object} request.fieldMask
-   *   Required. A mask specifying which fields in [][google.spanner.admin.instance.v1.UpdateInstanceRequest.instance] should be updated.
+   *   Required. A mask specifying which fields in Instance should be updated.
    *   The field mask must always be specified; this prevents any future fields in
-   *   [][google.spanner.admin.instance.v1.Instance] from being erased accidentally by clients that do not know
+   *   Instance from being erased accidentally by clients that do not know
    *   about them.
    *
    *   This object should have the same structure as [FieldMask]{@link google.protobuf.FieldMask}
@@ -1015,9 +1015,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1136,9 +1136,9 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
@@ -1176,8 +1176,7 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being specified.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {Object} request.policy
    *   REQUIRED: The complete policy to be applied to the `resource`. The size of
    *   the policy is limited to a few 10s of KB. An empty policy is a
@@ -1198,16 +1197,16 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const resource = '';
    * const policy = {};
    * const request = {
-   *   resource: formattedResource,
+   *   resource: resource,
    *   policy: policy,
    * };
    * client.setIamPolicy(request)
@@ -1248,8 +1247,12 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy is being requested.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {Object} [request.options]
+   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+   *   `GetIamPolicy`. This field is only used by Cloud IAM.
+   *
+   *   This object should have the same structure as [GetPolicyOptions]{@link google.iam.v1.GetPolicyOptions}
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
    *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
@@ -1263,14 +1266,14 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
-   * client.getIamPolicy({resource: formattedResource})
+   * const resource = '';
+   * client.getIamPolicy({resource: resource})
    *   .then(responses => {
    *     const response = responses[0];
    *     // doThingsWith(response)
@@ -1309,8 +1312,7 @@ class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.resource
    *   REQUIRED: The resource for which the policy detail is being requested.
-   *   `resource` is usually specified as a path. For example, a Project
-   *   resource is specified as `projects/{project}`.
+   *   See the operation documentation for the appropriate value for this field.
    * @param {string[]} request.permissions
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
@@ -1329,16 +1331,16 @@ class InstanceAdminClient {
    *
    * @example
    *
-   * const spannerAdminInstance = require('@google-cloud/spanner-admin-instance');
+   * const spanner = require('@google-cloud/spanner');
    *
-   * const client = new spannerAdminInstance.v1.InstanceAdminClient({
+   * const client = new spanner.v1.InstanceAdminClient({
    *   // optional auth parameters.
    * });
    *
-   * const formattedResource = client.instancePath('[PROJECT]', '[INSTANCE]');
+   * const resource = '';
    * const permissions = [];
    * const request = {
-   *   resource: formattedResource,
+   *   resource: resource,
    *   permissions: permissions,
    * };
    * client.testIamPermissions(request)

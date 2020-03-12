@@ -4,6 +4,111 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.2...v4.7.0) (2020-02-27)
+
+
+### Features
+
+* export protos in src/index.ts ([0fa0f93](https://www.github.com/googleapis/nodejs-spanner/commit/0fa0f933ac9655278a4684bfa9e07cc912442fbf))
+
+### [4.6.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.1...v4.6.2) (2020-02-14)
+
+
+### Bug Fixes
+
+* Correctly parse metadata from BatchDML response + fix flaky system test ([#825](https://www.github.com/googleapis/nodejs-spanner/issues/825)) ([8b95da7](https://www.github.com/googleapis/nodejs-spanner/commit/8b95da7c68694d7a4ce5644e82d8485d01efb434))
+* retry 'Session not found' errors on getSnapshot ([#819](https://www.github.com/googleapis/nodejs-spanner/issues/819)) ([59bafbf](https://www.github.com/googleapis/nodejs-spanner/commit/59bafbfbcfe1fc3c45291a6fab6a343299123905))
+* retry 'Session not found' for r/w tx ([#824](https://www.github.com/googleapis/nodejs-spanner/issues/824)) ([1b393c4](https://www.github.com/googleapis/nodejs-spanner/commit/1b393c4c940d196232f8fc6ac99dbb5d1fd61e4d))
+
+### [4.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.0...v4.6.1) (2020-01-29)
+
+
+### Bug Fixes
+
+* enum, bytes, and Long types now accept strings ([#816](https://www.github.com/googleapis/nodejs-spanner/issues/816)) ([e63914d](https://www.github.com/googleapis/nodejs-spanner/commit/e63914d19813400daa2b08abfba43e1d87abfe7b))
+* fixed wrong return type of Database.run(..) ([#810](https://www.github.com/googleapis/nodejs-spanner/issues/810)) ([10c31d8](https://www.github.com/googleapis/nodejs-spanner/commit/10c31d80fdde2b91f2498ffcbc90a20a83c1a454)), closes [#809](https://www.github.com/googleapis/nodejs-spanner/issues/809)
+* retry Session not found for Database.run(..) ([#812](https://www.github.com/googleapis/nodejs-spanner/issues/812)) ([6a48fd6](https://www.github.com/googleapis/nodejs-spanner/commit/6a48fd61bc6f424865e5a265bc1d7bac81454a7d))
+* use PreciseDate instead of Date for min read timestamp ([#807](https://www.github.com/googleapis/nodejs-spanner/issues/807)) ([da8c2f8](https://www.github.com/googleapis/nodejs-spanner/commit/da8c2f85b55346d99a9eacc4249e6d6cd1a14556))
+
+## [4.6.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.2...v4.6.0) (2020-01-16)
+
+
+### Features
+
+* add fieldNames option in instance#getMetadata() ([#760](https://www.github.com/googleapis/nodejs-spanner/issues/760)) ([fa3154e](https://www.github.com/googleapis/nodejs-spanner/commit/fa3154ebe6754ecce1dd7b32442bda0eb27842f6))
+
+### [4.5.2](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.1...v4.5.2) (2020-01-15)
+
+
+### Bug Fixes
+
+* max backoff should be 32 seconds ([#792](https://www.github.com/googleapis/nodejs-spanner/issues/792)) ([c697240](https://www.github.com/googleapis/nodejs-spanner/commit/c697240c0f1c5d55bee63732b7346e7c95f25dcc))
+* retry executeStreamingSql when error code is retryable ([#795](https://www.github.com/googleapis/nodejs-spanner/issues/795)) ([1491858](https://www.github.com/googleapis/nodejs-spanner/commit/149185809fe32e05504d398849f7eadfe864fb6b)), closes [#620](https://www.github.com/googleapis/nodejs-spanner/issues/620)
+
+### [4.5.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.5.0...v4.5.1) (2020-01-08)
+
+
+### Bug Fixes
+
+* session pool should only create session if pending<=waiters ([#791](https://www.github.com/googleapis/nodejs-spanner/issues/791)) ([75345b1](https://www.github.com/googleapis/nodejs-spanner/commit/75345b18d37937b60a89c6b039c6b3a39b0ea6b7)), closes [#790](https://www.github.com/googleapis/nodejs-spanner/issues/790)
+
+## [4.5.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.4.1...v4.5.0) (2020-01-06)
+
+
+### Features
+
+* include potential leaked session stacktraces in error ([#759](https://www.github.com/googleapis/nodejs-spanner/issues/759)) ([1c0cf27](https://www.github.com/googleapis/nodejs-spanner/commit/1c0cf27b6c502fe7cc03f9b4c9191d746761b8b6))
+
+
+### Bug Fixes
+
+* clear stack of session while preparing new r/w tx ([#768](https://www.github.com/googleapis/nodejs-spanner/issues/768)) ([c852709](https://www.github.com/googleapis/nodejs-spanner/commit/c852709cf509d174ff140ad946fbbc20e5594aba))
+* delete env var after test if it was not set ([#774](https://www.github.com/googleapis/nodejs-spanner/issues/774)) ([7a1f40d](https://www.github.com/googleapis/nodejs-spanner/commit/7a1f40d5041e217363722d5a8b45c181f7a1510a))
+* end readWrite transaction in sample ([#766](https://www.github.com/googleapis/nodejs-spanner/issues/766)) ([f419e27](https://www.github.com/googleapis/nodejs-spanner/commit/f419e27e24eb8df78633d8245c364a709e58d007))
+* return different databases for different pool options ([#754](https://www.github.com/googleapis/nodejs-spanner/issues/754)) ([106c7a5](https://www.github.com/googleapis/nodejs-spanner/commit/106c7a513052631cf08f1db23ed099d2e3178635))
+* session pool should use push/pop and return sessions lifo ([#776](https://www.github.com/googleapis/nodejs-spanner/issues/776)) ([384bde1](https://www.github.com/googleapis/nodejs-spanner/commit/384bde1848f2fc72f52601f5b57af17dadebca69))
+* transaction runner should not timeout before first attempt ([#789](https://www.github.com/googleapis/nodejs-spanner/issues/789)) ([c75076e](https://www.github.com/googleapis/nodejs-spanner/commit/c75076e01b8480386289c237bc01d0ea2b42c85c)), closes [#786](https://www.github.com/googleapis/nodejs-spanner/issues/786)
+* year zero was not accepted for SpannerDate ([#783](https://www.github.com/googleapis/nodejs-spanner/issues/783)) ([0ceb862](https://www.github.com/googleapis/nodejs-spanner/commit/0ceb862beac57f3732e0097d808b62dbdfa5d3a9))
+
+### [4.4.1](https://www.github.com/googleapis/nodejs-spanner/compare/v4.4.0...v4.4.1) (2019-12-16)
+
+
+### Bug Fixes
+
+* get stacktrace before any async method call ([#756](https://www.github.com/googleapis/nodejs-spanner/issues/756)) ([3091a78](https://www.github.com/googleapis/nodejs-spanner/commit/3091a7849985330828703018b43f6cfabc0e381a))
+
+## [4.4.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.3.0...v4.4.0) (2019-12-10)
+
+
+### Features
+
+* add plural and singular resource descriptor ([#737](https://www.github.com/googleapis/nodejs-spanner/issues/737)) ([11658bf](https://www.github.com/googleapis/nodejs-spanner/commit/11658bfae8467e6788bb492895e7afb9202c59f4))
+* add replica support ([#726](https://www.github.com/googleapis/nodejs-spanner/issues/726)) ([dea3e59](https://www.github.com/googleapis/nodejs-spanner/commit/dea3e599759f374773ed5e4180187e79f518a7b6))
+
+
+### Bug Fixes
+
+* changes to default rpc timeouts ([da066fc](https://www.github.com/googleapis/nodejs-spanner/commit/da066fc916df4468c5f7d0538aadc5677c5bdb33))
+* **deps:** pin TypeScript below 3.7.0 ([7b1e07b](https://www.github.com/googleapis/nodejs-spanner/commit/7b1e07b33f31f93adf125a19db03fa6d5baf0b6b))
+* **deps:** update dependency yargs to v15 ([#736](https://www.github.com/googleapis/nodejs-spanner/issues/736)) ([e289890](https://www.github.com/googleapis/nodejs-spanner/commit/e2898907511a3426c6c42204c80765716a3317a6))
+* **docs:** snippets are now replaced in jsdoc comments ([#731](https://www.github.com/googleapis/nodejs-spanner/issues/731)) ([843ce6f](https://www.github.com/googleapis/nodejs-spanner/commit/843ce6f1cf14f14ab05c9983f6f5b7a8428fa6c7))
+* createInstance should return a value ([#747](https://www.github.com/googleapis/nodejs-spanner/issues/747)) ([16c013f](https://www.github.com/googleapis/nodejs-spanner/commit/16c013f04a02cbc07222f1d571ff0b016646c672))
+* include long import in proto typescript declaration file ([#732](https://www.github.com/googleapis/nodejs-spanner/issues/732)) ([6fe0757](https://www.github.com/googleapis/nodejs-spanner/commit/6fe0757d659e7c0835fc8c40b4617c688ce69551))
+* restore SessionLeakError name after super call ([#745](https://www.github.com/googleapis/nodejs-spanner/issues/745)) ([d04609b](https://www.github.com/googleapis/nodejs-spanner/commit/d04609b40023b411c08052f503baa54610062994))
+
+## [4.3.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.2.0...v4.3.0) (2019-11-05)
+
+
+### Features
+
+* **database:** batch create sessions ([#692](https://www.github.com/googleapis/nodejs-spanner/issues/692)) ([21f83b1](https://www.github.com/googleapis/nodejs-spanner/commit/21f83b1b13e12fb413138267dd4dc1bdaa24ccb9))
+
+
+### Bug Fixes
+
+* **deps:** bump google-gax to 1.7.5 ([#712](https://www.github.com/googleapis/nodejs-spanner/issues/712)) ([03384d4](https://www.github.com/googleapis/nodejs-spanner/commit/03384d4b93a66c758f1db75fa5efa1572f5c1eaf))
+* don't wrap SpannerDate so timezone does not affect results ([#711](https://www.github.com/googleapis/nodejs-spanner/issues/711)) ([86c0ae5](https://www.github.com/googleapis/nodejs-spanner/commit/86c0ae5fbdddccd915689bbfff3af8834ec64d12))
+
 ## [4.2.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.1.0...v4.2.0) (2019-10-02)
 
 

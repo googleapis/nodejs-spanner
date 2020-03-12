@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 // to be loaded as the JS file.
 
 /**
+ * Information about the database restore.
+ *
  * @property {number} sourceType
  *   The type of the restore source.
  *
@@ -51,9 +53,14 @@ const RestoreInfo = {
  *   The number should be among the values of [State]{@link google.spanner.admin.database.v1.State}
  *
  * @property {Object} createTime
+ *   Output only. If exists, the time at which the database creation started.
+ *
  *   This object should have the same structure as [Timestamp]{@link google.protobuf.Timestamp}
  *
  * @property {Object} restoreInfo
+ *   Output only. Applicable only for restored databases. Contains information
+ *   about the restore source.
+ *
  *   This object should have the same structure as [RestoreInfo]{@link google.spanner.admin.database.v1.RestoreInfo}
  *
  * @typedef Database
@@ -86,6 +93,17 @@ const Database = {
      * The database is fully created and ready for use.
      */
     READY: 2,
+
+    /**
+     * The database is fully created and ready for use, but is still
+     * being optimized for performance and cannot handle full load.
+     *
+     * In this state, the database still references the backup
+     * it was restore from, preventing the backup
+     * from being deleted. When optimizations are complete, the full performance
+     * of the database will be restored, and the database will transition to
+     * `READY` state.
+     */
     READY_OPTIMIZING: 3
   }
 };
@@ -150,7 +168,7 @@ const ListDatabasesResponse = {
  *   database ID must be enclosed in backticks (`` ` ``).
  *
  * @property {string[]} extraStatements
- *   An optional list of DDL statements to run inside the newly created
+ *   Optional. A list of DDL statements to run inside the newly created
  *   database. Statements can create tables, indexes, etc. These
  *   statements execute atomically with the creation of the database:
  *   if there is an error in any statement, the database is not created.
@@ -215,7 +233,7 @@ const GetDatabaseRequest = {
  *   Required. The database to update.
  *
  * @property {string[]} statements
- *   DDL statements to be applied to the database.
+ *   Required. DDL statements to be applied to the database.
  *
  * @property {string} operationId
  *   If empty, the new update request is assigned an
@@ -316,57 +334,54 @@ const GetDatabaseDdlResponse = {
 };
 
 /**
+ * The request for
+ * ListDatabaseOperations.
+ *
  * @property {string} parent
  *   Required. The instance of the database operations.
  *   Values are of the form `projects/<project>/instances/<instance>`.
  *
  * @property {string} filter
- *   A filter expression that filters what operations are returned in the
- *   response.
+ *   An expression that filters the list of returned operations.
  *
- *   The response returns a list of
- *   long-running operations whose names are
- *   prefixed by a database name within the specified instance. The long-running
- *   operation metadata field type
- *   `metadata.type_url` describes the type of the metadata.
+ *   A filter expression consists of a field name, a
+ *   comparison operator, and a value for filtering.
+ *   The value must be a string, a number, or a boolean. The comparison operator
+ *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+ *   Colon `:` is the contains operator. Filter rules are not case sensitive.
  *
- *   The filter expression must specify the field name, a comparison operator,
- *   and the value that you want to use for filtering. The value must be a
- *   string, a number, or a boolean. The comparison operator must be
- *   <, >, <=, >=, !=, =, or :. Colon ‘:’ represents a HAS operator which is
- *   roughly synonymous with equality. Filter rules are case insensitive.
+ *   The following fields in the Operation
+ *   are eligible for filtering:
  *
- *   The long-running operation fields eligible for filtering are:
- *     * `name` --> The name of the long-running operation
- *     * `done` --> False if the operation is in progress, else true.
- *     * `metadata.type_url` (using filter string `metadata.@type`) and fields
- *        in `metadata.value` (using filter string `metadata.<field_name>`,
- *        where <field_name> is a field in metadata.value) are eligible for
- *        filtering.
- *     * `error` --> Error associated with the long-running operation.
- *     * `response.type_url` (using filter string `response.@type`) and fields
- *        in `response.value` (using filter string `response.<field_name>`,
- *        where <field_name> is a field in response.value) are eligible for
- *        filtering.
+ *     * `name` - The name of the long-running operation
+ *     * `done` - False if the operation is in progress, else true.
+ *     * `metadata.@type` - the type of metadata. For example, the type string
+ *        for RestoreDatabaseMetadata is
+ *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
+ *     * `metadata.<field_name>` - any field in metadata.value.
+ *     * `error` - Error associated with the long-running operation.
+ *     * `response.@type` - the type of response.
+ *     * `response.<field_name>` - any field in response.value.
  *
- *   To filter on multiple expressions, provide each separate expression within
- *   parentheses. By default, each expression is an AND expression. However,
- *   you can include AND, OR, and NOT expressions explicitly.
+ *   You can combine multiple expressions by enclosing each expression in
+ *   parentheses. By default, expressions are combined with AND logic. However,
+ *   you can specify AND, OR, and NOT logic explicitly.
  *
- *   Some examples of using filters are:
+ *   Here are a few examples:
  *
- *     * `done:true` --> The operation is complete.
- *     * `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata)
- *        AND (metadata.source_type:BACKUP)
- *        AND (metadata.backup_info.backup:backup_howl)
- *        AND (metadata.name:restored_howl)
- *        AND (metadata.progress.start_time < \"2018-03-28T14:50:00Z\")
- *        AND (error:*)`
- *            --> Return RestoreDatabase operations from backups whose name
- *                contains "backup_howl", where the created database name
- *                contains the string "restored_howl", the start_time of the
- *                restore operation is before 2018-03-28T14:50:00Z,
- *                and the operation returned an error.
+ *     * `done:true` - The operation is complete.
+ *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
+ *       `(metadata.source_type:BACKUP) AND` <br/>
+ *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
+ *       `(metadata.name:restored_howl) AND` <br/>
+ *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+ *       `(error:*)` - Return operations where:
+ *       * The operation's metadata type is RestoreDatabaseMetadata.
+ *       * The database is restored from a backup.
+ *       * The backup name contains "backup_howl".
+ *       * The restored database's name contains "restored_howl".
+ *       * The operation started before 2018-03-28T14:50:00Z.
+ *       * The operation resulted in an error.
  *
  * @property {number} pageSize
  *   Number of operations to be returned in the response. If 0 or
@@ -387,10 +402,13 @@ const ListDatabaseOperationsRequest = {
 };
 
 /**
+ * The response for
+ * ListDatabaseOperations.
+ *
  * @property {Object[]} operations
- *   The list of matching
- *   long-running operations whose names are
- *   prefixed by a database name. The long-running operation
+ *   The list of matching database long-running
+ *   operations. Each operation's name will be
+ *   prefixed by the database's name. The operation's
  *   metadata field type
  *   `metadata.type_url` describes the type of the metadata.
  *
@@ -410,12 +428,15 @@ const ListDatabaseOperationsResponse = {
 };
 
 /**
+ * The request for
+ * RestoreDatabase.
+ *
  * @property {string} parent
  *   Required. The name of the instance in which to create the
  *   restored database. This instance must be in the same project and
  *   have the same instance configuration as the instance containing
  *   the source backup. Values are of the form
- *   `projects/<project>/instances/<instance>.
+ *   `projects/<project>/instances/<instance>`.
  *
  * @property {string} databaseId
  *   Required. The id of the database to create and restore to. This
@@ -436,6 +457,9 @@ const RestoreDatabaseRequest = {
 };
 
 /**
+ * Metadata type for the long-running operation returned by
+ * RestoreDatabase.
+ *
  * @property {string} name
  *   Name of the database being created and restored to.
  *
@@ -445,6 +469,8 @@ const RestoreDatabaseRequest = {
  *   The number should be among the values of [RestoreSourceType]{@link google.spanner.admin.database.v1.RestoreSourceType}
  *
  * @property {Object} backupInfo
+ *   Information about the backup used to restore the database.
+ *
  *   This object should have the same structure as [BackupInfo]{@link google.spanner.admin.database.v1.BackupInfo}
  *
  * @property {Object} progress
@@ -455,9 +481,17 @@ const RestoreDatabaseRequest = {
  *   This object should have the same structure as [OperationProgress]{@link google.spanner.admin.database.v1.OperationProgress}
  *
  * @property {Object} cancelTime
- *   The time at which this operation was cancelled. If set, this operation is
- *   in the process of undoing itself (which is guaranteed to succeed) and
- *   cannot be cancelled again.
+ *   The time at which cancellation of this operation was received.
+ *   Operations.CancelOperation
+ *   starts asynchronous cancellation on a long-running operation. The server
+ *   makes a best effort to cancel the operation, but success is not guaranteed.
+ *   Clients can use
+ *   Operations.GetOperation or
+ *   other methods to check whether the cancellation succeeded or whether the
+ *   operation completed despite cancellation. On successful cancellation,
+ *   the operation is not deleted; instead, it becomes an operation with
+ *   an Operation.error value with a
+ *   google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
  *
  *   This object should have the same structure as [Timestamp]{@link google.protobuf.Timestamp}
  *
@@ -466,10 +500,10 @@ const RestoreDatabaseRequest = {
  *   track the post-restore optimization process to optimize the performance of
  *   the restored database, and remove the dependency on the restore source.
  *   The name is of the form
- *   `projects/<project>/instances/<instance>/databases/<database>/operations/<operation>
+ *   `projects/<project>/instances/<instance>/databases/<database>/operations/<operation>`
  *   where the <database> is the name of database being created and restored to.
  *   The metadata type of the  long-running operation is
- *   OptimizeRestoreDatabaseMetadata. This long-running operation will be
+ *   OptimizeRestoredDatabaseMetadata. This long-running operation will be
  *   automatically created by the system after the RestoreDatabase long-running
  *   operation completes successfully. This operation will not be created if the
  *   restore was not successful.
@@ -483,6 +517,8 @@ const RestoreDatabaseMetadata = {
 };
 
 /**
+ * Indicates the type of the restore source.
+ *
  * @enum {number}
  * @memberof google.spanner.admin.database.v1
  */

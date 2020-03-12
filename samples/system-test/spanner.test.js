@@ -1,22 +1,22 @@
-/**
- * Copyright 2017, Google, Inc.
- * Licensed under the Apache License, Version 2.0 (the `License`);
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an `AS IS` BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 'use strict';
 
 const {Spanner} = require(`@google-cloud/spanner`);
 const {assert} = require('chai');
+const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
@@ -25,6 +25,7 @@ const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
 const schemaCmd = `node schema.js`;
 const indexingCmd = `node indexing.js`;
+const queryOptionsCmd = `node queryoptions.js`;
 const transactionCmd = `node transaction.js`;
 const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
@@ -283,6 +284,28 @@ describe('Spanner', () => {
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
 
+  // spanner_create_client_with_query_options
+  it(`should use query options from a database reference`, async () => {
+    const output = execSync(
+      `${queryOptionsCmd} databaseWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+    );
+  });
+
+  // spanner_query_with_query_options
+  it(`should use query options on request`, async () => {
+    const output = execSync(
+      `${queryOptionsCmd} queryWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+    );
+  });
+
   // read_only_transaction
   it(`should read an example table using transactions`, async () => {
     const output = execSync(
@@ -431,7 +454,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /SingerId: 8\nSingerId: 7\nSingerId: 6/);
+    assert.match(output, /SingerId: 6\nSingerId: 7\nSingerId: 8/);
   });
 
   // query_with_struct_field_param

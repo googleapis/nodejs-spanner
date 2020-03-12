@@ -1,4 +1,4 @@
-// Copyright 2018 Google LLC.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,17 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 syntax = "proto3";
 
 package google.spanner.v1;
 
-import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "google/spanner/v1/query_plan.proto";
 import "google/spanner/v1/transaction.proto";
 import "google/spanner/v1/type.proto";
+import "google/api/annotations.proto";
 
 option cc_enable_arenas = true;
 option csharp_namespace = "Google.Cloud.Spanner.V1";
@@ -30,7 +29,6 @@ option java_multiple_files = true;
 option java_outer_classname = "ResultSetProto";
 option java_package = "com.google.spanner.v1";
 option php_namespace = "Google\\Cloud\\Spanner\\V1";
-
 
 // Results from [Read][google.spanner.v1.Spanner.Read] or
 // [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].

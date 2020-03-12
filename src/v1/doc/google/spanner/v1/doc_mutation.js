@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,10 @@
  *   its column values are overwritten with the ones provided. Any
  *   column values not explicitly written are preserved.
  *
+ *   When using insert_or_update, just as when using insert, all `NOT
+ *   NULL` columns in the table must be given a value. This holds true
+ *   even when the row already exists and will therefore actually be updated.
+ *
  *   This object should have the same structure as [Write]{@link google.spanner.v1.Write}
  *
  * @property {Object} replace
@@ -44,6 +48,11 @@
  *   deleted, and the column values provided are inserted
  *   instead. Unlike insert_or_update, this means any values not
  *   explicitly written become `NULL`.
+ *
+ *   In an interleaved table, if you create the child table with the
+ *   `ON DELETE CASCADE` annotation, then replacing a parent row
+ *   also deletes the child rows. Otherwise, you must delete the
+ *   child rows before you replace the parent row.
  *
  *   This object should have the same structure as [Write]{@link google.spanner.v1.Write}
  *
@@ -101,7 +110,10 @@ const Mutation = {
    *   Required. The table whose rows will be deleted.
    *
    * @property {Object} keySet
-   *   Required. The primary keys of the rows within table to delete.
+   *   Required. The primary keys of the rows within table to delete.  The
+   *   primary keys must be specified in the order in which they appear in the
+   *   `PRIMARY KEY()` clause of the table's equivalent DDL statement (the DDL
+   *   statement used to create the table).
    *   Delete is idempotent. The transaction will succeed even if some or all
    *   rows do not exist.
    *

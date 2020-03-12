@@ -15,13 +15,15 @@
  */
 
 import {promisify} from '@google-cloud/promisify';
-import {Metadata, ServiceError, status} from 'grpc';
-import {join} from 'path';
+import {ServiceError, status} from 'grpc';
 import {Root} from 'protobufjs';
 import * as through from 'through2';
 
 import {Session} from './session';
 import {Transaction} from './transaction';
+import {NormalCallback} from './common';
+import {isSessionNotFoundError} from './session-pool';
+import {Database} from './database';
 
 const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
@@ -47,10 +49,7 @@ export interface RunTransactionOptions {
  * @param {Transaction} transaction The transaction object. The transaction has
  *     already been created, and is ready to be queried and committed against.
  */
-export interface RunTransactionCallback {
-  (err: ServiceError, transaction?: null): void;
-  (err: null, transaction: Transaction): void;
-}
+export type RunTransactionCallback = NormalCallback<Transaction>;
 
 /**
  * A function to execute in the context of a transaction.
@@ -154,8 +153,21 @@ export abstract class Runner<T> {
 
       return secondsInMs + nanosInMs;
     }
+    // A 'Session not found' error without any specific retry info should not
+    // cause any delay between retries.
+    if (isSessionNotFoundError(err)) {
+      return 0;
+    }
 
-    return Math.pow(2, this.attempts) * 1000 + Math.floor(Math.random() * 1000);
+    // Max backoff should be 32 seconds.
+    return (
+      Math.pow(2, Math.min(this.attempts, 5)) * 1000 +
+      Math.floor(Math.random() * 1000)
+    );
+  }
+  /** Returns whether the given error should cause a transaction retry. */
+  shouldRetry(err: ServiceError): boolean {
+    return RETRYABLE.includes(err.code!) || isSessionNotFoundError(err);
   }
   /**
    * Retrieves a transaction to run against.
@@ -171,7 +183,9 @@ export abstract class Runner<T> {
       return transaction;
     }
 
-    const transaction = this.session.transaction();
+    const transaction = this.session.transaction(
+      (this.session.parent as Database).queryOptions_
+    );
     await transaction.begin();
     return transaction;
   }
@@ -189,15 +203,21 @@ export abstract class Runner<T> {
 
     let lastError: ServiceError;
 
-    while (Date.now() - start < timeout) {
+    // The transaction runner should always execute at least one attempt before
+    // timing out.
+    while (this.attempts === 0 || Date.now() - start < timeout) {
       const transaction = await this.getTransaction();
 
       try {
         return await this._run(transaction);
       } catch (e) {
+        this.session.lastError = e;
         lastError = e;
       }
 
+      // Note that if the error is a 'Session not found' error, it will be
+      // thrown here. We do this to bubble this error up to the caller who is
+      // responsible for retrying the transaction on a different session.
       if (!RETRYABLE.includes(lastError.code!)) {
         throw lastError;
       }
@@ -251,7 +271,7 @@ export class TransactionRunner extends Runner<void> {
 
     transaction.request = promisify((config: object, callback: Function) => {
       request(config, (err: null | ServiceError, resp: object) => {
-        if (!err || !RETRYABLE.includes(err.code!)) {
+        if (!err || !this.shouldRetry(err)) {
           callback(err, resp);
           return;
         }
@@ -268,7 +288,7 @@ export class TransactionRunner extends Runner<void> {
 
       stream
         .on('error', (err: ServiceError) => {
-          if (!RETRYABLE.includes(err.code!)) {
+          if (!this.shouldRetry(err)) {
             proxyStream.destroy(err);
             return;
           }

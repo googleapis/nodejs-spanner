@@ -21,7 +21,7 @@ import {
   ServiceObjectConfig,
   GetConfig,
 } from '@google-cloud/common';
-import {ServiceObject} from '@google-cloud/common-grpc';
+import {GrpcServiceObject} from './common-grpc/service-object';
 import {promisify, promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import * as extend from 'extend';
@@ -43,6 +43,7 @@ import {
   SessionPoolOptions,
   SessionPoolCloseCallback,
   SessionPoolInterface,
+  isSessionNotFoundError,
 } from './session-pool';
 import {Table, CreateTableCallback, CreateTableResponse} from './table';
 import {
@@ -51,6 +52,7 @@ import {
   Transaction,
   ExecuteSqlRequest,
   RunUpdateCallback,
+  RunResponse,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -98,12 +100,12 @@ export interface SessionPoolConstructor {
   ): SessionPoolInterface;
 }
 
-type UpdateSchemaCallback = ResourceCallback<
+export type UpdateSchemaCallback = ResourceCallback<
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 >;
 
-type UpdateSchemaResponse = [
+export type UpdateSchemaResponse = [
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
@@ -111,6 +113,7 @@ type UpdateSchemaResponse = [
 type PoolRequestCallback = RequestCallback<Session>;
 
 type RunCallback = RequestCallback<Row[]>;
+type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 
@@ -171,6 +174,21 @@ export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
 >;
+
+export interface BatchCreateSessionsOptions extends CreateSessionOptions {
+  count: number;
+}
+
+export type BatchCreateSessionsResponse = [
+  Session[],
+  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+];
+
+export type BatchCreateSessionsCallback = ResourceCallback<
+  Session[],
+  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+>;
+
 export type DatabaseDeleteCallback = NormalCallback<r.Response>;
 
 export interface CancelableDuplex extends Duplex {
@@ -195,6 +213,8 @@ export type RestoreDatabaseResponse = [
  * @param {string} name Name of the database.
  * @param {SessionPoolOptions|SessionPoolInterface} options Session pool
  *     configuration options or custom pool interface.
+ * @param {spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions} queryOptions
+ *     The default query options to use for queries on the database.
  *
  * @example
  * const {Spanner} = require('@google-cloud/spanner');
@@ -202,10 +222,11 @@ export type RestoreDatabaseResponse = [
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
  */
-class Database extends ServiceObject {
+class Database extends GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   request: <T, R = void>(
     config: RequestConfig,
     callback: RequestCallback<T, R>
@@ -213,7 +234,8 @@ class Database extends ServiceObject {
   constructor(
     instance: Instance,
     name: string,
-    poolOptions?: SessionPoolConstructor | SessionPoolOptions
+    poolOptions?: SessionPoolConstructor | SessionPoolOptions,
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ) {
     const methods = {
       /**
@@ -285,7 +307,122 @@ class Database extends ServiceObject {
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
+    this.queryOptions_ = Object.assign(
+      Object.assign({}, queryOptions),
+      Database.getEnvironmentQueryOptions()
+    );
   }
+
+  static getEnvironmentQueryOptions() {
+    const options = {} as spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+    if (process.env.SPANNER_OPTIMIZER_VERSION) {
+      options.optimizerVersion = process.env.SPANNER_OPTIMIZER_VERSION;
+    }
+    return options;
+  }
+
+  batchCreateSessions(
+    options: number | BatchCreateSessionsOptions
+  ): Promise<BatchCreateSessionsResponse>;
+  batchCreateSessions(
+    options: number | BatchCreateSessionsOptions,
+    callback: BatchCreateSessionsCallback
+  ): void;
+  /**
+   * @typedef {object} BatchCreateSessionsOptions
+   * @property {number} count The number of sessions to create.
+   * @property {object.<string, string>} [labels] Labels to apply to each
+   *     session.
+   */
+  /**
+   * @typedef {array} BatchCreateSessionsResponse
+   * @property {Session[]} 0 The newly created sessions.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback BatchCreateSessionsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Session[]} sessions The newly created sessions.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Create a batch of sessions, which can be used to perform transactions that
+   * read and/or modify data.
+   *
+   * **It is unlikely you will need to interact with sessions directly. By
+   * default, sessions are created and utilized for maximum performance
+   * automatically.**
+   *
+   * Wrapper around {@link v1.SpannerClient#batchCreateSessions}.
+   *
+   * @see {@link v1.SpannerClient#batchCreateSessions}
+   * @see [BatchCreateSessions API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BatchCreateSessions)
+   *
+   * @param {number|BatchCreateSessionsOptions} options Desired session count or
+   *     a configuration object.
+   * @param {BatchCreateSessionsCallback} [callback] Callback function.
+   * @returns {Promise<BatchCreateSessionsResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * const count = 5;
+   *
+   * database.batchCreateSession(count, (err, sessions, response) => {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   // `sessions` is an array of Session objects.
+   * });
+   *
+   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * const [sessions, response] = await database.batchCreateSessions(count);
+   */
+  batchCreateSessions(
+    options: number | BatchCreateSessionsOptions,
+    callback?: BatchCreateSessionsCallback
+  ): void | Promise<BatchCreateSessionsResponse> {
+    if (typeof options === 'number') {
+      options = {count: options};
+    }
+
+    const count = options.count;
+    const labels = options.labels || {};
+
+    const reqOpts: google.spanner.v1.IBatchCreateSessionsRequest = {
+      database: this.formattedName_,
+      sessionTemplate: {labels},
+      sessionCount: count,
+    };
+
+    this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
+      {
+        client: 'SpannerClient',
+        method: 'batchCreateSessions',
+        reqOpts,
+      },
+      (err, resp) => {
+        if (err) {
+          callback!(err, null, resp!);
+          return;
+        }
+
+        const sessions = (resp!.session || []).map(metadata => {
+          const session = this.session(metadata.name!);
+          session.metadata = metadata;
+          return session;
+        });
+
+        callback!(null, sessions, resp!);
+      }
+    );
+  }
+
   /**
    * Get a reference to a {@link BatchTransaction} object.
    *
@@ -1137,12 +1274,18 @@ class Database extends ServiceObject {
         return;
       }
 
-      const snapshot = session!.snapshot(options);
+      const snapshot = session!.snapshot(options, this.queryOptions_);
 
       snapshot.begin(err => {
         if (err) {
-          this.pool_.release(session!);
-          callback!(err);
+          if (isSessionNotFoundError(err)) {
+            session!.lastError = err;
+            this.pool_.release(session!);
+            this.getSnapshot(options, callback!);
+          } else {
+            this.pool_.release(session!);
+            callback!(err);
+          }
           return;
         }
 
@@ -1373,11 +1516,11 @@ class Database extends ServiceObject {
     );
   }
 
-  run(query: string | ExecuteSqlRequest): Promise<Row[]>;
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
   run(
     query: string | ExecuteSqlRequest,
     options?: TimestampBounds
-  ): Promise<Row[]>;
+  ): Promise<RunResponse>;
   run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   run(
     query: string | ExecuteSqlRequest,
@@ -1397,17 +1540,20 @@ class Database extends ServiceObject {
    */
   /**
    * @typedef {array} RunResponse
-   * @property {array[]} 0 Rows are returned as an array of objects. Each object
-   *     has a `name` and `value` property. To get a serialized object, call
-   *     `toJSON()`.
+   * @property {Array<Row | Json>} 0 Rows are returned as an array objects. Each
+   *     object has a `name` and `value` property. To get a serialized object,
+   *     call `toJSON()`.
+   * @property {?ResultSetStats} 1 Query statistics, if the query is executed in
+   *     PLAN or PROFILE mode.
    */
   /**
    * @callback RunCallback
    * @param {?Error} err Request error, if any.
-   * @param {array[]} rows Rows are returned as an array of objects. Each object
-   *     has a `name` and `value` property. To get a serialized object, call
-   *     `toJSON()`.
-   * @param {object} stats Stats returned for the provided SQL statement.
+   * @param {Array<Row | Json>} rows Rows are returned as an array of objects.
+   *     Each object has a `name` and `value` property. To get a serialized
+   *     object, call `toJSON()`.
+   * @param {?ResultSetStats} stats Query statistics, if the query is executed
+   *     in PLAN or PROFILE mode.
    */
   /**
    * Execute a SQL statement on this database.
@@ -1536,7 +1682,7 @@ class Database extends ServiceObject {
     query: string | ExecuteSqlRequest,
     optionsOrCallback?: TimestampBounds | RunCallback,
     cb?: RunCallback
-  ): void | Promise<Row[]> {
+  ): void | Promise<RunResponse> {
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'
@@ -1737,17 +1883,37 @@ class Database extends ServiceObject {
         return;
       }
 
-      const snapshot = session!.snapshot(options);
+      const snapshot = session!.snapshot(options, this.queryOptions_);
 
       this._releaseOnEnd(session!, snapshot);
 
-      snapshot
-        .runStream(query)
+      let dataReceived = false;
+      let dataStream = snapshot.runStream(query);
+      const endListener = () => snapshot.end();
+      dataStream
+        .once('data', () => (dataReceived = true))
         .once('error', err => {
-          proxyStream.destroy(err);
-          snapshot.end();
+          if (!dataReceived && isSessionNotFoundError(err)) {
+            // If it is a 'Session not found' error and we have not yet received
+            // any data, we can safely retry the query on a new session.
+            // Register the error on the session so the pool can discard it.
+            if (session) {
+              session.lastError = err;
+            }
+            // Remove the current data stream from the end user stream.
+            dataStream.unpipe(proxyStream);
+            dataStream.removeListener('end', endListener);
+            dataStream.end();
+            snapshot.end();
+            // Create a new data stream and add it to the end user stream.
+            dataStream = this.runStream(query, options);
+            dataStream.pipe(proxyStream);
+          } else {
+            proxyStream.destroy(err);
+            snapshot.end();
+          }
         })
-        .once('end', () => snapshot.end())
+        .once('end', endListener)
         .pipe(proxyStream);
     });
 
@@ -1849,6 +2015,10 @@ class Database extends ServiceObject {
         : {};
 
     this.pool_.getWriteSession((err, session?, transaction?) => {
+      if (err && isSessionNotFoundError(err)) {
+        this.runTransaction(options, runFn!);
+        return;
+      }
       if (err) {
         runFn!(err);
         return;
@@ -1863,8 +2033,13 @@ class Database extends ServiceObject {
       );
 
       runner.run().then(release, err => {
-        setImmediate(runFn!, err);
-        release();
+        if (isSessionNotFoundError(err)) {
+          release();
+          this.runTransaction(options, runFn!);
+        } else {
+          setImmediate(runFn!, err);
+          release();
+        }
       });
     });
   }
@@ -1942,18 +2117,27 @@ class Database extends ServiceObject {
         : {};
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
-    const [session, transaction] = await promisify(getWriteSession)();
-    const runner = new AsyncTransactionRunner<T>(
-      session,
-      transaction,
-      runFn,
-      options
-    );
+    // Loop to retry 'Session not found' errors.
+    while (true) {
+      try {
+        const [session, transaction] = await promisify(getWriteSession)();
+        const runner = new AsyncTransactionRunner<T>(
+          session,
+          transaction,
+          runFn,
+          options
+        );
 
-    try {
-      return await runner.run();
-    } finally {
-      this.pool_.release(session);
+        try {
+          return await runner.run();
+        } finally {
+          this.pool_.release(session);
+        }
+      } catch (e) {
+        if (!isSessionNotFoundError(e)) {
+          throw e;
+        }
+      }
     }
   }
   /**
