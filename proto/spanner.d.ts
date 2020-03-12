@@ -1146,16 +1146,16 @@ export namespace google {
                 paramTypes?: ({ [k: string]: google.spanner.v1.IType }|null);
 
                 /** ExecuteSqlRequest resumeToken */
-                resumeToken?: (Uint8Array|string|null);
+                resumeToken?: (Uint8Array|null);
 
                 /** ExecuteSqlRequest queryMode */
-                queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
+                queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
 
                 /** ExecuteSqlRequest partitionToken */
-                partitionToken?: (Uint8Array|string|null);
+                partitionToken?: (Uint8Array|null);
 
                 /** ExecuteSqlRequest seqno */
-                seqno?: (number|Long|string|null);
+                seqno?: (number|Long|null);
 
                 /** ExecuteSqlRequest queryOptions */
                 queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
@@ -1186,16 +1186,16 @@ export namespace google {
                 public paramTypes: { [k: string]: google.spanner.v1.IType };
 
                 /** ExecuteSqlRequest resumeToken. */
-                public resumeToken: (Uint8Array|string);
+                public resumeToken: Uint8Array;
 
                 /** ExecuteSqlRequest queryMode. */
-                public queryMode: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode);
+                public queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode;
 
                 /** ExecuteSqlRequest partitionToken. */
-                public partitionToken: (Uint8Array|string);
+                public partitionToken: Uint8Array;
 
                 /** ExecuteSqlRequest seqno. */
-                public seqno: (number|Long|string);
+                public seqno: (number|Long);
 
                 /** ExecuteSqlRequest queryOptions. */
                 public queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
@@ -1384,7 +1384,7 @@ export namespace google {
                 statements?: (google.spanner.v1.ExecuteBatchDmlRequest.IStatement[]|null);
 
                 /** ExecuteBatchDmlRequest seqno */
-                seqno?: (number|Long|string|null);
+                seqno?: (number|Long|null);
             }
 
             /** Represents an ExecuteBatchDmlRequest. */
@@ -1406,7 +1406,7 @@ export namespace google {
                 public statements: google.spanner.v1.ExecuteBatchDmlRequest.IStatement[];
 
                 /** ExecuteBatchDmlRequest seqno. */
-                public seqno: (number|Long|string);
+                public seqno: (number|Long);
 
                 /**
                  * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
@@ -1684,10 +1684,10 @@ export namespace google {
             interface IPartitionOptions {
 
                 /** PartitionOptions partitionSizeBytes */
-                partitionSizeBytes?: (number|Long|string|null);
+                partitionSizeBytes?: (number|Long|null);
 
                 /** PartitionOptions maxPartitions */
-                maxPartitions?: (number|Long|string|null);
+                maxPartitions?: (number|Long|null);
             }
 
             /** Represents a PartitionOptions. */
@@ -1700,10 +1700,10 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartitionOptions);
 
                 /** PartitionOptions partitionSizeBytes. */
-                public partitionSizeBytes: (number|Long|string);
+                public partitionSizeBytes: (number|Long);
 
                 /** PartitionOptions maxPartitions. */
-                public maxPartitions: (number|Long|string);
+                public maxPartitions: (number|Long);
 
                 /**
                  * Creates a new PartitionOptions instance using the specified properties.
@@ -2026,7 +2026,7 @@ export namespace google {
             interface IPartition {
 
                 /** Partition partitionToken */
-                partitionToken?: (Uint8Array|string|null);
+                partitionToken?: (Uint8Array|null);
             }
 
             /** Represents a Partition. */
@@ -2039,7 +2039,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartition);
 
                 /** Partition partitionToken. */
-                public partitionToken: (Uint8Array|string);
+                public partitionToken: Uint8Array;
 
                 /**
                  * Creates a new Partition instance using the specified properties.
@@ -2230,13 +2230,13 @@ export namespace google {
                 keySet?: (google.spanner.v1.IKeySet|null);
 
                 /** ReadRequest limit */
-                limit?: (number|Long|string|null);
+                limit?: (number|Long|null);
 
                 /** ReadRequest resumeToken */
-                resumeToken?: (Uint8Array|string|null);
+                resumeToken?: (Uint8Array|null);
 
                 /** ReadRequest partitionToken */
-                partitionToken?: (Uint8Array|string|null);
+                partitionToken?: (Uint8Array|null);
             }
 
             /** Represents a ReadRequest. */
@@ -2267,13 +2267,13 @@ export namespace google {
                 public keySet?: (google.spanner.v1.IKeySet|null);
 
                 /** ReadRequest limit. */
-                public limit: (number|Long|string);
+                public limit: (number|Long);
 
                 /** ReadRequest resumeToken. */
-                public resumeToken: (Uint8Array|string);
+                public resumeToken: Uint8Array;
 
                 /** ReadRequest partitionToken. */
-                public partitionToken: (Uint8Array|string);
+                public partitionToken: Uint8Array;
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
@@ -2449,7 +2449,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** CommitRequest transactionId */
-                transactionId?: (Uint8Array|string|null);
+                transactionId?: (Uint8Array|null);
 
                 /** CommitRequest singleUseTransaction */
                 singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -2471,7 +2471,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId: (Uint8Array|string);
+                public transactionId: Uint8Array;
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -2650,7 +2650,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** RollbackRequest transactionId */
-                transactionId?: (Uint8Array|string|null);
+                transactionId?: (Uint8Array|null);
             }
 
             /** Represents a RollbackRequest. */
@@ -2666,7 +2666,7 @@ export namespace google {
                 public session: string;
 
                 /** RollbackRequest transactionId. */
-                public transactionId: (Uint8Array|string);
+                public transactionId: Uint8Array;
 
                 /**
                  * Creates a new RollbackRequest instance using the specified properties.
@@ -3388,7 +3388,7 @@ export namespace google {
                 chunkedValue?: (boolean|null);
 
                 /** PartialResultSet resumeToken */
-                resumeToken?: (Uint8Array|string|null);
+                resumeToken?: (Uint8Array|null);
 
                 /** PartialResultSet stats */
                 stats?: (google.spanner.v1.IResultSetStats|null);
@@ -3413,7 +3413,7 @@ export namespace google {
                 public chunkedValue: boolean;
 
                 /** PartialResultSet resumeToken. */
-                public resumeToken: (Uint8Array|string);
+                public resumeToken: Uint8Array;
 
                 /** PartialResultSet stats. */
                 public stats?: (google.spanner.v1.IResultSetStats|null);
@@ -3595,10 +3595,10 @@ export namespace google {
                 queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact */
-                rowCountExact?: (number|Long|string|null);
+                rowCountExact?: (number|Long|null);
 
                 /** ResultSetStats rowCountLowerBound */
-                rowCountLowerBound?: (number|Long|string|null);
+                rowCountLowerBound?: (number|Long|null);
             }
 
             /** Represents a ResultSetStats. */
@@ -3617,10 +3617,10 @@ export namespace google {
                 public queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact. */
-                public rowCountExact: (number|Long|string);
+                public rowCountExact: (number|Long);
 
                 /** ResultSetStats rowCountLowerBound. */
-                public rowCountLowerBound: (number|Long|string);
+                public rowCountLowerBound: (number|Long);
 
                 /** ResultSetStats rowCount. */
                 public rowCount?: ("rowCountExact"|"rowCountLowerBound");
@@ -3703,7 +3703,7 @@ export namespace google {
                 index?: (number|null);
 
                 /** PlanNode kind */
-                kind?: (google.spanner.v1.PlanNode.Kind|keyof typeof google.spanner.v1.PlanNode.Kind|null);
+                kind?: (google.spanner.v1.PlanNode.Kind|null);
 
                 /** PlanNode displayName */
                 displayName?: (string|null);
@@ -3734,7 +3734,7 @@ export namespace google {
                 public index: number;
 
                 /** PlanNode kind. */
-                public kind: (google.spanner.v1.PlanNode.Kind|keyof typeof google.spanner.v1.PlanNode.Kind);
+                public kind: google.spanner.v1.PlanNode.Kind;
 
                 /** PlanNode displayName. */
                 public displayName: string;
@@ -4523,7 +4523,7 @@ export namespace google {
             interface ITransaction {
 
                 /** Transaction id */
-                id?: (Uint8Array|string|null);
+                id?: (Uint8Array|null);
 
                 /** Transaction readTimestamp */
                 readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -4539,7 +4539,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.ITransaction);
 
                 /** Transaction id. */
-                public id: (Uint8Array|string);
+                public id: Uint8Array;
 
                 /** Transaction readTimestamp. */
                 public readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -4622,7 +4622,7 @@ export namespace google {
                 singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id */
-                id?: (Uint8Array|string|null);
+                id?: (Uint8Array|null);
 
                 /** TransactionSelector begin */
                 begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -4641,7 +4641,7 @@ export namespace google {
                 public singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id. */
-                public id: (Uint8Array|string);
+                public id: Uint8Array;
 
                 /** TransactionSelector begin. */
                 public begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -4720,25 +4720,11 @@ export namespace google {
                 public toJSON(): { [k: string]: any };
             }
 
-            /** TypeCode enum. */
-            enum TypeCode {
-                TYPE_CODE_UNSPECIFIED = 0,
-                BOOL = 1,
-                INT64 = 2,
-                FLOAT64 = 3,
-                TIMESTAMP = 4,
-                DATE = 5,
-                STRING = 6,
-                BYTES = 7,
-                ARRAY = 8,
-                STRUCT = 9
-            }
-
             /** Properties of a Type. */
             interface IType {
 
                 /** Type code */
-                code?: (google.spanner.v1.TypeCode|keyof typeof google.spanner.v1.TypeCode|null);
+                code?: (google.spanner.v1.TypeCode|null);
 
                 /** Type arrayElementType */
                 arrayElementType?: (google.spanner.v1.IType|null);
@@ -4757,7 +4743,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IType);
 
                 /** Type code. */
-                public code: (google.spanner.v1.TypeCode|keyof typeof google.spanner.v1.TypeCode);
+                public code: google.spanner.v1.TypeCode;
 
                 /** Type arrayElementType. */
                 public arrayElementType?: (google.spanner.v1.IType|null);
@@ -5023,6 +5009,20 @@ export namespace google {
                      */
                     public toJSON(): { [k: string]: any };
                 }
+            }
+
+            /** TypeCode enum. */
+            enum TypeCode {
+                TYPE_CODE_UNSPECIFIED = 0,
+                BOOL = 1,
+                INT64 = 2,
+                FLOAT64 = 3,
+                TIMESTAMP = 4,
+                DATE = 5,
+                STRING = 6,
+                BYTES = 7,
+                ARRAY = 8,
+                STRUCT = 9
             }
         }
     }
