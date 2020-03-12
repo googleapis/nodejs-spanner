@@ -25,6 +25,7 @@ const batchCmd = `node batch.js`;
 const crudCmd = `node crud.js`;
 const schemaCmd = `node schema.js`;
 const indexingCmd = `node indexing.js`;
+const queryOptionsCmd = `node queryoptions.js`;
 const transactionCmd = `node transaction.js`;
 const timestampCmd = `node timestamp.js`;
 const structCmd = `node struct.js`;
@@ -267,6 +268,28 @@ describe('Spanner', () => {
       `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
+  });
+
+  // spanner_create_client_with_query_options
+  it(`should use query options from a database reference`, async () => {
+    const output = execSync(
+      `${queryOptionsCmd} databaseWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+    );
+  });
+
+  // spanner_query_with_query_options
+  it(`should use query options on request`, async () => {
+    const output = execSync(
+      `${queryOptionsCmd} queryWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+    );
   });
 
   // read_only_transaction

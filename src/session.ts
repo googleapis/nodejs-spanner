@@ -374,24 +374,31 @@ export class Session extends GrpcServiceObject {
    * Create a Snapshot transaction.
    *
    * @param {TimestampBounds} [options] The timestamp bounds.
+   * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions] The default query options to use.
    * @returns {Snapshot}
    *
    * @example
    * const snapshot = session.snapshot({strong: false});
    */
-  snapshot(options?: TimestampBounds) {
-    return new Snapshot(this, options);
+  snapshot(
+    options?: TimestampBounds,
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+  ) {
+    return new Snapshot(this, options, queryOptions);
   }
   /**
    * Create a read write Transaction.
    *
+   * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions] The default query options to use.
    * @return {Transaction}
    *
    * @example
    * const transaction = session.transaction();
    */
-  transaction() {
-    return new Transaction(this);
+  transaction(
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+  ) {
+    return new Transaction(this, undefined, queryOptions);
   }
   /**
    * Format the session name to include the parent database's name.

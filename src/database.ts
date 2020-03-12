@@ -187,6 +187,8 @@ export interface CancelableDuplex extends Duplex {
  * @param {string} name Name of the database.
  * @param {SessionPoolOptions|SessionPoolInterface} options Session pool
  *     configuration options or custom pool interface.
+ * @param {spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions} queryOptions
+ *     The default query options to use for queries on the database.
  *
  * @example
  * const {Spanner} = require('@google-cloud/spanner');
@@ -197,6 +199,7 @@ export interface CancelableDuplex extends Duplex {
 class Database extends GrpcServiceObject {
   formattedName_: string;
   pool_: SessionPoolInterface;
+  queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   request: <T, R = void>(
     config: RequestConfig,
     callback: RequestCallback<T, R>
@@ -204,7 +207,8 @@ class Database extends GrpcServiceObject {
   constructor(
     instance: Instance,
     name: string,
-    poolOptions?: SessionPoolConstructor | SessionPoolOptions
+    poolOptions?: SessionPoolConstructor | SessionPoolOptions,
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ) {
     const methods = {
       /**
@@ -275,6 +279,18 @@ class Database extends GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
+    this.queryOptions_ = Object.assign(
+      Object.assign({}, queryOptions),
+      Database.getEnvironmentQueryOptions()
+    );
+  }
+
+  static getEnvironmentQueryOptions() {
+    const options = {} as spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+    if (process.env.SPANNER_OPTIMIZER_VERSION) {
+      options.optimizerVersion = process.env.SPANNER_OPTIMIZER_VERSION;
+    }
+    return options;
   }
 
   batchCreateSessions(
@@ -1219,7 +1235,7 @@ class Database extends GrpcServiceObject {
         return;
       }
 
-      const snapshot = session!.snapshot(options);
+      const snapshot = session!.snapshot(options, this.queryOptions_);
 
       snapshot.begin(err => {
         if (err) {
@@ -1737,7 +1753,7 @@ class Database extends GrpcServiceObject {
         return;
       }
 
-      const snapshot = session!.snapshot(options);
+      const snapshot = session!.snapshot(options, this.queryOptions_);
 
       this._releaseOnEnd(session!, snapshot);
 

@@ -896,7 +896,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise}
    */
   async _prepareTransaction(session: Session): Promise<void> {
-    const transaction = session.transaction();
+    const transaction = session.transaction(
+      (session.parent as Database).queryOptions_
+    );
     await transaction.begin();
     session.txn = transaction;
   }

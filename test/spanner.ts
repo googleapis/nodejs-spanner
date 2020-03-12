@@ -41,6 +41,9 @@ import {
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import {Json} from '../src/codec';
 import Done = Mocha.Done;
+import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import v1 = google.spanner.v1;
+import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -68,6 +71,7 @@ describe('Spanner with mock server', () => {
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
+  let port: number;
   let spanner: Spanner;
   let instance: Instance;
   let dbCounter = 1;
@@ -78,10 +82,7 @@ describe('Spanner with mock server', () => {
 
   before(() => {
     sandbox = sinon.createSandbox();
-    const port = server.bind(
-      '0.0.0.0:0',
-      grpc.ServerCredentials.createInsecure()
-    );
+    port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
     server.start();
     spannerMock.putStatementResult(
       selectSql,
@@ -117,6 +118,10 @@ describe('Spanner with mock server', () => {
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
+  });
+
+  beforeEach(() => {
+    spannerMock.resetRequests();
   });
 
   describe('basics', () => {
@@ -519,6 +524,359 @@ describe('Spanner with mock server', () => {
             })
             .catch(done);
         });
+      });
+    });
+  });
+
+  describe('queryOptions', () => {
+    /** Common verify method for QueryOptions tests. */
+    function verifyQueryOptions(optimizerVersion: string) {
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(
+        request.queryOptions,
+        'no queryOptions found on ExecuteSqlRequest'
+      );
+      assert.strictEqual(
+        request.queryOptions!.optimizerVersion,
+        optimizerVersion
+      );
+    }
+
+    describe('on request', () => {
+      it('database.run', async () => {
+        const query = {
+          sql: selectSql,
+          queryOptions: QueryOptions.create({
+            optimizerVersion: '100',
+          }),
+        } as ExecuteSqlRequest;
+        const database = newTestDatabase();
+        try {
+          await database.run(query);
+          verifyQueryOptions('100');
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('snapshot.run', async () => {
+        const query = {
+          sql: selectSql,
+          queryOptions: QueryOptions.create({
+            optimizerVersion: '100',
+          }),
+        } as ExecuteSqlRequest;
+        const database = newTestDatabase();
+        try {
+          const [snapshot] = await database.getSnapshot();
+          await snapshot.run(query);
+          verifyQueryOptions('100');
+          await snapshot.end();
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('transaction.run', done => {
+        const query = {
+          sql: selectSql,
+          queryOptions: QueryOptions.create({
+            optimizerVersion: '100',
+          }),
+        } as ExecuteSqlRequest;
+        const database = newTestDatabase();
+        database.runTransaction(async (err, transaction) => {
+          assert.ifError(err);
+          await transaction!.run(query);
+          verifyQueryOptions('100');
+          await transaction!.commit();
+          await database.close();
+          done();
+        });
+      });
+
+      it('async transaction.run', async () => {
+        const query = {
+          sql: selectSql,
+          queryOptions: QueryOptions.create({
+            optimizerVersion: '100',
+          }),
+        } as ExecuteSqlRequest;
+        const database = newTestDatabase();
+        try {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(query);
+            verifyQueryOptions('100');
+            await transaction.commit();
+          });
+        } finally {
+          await database.close();
+        }
+      });
+    });
+
+    describe('with environment variable', () => {
+      const OPTIMIZER_VERSION = '20';
+      let spannerWithEnvVar: Spanner;
+      let instanceWithEnvVar: Instance;
+
+      function newTestDatabase(
+        options?: SessionPoolOptions,
+        queryOptions?: IQueryOptions
+      ): Database {
+        return instanceWithEnvVar.database(
+          `database-${dbCounter++}`,
+          options,
+          queryOptions
+        );
+      }
+
+      before(() => {
+        process.env.SPANNER_OPTIMIZER_VERSION = OPTIMIZER_VERSION;
+        spannerWithEnvVar = new Spanner({
+          projectId: 'fake-project-id',
+          servicePath: 'localhost',
+          port,
+          sslCreds: grpc.credentials.createInsecure(),
+        });
+        // Gets a reference to a Cloud Spanner instance and database
+        instanceWithEnvVar = spannerWithEnvVar.instance('instance');
+      });
+
+      after(() => {
+        delete process.env.SPANNER_OPTIMIZER_VERSION;
+      });
+
+      it('database.run', async () => {
+        const database = newTestDatabase();
+        try {
+          await database.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('database.run with database-with-query-options', async () => {
+        // The options that are given in the database options will not be used
+        // as they are overridden by the environment variable.
+        const database = newTestDatabase(undefined, {
+          optimizerVersion: 'version-in-db-opts',
+        });
+        try {
+          await database.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('database.run with query-options', async () => {
+        const database = newTestDatabase();
+        try {
+          await database.run({
+            sql: selectSql,
+            queryOptions: {
+              optimizerVersion: 'version-on-query',
+            },
+          });
+          verifyQueryOptions('version-on-query');
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('snapshot.run', async () => {
+        const database = newTestDatabase();
+        try {
+          const [snapshot] = await database.getSnapshot();
+          await snapshot.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+          await snapshot.end();
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('snapshot.run with query-options', async () => {
+        const database = newTestDatabase();
+        try {
+          const [snapshot] = await database.getSnapshot();
+          await snapshot.run({
+            sql: selectSql,
+            queryOptions: {
+              optimizerVersion: 'version-on-query',
+            },
+          });
+          verifyQueryOptions('version-on-query');
+          await snapshot.end();
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('snapshot.run with database-with-query-options', async () => {
+        const database = newTestDatabase(undefined, {
+          optimizerVersion: 'version-in-db-opts',
+        });
+        try {
+          const [snapshot] = await database.getSnapshot();
+          await snapshot.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+          await snapshot.end();
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('transaction.run', done => {
+        const database = newTestDatabase();
+        database.runTransaction(async (err, transaction) => {
+          assert.ifError(err);
+          await transaction!.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+          await transaction!.commit();
+          await database.close();
+          done();
+        });
+      });
+
+      it('transaction.run with query-options', done => {
+        const database = newTestDatabase();
+        database.runTransaction(async (err, transaction) => {
+          assert.ifError(err);
+          await transaction!.run({
+            sql: selectSql,
+            queryOptions: {
+              optimizerVersion: 'version-on-query',
+            },
+          });
+          verifyQueryOptions('version-on-query');
+          await transaction!.commit();
+          await database.close();
+          done();
+        });
+      });
+
+      it('transaction.run with database-with-query-options', done => {
+        const database = newTestDatabase(undefined, {
+          optimizerVersion: 'version-in-db-opts',
+        });
+        database.runTransaction(async (err, transaction) => {
+          assert.ifError(err);
+          await transaction!.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+          await transaction!.commit();
+          await database.close();
+          done();
+        });
+      });
+
+      it('async transaction.run', async () => {
+        const database = newTestDatabase();
+        try {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(selectSql);
+            verifyQueryOptions(OPTIMIZER_VERSION);
+            await transaction.commit();
+          });
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('async transaction.run with query-options', async () => {
+        const database = newTestDatabase();
+        try {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run({
+              sql: selectSql,
+              queryOptions: {
+                optimizerVersion: 'version-on-query',
+              },
+            });
+            verifyQueryOptions('version-on-query');
+            await transaction.commit();
+          });
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('async transaction.run with database-with-query-options', async () => {
+        const database = newTestDatabase(undefined, {
+          optimizerVersion: 'version-in-db-opts',
+        });
+        try {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(selectSql);
+            verifyQueryOptions(OPTIMIZER_VERSION);
+            await transaction.commit();
+          });
+        } finally {
+          await database.close();
+        }
+      });
+    });
+
+    describe('on database options', () => {
+      const OPTIMIZER_VERSION = '40';
+
+      // Request a database with default query options.
+      function newTestDatabase(options?: SessionPoolOptions): Database {
+        return instance.database(`database-${dbCounter++}`, options, {
+          optimizerVersion: OPTIMIZER_VERSION,
+        } as IQueryOptions);
+      }
+
+      it('database.run', async () => {
+        const database = newTestDatabase();
+        try {
+          await database.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('snapshot.run', async () => {
+        const database = newTestDatabase();
+        try {
+          const [snapshot] = await database.getSnapshot();
+          await snapshot.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+          await snapshot.end();
+        } finally {
+          await database.close();
+        }
+      });
+
+      it('transaction.run', done => {
+        const database = newTestDatabase();
+        database.runTransaction(async (err, transaction) => {
+          assert.ifError(err);
+          await transaction!.run(selectSql);
+          verifyQueryOptions(OPTIMIZER_VERSION);
+          await transaction!.commit();
+          await database.close();
+          done();
+        });
+      });
+
+      it('async transaction.run', async () => {
+        const database = newTestDatabase();
+        try {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(selectSql);
+            verifyQueryOptions(OPTIMIZER_VERSION);
+            await transaction.commit();
+          });
+        } finally {
+          await database.close();
+        }
       });
     });
   });

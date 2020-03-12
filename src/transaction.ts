@@ -39,6 +39,8 @@ import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import * as grpc from 'grpc';
+import {Database} from './database';
+import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -70,6 +72,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryMode?: s.QueryMode;
   partitionToken?: Uint8Array | string;
   seqno?: number;
+  queryOptions?: IQueryOptions;
 }
 
 export interface KeyRange {
@@ -198,6 +201,7 @@ export class Snapshot extends EventEmitter {
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
   session: Session;
+  queryOptions?: IQueryOptions;
 
   /**
    * The transaction ID.
@@ -239,12 +243,19 @@ export class Snapshot extends EventEmitter {
    *
    * @param {Session} session The parent Session object.
    * @param {TimestampBounds} [options] Snapshot timestamp bounds.
+   * @param {QueryOptions} [queryOptions] Default query options to use when none
+   *        are specified for a query.
    */
-  constructor(session: Session, options?: TimestampBounds) {
+  constructor(
+    session: Session,
+    options?: TimestampBounds,
+    queryOptions?: IQueryOptions
+  ) {
     super();
 
     this.ended = false;
     this.session = session;
+    this.queryOptions = Object.assign({}, queryOptions);
     this.request = session.request.bind(session);
     this.requestStream = session.requestStream.bind(session);
 
@@ -864,6 +875,10 @@ export class Snapshot extends EventEmitter {
     }
 
     query = Object.assign({}, query) as ExecuteSqlRequest;
+    query.queryOptions = Object.assign(
+      Object.assign({}, this.queryOptions),
+      query.queryOptions
+    );
 
     const {gaxOptions, json, jsonOptions} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
@@ -1185,8 +1200,12 @@ export class Transaction extends Dml {
    *   }
    * });
    */
-  constructor(session: Session, options = {} as s.ReadWrite) {
-    super(session);
+  constructor(
+    session: Session,
+    options = {} as s.ReadWrite,
+    queryOptions?: IQueryOptions
+  ) {
+    super(session, undefined, queryOptions);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
