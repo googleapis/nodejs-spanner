@@ -185,11 +185,7 @@ declare namespace SpannerClient {
     (error: null | ServiceError, response: ExecuteBatchDmlResponse): void;
   }
 
-  enum QueryMode {
-    NORMAL,
-    PLAN,
-    PROFILE
-  }
+  type QueryMode = "NORMAL" | "PLAN" | "PROFILE" | 0 | 1 | 2;
 
   interface ExecuteSqlRequest {
     session: string;

@@ -53,6 +53,7 @@ import {
   ExecuteSqlRequest,
   RunUpdateCallback,
   RunResponse,
+  RunCallback,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -112,7 +113,6 @@ export type UpdateSchemaResponse = [
 
 type PoolRequestCallback = RequestCallback<Session>;
 
-type RunCallback = RequestCallback<Row[]>;
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
@@ -1553,6 +1553,7 @@ class Database extends GrpcServiceObject {
     optionsOrCallback?: TimestampBounds | RunCallback,
     cb?: RunCallback
   ): void | Promise<RunResponse> {
+    let stats: ResultSetStats;
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'
@@ -1565,11 +1566,12 @@ class Database extends GrpcServiceObject {
 
     this.runStream(query, options)
       .on('error', callback!)
+      .on('stats', _stats => (stats = _stats))
       .on('data', row => {
         rows.push(row);
       })
       .on('end', () => {
-        callback!(null, rows);
+        callback!(null, rows, stats);
       });
   }
   runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
@@ -1783,6 +1785,7 @@ class Database extends GrpcServiceObject {
             snapshot.end();
           }
         })
+        .on('stats', stats => proxyStream.emit('stats', stats))
         .once('end', endListener)
         .pipe(proxyStream);
     });
