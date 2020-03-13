@@ -21,7 +21,7 @@ import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {util} from '@google-cloud/common-grpc';
+import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import {Instance} from '../src';
 import { PreciseDate } from '@google-cloud/precise-date';

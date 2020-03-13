@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {PreciseDate} from '@google-cloud/precise-date';
+import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import pLimit from 'p-limit';
@@ -32,7 +32,6 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
 import { status } from 'grpc';
 import { google } from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
