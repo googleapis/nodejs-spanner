@@ -45,7 +45,7 @@ import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
-import {SpannerClient as s} from '../src/v1'
+import {SpannerClient as s} from '../src/v1';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
