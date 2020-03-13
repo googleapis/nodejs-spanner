@@ -45,6 +45,7 @@ import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
+import {SpannerClient as s} from '../src/v1'
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -178,7 +179,7 @@ describe('Spanner with mock server', () => {
       try {
         const [rows, stats] = await database.run({
           sql: selectSql,
-          queryMode: 'PROFILE',
+          queryMode: s.QueryMode.PROFILE,
         });
         assert.strictEqual(rows.length, 3);
         assert.ok(stats);
@@ -194,7 +195,7 @@ describe('Spanner with mock server', () => {
         const [snapshot] = await database.getSnapshot();
         const [rows, stats] = await snapshot.run({
           sql: selectSql,
-          queryMode: 'PROFILE',
+          queryMode: s.QueryMode.PROFILE,
         });
         assert.strictEqual(rows.length, 3);
         assert.ok(stats);
@@ -212,7 +213,7 @@ describe('Spanner with mock server', () => {
       database
         .runStream({
           sql: selectSql,
-          queryMode: 'PROFILE',
+          queryMode: s.QueryMode.PROFILE,
         })
         .on('data', () => rowCount++)
         .on('stats', _stats => (stats = _stats))
@@ -233,7 +234,7 @@ describe('Spanner with mock server', () => {
         snapshot
           .runStream({
             sql: selectSql,
-            queryMode: 'PROFILE',
+            queryMode: s.QueryMode.PROFILE,
           })
           .on('data', () => rowCount++)
           .on('stats', _stats => (stats = _stats))
@@ -252,7 +253,7 @@ describe('Spanner with mock server', () => {
       database.run(
         {
           sql: selectSql,
-          queryMode: 'PROFILE',
+          queryMode: s.QueryMode.PROFILE,
         },
         (err, rows, stats) => {
           assert.ifError(err);
