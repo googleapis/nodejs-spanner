@@ -20,8 +20,7 @@ import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {GrpcService} from '../src/common-grpc/service';
-
-import {SpannerClient as s} from '../src/v1';
+import {google} from '../protos/protos';
 
 describe('codec', () => {
   let codec;
@@ -386,7 +385,7 @@ describe('codec', () => {
       const encoded = expected.toString('base64');
 
       const decoded = codec.decode(encoded, {
-        code: s.TypeCode.BYTES,
+        code: google.spanner.v1.TypeCode.BYTES,
       });
 
       assert.deepStrictEqual(decoded, expected);
@@ -396,7 +395,7 @@ describe('codec', () => {
       const value = 'Infinity';
 
       const decoded = codec.decode(value, {
-        code: s.TypeCode.FLOAT64,
+        code: google.spanner.v1.TypeCode.FLOAT64,
       });
 
       assert(decoded instanceof codec.Float);
@@ -407,7 +406,7 @@ describe('codec', () => {
       const value = '64';
 
       const decoded = codec.decode(value, {
-        code: s.TypeCode.INT64,
+        code: google.spanner.v1.TypeCode.INT64,
       });
 
       assert(decoded instanceof codec.Int);
@@ -418,7 +417,7 @@ describe('codec', () => {
       const value = new Date();
       const expected = new PreciseDate(value.getTime());
       const decoded = codec.decode(value.toJSON(), {
-        code: s.TypeCode.TIMESTAMP,
+        code: google.spanner.v1.TypeCode.TIMESTAMP,
       });
 
       assert.deepStrictEqual(decoded, expected);
@@ -428,7 +427,7 @@ describe('codec', () => {
       const value = new Date();
       const expected = new codec.SpannerDate(value.toISOString());
       const decoded = codec.decode(value.toJSON(), {
-        code: s.TypeCode.DATE,
+        code: google.spanner.v1.TypeCode.DATE,
       });
 
       assert.deepStrictEqual(decoded, expected);
@@ -438,9 +437,9 @@ describe('codec', () => {
       const value = ['1'];
 
       const decoded = codec.decode(value, {
-        code: s.TypeCode.ARRAY,
+        code: google.spanner.v1.TypeCode.ARRAY,
         arrayElementType: {
-          code: s.TypeCode.INT64,
+          code: google.spanner.v1.TypeCode.INT64,
         },
       });
 
@@ -453,13 +452,13 @@ describe('codec', () => {
       };
 
       const decoded = codec.decode(value, {
-        code: s.TypeCode.STRUCT,
+        code: google.spanner.v1.TypeCode.STRUCT,
         structType: {
           fields: [
             {
               name: 'fieldName',
               type: {
-                code: s.TypeCode.INT64,
+                code: google.spanner.v1.TypeCode.INT64,
               },
             },
           ],
@@ -709,37 +708,37 @@ describe('codec', () => {
     it('should convert strings to the corresponding type', () => {
       const typeMap = {
         unspecified: {
-          code: s.TypeCode.TYPE_CODE_UNSPECIFIED,
+          code: google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED,
         },
         bool: {
-          code: s.TypeCode.BOOL,
+          code: google.spanner.v1.TypeCode.BOOL,
         },
         int64: {
-          code: s.TypeCode.INT64,
+          code: google.spanner.v1.TypeCode.INT64,
         },
         float64: {
-          code: s.TypeCode.FLOAT64,
+          code: google.spanner.v1.TypeCode.FLOAT64,
         },
         timestamp: {
-          code: s.TypeCode.TIMESTAMP,
+          code: google.spanner.v1.TypeCode.TIMESTAMP,
         },
         date: {
-          code: s.TypeCode.DATE,
+          code: google.spanner.v1.TypeCode.DATE,
         },
         string: {
-          code: s.TypeCode.STRING,
+          code: google.spanner.v1.TypeCode.STRING,
         },
         bytes: {
-          code: s.TypeCode.BYTES,
+          code: google.spanner.v1.TypeCode.BYTES,
         },
         array: {
-          code: s.TypeCode.ARRAY,
+          code: google.spanner.v1.TypeCode.ARRAY,
           arrayElementType: {
-            code: s.TypeCode.TYPE_CODE_UNSPECIFIED,
+            code: google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED,
           },
         },
         struct: {
-          code: s.TypeCode.STRUCT,
+          code: google.spanner.v1.TypeCode.STRUCT,
           structType: {fields: []},
         },
       };
@@ -754,7 +753,7 @@ describe('codec', () => {
       const type = codec.createTypeObject('unicorn');
 
       assert.deepStrictEqual(type, {
-        code: s.TypeCode.TYPE_CODE_UNSPECIFIED,
+        code: google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED,
       });
     });
 
@@ -765,9 +764,9 @@ describe('codec', () => {
       });
 
       assert.deepStrictEqual(type, {
-        code: s.TypeCode.ARRAY,
+        code: google.spanner.v1.TypeCode.ARRAY,
         arrayElementType: {
-          code: s.TypeCode.BOOL,
+          code: google.spanner.v1.TypeCode.BOOL,
         },
       });
     });
@@ -782,19 +781,19 @@ describe('codec', () => {
       });
 
       assert.deepStrictEqual(type, {
-        code: s.TypeCode.STRUCT,
+        code: google.spanner.v1.TypeCode.STRUCT,
         structType: {
           fields: [
             {
               name: 'boolKey',
               type: {
-                code: s.TypeCode.BOOL,
+                code: google.spanner.v1.TypeCode.BOOL,
               },
             },
             {
               name: 'intKey',
               type: {
-                code: s.TypeCode.INT64,
+                code: google.spanner.v1.TypeCode.INT64,
               },
             },
           ],
@@ -820,19 +819,19 @@ describe('codec', () => {
       });
 
       assert.deepStrictEqual(type, {
-        code: s.TypeCode.STRUCT,
+        code: google.spanner.v1.TypeCode.STRUCT,
         structType: {
           fields: [
             {
               name: 'nestedStruct',
               type: {
-                code: s.TypeCode.STRUCT,
+                code: google.spanner.v1.TypeCode.STRUCT,
                 structType: {
                   fields: [
                     {
                       name: 'boolKey',
                       type: {
-                        code: s.TypeCode.BOOL,
+                        code: google.spanner.v1.TypeCode.BOOL,
                       },
                     },
                   ],

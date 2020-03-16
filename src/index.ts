@@ -46,11 +46,6 @@ import * as gapic from './gapic';
 
 const grpc = require('grpc');
 
-// Import the clients for each version supported by this package.
-const gapic = Object.freeze({
-  v1: require('./v1'),
-});
-
 const gcpApiConfig = require('./spanner_grpc_config.json');
 
 export interface SpannerOptions extends GrpcClientOptions {

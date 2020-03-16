@@ -23,7 +23,7 @@ import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
-import {SpannerClient as s} from '../src/v1';
+import {google} from '../protos/protos';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -808,14 +808,14 @@ describe('Transaction', () => {
       it('should encode param types', () => {
         const fakeTypes = {a: 'string', b: 'number'};
         const expectedTypes = {
-          a: {code: s.TypeCode.STRING},
-          b: {code: s.TypeCode.INT64},
+          a: {code: google.spanner.v1.TypeCode.STRING},
+          b: {code: google.spanner.v1.TypeCode.INT64},
         };
 
         const stub = sandbox.stub(codec, 'createTypeObject');
 
-        stub.withArgs(fakeTypes.a).returns(expectedTypes.a);
-        stub.withArgs(fakeTypes.b).returns(expectedTypes.b);
+        stub.withArgs(fakeTypes.a).returns(expectedTypes.a as google.spanner.v1.Type);
+        stub.withArgs(fakeTypes.b).returns(expectedTypes.b as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({types: fakeTypes});
 
@@ -826,7 +826,7 @@ describe('Transaction', () => {
         const fakeParams = {a: 'foo', b: 3};
         const fakeTypes = {b: 'number'};
         const fakeMissingType = {type: 'string'};
-        const expectedType = {code: s.TypeCode.STRING};
+        const expectedType = {code: google.spanner.v1.TypeCode.STRING};
 
         sandbox
           .stub(codec, 'getType')
@@ -836,7 +836,7 @@ describe('Transaction', () => {
         sandbox
           .stub(codec, 'createTypeObject')
           .withArgs(fakeMissingType)
-          .returns(expectedType);
+          .returns(expectedType as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
