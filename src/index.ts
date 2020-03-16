@@ -41,7 +41,8 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
-import {google} from '../proto/spanner';
+import {google} from '../protos/protos';
+import * as gapic from './gapic';
 
 const grpc = require('grpc');
 
