@@ -18,7 +18,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-import {google as spannerClient} from '../proto/spanner';
+import {google as spannerClient} from '../protos/protos';
 import {SpannerClient as s} from './v1';
 
 // tslint:disable-next-line no-any

@@ -30,7 +30,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google as databaseAdmin} from '../protos/protos';
 import {
   Instance,
   CreateDatabaseOptions,
@@ -62,7 +62,7 @@ import {
   TransactionRunner,
 } from './transaction-runner';
 
-import {google} from '../proto/spanner';
+import {google} from '../protos/protos';
 import {
   Schema,
   RequestCallback,
@@ -74,7 +74,7 @@ import {
 import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {google as spannerClient} from '../proto/spanner';
+import {google as spannerClient} from '../protos/protos';
 import {RequestConfig} from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<

@@ -34,7 +34,7 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {SpannerClient as s} from './v1';
-import {google as spannerClient} from '../proto/spanner';
+import {google as spannerClient} from '../protos/protos';
 import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;

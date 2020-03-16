@@ -27,7 +27,7 @@ import {
   ReadCallback,
   CommitCallback,
 } from './transaction';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google as databaseAdmin} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 
 export type Key = string | string[];
