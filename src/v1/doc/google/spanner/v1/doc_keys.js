@@ -23,7 +23,8 @@
  *
  * Keys are represented by lists, where the ith value in the list
  * corresponds to the ith component of the table or index primary key.
- * Individual values are encoded as described here.
+ * Individual values are encoded as described
+ * here.
  *
  * For example, consider the following table definition:
  *

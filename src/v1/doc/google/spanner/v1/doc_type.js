@@ -155,7 +155,8 @@ const TypeCode = {
 
   /**
    * Encoded as `list`, where the list elements are represented
-   * according to array_element_type.
+   * according to
+   * array_element_type.
    */
   ARRAY: 8,
 

@@ -15,8 +15,8 @@
 module.exports = {
   entry: './src/browser.js',
   output: {
-    library: 'spanner-admin-instance',
-    filename: './spanner-admin-instance.js',
+    library: 'spanner',
+    filename: './spanner.js',
   },
   node: {
     child_process: 'empty',
