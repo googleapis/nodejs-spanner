@@ -44,7 +44,6 @@ const CANCELLED_BACKUP_ID = `test-backup-${date}-c`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
-  apiEndpoint: process.env.API_ENDPOINT
 });
 
 describe('Spanner', () => {

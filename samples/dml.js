@@ -32,8 +32,6 @@ function insertUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -85,8 +83,6 @@ function updateUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -131,8 +127,6 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -176,8 +170,6 @@ function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -223,8 +215,6 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -281,8 +271,6 @@ function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -330,8 +318,6 @@ function writeUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -379,8 +365,6 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -434,8 +418,6 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -542,8 +524,6 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -579,8 +559,6 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -616,8 +594,6 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    // Optional - allow Spanner API endpoint to be configured with environment variable
-    apiEndpoint: process.env.API_ENDPOINT,
   });
 
   // Gets a reference to a Cloud Spanner instance and database
