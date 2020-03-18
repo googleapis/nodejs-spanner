@@ -1,5 +1,5 @@
 /*!
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2020 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,7 @@ type DeleteBackupCallback = RequestCallback<
 >;
 
 /**
- * The {@link Backup} class represents a Cloud Spanner
- * backup.
+ * The {@link Backup} class represents a Cloud Spanner backup.
  *
  * Create a `Backup` object to interact with or create a Cloud Spanner backup.
  *
@@ -94,8 +93,8 @@ class Backup {
    * Create a backup.
    *
    * @method Backup#create
-   * @returns {Promise<CreateBackupResponse>} when resolved, the backup operation will have started, but will not
-   * have necessarily completed.
+   * @returns {Promise<CreateBackupResponse>} when resolved, the backup
+   *     operation will have started, but will not have necessarily completed.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -150,7 +149,8 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#getBackupInfo
-   * @returns {Promise<GetBackupInfoResponse>} when resolved, contains metadata of the backup.
+   * @returns {Promise<GetBackupInfoResponse>} when resolved, contains metadata
+   *     of the backup.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -183,14 +183,16 @@ class Backup {
   }
 
   /**
-   * Retrieves the state of the backup.  The backup state indicates if the backup has completed.
+   * Retrieves the state of the backup.
+   *
+   * The backup state indicates if the backup has completed.
    *
    * @see {@link #getBackupInfo}
    *
    * @method Backup#getState
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>} when
-   *          resolved, contains the current state of the backup if it exists, or undefined if the backup does not
-   *          exist.
+   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
+   *     when resolved, contains the current state of the backup if it exists, or
+   *     undefined if the backup does not exist.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -213,9 +215,9 @@ class Backup {
    * @see {@link #getBackupInfo}
    *
    * @method Backup#getExpireTime
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>} when
-   *          resolved, contains the current expire time of the backup if it exists, or undefined if the backup does not
-   *          exist.
+   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
+   *     when resolved, contains the current expire time of the backup if it exists,
+   *     or undefined if the backup does not exist.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -237,7 +239,8 @@ class Backup {
    * @see {@link #getBackupInfo}
    *
    * @method Backup#exists
-   * @returns {Promise<boolean>} when resolved, contains true if the backup exists and false if it does not exist.
+   * @returns {Promise<boolean>} when resolved, contains true if the backup
+   *     exists and false if it does not exist.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -257,14 +260,12 @@ class Backup {
     try {
       // Attempt to read metadata to determine whether backup exists
       await this.getBackupInfo();
-
       // Found therefore it exists
       return true;
     } catch (err) {
       if (err.code === status.NOT_FOUND) {
         return false;
       }
-
       // Some other error occurred, rethrow
       throw err;
     }
@@ -276,7 +277,8 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#updateExpireTime
-   * @returns {Promise<Backup>} when resolved, the backup's expire time will have been updated.
+   * @returns {Promise<Backup>} when resolved, the backup's expire time will
+   *     have been updated.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');

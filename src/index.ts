@@ -75,7 +75,8 @@ export interface RequestConfig {
 export type EnumKey<E extends {[index: string]: unknown}> = keyof E;
 
 /**
- * Translates an enum property of an object from enum value to enum key, leaving all other properties as-is.
+ * Translates an enum property of an object from enum value to enum key, leaving
+ * all other properties as-is.
  *
  * @param T type containing properties to translate.
  * @param U name of the enum property.

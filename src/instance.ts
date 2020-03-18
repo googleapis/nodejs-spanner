@@ -280,7 +280,9 @@ class Instance extends common.GrpcServiceObject {
    * @property {object} 1 The full API response.
    */
   /**
-   * List backups on the instance.  Both completed and in-progress backups are listed if no filter is supplied.
+   * List backups on the instance.
+   *
+   * Both completed and in-progress backups are listed if no filter is supplied.
    *
    * @see {@link #backup}
    *
@@ -357,7 +359,8 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #listOperations}
    *
    * @param query query object for listing backup operations.
-   * @returns {Promise<ListBackupOperationsResponse>} when resolved, contains a paged list of backup operations.
+   * @returns {Promise<ListBackupOperationsResponse>} when resolved, contains a
+   *     paged list of backup operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');

@@ -1370,7 +1370,8 @@ class Database extends GrpcServiceObject {
    * @see {@link Instance.listDatabaseOperations}
    *
    * @param query query object for listing database operations.
-   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
+   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains
+   *     a paged list of database operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -1381,8 +1382,9 @@ class Database extends GrpcServiceObject {
    */
   async listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse> {
 
-    // Create a query that lists database operations only on this database from the instance
-    // Operation name will be prefixed with the database path for all operations on this database
+    // Create a query that lists database operations only on this database from
+    // the instance. Operation name will be prefixed with the database path for
+    // all operations on this database
     let dbSpecificFilter =
       `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${this.formattedName_}) OR ` +
       `(metadata.@type:RestoreDatabaseMetadata AND metadata.name:${this.formattedName_}) OR ` +
@@ -1479,7 +1481,9 @@ class Database extends GrpcServiceObject {
   }
 
   /**
-   * Restore a backup into this database.  When this call completes, the restore will have commenced but will not
+   * Restore a backup into this database.
+   *
+   * When this call completes, the restore will have commenced but will not
    * necessarily have completed.
    *
    * @param backupPath the path of the backup to restore.
