@@ -93,6 +93,7 @@ has instructions for running the samples.
 | Datatypes | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/datatypes.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/datatypes.js,samples/README.md) |
 | DML | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/dml.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml.js,samples/README.md) |
 | Indexing | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/indexing.js,samples/README.md) |
+| Queryoptions | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/queryoptions.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/queryoptions.js,samples/README.md) |
 | Quickstart | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/quickstart.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/quickstart.js,samples/README.md) |
 | Schema | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/schema.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/schema.js,samples/README.md) |
 | Struct | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/struct.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/struct.js,samples/README.md) |
@@ -126,6 +127,12 @@ More Information: [Google Cloud Platform Launch Stages][launch_stages]
 ## Contributing
 
 Contributions welcome! See the [Contributing Guide](https://github.com/googleapis/nodejs-spanner/blob/master/CONTRIBUTING.md).
+
+Please note that this `README.md`, the `samples/README.md`,
+and a variety of configuration files in this repository (including `.nycrc` and `tsconfig.json`)
+are generated from a central template. To edit one of these files, make an edit
+to its template in this
+[directory](https://github.com/googleapis/synthtool/tree/master/synthtool/gcp/templates/node_library).
 
 ## License
 
