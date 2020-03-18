@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,13 +39,20 @@ async function listBackupOperations(instanceId, databaseId, projectId) {
   // List backup operations
   try {
     const [backupOperations] = await instance.listBackupOperations({
-      filter: `(metadata.database:${databaseId}) AND (metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`
+      filter: `(metadata.database:${databaseId}) AND (metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
     });
     console.log('Backup Operations:');
     backupOperations.forEach(backupOperation => {
-      console.log(backupOperation.name + (backupOperation.done
-                  ? ' (completed)'
-                  : ` (in progress - ${google.spanner.admin.database.v1.CreateBackupMetadata.decode(backupOperation.metadata.value).progress.progressPercent}%)`));
+      console.log(
+        backupOperation.name +
+          (backupOperation.done
+            ? ' (completed)'
+            : ` (in progress - ${
+                google.spanner.admin.database.v1.CreateBackupMetadata.decode(
+                  backupOperation.metadata.value
+                ).progress.progressPercent
+              }%)`)
+      );
     });
   } catch (err) {
     console.error('ERROR:', err);

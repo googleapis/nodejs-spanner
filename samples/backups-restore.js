@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,8 +38,12 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   const database = instance.database(databaseId);
 
   // Restore the database
-  console.log(`Restoring database ${database.formattedName_} from backup ${backupId}.`);
-  const [restoreOperation] = await database.restore(`projects/${projectId}/instances/${instanceId}/backups/${backupId}`);
+  console.log(
+    `Restoring database ${database.formattedName_} from backup ${backupId}.`
+  );
+  const [restoreOperation] = await database.restore(
+    `projects/${projectId}/instances/${instanceId}/backups/${backupId}`
+  );
 
   // Wait for restore to complete
   console.log(`Waiting for database restore to complete...`);

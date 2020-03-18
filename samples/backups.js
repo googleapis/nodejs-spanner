@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,14 @@
 
 const {createBackup} = require('./backups-create');
 const {cancelBackup} = require('./backups-cancel');
-const {listBackups, listBackupsByDatabase, listBackupsByName, listSmallBackups, listNewBackups, listBackupsPaginated} = require('./backups-list');
+const {
+  listBackups,
+  listBackupsByDatabase,
+  listBackupsByName,
+  listSmallBackups,
+  listNewBackups,
+  listBackupsPaginated,
+} = require('./backups-list');
 const {listBackupOperations} = require('./backups-list-operations');
 const {listDatabaseOperations} = require('./backups-list-database-operations');
 const {updateBackupExpireTime} = require('./backups-update');
@@ -30,13 +37,25 @@ require(`yargs`)
     `createBackup <instanceName> <databaseName> <backupName> <projectId>`,
     `Creates a backup of a Cloud Spanner database.`,
     {},
-    opts => createBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+    opts =>
+      createBackup(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId
+      )
   )
   .command(
     `cancelBackup <instanceName> <databaseName> <backupName> <projectId>`,
     `Creates and cancels a backup of a Cloud Spanner database.`,
     {},
-    opts => cancelBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+    opts =>
+      cancelBackup(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId
+      )
   )
   .command(
     `listBackups <instanceName> <projectId>`,
@@ -48,7 +67,8 @@ require(`yargs`)
     `listBackupsByDatabase <instanceName> <databaseId> <projectId>`,
     `Lists all backups for the specified database.`,
     {},
-    opts => listBackupsByDatabase(opts.instanceName, opts.databaseId, opts.projectId)
+    opts =>
+      listBackupsByDatabase(opts.instanceName, opts.databaseId, opts.projectId)
   )
   .command(
     `listBackupsByName <instanceName> <backupId> <projectId>`,
@@ -78,7 +98,8 @@ require(`yargs`)
     `listBackupOperations <instanceName> <databaseName> <projectId>`,
     `Lists all backup operations in the instance.`,
     {},
-    opts => listBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      listBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
     `listDatabaseOperations <instanceName> <projectId>`,
@@ -90,21 +111,41 @@ require(`yargs`)
     `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,
     `Updates the expire time of a backup.`,
     {},
-    opts => updateBackupExpireTime(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+    opts =>
+      updateBackupExpireTime(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId
+      )
   )
   .command(
     `restoreBackup <instanceName> <databaseName> <backupName> <projectId>`,
     `Restores a Cloud Spanner database from a backup.`,
     {},
-    opts => restoreBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
+    opts =>
+      restoreBackup(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId
+      )
   )
   .command(
     `deleteBackup <instanceName> <databaseName> <backupName> <projectId>`,
     `Deletes a backup.`,
     {},
-    opts => deleteBackup(opts.instanceName, opts.databaseName, opts.backupName, opts.projectId)
-    )
-  .example(`node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"`)
+    opts =>
+      deleteBackup(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId
+      )
+  )
+  .example(
+    `node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"`
+  )
   .wrap(120)
   .recommendCommands()
   .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)

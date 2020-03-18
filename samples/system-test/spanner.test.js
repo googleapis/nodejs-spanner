@@ -698,7 +698,7 @@ describe('Spanner', () => {
   // create_backup
   it(`should create a backup of the database`, async () => {
     const output = execSync(
-        `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup created./);
   });
@@ -706,7 +706,7 @@ describe('Spanner', () => {
   // cancel_backup
   it(`should cancel a backup of the database`, async () => {
     const output = execSync(
-        `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup cancelled./);
   });
@@ -714,91 +714,70 @@ describe('Spanner', () => {
   // list_backups
   it(`should list backups in the instance`, async () => {
     const output = execSync(
-        `${backupsCmd} listBackups ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listBackups ${INSTANCE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backups:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}`));
   });
 
   // list_backups_by_database
   it(`should list backups for a database`, async () => {
     const output = execSync(
-        `${backupsCmd} listBackupsByDatabase ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listBackupsByDatabase ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backups:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}`));
   });
 
   // list_backups_by_name
   it(`should list backups by backup name`, async () => {
     const output = execSync(
-        `${backupsCmd} listBackupsByName ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} listBackupsByName ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backups:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}`));
   });
 
   // list_small_backups
   it(`should list small backups on the instance`, async () => {
     const output = execSync(
-        `${backupsCmd} listSmallBackups ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listSmallBackups ${INSTANCE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backups:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}`));
   });
 
   // list_new_backups
   it(`should list new backups on the instance`, async () => {
     const output = execSync(
-        `${backupsCmd} listNewBackups ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listNewBackups ${INSTANCE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backups:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}`));
   });
 
   // list_backups_paginated
   it(`should list backups using pagination`, async () => {
     const output = execSync(
-        `${backupsCmd} listBackupsPaginated ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listBackupsPaginated ${INSTANCE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backups:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}`));
   });
 
   // list_backup_operations
   it(`should list backup operations in the instance`, async () => {
     const output = execSync(
-        `${backupsCmd} listBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup Operations:/);
-    assert.match(
-        output,
-        new RegExp(`${BACKUP_ID}/operations/`)
-    );
+    assert.match(output, new RegExp(`${BACKUP_ID}/operations/`));
   });
 
   // list_database_operations
   it(`should list database operations in the instance`, async () => {
     const output = execSync(
-        `${backupsCmd} listDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Database Operations:/);
   });
@@ -806,7 +785,7 @@ describe('Spanner', () => {
   // update_backup_expire_time
   it(`should update the expire time of a backup`, async () => {
     const output = execSync(
-        `${backupsCmd} updateBackupExpireTime ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} updateBackupExpireTime ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Expire time updated./);
   });
@@ -814,14 +793,13 @@ describe('Spanner', () => {
   // restore_backup
   it(`should restore database from a backup`, async () => {
     const output = execSync(
-        `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Database restored from backup./);
   });
 
   // delete_backup
   it(`should delete a backup`, async () => {
-
     function sleep(timeMillis) {
       return new Promise(resolve => setTimeout(resolve, timeMillis));
     }
@@ -829,12 +807,12 @@ describe('Spanner', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(RESTORE_DATABASE_ID);
-    while (await database.getState() === 'READY_OPTIMIZING') {
+    while ((await database.getState()) === 'READY_OPTIMIZING') {
       await sleep(1000);
     }
 
     const output = execSync(
-        `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup deleted./);
   });

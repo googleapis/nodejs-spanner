@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,12 @@
 
 'use strict';
 
-async function updateBackupExpireTime(instanceId, databaseId, backupId, projectId) {
+async function updateBackupExpireTime(
+  instanceId,
+  databaseId,
+  backupId,
+  projectId
+) {
   // [START spanner_update_backup]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
@@ -45,7 +50,9 @@ async function updateBackupExpireTime(instanceId, databaseId, backupId, projectI
     const currentExpireTime = await backup.getExpireTime();
     const newExpireTime = new PreciseDate(currentExpireTime);
     newExpireTime.setDate(newExpireTime.getDate() + 30);
-    console.log(`Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`);
+    console.log(
+      `Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`
+    );
     console.log(`Updating expire time to ${newExpireTime.toISOString()}`);
     await backup.updateExpireTime(newExpireTime);
     console.log('Expire time updated.');

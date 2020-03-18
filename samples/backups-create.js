@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
   const databasePath = database.formattedName_;
-  const expireTime =  new PreciseDate(Date.now() + 1000 * 60 * 60 * 24); // one day in the future
+  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24); // one day in the future
   const backup = instance.backup(backupId, databasePath, expireTime);
 
   // Creates a new backup of the database
@@ -55,7 +55,9 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
       console.log('Backup created.');
       console.log(`Name: ${backupInfo.name}`);
       console.log(`Size: ${backupInfo.sizeBytes} bytes`);
-      console.log(`Created: ${new PreciseDate(backupInfo.createTime).toISOString()}`);
+      console.log(
+        `Created: ${new PreciseDate(backupInfo.createTime).toISOString()}`
+      );
     } else {
       console.error('ERROR: Backup is not ready.');
     }

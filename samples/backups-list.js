@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,21 +53,23 @@ async function listBackupsByDatabase(instanceId, databaseId, projectId) {
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
-      // const projectId = 'my-project-id';
-      // const databaseId = 'my-database';
-      // const instanceId = 'my-instance';
+  // const projectId = 'my-project-id';
+  // const databaseId = 'my-database';
+  // const instanceId = 'my-instance';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-      });
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
 
   // List backups and print their names
   try {
-    const [backups] = await instance.listBackups({filter: `Database:${databaseId}`});
+    const [backups] = await instance.listBackups({
+      filter: `Database:${databaseId}`,
+    });
     console.log('Backups:');
     backups.forEach(backup => {
       console.log(backup.backupId);
@@ -84,14 +86,14 @@ async function listBackupsByName(instanceId, backupId, projectId) {
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
-      // const projectId = 'my-project-id';
-      // const databaseId = 'my-database';
-      // const instanceId = 'my-instance';
+  // const projectId = 'my-project-id';
+  // const databaseId = 'my-database';
+  // const instanceId = 'my-instance';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-      });
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
@@ -115,13 +117,13 @@ async function listNewBackups(instanceId, projectId) {
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
-      // const projectId = 'my-project-id';
-      // const instanceId = 'my-instance';
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-      });
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
@@ -133,7 +135,9 @@ async function listNewBackups(instanceId, projectId) {
     minCreateTime.setDate(minCreateTime.getDate() - 1);
     maxExpireTime.setDate(maxExpireTime.getDate() + 3);
 
-    const [backups] = await instance.listBackups({filter: `(state:READY) AND (create_time > "${minCreateTime.toISOString()}") AND (expire_time < "${maxExpireTime.toISOString()}")`});
+    const [backups] = await instance.listBackups({
+      filter: `(state:READY) AND (create_time > "${minCreateTime.toISOString()}") AND (expire_time < "${maxExpireTime.toISOString()}")`,
+    });
     console.log('Backups:');
     backups.forEach(backup => {
       console.log(backup.backupId);
@@ -150,20 +154,22 @@ async function listSmallBackups(instanceId, projectId) {
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
-      // const projectId = 'my-project-id';
-      // const instanceId = 'my-instance';
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-      });
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
 
   // List backups and print their names
   try {
-    const [backups] = await instance.listBackups({filter: '(state:READY) AND (size_bytes < 65536)'});
+    const [backups] = await instance.listBackups({
+      filter: '(state:READY) AND (size_bytes < 65536)',
+    });
     console.log('Backups:');
     backups.forEach(backup => {
       console.log(backup.backupId);
@@ -180,13 +186,13 @@ async function listBackupsPaginated(instanceId, projectId) {
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
-      // const projectId = 'my-project-id';
-      // const instanceId = 'my-instance';
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
 
-      // Creates a client
+  // Creates a client
   const spanner = new Spanner({
-        projectId: projectId,
-      });
+    projectId: projectId,
+  });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
@@ -196,7 +202,11 @@ async function listBackupsPaginated(instanceId, projectId) {
     let pageToken = undefined;
     console.log('Backups:');
     do {
-      const [backups,, response] = await instance.listBackups({autoPaginate: false, pageSize: 3, pageToken});
+      const [backups, , response] = await instance.listBackups({
+        autoPaginate: false,
+        pageSize: 3,
+        pageToken,
+      });
       backups.forEach(backup => {
         console.log(backup.backupId);
       });

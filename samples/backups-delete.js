@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,46 +16,46 @@
 'use strict';
 
 async function deleteBackup(instanceId, databaseId, backupId, projectId) {
-    // [START spanner_delete_backup]
-    // Imports the Google Cloud client library
-    const {Spanner} = require('@google-cloud/spanner');
+  // [START spanner_delete_backup]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
 
-    /**
-     * TODO(developer): Uncomment the following lines before running the sample.
-     */
-    // const projectId = 'my-project-id';
-    // const instanceId = 'my-instance';
-    // const databaseId = 'my-database';
-    // const backupId = 'my-backup';
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
 
-    // Creates a client
-    const spanner = new Spanner({
-      projectId: projectId,
-    });
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
 
-    // Gets a reference to a Cloud Spanner instance and database
-    const instance = spanner.instance(instanceId);
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
 
-    // Find backup to delete
-    const [backups] = await instance.listBackups({filter:`name:${backupId}`});
-    if (backups.length < 1) {
-        console.error(`Backup ${backupId} not found.`);
-        return;
-    }
-    const backup = backups[0];
+  // Find backup to delete
+  const [backups] = await instance.listBackups({filter: `name:${backupId}`});
+  if (backups.length < 1) {
+    console.error(`Backup ${backupId} not found.`);
+    return;
+  }
+  const backup = backups[0];
 
-    // Delete the backup
-    console.log(`Deleting backup ${backupId}.`);
-    await backup.deleteBackup();
+  // Delete the backup
+  console.log(`Deleting backup ${backupId}.`);
+  await backup.deleteBackup();
 
-    // Verify backup no longer exists
-    const exists = await backup.exists();
-    if (exists) {
-        console.error('Error: backup still exists.');
-    } else {
-        console.log(`Backup deleted.`);
-    }
-    // [END spanner_delete_backup]
+  // Verify backup no longer exists
+  const exists = await backup.exists();
+  if (exists) {
+    console.error('Error: backup still exists.');
+  } else {
+    console.log(`Backup deleted.`);
+  }
+  // [END spanner_delete_backup]
 }
 
 module.exports.deleteBackup = deleteBackup;

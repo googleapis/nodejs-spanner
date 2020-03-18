@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,10 @@ async function listDatabaseOperations(instanceId, projectId) {
     const [databaseOperations] = await instance.listDatabaseOperations();
     console.log('Database Operations:');
     databaseOperations.forEach(databaseOperation => {
-      console.log(databaseOperation.name + (databaseOperation.done ? ' (completed)' : ' (in progress)'));
+      console.log(
+        databaseOperation.name +
+          (databaseOperation.done ? ' (completed)' : ' (in progress)')
+      );
     });
   } catch (err) {
     console.error('ERROR:', err);
