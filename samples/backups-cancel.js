@@ -37,8 +37,10 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
+
   const databasePath = database.formattedName_;
-  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24); // one day in the future
+  // Expire backup one day in the future
+  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
   const backup = instance.backup(backupId, databasePath, expireTime);
 
   // Creates a new backup of the database
@@ -53,7 +55,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    // Delete backup in case it got created before there was a chance to cancel it
+    // Delete backup in case it got created before the cancel operation
     await backup.deleteBackup();
 
     // Close the database when finished.

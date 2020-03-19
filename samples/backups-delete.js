@@ -33,16 +33,9 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database
+  // Gets a reference to a Cloud Spanner instance and backup
   const instance = spanner.instance(instanceId);
-
-  // Find backup to delete
-  const [backups] = await instance.listBackups({filter: `name:${backupId}`});
-  if (backups.length < 1) {
-    console.error(`Backup ${backupId} not found.`);
-    return;
-  }
-  const backup = backups[0];
+  const backup = instance.backup(backupId);
 
   // Delete the backup
   console.log(`Deleting backup ${backupId}.`);

@@ -39,7 +39,7 @@ async function updateBackupExpireTime(
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database
+  // Gets a reference to a Cloud Spanner instance, database and backup
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
   const databasePath = database.formattedName_;
