@@ -28,8 +28,8 @@ import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
 import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
-import { Backup } from '../src/backup';
-import { PreciseDate } from '@google-cloud/precise-date';
+import {Backup} from '../src/backup';
+import {PreciseDate} from '@google-cloud/precise-date';
 
 const fakePaginator = {
   paginator: {
@@ -1000,7 +1000,7 @@ describe('Instance', () => {
         {
           name: 'backup-name',
           database: 'database-name',
-          expireTime: new PreciseDate(1000)
+          expireTime: new PreciseDate(1000),
         },
       ];
 
@@ -1019,7 +1019,10 @@ describe('Instance', () => {
         instance.backup = (backupId, databasePath, expireTime) => {
           assert.strictEqual(backupId, BACKUPS[0].name);
           assert.strictEqual(databasePath, BACKUPS[0].database);
-          assert.strictEqual(expireTime.getFullTime(), BACKUPS[0].expireTime.getFullTime());
+          assert.strictEqual(
+            expireTime.getFullTime(),
+            BACKUPS[0].expireTime.getFullTime()
+          );
           return fakeBackupInstance as Backup;
         };
 
@@ -1048,7 +1051,10 @@ describe('Instance', () => {
 
     it('should create a Backup instance', () => {
       const backup = instance.backup(BACKUP_NAME, DATABASE_NAME, EXPIRE_TIME);
-      assert.strictEqual(backup.formattedName_, 'projects/project-id/instances/instance-name/backups/backup-name');
+      assert.strictEqual(
+        backup.formattedName_,
+        'projects/project-id/instances/instance-name/backups/backup-name'
+      );
     });
 
     it('should create a backup from a Backup instance', done => {
@@ -1056,10 +1062,12 @@ describe('Instance', () => {
         parent: instance.formattedName_,
         backupId: BACKUP_NAME,
         backup: {
-          name: 'projects/project-id/instances/instance-name/backups/backup-name',
-          database: 'projects/project-id/instances/instance-name/database/database-name',
-          expireTime: { seconds: 3, nanos: 5 }
-        }
+          name:
+            'projects/project-id/instances/instance-name/backups/backup-name',
+          database:
+            'projects/project-id/instances/instance-name/database/database-name',
+          expireTime: {seconds: 3, nanos: 5},
+        },
       };
       instance.request = config => {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
@@ -1068,7 +1076,12 @@ describe('Instance', () => {
         done();
       };
 
-      const backup = new Backup(instance, BACKUP_NAME, 'projects/project-id/instances/instance-name/database/database-name', EXPIRE_TIME);
+      const backup = new Backup(
+        instance,
+        BACKUP_NAME,
+        'projects/project-id/instances/instance-name/database/database-name',
+        EXPIRE_TIME
+      );
       backup.create();
     });
   });

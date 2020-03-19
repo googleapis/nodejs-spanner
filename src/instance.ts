@@ -35,10 +35,10 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
-import { google, google as databaseAdmin } from '../proto/spanner_database_admin';
+import {google, google as databaseAdmin} from '../proto/spanner_database_admin';
 import {google as spannerClient} from '../proto/spanner';
-import { Backup } from './backup';
-import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
+import {Backup} from './backup';
+import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import IBackup = google.spanner.admin.database.v1.IBackup;
 
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -98,7 +98,8 @@ export interface ListBackupOperationsRequest
   maxResults?: number;
 }
 export interface ListDatabaseOperationsRequest
-  extends databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest {
+  extends databaseAdmin.spanner.admin.database.v1
+    .IListDatabaseOperationsRequest {
   autoPaginate?: boolean;
   maxApiCalls?: number;
   maxResults?: number;
@@ -254,7 +255,11 @@ class Instance extends common.GrpcServiceObject {
    * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
    * const backup = instance.backup('my-backup', 'projects/my-project/instances/my-instance/databases/my-database', backupExpiryDate);
    */
-  backup(backupId: string, databasePath: string, expireTime: PreciseDate): Backup {
+  backup(
+    backupId: string,
+    databasePath: string,
+    expireTime: PreciseDate
+  ): Backup {
     if (!backupId) {
       throw new Error('A backup ID is required to create a backup.');
     }
@@ -303,7 +308,6 @@ class Instance extends common.GrpcServiceObject {
     queryOrCallback?: ListBackupsRequest | ListBackupsCallback,
     cb?: ListBackupsCallback
   ): void | Promise<ListBackupsResponse> {
-
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
@@ -326,8 +330,14 @@ class Instance extends common.GrpcServiceObject {
         if (rowBackups) {
           backups = rowBackups.map(rowBackup => {
             const rowBackupName = rowBackup.name!;
-            const backupId = rowBackupName.substring(rowBackupName.lastIndexOf('/') + 1);
-            return this.backup(backupId, rowBackup.database!, new PreciseDate(rowBackup.expireTime as DateStruct))
+            const backupId = rowBackupName.substring(
+              rowBackupName.lastIndexOf('/') + 1
+            );
+            return this.backup(
+              backupId,
+              rowBackup.database!,
+              new PreciseDate(rowBackup.expireTime as DateStruct)
+            );
           });
         }
 
@@ -368,13 +378,21 @@ class Instance extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const [operations] = await instance.listBackupOperations();
    */
-  listBackupOperations(query?: ListBackupOperationsRequest): Promise<ListBackupOperationsResponse>;
+  listBackupOperations(
+    query?: ListBackupOperationsRequest
+  ): Promise<ListBackupOperationsResponse>;
   listBackupOperations(callback: ListBackupOperationsCallback): void;
-  listBackupOperations(query: ListBackupOperationsRequest, callback: ListBackupOperationsCallback): void;
+  listBackupOperations(
+    query: ListBackupOperationsRequest,
+    callback: ListBackupOperationsCallback
+  ): void;
 
-  listBackupOperations(queryOrCallback?: ListBackupOperationsRequest | ListBackupOperationsCallback,
-                       cb?: ListBackupOperationsCallback): void | Promise<ListBackupOperationsResponse> {
-
+  listBackupOperations(
+    queryOrCallback?:
+      | ListBackupOperationsRequest
+      | ListBackupOperationsCallback,
+    cb?: ListBackupOperationsCallback
+  ): void | Promise<ListBackupOperationsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
@@ -430,13 +448,21 @@ class Instance extends common.GrpcServiceObject {
    * const [operations] = await instance.listDatabaseOperations();
    * // ... then do something with the operations
    */
-  listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse>;
+  listDatabaseOperations(
+    query?: ListDatabaseOperationsRequest
+  ): Promise<ListDatabaseOperationsResponse>;
   listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
-  listDatabaseOperations(query: ListDatabaseOperationsRequest, callback: ListDatabaseOperationsCallback): void;
+  listDatabaseOperations(
+    query: ListDatabaseOperationsRequest,
+    callback: ListDatabaseOperationsCallback
+  ): void;
 
-  listDatabaseOperations(queryOrCallback?: ListDatabaseOperationsRequest | ListDatabaseOperationsCallback,
-                         cb?: ListDatabaseOperationsCallback): void | Promise<ListDatabaseOperationsResponse> {
-
+  listDatabaseOperations(
+    queryOrCallback?:
+      | ListDatabaseOperationsRequest
+      | ListDatabaseOperationsCallback,
+    cb?: ListDatabaseOperationsCallback
+  ): void | Promise<ListDatabaseOperationsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =

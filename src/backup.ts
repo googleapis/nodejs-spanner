@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import { promisifyAll } from '@google-cloud/promisify';
-import { google as databaseAdmin } from '../proto/spanner_database_admin';
-import { Instance, } from './instance';
-import { RequestCallback, ResourceCallback, } from './common';
-import { EnumKey, RequestConfig, TranslateEnumKeys } from '.';
-import { Metadata, Operation as GaxOperation } from 'google-gax';
+import {promisifyAll} from '@google-cloud/promisify';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {Instance} from './instance';
+import {RequestCallback, ResourceCallback} from './common';
+import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import {Metadata, Operation as GaxOperation} from 'google-gax';
 import * as extend from 'extend';
-import { DateStruct, PreciseDate } from '@google-cloud/precise-date';
-import { status } from "grpc";
+import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
+import {status} from 'grpc';
 
 export type CreateBackupCallback = ResourceCallback<
   GaxOperation,
@@ -30,7 +30,8 @@ export type CreateBackupCallback = ResourceCallback<
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
-  metadata: Metadata & databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata;
+  metadata: Metadata &
+    databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata;
 }
 
 export type CreateBackupResponse = [
@@ -41,20 +42,18 @@ export type CreateBackupResponse = [
 /**
  * IBackup structure with backup state enum translated to string form.
  */
-type IBackupTranslatedEnum = TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IBackup, 'state', typeof databaseAdmin.spanner.admin.database.v1.Backup.State>;
+type IBackupTranslatedEnum = TranslateEnumKeys<
+  databaseAdmin.spanner.admin.database.v1.IBackup,
+  'state',
+  typeof databaseAdmin.spanner.admin.database.v1.Backup.State
+>;
 
 export type GetBackupInfoResponse = [IBackupTranslatedEnum];
-type GetBackupInfoCallback = RequestCallback<
-  IBackupTranslatedEnum
->;
+type GetBackupInfoCallback = RequestCallback<IBackupTranslatedEnum>;
 
-type UpdateExpireTimeCallback = RequestCallback<
-  Backup
->;
+type UpdateExpireTimeCallback = RequestCallback<Backup>;
 
-type DeleteBackupCallback = RequestCallback<
-  void
->;
+type DeleteBackupCallback = RequestCallback<void>;
 
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
@@ -70,7 +69,6 @@ type DeleteBackupCallback = RequestCallback<
  * const backup = instance.backup('my-backup');
  */
 class Backup {
-
   request: <T, R = void>(
     config: RequestConfig,
     callback: RequestCallback<T, R>
@@ -85,7 +83,8 @@ class Backup {
     private expireTime?: PreciseDate
   ) {
     this.request = instance.request;
-    this.formattedName_ = this.instance.formattedName_ + '/backups/' + this.backupId;
+    this.formattedName_ =
+      this.instance.formattedName_ + '/backups/' + this.backupId;
   }
 
   /**
@@ -112,7 +111,6 @@ class Backup {
   create(
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-
     if (!this.expireTime) {
       throw new Error('Expire time is required to create a backup.');
     }
@@ -127,8 +125,8 @@ class Backup {
         backup: {
           database: this.databasePath,
           expireTime: this.expireTime.toStruct(),
-          name: this.formattedName_
-        }
+          name: this.formattedName_,
+        },
       }
     );
     return this.request(
@@ -201,7 +199,10 @@ class Backup {
    * const state = await backup.getState();
    * const backupCompleted = (state === 'READY');
    */
-  async getState(): Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined> {
+  async getState(): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
+    | undefined
+  > {
     const [backupInfo] = await this.getBackupInfo();
     const state = backupInfo.state;
     return state === null || state === undefined ? undefined : state;
@@ -288,22 +289,24 @@ class Backup {
    * await myBackup.updateExpireTime(newExpireTime);
    */
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
-  updateExpireTime(expireTime: PreciseDate, callback: UpdateExpireTimeCallback): void;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    callback: UpdateExpireTimeCallback
+  ): void;
   updateExpireTime(
     expireTime: PreciseDate,
     callback?: UpdateExpireTimeCallback
   ): void | Promise<Backup> {
-
     this.expireTime = expireTime;
 
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
         name: this.formattedName_,
-        expireTime: expireTime.toStruct()
+        expireTime: expireTime.toStruct(),
       },
       updateMask: {
-        paths: ['expire_time']
-      }
+        paths: ['expire_time'],
+      },
     };
     return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
@@ -311,7 +314,7 @@ class Backup {
         method: 'updateBackup',
         reqOpts,
       },
-      (err) => {
+      err => {
         callback!(err, err ? undefined : this);
       }
     );
@@ -332,12 +335,9 @@ class Backup {
    */
   deleteBackup(): Promise<void>;
   deleteBackup(callback: DeleteBackupCallback): void;
-  deleteBackup(
-    callback?: DeleteBackupCallback
-  ): void | Promise<void> {
-
+  deleteBackup(callback?: DeleteBackupCallback): void | Promise<void> {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
-      name: this.formattedName_
+      name: this.formattedName_,
     };
     return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
@@ -345,7 +345,7 @@ class Backup {
         method: 'deleteBackup',
         reqOpts,
       },
-      (err) => {
+      err => {
         callback!(err, null);
       }
     );
@@ -358,11 +358,7 @@ class Backup {
  * that a callback is omitted.
  */
 promisifyAll(Backup, {
-  exclude: [
-    'getState',
-    'getExpireTime',
-    'exists'
-  ],
+  exclude: ['getState', 'getExpireTime', 'exists'],
 });
 
 /**

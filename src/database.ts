@@ -34,7 +34,9 @@ import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {
   Instance,
   CreateDatabaseOptions,
-  CreateDatabaseCallback, ListDatabaseOperationsRequest, ListDatabaseOperationsResponse,
+  CreateDatabaseCallback,
+  ListDatabaseOperationsRequest,
+  ListDatabaseOperationsResponse,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -75,7 +77,7 @@ import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../proto/spanner';
-import { EnumKey, RequestConfig, TranslateEnumKeys } from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -120,22 +122,26 @@ type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 /**
  * IDatabase structure with database state enum translated to string form.
  */
-type IDatabaseTranslatedEnum =
-  Omit<
-    TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IDatabase, 'state', typeof databaseAdmin.spanner.admin.database.v1.Database.State>,
-    'restoreInfo'
-  > & { restoreInfo?: IRestoreInfoTranslatedEnum | null };
+type IDatabaseTranslatedEnum = Omit<
+  TranslateEnumKeys<
+    databaseAdmin.spanner.admin.database.v1.IDatabase,
+    'state',
+    typeof databaseAdmin.spanner.admin.database.v1.Database.State
+  >,
+  'restoreInfo'
+> & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
 
 /**
  * IRestoreInfo structure with restore source type enum translated to string form.
  */
-type IRestoreInfoTranslatedEnum =
-  TranslateEnumKeys<databaseAdmin.spanner.admin.database.v1.IRestoreInfo, 'sourceType', typeof databaseAdmin.spanner.admin.database.v1.RestoreSourceType>;
+type IRestoreInfoTranslatedEnum = TranslateEnumKeys<
+  databaseAdmin.spanner.admin.database.v1.IRestoreInfo,
+  'sourceType',
+  typeof databaseAdmin.spanner.admin.database.v1.RestoreSourceType
+>;
 
 type GetMetadataResponse = [IDatabaseTranslatedEnum];
-type GetMetadataCallback = RequestCallback<
-  IDatabaseTranslatedEnum
->;
+type GetMetadataCallback = RequestCallback<IDatabaseTranslatedEnum>;
 
 type GetSchemaCallback = RequestCallback<
   string,
@@ -198,7 +204,7 @@ export interface CancelableDuplex extends Duplex {
 export type RestoreDatabaseCallback = ResourceCallback<
   GaxOperation,
   databaseAdmin.longrunning.IOperation
-  >;
+>;
 
 export type RestoreDatabaseResponse = [
   GaxOperation,
@@ -1007,12 +1013,19 @@ class Database extends GrpcServiceObject {
 
   async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
     const [metadata] = await this.getMetadata();
-    return metadata.restoreInfo === null || metadata.restoreInfo === undefined ? undefined : metadata.restoreInfo;
-  };
+    return metadata.restoreInfo === null || metadata.restoreInfo === undefined
+      ? undefined
+      : metadata.restoreInfo;
+  }
 
-  async getState(): Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State> | undefined> {
+  async getState(): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
+    | undefined
+  > {
     const [metadata] = await this.getMetadata();
-    return metadata.state === null || metadata.state === undefined ? undefined : metadata.state;
+    return metadata.state === null || metadata.state === undefined
+      ? undefined
+      : metadata.state;
   }
 
   getSchema(): Promise<GetSchemaResponse>;
@@ -1380,8 +1393,9 @@ class Database extends GrpcServiceObject {
    * const database = instance.database('my-database');
    * const [operations] = await database.listDatabaseOperations();
    */
-  async listDatabaseOperations(query?: ListDatabaseOperationsRequest): Promise<ListDatabaseOperationsResponse> {
-
+  async listDatabaseOperations(
+    query?: ListDatabaseOperationsRequest
+  ): Promise<ListDatabaseOperationsResponse> {
     // Create a query that lists database operations only on this database from
     // the instance. Operation name will be prefixed with the database path for
     // all operations on this database
@@ -1394,10 +1408,10 @@ class Database extends GrpcServiceObject {
     }
     const dbSpecificQuery: ListDatabaseOperationsRequest = {
       ...query,
-      filter: dbSpecificFilter
+      filter: dbSpecificFilter,
     };
 
-    return await this.instance.listDatabaseOperations(dbSpecificQuery);
+    return this.instance.listDatabaseOperations(dbSpecificQuery);
   }
 
   makePooledRequest_(config: RequestConfig): Promise<Session>;
@@ -1501,13 +1515,15 @@ class Database extends GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
 
-  restore(backupPath: string, callback?: RestoreDatabaseCallback): Promise<RestoreDatabaseResponse> | void {
-
+  restore(
+    backupPath: string,
+    callback?: RestoreDatabaseCallback
+  ): Promise<RestoreDatabaseResponse> | void {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = extend(
       {
         parent: this.instance.formattedName_,
         databaseId: this.id,
-        backup: backupPath
+        backup: backupPath,
       }
     );
     return this.request(

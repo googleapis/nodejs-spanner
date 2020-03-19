@@ -2207,7 +2207,7 @@ describe('Database', () => {
 
   describe('getState', () => {
     it('should get state from database metadata', async () => {
-      database.getMetadata = async () => [{ state: 'READY' }];
+      database.getMetadata = async () => [{state: 'READY'}];
       const result = await database.getState();
       assert.strictEqual(result, 'READY');
     });
@@ -2215,8 +2215,8 @@ describe('Database', () => {
 
   describe('getRestoreInfo', () => {
     it('should get restore info from database metadata', async () => {
-      const restoreInfo = { sourceType: 'BACKUP' };
-      database.getMetadata = async () => [{ restoreInfo }];
+      const restoreInfo = {sourceType: 'BACKUP'};
+      database.getMetadata = async () => [{restoreInfo}];
       const result = await database.getRestoreInfo();
       assert.deepStrictEqual(result, restoreInfo);
     });
@@ -2227,8 +2227,11 @@ describe('Database', () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
       database.instance.listDatabaseOperations = async query => {
-        assert.strictEqual(query.filter, `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})`);
-        return [operations, {}]
+        assert.strictEqual(
+          query.filter,
+          `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})`
+        );
+        return [operations, {}];
       };
 
       const [results] = await database.listDatabaseOperations();
@@ -2239,19 +2242,24 @@ describe('Database', () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
       database.instance.listDatabaseOperations = async query => {
-        assert.strictEqual(query.filter, `((metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})) AND (someOtherAttribute: aValue)`);
-        return [operations, {}]
+        assert.strictEqual(
+          query.filter,
+          `((metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})) AND (someOtherAttribute: aValue)`
+        );
+        return [operations, {}];
       };
 
-      const [results] = await database.listDatabaseOperations({filter: 'someOtherAttribute: aValue'});
+      const [results] = await database.listDatabaseOperations({
+        filter: 'someOtherAttribute: aValue',
+      });
       assert.deepStrictEqual(results, operations);
     });
   });
 
   describe('restore', () => {
-
     const BACKUP_NAME = 'backup-name';
-    const BACKUP_FORMATTED_NAME = INSTANCE.formattedName_ + '/backups/' + BACKUP_NAME;
+    const BACKUP_FORMATTED_NAME =
+      INSTANCE.formattedName_ + '/backups/' + BACKUP_NAME;
 
     it('should make the correct request', async () => {
       const QUERY = {};
@@ -2259,7 +2267,7 @@ describe('Database', () => {
       const expectedReqOpts = extend({}, QUERY, {
         databaseId: NAME,
         parent: INSTANCE.formattedName_,
-        backup: BACKUP_FORMATTED_NAME
+        backup: BACKUP_FORMATTED_NAME,
       });
 
       database.id = NAME;

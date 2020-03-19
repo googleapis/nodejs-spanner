@@ -23,9 +23,9 @@ import * as sinon from 'sinon';
 import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import {Instance} from '../src';
-import { PreciseDate } from '@google-cloud/precise-date';
+import {PreciseDate} from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
-import { Backup, GetBackupInfoResponse } from '../src/backup';
+import {Backup, GetBackupInfoResponse} from '../src/backup';
 import * as grpc from 'grpc';
 
 let promisified = false;
@@ -38,7 +38,7 @@ const fakePfy = extend({}, pfy, {
     assert.deepStrictEqual(options.exclude, [
       'getState',
       'getExpireTime',
-      'exists'
+      'exists',
     ]);
   },
 });
@@ -93,7 +93,12 @@ describe('Backup', () => {
 
   beforeEach(() => {
     fakeCodec.encode = util.noop;
-    backup = new Backup(INSTANCE, BACKUP_NAME, DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME);
+    backup = new Backup(
+      INSTANCE,
+      BACKUP_NAME,
+      DATABASE_FORMATTED_NAME,
+      BACKUP_EXPIRE_TIME
+    );
   });
 
   afterEach(() => sandbox.restore());
@@ -117,8 +122,8 @@ describe('Backup', () => {
         backup: {
           name: BACKUP_FORMATTED_NAME,
           database: DATABASE_FORMATTED_NAME,
-          expireTime: BACKUP_EXPIRE_TIME.toStruct()
-        }
+          expireTime: BACKUP_EXPIRE_TIME.toStruct(),
+        },
       });
 
       backup.request = config => {
@@ -152,14 +157,24 @@ describe('Backup', () => {
 
     it('should throw if a database path is not provided', async () => {
       await assert.rejects(async () => {
-        const backupWithoutDatabasePath = new Backup(INSTANCE, BACKUP_NAME, undefined, BACKUP_EXPIRE_TIME);
+        const backupWithoutDatabasePath = new Backup(
+          INSTANCE,
+          BACKUP_NAME,
+          undefined,
+          BACKUP_EXPIRE_TIME
+        );
         await backupWithoutDatabasePath.create();
       }, /Database path is required to create a backup\./);
     });
 
     it('should throw if an expire time is not provided', async () => {
       await assert.rejects(async () => {
-        const backupWithoutDatabasePath = new Backup(INSTANCE, BACKUP_NAME, DATABASE_FORMATTED_NAME, undefined);
+        const backupWithoutDatabasePath = new Backup(
+          INSTANCE,
+          BACKUP_NAME,
+          DATABASE_FORMATTED_NAME,
+          undefined
+        );
         await backupWithoutDatabasePath.create();
       }, /Expire time is required to create a backup\./);
     });
@@ -208,7 +223,7 @@ describe('Backup', () => {
       const INFO = {
         name: 'backup-name',
         database: 'database-name',
-        expireTime: BACKUP_EXPIRE_TIME
+        expireTime: BACKUP_EXPIRE_TIME,
       };
 
       // tslint:disable-next-line no-any
@@ -224,7 +239,7 @@ describe('Backup', () => {
         const fakeInfo = {
           name: BACKUP_NAME,
           database: DATABASE_NAME,
-          expireTime: BACKUP_EXPIRE_TIME
+          expireTime: BACKUP_EXPIRE_TIME,
         };
 
         backup.getBackupInfo((...args) => {
@@ -242,8 +257,8 @@ describe('Backup', () => {
     it('should return the state from backup info', async () => {
       const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
         {
-          state: 'CREATING'
-        }
+          state: 'CREATING',
+        },
       ];
       backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
 
@@ -256,8 +271,8 @@ describe('Backup', () => {
     it('should return the expire time from backup info', async () => {
       const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
         {
-           expireTime: BACKUP_EXPIRE_TIME.toStruct()
-        }
+          expireTime: BACKUP_EXPIRE_TIME.toStruct(),
+        },
       ];
       backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
 
@@ -276,15 +291,19 @@ describe('Backup', () => {
     });
 
     it('should return false when backup info indicates backup does not exist', async () => {
-      backup.getBackupInfo = async () => { throw { code: grpc.status.NOT_FOUND }};
+      backup.getBackupInfo = async () => {
+        throw {code: grpc.status.NOT_FOUND};
+      };
 
       const result = await backup.exists();
       assert.strictEqual(result, false);
     });
 
     it('should rethrow other errors', async () => {
-      const err = { code: grpc.status.INTERNAL };
-      backup.getBackupInfo = async () => { throw err };
+      const err = {code: grpc.status.INTERNAL};
+      backup.getBackupInfo = async () => {
+        throw err;
+      };
 
       try {
         await backup.exists();
@@ -304,11 +323,11 @@ describe('Backup', () => {
       const expectedReqOpts = extend({}, QUERY, {
         backup: {
           name: BACKUP_FORMATTED_NAME,
-          expireTime: NEW_EXPIRE_TIME.toStruct()
+          expireTime: NEW_EXPIRE_TIME.toStruct(),
         },
         updateMask: {
-          paths: ['expire_time']
-        }
+          paths: ['expire_time'],
+        },
       });
 
       backup.request = config => {

@@ -82,8 +82,12 @@ export type EnumKey<E extends {[index: string]: unknown}> = keyof E;
  * @param U name of the enum property.
  * @param E enum type to translate.
  */
-export type TranslateEnumKeys<T, U extends keyof T, E extends {[index: string]: unknown}> = {
-  [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P]
+export type TranslateEnumKeys<
+  T,
+  U extends keyof T,
+  E extends {[index: string]: unknown}
+> = {
+  [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
 };
 
 /*!
