@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.7.0...v4.8.0) (2020-03-12)
+
+
+### Features
+
+* add backups API ([#851](https://www.github.com/googleapis/nodejs-spanner/issues/851)) ([faf224d](https://www.github.com/googleapis/nodejs-spanner/commit/faf224dc4010337829eb0b6ecd7df274f1de5fff))
+* add support for QueryOptions ([#846](https://www.github.com/googleapis/nodejs-spanner/issues/846)) ([c1098c5](https://www.github.com/googleapis/nodejs-spanner/commit/c1098c5f4509918cacd3942b8f09354c88a85bb9))
+
 ## [4.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.6.2...v4.7.0) (2020-02-27)
 
 
