@@ -246,14 +246,9 @@ class Backup {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = spanner.database('my-database');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const backup = instance.backup('my-backup');
    * const alreadyExists = await backup.exists();
-   *
-   * // Create new backup only when backup named 'my-backup' does not already exist
-   * if (!alreadyExists) {
-   *   await backup.create();
-   * }
+   * console.log(`Does backup exist? ${alreadyExists}`);
    */
   async exists(): Promise<boolean> {
     try {
