@@ -39,7 +39,7 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
 
   // Delete the backup
   console.log(`Deleting backup ${backupId}.`);
-  await backup.deleteBackup();
+  await backup.delete();
 
   // Verify backup no longer exists
   const exists = await backup.exists();

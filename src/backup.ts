@@ -53,7 +53,7 @@ type GetMetadataCallback = RequestCallback<IBackupTranslatedEnum>;
 
 type UpdateExpireTimeCallback = RequestCallback<Backup>;
 
-type DeleteBackupCallback = RequestCallback<void>;
+type DeleteCallback = RequestCallback<void>;
 
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
@@ -319,12 +319,12 @@ class Backup {
     );
   }
 
-  deleteBackup(): Promise<void>;
-  deleteBackup(callback: DeleteBackupCallback): void;
+  delete(): Promise<void>;
+  delete(callback: DeleteCallback): void;
   /**
    * Deletes a backup.
    *
-   * @method Backup#deleteBackup
+   * @method Backup#delete
    * @returns {Promise<void>} when resolved, the backup will have been deleted.
    *
    * @example
@@ -332,9 +332,9 @@ class Backup {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const myBackup = instance.backup('my-backup');
-   * await myBackup.deleteBackup();
+   * await myBackup.delete();
    */
-  deleteBackup(callback?: DeleteBackupCallback): void | Promise<void> {
+  delete(callback?: DeleteCallback): void | Promise<void> {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
     };

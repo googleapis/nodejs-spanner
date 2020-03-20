@@ -1048,8 +1048,8 @@ describe('Spanner', () => {
     });
 
     after(async () => {
-      await backup1.deleteBackup();
-      await backup2.deleteBackup();
+      await backup1.delete();
+      await backup2.delete();
 
       await database1.delete();
       await database2.delete();
@@ -1248,7 +1248,7 @@ describe('Spanner', () => {
 
     it('should delete backup', async () => {
       // Delete backup.
-      await backup2.deleteBackup();
+      await backup2.delete();
 
       // Verify backup is gone by querying metadata.
       // Expect backup not to be found.

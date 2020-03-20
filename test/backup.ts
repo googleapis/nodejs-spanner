@@ -397,7 +397,7 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.deleteBackup();
+      await backup.delete();
     });
 
     describe('error', () => {
@@ -410,7 +410,7 @@ describe('Backup', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        backup.deleteBackup((...args) => {
+        backup.delete((...args) => {
           assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
           done();
         });
