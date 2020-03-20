@@ -36,7 +36,7 @@ async function listBackups(instanceId, projectId) {
 
   // List backups and print their names
   try {
-    const [backups] = await instance.listBackups();
+    const [backups] = await instance.getBackups();
     console.log('Backups:');
     backups.forEach(backup => {
       console.log(backup.backupId);
@@ -67,7 +67,7 @@ async function listBackupsByDatabase(instanceId, databaseId, projectId) {
 
   // List backups and print their names
   try {
-    const [backups] = await instance.listBackups({
+    const [backups] = await instance.getBackups({
       filter: `Database:${databaseId}`,
     });
     console.log('Backups:');
@@ -100,7 +100,7 @@ async function listBackupsByName(instanceId, backupId, projectId) {
 
   // List backups and print their names
   try {
-    const [backups] = await instance.listBackups({filter: `Name:${backupId}`});
+    const [backups] = await instance.getBackups({filter: `Name:${backupId}`});
     console.log('Backups:');
     backups.forEach(backup => {
       console.log(backup.backupId);
@@ -135,7 +135,7 @@ async function listNewBackups(instanceId, projectId) {
     minCreateTime.setDate(minCreateTime.getDate() - 1);
     maxExpireTime.setDate(maxExpireTime.getDate() + 3);
 
-    const [backups] = await instance.listBackups({
+    const [backups] = await instance.getBackups({
       filter: `(state:READY) AND (create_time > "${minCreateTime.toISOString()}") AND (expire_time < "${maxExpireTime.toISOString()}")`,
     });
     console.log('Backups:');
@@ -167,7 +167,7 @@ async function listSmallBackups(instanceId, projectId) {
 
   // List backups and print their names
   try {
-    const [backups] = await instance.listBackups({
+    const [backups] = await instance.getBackups({
       filter: '(state:READY) AND (size_bytes < 65536)',
     });
     console.log('Backups:');
@@ -202,7 +202,7 @@ async function listBackupsPaginated(instanceId, projectId) {
     let pageToken = undefined;
     console.log('Backups:');
     do {
-      const [backups, , response] = await instance.listBackups({
+      const [backups, , response] = await instance.getBackups({
         autoPaginate: false,
         pageSize: 3,
         pageToken,

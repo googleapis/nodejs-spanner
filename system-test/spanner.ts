@@ -1122,7 +1122,7 @@ describe('Spanner', () => {
     });
 
     it('should list backups', async () => {
-      const [backups] = await instance.listBackups();
+      const [backups] = await instance.getBackups();
       assert.ok(backups.length > 0);
       assert.ok(
         backups.find(backup => backup.formattedName_ === backup1.formattedName_)
@@ -1130,16 +1130,16 @@ describe('Spanner', () => {
     });
 
     it('should list backups with pagination', async () => {
-      const [page1, , resp1] = await instance.listBackups({
+      const [page1, , resp1] = await instance.getBackups({
         pageSize: 1,
         autoPaginate: false,
       });
-      const [page2] = await instance.listBackups({
+      const [page2] = await instance.getBackups({
         pageSize: 1,
         autoPaginate: false,
         pageToken: resp1!.nextPageToken,
       });
-      const [page3] = await instance.listBackups({
+      const [page3] = await instance.getBackups({
         pageSize: 2,
         autoPaginate: false,
       });

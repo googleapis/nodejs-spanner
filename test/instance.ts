@@ -941,10 +941,10 @@ describe('Instance', () => {
     });
   });
 
-  describe('listBackups', () => {
+  describe('getBackups', () => {
     const QUERY = {
       a: 'b',
-    } as inst.ListBackupsRequest;
+    } as inst.GetBackupsRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -963,7 +963,7 @@ describe('Instance', () => {
         assert.strictEqual(config.gaxOpts, QUERY);
       };
 
-      await instance.listBackups(QUERY);
+      await instance.getBackups(QUERY);
     });
 
     it('should not require a query', async () => {
@@ -975,7 +975,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.gaxOpts, {});
       };
 
-      await instance.listBackups();
+      await instance.getBackups();
     });
 
     describe('error', () => {
@@ -988,7 +988,7 @@ describe('Instance', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        instance.listBackups(QUERY, (...args) => {
+        instance.getBackups(QUERY, (...args) => {
           assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
           done();
         });
@@ -1026,7 +1026,7 @@ describe('Instance', () => {
           return fakeBackupInstance as Backup;
         };
 
-        instance.listBackups(QUERY, (...args) => {
+        instance.getBackups(QUERY, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backup = args[1]!.pop();
