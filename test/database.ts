@@ -2227,10 +2227,7 @@ describe('Database', () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
       database.instance.listDatabaseOperations = async query => {
-        assert.strictEqual(
-          query.filter,
-          `name:${DATABASE_FORMATTED_NAME}`
-        );
+        assert.strictEqual(query.filter, `name:${DATABASE_FORMATTED_NAME}`);
         return [operations, {}];
       };
 
