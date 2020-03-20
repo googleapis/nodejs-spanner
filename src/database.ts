@@ -1013,9 +1013,7 @@ class Database extends GrpcServiceObject {
 
   async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
     const [metadata] = await this.getMetadata();
-    return metadata.restoreInfo === null || metadata.restoreInfo === undefined
-      ? undefined
-      : metadata.restoreInfo;
+    return metadata.restoreInfo ? metadata.restoreInfo : undefined;
   }
 
   async getState(): Promise<
@@ -1023,9 +1021,7 @@ class Database extends GrpcServiceObject {
     | undefined
   > {
     const [metadata] = await this.getMetadata();
-    return metadata.state === null || metadata.state === undefined
-      ? undefined
-      : metadata.state;
+    return metadata.state ? metadata.state : undefined;
   }
 
   getSchema(): Promise<GetSchemaResponse>;
@@ -1399,10 +1395,7 @@ class Database extends GrpcServiceObject {
     // Create a query that lists database operations only on this database from
     // the instance. Operation name will be prefixed with the database path for
     // all operations on this database
-    let dbSpecificFilter =
-      `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${this.formattedName_}) OR ` +
-      `(metadata.@type:RestoreDatabaseMetadata AND metadata.name:${this.formattedName_}) OR ` +
-      `(metadata.@type:UpdateDatabaseDdl AND metadata.database:${this.formattedName_})`;
+    let dbSpecificFilter = `name:${this.formattedName_}`;
     if (query && query.filter) {
       dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
     }
@@ -1494,6 +1487,8 @@ class Database extends GrpcServiceObject {
     return waitForSessionStream;
   }
 
+  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
+  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   /**
    * Restore a backup into this database.
    *
@@ -1508,13 +1503,10 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [restoreOperation] = await restoreDatabase.restore('projects/my-project/instances/my-instance/backups/my-backup');
+   * const [restoreOperation] = await database.restore('projects/my-project/instances/my-instance/backups/my-backup');
    * // Wait for restore to complete
    * await restoreOperation.promise();
    */
-  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
-  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
-
   restore(
     backupPath: string,
     callback?: RestoreDatabaseCallback

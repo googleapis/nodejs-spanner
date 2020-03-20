@@ -35,12 +35,12 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
-import {google, google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {google as spannerClient} from '../proto/spanner';
 import {Backup} from './backup';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import IBackup = google.spanner.admin.database.v1.IBackup;
 
+export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
 export type IOperation = instanceAdmin.longrunning.IOperation;
