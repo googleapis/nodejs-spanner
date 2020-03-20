@@ -87,6 +87,8 @@ class Backup {
       this.instance.formattedName_ + '/backups/' + this.backupId;
   }
 
+  create(): Promise<CreateBackupResponse>;
+  create(callback: CreateBackupCallback): void;
   /**
    * Create a backup.
    *
@@ -105,9 +107,6 @@ class Backup {
    * // Await completion of the backup operation.
    * await backupOperation.promise();
    */
-  create(): Promise<CreateBackupResponse>;
-  create(callback: CreateBackupCallback): void;
-
   create(
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
@@ -139,6 +138,8 @@ class Backup {
     );
   }
 
+  getBackupInfo(): Promise<GetBackupInfoResponse>;
+  getBackupInfo(callback: GetBackupInfoCallback): void;
   /**
    * Retrieves all metadata of the backup.
    *
@@ -159,8 +160,6 @@ class Backup {
    * const [backupInfo] = await backup.getBackupInfo();
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
-  getBackupInfo(): Promise<GetBackupInfoResponse>;
-  getBackupInfo(callback: GetBackupInfoCallback): void;
   getBackupInfo(
     callback?: GetBackupInfoCallback
   ): void | Promise<GetBackupInfoResponse> {
@@ -271,6 +270,11 @@ class Backup {
     }
   }
 
+  updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    callback: UpdateExpireTimeCallback
+  ): void;
   /**
    * Sets the expiry time of a backup.
    *
@@ -288,11 +292,6 @@ class Backup {
    * const newExpireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
    * await myBackup.updateExpireTime(newExpireTime);
    */
-  updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
-  updateExpireTime(
-    expireTime: PreciseDate,
-    callback: UpdateExpireTimeCallback
-  ): void;
   updateExpireTime(
     expireTime: PreciseDate,
     callback?: UpdateExpireTimeCallback
@@ -320,6 +319,8 @@ class Backup {
     );
   }
 
+  deleteBackup(): Promise<void>;
+  deleteBackup(callback: DeleteBackupCallback): void;
   /**
    * Deletes a backup.
    *
@@ -333,8 +334,6 @@ class Backup {
    * const myBackup = instance.backup('my-backup');
    * await myBackup.deleteBackup();
    */
-  deleteBackup(): Promise<void>;
-  deleteBackup(callback: DeleteBackupCallback): void;
   deleteBackup(callback?: DeleteBackupCallback): void | Promise<void> {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
