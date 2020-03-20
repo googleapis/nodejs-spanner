@@ -1186,7 +1186,10 @@ describe('Spanner', () => {
 
       // Validate restore info of database.
       const restoreInfo = await restoreDatabase.getRestoreInfo();
-      assert.strictEqual(restoreInfo!.backupInfo!.backup, backup1.formattedName_);
+      assert.strictEqual(
+        restoreInfo!.backupInfo!.backup,
+        backup1.formattedName_
+      );
       const [originalDatabaseMetadata] = await database1.getMetadata();
       assert.strictEqual(
         restoreInfo!.backupInfo!.sourceDatabase,
