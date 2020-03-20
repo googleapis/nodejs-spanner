@@ -48,8 +48,8 @@ type IBackupTranslatedEnum = TranslateEnumKeys<
   typeof databaseAdmin.spanner.admin.database.v1.Backup.State
 >;
 
-export type GetBackupInfoResponse = [IBackupTranslatedEnum];
-type GetBackupInfoCallback = RequestCallback<IBackupTranslatedEnum>;
+export type GetMetadataResponse = [IBackupTranslatedEnum];
+type GetMetadataCallback = RequestCallback<IBackupTranslatedEnum>;
 
 type UpdateExpireTimeCallback = RequestCallback<Backup>;
 
@@ -138,16 +138,16 @@ class Backup {
     );
   }
 
-  getBackupInfo(): Promise<GetBackupInfoResponse>;
-  getBackupInfo(callback: GetBackupInfoCallback): void;
+  getMetadata(): Promise<GetMetadataResponse>;
+  getMetadata(callback: GetMetadataCallback): void;
   /**
    * Retrieves all metadata of the backup.
    *
    * @see {@link #getState}
    * @see {@link #getExpireTime}
    *
-   * @method Backup#getBackupInfo
-   * @returns {Promise<GetBackupInfoResponse>} when resolved, contains metadata
+   * @method Backup#getMetadata
+   * @returns {Promise<GetMetadataResponse>} when resolved, contains metadata
    *     of the backup.
    *
    * @example
@@ -157,12 +157,12 @@ class Backup {
    * const database = spanner.database('my-database');
    * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
    * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
-   * const [backupInfo] = await backup.getBackupInfo();
+   * const [backupInfo] = await backup.getMetadata();
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
-  getBackupInfo(
-    callback?: GetBackupInfoCallback
-  ): void | Promise<GetBackupInfoResponse> {
+  getMetadata(
+    callback?: GetMetadataCallback
+  ): void | Promise<GetMetadataResponse> {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
@@ -183,7 +183,7 @@ class Backup {
    *
    * The backup state indicates if the backup has completed.
    *
-   * @see {@link #getBackupInfo}
+   * @see {@link #getMetadata}
    *
    * @method Backup#getState
    * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
@@ -202,7 +202,7 @@ class Backup {
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
     | undefined
   > {
-    const [backupInfo] = await this.getBackupInfo();
+    const [backupInfo] = await this.getMetadata();
     const state = backupInfo.state;
     return state === null || state === undefined ? undefined : state;
   }
@@ -211,7 +211,7 @@ class Backup {
    * Retrieves the expiry time of the backup.
    *
    * @see {@link #updateExpireTime}
-   * @see {@link #getBackupInfo}
+   * @see {@link #getMetadata}
    *
    * @method Backup#getExpireTime
    * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
@@ -227,7 +227,7 @@ class Backup {
    * console.log(`Backup ${backup.formattedName_} expires on ${expireTime.toISOString()}`);
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
-    const [backupInfo] = await this.getBackupInfo();
+    const [backupInfo] = await this.getMetadata();
     const expireTime = backupInfo.expireTime;
     return expireTime ? new PreciseDate(expireTime as DateStruct) : undefined;
   }
@@ -235,7 +235,7 @@ class Backup {
   /**
    * Checks whether the backup exists.
    *
-   * @see {@link #getBackupInfo}
+   * @see {@link #getMetadata}
    *
    * @method Backup#exists
    * @returns {Promise<boolean>} when resolved, contains true if the backup
@@ -258,7 +258,7 @@ class Backup {
   async exists(): Promise<boolean> {
     try {
       // Attempt to read metadata to determine whether backup exists
-      await this.getBackupInfo();
+      await this.getMetadata();
       // Found therefore it exists
       return true;
     } catch (err) {

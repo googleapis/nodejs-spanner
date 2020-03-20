@@ -25,7 +25,7 @@ import * as pfy from '@google-cloud/promisify';
 import {Instance} from '../src';
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
-import {Backup, GetBackupInfoResponse} from '../src/backup';
+import {Backup, GetMetadataResponse} from '../src/backup';
 import * as grpc from 'grpc';
 
 let promisified = false;
@@ -180,7 +180,7 @@ describe('Backup', () => {
     });
   });
 
-  describe('getBackupInfo', () => {
+  describe('getMetadata', () => {
     const BACKUP_NAME = 'backup-name';
 
     it('should make the correct request', async () => {
@@ -199,7 +199,7 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.getBackupInfo();
+      await backup.getMetadata();
     });
 
     describe('error', () => {
@@ -212,7 +212,7 @@ describe('Backup', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        backup.getBackupInfo((...args) => {
+        backup.getMetadata((...args) => {
           assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
           done();
         });
@@ -242,7 +242,7 @@ describe('Backup', () => {
           expireTime: BACKUP_EXPIRE_TIME,
         };
 
-        backup.getBackupInfo((...args) => {
+        backup.getMetadata((...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backupInfo = args[1];
@@ -255,12 +255,12 @@ describe('Backup', () => {
 
   describe('getState', () => {
     it('should return the state from backup info', async () => {
-      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
         {
           state: 'CREATING',
         },
       ];
-      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.getState();
       assert.strictEqual(result, 'CREATING');
@@ -269,12 +269,12 @@ describe('Backup', () => {
 
   describe('getExpireTime', () => {
     it('should return the expire time from backup info', async () => {
-      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
         {
           expireTime: BACKUP_EXPIRE_TIME.toStruct(),
         },
       ];
-      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.getExpireTime();
       assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
@@ -283,15 +283,15 @@ describe('Backup', () => {
 
   describe('exists', () => {
     it('should return true when backup info indicates backup exists', async () => {
-      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [{}];
-      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [{}];
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.exists();
       assert.strictEqual(result, true);
     });
 
     it('should return false when backup info indicates backup does not exist', async () => {
-      backup.getBackupInfo = async () => {
+      backup.getMetadata = async () => {
         throw {code: grpc.status.NOT_FOUND};
       };
 
@@ -301,7 +301,7 @@ describe('Backup', () => {
 
     it('should rethrow other errors', async () => {
       const err = {code: grpc.status.INTERNAL};
-      backup.getBackupInfo = async () => {
+      backup.getMetadata = async () => {
         throw err;
       };
 

@@ -52,7 +52,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     await operation.promise();
 
     // Verify backup is ready
-    const [backupInfo] = await backup.getBackupInfo();
+    const [backupInfo] = await backup.getMetadata();
     if (backupInfo.state === 'READY') {
       console.log('Backup created.');
       console.log(`Name: ${backupInfo.name}`);

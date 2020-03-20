@@ -1061,7 +1061,7 @@ describe('Spanner', () => {
 
     it('should have completed a backup', async () => {
       // Validate backup has completed.
-      const [backupInfo] = await backup1.getBackupInfo();
+      const [backupInfo] = await backup1.getMetadata();
       assert.strictEqual(backupInfo.state, 'READY');
       assert.strictEqual(
         backupInfo.name,
@@ -1221,9 +1221,9 @@ describe('Spanner', () => {
       await backup1.updateExpireTime(updatedBackupExpiryDate);
 
       // Read metadata, verify expiry date was updated.
-      const [updatedBackupInfo] = await backup1.getBackupInfo();
+      const [updatedMetadata] = await backup1.getMetadata();
       const expiryDateFromMetadataAfterUpdate = new PreciseDate(
-        updatedBackupInfo.expireTime as DateStruct
+        updatedMetadata.expireTime as DateStruct
       );
 
       assert.deepStrictEqual(
@@ -1253,8 +1253,8 @@ describe('Spanner', () => {
       // Verify backup is gone by querying metadata.
       // Expect backup not to be found.
       try {
-        const [deletedBackupInfo] = await backup2.getBackupInfo();
-        assert.fail('Backup was not deleted: ' + deletedBackupInfo.name);
+        const [deletedMetadata] = await backup2.getMetadata();
+        assert.fail('Backup was not deleted: ' + deletedMetadata.name);
       } catch (err) {
         assert.strictEqual(err.code, status.NOT_FOUND);
       }
