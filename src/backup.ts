@@ -141,22 +141,32 @@ class Backup {
   getMetadata(): Promise<GetMetadataResponse>;
   getMetadata(callback: GetMetadataCallback): void;
   /**
-   * Retrieves all metadata of the backup.
+   * @typedef {array} GetMetadataResponse
+   * @property {object} 0 The {@link Backup} metadata.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback GetMetadataCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} metadata The {@link Backup} metadata.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Retrieves backup's metadata.
    *
    * @see {@link #getState}
    * @see {@link #getExpireTime}
    *
    * @method Backup#getMetadata
-   * @returns {Promise<GetMetadataResponse>} when resolved, contains metadata
-   *     of the backup.
+   * @returns {Promise<GetMetadataResponse>} when resolved, contains
+   *     metadata of the backup.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = spanner.database('my-database');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const backup = instance.backup('my-backup');
    * const [backupInfo] = await backup.getMetadata();
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
