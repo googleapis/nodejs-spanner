@@ -345,6 +345,14 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
+  listBackupOperations(
+    query?: ListBackupOperationsRequest
+  ): Promise<ListBackupOperationsResponse>;
+  listBackupOperations(callback: ListBackupOperationsCallback): void;
+  listBackupOperations(
+    query: ListBackupOperationsRequest,
+    callback: ListBackupOperationsCallback
+  ): void;
   /**
    * Query object for listing backup operations.
    *
@@ -378,15 +386,6 @@ class Instance extends common.GrpcServiceObject {
    * const [operations] = await instance.listBackupOperations();
    */
   listBackupOperations(
-    query?: ListBackupOperationsRequest
-  ): Promise<ListBackupOperationsResponse>;
-  listBackupOperations(callback: ListBackupOperationsCallback): void;
-  listBackupOperations(
-    query: ListBackupOperationsRequest,
-    callback: ListBackupOperationsCallback
-  ): void;
-
-  listBackupOperations(
     queryOrCallback?:
       | ListBackupOperationsRequest
       | ListBackupOperationsCallback,
@@ -402,7 +401,7 @@ class Instance extends common.GrpcServiceObject {
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
     });
-    this.request<IBackup[]>(
+    this.request<IOperation[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
@@ -415,6 +414,14 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
+  listDatabaseOperations(
+    query?: ListDatabaseOperationsRequest
+  ): Promise<ListDatabaseOperationsResponse>;
+  listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
+  listDatabaseOperations(
+    query: ListDatabaseOperationsRequest,
+    callback: ListDatabaseOperationsCallback
+  ): void;
   /**
    * Query object for listing database operations.
    *
@@ -448,15 +455,6 @@ class Instance extends common.GrpcServiceObject {
    * // ... then do something with the operations
    */
   listDatabaseOperations(
-    query?: ListDatabaseOperationsRequest
-  ): Promise<ListDatabaseOperationsResponse>;
-  listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
-  listDatabaseOperations(
-    query: ListDatabaseOperationsRequest,
-    callback: ListDatabaseOperationsCallback
-  ): void;
-
-  listDatabaseOperations(
     queryOrCallback?:
       | ListDatabaseOperationsRequest
       | ListDatabaseOperationsCallback,
@@ -472,7 +470,7 @@ class Instance extends common.GrpcServiceObject {
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
     });
-    this.request<IBackup[]>(
+    this.request<IOperation[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',
