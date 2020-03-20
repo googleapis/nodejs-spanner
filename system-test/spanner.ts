@@ -4470,13 +4470,74 @@ function deleteInstanceArray(instanceArray) {
   const limit = pLimit(5);
   return Promise.all(
     instanceArray.map(instance =>
-      limit(() =>
-        setTimeout(() => {
-          instance.delete();
-        }, delay)
-      )
+      limit(() => setTimeout(deleteInstance, delay, instance))
     )
   );
+}
+
+function deleteInstance(instance) {
+  return new Promise((resolve, reject) => {
+    // Backups must be deleted before an instance can be deleted.
+    instance.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts: {
+          parent: instance.formattedName_,
+        },
+      },
+      async (err, backups) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (backups.length > 0) {
+          try {
+            await deleteInstanceBackups(instance, backups);
+          } catch (e) {
+            reject(err);
+            return;
+          }
+
+          deleteInstance(instance).then(resolve, reject);
+          return;
+        }
+
+        try {
+          await instance.delete();
+        } catch (e) {
+          reject(e);
+          return;
+        }
+
+        resolve();
+      }
+    );
+  });
+}
+
+function deleteInstanceBackups(instance, instanceBackups) {
+  const deleteInstanceBackupPromises = instanceBackups.map(instanceBackup => {
+    return new Promise((resolve, reject) => {
+      instance.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'deleteBackup',
+          reqOpts: {name: instanceBackup.name},
+        },
+        err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        }
+      );
+    });
+  });
+
+  return Promise.all(deleteInstanceBackupPromises);
 }
 
 function wait(time) {
