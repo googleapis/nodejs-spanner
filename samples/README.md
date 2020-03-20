@@ -19,6 +19,7 @@ and automatic, synchronous replication for high availability.
   * [Datatypes](#datatypes)
   * [DML](#dml)
   * [Indexing](#indexing)
+  * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Schema](#schema)
   * [Struct](#struct)
@@ -118,6 +119,23 @@ __Usage:__
 
 
 `node samples/indexing.js`
+
+
+-----
+
+
+
+
+### Queryoptions
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/queryoptions.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/queryoptions.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/queryoptions.js`
 
 
 -----
