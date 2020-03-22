@@ -1263,7 +1263,7 @@ describe('Spanner', () => {
     it('should list backup operations', async () => {
       // List operations and ensure operation for current backup exists.
       // Without a filter.
-      const [operationsWithoutFilter] = await instance.listBackupOperations();
+      const [operationsWithoutFilter] = await instance.getBackupOperations();
       const operationForCurrentBackup = operationsWithoutFilter.find(
         operation =>
           operation.name && operation.name.includes(backup1.formattedName_)
@@ -1275,7 +1275,7 @@ describe('Spanner', () => {
       );
 
       // With a filter.
-      const [operationsWithFilter] = await instance.listBackupOperations({
+      const [operationsWithFilter] = await instance.getBackupOperations({
         filter: `(metadata.@type:CreateBackupMetadata AND
                     metadata.name:${backup1.formattedName_})`,
       });

@@ -1086,10 +1086,10 @@ describe('Instance', () => {
     });
   });
 
-  describe('listBackupOperations', () => {
+  describe('getBackupOperations', () => {
     const QUERY = {
       a: 'b',
-    } as inst.ListBackupOperationsRequest;
+    } as inst.GetBackupOperationsRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -1108,7 +1108,7 @@ describe('Instance', () => {
         assert.strictEqual(config.gaxOpts, QUERY);
       };
 
-      await instance.listBackupOperations(QUERY);
+      await instance.getBackupOperations(QUERY);
     });
 
     it('should not require a query', async () => {
@@ -1120,7 +1120,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.gaxOpts, {});
       };
 
-      await instance.listBackupOperations();
+      await instance.getBackupOperations();
     });
   });
 

@@ -61,7 +61,7 @@ export type GetBackupsResponse = PagedResponse<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-export type ListBackupOperationsResponse = PagedResponse<
+export type GetBackupOperationsResponse = PagedResponse<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
@@ -91,7 +91,7 @@ export interface GetBackupsRequest
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface ListBackupOperationsRequest
+export interface GetBackupOperationsRequest
   extends databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest {
   autoPaginate?: boolean;
   maxApiCalls?: number;
@@ -125,7 +125,7 @@ export type GetBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-export type ListBackupOperationsCallback = RequestCallback<
+export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
@@ -345,18 +345,18 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  listBackupOperations(
-    query?: ListBackupOperationsRequest
-  ): Promise<ListBackupOperationsResponse>;
-  listBackupOperations(callback: ListBackupOperationsCallback): void;
-  listBackupOperations(
-    query: ListBackupOperationsRequest,
-    callback: ListBackupOperationsCallback
+  getBackupOperations(
+    query?: GetBackupOperationsRequest
+  ): Promise<GetBackupOperationsResponse>;
+  getBackupOperations(callback: GetBackupOperationsCallback): void;
+  getBackupOperations(
+    query: GetBackupOperationsRequest,
+    callback: GetBackupOperationsCallback
   ): void;
   /**
    * Query object for listing backup operations.
    *
-   * @typedef {object} ListBackupOperationsRequest
+   * @typedef {object} GetBackupOperationsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -366,7 +366,7 @@ class Instance extends common.GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListBackupOperationsResponse
+   * @typedef {array} GetBackupOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 The full API response.
    */
@@ -376,27 +376,27 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #listOperations}
    *
    * @param query query object for listing backup operations.
-   * @returns {Promise<ListBackupOperationsResponse>} when resolved, contains a
+   * @returns {Promise<GetBackupOperationsResponse>} when resolved, contains a
    *     paged list of backup operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [operations] = await instance.listBackupOperations();
+   * const [operations] = await instance.getBackupOperations();
    */
-  listBackupOperations(
+  getBackupOperations(
     queryOrCallback?:
-      | ListBackupOperationsRequest
-      | ListBackupOperationsCallback,
-    cb?: ListBackupOperationsCallback
-  ): void | Promise<ListBackupOperationsResponse> {
+      | GetBackupOperationsRequest
+      | GetBackupOperationsCallback,
+    cb?: GetBackupOperationsCallback
+  ): void | Promise<GetBackupOperationsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
       typeof queryOrCallback === 'object'
         ? queryOrCallback
-        : ({} as ListBackupOperationsRequest);
+        : ({} as GetBackupOperationsRequest);
 
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
