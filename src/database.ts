@@ -35,8 +35,8 @@ import {
   Instance,
   CreateDatabaseOptions,
   CreateDatabaseCallback,
-  ListDatabaseOperationsRequest,
-  ListDatabaseOperationsResponse,
+  GetDatabaseOperationsRequest,
+  GetDatabaseOperationsResponse,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -1359,7 +1359,7 @@ class Database extends GrpcServiceObject {
   /**
    * Query object for listing database operations.
    *
-   * @typedef {object} ListDatabaseOperationsRequest
+   * @typedef {object} GetDatabaseOperationsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -1369,17 +1369,17 @@ class Database extends GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListDatabaseOperationsResponse
+   * @typedef {array} GetDatabaseOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 The full API response.
    */
   /**
    * List pending and completed operations for the database.
    *
-   * @see {@link Instance.listDatabaseOperations}
+   * @see {@link Instance.getDatabaseOperations}
    *
    * @param query query object for listing database operations.
-   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains
+   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains
    *     a paged list of database operations.
    *
    * @example
@@ -1387,11 +1387,11 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [operations] = await database.listDatabaseOperations();
+   * const [operations] = await database.getDatabaseOperations();
    */
-  async listDatabaseOperations(
-    query?: ListDatabaseOperationsRequest
-  ): Promise<ListDatabaseOperationsResponse> {
+  async getDatabaseOperations(
+    query?: GetDatabaseOperationsRequest
+  ): Promise<GetDatabaseOperationsResponse> {
     // Create a query that lists database operations only on this database from
     // the instance. Operation name will be prefixed with the database path for
     // all operations on this database
@@ -1399,12 +1399,12 @@ class Database extends GrpcServiceObject {
     if (query && query.filter) {
       dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
     }
-    const dbSpecificQuery: ListDatabaseOperationsRequest = {
+    const dbSpecificQuery: GetDatabaseOperationsRequest = {
       ...query,
       filter: dbSpecificFilter,
     };
 
-    return this.instance.listDatabaseOperations(dbSpecificQuery);
+    return this.instance.getDatabaseOperations(dbSpecificQuery);
   }
 
   makePooledRequest_(config: RequestConfig): Promise<Session>;
@@ -2326,7 +2326,7 @@ promisifyAll(Database, {
     'getMetadata',
     'getRestoreInfo',
     'getState',
-    'listDatabaseOperations',
+    'getDatabaseOperations',
     'runTransaction',
     'table',
     'updateSchema',

@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function listDatabaseOperations(instanceId, projectId) {
+async function getDatabaseOperations(instanceId, projectId) {
   // [START spanner_list_database_operations]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -36,7 +36,7 @@ async function listDatabaseOperations(instanceId, projectId) {
 
   // List database operations
   try {
-    const [databaseOperations] = await instance.listDatabaseOperations();
+    const [databaseOperations] = await instance.getDatabaseOperations();
     console.log('Database Operations:');
     databaseOperations.forEach(databaseOperation => {
       console.log(
@@ -50,4 +50,4 @@ async function listDatabaseOperations(instanceId, projectId) {
   // [END spanner_list_database_operations]
 }
 
-module.exports.listDatabaseOperations = listDatabaseOperations;
+module.exports.getDatabaseOperations = getDatabaseOperations;

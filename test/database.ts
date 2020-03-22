@@ -43,7 +43,7 @@ const fakePfy = extend({}, pfy, {
       'getMetadata',
       'getRestoreInfo',
       'getState',
-      'listDatabaseOperations',
+      'getDatabaseOperations',
       'runTransaction',
       'table',
       'updateSchema',
@@ -2222,23 +2222,23 @@ describe('Database', () => {
     });
   });
 
-  describe('listDatabaseOperations', () => {
+  describe('getDatabaseOperations', () => {
     it('should create filter for querying the database', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
-      database.instance.listDatabaseOperations = async query => {
+      database.instance.getDatabaseOperations = async query => {
         assert.strictEqual(query.filter, `name:${DATABASE_FORMATTED_NAME}`);
         return [operations, {}];
       };
 
-      const [results] = await database.listDatabaseOperations();
+      const [results] = await database.getDatabaseOperations();
       assert.deepStrictEqual(results, operations);
     });
 
     it('should create filter for querying the database in combination with user supplied filter', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
-      database.instance.listDatabaseOperations = async query => {
+      database.instance.getDatabaseOperations = async query => {
         assert.strictEqual(
           query.filter,
           `(name:${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`
@@ -2246,7 +2246,7 @@ describe('Database', () => {
         return [operations, {}];
       };
 
-      const [results] = await database.listDatabaseOperations({
+      const [results] = await database.getDatabaseOperations({
         filter: 'someOtherAttribute: aValue',
       });
       assert.deepStrictEqual(results, operations);

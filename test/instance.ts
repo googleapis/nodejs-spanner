@@ -1124,10 +1124,10 @@ describe('Instance', () => {
     });
   });
 
-  describe('listDatabaseOperations', () => {
+  describe('getDatabaseOperations', () => {
     const QUERY = {
       a: 'b',
-    } as inst.ListDatabaseOperationsRequest;
+    } as inst.GetDatabaseOperationsRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -1146,7 +1146,7 @@ describe('Instance', () => {
         assert.strictEqual(config.gaxOpts, QUERY);
       };
 
-      await instance.listDatabaseOperations(QUERY);
+      await instance.getDatabaseOperations(QUERY);
     });
 
     it('should not require a query', async () => {
@@ -1158,7 +1158,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.gaxOpts, {});
       };
 
-      await instance.listDatabaseOperations();
+      await instance.getDatabaseOperations();
     });
   });
 });

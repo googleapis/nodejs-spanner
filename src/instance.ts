@@ -65,7 +65,7 @@ export type ListBackupOperationsResponse = PagedResponse<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-export type ListDatabaseOperationsResponse = PagedResponse<
+export type GetDatabaseOperationsResponse = PagedResponse<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
 >;
@@ -97,7 +97,7 @@ export interface ListBackupOperationsRequest
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface ListDatabaseOperationsRequest
+export interface GetDatabaseOperationsRequest
   extends databaseAdmin.spanner.admin.database.v1
     .IListDatabaseOperationsRequest {
   autoPaginate?: boolean;
@@ -129,7 +129,7 @@ export type ListBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-export type ListDatabaseOperationsCallback = RequestCallback<
+export type GetDatabaseOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
 >;
@@ -414,18 +414,18 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  listDatabaseOperations(
-    query?: ListDatabaseOperationsRequest
-  ): Promise<ListDatabaseOperationsResponse>;
-  listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
-  listDatabaseOperations(
-    query: ListDatabaseOperationsRequest,
-    callback: ListDatabaseOperationsCallback
+  getDatabaseOperations(
+    query?: GetDatabaseOperationsRequest
+  ): Promise<GetDatabaseOperationsResponse>;
+  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
+  getDatabaseOperations(
+    query: GetDatabaseOperationsRequest,
+    callback: GetDatabaseOperationsCallback
   ): void;
   /**
    * Query object for listing database operations.
    *
-   * @typedef {object} ListDatabaseOperationsRequest
+   * @typedef {object} GetDatabaseOperationsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -435,37 +435,37 @@ class Instance extends common.GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListDatabaseOperationsResponse
+   * @typedef {array} GetDatabaseOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 The full API response.
    */
   /**
    * List pending and completed operations for all databases in the instance.
    *
-   * @see {@link Database.listDatabaseOperations}
+   * @see {@link Database.getDatabaseOperations}
    *
    * @param query query object for listing database operations.
-   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
+   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [operations] = await instance.listDatabaseOperations();
+   * const [operations] = await instance.getDatabaseOperations();
    * // ... then do something with the operations
    */
-  listDatabaseOperations(
+  getDatabaseOperations(
     queryOrCallback?:
-      | ListDatabaseOperationsRequest
-      | ListDatabaseOperationsCallback,
-    cb?: ListDatabaseOperationsCallback
-  ): void | Promise<ListDatabaseOperationsResponse> {
+      | GetDatabaseOperationsRequest
+      | GetDatabaseOperationsCallback,
+    cb?: GetDatabaseOperationsCallback
+  ): void | Promise<GetDatabaseOperationsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
       typeof queryOrCallback === 'object'
         ? queryOrCallback
-        : ({} as ListDatabaseOperationsRequest);
+        : ({} as GetDatabaseOperationsRequest);
 
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,

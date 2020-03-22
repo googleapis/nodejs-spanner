@@ -26,7 +26,7 @@ const {
   listBackupsPaginated,
 } = require('./backups-list');
 const {listBackupOperations} = require('./backups-list-operations');
-const {listDatabaseOperations} = require('./backups-list-database-operations');
+const {getDatabaseOperations} = require('./backups-get-database-operations');
 const {updateBackupExpireTime} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
 const {deleteBackup} = require('./backups-delete');
@@ -102,10 +102,10 @@ require(`yargs`)
       listBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `listDatabaseOperations <instanceName> <projectId>`,
+    `getDatabaseOperations <instanceName> <projectId>`,
     `Lists all database operations in the instance.`,
     {},
-    opts => listDatabaseOperations(opts.instanceName, opts.projectId)
+    opts => getDatabaseOperations(opts.instanceName, opts.projectId)
   )
   .command(
     `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,

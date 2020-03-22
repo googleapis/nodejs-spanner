@@ -931,7 +931,7 @@ describe('Spanner', () => {
       const databaseFullName = databaseMetadata.name;
 
       // List operations and ensure operation for creation of test database exists.
-      const [databaseCreateOperations] = await instance.listDatabaseOperations({
+      const [databaseCreateOperations] = await instance.getDatabaseOperations({
         filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata) AND
                  (metadata.database:${database.formattedName_})`,
       });
@@ -955,7 +955,7 @@ describe('Spanner', () => {
       const databaseFullName = databaseMetadata.name;
 
       // List operations.
-      const [databaseOperations] = await database.listDatabaseOperations();
+      const [databaseOperations] = await database.getDatabaseOperations();
 
       // Validate operation has at least the create operation for the database.
       assert.ok(databaseOperations.length > 0);
@@ -1198,7 +1198,7 @@ describe('Spanner', () => {
       assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
 
       // Check that restore operation ends up in the operations list.
-      const [restoreOperations] = await restoreDatabase.listDatabaseOperations({
+      const [restoreOperations] = await restoreDatabase.getDatabaseOperations({
         filter: 'metadata.@type:RestoreDatabaseMetadata',
       });
       assert.strictEqual(restoreOperations.length, 1);
