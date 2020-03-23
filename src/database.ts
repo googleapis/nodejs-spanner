@@ -71,7 +71,7 @@ import {
   PagedRequest,
   ResourceCallback,
   PagedResponse,
-  NormalCallback,
+  NormalCallback, LongRunningCallback,
 } from './common';
 import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
@@ -201,12 +201,10 @@ export interface CancelableDuplex extends Duplex {
   cancel(): void;
 }
 
-export type RestoreDatabaseCallback = ResourceCallback<
-  GaxOperation,
-  databaseAdmin.longrunning.IOperation
->;
+export type RestoreDatabaseCallback = LongRunningCallback<Database>;
 
 export type RestoreDatabaseResponse = [
+  Database,
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
@@ -1503,7 +1501,7 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [restoreOperation] = await database.restore('projects/my-project/instances/my-instance/backups/my-backup');
+   * const [, restoreOperation] = await database.restore('projects/my-project/instances/my-instance/backups/my-backup');
    * // Wait for restore to complete
    * await restoreOperation.promise();
    */
@@ -1524,7 +1522,13 @@ class Database extends GrpcServiceObject {
         method: 'restoreDatabase',
         reqOpts,
       },
-      callback!
+      (err, resp) => {
+        if (err) {
+          callback!(err, null, resp!);
+          return;
+        }
+        callback!(null, this, resp, resp);
+      }
     );
   }
 

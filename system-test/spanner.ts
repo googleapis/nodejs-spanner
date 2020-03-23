@@ -1158,7 +1158,7 @@ describe('Spanner', () => {
     it('should restore a backup', async () => {
       // Perform restore to a different database.
       const restoreDatabase = instance.database(generateName('database'));
-      const [restoreOperation] = await restoreDatabase.restore(
+      const [, restoreOperation] = await restoreDatabase.restore(
         backup1.formattedName_
       );
 
