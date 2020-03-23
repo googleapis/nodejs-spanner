@@ -16,17 +16,23 @@
 import {promisifyAll} from '@google-cloud/promisify';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {Instance} from './instance';
-import {RequestCallback, ResourceCallback} from './common';
+import {IOperation, RequestCallback} from './common';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
 import * as extend from 'extend';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {status} from 'grpc';
+import {ServiceError, status } from 'grpc';
 
-export type CreateBackupCallback = ResourceCallback<
-  GaxOperation,
-  databaseAdmin.longrunning.IOperation
->;
+// Like LongRunningCallback<Backup> but with more specific type for operation parameter
+export type CreateBackupCallback = {
+  (
+    err: ServiceError | null,
+    resource?: Backup | null,
+    // More specific type for CreateBackup operation
+    operation?: CreateBackupGaxOperation | null,
+    apiResponse?: IOperation
+  ): void;
+};
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
@@ -35,6 +41,7 @@ export interface CreateBackupGaxOperation extends GaxOperation {
 }
 
 export type CreateBackupResponse = [
+  Backup,
   CreateBackupGaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
@@ -103,7 +110,7 @@ class Backup {
    * const database = spanner.database('my-database');
    * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
    * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
-   * const [backupOperation] = await backup.create();
+   * const [, backupOperation] = await backup.create();
    * // Await completion of the backup operation.
    * await backupOperation.promise();
    */
@@ -128,13 +135,19 @@ class Backup {
         },
       }
     );
-    return this.request(
+    return this.request<CreateBackupGaxOperation>(
       {
         client: 'DatabaseAdminClient',
         method: 'createBackup',
         reqOpts,
       },
-      callback!
+      (err, resp) => {
+        if (err) {
+          callback!(err, null, null);
+          return;
+        }
+        callback!(null, this, resp, resp || undefined);
+      }
     );
   }
 

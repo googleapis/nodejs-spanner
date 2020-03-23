@@ -46,7 +46,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a new backup of the database
   try {
     console.log(`Creating backup of database ${database.formattedName_}.`);
-    const [operation] = await backup.create();
+    const [, operation] = await backup.create();
 
     // Cancel the backup
     await operation.cancel();

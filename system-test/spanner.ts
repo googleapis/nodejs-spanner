@@ -1021,8 +1021,8 @@ describe('Spanner', () => {
         database2.formattedName_,
         backupExpiryDate
       );
-      const [backup1Operation] = await backup1.create();
-      const [backup2Operation] = await backup2.create();
+      const [, backup1Operation] = await backup1.create();
+      const [, backup2Operation] = await backup2.create();
 
       assert.strictEqual(
         backup1Operation.metadata!.name,
@@ -1097,7 +1097,7 @@ describe('Spanner', () => {
         backupExpiryDate
       );
       try {
-        const [backupOperation] = await backup.create();
+        const [, backupOperation] = await backup.create();
         assert.fail(
           'Backup should have failed for expiration time in the past'
         );

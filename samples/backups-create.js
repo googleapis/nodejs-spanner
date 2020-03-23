@@ -46,7 +46,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a new backup of the database
   try {
     console.log(`Creating backup of database ${database.formattedName_}.`);
-    const [operation] = await backup.create();
+    const [, operation] = await backup.create();
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
     await operation.promise();
