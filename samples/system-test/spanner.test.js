@@ -768,7 +768,7 @@ describe('Spanner', () => {
   // list_backup_operations
   it(`should list backup operations in the instance`, async () => {
     const output = execSync(
-      `${backupsCmd} listBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Backup Operations:/);
     assert.match(output, new RegExp(`${BACKUP_ID}/operations/`));
@@ -777,7 +777,7 @@ describe('Spanner', () => {
   // list_database_operations
   it(`should list database operations in the instance`, async () => {
     const output = execSync(
-      `${backupsCmd} listDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Database Operations:/);
   });

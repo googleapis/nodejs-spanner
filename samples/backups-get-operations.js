@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function listBackupOperations(instanceId, databaseId, projectId) {
+async function getBackupOperations(instanceId, databaseId, projectId) {
   // [START spanner_list_backup_operations]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -38,7 +38,7 @@ async function listBackupOperations(instanceId, databaseId, projectId) {
 
   // List backup operations
   try {
-    const [backupOperations] = await instance.listBackupOperations({
+    const [backupOperations] = await instance.getBackupOperations({
       filter: `(metadata.database:${databaseId}) AND (metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
     });
     console.log('Backup Operations:');
@@ -60,4 +60,4 @@ async function listBackupOperations(instanceId, databaseId, projectId) {
   // [END spanner_list_backup_operations]
 }
 
-module.exports.listBackupOperations = listBackupOperations;
+module.exports.getBackupOperations = getBackupOperations;
