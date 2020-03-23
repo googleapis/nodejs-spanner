@@ -1020,8 +1020,8 @@ describe('Instance', () => {
           assert.strictEqual(backupId, BACKUPS[0].name);
           assert.strictEqual(databasePath, BACKUPS[0].database);
           assert.strictEqual(
-            expireTime.getFullTime(),
-            BACKUPS[0].expireTime.getFullTime()
+            expireTime.getFullTimeString(),
+            BACKUPS[0].expireTime.getFullTimeString()
           );
           return fakeBackupInstance as Backup;
         };
