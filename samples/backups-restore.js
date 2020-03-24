@@ -51,8 +51,10 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
 
   console.log(`Database restored from backup.`);
   const restoreInfo = await database.getRestoreInfo();
-  console.log(`Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
-      `to ${databaseId} from backup ${restoreInfo.backupInfo.backup}.`);
+  console.log(
+    `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
+      `to ${databaseId} from backup ${restoreInfo.backupInfo.backup}.`
+  );
   // [END spanner_restore_backup]
 }
 

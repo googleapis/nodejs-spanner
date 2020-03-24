@@ -21,10 +21,10 @@ import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
 import * as extend from 'extend';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {ServiceError, status } from 'grpc';
+import {ServiceError, status} from 'grpc';
 
 // Like LongRunningCallback<Backup> but with more specific type for operation parameter
-export type CreateBackupCallback = {
+export interface CreateBackupCallback {
   (
     err: ServiceError | null,
     resource?: Backup | null,
@@ -32,7 +32,7 @@ export type CreateBackupCallback = {
     operation?: CreateBackupGaxOperation | null,
     apiResponse?: IOperation
   ): void;
-};
+}
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation

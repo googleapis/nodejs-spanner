@@ -386,9 +386,7 @@ class Instance extends common.GrpcServiceObject {
    * const [operations] = await instance.getBackupOperations();
    */
   getBackupOperations(
-    queryOrCallback?:
-      | GetBackupOperationsRequest
-      | GetBackupOperationsCallback,
+    queryOrCallback?: GetBackupOperationsRequest | GetBackupOperationsCallback,
     cb?: GetBackupOperationsCallback
   ): void | Promise<GetBackupOperationsResponse> {
     const callback =

@@ -700,7 +700,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp(`Backup (\.+)${BACKUP_ID} of size`));
+    assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
   });
 
   // cancel_backup
@@ -733,7 +733,10 @@ describe('Spanner', () => {
       `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Create Backup Operations:/);
-    assert.match(output, new RegExp(`Backup (\.+)${BACKUP_ID} (\.+) is 100% complete`));
+    assert.match(
+      output,
+      new RegExp(`Backup (.+)${BACKUP_ID} (.+) is 100% complete`)
+    );
   });
 
   // update_backup_expire_time
@@ -750,9 +753,13 @@ describe('Spanner', () => {
       `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Database restored from backup./);
-    assert.match(output, new RegExp(
-        `Database (\.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
-        `(\.+)${BACKUP_ID}`));
+    assert.match(
+      output,
+      new RegExp(
+        `Database (.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
+          `(.+)${BACKUP_ID}`
+      )
+    );
   });
 
   // list_database_operations
@@ -763,8 +770,10 @@ describe('Spanner', () => {
     assert.match(output, /Optimize Database Operations:/);
     // TODO: Fix the OptimizeRestoredDatabaseMetadata type so that the progress
     // percent is not undefined.
-    assert.match(output,
-        new RegExp(`Database (\.+)${RESTORE_DATABASE_ID} restored from backup`));
+    assert.match(
+      output,
+      new RegExp(`Database (.+)${RESTORE_DATABASE_ID} restored from backup`)
+    );
   });
 
   // delete_backup

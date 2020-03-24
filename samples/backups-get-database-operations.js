@@ -38,15 +38,16 @@ async function getDatabaseOperations(instanceId, projectId) {
   // List database operations
   try {
     const [databaseOperations] = await instance.getDatabaseOperations({
-      filter: "(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)"
+      filter:
+        '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)',
     });
     console.log('Optimize Database Operations:');
     databaseOperations.forEach(databaseOperation => {
-      const metadata =
-          google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
-              databaseOperation.metadata.value);
+      const metadata = google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
+        databaseOperation.metadata.value
+      );
       console.log(
-          `Database ${metadata.name} restored from backup is ` +
+        `Database ${metadata.name} restored from backup is ` +
           `${metadata.progress.progress_percent}% optimized.`
       );
     });

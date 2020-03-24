@@ -55,9 +55,10 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     const [backupInfo] = await backup.getMetadata();
     if (backupInfo.state === 'READY') {
       console.log(
-          `Backup ${backupInfo.name} of size ` +
+        `Backup ${backupInfo.name} of size ` +
           `${backupInfo.sizeBytes} bytes was created at ` +
-          `${new PreciseDate(backupInfo.createTime).toISOString()}`);
+          `${new PreciseDate(backupInfo.createTime).toISOString()}`
+      );
     } else {
       console.error('ERROR: Backup is not ready.');
     }

@@ -71,7 +71,8 @@ import {
   PagedRequest,
   ResourceCallback,
   PagedResponse,
-  NormalCallback, LongRunningCallback,
+  NormalCallback,
+  LongRunningCallback,
 } from './common';
 import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';

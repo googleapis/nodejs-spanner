@@ -111,5 +111,4 @@ async function listBackups(instanceId, databaseId, backupId, projectId) {
   // [END spanner_list_backups]
 }
 
-
 module.exports.listBackups = listBackups;
