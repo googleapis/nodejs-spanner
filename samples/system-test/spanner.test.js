@@ -700,7 +700,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Backup created./);
+    assert.match(output, new RegExp(`Backup (\.+)${BACKUP_ID} of size`));
   });
 
   // cancel_backup

@@ -39,8 +39,8 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   const database = instance.database(databaseId);
 
   const databasePath = database.formattedName_;
-  // Expire backup one day in the future
-  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
+  // Expire backup 14 days in the future
+  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 14);
   const backup = instance.backup(backupId, databasePath, expireTime);
 
   // Creates a new backup of the database
@@ -54,12 +54,10 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     // Verify backup is ready
     const [backupInfo] = await backup.getMetadata();
     if (backupInfo.state === 'READY') {
-      console.log('Backup created.');
-      console.log(`Name: ${backupInfo.name}`);
-      console.log(`Size: ${backupInfo.sizeBytes} bytes`);
       console.log(
-        `Created: ${new PreciseDate(backupInfo.createTime).toISOString()}`
-      );
+          `Backup ${backupInfo.name} of size ` +
+          `${backupInfo.sizeBytes} bytes was created at ` +
+          `${new PreciseDate(backupInfo.createTime).toISOString()}`);
     } else {
       console.error('ERROR: Backup is not ready.');
     }
