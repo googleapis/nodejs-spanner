@@ -714,55 +714,17 @@ describe('Spanner', () => {
   // list_backups
   it(`should list backups in the instance`, async () => {
     const output = execSync(
-      `${backupsCmd} listBackups ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} listBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Backups:/);
-    assert.match(output, new RegExp(`${BACKUP_ID}`));
-  });
-
-  // list_backups_by_database
-  it(`should list backups for a database`, async () => {
-    const output = execSync(
-      `${backupsCmd} listBackupsByDatabase ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /Backups:/);
-    assert.match(output, new RegExp(`${BACKUP_ID}`));
-  });
-
-  // list_backups_by_name
-  it(`should list backups by backup name`, async () => {
-    const output = execSync(
-      `${backupsCmd} listBackupsByName ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /Backups:/);
-    assert.match(output, new RegExp(`${BACKUP_ID}`));
-  });
-
-  // list_small_backups
-  it(`should list small backups on the instance`, async () => {
-    const output = execSync(
-      `${backupsCmd} listSmallBackups ${INSTANCE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /Backups:/);
-    assert.match(output, new RegExp(`${BACKUP_ID}`));
-  });
-
-  // list_new_backups
-  it(`should list new backups on the instance`, async () => {
-    const output = execSync(
-      `${backupsCmd} listNewBackups ${INSTANCE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /Backups:/);
-    assert.match(output, new RegExp(`${BACKUP_ID}`));
-  });
-
-  // list_backups_paginated
-  it(`should list backups using pagination`, async () => {
-    const output = execSync(
-      `${backupsCmd} listBackupsPaginated ${INSTANCE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /Backups:/);
-    assert.match(output, new RegExp(`${BACKUP_ID}`));
+    assert.include(output, 'All backups:');
+    assert.include(output, 'Backups matching backup name:');
+    assert.include(output, 'Backups expiring within 30 days:');
+    assert.include(output, 'Backups matching database name:');
+    assert.include(output, 'Backups filtered by size:');
+    assert.include(output, 'Ready backups filtered by create time:');
+    assert.include(output, 'List backups paginated:');
+    const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
+    assert.equal(count, 7);
   });
 
   // list_backup_operations

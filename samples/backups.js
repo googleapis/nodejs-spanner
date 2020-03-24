@@ -58,41 +58,10 @@ require(`yargs`)
       )
   )
   .command(
-    `listBackups <instanceName> <projectId>`,
-    `Lists all backups in the instance.`,
+    `listBackups <instanceName> <databaseId> <backupId> <projectId>`,
+    `Lists backups in the instance with filters.`,
     {},
     opts => listBackups(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listBackupsByDatabase <instanceName> <databaseId> <projectId>`,
-    `Lists all backups for the specified database.`,
-    {},
-    opts =>
-      listBackupsByDatabase(opts.instanceName, opts.databaseId, opts.projectId)
-  )
-  .command(
-    `listBackupsByName <instanceName> <backupId> <projectId>`,
-    `Lists backups by backup name.`,
-    {},
-    opts => listBackupsByName(opts.instanceName, opts.backupId, opts.projectId)
-  )
-  .command(
-    `listSmallBackups <instanceName> <projectId>`,
-    `Lists all backups in the instance that are under 64K.`,
-    {},
-    opts => listSmallBackups(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listNewBackups <instanceName> <projectId>`,
-    `Lists all backups in the instance created recently and which expire soon.`,
-    {},
-    opts => listNewBackups(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listBackupsPaginated <instanceName> <projectId>`,
-    `Lists all backups in the instance using pagination.`,
-    {},
-    opts => listBackupsPaginated(opts.instanceName, opts.projectId)
   )
   .command(
     `getBackupOperations <instanceName> <databaseName> <projectId>`,
