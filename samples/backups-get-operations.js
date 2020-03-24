@@ -39,20 +39,17 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
   // List backup operations
   try {
     const [backupOperations] = await instance.getBackupOperations({
-      filter: `(metadata.database:${databaseId}) AND (metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
+      filter: `(metadata.database:${databaseId}) AND ` +
+          `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
     });
-    console.log('Backup Operations:');
+    console.log('Create Backup Operations:');
     backupOperations.forEach(backupOperation => {
+      const metadata =
+          google.spanner.admin.database.v1.CreateBackupMetadata.decode(
+              backupOperation.metadata.value);
       console.log(
-        backupOperation.name +
-          (backupOperation.done
-            ? ' (completed)'
-            : ` (in progress - ${
-                google.spanner.admin.database.v1.CreateBackupMetadata.decode(
-                  backupOperation.metadata.value
-                ).progress.progressPercent
-              }%)`)
-      );
+          `Backup ${metadata.name} on database ${metadata.database} is ` +
+          `${metadata.progress.progressPercent}% complete.`);
     });
   } catch (err) {
     console.error('ERROR:', err);
