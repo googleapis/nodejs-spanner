@@ -788,6 +788,9 @@ describe('Spanner', () => {
       `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Database restored from backup./);
+    assert.match(output, new RegExp(
+        `Database (\.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
+        `(\.+)${BACKUP_ID}`));
   });
 
   // list_database_operations
