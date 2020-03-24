@@ -19,6 +19,7 @@ async function getDatabaseOperations(instanceId, projectId) {
   // [START spanner_list_database_operations]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
+  const {google} = require('../protos/protos');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -36,12 +37,17 @@ async function getDatabaseOperations(instanceId, projectId) {
 
   // List database operations
   try {
-    const [databaseOperations] = await instance.getDatabaseOperations();
-    console.log('Database Operations:');
+    const [databaseOperations] = await instance.getDatabaseOperations({
+      filter: "(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)"
+    });
+    console.log('Optimize Database Operations:');
     databaseOperations.forEach(databaseOperation => {
+      const metadata =
+          google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
+              databaseOperation.metadata.value);
       console.log(
-        databaseOperation.name +
-          (databaseOperation.done ? ' (completed)' : ' (in progress)')
+          `Database ${metadata.name} restored from backup is ` +
+          `${metadata.progress.progress_percent}% optimized.`
       );
     });
   } catch (err) {
