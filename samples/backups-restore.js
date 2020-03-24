@@ -41,7 +41,7 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   console.log(
     `Restoring database ${database.formattedName_} from backup ${backupId}.`
   );
-  const [restoreOperation] = await database.restore(
+  const [, restoreOperation] = await database.restore(
     `projects/${projectId}/instances/${instanceId}/backups/${backupId}`
   );
 
