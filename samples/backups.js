@@ -59,7 +59,8 @@ require(`yargs`)
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId)
+        opts.projectId
+      )
   )
   .command(
     `getBackupOperations <instanceName> <databaseName> <projectId>`,
