@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function listBackups(instanceId, databaseId, backupId, projectId) {
+async function getBackups(instanceId, databaseId, backupId, projectId) {
   // [START spanner_list_backups]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -95,7 +95,7 @@ async function listBackups(instanceId, databaseId, backupId, projectId) {
 
     // List backups using pagination
     let pageToken = undefined;
-    console.log('List backups paginated:');
+    console.log('Get backups paginated:');
     do {
       const [backups, , response] = await instance.getBackups({
         autoPaginate: false,
@@ -113,4 +113,4 @@ async function listBackups(instanceId, databaseId, backupId, projectId) {
   // [END spanner_list_backups]
 }
 
-module.exports.listBackups = listBackups;
+module.exports.getBackups = getBackups;

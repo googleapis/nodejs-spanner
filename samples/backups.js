@@ -17,7 +17,7 @@
 
 const {createBackup} = require('./backups-create');
 const {cancelBackup} = require('./backups-cancel');
-const {listBackups} = require('./backups-list');
+const {getBackups} = require('./backups-get');
 const {getBackupOperations} = require('./backups-get-operations');
 const {getDatabaseOperations} = require('./backups-get-database-operations');
 const {updateBackupExpireTime} = require('./backups-update');
@@ -51,11 +51,11 @@ require(`yargs`)
       )
   )
   .command(
-    `listBackups <instanceName> <databaseName> <backupName> <projectId>`,
+    `getBackups <instanceName> <databaseName> <backupName> <projectId>`,
     `Lists backups in the instance with filters.`,
     {},
     opts =>
-      listBackups(
+      getBackups(
         opts.instanceName,
         opts.databaseName,
         opts.backupName,

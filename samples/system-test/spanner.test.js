@@ -711,10 +711,10 @@ describe('Spanner', () => {
     assert.match(output, /Backup cancelled./);
   });
 
-  // list_backups
+  // get_backups
   it(`should list backups in the instance`, async () => {
     const output = execSync(
-      `${backupsCmd} listBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.include(output, 'All backups:');
     assert.include(output, 'Backups matching backup name:');
@@ -722,7 +722,7 @@ describe('Spanner', () => {
     assert.include(output, 'Backups matching database name:');
     assert.include(output, 'Backups filtered by size:');
     assert.include(output, 'Ready backups filtered by create time:');
-    assert.include(output, 'List backups paginated:');
+    assert.include(output, 'Get backups paginated:');
     const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
     assert.equal(count, 7);
   });
