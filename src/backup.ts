@@ -171,8 +171,7 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#getMetadata
-   * @returns {Promise<GetMetadataResponse>} when resolved, contains
-   *     metadata of the backup.
+   * @returns {Promise<GetMetadataResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -209,7 +208,7 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getState
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
+   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
    *     when resolved, contains the current state of the backup if it exists, or
    *     undefined if the backup does not exist.
    *
@@ -237,7 +236,7 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getExpireTime
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
+   * @returns {Promise<PreciseDate | undefined>}
    *     when resolved, contains the current expire time of the backup if it exists,
    *     or undefined if the backup does not exist.
    *
