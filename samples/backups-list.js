@@ -25,6 +25,8 @@ async function listBackups(instanceId, databaseId, backupId, projectId) {
    */
   // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
 
   // Creates a client
   const spanner = new Spanner({
