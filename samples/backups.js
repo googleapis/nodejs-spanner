@@ -51,10 +51,15 @@ require(`yargs`)
       )
   )
   .command(
-    `listBackups <instanceName> <databaseId> <backupId> <projectId>`,
+    `listBackups <instanceName> <databaseName> <backupName> <projectId>`,
     `Lists backups in the instance with filters.`,
     {},
-    opts => listBackups(opts.instanceName, opts.projectId)
+    opts =>
+      listBackups(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId)
   )
   .command(
     `getBackupOperations <instanceName> <databaseName> <projectId>`,

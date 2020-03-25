@@ -73,7 +73,7 @@ async function listBackups(instanceId, databaseId, backupId, projectId) {
 
     // List backups filtered by backup size
     const [backupsBySize] = await instance.getBackups({
-      filter: 'size_bytes > 1000',
+      filter: 'size_bytes > 100',
     });
     console.log('Backups filtered by size:');
     backupsBySize.forEach(backup => {
