@@ -48,7 +48,7 @@ async function getDatabaseOperations(instanceId, projectId) {
       );
       console.log(
         `Database ${metadata.name} restored from backup is ` +
-          `${metadata.progress.progress_percent}% optimized.`
+          `${metadata.progress.progressPercent}% optimized.`
       );
     });
   } catch (err) {
