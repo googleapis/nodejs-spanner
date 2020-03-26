@@ -770,8 +770,10 @@ describe('Spanner', () => {
     assert.match(output, /Optimize Database Operations:/);
     assert.match(
       output,
-      new RegExp(`Database (.+)${RESTORE_DATABASE_ID} restored from backup ` +
-        'is 100% optimized')
+      new RegExp(
+        `Database (.+)${RESTORE_DATABASE_ID} restored from backup ` +
+          'is 100% optimized'
+      )
     );
   });
 
