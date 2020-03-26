@@ -208,7 +208,7 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getState
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
    *     when resolved, contains the current state of the backup if it exists, or
    *     undefined if the backup does not exist.
    *
