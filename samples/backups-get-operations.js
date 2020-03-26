@@ -18,8 +18,7 @@
 async function getBackupOperations(instanceId, databaseId, projectId) {
   // [START spanner_list_backup_operations]
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-  const {google} = require('../protos/protos');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -45,7 +44,7 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
     });
     console.log('Create Backup Operations:');
     backupOperations.forEach(backupOperation => {
-      const metadata = google.spanner.admin.database.v1.CreateBackupMetadata.decode(
+      const metadata = protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
         backupOperation.metadata.value
       );
       console.log(
