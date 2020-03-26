@@ -2384,8 +2384,7 @@ export namespace google {
                        * @param [writer] Writer to encode to
                        * @returns Writer
                        */
-                      public static encodeDelimited(message:
-                                                    google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+                      public static encodeDelimited(message: google.spanner.admin.database.v1.IOptimizeRestoredDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
 
                       /**
                        * Decodes a OptimizeRestoredDatabaseMetadata message from the specified reader or buffer.
