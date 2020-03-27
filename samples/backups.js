@@ -20,7 +20,7 @@ const {cancelBackup} = require('./backups-cancel');
 const {getBackups} = require('./backups-get');
 const {getBackupOperations} = require('./backups-get-operations');
 const {getDatabaseOperations} = require('./backups-get-database-operations');
-const {updateBackupExpireTime} = require('./backups-update');
+const {updateBackup} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
 const {deleteBackup} = require('./backups-delete');
 
@@ -76,13 +76,12 @@ require(`yargs`)
     opts => getDatabaseOperations(opts.instanceName, opts.projectId)
   )
   .command(
-    `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,
+    `updateBackup <instanceName> <backupName> <projectId>`,
     `Updates the expire time of a backup.`,
     {},
     opts =>
-      updateBackupExpireTime(
+      updateBackup(
         opts.instanceName,
-        opts.databaseName,
         opts.backupName,
         opts.projectId
       )

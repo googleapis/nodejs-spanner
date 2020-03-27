@@ -742,7 +742,7 @@ describe('Spanner', () => {
   // update_backup_expire_time
   it(`should update the expire time of a backup`, async () => {
     const output = execSync(
-      `${backupsCmd} updateBackupExpireTime ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Expire time updated./);
   });
