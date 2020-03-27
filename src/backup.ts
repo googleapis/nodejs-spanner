@@ -218,7 +218,7 @@ class Backup {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const myBackup = instance.backup('my-backup');
-   * const state = await backup.getState();
+   * const state = await myBackup.getState();
    * const backupCompleted = (state === 'READY');
    */
   async getState(): Promise<
