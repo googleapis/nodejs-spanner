@@ -108,8 +108,9 @@ class Backup {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = spanner.database('my-database');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const oneDay = 1000 * 60 * 60 * 24;
+   * const ExpiryTime = new PreciseDate(Date.now() + oneDay)
+   * const backup = instance.backup('my-backup', database.formattedName_, expiryTime);
    * const [, backupOperation] = await backup.create();
    * // Await completion of the backup operation.
    * await backupOperation.promise();
@@ -306,7 +307,8 @@ class Backup {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const myBackup = instance.backup('my-backup');
-   * const newExpireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
+   * const oneDay = 1000 * 60 * 60 * 24;
+   * const newExpireTime = new PreciseDate(Date.now() + oneDay);
    * await myBackup.updateExpireTime(newExpireTime);
    */
   updateExpireTime(
