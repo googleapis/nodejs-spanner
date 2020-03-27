@@ -79,12 +79,7 @@ require(`yargs`)
     `updateBackup <instanceName> <backupName> <projectId>`,
     `Updates the expire time of a backup.`,
     {},
-    opts =>
-      updateBackup(
-        opts.instanceName,
-        opts.backupName,
-        opts.projectId
-      )
+    opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId)
   )
   .command(
     `restoreBackup <instanceName> <databaseName> <backupName> <projectId>`,
