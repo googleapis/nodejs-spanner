@@ -773,7 +773,7 @@ describe('Spanner', () => {
     assert.match(
       output,
       new RegExp(
-        `Database (.+)${RESTORE_DATABASE_ID} restored from backup is (\d+)%` +
+        `Database (.+)${RESTORE_DATABASE_ID} restored from backup is (\\d+)% ` +
           'optimized'
       )
     );
