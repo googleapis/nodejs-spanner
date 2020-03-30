@@ -368,7 +368,7 @@ export class Snapshot extends EventEmitter {
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
    * @typedef {object} ReadRequest
-   * @property {string[]} [keys] The primary keys of the rows in this table to be
+   * @property {string[]|string[][]} [keys] The primary keys of the rows in this table to be
    *     yielded. If using a composite key, provide an array within this array.
    *     See the example below.
    * @property {KeyRange[]} [ranges] An alternative to the keys property; this can
