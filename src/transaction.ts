@@ -86,7 +86,7 @@ export interface ReadRequest extends RequestOptions {
   table?: string;
   index?: string;
   columns?: string[] | null;
-  keys?: string[];
+  keys?: string[] | string[][];
   ranges?: KeyRange[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
   limit?: number | Long | null;
@@ -928,7 +928,9 @@ export class Snapshot extends EventEmitter {
     const keySet: spannerClient.spanner.v1.IKeySet = request.keySet || {};
 
     if (request.keys) {
-      keySet.keys = arrify(request.keys).map(codec.convertToListValue);
+      keySet.keys = arrify(request.keys as string[]).map(
+        codec.convertToListValue
+      );
     }
 
     if (request.ranges) {
