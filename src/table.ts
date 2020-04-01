@@ -469,7 +469,7 @@ class Table {
    * @typedef {object} TableReadRequestOptions
    * @property {string[]} columns The columns of the table to be returned for each
    *     row matching this query.
-   * @property {string[]|string[][]} keys The primary keys of the rows in this table to be
+   * @property {array} keys The primary keys of the rows in this table to be
    *     yielded. If using a composite key, provide an array within this array.
    *     See the example below.
    * @property {string} [index] The name of an index on the table.

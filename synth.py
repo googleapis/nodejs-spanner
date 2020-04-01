@@ -6,9 +6,6 @@ import subprocess
 
 logging.basicConfig(level=logging.DEBUG)
 
-AUTOSYNTH_MULTIPLE_COMMITS = True
-
-
 gapic = gcp.GAPICGenerator()
 
 spanner = gapic.node_library(
