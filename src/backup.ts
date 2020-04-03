@@ -421,7 +421,9 @@ class Backup {
   }
 
   delete(): Promise<void>;
+  delete(options?: CallOptions): Promise<void>;
   delete(callback: DeleteCallback): void;
+  delete(options: CallOptions, callback: DeleteCallback): void;
   /**
    * Deletes a backup.
    *
@@ -435,7 +437,18 @@ class Backup {
    * const backup = instance.backup('my-backup');
    * await backup.delete();
    */
-  delete(callback?: DeleteCallback): void | Promise<void> {
+  delete(
+    optionsOrCallback?: CallOptions | DeleteCallback,
+    cb?: DeleteCallback
+  ): void | Promise<void> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as DeleteCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
     };
@@ -444,6 +457,7 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'deleteBackup',
         reqOpts,
+        gaxOpts,
       },
       err => {
         callback!(err, null);
