@@ -29,6 +29,7 @@ import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';
+import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {
@@ -1541,20 +1542,20 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const newDatabaseName = 'projects/my-project/instances/my-instance/backups/my-backup';
-   * const [, restoreOperation] = await database.restore(newDatabaseName);
+   * const backupName = 'projects/my-project/instances/my-instance/backups/my-backup';
+   * const [, restoreOperation] = await database.restore(backupName);
    * // Wait for restore to complete
    * await restoreOperation.promise();
    */
   restore(
-    backupPath: string,
+    backupName: string,
     callback?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = extend(
       {
         parent: this.instance.formattedName_,
         databaseId: this.id,
-        backup: backupPath,
+        backup: Backup.formatName_(this.instance.formattedName_, backupName),
       }
     );
     return this.request(

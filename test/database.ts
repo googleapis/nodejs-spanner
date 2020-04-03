@@ -2280,6 +2280,23 @@ describe('Database', () => {
       await database.restore(BACKUP_FORMATTED_NAME);
     });
 
+    it('should accept a backup name', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        databaseId: NAME,
+        parent: INSTANCE.formattedName_,
+        backup: BACKUP_FORMATTED_NAME,
+      });
+
+      database.id = NAME;
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+      };
+
+      await database.restore(BACKUP_NAME);
+    });
+
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};
