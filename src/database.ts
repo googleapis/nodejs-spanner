@@ -1015,6 +1015,27 @@ class Database extends GrpcServiceObject {
     return metadata.restoreInfo ? metadata.restoreInfo : undefined;
   }
 
+  /**
+   * Retrieves the state of the database.
+   *
+   * The database state indicates if the database is ready after creation or
+   * after being restored from a backup.
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getState
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
+   *     when resolved, contains the current state of the database if it exists, or
+   *     undefined if the database does not exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const state = await database.getState();
+   * const isReady = (state === 'READY');
+   */
   async getState(): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
     | undefined
