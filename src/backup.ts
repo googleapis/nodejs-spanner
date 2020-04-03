@@ -76,19 +76,23 @@ type DeleteCallback = RequestCallback<void>;
  * const backup = instance.backup('my-backup');
  */
 class Backup {
+  id_: string;
   formattedName_: string;
+  instanceFormattedName_: string;
   request: <T, R = void>(
     config: RequestConfig,
     callback: RequestCallback<T, R>
   ) => void;
   constructor(
-    private instance: Instance,
-    private backupId: string,
+    instance: Instance,
+    name: string,
     private databasePath?: string,
     private expireTime?: PreciseDate
   ) {
     this.request = instance.request;
-    this.formattedName_ = Backup.formatName_(this.instance.formattedName_, this.backupId);
+    this.instanceFormattedName_ = instance.formattedName_;
+    this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
+    this.id_ = this.formattedName_.split('/').pop() || '';
   }
 
   create(): Promise<CreateBackupResponse>;
@@ -107,7 +111,10 @@ class Backup {
    * const database = spanner.database('my-database');
    * const oneDay = 1000 * 60 * 60 * 24;
    * const expiryTime = new PreciseDate(Date.now() + oneDay);
-   * const backup = instance.backup('my-backup', database.formattedName_, expiryTime);
+   * const backup = instance.backup(
+   *   'my-backup',
+   *   'projects/my-project/instances/my-instance/databases/my-database',
+   *   expiryTime);
    * const [, backupOperation] = await backup.create();
    * // Await completion of the backup operation.
    * await backupOperation.promise();
@@ -124,8 +131,8 @@ class Backup {
 
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {
-        parent: this.instance.formattedName_,
-        backupId: this.backupId,
+        parent: this.instanceFormattedName_,
+        backupId: this.id_,
         backup: {
           database: this.databasePath,
           expireTime: this.expireTime.toStruct(),
@@ -251,7 +258,7 @@ class Backup {
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const expireTime = await backup.getExpireTime();
-   * console.log(`Backup ${backup.formattedName_} expires on ${expireTime.toISOString()}`);
+   * console.log(`Backup expires on ${expireTime.toISOString()}`);
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
     try {
