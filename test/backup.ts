@@ -412,6 +412,18 @@ describe('Backup', () => {
       await backup.updateExpireTime(NEW_EXPIRE_TIME);
     });
 
+    it('should accept gaxOpts and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await backup.updateExpireTime(NEW_EXPIRE_TIME, options, assert.ifError);
+    });
+
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};

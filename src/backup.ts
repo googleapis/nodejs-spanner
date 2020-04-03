@@ -347,10 +347,21 @@ class Backup {
   }
 
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
+  updateExpireTime(expireTime: PreciseDate, options?: CallOptions): Promise<Backup>;
   updateExpireTime(
     expireTime: PreciseDate,
     callback: UpdateExpireTimeCallback
   ): void;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    options: CallOptions,
+    callback: UpdateExpireTimeCallback
+  ): void;
+  /**
+   * @callback UpdateExpireTimeCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Backup} backup The updated {@link Backup}.
+   */
   /**
    * Sets the expiry time of a backup.
    *
@@ -371,8 +382,17 @@ class Backup {
    */
   updateExpireTime(
     expireTime: PreciseDate,
-    callback?: UpdateExpireTimeCallback
+    optionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
+    cb?: UpdateExpireTimeCallback
   ): void | Promise<Backup> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as UpdateExpireTimeCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
         name: this.formattedName_,
@@ -387,6 +407,7 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'updateBackup',
         reqOpts,
+        gaxOpts,
       },
       (err) => {
         if (err) {
