@@ -221,8 +221,8 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const myBackup = instance.backup('my-backup');
-   * const state = await myBackup.getState();
+   * const backup = instance.backup('my-backup');
+   * const state = await backup.getState();
    * const backupCompleted = (state === 'READY');
    */
   async getState(): Promise<
@@ -325,10 +325,10 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const myBackup = instance.backup('my-backup');
+   * const backup = instance.backup('my-backup');
    * const oneDay = 1000 * 60 * 60 * 24;
    * const newExpireTime = new PreciseDate(Date.now() + oneDay);
-   * await myBackup.updateExpireTime(newExpireTime);
+   * await backup.updateExpireTime(newExpireTime);
    */
   updateExpireTime(
     expireTime: PreciseDate,
@@ -372,8 +372,8 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const myBackup = instance.backup('my-backup');
-   * await myBackup.delete();
+   * const backup = instance.backup('my-backup');
+   * await backup.delete();
    */
   delete(callback?: DeleteCallback): void | Promise<void> {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
