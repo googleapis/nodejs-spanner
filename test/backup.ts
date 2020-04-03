@@ -214,6 +214,18 @@ describe('Backup', () => {
       await backup.getMetadata();
     });
 
+    it('should accept gaxOpts and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await backup.getMetadata(options, assert.ifError);
+    });
+
     describe('error', () => {
       const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
 

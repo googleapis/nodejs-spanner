@@ -184,7 +184,9 @@ class Backup {
   }
 
   getMetadata(): Promise<GetMetadataResponse>;
+  getMetadata(options?: CallOptions): Promise<GetMetadataResponse>;
   getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(options: CallOptions, callback: GetMetadataCallback): void;
   /**
    * @typedef {array} GetMetadataResponse
    * @property {object} 0 The {@link Backup} metadata.
@@ -215,8 +217,17 @@ class Backup {
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
   getMetadata(
-    callback?: GetMetadataCallback
+    optionsOrCallback?: CallOptions | GetMetadataCallback,
+    cb?: GetMetadataCallback
   ): void | Promise<GetMetadataResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetMetadataCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
@@ -225,6 +236,7 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'getBackup',
         reqOpts,
+        gaxOpts,
       },
       (err, response) => {
         callback!(err, response);
