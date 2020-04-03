@@ -100,6 +100,21 @@ class Backup {
   create(callback: CreateBackupCallback): void;
   create(options: CallOptions, callback: CreateBackupCallback): void;
   /**
+   * @typedef {array} CreateBackupResponse
+   * @property {Backup} 0 The new {@link Backup}.
+   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback CreateBackupCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Backup} backup The new {@link Backup}.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
    * Create a backup.
    *
    * @method Backup#create
