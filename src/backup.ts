@@ -21,7 +21,7 @@ import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
 import * as extend from 'extend';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {ServiceError, status} from 'grpc';
+import {CallOptions, ServiceError, status} from 'grpc';
 
 // Like LongRunningCallback<Backup> but with more specific type for operation parameter
 export interface CreateBackupCallback {
@@ -96,7 +96,9 @@ class Backup {
   }
 
   create(): Promise<CreateBackupResponse>;
+  create(options?: CallOptions): Promise<CreateBackupResponse>;
   create(callback: CreateBackupCallback): void;
+  create(options: CallOptions, callback: CreateBackupCallback): void;
   /**
    * Create a backup.
    *
@@ -120,7 +122,8 @@ class Backup {
    * await backupOperation.promise();
    */
   create(
-    callback?: CreateBackupCallback
+    optionsOrCallback?: CallOptions | CreateBackupCallback,
+    cb?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
     if (!this.expireTime) {
       throw new Error('Expire time is required to create a backup.');
@@ -129,6 +132,14 @@ class Backup {
       throw new Error('Database path is required to create a backup.');
     }
 
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as CreateBackupCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {
         parent: this.instanceFormattedName_,
@@ -145,6 +156,7 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'createBackup',
         reqOpts,
+        gaxOpts,
       },
       (err, resp) => {
         if (err) {
