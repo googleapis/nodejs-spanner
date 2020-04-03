@@ -175,7 +175,7 @@ class Backup {
       },
       (err, resp) => {
         if (err) {
-          callback!(err, null, null);
+          callback!(err, null, null, null);
           return;
         }
         callback!(null, this, resp, resp || undefined);
