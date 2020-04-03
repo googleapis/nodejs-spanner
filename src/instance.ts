@@ -261,7 +261,7 @@ class Instance extends common.GrpcServiceObject {
     expireTime: PreciseDate
   ): Backup {
     if (!backupId) {
-      throw new Error('A backup ID is required to create a backup.');
+      throw new Error('A backup ID is required to create a Backup.');
     }
 
     return new Backup(this, backupId, databasePath, expireTime);

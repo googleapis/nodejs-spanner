@@ -1046,7 +1046,7 @@ describe('Instance', () => {
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
         instance.backup(null!, DATABASE_NAME, EXPIRE_TIME);
-      }, /A backup ID is required to create a backup\./);
+      }, /A backup ID is required to create a Backup\./);
     });
 
     it('should create a Backup instance', () => {
