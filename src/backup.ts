@@ -225,9 +225,16 @@ class Backup {
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
     | undefined
   > {
-    const [backupInfo] = await this.getMetadata();
-    const state = backupInfo.state;
-    return state === null || state === undefined ? undefined : state;
+    try {
+      const [backupInfo] = await this.getMetadata();
+      return backupInfo.state || undefined;
+    } catch (err) {
+      if (err.code === status.NOT_FOUND) {
+        return undefined;
+      }
+      // Some other error occurred, rethrow
+      throw err;
+    }
   }
 
   /**
@@ -250,9 +257,16 @@ class Backup {
    * console.log(`Backup ${backup.formattedName_} expires on ${expireTime.toISOString()}`);
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
-    const [backupInfo] = await this.getMetadata();
-    const expireTime = backupInfo.expireTime;
-    return expireTime ? new PreciseDate(expireTime as DateStruct) : undefined;
+    try {
+      const [backupInfo] = await this.getMetadata();
+      return new PreciseDate(backupInfo.expireTime as DateStruct);
+    } catch (err) {
+      if (err.code === status.NOT_FOUND) {
+        return undefined;
+      }
+      // Some other error occurred, rethrow
+      throw err;
+    }
   }
 
   /**

@@ -265,6 +265,29 @@ describe('Backup', () => {
       const result = await backup.getState();
       assert.strictEqual(result, 'CREATING');
     });
+
+    it('should return undefined when backup does not exist', async () => {
+      backup.getMetadata = async () => {
+        throw {code: grpc.status.NOT_FOUND};
+      };
+
+      const result = await backup.getState();
+      assert.strictEqual(result, undefined);
+    });
+
+    it('should rethrow other errors', async () => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      try {
+        await backup.getState();
+        assert.fail('Should have rethrown error');
+      } catch (thrown) {
+        assert.deepStrictEqual(thrown, err);
+      }
+    });
   });
 
   describe('getExpireTime', () => {
@@ -279,6 +302,29 @@ describe('Backup', () => {
       const result = await backup.getExpireTime();
       assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
     });
+
+    it('should return undefined when backup does not exist', async () => {
+      backup.getMetadata = async () => {
+        throw {code: grpc.status.NOT_FOUND};
+      };
+
+      const result = await backup.getExpireTime();
+      assert.strictEqual(result, undefined);
+    });
+
+    it('should rethrow other errors', async () => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      try {
+        await backup.getExpireTime();
+        assert.fail('Should have rethrown error');
+      } catch (thrown) {
+        assert.deepStrictEqual(thrown, err);
+      }
+    });
   });
 
   describe('exists', () => {
@@ -290,7 +336,7 @@ describe('Backup', () => {
       assert.strictEqual(result, true);
     });
 
-    it('should return false when backup info indicates backup does not exist', async () => {
+    it('should return false when backup does not exist', async () => {
       backup.getMetadata = async () => {
         throw {code: grpc.status.NOT_FOUND};
       };
