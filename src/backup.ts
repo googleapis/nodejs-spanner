@@ -76,13 +76,11 @@ type DeleteCallback = RequestCallback<void>;
  * const backup = instance.backup('my-backup');
  */
 class Backup {
+  formattedName_: string;
   request: <T, R = void>(
     config: RequestConfig,
     callback: RequestCallback<T, R>
   ) => void;
-
-  formattedName_: string;
-
   constructor(
     private instance: Instance,
     private backupId: string,
@@ -90,8 +88,7 @@ class Backup {
     private expireTime?: PreciseDate
   ) {
     this.request = instance.request;
-    this.formattedName_ =
-      this.instance.formattedName_ + '/backups/' + this.backupId;
+    this.formattedName_ = Backup.formatName_(this.instance.formattedName_, this.backupId);
   }
 
   create(): Promise<CreateBackupResponse>;
@@ -381,6 +378,30 @@ class Backup {
         callback!(err, null);
       }
     );
+  }
+
+  /**
+   * Format the backup name to include the instance name.
+   *
+   * @private
+   *
+   * @param {string} instanceName The formatted instance name.
+   * @param {string} name The table name.
+   * @returns {string}
+   *
+   * @example
+   * Backup.formatName_(
+   *   'projects/grape-spaceship-123/instances/my-instance',
+   *   'my-backup'
+   * );
+   * // 'projects/grape-spaceship-123/instances/my-instance/backups/my-backup'
+   */
+  static formatName_(instanceName: string, name: string) {
+    if (name.indexOf('/') > -1) {
+      return name;
+    }
+    const backupName = name.split('/').pop();
+    return instanceName + '/backups/' + backupName;
   }
 }
 

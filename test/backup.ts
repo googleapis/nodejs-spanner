@@ -463,4 +463,21 @@ describe('Backup', () => {
       });
     });
   });
+
+  describe('formatName_', () => {
+    it('should return the name if already formatted', () => {
+      assert.strictEqual(
+        Backup.formatName_(INSTANCE.formattedName_, BACKUP_FORMATTED_NAME),
+        BACKUP_FORMATTED_NAME
+      );
+    });
+
+    it('should format the name', () => {
+      const formattedName_ = Backup.formatName_(
+        INSTANCE.formattedName_,
+        BACKUP_NAME
+      );
+      assert.strictEqual(formattedName_, BACKUP_FORMATTED_NAME);
+    });
+  });
 });
