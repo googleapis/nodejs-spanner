@@ -328,12 +328,8 @@ class Instance extends common.GrpcServiceObject {
         let backups: Backup[] | null = null;
         if (rowBackups) {
           backups = rowBackups.map(rowBackup => {
-            const rowBackupName = rowBackup.name!;
-            const backupId = rowBackupName.substring(
-              rowBackupName.lastIndexOf('/') + 1
-            );
             return this.backup(
-              backupId,
+              rowBackup.name!,
               rowBackup.database!,
               new PreciseDate(rowBackup.expireTime as DateStruct)
             );
