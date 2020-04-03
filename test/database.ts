@@ -2222,7 +2222,7 @@ describe('Database', () => {
     });
   });
 
-  describe('getDatabaseOperations', () => {
+  describe('getOperations', () => {
     it('should create filter for querying the database', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
@@ -2231,7 +2231,7 @@ describe('Database', () => {
         return [operations, {}];
       };
 
-      const [results] = await database.getDatabaseOperations();
+      const [results] = await database.getOperations();
       assert.deepStrictEqual(results, operations);
     });
 
@@ -2246,7 +2246,7 @@ describe('Database', () => {
         return [operations, {}];
       };
 
-      const [results] = await database.getDatabaseOperations({
+      const [results] = await database.getOperations({
         filter: 'someOtherAttribute: aValue',
       });
       assert.deepStrictEqual(results, operations);

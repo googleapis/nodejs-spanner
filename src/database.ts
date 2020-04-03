@@ -1425,9 +1425,9 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [operations] = await database.getDatabaseOperations();
+   * const [operations] = await database.getOperations();
    */
-  async getDatabaseOperations(
+  async getOperations(
     query?: GetDatabaseOperationsRequest
   ): Promise<GetDatabaseOperationsResponse> {
     // Create a query that lists database operations only on this database from
@@ -1541,7 +1541,8 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [, restoreOperation] = await database.restore('projects/my-project/instances/my-instance/backups/my-backup');
+   * const newDatabaseName = 'projects/my-project/instances/my-instance/backups/my-backup';
+   * const [, restoreOperation] = await database.restore(newDatabaseName);
    * // Wait for restore to complete
    * await restoreOperation.promise();
    */

@@ -955,7 +955,7 @@ describe('Spanner', () => {
       const databaseFullName = databaseMetadata.name;
 
       // List operations.
-      const [databaseOperations] = await database.getDatabaseOperations();
+      const [databaseOperations] = await database.getOperations();
 
       // Validate operation has at least the create operation for the database.
       assert.ok(databaseOperations.length > 0);
@@ -1198,7 +1198,7 @@ describe('Spanner', () => {
       assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
 
       // Check that restore operation ends up in the operations list.
-      const [restoreOperations] = await restoreDatabase.getDatabaseOperations({
+      const [restoreOperations] = await restoreDatabase.getOperations({
         filter: 'metadata.@type:RestoreDatabaseMetadata',
       });
       assert.strictEqual(restoreOperations.length, 1);
