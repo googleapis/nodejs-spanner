@@ -151,7 +151,7 @@ describe('Backup', () => {
     });
 
     describe('error', () => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, null];
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, null, null];
 
       beforeEach(() => {
         backup.request = (config, callback: Function) => {
