@@ -86,8 +86,6 @@ class Backup {
   constructor(
     instance: Instance,
     name: string,
-    private databasePath?: string,
-    private expireTime?: PreciseDate
   ) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
@@ -95,10 +93,26 @@ class Backup {
     this.id_ = this.formattedName_.split('/').pop() || '';
   }
 
-  create(): Promise<CreateBackupResponse>;
-  create(options?: CallOptions): Promise<CreateBackupResponse>;
-  create(callback: CreateBackupCallback): void;
-  create(options: CallOptions, callback: CreateBackupCallback): void;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+  ): Promise<CreateBackupResponse>;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+    options?: CallOptions,
+  ): Promise<CreateBackupResponse>;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+    callback: CreateBackupCallback,
+  ): void;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+    options: CallOptions,
+    callback: CreateBackupCallback,
+  ): void;
   /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.
@@ -118,6 +132,8 @@ class Backup {
    * Create a backup.
    *
    * @method Backup#create
+   * @param {string} databasePath The path of the database.
+   * @param {PreciseDate} expireTime The expiry time of the backup.
    * @returns {Promise<CreateBackupResponse>} when resolved, the backup
    *     operation will have started, but will not have necessarily completed.
    *
@@ -128,25 +144,20 @@ class Backup {
    * const database = spanner.database('my-database');
    * const oneDay = 1000 * 60 * 60 * 24;
    * const expiryTime = new PreciseDate(Date.now() + oneDay);
-   * const backup = instance.backup(
-   *   'my-backup',
+   * const backup = instance.backup('my-backup');
+   * const [, backupOperation] = await backup.create(
    *   'projects/my-project/instances/my-instance/databases/my-database',
    *   expiryTime);
-   * const [, backupOperation] = await backup.create();
+   * );
    * // Await completion of the backup operation.
    * await backupOperation.promise();
    */
   create(
+    databasePath: string,
+    expireTime: PreciseDate,
     optionsOrCallback?: CallOptions | CreateBackupCallback,
     cb?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-    if (!this.expireTime) {
-      throw new Error('Expire time is required to create a backup.');
-    }
-    if (!this.databasePath) {
-      throw new Error('Database path is required to create a backup.');
-    }
-
     const callback =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as CreateBackupCallback)
@@ -160,8 +171,8 @@ class Backup {
         parent: this.instanceFormattedName_,
         backupId: this.id_,
         backup: {
-          database: this.databasePath,
-          expireTime: this.expireTime.toStruct(),
+          database: databasePath,
+          expireTime: expireTime.toStruct(),
           name: this.formattedName_,
         },
       }
@@ -302,8 +313,7 @@ class Backup {
   async getExpireTime(): Promise<PreciseDate | undefined> {
     try {
       const [backupInfo] = await this.getMetadata();
-      this.expireTime = new PreciseDate(backupInfo.expireTime as DateStruct);
-      return this.expireTime;
+      return new PreciseDate(backupInfo.expireTime as DateStruct);
     } catch (err) {
       if (err.code === status.NOT_FOUND) {
         return undefined;
@@ -371,6 +381,7 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#updateExpireTime
+   * @param {PreciseDate} expireTime The expiry time to update with.
    * @returns {Promise<Backup>} when resolved, the backup's expire time will
    *     have been updated.
    *
@@ -417,7 +428,6 @@ class Backup {
           callback!(err, undefined);
           return;
         }
-        this.expireTime = expireTime;
         callback!(null, this);
       }
     );

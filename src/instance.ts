@@ -244,27 +244,22 @@ class Instance extends common.GrpcServiceObject {
    * @throws {Error} If any parameter is not provided.
    *
    * @param {string} backupId The name of the backup.
-   * @param {string} databasePath the path of the backup.  Only needs to be specified for new backups.
-   * @param {PreciseDate} expireTime expiry time of the backup.  Only needs to be specified for new backups.
    * @return {Backup} A Backup object.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', 'projects/my-project/instances/my-instance/databases/my-database', backupExpiryDate);
+   * const backup = instance.backup('my-backup');
    */
   backup(
     backupId: string,
-    databasePath: string,
-    expireTime: PreciseDate
   ): Backup {
     if (!backupId) {
       throw new Error('A backup ID is required to create a Backup.');
     }
 
-    return new Backup(this, backupId, databasePath, expireTime);
+    return new Backup(this, backupId);
   }
 
   getBackups(query?: GetBackupsRequest): Promise<GetBackupsResponse>;
@@ -328,11 +323,7 @@ class Instance extends common.GrpcServiceObject {
         let backups: Backup[] | null = null;
         if (rowBackups) {
           backups = rowBackups.map(rowBackup => {
-            return this.backup(
-              rowBackup.name!,
-              rowBackup.database!,
-              new PreciseDate(rowBackup.expireTime as DateStruct)
-            );
+            return this.backup(rowBackup.name!);
           });
         }
 

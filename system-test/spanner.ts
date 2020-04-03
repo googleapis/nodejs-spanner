@@ -1011,18 +1011,16 @@ describe('Spanner', () => {
       await database2CreateOperation.promise();
 
       // Create backups.
-      backup1 = instance.backup(
-        backup1Name,
+      backup1 = instance.backup(backup1Name);
+      backup2 = instance.backup(backup2Name);
+      const [, backup1Operation] = await backup1.create(
         database1.formattedName_,
         backupExpiryDate
       );
-      backup2 = instance.backup(
-        backup2Name,
+      const [, backup2Operation] = await backup2.create(
         database2.formattedName_,
         backupExpiryDate
       );
-      const [, backup1Operation] = await backup1.create();
-      const [, backup2Operation] = await backup2.create();
 
       assert.strictEqual(
         backup1Operation.metadata!.name,
@@ -1091,13 +1089,12 @@ describe('Spanner', () => {
       // Create backup.
       const backupName = generateName('backup');
       const backupExpiryDate = futureDateByHours(-12);
-      const backup = instance.backup(
-        backupName,
-        database1.formattedName_,
-        backupExpiryDate
-      );
+      const backup = instance.backup(backupName);
       try {
-        const [, backupOperation] = await backup.create();
+        const [, backupOperation] = await backup.create(
+          database1.formattedName_,
+          backupExpiryDate
+        );
         assert.fail(
           'Backup should have failed for expiration time in the past'
         );
@@ -1111,11 +1108,7 @@ describe('Spanner', () => {
       // This backup won't exist, we're just generating the name without creating the backup itself.
       const backupName = generateName('backup');
       const backupExpiryDate = futureDateByHours(12);
-      const backup = instance.backup(
-        backupName,
-        database1.formattedName_,
-        backupExpiryDate
-      );
+      const backup = instance.backup(backupName);
 
       const exists = await backup.exists();
       assert.strictEqual(exists, false);

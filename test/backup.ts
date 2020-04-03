@@ -93,12 +93,7 @@ describe('Backup', () => {
 
   beforeEach(() => {
     fakeCodec.encode = util.noop;
-    backup = new Backup(
-      INSTANCE,
-      BACKUP_NAME,
-      DATABASE_FORMATTED_NAME,
-      BACKUP_EXPIRE_TIME
-    );
+    backup = new Backup(INSTANCE, BACKUP_NAME);
   });
 
   afterEach(() => sandbox.restore());
@@ -135,7 +130,7 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.create();
+      await backup.create(DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME);
     });
 
     it('should accept gaxOptions and a callback', async () => {
@@ -147,7 +142,8 @@ describe('Backup', () => {
         assert.deepStrictEqual(config.gaxOpts, options);
       };
 
-      await backup.create(options, assert.ifError);
+      await backup.create(
+        DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME, options, assert.ifError);
     });
 
     describe('error', () => {
@@ -160,35 +156,13 @@ describe('Backup', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        backup.create((...args) => {
-          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
-          done();
-        });
+        backup.create(
+          DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME, (...args) => {
+            assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+            done();
+          }
+        );
       });
-    });
-
-    it('should throw if a database path is not provided', async () => {
-      await assert.rejects(async () => {
-        const backupWithoutDatabasePath = new Backup(
-          INSTANCE,
-          BACKUP_NAME,
-          undefined,
-          BACKUP_EXPIRE_TIME
-        );
-        await backupWithoutDatabasePath.create();
-      }, /Database path is required to create a backup\./);
-    });
-
-    it('should throw if an expire time is not provided', async () => {
-      await assert.rejects(async () => {
-        const backupWithoutDatabasePath = new Backup(
-          INSTANCE,
-          BACKUP_NAME,
-          DATABASE_FORMATTED_NAME,
-          undefined
-        );
-        await backupWithoutDatabasePath.create();
-      }, /Expire time is required to create a backup\./);
     });
   });
 

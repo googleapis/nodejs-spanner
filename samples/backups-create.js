@@ -38,15 +38,15 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const databasePath = database.formattedName_;
-  // Expire backup 14 days in the future
-  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 14);
-  const backup = instance.backup(backupId, databasePath, expireTime);
+  const backup = instance.backup(backupId);
 
   // Creates a new backup of the database
   try {
     console.log(`Creating backup of database ${database.formattedName_}.`);
-    const [, operation] = await backup.create();
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 14);
+    const [, operation] = await backup.create(databasePath, expireTime);
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
     await operation.promise();

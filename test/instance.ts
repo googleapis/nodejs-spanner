@@ -1016,13 +1016,8 @@ describe('Instance', () => {
       it('should create and return Backup objects', done => {
         const fakeBackupInstance = {};
 
-        instance.backup = (backupId, databasePath, expireTime) => {
+        instance.backup = (backupId) => {
           assert.strictEqual(backupId, BACKUPS[0].name);
-          assert.strictEqual(databasePath, BACKUPS[0].database);
-          assert.strictEqual(
-            expireTime.getFullTimeString(),
-            BACKUPS[0].expireTime.getFullTimeString()
-          );
           return fakeBackupInstance as Backup;
         };
 
@@ -1045,12 +1040,12 @@ describe('Instance', () => {
 
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
-        instance.backup(null!, DATABASE_NAME, EXPIRE_TIME);
+        instance.backup(null!);
       }, /A backup ID is required to create a Backup\./);
     });
 
     it('should create a Backup instance', () => {
-      const backup = instance.backup(BACKUP_NAME, DATABASE_NAME, EXPIRE_TIME);
+      const backup = instance.backup(BACKUP_NAME);
       assert.strictEqual(
         backup.formattedName_,
         'projects/project-id/instances/instance-name/backups/backup-name'
@@ -1076,13 +1071,11 @@ describe('Instance', () => {
         done();
       };
 
-      const backup = new Backup(
-        instance,
-        BACKUP_NAME,
+      const backup = new Backup(instance, BACKUP_NAME);
+      backup.create(
         'projects/project-id/instances/instance-name/database/database-name',
         EXPIRE_TIME
       );
-      backup.create();
     });
   });
 
