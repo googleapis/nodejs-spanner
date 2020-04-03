@@ -347,7 +347,10 @@ class Backup {
   }
 
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
-  updateExpireTime(expireTime: PreciseDate, options?: CallOptions): Promise<Backup>;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    options?: CallOptions
+  ): Promise<Backup>;
   updateExpireTime(
     expireTime: PreciseDate,
     callback: UpdateExpireTimeCallback
@@ -409,7 +412,7 @@ class Backup {
         reqOpts,
         gaxOpts,
       },
-      (err) => {
+      err => {
         if (err) {
           callback!(err, undefined);
           return;
