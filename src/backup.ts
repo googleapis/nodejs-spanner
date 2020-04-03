@@ -263,7 +263,8 @@ class Backup {
   async getExpireTime(): Promise<PreciseDate | undefined> {
     try {
       const [backupInfo] = await this.getMetadata();
-      return new PreciseDate(backupInfo.expireTime as DateStruct);
+      this.expireTime = new PreciseDate(backupInfo.expireTime as DateStruct);
+      return this.expireTime;
     } catch (err) {
       if (err.code === status.NOT_FOUND) {
         return undefined;
@@ -333,8 +334,6 @@ class Backup {
     expireTime: PreciseDate,
     callback?: UpdateExpireTimeCallback
   ): void | Promise<Backup> {
-    this.expireTime = expireTime;
-
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
         name: this.formattedName_,
@@ -350,8 +349,13 @@ class Backup {
         method: 'updateBackup',
         reqOpts,
       },
-      err => {
-        callback!(err, err ? undefined : this);
+      (err) => {
+        if (err) {
+          callback!(err, undefined);
+          return;
+        }
+        this.expireTime = expireTime;
+        callback!(null, this);
       }
     );
   }
