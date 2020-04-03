@@ -1010,6 +1010,24 @@ class Database extends GrpcServiceObject {
     );
   }
 
+  /**
+   * Retrieves the restore information of the database.
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getRestoreInfo
+   * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>}
+   *     when resolved, contains the restore information for the database if it exists,
+   *     or undefined if the database does not exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const restoreInfo = await database.getRestoreInfo();
+   * console.log(`Database restored from ${restoreInfo.backupInfo.backup}`);
+   */
   async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
     const [metadata] = await this.getMetadata();
     return metadata.restoreInfo ? metadata.restoreInfo : undefined;
