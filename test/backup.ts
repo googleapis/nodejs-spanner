@@ -143,7 +143,11 @@ describe('Backup', () => {
       };
 
       await backup.create(
-        DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME, options, assert.ifError);
+        DATABASE_FORMATTED_NAME,
+        BACKUP_EXPIRE_TIME,
+        options,
+        assert.ifError
+      );
     });
 
     describe('error', () => {
@@ -157,7 +161,9 @@ describe('Backup', () => {
 
       it('should execute callback with original arguments', done => {
         backup.create(
-          DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME, (...args) => {
+          DATABASE_FORMATTED_NAME,
+          BACKUP_EXPIRE_TIME,
+          (...args) => {
             assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
             done();
           }

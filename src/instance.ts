@@ -252,9 +252,7 @@ class Instance extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    */
-  backup(
-    backupId: string,
-  ): Backup {
+  backup(backupId: string): Backup {
     if (!backupId) {
       throw new Error('A backup ID is required to create a Backup.');
     }

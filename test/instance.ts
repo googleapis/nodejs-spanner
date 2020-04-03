@@ -1016,7 +1016,7 @@ describe('Instance', () => {
       it('should create and return Backup objects', done => {
         const fakeBackupInstance = {};
 
-        instance.backup = (backupId) => {
+        instance.backup = backupId => {
           assert.strictEqual(backupId, BACKUPS[0].name);
           return fakeBackupInstance as Backup;
         };

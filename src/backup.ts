@@ -83,10 +83,7 @@ class Backup {
     config: RequestConfig,
     callback: RequestCallback<T, R>
   ) => void;
-  constructor(
-    instance: Instance,
-    name: string,
-  ) {
+  constructor(instance: Instance, name: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
@@ -95,23 +92,23 @@ class Backup {
 
   create(
     databasePath: string,
-    expireTime: PreciseDate,
+    expireTime: PreciseDate
   ): Promise<CreateBackupResponse>;
   create(
     databasePath: string,
     expireTime: PreciseDate,
-    options?: CallOptions,
+    options?: CallOptions
   ): Promise<CreateBackupResponse>;
   create(
     databasePath: string,
     expireTime: PreciseDate,
-    callback: CreateBackupCallback,
+    callback: CreateBackupCallback
   ): void;
   create(
     databasePath: string,
     expireTime: PreciseDate,
     options: CallOptions,
-    callback: CreateBackupCallback,
+    callback: CreateBackupCallback
   ): void;
   /**
    * @typedef {array} CreateBackupResponse
