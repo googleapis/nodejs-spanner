@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [4.9.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.8.0...v4.9.0) (2020-04-05)
+
+
+### Features
+
+* run and runStream can return query stats ([#857](https://www.github.com/googleapis/nodejs-spanner/issues/857)) ([1656e4f](https://www.github.com/googleapis/nodejs-spanner/commit/1656e4f14f0dd24f530f36ecf1ccf34b51e726fb))
+
+
+### Bug Fixes
+
+* **types:** fix type of ReadRequest ([#876](https://www.github.com/googleapis/nodejs-spanner/issues/876)) ([990fec2](https://www.github.com/googleapis/nodejs-spanner/commit/990fec20c482e11f48b8b7fbaacae8f395e93db9))
+
 ## [4.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.7.0...v4.8.0) (2020-03-12)
 
 
