@@ -133,7 +133,7 @@ async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   const query = {
-    sql: `SELECT SingerId, AlbumId, MarketingBudget FROM Albums`,
+    sql: 'SELECT SingerId, AlbumId, MarketingBudget FROM Albums',
   };
 
   // Queries rows from the Albums table
@@ -160,23 +160,23 @@ async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   // [END spanner_query_data_with_new_column]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `createDatabase <instanceName> <databaseName> <projectId>`,
-    `Creates an example database with two tables in a Cloud Spanner instance.`,
+    'createDatabase <instanceName> <databaseName> <projectId>',
+    'Creates an example database with two tables in a Cloud Spanner instance.',
     {},
     opts => createDatabase(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `addColumn <instanceName> <databaseName> <projectId>`,
-    `Adds an example MarketingBudget column to an example Cloud Spanner table.`,
+    'addColumn <instanceName> <databaseName> <projectId>',
+    'Adds an example MarketingBudget column to an example Cloud Spanner table.',
     {},
     opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryNewColumn <instanceName> <databaseName> <projectId>`,
-    `Executes a read-only SQL query against an example Cloud Spanner table with an additional column (MarketingBudget) added by addColumn.`,
+    'queryNewColumn <instanceName> <databaseName> <projectId>',
+    'Executes a read-only SQL query against an example Cloud Spanner table with an additional column (MarketingBudget) added by addColumn.',
     {},
     opts =>
       queryDataWithNewColumn(
@@ -185,11 +185,11 @@ require(`yargs`)
         opts.projectId
       )
   )
-  .example(`node $0 createDatabase "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 addColumn "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryNewColumn "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 createDatabase "my-instance" "my-database" "my-project-id"')
+  .example('node $0 addColumn "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryNewColumn "my-instance" "my-database" "my-project-id"')
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

@@ -40,21 +40,21 @@ export type CreateTableResponse = [
 export type CreateTableCallback = LongRunningCallback<Table>;
 
 export type DropTableResponse = UpdateSchemaResponse;
-export interface DropTableCallback extends UpdateSchemaCallback {}
+export type DropTableCallback = UpdateSchemaCallback;
 
-export interface DeleteRowsCallback extends CommitCallback {}
+export type DeleteRowsCallback = CommitCallback;
 export type DeleteRowsResponse = CommitResponse;
 
-export interface InsertRowsCallback extends CommitCallback {}
+export type InsertRowsCallback = CommitCallback;
 export type InsertRowsResponse = CommitResponse;
 
-export interface ReplaceRowsCallback extends CommitCallback {}
+export type ReplaceRowsCallback = CommitCallback;
 export type ReplaceRowsResponse = CommitResponse;
 
-export interface UpdateRowsCallback extends CommitCallback {}
+export type UpdateRowsCallback = CommitCallback;
 export type UpdateRowsResponse = CommitResponse;
 
-export interface UpsertRowsCallback extends CommitCallback {}
+export type UpsertRowsCallback = CommitCallback;
 export type UpsertRowsResponse = CommitResponse;
 /**
  * Create a Table object to interact with a table in a Cloud Spanner

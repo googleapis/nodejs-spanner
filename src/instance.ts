@@ -16,6 +16,7 @@
 
 import arrify = require('arrify');
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
@@ -678,6 +679,7 @@ class Instance extends common.GrpcServiceObject {
     queryOrCallback?: GetDatabasesRequest | GetDatabasesCallback,
     cb?: GetDatabasesCallback
   ): void | Promise<GetDatabasesResponse> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;

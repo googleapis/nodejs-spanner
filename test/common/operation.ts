@@ -16,7 +16,7 @@
 
 import {util} from '@google-cloud/common';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import * as proxyquire from 'proxyquire';
 import {Response} from 'teeny-request';
@@ -29,8 +29,9 @@ const sandbox = Sinon.createSandbox();
 
 let decorateErrorOverride_: Function | null;
 class FakeGrpcService {
-  static decorateError_() {
-    return (decorateErrorOverride_ || util.noop).apply(null, arguments);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static decorateError_(...args: any[]) {
+    return (decorateErrorOverride_ || util.noop)(...args);
   }
 }
 
@@ -129,7 +130,7 @@ describe('GrpcOperation', () => {
         assert.strictEqual(callback, util.noop);
         done();
       };
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (grpcOperation as any).cancel();
     });
   });
@@ -143,7 +144,7 @@ describe('GrpcOperation', () => {
       sandbox.stub(grpcOperation, 'getMetadata').callsFake(() => {
         done();
       });
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (grpcOperation as any).poll_().then(util.noop, assert.ifError);
     });
 
@@ -153,9 +154,9 @@ describe('GrpcOperation', () => {
         sandbox.stub(grpcOperation, 'getMetadata').callsFake(callback => {
           callback(error);
         });
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (grpcOperation as any).poll_().then(
-          (r: Response) => {},
+          () => {},
           (err: Error) => {
             assert.strictEqual(err, error);
             done();
@@ -178,9 +179,9 @@ describe('GrpcOperation', () => {
           return decoratedGrpcStatus;
         };
 
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (grpcOperation as any).poll_().then(
-          (r: Response) => {},
+          () => {},
           (err: Error) => {
             assert.strictEqual(err, decoratedGrpcStatus);
             done();
@@ -198,7 +199,7 @@ describe('GrpcOperation', () => {
       });
 
       it('should callback with no arguments', async () => {
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (grpcOperation as any).poll_().then((resp: Response) => {
           assert.strictEqual(resp, undefined);
         }, assert.ifError);
@@ -215,7 +216,7 @@ describe('GrpcOperation', () => {
       });
 
       it('should emit complete with metadata', async () => {
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (grpcOperation as any).poll_().then((resp: Response) => {
           assert.strictEqual(resp, apiResponse);
         }, assert.ifError);

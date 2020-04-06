@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -169,12 +169,6 @@ describe('codec', () => {
         const struct = new codec.Struct();
         const options = {};
         const fakeJson = {};
-
-        const stub = sandbox
-          .stub(codec, 'convertFieldsToJson')
-          .withArgs(struct, options)
-          .returns(fakeJson);
-
         assert.strictEqual(struct.toJSON(options), fakeJson);
       });
     });

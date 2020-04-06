@@ -275,7 +275,7 @@ class Database extends GrpcServiceObject {
         : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
     this.request = instance.request;
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
@@ -472,7 +472,7 @@ class Database extends GrpcServiceObject {
     callback?: SessionPoolCloseCallback
   ): void | Promise<DatabaseCloseResponse> {
     const key = this.id!.split('/').pop();
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.parent as any).databases_.delete(key);
     this.pool_.close(callback!);
   }
@@ -1030,7 +1030,7 @@ class Database extends GrpcServiceObject {
         method: 'getDatabaseDdl',
         reqOpts,
       },
-      // tslint:disable-next-line: no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err, statements, ...args: any[]) => {
         callback!(err, statements ? statements.statements : null, ...args);
       }
@@ -1125,6 +1125,7 @@ class Database extends GrpcServiceObject {
     optionsOrCallback?: GetSessionsOptions | GetSessionsCallback,
     cb?: GetSessionsCallback
   ): void | Promise<GetSessionsResponse> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const callback =
       typeof optionsOrCallback === 'function'
@@ -1347,12 +1348,13 @@ class Database extends GrpcServiceObject {
    * @returns {Stream}
    */
   makePooledStreamingRequest_(config: RequestConfig): Readable {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const pool = this.pool_;
     let requestStream: CancelableDuplex;
     let session: Session | null;
     const waitForSessionStream = streamEvents(through.obj());
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (waitForSessionStream as any).abort = () => {
       releaseSession();
       if (requestStream) {
@@ -1988,7 +1990,7 @@ class Database extends GrpcServiceObject {
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
-    while (true) {
+    for (;;) {
       try {
         const [session, transaction] = await promisify(getWriteSession)();
         const runner = new AsyncTransactionRunner<T>(

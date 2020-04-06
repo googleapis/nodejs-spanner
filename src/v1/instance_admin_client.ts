@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,19 +18,19 @@
 
 import * as gax from 'google-gax';
 import {
-  APICallback,
   Callback,
   CallOptions,
   Descriptors,
   ClientOptions,
   LROperation,
   PaginationCallback,
-  PaginationResponse,
+  GaxCall,
 } from 'google-gax';
 import * as path from 'path';
 
 import {Transform} from 'stream';
-import * as protosTypes from '../../protos/protos';
+import {RequestType} from 'google-gax/build/src/apitypes';
+import * as protos from '../../protos/protos';
 import * as gapicConfig from './instance_admin_client_config.json';
 
 const version = require('../../../package.json').version;
@@ -61,9 +61,6 @@ const version = require('../../../package.json').version;
  * @memberof v1
  */
 export class InstanceAdminClient {
-  private _descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}};
-  private _innerApiCalls: {[name: string]: Function};
-  private _pathTemplates: {[name: string]: gax.PathTemplate};
   private _terminated = false;
   private _opts: ClientOptions;
   private _gaxModule: typeof gax | typeof gax.fallback;
@@ -71,6 +68,14 @@ export class InstanceAdminClient {
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
   auth: gax.GoogleAuth;
+  descriptors: Descriptors = {
+    page: {},
+    stream: {},
+    longrunning: {},
+    batching: {},
+  };
+  innerApiCalls: {[name: string]: Function};
+  pathTemplates: {[name: string]: gax.PathTemplate};
   operationsClient: gax.OperationsClient;
   instanceAdminStub?: Promise<{[name: string]: Function}>;
 
@@ -163,13 +168,16 @@ export class InstanceAdminClient {
       'protos.json'
     );
     this._protos = this._gaxGrpc.loadProto(
-      opts.fallback ? require('../../protos/protos.json') : nodejsProtoPath
+      opts.fallback
+        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
+          require('../../protos/protos.json')
+        : nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
-    this._pathTemplates = {
+    this.pathTemplates = {
       instancePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}'
       ),
@@ -181,7 +189,7 @@ export class InstanceAdminClient {
     // Some of the methods on this service return "paged" results,
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
-    this._descriptors.page = {
+    this.descriptors.page = {
       listInstanceConfigs: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
@@ -199,6 +207,7 @@ export class InstanceAdminClient {
     // rather than holding a request open.
     const protoFilesRoot = opts.fallback
       ? this._gaxModule.protobuf.Root.fromJSON(
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           require('../../protos/protos.json')
         )
       : this._gaxModule.protobuf.loadSync(nodejsProtoPath);
@@ -222,7 +231,7 @@ export class InstanceAdminClient {
       '.google.spanner.admin.instance.v1.UpdateInstanceMetadata'
     ) as gax.protobuf.Type;
 
-    this._descriptors.longrunning = {
+    this.descriptors.longrunning = {
       createInstance: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createInstanceResponse.decode.bind(createInstanceResponse),
@@ -246,7 +255,7 @@ export class InstanceAdminClient {
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
-    this._innerApiCalls = {};
+    this.innerApiCalls = {};
   }
 
   /**
@@ -273,7 +282,7 @@ export class InstanceAdminClient {
         ? (this._protos as protobuf.Root).lookupService(
             'google.spanner.admin.instance.v1.InstanceAdmin'
           )
-        : // tslint:disable-next-line no-any
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.admin.instance.v1.InstanceAdmin,
       this._opts
     ) as Promise<{[method: string]: Function}>;
@@ -292,14 +301,14 @@ export class InstanceAdminClient {
       'getIamPolicy',
       'testIamPermissions',
     ];
-
     for (const methodName of instanceAdminStubMethods) {
-      const innerCallPromise = this.instanceAdminStub.then(
+      const callPromise = this.instanceAdminStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
           }
-          return stub[methodName].apply(stub, args);
+          const func = stub[methodName];
+          return func.apply(stub, args);
         },
         (err: Error | null | undefined) => () => {
           throw err;
@@ -307,20 +316,14 @@ export class InstanceAdminClient {
       );
 
       const apiCall = this._gaxModule.createApiCall(
-        innerCallPromise,
+        callPromise,
         this._defaults[methodName],
-        this._descriptors.page[methodName] ||
-          this._descriptors.stream[methodName] ||
-          this._descriptors.longrunning[methodName]
+        this.descriptors.page[methodName] ||
+          this.descriptors.stream[methodName] ||
+          this.descriptors.longrunning[methodName]
       );
 
-      this._innerApiCalls[methodName] = (
-        argument: {},
-        callOptions?: CallOptions,
-        callback?: APICallback
-      ) => {
-        return apiCall(argument, callOptions, callback);
-      };
+      this.innerApiCalls[methodName] = apiCall;
     }
 
     return this.instanceAdminStub;
@@ -380,26 +383,37 @@ export class InstanceAdminClient {
   // -- Service calls --
   // -------------------
   getInstanceConfig(
-    request: protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig,
+      protos.google.spanner.admin.instance.v1.IInstanceConfig,
       (
-        | protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+        | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
         | undefined
       ),
       {} | undefined
     ]
   >;
   getInstanceConfig(
-    request: protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig,
-      | protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+      protos.google.spanner.admin.instance.v1.IInstanceConfig,
+      | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  getInstanceConfig(
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
+    callback: Callback<
+      protos.google.spanner.admin.instance.v1.IInstanceConfig,
+      | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -417,26 +431,28 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getInstanceConfig(
-    request: protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.instance.v1.IInstanceConfig,
-          | protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+          protos.google.spanner.admin.instance.v1.IInstanceConfig,
+          | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig,
-      | protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+      protos.google.spanner.admin.instance.v1.IInstanceConfig,
+      | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig,
+      protos.google.spanner.admin.instance.v1.IInstanceConfig,
       (
-        | protosTypes.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+        | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
         | undefined
       ),
       {} | undefined
@@ -459,29 +475,37 @@ export class InstanceAdminClient {
       name: request.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.getInstanceConfig(request, options, callback);
+    return this.innerApiCalls.getInstanceConfig(request, options, callback);
   }
   getInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstance,
-      (
-        | protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.instance.v1.IInstance,
+      protos.google.spanner.admin.instance.v1.IGetInstanceRequest | undefined,
       {} | undefined
     ]
   >;
   getInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstance,
-      | protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest
+      protos.google.spanner.admin.instance.v1.IInstance,
+      | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  getInstance(
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
+    callback: Callback<
+      protos.google.spanner.admin.instance.v1.IInstance,
+      | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -503,28 +527,27 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.instance.v1.IInstance,
-          | protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest
+          protos.google.spanner.admin.instance.v1.IInstance,
+          | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstance,
-      | protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest
+      protos.google.spanner.admin.instance.v1.IInstance,
+      | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstance,
-      (
-        | protosTypes.google.spanner.admin.instance.v1.IGetInstanceRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.instance.v1.IInstance,
+      protos.google.spanner.admin.instance.v1.IGetInstanceRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -545,29 +568,40 @@ export class InstanceAdminClient {
       name: request.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.getInstance(request, options, callback);
+    return this.innerApiCalls.getInstance(request, options, callback);
   }
   deleteInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.protobuf.IEmpty,
+      protos.google.protobuf.IEmpty,
       (
-        | protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+        | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
         | undefined
       ),
       {} | undefined
     ]
   >;
   deleteInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.protobuf.IEmpty,
-      | protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  deleteInstance(
+    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -595,26 +629,28 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   deleteInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.protobuf.IEmpty,
-          | protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.protobuf.IEmpty,
-      | protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.protobuf.IEmpty,
+      protos.google.protobuf.IEmpty,
       (
-        | protosTypes.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+        | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
         | undefined
       ),
       {} | undefined
@@ -637,25 +673,33 @@ export class InstanceAdminClient {
       name: request.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.deleteInstance(request, options, callback);
+    return this.innerApiCalls.deleteInstance(request, options, callback);
   }
   setIamPolicy(
-    request: protosTypes.google.iam.v1.ISetIamPolicyRequest,
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | undefined,
       {} | undefined
     ]
   >;
   setIamPolicy(
-    request: protosTypes.google.iam.v1.ISetIamPolicyRequest,
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  setIamPolicy(
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    callback: Callback<
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -674,23 +718,23 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   setIamPolicy(
-    request: protosTypes.google.iam.v1.ISetIamPolicyRequest,
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.iam.v1.IPolicy,
-          protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
-          {} | undefined
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -711,25 +755,33 @@ export class InstanceAdminClient {
       resource: request.resource || '',
     });
     this.initialize();
-    return this._innerApiCalls.setIamPolicy(request, options, callback);
+    return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   getIamPolicy(
-    request: protosTypes.google.iam.v1.IGetIamPolicyRequest,
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | undefined,
       {} | undefined
     ]
   >;
   getIamPolicy(
-    request: protosTypes.google.iam.v1.IGetIamPolicyRequest,
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  getIamPolicy(
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    callback: Callback<
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -748,23 +800,23 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getIamPolicy(
-    request: protosTypes.google.iam.v1.IGetIamPolicyRequest,
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.iam.v1.IPolicy,
-          protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
-          {} | undefined
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -785,25 +837,33 @@ export class InstanceAdminClient {
       resource: request.resource || '',
     });
     this.initialize();
-    return this._innerApiCalls.getIamPolicy(request, options, callback);
+    return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
   testIamPermissions(
-    request: protosTypes.google.iam.v1.ITestIamPermissionsRequest,
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
       {} | undefined
     ]
   >;
   testIamPermissions(
-    request: protosTypes.google.iam.v1.ITestIamPermissionsRequest,
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  testIamPermissions(
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    callback: Callback<
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -823,23 +883,23 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   testIamPermissions(
-    request: protosTypes.google.iam.v1.ITestIamPermissionsRequest,
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-          protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
-          {} | undefined
+          protos.google.iam.v1.ITestIamPermissionsResponse,
+          protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -860,32 +920,43 @@ export class InstanceAdminClient {
       resource: request.resource || '',
     });
     this.initialize();
-    return this._innerApiCalls.testIamPermissions(request, options, callback);
+    return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
 
   createInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     options?: gax.CallOptions
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   >;
   createInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     options: gax.CallOptions,
     callback: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createInstance(
+    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -943,32 +1014,32 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   createInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           LROperation<
-            protosTypes.google.spanner.admin.instance.v1.IInstance,
-            protosTypes.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+            protos.google.spanner.admin.instance.v1.IInstance,
+            protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
           >,
-          protosTypes.google.longrunning.IOperation | undefined,
-          {} | undefined
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   > | void {
@@ -989,31 +1060,42 @@ export class InstanceAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.createInstance(request, options, callback);
+    return this.innerApiCalls.createInstance(request, options, callback);
   }
   updateInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     options?: gax.CallOptions
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   >;
   updateInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     options: gax.CallOptions,
     callback: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateInstance(
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1075,32 +1157,32 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   updateInstance(
-    request: protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           LROperation<
-            protosTypes.google.spanner.admin.instance.v1.IInstance,
-            protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+            protos.google.spanner.admin.instance.v1.IInstance,
+            protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
           >,
-          protosTypes.google.longrunning.IOperation | undefined,
-          {} | undefined
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.instance.v1.IInstance,
-        protosTypes.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   > | void {
@@ -1121,25 +1203,37 @@ export class InstanceAdminClient {
       'instance.name': request.instance!.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.updateInstance(request, options, callback);
+    return this.innerApiCalls.updateInstance(request, options, callback);
   }
   listInstanceConfigs(
-    request: protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      protos.google.spanner.admin.instance.v1.IInstanceConfig[],
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
     ]
   >;
   listInstanceConfigs(
-    request: protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     options: gax.CallOptions,
-    callback: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstanceConfig
+    >
+  ): void;
+  listInstanceConfigs(
+    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstanceConfig
     >
   ): void;
   /**
@@ -1177,24 +1271,28 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listInstanceConfigs(
-    request: protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     optionsOrCallback?:
       | gax.CallOptions
-      | Callback<
-          protosTypes.google.spanner.admin.instance.v1.IInstanceConfig[],
-          protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-          protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.instance.v1.IInstanceConfig
         >,
-    callback?: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstanceConfig
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstanceConfig[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      protos.google.spanner.admin.instance.v1.IInstanceConfig[],
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
     ]
   > | void {
     request = request || {};
@@ -1214,7 +1312,7 @@ export class InstanceAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.listInstanceConfigs(request, options, callback);
+    return this.innerApiCalls.listInstanceConfigs(request, options, callback);
   }
 
   /**
@@ -1249,7 +1347,7 @@ export class InstanceAdminClient {
    *   An object stream which emits an object representing [InstanceConfig]{@link google.spanner.admin.instance.v1.InstanceConfig} on 'data' event.
    */
   listInstanceConfigsStream(
-    request?: protosTypes.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     options?: gax.CallOptions
   ): Transform {
     request = request || {};
@@ -1263,29 +1361,87 @@ export class InstanceAdminClient {
     });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this._descriptors.page.listInstanceConfigs.createStream(
-      this._innerApiCalls.listInstanceConfigs as gax.GaxCall,
+    return this.descriptors.page.listInstanceConfigs.createStream(
+      this.innerApiCalls.listInstanceConfigs as gax.GaxCall,
       request,
       callSettings
     );
   }
+
+  /**
+   * Equivalent to {@link listInstanceConfigs}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the project for which a list of supported instance
+   *   configurations is requested. Values are of the form
+   *   `projects/<project>`.
+   * @param {number} request.pageSize
+   *   Number of instance configurations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token|next_page_token}
+   *   from a previous {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listInstanceConfigsAsync(
+    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listInstanceConfigs.asyncIterate(
+      this.innerApiCalls['listInstanceConfigs'] as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
+  }
   listInstances(
-    request: protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest,
+    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstance[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesResponse
+      protos.google.spanner.admin.instance.v1.IInstance[],
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancesResponse
     ]
   >;
   listInstances(
-    request: protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest,
+    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     options: gax.CallOptions,
-    callback: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstance[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesResponse
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstance
+    >
+  ): void;
+  listInstances(
+    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstance
     >
   ): void;
   /**
@@ -1342,24 +1498,28 @@ export class InstanceAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listInstances(
-    request: protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest,
+    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     optionsOrCallback?:
       | gax.CallOptions
-      | Callback<
-          protosTypes.google.spanner.admin.instance.v1.IInstance[],
-          protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-          protosTypes.google.spanner.admin.instance.v1.IListInstancesResponse
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.instance.v1.IInstance
         >,
-    callback?: Callback<
-      protosTypes.google.spanner.admin.instance.v1.IInstance[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesResponse
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstance
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.instance.v1.IInstance[],
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protosTypes.google.spanner.admin.instance.v1.IListInstancesResponse
+      protos.google.spanner.admin.instance.v1.IInstance[],
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancesResponse
     ]
   > | void {
     request = request || {};
@@ -1379,7 +1539,7 @@ export class InstanceAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.listInstances(request, options, callback);
+    return this.innerApiCalls.listInstances(request, options, callback);
   }
 
   /**
@@ -1433,7 +1593,7 @@ export class InstanceAdminClient {
    *   An object stream which emits an object representing [Instance]{@link google.spanner.admin.instance.v1.Instance} on 'data' event.
    */
   listInstancesStream(
-    request?: protosTypes.google.spanner.admin.instance.v1.IListInstancesRequest,
+    request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     options?: gax.CallOptions
   ): Transform {
     request = request || {};
@@ -1447,11 +1607,76 @@ export class InstanceAdminClient {
     });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this._descriptors.page.listInstances.createStream(
-      this._innerApiCalls.listInstances as gax.GaxCall,
+    return this.descriptors.page.listInstances.createStream(
+      this.innerApiCalls.listInstances as gax.GaxCall,
       request,
       callSettings
     );
+  }
+
+  /**
+   * Equivalent to {@link listInstances}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the project for which a list of instances is
+   *   requested. Values are of the form `projects/<project>`.
+   * @param {number} request.pageSize
+   *   Number of instances to be returned in the response. If 0 or less, defaults
+   *   to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
+   * @param {string} request.filter
+   *   An expression for filtering the results of the request. Filter rules are
+   *   case insensitive. The fields eligible for filtering are:
+   *
+   *     * `name`
+   *     * `display_name`
+   *     * `labels.key` where key is the name of a label
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `name:*` --> The instance has a name.
+   *     * `name:Howl` --> The instance's name contains the string "howl".
+   *     * `name:HOWL` --> Equivalent to above.
+   *     * `NAME:howl` --> Equivalent to above.
+   *     * `labels.env:*` --> The instance has the label "env".
+   *     * `labels.env:dev` --> The instance has the label "env" and the value of
+   *                          the label contains the string "dev".
+   *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
+   *                                    it has the label "env" with its value
+   *                                    containing "dev".
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listInstancesAsync(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listInstances.asyncIterate(
+      this.innerApiCalls['listInstances'] as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance>;
   }
   // --------------------
   // -- Path templates --
@@ -1465,9 +1690,9 @@ export class InstanceAdminClient {
    * @returns {string} Resource name string.
    */
   instancePath(project: string, instance: string) {
-    return this._pathTemplates.instancePathTemplate.render({
-      project,
-      instance,
+    return this.pathTemplates.instancePathTemplate.render({
+      project: project,
+      instance: instance,
     });
   }
 
@@ -1479,7 +1704,7 @@ export class InstanceAdminClient {
    * @returns {string} A string representing the project.
    */
   matchProjectFromInstanceName(instanceName: string) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
+    return this.pathTemplates.instancePathTemplate.match(instanceName).project;
   }
 
   /**
@@ -1490,8 +1715,7 @@ export class InstanceAdminClient {
    * @returns {string} A string representing the instance.
    */
   matchInstanceFromInstanceName(instanceName: string) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName)
-      .instance;
+    return this.pathTemplates.instancePathTemplate.match(instanceName).instance;
   }
 
   /**
@@ -1502,8 +1726,8 @@ export class InstanceAdminClient {
    * @returns {string} Resource name string.
    */
   instanceConfigPath(project: string, instanceConfig: string) {
-    return this._pathTemplates.instanceConfigPathTemplate.render({
-      project,
+    return this.pathTemplates.instanceConfigPathTemplate.render({
+      project: project,
       instance_config: instanceConfig,
     });
   }
@@ -1516,7 +1740,7 @@ export class InstanceAdminClient {
    * @returns {string} A string representing the project.
    */
   matchProjectFromInstanceConfigName(instanceConfigName: string) {
-    return this._pathTemplates.instanceConfigPathTemplate.match(
+    return this.pathTemplates.instanceConfigPathTemplate.match(
       instanceConfigName
     ).project;
   }
@@ -1529,7 +1753,7 @@ export class InstanceAdminClient {
    * @returns {string} A string representing the instance_config.
    */
   matchInstanceConfigFromInstanceConfigName(instanceConfigName: string) {
-    return this._pathTemplates.instanceConfigPathTemplate.match(
+    return this.pathTemplates.instanceConfigPathTemplate.match(
       instanceConfigName
     ).instance_config;
   }

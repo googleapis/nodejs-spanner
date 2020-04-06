@@ -98,7 +98,10 @@ export interface BatchUpdateError extends ServiceError {
 
 export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
-export type BatchUpdateResponse = [number[], spannerClient.spanner.v1.ExecuteBatchDmlResponse];
+export type BatchUpdateResponse = [
+  number[],
+  spannerClient.spanner.v1.ExecuteBatchDmlResponse
+];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
 export type BeginTransactionCallback = NormalCallback<
@@ -1282,14 +1285,16 @@ export class Transaction extends Dml {
       return;
     }
 
-    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] = queries.map(query => {
-      if (typeof query === 'string') {
-        return {sql: query};
+    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] = queries.map(
+      query => {
+        if (typeof query === 'string') {
+          return {sql: query};
+        }
+        const {sql} = query;
+        const {params, paramTypes} = Snapshot.encodeParams(query);
+        return {sql, params, paramTypes};
       }
-      const {sql} = query;
-      const {params, paramTypes} = Snapshot.encodeParams(query);
-      return {sql, params, paramTypes};
-    });
+    );
 
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
@@ -1304,7 +1309,10 @@ export class Transaction extends Dml {
         method: 'executeBatchDml',
         reqOpts,
       },
-      (err: null | ServiceError, resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse) => {
+      (
+        err: null | ServiceError,
+        resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
+      ) => {
         let batchUpdateError: BatchUpdateError;
 
         if (err) {
@@ -1316,7 +1324,15 @@ export class Transaction extends Dml {
 
         const {resultSets, status} = resp;
         const rowCounts: number[] = resultSets.map(({stats}) => {
-          return (stats && Number(stats[(stats as spannerClient.spanner.v1.ResultSetStats).rowCount!])) || 0;
+          return (
+            (stats &&
+              Number(
+                stats[
+                  (stats as spannerClient.spanner.v1.ResultSetStats).rowCount!
+                ]
+              )) ||
+            0
+          );
         });
 
         if (status && status.code !== 0) {
@@ -1470,8 +1486,12 @@ export class Transaction extends Dml {
    * ];
    */
   deleteRows(table: string, keys: Key[]): void {
-    const keySet: spannerClient.spanner.v1.IKeySet = {keys: arrify(keys).map(codec.convertToListValue)};
-    const mutation: spannerClient.spanner.v1.IMutation = {delete: {table, keySet}};
+    const keySet: spannerClient.spanner.v1.IKeySet = {
+      keys: arrify(keys).map(codec.convertToListValue),
+    };
+    const mutation: spannerClient.spanner.v1.IMutation = {
+      delete: {table, keySet},
+    };
 
     this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
   }
@@ -1602,7 +1622,9 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: spannerClient.spanner.v1.Spanner.RollbackCallback): void | Promise<void> {
+  rollback(
+    callback?: spannerClient.spanner.v1.Spanner.RollbackCallback
+  ): void | Promise<void> {
     if (!this.id) {
       callback!(
         new Error(
@@ -1614,7 +1636,10 @@ export class Transaction extends Dml {
 
     const session = this.session.formattedName_!;
     const transactionId = this.id;
-    const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {session, transactionId};
+    const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
+      session,
+      transactionId,
+    };
 
     this.request(
       {
@@ -1784,7 +1809,10 @@ promisifyAll(Transaction, {
  * @see Database#runPartitionedUpdate
  */
 export class PartitionedDml extends Dml {
-  constructor(session: Session, options = {} as spannerClient.spanner.v1.TransactionOptions.PartitionedDml) {
+  constructor(
+    session: Session,
+    options = {} as spannerClient.spanner.v1.TransactionOptions.PartitionedDml
+  ) {
     super(session);
     this._options = {partitionedDml: options};
   }

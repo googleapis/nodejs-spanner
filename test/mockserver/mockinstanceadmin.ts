@@ -23,7 +23,6 @@ import iam = google.iam.v1;
 import longrunning = google.longrunning;
 import Any = google.protobuf.Any;
 import Empty = google.protobuf.Empty;
-import {IInstance} from '../../src/instance';
 
 const PROTO_PATH = 'spanner_instance_admin.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';

@@ -343,11 +343,11 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // [END spanner_query_data_with_timestamp_column]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `createTableWithTimestamp <instanceName> <databaseName> <projectId>`,
-    `Creates an example table with a commit timestamp column in a Cloud Spanner database.`,
+    'createTableWithTimestamp <instanceName> <databaseName> <projectId>',
+    'Creates an example table with a commit timestamp column in a Cloud Spanner database.',
     {},
     opts =>
       createTableWithTimestamp(
@@ -357,15 +357,15 @@ require(`yargs`)
       )
   )
   .command(
-    `insertWithTimestamp <instanceName> <databaseName> <projectId>`,
-    `Inserts new rows of data including commit timestamps into an example Cloud Spanner table.`,
+    'insertWithTimestamp <instanceName> <databaseName> <projectId>',
+    'Inserts new rows of data including commit timestamps into an example Cloud Spanner table.',
     {},
     opts =>
       insertWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryTableWithTimestamp <instanceName> <databaseName> <projectId>`,
-    `Executes a read-only SQL query against an example Cloud Spanner table created with a commit timestamp column.`,
+    'queryTableWithTimestamp <instanceName> <databaseName> <projectId>',
+    'Executes a read-only SQL query against an example Cloud Spanner table created with a commit timestamp column.',
     {},
     opts =>
       queryTableWithTimestamp(
@@ -375,21 +375,21 @@ require(`yargs`)
       )
   )
   .command(
-    `addTimestampColumn <instanceName> <databaseName> <projectId>`,
-    `Adds a example commit timestamp column to an existing example Cloud Spanner table.`,
+    'addTimestampColumn <instanceName> <databaseName> <projectId>',
+    'Adds a example commit timestamp column to an existing example Cloud Spanner table.',
     {},
     opts =>
       addTimestampColumn(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `updateWithTimestamp <instanceName> <databaseName> <projectId>`,
-    `Modifies existing rows of data in an example Cloud Spanner table with a commit timestamp column..`,
+    'updateWithTimestamp <instanceName> <databaseName> <projectId>',
+    'Modifies existing rows of data in an example Cloud Spanner table with a commit timestamp column..',
     {},
     opts =>
       updateWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithTimestamp <instanceName> <databaseName> <projectId>`,
+    'queryWithTimestamp <instanceName> <databaseName> <projectId>',
     `Executes a read-only SQL query against an example Cloud Spanner table with an additional
     column (LastUpdateTime) added by addTimestampColumn.`,
     {},
@@ -397,25 +397,25 @@ require(`yargs`)
       queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .example(
-    `node $0 createTableWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 createTableWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 insertWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 insertWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 queryTableWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 queryTableWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 addTimestampColumn "my-instance" "my-database" "my-project-id"`
+    'node $0 addTimestampColumn "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 updateWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 updateWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

@@ -20,7 +20,7 @@ import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
 
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
 
 export interface Field {
@@ -72,7 +72,7 @@ export class SpannerDate extends Date {
     const yearOrDateString = dateFields[0];
 
     // yearOrDateString could be 0 (number).
-    if (yearOrDateString == null) {
+    if (yearOrDateString === null) {
       dateFields[0] = new Date().toDateString();
     }
 
@@ -284,6 +284,7 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
   }
 
   let decoded = value;
+  let fields;
 
   switch (type.code) {
     case spannerClient.spanner.v1.TypeCode.BYTES:
@@ -303,12 +304,18 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
       break;
     case spannerClient.spanner.v1.TypeCode.ARRAY:
       decoded = decoded.map(value => {
-        return decode(value, type.arrayElementType! as spannerClient.spanner.v1.Type);
+        return decode(
+          value,
+          type.arrayElementType! as spannerClient.spanner.v1.Type
+        );
       });
       break;
     case spannerClient.spanner.v1.TypeCode.STRUCT:
-      const fields = type.structType!.fields!.map(({name, type}, index) => {
-        const value = decode(decoded[name!] || decoded[index], type as spannerClient.spanner.v1.Type);
+      fields = type.structType!.fields!.map(({name, type}, index) => {
+        const value = decode(
+          decoded[name!] || decoded[index],
+          type as spannerClient.spanner.v1.Type
+        );
         return {name, value};
       });
       decoded = Struct.fromArray(fields as Field[]);
@@ -554,7 +561,9 @@ function convertProtoTimestampToDate({
  * @param {object|string} [config='unspecified'] Type config.
  * @return {object}
  */
-function createTypeObject(friendlyType?: string | Type): spannerClient.spanner.v1.Type {
+function createTypeObject(
+  friendlyType?: string | Type
+): spannerClient.spanner.v1.Type {
   if (!friendlyType) {
     friendlyType = 'unspecified';
   }
@@ -564,8 +573,11 @@ function createTypeObject(friendlyType?: string | Type): spannerClient.spanner.v
   }
 
   const config: Type = friendlyType as Type;
-  const code: spannerClient.spanner.v1.TypeCode = TypeCode[config.type] || TypeCode.unspecified;
-  const type: spannerClient.spanner.v1.Type = {code} as spannerClient.spanner.v1.Type;
+  const code: spannerClient.spanner.v1.TypeCode =
+    TypeCode[config.type] || TypeCode.unspecified;
+  const type: spannerClient.spanner.v1.Type = {
+    code,
+  } as spannerClient.spanner.v1.Type;
 
   if (code === spannerClient.spanner.v1.TypeCode.ARRAY) {
     type.arrayElementType = codec.createTypeObject(config.child);

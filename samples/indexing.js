@@ -268,23 +268,23 @@ async function readDataWithStoringIndex(instanceId, databaseId, projectId) {
   // [END spanner_read_data_with_storing_index]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `createIndex <instanceName> <databaseName> <projectId>`,
-    `Creates a new index in an example Cloud Spanner table.`,
+    'createIndex <instanceName> <databaseName> <projectId>',
+    'Creates a new index in an example Cloud Spanner table.',
     {},
     opts => createIndex(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `createStoringIndex <instanceName> <databaseName> <projectId>`,
-    `Creates a new value-storing index in an example Cloud Spanner table.`,
+    'createStoringIndex <instanceName> <databaseName> <projectId>',
+    'Creates a new value-storing index in an example Cloud Spanner table.',
     {},
     opts =>
       createStoringIndex(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryIndex <instanceName> <databaseName> <projectId>`,
+    'queryIndex <instanceName> <databaseName> <projectId>',
     `Executes a read-only SQL query against an example Cloud Spanner table using an existing index.
     Returns results with titles between a start title (default: 'Ardvark') and an end title (default: 'Goo').`,
     {
@@ -309,15 +309,15 @@ require(`yargs`)
       )
   )
   .command(
-    `readIndex <instanceName> <databaseName> <projectId>`,
-    `Reads data from an example Cloud Spanner table using an existing index.`,
+    'readIndex <instanceName> <databaseName> <projectId>',
+    'Reads data from an example Cloud Spanner table using an existing index.',
     {},
     opts =>
       readDataWithIndex(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `readStoringIndex <instanceName> <databaseName> <projectId>`,
-    `Reads data from an example Cloud Spanner table using an existing storing index.`,
+    'readStoringIndex <instanceName> <databaseName> <projectId>',
+    'Reads data from an example Cloud Spanner table using an existing storing index.',
     {},
     opts =>
       readDataWithStoringIndex(
@@ -326,17 +326,17 @@ require(`yargs`)
         opts.projectId
       )
   )
-  .example(`node $0 createIndex "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 createIndex "my-instance" "my-database" "my-project-id"')
   .example(
-    `node $0 createStoringIndex "my-instance" "my-database" "my-project-id"`
+    'node $0 createStoringIndex "my-instance" "my-database" "my-project-id"'
   )
-  .example(`node $0 queryIndex "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 readIndex "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 queryIndex "my-instance" "my-database" "my-project-id"')
+  .example('node $0 readIndex "my-instance" "my-database" "my-project-id"')
   .example(
-    `node $0 readStoringIndex "my-instance" "my-database" "my-project-id"`
+    'node $0 readStoringIndex "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

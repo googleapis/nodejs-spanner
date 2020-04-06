@@ -171,7 +171,11 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {string} encoding Chunk encoding (Not used in object streams).
    * @param {function} next Function to be called upon completion.
    */
-  _transform(chunk: google.spanner.v1.PartialResultSet, enc: string, next: Function): void {
+  _transform(
+    chunk: google.spanner.v1.PartialResultSet,
+    enc: string,
+    next: Function
+  ): void {
     this.emit('response', chunk);
 
     if (chunk.stats) {
@@ -179,7 +183,8 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
 
     if (!this._fields && chunk.metadata) {
-      this._fields = chunk.metadata.rowType!.fields as google.spanner.v1.StructType.Field[];
+      this._fields = chunk.metadata.rowType!
+        .fields as google.spanner.v1.StructType.Field[];
     }
 
     if (!is.empty(chunk.values)) {
@@ -281,9 +286,16 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {*} tail The tail of the combined value.
    * @returns {Array.<*>}
    */
-  // tslint:disable-next-line no-any
-  static merge(type: google.spanner.v1.Type, head: Value, tail: Value): Value[] {
-    if (type.code === google.spanner.v1.TypeCode.ARRAY || type.code === google.spanner.v1.TypeCode.STRUCT) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static merge(
+    type: google.spanner.v1.Type,
+    head: Value,
+    tail: Value
+  ): Value[] {
+    if (
+      type.code === google.spanner.v1.TypeCode.ARRAY ||
+      type.code === google.spanner.v1.TypeCode.STRUCT
+    ) {
       return [PartialResultStream.mergeLists(type, head, tail)];
     }
 
@@ -304,13 +316,18 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {Array.<*>} tail The end of the list.
    * @returns {Array.<*>}
    */
-  static mergeLists(type: google.spanner.v1.Type, head: Value[], tail: Value[]): Value[] {
+  static mergeLists(
+    type: google.spanner.v1.Type,
+    head: Value[],
+    tail: Value[]
+  ): Value[] {
     let listType: google.spanner.v1.Type;
 
     if (type.code === 'ARRAY') {
       listType = type.arrayElementType as google.spanner.v1.Type;
     } else {
-      listType = type.structType!.fields![head.length - 1].type as google.spanner.v1.Type;
+      listType = type.structType!.fields![head.length - 1]
+        .type as google.spanner.v1.Type;
     }
 
     const merged = PartialResultStream.merge(
@@ -397,7 +414,7 @@ export function partialResultStream(
   eventsIntercept.patch(requestsStream);
 
   // need types for events-intercept
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (requestsStream as any).intercept('error', retry);
 
   return (

@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,19 +18,19 @@
 
 import * as gax from 'google-gax';
 import {
-  APICallback,
   Callback,
   CallOptions,
   Descriptors,
   ClientOptions,
   LROperation,
   PaginationCallback,
-  PaginationResponse,
+  GaxCall,
 } from 'google-gax';
 import * as path from 'path';
 
 import {Transform} from 'stream';
-import * as protosTypes from '../../protos/protos';
+import {RequestType} from 'google-gax/build/src/apitypes';
+import * as protos from '../../protos/protos';
 import * as gapicConfig from './database_admin_client_config.json';
 
 const version = require('../../../package.json').version;
@@ -46,9 +46,6 @@ const version = require('../../../package.json').version;
  * @memberof v1
  */
 export class DatabaseAdminClient {
-  private _descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}};
-  private _innerApiCalls: {[name: string]: Function};
-  private _pathTemplates: {[name: string]: gax.PathTemplate};
   private _terminated = false;
   private _opts: ClientOptions;
   private _gaxModule: typeof gax | typeof gax.fallback;
@@ -56,6 +53,14 @@ export class DatabaseAdminClient {
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
   auth: gax.GoogleAuth;
+  descriptors: Descriptors = {
+    page: {},
+    stream: {},
+    longrunning: {},
+    batching: {},
+  };
+  innerApiCalls: {[name: string]: Function};
+  pathTemplates: {[name: string]: gax.PathTemplate};
   operationsClient: gax.OperationsClient;
   databaseAdminStub?: Promise<{[name: string]: Function}>;
 
@@ -148,13 +153,16 @@ export class DatabaseAdminClient {
       'protos.json'
     );
     this._protos = this._gaxGrpc.loadProto(
-      opts.fallback ? require('../../protos/protos.json') : nodejsProtoPath
+      opts.fallback
+        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
+          require('../../protos/protos.json')
+        : nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
-    this._pathTemplates = {
+    this.pathTemplates = {
       backupPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/backups/{backup}'
       ),
@@ -169,7 +177,7 @@ export class DatabaseAdminClient {
     // Some of the methods on this service return "paged" results,
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
-    this._descriptors.page = {
+    this.descriptors.page = {
       listDatabases: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
@@ -187,6 +195,7 @@ export class DatabaseAdminClient {
     // rather than holding a request open.
     const protoFilesRoot = opts.fallback
       ? this._gaxModule.protobuf.Root.fromJSON(
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           require('../../protos/protos.json')
         )
       : this._gaxModule.protobuf.loadSync(nodejsProtoPath);
@@ -222,7 +231,7 @@ export class DatabaseAdminClient {
       '.google.spanner.admin.database.v1.RestoreDatabaseMetadata'
     ) as gax.protobuf.Type;
 
-    this._descriptors.longrunning = {
+    this.descriptors.longrunning = {
       createDatabase: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createDatabaseResponse.decode.bind(createDatabaseResponse),
@@ -256,7 +265,7 @@ export class DatabaseAdminClient {
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
-    this._innerApiCalls = {};
+    this.innerApiCalls = {};
   }
 
   /**
@@ -283,7 +292,7 @@ export class DatabaseAdminClient {
         ? (this._protos as protobuf.Root).lookupService(
             'google.spanner.admin.database.v1.DatabaseAdmin'
           )
-        : // tslint:disable-next-line no-any
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.admin.database.v1.DatabaseAdmin,
       this._opts
     ) as Promise<{[method: string]: Function}>;
@@ -309,14 +318,14 @@ export class DatabaseAdminClient {
       'listDatabaseOperations',
       'listBackupOperations',
     ];
-
     for (const methodName of databaseAdminStubMethods) {
-      const innerCallPromise = this.databaseAdminStub.then(
+      const callPromise = this.databaseAdminStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
           }
-          return stub[methodName].apply(stub, args);
+          const func = stub[methodName];
+          return func.apply(stub, args);
         },
         (err: Error | null | undefined) => () => {
           throw err;
@@ -324,20 +333,14 @@ export class DatabaseAdminClient {
       );
 
       const apiCall = this._gaxModule.createApiCall(
-        innerCallPromise,
+        callPromise,
         this._defaults[methodName],
-        this._descriptors.page[methodName] ||
-          this._descriptors.stream[methodName] ||
-          this._descriptors.longrunning[methodName]
+        this.descriptors.page[methodName] ||
+          this.descriptors.stream[methodName] ||
+          this.descriptors.longrunning[methodName]
       );
 
-      this._innerApiCalls[methodName] = (
-        argument: {},
-        callOptions?: CallOptions,
-        callback?: APICallback
-      ) => {
-        return apiCall(argument, callOptions, callback);
-      };
+      this.innerApiCalls[methodName] = apiCall;
     }
 
     return this.databaseAdminStub;
@@ -397,26 +400,34 @@ export class DatabaseAdminClient {
   // -- Service calls --
   // -------------------
   getDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IDatabase,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IDatabase,
+      protos.google.spanner.admin.database.v1.IGetDatabaseRequest | undefined,
       {} | undefined
     ]
   >;
   getDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IDatabase,
-      | protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest
+      protos.google.spanner.admin.database.v1.IDatabase,
+      | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  getDatabase(
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IDatabase,
+      | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -434,28 +445,27 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.database.v1.IDatabase,
-          | protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest
+          protos.google.spanner.admin.database.v1.IDatabase,
+          | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IDatabase,
-      | protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest
+      protos.google.spanner.admin.database.v1.IDatabase,
+      | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IDatabase,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IGetDatabaseRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IDatabase,
+      protos.google.spanner.admin.database.v1.IGetDatabaseRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -476,29 +486,37 @@ export class DatabaseAdminClient {
       name: request.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.getDatabase(request, options, callback);
+    return this.innerApiCalls.getDatabase(request, options, callback);
   }
   dropDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.protobuf.IEmpty,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest
-        | undefined
-      ),
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.admin.database.v1.IDropDatabaseRequest | undefined,
       {} | undefined
     ]
   >;
   dropDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.protobuf.IEmpty,
-      | protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  dropDatabase(
+    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -517,28 +535,27 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   dropDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.protobuf.IEmpty,
-          | protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.protobuf.IEmpty,
-      | protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.protobuf.IEmpty,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IDropDatabaseRequest
-        | undefined
-      ),
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.admin.database.v1.IDropDatabaseRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -559,29 +576,40 @@ export class DatabaseAdminClient {
       database: request.database || '',
     });
     this.initialize();
-    return this._innerApiCalls.dropDatabase(request, options, callback);
+    return this.innerApiCalls.dropDatabase(request, options, callback);
   }
   getDatabaseDdl(
-    request: protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+      protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
       (
-        | protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+        | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
         | undefined
       ),
       {} | undefined
     ]
   >;
   getDatabaseDdl(
-    request: protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
-      | protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+      protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+      | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  getDatabaseDdl(
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+      | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -600,26 +628,28 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getDatabaseDdl(
-    request: protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
-          | protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+          protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+          | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
-      | protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+      protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+      | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+      protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
       (
-        | protosTypes.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+        | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
         | undefined
       ),
       {} | undefined
@@ -642,25 +672,33 @@ export class DatabaseAdminClient {
       database: request.database || '',
     });
     this.initialize();
-    return this._innerApiCalls.getDatabaseDdl(request, options, callback);
+    return this.innerApiCalls.getDatabaseDdl(request, options, callback);
   }
   setIamPolicy(
-    request: protosTypes.google.iam.v1.ISetIamPolicyRequest,
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | undefined,
       {} | undefined
     ]
   >;
   setIamPolicy(
-    request: protosTypes.google.iam.v1.ISetIamPolicyRequest,
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  setIamPolicy(
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    callback: Callback<
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -681,23 +719,23 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   setIamPolicy(
-    request: protosTypes.google.iam.v1.ISetIamPolicyRequest,
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.iam.v1.IPolicy,
-          protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
-          {} | undefined
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.ISetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -718,25 +756,33 @@ export class DatabaseAdminClient {
       resource: request.resource || '',
     });
     this.initialize();
-    return this._innerApiCalls.setIamPolicy(request, options, callback);
+    return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   getIamPolicy(
-    request: protosTypes.google.iam.v1.IGetIamPolicyRequest,
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | undefined,
       {} | undefined
     ]
   >;
   getIamPolicy(
-    request: protosTypes.google.iam.v1.IGetIamPolicyRequest,
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  getIamPolicy(
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    callback: Callback<
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -758,23 +804,23 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getIamPolicy(
-    request: protosTypes.google.iam.v1.IGetIamPolicyRequest,
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.iam.v1.IPolicy,
-          protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
-          {} | undefined
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.iam.v1.IPolicy,
-      protosTypes.google.iam.v1.IGetIamPolicyRequest | undefined,
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -795,25 +841,33 @@ export class DatabaseAdminClient {
       resource: request.resource || '',
     });
     this.initialize();
-    return this._innerApiCalls.getIamPolicy(request, options, callback);
+    return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
   testIamPermissions(
-    request: protosTypes.google.iam.v1.ITestIamPermissionsRequest,
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
       {} | undefined
     ]
   >;
   testIamPermissions(
-    request: protosTypes.google.iam.v1.ITestIamPermissionsRequest,
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  testIamPermissions(
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    callback: Callback<
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -837,23 +891,23 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   testIamPermissions(
-    request: protosTypes.google.iam.v1.ITestIamPermissionsRequest,
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-          protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
-          {} | undefined
+          protos.google.iam.v1.ITestIamPermissionsResponse,
+          protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.iam.v1.ITestIamPermissionsResponse,
-      protosTypes.google.iam.v1.ITestIamPermissionsRequest | undefined,
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -874,29 +928,37 @@ export class DatabaseAdminClient {
       resource: request.resource || '',
     });
     this.initialize();
-    return this._innerApiCalls.testIamPermissions(request, options, callback);
+    return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
   getBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IGetBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IGetBackupRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IBackup,
+      protos.google.spanner.admin.database.v1.IGetBackupRequest | undefined,
       {} | undefined
     ]
   >;
   getBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IGetBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      | protosTypes.google.spanner.admin.database.v1.IGetBackupRequest
+      protos.google.spanner.admin.database.v1.IBackup,
+      | protos.google.spanner.admin.database.v1.IGetBackupRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  getBackup(
+    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackup,
+      | protos.google.spanner.admin.database.v1.IGetBackupRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -911,28 +973,27 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IGetBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.database.v1.IBackup,
-          | protosTypes.google.spanner.admin.database.v1.IGetBackupRequest
+          protos.google.spanner.admin.database.v1.IBackup,
+          | protos.google.spanner.admin.database.v1.IGetBackupRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      | protosTypes.google.spanner.admin.database.v1.IGetBackupRequest
+      protos.google.spanner.admin.database.v1.IBackup,
+      | protos.google.spanner.admin.database.v1.IGetBackupRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IGetBackupRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IBackup,
+      protos.google.spanner.admin.database.v1.IGetBackupRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -953,29 +1014,37 @@ export class DatabaseAdminClient {
       name: request.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.getBackup(request, options, callback);
+    return this.innerApiCalls.getBackup(request, options, callback);
   }
   updateBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IBackup,
+      protos.google.spanner.admin.database.v1.IUpdateBackupRequest | undefined,
       {} | undefined
     ]
   >;
   updateBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      | protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest
+      protos.google.spanner.admin.database.v1.IBackup,
+      | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  updateBackup(
+    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackup,
+      | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -990,28 +1059,27 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   updateBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.database.v1.IBackup,
-          | protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest
+          protos.google.spanner.admin.database.v1.IBackup,
+          | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      | protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest
+      protos.google.spanner.admin.database.v1.IBackup,
+      | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IBackup,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IUpdateBackupRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IBackup,
+      protos.google.spanner.admin.database.v1.IUpdateBackupRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -1032,29 +1100,37 @@ export class DatabaseAdminClient {
       'backup.name': request.backup!.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.updateBackup(request, options, callback);
+    return this.innerApiCalls.updateBackup(request, options, callback);
   }
   deleteBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.protobuf.IEmpty,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest
-        | undefined
-      ),
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.admin.database.v1.IDeleteBackupRequest | undefined,
       {} | undefined
     ]
   >;
   deleteBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.protobuf.IEmpty,
-      | protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  deleteBackup(
+    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1069,28 +1145,27 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   deleteBackup(
-    request: protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.protobuf.IEmpty,
-          | protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.protobuf.IEmpty,
-      | protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.protobuf.IEmpty,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IDeleteBackupRequest
-        | undefined
-      ),
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.admin.database.v1.IDeleteBackupRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -1111,29 +1186,37 @@ export class DatabaseAdminClient {
       name: request.name || '',
     });
     this.initialize();
-    return this._innerApiCalls.deleteBackup(request, options, callback);
+    return this.innerApiCalls.deleteBackup(request, options, callback);
   }
   listBackups(
-    request: protosTypes.google.spanner.admin.database.v1.IListBackupsRequest,
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IListBackupsResponse,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IListBackupsRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
+      protos.google.spanner.admin.database.v1.IListBackupsRequest | undefined,
       {} | undefined
     ]
   >;
   listBackups(
-    request: protosTypes.google.spanner.admin.database.v1.IListBackupsRequest,
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IListBackupsResponse,
-      | protosTypes.google.spanner.admin.database.v1.IListBackupsRequest
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
+      | protos.google.spanner.admin.database.v1.IListBackupsRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  listBackups(
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
+      | protos.google.spanner.admin.database.v1.IListBackupsRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1150,28 +1233,27 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listBackups(
-    request: protosTypes.google.spanner.admin.database.v1.IListBackupsRequest,
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.database.v1.IListBackupsResponse,
-          | protosTypes.google.spanner.admin.database.v1.IListBackupsRequest
+          protos.google.spanner.admin.database.v1.IListBackupsResponse,
+          | protos.google.spanner.admin.database.v1.IListBackupsRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IListBackupsResponse,
-      | protosTypes.google.spanner.admin.database.v1.IListBackupsRequest
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
+      | protos.google.spanner.admin.database.v1.IListBackupsRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IListBackupsResponse,
-      (
-        | protosTypes.google.spanner.admin.database.v1.IListBackupsRequest
-        | undefined
-      ),
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
+      protos.google.spanner.admin.database.v1.IListBackupsRequest | undefined,
       {} | undefined
     ]
   > | void {
@@ -1192,29 +1274,40 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.listBackups(request, options, callback);
+    return this.innerApiCalls.listBackups(request, options, callback);
   }
   listBackupOperations(
-    request: protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
       (
-        | protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest
+        | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
         | undefined
       ),
       {} | undefined
     ]
   >;
   listBackupOperations(
-    request: protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     options: gax.CallOptions,
     callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      | protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+      | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
+    >
+  ): void;
+  listBackupOperations(
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+      | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
+      | null
+      | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1238,26 +1331,28 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listBackupOperations(
-    request: protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protosTypes.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-          | protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest
+          protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+          | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
+          | null
           | undefined,
-          {} | undefined
+          {} | null | undefined
         >,
     callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      | protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+      | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
+      | null
       | undefined,
-      {} | undefined
+      {} | null | undefined
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
       (
-        | protosTypes.google.spanner.admin.database.v1.IListBackupOperationsRequest
+        | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
         | undefined
       ),
       {} | undefined
@@ -1280,32 +1375,43 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.listBackupOperations(request, options, callback);
+    return this.innerApiCalls.listBackupOperations(request, options, callback);
   }
 
   createDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     options?: gax.CallOptions
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   >;
   createDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     options: gax.CallOptions,
     callback: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createDatabase(
+    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1341,32 +1447,32 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   createDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           LROperation<
-            protosTypes.google.spanner.admin.database.v1.IDatabase,
-            protosTypes.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
           >,
-          protosTypes.google.longrunning.IOperation | undefined,
-          {} | undefined
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   > | void {
@@ -1387,31 +1493,42 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.createDatabase(request, options, callback);
+    return this.innerApiCalls.createDatabase(request, options, callback);
   }
   updateDatabaseDdl(
-    request: protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     options?: gax.CallOptions
   ): Promise<
     [
       LROperation<
-        protosTypes.google.protobuf.IEmpty,
-        protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+        protos.google.protobuf.IEmpty,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   >;
   updateDatabaseDdl(
-    request: protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     options: gax.CallOptions,
     callback: Callback<
       LROperation<
-        protosTypes.google.protobuf.IEmpty,
-        protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+        protos.google.protobuf.IEmpty,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateDatabaseDdl(
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.protobuf.IEmpty,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1456,32 +1573,32 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   updateDatabaseDdl(
-    request: protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           LROperation<
-            protosTypes.google.protobuf.IEmpty,
-            protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+            protos.google.protobuf.IEmpty,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
           >,
-          protosTypes.google.longrunning.IOperation | undefined,
-          {} | undefined
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
       LROperation<
-        protosTypes.google.protobuf.IEmpty,
-        protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+        protos.google.protobuf.IEmpty,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
       LROperation<
-        protosTypes.google.protobuf.IEmpty,
-        protosTypes.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+        protos.google.protobuf.IEmpty,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   > | void {
@@ -1502,31 +1619,42 @@ export class DatabaseAdminClient {
       database: request.database || '',
     });
     this.initialize();
-    return this._innerApiCalls.updateDatabaseDdl(request, options, callback);
+    return this.innerApiCalls.updateDatabaseDdl(request, options, callback);
   }
   createBackup(
-    request: protosTypes.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     options?: gax.CallOptions
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IBackup,
-        protosTypes.google.spanner.admin.database.v1.ICreateBackupMetadata
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICreateBackupMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   >;
   createBackup(
-    request: protosTypes.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     options: gax.CallOptions,
     callback: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IBackup,
-        protosTypes.google.spanner.admin.database.v1.ICreateBackupMetadata
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICreateBackupMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createBackup(
+    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICreateBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1552,32 +1680,32 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   createBackup(
-    request: protosTypes.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           LROperation<
-            protosTypes.google.spanner.admin.database.v1.IBackup,
-            protosTypes.google.spanner.admin.database.v1.ICreateBackupMetadata
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICreateBackupMetadata
           >,
-          protosTypes.google.longrunning.IOperation | undefined,
-          {} | undefined
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IBackup,
-        protosTypes.google.spanner.admin.database.v1.ICreateBackupMetadata
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICreateBackupMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IBackup,
-        protosTypes.google.spanner.admin.database.v1.ICreateBackupMetadata
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICreateBackupMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   > | void {
@@ -1598,31 +1726,42 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.createBackup(request, options, callback);
+    return this.innerApiCalls.createBackup(request, options, callback);
   }
   restoreDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     options?: gax.CallOptions
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   >;
   restoreDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     options: gax.CallOptions,
     callback: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  restoreDatabase(
+    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): void;
   /**
@@ -1667,32 +1806,32 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   restoreDatabase(
-    request: protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           LROperation<
-            protosTypes.google.spanner.admin.database.v1.IDatabase,
-            protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
           >,
-          protosTypes.google.longrunning.IOperation | undefined,
-          {} | undefined
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
         >,
     callback?: Callback<
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
-      {} | undefined
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
     >
   ): Promise<
     [
       LROperation<
-        protosTypes.google.spanner.admin.database.v1.IDatabase,
-        protosTypes.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
       >,
-      protosTypes.google.longrunning.IOperation | undefined,
+      protos.google.longrunning.IOperation | undefined,
       {} | undefined
     ]
   > | void {
@@ -1713,25 +1852,37 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.restoreDatabase(request, options, callback);
+    return this.innerApiCalls.restoreDatabase(request, options, callback);
   }
   listDatabases(
-    request: protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IDatabase[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesResponse
+      protos.google.spanner.admin.database.v1.IDatabase[],
+      protos.google.spanner.admin.database.v1.IListDatabasesRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabasesResponse
     ]
   >;
   listDatabases(
-    request: protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     options: gax.CallOptions,
-    callback: Callback<
-      protosTypes.google.spanner.admin.database.v1.IDatabase[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesResponse
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabasesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabase
+    >
+  ): void;
+  listDatabases(
+    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabasesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabase
     >
   ): void;
   /**
@@ -1768,24 +1919,28 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listDatabases(
-    request: protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     optionsOrCallback?:
       | gax.CallOptions
-      | Callback<
-          protosTypes.google.spanner.admin.database.v1.IDatabase[],
-          protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-          protosTypes.google.spanner.admin.database.v1.IListDatabasesResponse
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabasesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IDatabase
         >,
-    callback?: Callback<
-      protosTypes.google.spanner.admin.database.v1.IDatabase[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesResponse
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabasesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabase
     >
   ): Promise<
     [
-      protosTypes.google.spanner.admin.database.v1.IDatabase[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabasesResponse
+      protos.google.spanner.admin.database.v1.IDatabase[],
+      protos.google.spanner.admin.database.v1.IListDatabasesRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabasesResponse
     ]
   > | void {
     request = request || {};
@@ -1805,7 +1960,7 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.listDatabases(request, options, callback);
+    return this.innerApiCalls.listDatabases(request, options, callback);
   }
 
   /**
@@ -1839,7 +1994,7 @@ export class DatabaseAdminClient {
    *   An object stream which emits an object representing [Database]{@link google.spanner.admin.database.v1.Database} on 'data' event.
    */
   listDatabasesStream(
-    request?: protosTypes.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     options?: gax.CallOptions
   ): Transform {
     request = request || {};
@@ -1853,29 +2008,86 @@ export class DatabaseAdminClient {
     });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this._descriptors.page.listDatabases.createStream(
-      this._innerApiCalls.listDatabases as gax.GaxCall,
+    return this.descriptors.page.listDatabases.createStream(
+      this.innerApiCalls.listDatabases as gax.GaxCall,
       request,
       callSettings
     );
   }
+
+  /**
+   * Equivalent to {@link listDatabases}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance whose databases should be listed.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {number} request.pageSize
+   *   Number of databases to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listDatabasesAsync(
+    request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listDatabases.asyncIterate(
+      this.innerApiCalls['listDatabases'] as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
+  }
   listDatabaseOperations(
-    request: protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     options?: gax.CallOptions
   ): Promise<
     [
-      protosTypes.google.longrunning.IOperation[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      protos.google.longrunning.IOperation[],
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
     ]
   >;
   listDatabaseOperations(
-    request: protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     options: gax.CallOptions,
-    callback: Callback<
-      protosTypes.google.longrunning.IOperation[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): void;
+  listDatabaseOperations(
+    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
     >
   ): void;
   /**
@@ -1961,24 +2173,28 @@ export class DatabaseAdminClient {
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listDatabaseOperations(
-    request: protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     optionsOrCallback?:
       | gax.CallOptions
-      | Callback<
-          protosTypes.google.longrunning.IOperation[],
-          protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-          protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
         >,
-    callback?: Callback<
-      protosTypes.google.longrunning.IOperation[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
     >
   ): Promise<
     [
-      protosTypes.google.longrunning.IOperation[],
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-      protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      protos.google.longrunning.IOperation[],
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
     ]
   > | void {
     request = request || {};
@@ -1998,7 +2214,7 @@ export class DatabaseAdminClient {
       parent: request.parent || '',
     });
     this.initialize();
-    return this._innerApiCalls.listDatabaseOperations(
+    return this.innerApiCalls.listDatabaseOperations(
       request,
       options,
       callback
@@ -2078,7 +2294,7 @@ export class DatabaseAdminClient {
    *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
    */
   listDatabaseOperationsStream(
-    request?: protosTypes.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     options?: gax.CallOptions
   ): Transform {
     request = request || {};
@@ -2092,11 +2308,98 @@ export class DatabaseAdminClient {
     });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this._descriptors.page.listDatabaseOperations.createStream(
-      this._innerApiCalls.listDatabaseOperations as gax.GaxCall,
+    return this.descriptors.page.listDatabaseOperations.createStream(
+      this.innerApiCalls.listDatabaseOperations as gax.GaxCall,
       request,
       callSettings
     );
+  }
+
+  /**
+   * Equivalent to {@link listDatabaseOperations}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance of the database operations.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.longrunning.Operation|Operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic. However,
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
+   *       `(metadata.source_type:BACKUP) AND` <br/>
+   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
+   *       `(metadata.name:restored_howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Return operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The database is restored from a backup.
+   *       * The backup name contains "backup_howl".
+   *       * The restored database's name contains "restored_howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} request.pageSize
+   *   Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
+   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
+   *   same `parent` and with the same `filter`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listDatabaseOperationsAsync(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listDatabaseOperations.asyncIterate(
+      this.innerApiCalls['listDatabaseOperations'] as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   // --------------------
   // -- Path templates --
@@ -2111,10 +2414,10 @@ export class DatabaseAdminClient {
    * @returns {string} Resource name string.
    */
   backupPath(project: string, instance: string, backup: string) {
-    return this._pathTemplates.backupPathTemplate.render({
-      project,
-      instance,
-      backup,
+    return this.pathTemplates.backupPathTemplate.render({
+      project: project,
+      instance: instance,
+      backup: backup,
     });
   }
 
@@ -2126,7 +2429,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the project.
    */
   matchProjectFromBackupName(backupName: string) {
-    return this._pathTemplates.backupPathTemplate.match(backupName).project;
+    return this.pathTemplates.backupPathTemplate.match(backupName).project;
   }
 
   /**
@@ -2137,7 +2440,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the instance.
    */
   matchInstanceFromBackupName(backupName: string) {
-    return this._pathTemplates.backupPathTemplate.match(backupName).instance;
+    return this.pathTemplates.backupPathTemplate.match(backupName).instance;
   }
 
   /**
@@ -2148,7 +2451,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the backup.
    */
   matchBackupFromBackupName(backupName: string) {
-    return this._pathTemplates.backupPathTemplate.match(backupName).backup;
+    return this.pathTemplates.backupPathTemplate.match(backupName).backup;
   }
 
   /**
@@ -2160,10 +2463,10 @@ export class DatabaseAdminClient {
    * @returns {string} Resource name string.
    */
   databasePath(project: string, instance: string, database: string) {
-    return this._pathTemplates.databasePathTemplate.render({
-      project,
-      instance,
-      database,
+    return this.pathTemplates.databasePathTemplate.render({
+      project: project,
+      instance: instance,
+      database: database,
     });
   }
 
@@ -2175,7 +2478,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the project.
    */
   matchProjectFromDatabaseName(databaseName: string) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName).project;
+    return this.pathTemplates.databasePathTemplate.match(databaseName).project;
   }
 
   /**
@@ -2186,8 +2489,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the instance.
    */
   matchInstanceFromDatabaseName(databaseName: string) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName)
-      .instance;
+    return this.pathTemplates.databasePathTemplate.match(databaseName).instance;
   }
 
   /**
@@ -2198,8 +2500,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the database.
    */
   matchDatabaseFromDatabaseName(databaseName: string) {
-    return this._pathTemplates.databasePathTemplate.match(databaseName)
-      .database;
+    return this.pathTemplates.databasePathTemplate.match(databaseName).database;
   }
 
   /**
@@ -2210,9 +2511,9 @@ export class DatabaseAdminClient {
    * @returns {string} Resource name string.
    */
   instancePath(project: string, instance: string) {
-    return this._pathTemplates.instancePathTemplate.render({
-      project,
-      instance,
+    return this.pathTemplates.instancePathTemplate.render({
+      project: project,
+      instance: instance,
     });
   }
 
@@ -2224,7 +2525,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the project.
    */
   matchProjectFromInstanceName(instanceName: string) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName).project;
+    return this.pathTemplates.instancePathTemplate.match(instanceName).project;
   }
 
   /**
@@ -2235,8 +2536,7 @@ export class DatabaseAdminClient {
    * @returns {string} A string representing the instance.
    */
   matchInstanceFromInstanceName(instanceName: string) {
-    return this._pathTemplates.instancePathTemplate.match(instanceName)
-      .instance;
+    return this.pathTemplates.instancePathTemplate.match(instanceName).instance;
   }
 
   /**

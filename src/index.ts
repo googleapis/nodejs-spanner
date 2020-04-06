@@ -41,11 +41,10 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
-import {google} from '../protos/protos';
 import * as gapic from './gapic';
+import * as grpc from 'grpc';
 
-const grpc = require('grpc');
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
 
 export interface SpannerOptions extends GrpcClientOptions {
@@ -57,109 +56,11 @@ export interface SpannerOptions extends GrpcClientOptions {
 export interface RequestConfig {
   client: string;
   method: string;
-  // tslint:disable-next-line: no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reqOpts: any;
   gaxOpts?: {};
 }
-/*!
- * DO NOT DELETE THE FOLLOWING NAMESPACE DEFINITIONS
- */
-/**
- * @namespace google
- */
-/**
- * @namespace google.iam
- */
-/**
- * @namespace google.iam.v1
- */
-/**
- * @namespace google.type
- */
-/**
- * @namespace google.protobuf
- */
-/**
- * @namespace google.rpc
- */
-/**
- * @namespace google.longrunning
- */
-/**
- * @namespace google.spanner
- */
-/**
- * @namespace google.spanner.admin
- */
-/**
- * @namespace google.spanner.admin.database.v1
- */
-/**
- * @namespace google.spanner.admin.instance.v1
- */
-/**
- * @namespace google.spanner.database
- */
-/**
- * @namespace google.spanner.database.v1
- */
-/**
- * @namespace google.spanner.instance
- */
-/**
- * @namespace google.spanner.instance.v1
- */
-/**
- * @namespace google.spanner.v1
- */
-/**
- * @typedef {array} BasicResponse
- * @property {object} 0 The full API response.
- */
-/**
- * @callback BasicCallback
- * @param {?Error} err Request error, if any.
- * @param {object} apiResponse The full API response.
- */
-/**
- * @typedef {array} LongRunningOperationResponse
- * @property {Operation} 0 An {@link Operation} object that can be used to check
- *     the status of the request.
- * @property {object} 1 The full API response.
- */
-/**
- * @callback LongRunningOperationCallback
- * @param {?Error} err Request error, if any.
- * @param {Operation} operation An {@link Operation} object that can be used to
- *     check the status of the request.
- * @param {object} apiResponse The full API response.
- */
-/**
- * @typedef {object} ClientConfig
- * @property {string} [projectId] The project ID from the Google Developer's
- *     Console, e.g. 'grape-spaceship-123'. We will also check the environment
- *     variable `GCLOUD_PROJECT` for your project ID. If your app is running in
- *     an environment which supports {@link
- * https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application
- * Application Default Credentials}, your project ID will be detected
- * automatically.
- * @property {string} [keyFilename] Full path to the a .json, .pem, or .p12 key
- *     downloaded from the Google Developers Console. If you provide a path to a
- *     JSON file, the `projectId` option above is not necessary. NOTE: .pem and
- *     .p12 require you to specify the `email` option as well.
- * @property {string} [email] Account email address. Required when using a .pem
- *     or .p12 keyFilename.
- * @property {object} [credentials] Credentials object.
- * @property {string} [credentials.client_email]
- * @property {string} [credentials.private_key]
- * @property {boolean} [autoRetry=true] Automatically retry requests if the
- *     response is related to rate limits or certain intermittent server errors.
- *     We will exponentially backoff subsequent requests by default.
- * @property {number} [maxRetries=3] Maximum number of automatic retries
- *     attempted before returning the error.
- * @property {Constructor} [promise] Custom promise module to use instead of
- *     native Promises.
- */
+
 /**
  * [Cloud Spanner](https://cloud.google.com/spanner) is a highly scalable,
  * transactional, managed, NewSQL database service. Cloud Spanner solves the
@@ -411,7 +312,7 @@ class Spanner extends GrpcService {
    *     // Instance created successfully.
    *   });
    */
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createInstance(name: string, config?, callback?): any {
     if (!name) {
       throw new Error('A name is required to create an instance.');
@@ -537,8 +438,9 @@ class Spanner extends GrpcService {
    *   const instances = data[0];
    * });
    */
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getInstances(query?, callback?): any {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     if (is.fn(query)) {
       callback = query;
@@ -557,13 +459,15 @@ class Spanner extends GrpcService {
       // tslint:disable-next-line only-arrow-functions
       function(err, instances) {
         if (instances) {
+          // eslint-disable-next-line prefer-rest-params
           arguments[1] = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
-            // tslint:disable-next-line no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (instanceInstance as any).metadata = instance;
             return instanceInstance;
           });
         }
+        // eslint-disable-next-line prefer-spread, prefer-rest-params
         callback.apply(null, arguments);
       }
     );
@@ -642,7 +546,7 @@ class Spanner extends GrpcService {
    *   const instanceConfigs = data[0];
    * });
    */
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getInstanceConfigs(query?, callback?): any {
     if (is.fn(query)) {
       callback = query;
@@ -748,7 +652,7 @@ class Spanner extends GrpcService {
     if (!name) {
       throw new Error('A name is required to access an Operation object.');
     }
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new GrpcOperation(this as any, name);
   }
 
@@ -794,7 +698,7 @@ class Spanner extends GrpcService {
    * @param {function} [callback] Callback function.
    * @returns {Promise}
    */
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request(config: any, callback?: any): any {
     if (is.fn(callback)) {
       this.prepareGapicRequest_(config, (err, requestFn) => {
@@ -828,7 +732,7 @@ class Spanner extends GrpcService {
    * @param {function} [callback] Callback function.
    * @returns {Stream}
    */
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestStream(config): any {
     const stream = streamEvents(through.obj());
     stream.once('reading', () => {
@@ -870,7 +774,7 @@ class Spanner extends GrpcService {
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
    */
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static date(...dateFields: any[]) {
     return new codec.SpannerDate(...dateFields);
   }
@@ -1092,9 +996,8 @@ export {Transaction};
  * @property {constructor} SpannerClient
  *   Reference to {@link v1.SpannerClient}
  */
-module.exports.v1 = gapic.v1;
-
-// Alias `module.exports` as `module.exports.default`, for future-proofing.
-module.exports.default = Object.assign({}, module.exports);
 import * as protos from '../protos/protos';
 export {protos};
+const v1 = gapic.v1;
+export {v1};
+export default {Spanner};
