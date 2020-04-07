@@ -76,7 +76,7 @@ type DeleteCallback = RequestCallback<void>;
  * const backup = instance.backup('my-backup');
  */
 class Backup {
-  id_: string;
+  id: string;
   formattedName_: string;
   instanceFormattedName_: string;
   request: <T, R = void>(
@@ -87,7 +87,7 @@ class Backup {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
-    this.id_ = this.formattedName_.split('/').pop() || '';
+    this.id = this.formattedName_.split('/').pop() || '';
   }
 
   create(
@@ -166,7 +166,7 @@ class Backup {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {
         parent: this.instanceFormattedName_,
-        backupId: this.id_,
+        backupId: this.id,
         backup: {
           database: databasePath,
           expireTime: expireTime.toStruct(),

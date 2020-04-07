@@ -41,7 +41,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     const [allBackups] = await instance.getBackups();
     console.log('All backups:');
     allBackups.forEach(backup => {
-      console.log(backup.backupId);
+      console.log(backup.id);
     });
 
     // List backups filtered by backup name
@@ -50,7 +50,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     });
     console.log('Backups matching backup name:');
     backupsByName.forEach(backup => {
-      console.log(backup.backupId);
+      console.log(backup.id);
     });
 
     // List backups expiring within 30 days
@@ -61,7 +61,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     });
     console.log('Backups expiring within 30 days:');
     backupsByExpiry.forEach(backup => {
-      console.log(backup.backupId);
+      console.log(backup.id);
     });
 
     // List backups filtered by database name
@@ -70,7 +70,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     });
     console.log('Backups matching database name:');
     backupsByDbName.forEach(backup => {
-      console.log(backup.backupId);
+      console.log(backup.id);
     });
 
     // List backups filtered by backup size
@@ -79,7 +79,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     });
     console.log('Backups filtered by size:');
     backupsBySize.forEach(backup => {
-      console.log(backup.backupId);
+      console.log(backup.id);
     });
 
     // List backups that are ready that were created after a certain time
@@ -90,7 +90,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     });
     console.log('Ready backups filtered by create time:');
     backupsByCreateTime.forEach(backup => {
-      console.log(backup.backupId);
+      console.log(backup.id);
     });
 
     // List backups using pagination
@@ -103,7 +103,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
         pageToken,
       });
       backups.forEach(backup => {
-        console.log(backup.backupId);
+        console.log(backup.id);
       });
       pageToken = response.nextPageToken;
     } while (pageToken);
