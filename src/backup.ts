@@ -131,6 +131,8 @@ class Backup {
    * @method Backup#create
    * @param {string} databasePath The path of the database.
    * @param {PreciseDate} expireTime The expiry time of the backup.
+   * @param {object} [options] Configuration object.
+   * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} when resolved, the backup
    *     operation will have started, but will not have necessarily completed.
    *
@@ -213,6 +215,8 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#getMetadata
+   * @param {object} [options] Configuration object.
+   * @param {GetMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetMetadataResponse>}
    *
    * @example
@@ -379,6 +383,8 @@ class Backup {
    *
    * @method Backup#updateExpireTime
    * @param {PreciseDate} expireTime The expiry time to update with.
+   * @param {object} [options] Configuration object.
+   * @param {UpdateExpireTimeCallback} [callback] Callback function.
    * @returns {Promise<Backup>} when resolved, the backup's expire time will
    *     have been updated.
    *
@@ -438,6 +444,8 @@ class Backup {
    * Deletes a backup.
    *
    * @method Backup#delete
+   * @param {object} [options] Configuration object.
+   * @param {DeleteBackupCallback} [callback] Callback function.
    * @returns {Promise<void>} when resolved, the backup will have been deleted.
    *
    * @example
