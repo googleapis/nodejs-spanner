@@ -38,12 +38,14 @@ import {
   SessionPoolExhaustedError,
   SessionPoolOptions,
 } from '../src/session-pool';
-import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import {Json} from '../src/codec';
+import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import Done = Mocha.Done;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+import ResultSetStats = google.spanner.v1.ResultSetStats;
+import {SpannerClient as s} from '../src/v1';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -170,6 +172,97 @@ describe('Spanner with mock server', () => {
       } finally {
         await database.close();
       }
+    });
+
+    it('should return statistics', async () => {
+      const database = newTestDatabase();
+      try {
+        const [rows, stats] = await database.run({
+          sql: selectSql,
+          queryMode: s.QueryMode.PROFILE,
+        });
+        assert.strictEqual(rows.length, 3);
+        assert.ok(stats);
+        assert.ok(stats.queryPlan);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should return statistics from snapshot', async () => {
+      const database = newTestDatabase();
+      try {
+        const [snapshot] = await database.getSnapshot();
+        const [rows, stats] = await snapshot.run({
+          sql: selectSql,
+          queryMode: s.QueryMode.PROFILE,
+        });
+        assert.strictEqual(rows.length, 3);
+        assert.ok(stats);
+        assert.ok(stats.queryPlan);
+        snapshot.end();
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should emit query statistics', done => {
+      const database = newTestDatabase();
+      let rowCount = 0;
+      let stats: ResultSetStats;
+      database
+        .runStream({
+          sql: selectSql,
+          queryMode: s.QueryMode.PROFILE,
+        })
+        .on('data', () => rowCount++)
+        .on('stats', _stats => (stats = _stats))
+        .on('end', () => {
+          assert.strictEqual(rowCount, 3);
+          assert.ok(stats);
+          assert.ok(stats.queryPlan);
+          database.close().then(() => done());
+        });
+    });
+
+    it('should emit query statistics from snapshot', done => {
+      const database = newTestDatabase();
+      let rowCount = 0;
+      let stats: ResultSetStats;
+      database.getSnapshot().then(response => {
+        const [snapshot] = response;
+        snapshot
+          .runStream({
+            sql: selectSql,
+            queryMode: s.QueryMode.PROFILE,
+          })
+          .on('data', () => rowCount++)
+          .on('stats', _stats => (stats = _stats))
+          .on('end', () => {
+            assert.strictEqual(rowCount, 3);
+            assert.ok(stats);
+            assert.ok(stats.queryPlan);
+            snapshot.end();
+            database.close().then(() => done());
+          });
+      });
+    });
+
+    it('should call callback with statistics', done => {
+      const database = newTestDatabase();
+      database.run(
+        {
+          sql: selectSql,
+          queryMode: s.QueryMode.PROFILE,
+        },
+        (err, rows, stats) => {
+          assert.ifError(err);
+          assert.strictEqual(rows.length, 3);
+          assert.ok(stats);
+          assert.ok(stats.queryPlan);
+          database.close().then(() => done());
+        }
+      );
     });
 
     it('should execute update', async () => {
