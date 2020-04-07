@@ -417,25 +417,29 @@ describe('Backup', () => {
       it('should execute callback with error & API response', done => {
         backup.updateExpireTime(NEW_EXPIRE_TIME, (err, resp) => {
           assert.strictEqual(err, ERROR);
-          assert.strictEqual(resp, undefined);
+          assert.strictEqual(resp, null);
           done();
         });
       });
     });
 
     describe('success', () => {
-      const API_RESPONSE = {};
+      const API_RESPONSE = {
+        name: 'backup-name',
+        database: 'database-name',
+        expireTime: NEW_EXPIRE_TIME,
+      };
 
       beforeEach(() => {
         backup.request = (config, callback: Function) => {
-          callback(null, null, API_RESPONSE);
+          callback(null, API_RESPONSE);
         };
       });
 
-      it('should return same backup object on successful update', done => {
+      it('should return backup object with updated expire time', done => {
         backup.updateExpireTime(NEW_EXPIRE_TIME, (...args) => {
           assert.ifError(args[0]);
-          assert.strictEqual(args[1], backup);
+          assert.strictEqual(args[1]!.expireTime, NEW_EXPIRE_TIME);
           done();
         });
       });

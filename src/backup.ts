@@ -58,7 +58,9 @@ type IBackupTranslatedEnum = TranslateEnumKeys<
 export type GetMetadataResponse = [IBackupTranslatedEnum];
 type GetMetadataCallback = RequestCallback<IBackupTranslatedEnum>;
 
-type UpdateExpireTimeCallback = RequestCallback<Backup>;
+type UpdateExpireTimeCallback = RequestCallback<
+  databaseAdmin.spanner.admin.database.v1.IBackup
+>;
 
 type DeleteCallback = RequestCallback<void>;
 
@@ -371,7 +373,7 @@ class Backup {
   /**
    * @callback UpdateExpireTimeCallback
    * @param {?Error} err Request error, if any.
-   * @param {Backup} backup The updated {@link Backup}.
+   * @param {IBackup} backup The updated {@link v1.IBackup}.
    */
   /**
    * Sets the expiry time of a backup.
@@ -423,12 +425,8 @@ class Backup {
         reqOpts,
         gaxOpts,
       },
-      err => {
-        if (err) {
-          callback!(err, undefined);
-          return;
-        }
-        callback!(null, this);
+      (err, response) => {
+        callback!(err, response);
       }
     );
   }
