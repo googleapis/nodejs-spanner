@@ -140,13 +140,12 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const database = spanner.database('my-database');
    * const oneDay = 1000 * 60 * 60 * 24;
    * const expiryTime = new PreciseDate(Date.now() + oneDay);
    * const backup = instance.backup('my-backup');
    * const [, backupOperation] = await backup.create(
    *   'projects/my-project/instances/my-instance/databases/my-database',
-   *   expiryTime);
+   *   expiryTime
    * );
    * // Await completion of the backup operation.
    * await backupOperation.promise();
@@ -223,7 +222,6 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const database = spanner.database('my-database');
    * const backup = instance.backup('my-backup');
    * const [backupInfo] = await backup.getMetadata();
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
@@ -337,7 +335,6 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const database = spanner.database('my-database');
    * const backup = instance.backup('my-backup');
    * const alreadyExists = await backup.exists();
    * console.log(`Does backup exist? ${alreadyExists}`);
