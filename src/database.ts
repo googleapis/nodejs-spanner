@@ -1529,6 +1529,21 @@ class Database extends GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   /**
+   * @typedef {array} RestoreDatabaseResponse
+   * @property {Backup} 0 The new {@link Database}.
+   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback RestoreDatabaseCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Database} database The new {@link Database}.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
    * Restore a backup into this database.
    *
    * When this call completes, the restore will have commenced but will not
