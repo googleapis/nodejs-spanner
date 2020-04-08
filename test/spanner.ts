@@ -46,6 +46,7 @@ import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
 import {SpannerClient as s} from '../src/v1';
+import {GetDatabaseOperationsRequest} from '../src/instance';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -2105,6 +2106,20 @@ describe('Spanner with mock server', () => {
         createdDatabase.name,
         `${instance.formattedName_}/databases/new-database`
       );
+    });
+
+    it('should list database operations', async () => {
+      let dbSpecificFilter = `name:projects/p/instances/i/databases/test-database`;
+      const dbSpecificQuery: GetDatabaseOperationsRequest = {
+        filter: dbSpecificFilter,
+      };
+      const [operations1] = await instance.getDatabaseOperations(dbSpecificQuery);
+
+      const database = instance.database('test-database');
+      const [operations2] = await database.getOperations();
+      assert.strictEqual(operations1.length, 2);
+      assert.strictEqual(operations2.length, 2);
+      assert.deepStrictEqual(operations1, operations2);
     });
   });
 });

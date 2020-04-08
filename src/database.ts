@@ -2390,7 +2390,7 @@ promisifyAll(Database, {
     'getMetadata',
     'getRestoreInfo',
     'getState',
-    'getDatabaseOperations',
+    'getOperations',
     'runTransaction',
     'table',
     'updateSchema',

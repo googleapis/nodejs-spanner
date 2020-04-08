@@ -22,7 +22,6 @@ import v1 = google.spanner.admin.database.v1;
 import iam = google.iam.v1;
 import longrunning = google.longrunning;
 import Any = google.protobuf.Any;
-import Empty = google.protobuf.Empty;
 
 const PROTO_PATH = 'spanner_database_admin.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -59,6 +58,28 @@ export class MockDatabaseAdmin {
     state: v1.Database.State.READY,
   });
 
+  private static CREATE_TEST_DATABASE_OPERATION = longrunning.Operation.create({
+    name: `${TEST_DATABASE_NAME}/operations/1`,
+    done: true,
+    response: Any.create({value: v1.Database.encode(MockDatabaseAdmin.TEST_DATABASE).finish()}),
+    metadata: Any.create({value: v1.CreateDatabaseMetadata.encode(
+        v1.CreateDatabaseMetadata.create({
+          database: MockDatabaseAdmin.TEST_DATABASE.name,
+        })
+      ).finish()}),
+  });
+
+  private static CREATE_PROD_DATABASE_OPERATION = longrunning.Operation.create({
+    name: `${PROD_DATABASE_NAME}/operations/1`,
+    done: true,
+    response: Any.create({value: v1.Database.encode(MockDatabaseAdmin.PROD_DATABASE).finish()}),
+    metadata: Any.create({value: v1.CreateDatabaseMetadata.encode(
+        v1.CreateDatabaseMetadata.create({
+          database: MockDatabaseAdmin.PROD_DATABASE.name,
+        })
+      ).finish()}),
+  });
+
   private constructor() {}
 
   /**
@@ -92,6 +113,21 @@ export class MockDatabaseAdmin {
         databases: [
           MockDatabaseAdmin.TEST_DATABASE,
           MockDatabaseAdmin.PROD_DATABASE,
+        ],
+      })
+    );
+  }
+
+  listDatabaseOperations(
+    call: grpc.ServerUnaryCall<v1.ListDatabaseOperationsRequest>,
+    callback: v1.DatabaseAdmin.ListDatabaseOperationsCallback
+  ) {
+    callback(
+      null,
+      v1.ListDatabaseOperationsResponse.create({
+        operations: [
+          MockDatabaseAdmin.CREATE_TEST_DATABASE_OPERATION,
+          MockDatabaseAdmin.CREATE_PROD_DATABASE_OPERATION,
         ],
       })
     );
@@ -197,6 +233,7 @@ export function createMockDatabaseAdmin(
     updateDatabaseDdl: mock.updateDatabaseDdl,
     dropDatabase: mock.dropDatabase,
     getDatabaseDdl: mock.getDatabaseDdl,
+    listDatabaseOperations: mock.listDatabaseOperations,
     setIamPolicy: mock.setIamPolicy,
     getIamPolicy: mock.getIamPolicy,
     testIamPermissions: mock.testIamPermissions,
