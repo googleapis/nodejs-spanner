@@ -2109,11 +2109,13 @@ describe('Spanner with mock server', () => {
     });
 
     it('should list database operations', async () => {
-      let dbSpecificFilter = `name:projects/p/instances/i/databases/test-database`;
+      const dbSpecificFilter = `name:projects/p/instances/i/databases/test-database`;
       const dbSpecificQuery: GetDatabaseOperationsRequest = {
         filter: dbSpecificFilter,
       };
-      const [operations1] = await instance.getDatabaseOperations(dbSpecificQuery);
+      const [operations1] = await instance.getDatabaseOperations(
+        dbSpecificQuery
+      );
 
       const database = instance.database('test-database');
       const [operations2] = await database.getOperations();

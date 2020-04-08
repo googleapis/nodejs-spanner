@@ -61,23 +61,31 @@ export class MockDatabaseAdmin {
   private static CREATE_TEST_DATABASE_OPERATION = longrunning.Operation.create({
     name: `${TEST_DATABASE_NAME}/operations/1`,
     done: true,
-    response: Any.create({value: v1.Database.encode(MockDatabaseAdmin.TEST_DATABASE).finish()}),
-    metadata: Any.create({value: v1.CreateDatabaseMetadata.encode(
+    response: Any.create({
+      value: v1.Database.encode(MockDatabaseAdmin.TEST_DATABASE).finish(),
+    }),
+    metadata: Any.create({
+      value: v1.CreateDatabaseMetadata.encode(
         v1.CreateDatabaseMetadata.create({
           database: MockDatabaseAdmin.TEST_DATABASE.name,
         })
-      ).finish()}),
+      ).finish(),
+    }),
   });
 
   private static CREATE_PROD_DATABASE_OPERATION = longrunning.Operation.create({
     name: `${PROD_DATABASE_NAME}/operations/1`,
     done: true,
-    response: Any.create({value: v1.Database.encode(MockDatabaseAdmin.PROD_DATABASE).finish()}),
-    metadata: Any.create({value: v1.CreateDatabaseMetadata.encode(
+    response: Any.create({
+      value: v1.Database.encode(MockDatabaseAdmin.PROD_DATABASE).finish(),
+    }),
+    metadata: Any.create({
+      value: v1.CreateDatabaseMetadata.encode(
         v1.CreateDatabaseMetadata.create({
           database: MockDatabaseAdmin.PROD_DATABASE.name,
         })
-      ).finish()}),
+      ).finish(),
+    }),
   });
 
   private constructor() {}
