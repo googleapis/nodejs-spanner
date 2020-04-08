@@ -974,6 +974,7 @@ describe('Spanner', () => {
   describe('Backups', () => {
     let database1: Database;
     let database2: Database;
+    let restoreDatabase: Database;
 
     let backup1: Backup;
     let backup2: Backup;
@@ -1046,6 +1047,8 @@ describe('Spanner', () => {
     });
 
     after(async () => {
+      await restoreDatabase.delete();
+
       await backup1.delete();
       await backup2.delete();
 
@@ -1150,7 +1153,7 @@ describe('Spanner', () => {
 
     it('should restore a backup', async () => {
       // Perform restore to a different database.
-      const restoreDatabase = instance.database(generateName('database'));
+      restoreDatabase = instance.database(generateName('database'));
       const [, restoreOperation] = await restoreDatabase.restore(
         backup1.formattedName_
       );
