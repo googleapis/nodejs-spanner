@@ -2297,6 +2297,19 @@ describe('Database', () => {
       await database.restore(BACKUP_NAME);
     });
 
+    it('should accept gaxOpts and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      database.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await database.restore(BACKUP_NAME, options, assert.ifError);
+    });
+
+
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};

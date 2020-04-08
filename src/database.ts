@@ -1527,7 +1527,9 @@ class Database extends GrpcServiceObject {
   }
 
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
+  restore(backupPath: string, options?: CallOptions): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
+  restore(backupPath: string, options: CallOptions, callback: RestoreDatabaseCallback): void;
   /**
    * @typedef {array} RestoreDatabaseResponse
    * @property {Backup} 0 The new {@link Database}.
@@ -1550,6 +1552,7 @@ class Database extends GrpcServiceObject {
    * necessarily have completed.
    *
    * @param backupPath the path of the backup to restore.
+   * @param {object} [options] Configuration object.
    * @returns Promise<RestoreDatabaseResponse> when resolved, contains the restore operation.
    *
    * @example
@@ -1564,8 +1567,17 @@ class Database extends GrpcServiceObject {
    */
   restore(
     backupName: string,
-    callback?: RestoreDatabaseCallback
+    optionsOrCallback?: CallOptions | RestoreDatabaseCallback,
+    cb?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as RestoreDatabaseCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = extend(
       {
         parent: this.instance.formattedName_,
@@ -1578,6 +1590,7 @@ class Database extends GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'restoreDatabase',
         reqOpts,
+        gaxOpts,
       },
       (err, resp) => {
         if (err) {
