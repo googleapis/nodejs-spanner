@@ -1011,6 +1011,9 @@ describe('Spanner', () => {
       });
       await database2CreateOperation.promise();
 
+      // Initialize a database instance to restore to.
+      restoreDatabase = instance.database(generateName('database'));
+
       // Create backups.
       backup1 = instance.backup(backup1Name);
       backup2 = instance.backup(backup2Name);
@@ -1153,7 +1156,6 @@ describe('Spanner', () => {
 
     it('should restore a backup', async () => {
       // Perform restore to a different database.
-      restoreDatabase = instance.database(generateName('database'));
       const [, restoreOperation] = await restoreDatabase.restore(
         backup1.formattedName_
       );
