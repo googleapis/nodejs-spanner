@@ -941,10 +941,10 @@ describe('Instance', () => {
     });
   });
 
-  describe('listBackups', () => {
+  describe('getBackups', () => {
     const QUERY = {
       a: 'b',
-    } as inst.ListBackupsRequest;
+    } as inst.GetBackupsRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -963,7 +963,7 @@ describe('Instance', () => {
         assert.strictEqual(config.gaxOpts, QUERY);
       };
 
-      await instance.listBackups(QUERY);
+      await instance.getBackups(QUERY);
     });
 
     it('should not require a query', async () => {
@@ -975,7 +975,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.gaxOpts, {});
       };
 
-      await instance.listBackups();
+      await instance.getBackups();
     });
 
     describe('error', () => {
@@ -988,7 +988,7 @@ describe('Instance', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        instance.listBackups(QUERY, (...args) => {
+        instance.getBackups(QUERY, (...args) => {
           assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
           done();
         });
@@ -1016,17 +1016,12 @@ describe('Instance', () => {
       it('should create and return Backup objects', done => {
         const fakeBackupInstance = {};
 
-        instance.backup = (backupId, databasePath, expireTime) => {
+        instance.backup = backupId => {
           assert.strictEqual(backupId, BACKUPS[0].name);
-          assert.strictEqual(databasePath, BACKUPS[0].database);
-          assert.strictEqual(
-            expireTime.getFullTime(),
-            BACKUPS[0].expireTime.getFullTime()
-          );
           return fakeBackupInstance as Backup;
         };
 
-        instance.listBackups(QUERY, (...args) => {
+        instance.getBackups(QUERY, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backup = args[1]!.pop();
@@ -1045,12 +1040,12 @@ describe('Instance', () => {
 
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
-        instance.backup(null!, DATABASE_NAME, EXPIRE_TIME);
-      }, /A backup ID is required to create a backup\./);
+        instance.backup(null!);
+      }, /A backup ID is required to create a Backup\./);
     });
 
     it('should create a Backup instance', () => {
-      const backup = instance.backup(BACKUP_NAME, DATABASE_NAME, EXPIRE_TIME);
+      const backup = instance.backup(BACKUP_NAME);
       assert.strictEqual(
         backup.formattedName_,
         'projects/project-id/instances/instance-name/backups/backup-name'
@@ -1076,20 +1071,18 @@ describe('Instance', () => {
         done();
       };
 
-      const backup = new Backup(
-        instance,
-        BACKUP_NAME,
+      const backup = new Backup(instance, BACKUP_NAME);
+      backup.create(
         'projects/project-id/instances/instance-name/database/database-name',
         EXPIRE_TIME
       );
-      backup.create();
     });
   });
 
-  describe('listBackupOperations', () => {
+  describe('getBackupOperations', () => {
     const QUERY = {
       a: 'b',
-    } as inst.ListBackupOperationsRequest;
+    } as inst.GetBackupOperationsRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -1108,7 +1101,7 @@ describe('Instance', () => {
         assert.strictEqual(config.gaxOpts, QUERY);
       };
 
-      await instance.listBackupOperations(QUERY);
+      await instance.getBackupOperations(QUERY);
     });
 
     it('should not require a query', async () => {
@@ -1120,14 +1113,14 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.gaxOpts, {});
       };
 
-      await instance.listBackupOperations();
+      await instance.getBackupOperations();
     });
   });
 
-  describe('listDatabaseOperations', () => {
+  describe('getDatabaseOperations', () => {
     const QUERY = {
       a: 'b',
-    } as inst.ListDatabaseOperationsRequest;
+    } as inst.GetDatabaseOperationsRequest;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -1146,7 +1139,7 @@ describe('Instance', () => {
         assert.strictEqual(config.gaxOpts, QUERY);
       };
 
-      await instance.listDatabaseOperations(QUERY);
+      await instance.getDatabaseOperations(QUERY);
     });
 
     it('should not require a query', async () => {
@@ -1158,7 +1151,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.gaxOpts, {});
       };
 
-      await instance.listDatabaseOperations();
+      await instance.getDatabaseOperations();
     });
   });
 });

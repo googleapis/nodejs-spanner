@@ -931,7 +931,7 @@ describe('Spanner', () => {
       const databaseFullName = databaseMetadata.name;
 
       // List operations and ensure operation for creation of test database exists.
-      const [databaseCreateOperations] = await instance.listDatabaseOperations({
+      const [databaseCreateOperations] = await instance.getDatabaseOperations({
         filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata) AND
                  (metadata.database:${database.formattedName_})`,
       });
@@ -955,7 +955,7 @@ describe('Spanner', () => {
       const databaseFullName = databaseMetadata.name;
 
       // List operations.
-      const [databaseOperations] = await database.listDatabaseOperations();
+      const [databaseOperations] = await database.getOperations();
 
       // Validate operation has at least the create operation for the database.
       assert.ok(databaseOperations.length > 0);
@@ -1011,18 +1011,16 @@ describe('Spanner', () => {
       await database2CreateOperation.promise();
 
       // Create backups.
-      backup1 = instance.backup(
-        backup1Name,
+      backup1 = instance.backup(backup1Name);
+      backup2 = instance.backup(backup2Name);
+      const [, backup1Operation] = await backup1.create(
         database1.formattedName_,
         backupExpiryDate
       );
-      backup2 = instance.backup(
-        backup2Name,
+      const [, backup2Operation] = await backup2.create(
         database2.formattedName_,
         backupExpiryDate
       );
-      const [backup1Operation] = await backup1.create();
-      const [backup2Operation] = await backup2.create();
 
       assert.strictEqual(
         backup1Operation.metadata!.name,
@@ -1048,8 +1046,8 @@ describe('Spanner', () => {
     });
 
     after(async () => {
-      await backup1.deleteBackup();
-      await backup2.deleteBackup();
+      await backup1.delete();
+      await backup2.delete();
 
       await database1.delete();
       await database2.delete();
@@ -1061,7 +1059,7 @@ describe('Spanner', () => {
 
     it('should have completed a backup', async () => {
       // Validate backup has completed.
-      const [backupInfo] = await backup1.getBackupInfo();
+      const [backupInfo] = await backup1.getMetadata();
       assert.strictEqual(backupInfo.state, 'READY');
       assert.strictEqual(
         backupInfo.name,
@@ -1091,13 +1089,12 @@ describe('Spanner', () => {
       // Create backup.
       const backupName = generateName('backup');
       const backupExpiryDate = futureDateByHours(-12);
-      const backup = instance.backup(
-        backupName,
-        database1.formattedName_,
-        backupExpiryDate
-      );
+      const backup = instance.backup(backupName);
       try {
-        const [backupOperation] = await backup.create();
+        const [, backupOperation] = await backup.create(
+          database1.formattedName_,
+          backupExpiryDate
+        );
         assert.fail(
           'Backup should have failed for expiration time in the past'
         );
@@ -1111,18 +1108,14 @@ describe('Spanner', () => {
       // This backup won't exist, we're just generating the name without creating the backup itself.
       const backupName = generateName('backup');
       const backupExpiryDate = futureDateByHours(12);
-      const backup = instance.backup(
-        backupName,
-        database1.formattedName_,
-        backupExpiryDate
-      );
+      const backup = instance.backup(backupName);
 
       const exists = await backup.exists();
       assert.strictEqual(exists, false);
     });
 
     it('should list backups', async () => {
-      const [backups] = await instance.listBackups();
+      const [backups] = await instance.getBackups();
       assert.ok(backups.length > 0);
       assert.ok(
         backups.find(backup => backup.formattedName_ === backup1.formattedName_)
@@ -1130,16 +1123,16 @@ describe('Spanner', () => {
     });
 
     it('should list backups with pagination', async () => {
-      const [page1, , resp1] = await instance.listBackups({
+      const [page1, , resp1] = await instance.getBackups({
         pageSize: 1,
         autoPaginate: false,
       });
-      const [page2] = await instance.listBackups({
+      const [page2] = await instance.getBackups({
         pageSize: 1,
         autoPaginate: false,
         pageToken: resp1!.nextPageToken,
       });
-      const [page3] = await instance.listBackups({
+      const [page3] = await instance.getBackups({
         pageSize: 2,
         autoPaginate: false,
       });
@@ -1158,7 +1151,7 @@ describe('Spanner', () => {
     it('should restore a backup', async () => {
       // Perform restore to a different database.
       const restoreDatabase = instance.database(generateName('database'));
-      const [restoreOperation] = await restoreDatabase.restore(
+      const [, restoreOperation] = await restoreDatabase.restore(
         backup1.formattedName_
       );
 
@@ -1186,7 +1179,10 @@ describe('Spanner', () => {
 
       // Validate restore info of database.
       const restoreInfo = await restoreDatabase.getRestoreInfo();
-      assert.strictEqual(restoreInfo!.backupInfo!.backup, backup1.formattedName_);
+      assert.strictEqual(
+        restoreInfo!.backupInfo!.backup,
+        backup1.formattedName_
+      );
       const [originalDatabaseMetadata] = await database1.getMetadata();
       assert.strictEqual(
         restoreInfo!.backupInfo!.sourceDatabase,
@@ -1195,7 +1191,7 @@ describe('Spanner', () => {
       assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
 
       // Check that restore operation ends up in the operations list.
-      const [restoreOperations] = await restoreDatabase.listDatabaseOperations({
+      const [restoreOperations] = await restoreDatabase.getOperations({
         filter: 'metadata.@type:RestoreDatabaseMetadata',
       });
       assert.strictEqual(restoreOperations.length, 1);
@@ -1218,9 +1214,9 @@ describe('Spanner', () => {
       await backup1.updateExpireTime(updatedBackupExpiryDate);
 
       // Read metadata, verify expiry date was updated.
-      const [updatedBackupInfo] = await backup1.getBackupInfo();
+      const [updatedMetadata] = await backup1.getMetadata();
       const expiryDateFromMetadataAfterUpdate = new PreciseDate(
-        updatedBackupInfo.expireTime as DateStruct
+        updatedMetadata.expireTime as DateStruct
       );
 
       assert.deepStrictEqual(
@@ -1245,13 +1241,13 @@ describe('Spanner', () => {
 
     it('should delete backup', async () => {
       // Delete backup.
-      await backup2.deleteBackup();
+      await backup2.delete();
 
       // Verify backup is gone by querying metadata.
       // Expect backup not to be found.
       try {
-        const [deletedBackupInfo] = await backup2.getBackupInfo();
-        assert.fail('Backup was not deleted: ' + deletedBackupInfo.name);
+        const [deletedMetadata] = await backup2.getMetadata();
+        assert.fail('Backup was not deleted: ' + deletedMetadata.name);
       } catch (err) {
         assert.strictEqual(err.code, status.NOT_FOUND);
       }
@@ -1260,7 +1256,7 @@ describe('Spanner', () => {
     it('should list backup operations', async () => {
       // List operations and ensure operation for current backup exists.
       // Without a filter.
-      const [operationsWithoutFilter] = await instance.listBackupOperations();
+      const [operationsWithoutFilter] = await instance.getBackupOperations();
       const operationForCurrentBackup = operationsWithoutFilter.find(
         operation =>
           operation.name && operation.name.includes(backup1.formattedName_)
@@ -1272,7 +1268,7 @@ describe('Spanner', () => {
       );
 
       // With a filter.
-      const [operationsWithFilter] = await instance.listBackupOperations({
+      const [operationsWithFilter] = await instance.getBackupOperations({
         filter: `(metadata.@type:CreateBackupMetadata AND
                     metadata.name:${backup1.formattedName_})`,
       });
@@ -4857,13 +4853,74 @@ function deleteInstanceArray(instanceArray) {
   const limit = pLimit(5);
   return Promise.all(
     instanceArray.map(instance =>
-      limit(() =>
-        setTimeout(() => {
-          instance.delete();
-        }, delay)
-      )
+      limit(() => setTimeout(deleteInstance, delay, instance))
     )
   );
+}
+
+function deleteInstance(instance) {
+  return new Promise((resolve, reject) => {
+    // Backups must be deleted before an instance can be deleted.
+    instance.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts: {
+          parent: instance.formattedName_,
+        },
+      },
+      async (err, backups) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (backups.length > 0) {
+          try {
+            await deleteInstanceBackups(instance, backups);
+          } catch (e) {
+            reject(err);
+            return;
+          }
+
+          deleteInstance(instance).then(resolve, reject);
+          return;
+        }
+
+        try {
+          await instance.delete();
+        } catch (e) {
+          reject(e);
+          return;
+        }
+
+        resolve();
+      }
+    );
+  });
+}
+
+function deleteInstanceBackups(instance, instanceBackups) {
+  const deleteInstanceBackupPromises = instanceBackups.map(instanceBackup => {
+    return new Promise((resolve, reject) => {
+      instance.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'deleteBackup',
+          reqOpts: {name: instanceBackup.name},
+        },
+        err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        }
+      );
+    });
+  });
+
+  return Promise.all(deleteInstanceBackupPromises);
 }
 
 function wait(time) {

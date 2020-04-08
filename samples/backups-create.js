@@ -38,27 +38,26 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const databasePath = database.formattedName_;
-  // Expire backup one day in the future
-  const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
-  const backup = instance.backup(backupId, databasePath, expireTime);
+  const backup = instance.backup(backupId);
 
   // Creates a new backup of the database
   try {
     console.log(`Creating backup of database ${database.formattedName_}.`);
-    const [operation] = await backup.create();
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 14);
+    const [, operation] = await backup.create(databasePath, expireTime);
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
     await operation.promise();
 
     // Verify backup is ready
-    const [backupInfo] = await backup.getBackupInfo();
+    const [backupInfo] = await backup.getMetadata();
     if (backupInfo.state === 'READY') {
-      console.log('Backup created.');
-      console.log(`Name: ${backupInfo.name}`);
-      console.log(`Size: ${backupInfo.sizeBytes} bytes`);
       console.log(
-        `Created: ${new PreciseDate(backupInfo.createTime).toISOString()}`
+        `Backup ${backupInfo.name} of size ` +
+          `${backupInfo.sizeBytes} bytes was created at ` +
+          `${new PreciseDate(backupInfo.createTime).toISOString()}`
       );
     } else {
       console.error('ERROR: Backup is not ready.');

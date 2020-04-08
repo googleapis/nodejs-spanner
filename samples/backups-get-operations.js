@@ -15,15 +15,16 @@
 
 'use strict';
 
-async function listDatabaseOperations(instanceId, projectId) {
-  // [START spanner_list_database_operations]
+async function getBackupOperations(instanceId, databaseId, projectId) {
+  // [START spanner_list_backup_operations]
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
   // const projectId = 'my-project-id';
+  // const databaseId = 'my-database';
   // const instanceId = 'my-instance';
 
   // Creates a client
@@ -34,20 +35,27 @@ async function listDatabaseOperations(instanceId, projectId) {
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
 
-  // List database operations
+  // List backup operations
   try {
-    const [databaseOperations] = await instance.listDatabaseOperations();
-    console.log('Database Operations:');
-    databaseOperations.forEach(databaseOperation => {
+    const [backupOperations] = await instance.getBackupOperations({
+      filter:
+        `(metadata.database:${databaseId}) AND ` +
+        `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
+    });
+    console.log('Create Backup Operations:');
+    backupOperations.forEach(backupOperation => {
+      const metadata = protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
+        backupOperation.metadata.value
+      );
       console.log(
-        databaseOperation.name +
-          (databaseOperation.done ? ' (completed)' : ' (in progress)')
+        `Backup ${metadata.name} on database ${metadata.database} is ` +
+          `${metadata.progress.progressPercent}% complete.`
       );
     });
   } catch (err) {
     console.error('ERROR:', err);
   }
-  // [END spanner_list_database_operations]
+  // [END spanner_list_backup_operations]
 }
 
-module.exports.listDatabaseOperations = listDatabaseOperations;
+module.exports.getBackupOperations = getBackupOperations;

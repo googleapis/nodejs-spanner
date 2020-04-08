@@ -25,7 +25,7 @@ import * as pfy from '@google-cloud/promisify';
 import {Instance} from '../src';
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
-import {Backup, GetBackupInfoResponse} from '../src/backup';
+import {Backup, GetMetadataResponse} from '../src/backup';
 import * as grpc from 'grpc';
 
 let promisified = false;
@@ -93,12 +93,7 @@ describe('Backup', () => {
 
   beforeEach(() => {
     fakeCodec.encode = util.noop;
-    backup = new Backup(
-      INSTANCE,
-      BACKUP_NAME,
-      DATABASE_FORMATTED_NAME,
-      BACKUP_EXPIRE_TIME
-    );
+    backup = new Backup(INSTANCE, BACKUP_NAME);
   });
 
   afterEach(() => sandbox.restore());
@@ -135,11 +130,28 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.create();
+      await backup.create(DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME);
+    });
+
+    it('should accept gaxOptions and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await backup.create(
+        DATABASE_FORMATTED_NAME,
+        BACKUP_EXPIRE_TIME,
+        options,
+        assert.ifError
+      );
     });
 
     describe('error', () => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, null, null];
 
       beforeEach(() => {
         backup.request = (config, callback: Function) => {
@@ -148,39 +160,19 @@ describe('Backup', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        backup.create((...args) => {
-          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
-          done();
-        });
-      });
-    });
-
-    it('should throw if a database path is not provided', async () => {
-      await assert.rejects(async () => {
-        const backupWithoutDatabasePath = new Backup(
-          INSTANCE,
-          BACKUP_NAME,
-          undefined,
-          BACKUP_EXPIRE_TIME
-        );
-        await backupWithoutDatabasePath.create();
-      }, /Database path is required to create a backup\./);
-    });
-
-    it('should throw if an expire time is not provided', async () => {
-      await assert.rejects(async () => {
-        const backupWithoutDatabasePath = new Backup(
-          INSTANCE,
-          BACKUP_NAME,
+        backup.create(
           DATABASE_FORMATTED_NAME,
-          undefined
+          BACKUP_EXPIRE_TIME,
+          (...args) => {
+            assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+            done();
+          }
         );
-        await backupWithoutDatabasePath.create();
-      }, /Expire time is required to create a backup\./);
+      });
     });
   });
 
-  describe('getBackupInfo', () => {
+  describe('getMetadata', () => {
     const BACKUP_NAME = 'backup-name';
 
     it('should make the correct request', async () => {
@@ -199,7 +191,19 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.getBackupInfo();
+      await backup.getMetadata();
+    });
+
+    it('should accept gaxOpts and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await backup.getMetadata(options, assert.ifError);
     });
 
     describe('error', () => {
@@ -212,7 +216,7 @@ describe('Backup', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        backup.getBackupInfo((...args) => {
+        backup.getMetadata((...args) => {
           assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
           done();
         });
@@ -242,7 +246,7 @@ describe('Backup', () => {
           expireTime: BACKUP_EXPIRE_TIME,
         };
 
-        backup.getBackupInfo((...args) => {
+        backup.getMetadata((...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backupInfo = args[1];
@@ -255,43 +259,89 @@ describe('Backup', () => {
 
   describe('getState', () => {
     it('should return the state from backup info', async () => {
-      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
         {
           state: 'CREATING',
         },
       ];
-      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.getState();
       assert.strictEqual(result, 'CREATING');
+    });
+
+    it('should return undefined when backup does not exist', async () => {
+      backup.getMetadata = async () => {
+        throw {code: grpc.status.NOT_FOUND};
+      };
+
+      const result = await backup.getState();
+      assert.strictEqual(result, undefined);
+    });
+
+    it('should rethrow other errors', async () => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      try {
+        await backup.getState();
+        assert.fail('Should have rethrown error');
+      } catch (thrown) {
+        assert.deepStrictEqual(thrown, err);
+      }
     });
   });
 
   describe('getExpireTime', () => {
     it('should return the expire time from backup info', async () => {
-      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
         {
           expireTime: BACKUP_EXPIRE_TIME.toStruct(),
         },
       ];
-      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.getExpireTime();
       assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
+    });
+
+    it('should return undefined when backup does not exist', async () => {
+      backup.getMetadata = async () => {
+        throw {code: grpc.status.NOT_FOUND};
+      };
+
+      const result = await backup.getExpireTime();
+      assert.strictEqual(result, undefined);
+    });
+
+    it('should rethrow other errors', async () => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      try {
+        await backup.getExpireTime();
+        assert.fail('Should have rethrown error');
+      } catch (thrown) {
+        assert.deepStrictEqual(thrown, err);
+      }
     });
   });
 
   describe('exists', () => {
     it('should return true when backup info indicates backup exists', async () => {
-      const BACKUP_INFO_RESPONSE: GetBackupInfoResponse = [{}];
-      backup.getBackupInfo = async () => BACKUP_INFO_RESPONSE;
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [{}];
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.exists();
       assert.strictEqual(result, true);
     });
 
-    it('should return false when backup info indicates backup does not exist', async () => {
-      backup.getBackupInfo = async () => {
+    it('should return false when backup does not exist', async () => {
+      backup.getMetadata = async () => {
         throw {code: grpc.status.NOT_FOUND};
       };
 
@@ -301,7 +351,7 @@ describe('Backup', () => {
 
     it('should rethrow other errors', async () => {
       const err = {code: grpc.status.INTERNAL};
-      backup.getBackupInfo = async () => {
+      backup.getMetadata = async () => {
         throw err;
       };
 
@@ -342,6 +392,18 @@ describe('Backup', () => {
       await backup.updateExpireTime(NEW_EXPIRE_TIME);
     });
 
+    it('should accept gaxOpts and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await backup.updateExpireTime(NEW_EXPIRE_TIME, options, assert.ifError);
+    });
+
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};
@@ -355,25 +417,29 @@ describe('Backup', () => {
       it('should execute callback with error & API response', done => {
         backup.updateExpireTime(NEW_EXPIRE_TIME, (err, resp) => {
           assert.strictEqual(err, ERROR);
-          assert.strictEqual(resp, undefined);
+          assert.strictEqual(resp, null);
           done();
         });
       });
     });
 
     describe('success', () => {
-      const API_RESPONSE = {};
+      const API_RESPONSE = {
+        name: 'backup-name',
+        database: 'database-name',
+        expireTime: NEW_EXPIRE_TIME,
+      };
 
       beforeEach(() => {
         backup.request = (config, callback: Function) => {
-          callback(null, null, API_RESPONSE);
+          callback(null, API_RESPONSE);
         };
       });
 
-      it('should return same backup object on successful update', done => {
+      it('should return backup object with updated expire time', done => {
         backup.updateExpireTime(NEW_EXPIRE_TIME, (...args) => {
           assert.ifError(args[0]);
-          assert.strictEqual(args[1], backup);
+          assert.strictEqual(args[1]!.expireTime, NEW_EXPIRE_TIME);
           done();
         });
       });
@@ -397,7 +463,19 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.deleteBackup();
+      await backup.delete();
+    });
+
+    it('should accept gaxOpts and a callback', async () => {
+      const options = {
+        timeout: 1000,
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+      };
+
+      await backup.delete(options, assert.ifError);
     });
 
     describe('error', () => {
@@ -410,11 +488,28 @@ describe('Backup', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        backup.deleteBackup((...args) => {
+        backup.delete((...args) => {
           assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
           done();
         });
       });
+    });
+  });
+
+  describe('formatName_', () => {
+    it('should return the name if already formatted', () => {
+      assert.strictEqual(
+        Backup.formatName_(INSTANCE.formattedName_, BACKUP_FORMATTED_NAME),
+        BACKUP_FORMATTED_NAME
+      );
+    });
+
+    it('should format the name', () => {
+      const formattedName_ = Backup.formatName_(
+        INSTANCE.formattedName_,
+        BACKUP_NAME
+      );
+      assert.strictEqual(formattedName_, BACKUP_FORMATTED_NAME);
     });
   });
 });

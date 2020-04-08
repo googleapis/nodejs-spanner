@@ -41,7 +41,7 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   console.log(
     `Restoring database ${database.formattedName_} from backup ${backupId}.`
   );
-  const [restoreOperation] = await database.restore(
+  const [, restoreOperation] = await database.restore(
     `projects/${projectId}/instances/${instanceId}/backups/${backupId}`
   );
 
@@ -51,8 +51,10 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
 
   console.log(`Database restored from backup.`);
   const restoreInfo = await database.getRestoreInfo();
-  console.log(`Backup name: ${restoreInfo.backupInfo.backup}`);
-  console.log(`Source database: ${restoreInfo.backupInfo.sourceDatabase}`);
+  console.log(
+    `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
+      `to ${databaseId} from backup ${restoreInfo.backupInfo.backup}.`
+  );
   // [END spanner_restore_backup]
 }
 

@@ -16,17 +16,23 @@
 import {promisifyAll} from '@google-cloud/promisify';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {Instance} from './instance';
-import {RequestCallback, ResourceCallback} from './common';
+import {IOperation, RequestCallback} from './common';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
 import * as extend from 'extend';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {status} from 'grpc';
+import {CallOptions, ServiceError, status} from 'grpc';
 
-export type CreateBackupCallback = ResourceCallback<
-  GaxOperation,
-  databaseAdmin.longrunning.IOperation
->;
+// Like LongRunningCallback<Backup> but with more specific type for operation parameter
+export interface CreateBackupCallback {
+  (
+    err: ServiceError | null,
+    resource?: Backup | null,
+    // More specific type for CreateBackup operation
+    operation?: CreateBackupGaxOperation | null,
+    apiResponse?: IOperation
+  ): void;
+}
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
@@ -35,6 +41,7 @@ export interface CreateBackupGaxOperation extends GaxOperation {
 }
 
 export type CreateBackupResponse = [
+  Backup,
   CreateBackupGaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
@@ -48,12 +55,14 @@ type IBackupTranslatedEnum = TranslateEnumKeys<
   typeof databaseAdmin.spanner.admin.database.v1.Backup.State
 >;
 
-export type GetBackupInfoResponse = [IBackupTranslatedEnum];
-type GetBackupInfoCallback = RequestCallback<IBackupTranslatedEnum>;
+export type GetMetadataResponse = [IBackupTranslatedEnum];
+type GetMetadataCallback = RequestCallback<IBackupTranslatedEnum>;
 
-type UpdateExpireTimeCallback = RequestCallback<Backup>;
+type UpdateExpireTimeCallback = RequestCallback<
+  databaseAdmin.spanner.admin.database.v1.IBackup
+>;
 
-type DeleteBackupCallback = RequestCallback<void>;
+type DeleteCallback = RequestCallback<void>;
 
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
@@ -69,28 +78,63 @@ type DeleteBackupCallback = RequestCallback<void>;
  * const backup = instance.backup('my-backup');
  */
 class Backup {
+  id: string;
+  formattedName_: string;
+  instanceFormattedName_: string;
   request: <T, R = void>(
     config: RequestConfig,
     callback: RequestCallback<T, R>
   ) => void;
-
-  formattedName_: string;
-
-  constructor(
-    private instance: Instance,
-    private backupId: string,
-    private databasePath?: string,
-    private expireTime?: PreciseDate
-  ) {
+  constructor(instance: Instance, name: string) {
     this.request = instance.request;
-    this.formattedName_ =
-      this.instance.formattedName_ + '/backups/' + this.backupId;
+    this.instanceFormattedName_ = instance.formattedName_;
+    this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
+    this.id = this.formattedName_.split('/').pop() || '';
   }
 
+  create(
+    databasePath: string,
+    expireTime: PreciseDate
+  ): Promise<CreateBackupResponse>;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+    options?: CallOptions
+  ): Promise<CreateBackupResponse>;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+    callback: CreateBackupCallback
+  ): void;
+  create(
+    databasePath: string,
+    expireTime: PreciseDate,
+    options: CallOptions,
+    callback: CreateBackupCallback
+  ): void;
+  /**
+   * @typedef {array} CreateBackupResponse
+   * @property {Backup} 0 The new {@link Backup}.
+   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback CreateBackupCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Backup} backup The new {@link Backup}.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
   /**
    * Create a backup.
    *
    * @method Backup#create
+   * @param {string} databasePath The path of the database.
+   * @param {PreciseDate} expireTime The expiry time of the backup.
+   * @param {object} [options] Configuration object.
+   * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} when resolved, the backup
    *     operation will have started, but will not have necessarily completed.
    *
@@ -98,72 +142,104 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const database = spanner.database('my-database');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
-   * const [backupOperation] = await backup.create();
+   * const oneDay = 1000 * 60 * 60 * 24;
+   * const expiryTime = new PreciseDate(Date.now() + oneDay);
+   * const backup = instance.backup('my-backup');
+   * const [, backupOperation] = await backup.create(
+   *   'projects/my-project/instances/my-instance/databases/my-database',
+   *   expiryTime
+   * );
    * // Await completion of the backup operation.
    * await backupOperation.promise();
    */
-  create(): Promise<CreateBackupResponse>;
-  create(callback: CreateBackupCallback): void;
-
   create(
-    callback?: CreateBackupCallback
+    databasePath: string,
+    expireTime: PreciseDate,
+    optionsOrCallback?: CallOptions | CreateBackupCallback,
+    cb?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-    if (!this.expireTime) {
-      throw new Error('Expire time is required to create a backup.');
-    }
-    if (!this.databasePath) {
-      throw new Error('Database path is required to create a backup.');
-    }
-
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as CreateBackupCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
       {
-        parent: this.instance.formattedName_,
-        backupId: this.backupId,
+        parent: this.instanceFormattedName_,
+        backupId: this.id,
         backup: {
-          database: this.databasePath,
-          expireTime: this.expireTime.toStruct(),
+          database: databasePath,
+          expireTime: expireTime.toStruct(),
           name: this.formattedName_,
         },
       }
     );
-    return this.request(
+    return this.request<CreateBackupGaxOperation>(
       {
         client: 'DatabaseAdminClient',
         method: 'createBackup',
         reqOpts,
+        gaxOpts,
       },
-      callback!
+      (err, resp) => {
+        if (err) {
+          callback!(err, null, null, resp!);
+          return;
+        }
+        callback!(null, this, resp, resp || undefined);
+      }
     );
   }
 
+  getMetadata(): Promise<GetMetadataResponse>;
+  getMetadata(options?: CallOptions): Promise<GetMetadataResponse>;
+  getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(options: CallOptions, callback: GetMetadataCallback): void;
   /**
-   * Retrieves all metadata of the backup.
+   * @typedef {array} GetMetadataResponse
+   * @property {object} 0 The {@link Backup} metadata.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback GetMetadataCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} metadata The {@link Backup} metadata.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Retrieves backup's metadata.
    *
    * @see {@link #getState}
    * @see {@link #getExpireTime}
    *
-   * @method Backup#getBackupInfo
-   * @returns {Promise<GetBackupInfoResponse>} when resolved, contains metadata
-   *     of the backup.
+   * @method Backup#getMetadata
+   * @param {object} [options] Configuration object.
+   * @param {GetMetadataCallback} [callback] Callback function.
+   * @returns {Promise<GetMetadataResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const database = spanner.database('my-database');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
-   * const [backupInfo] = await backup.getBackupInfo();
+   * const backup = instance.backup('my-backup');
+   * const [backupInfo] = await backup.getMetadata();
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
-  getBackupInfo(): Promise<GetBackupInfoResponse>;
-  getBackupInfo(callback: GetBackupInfoCallback): void;
-  getBackupInfo(
-    callback?: GetBackupInfoCallback
-  ): void | Promise<GetBackupInfoResponse> {
+  getMetadata(
+    optionsOrCallback?: CallOptions | GetMetadataCallback,
+    cb?: GetMetadataCallback
+  ): void | Promise<GetMetadataResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetMetadataCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
@@ -172,6 +248,7 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'getBackup',
         reqOpts,
+        gaxOpts,
       },
       (err, response) => {
         callback!(err, response);
@@ -184,10 +261,10 @@ class Backup {
    *
    * The backup state indicates if the backup has completed.
    *
-   * @see {@link #getBackupInfo}
+   * @see {@link #getMetadata}
    *
    * @method Backup#getState
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
    *     when resolved, contains the current state of the backup if it exists, or
    *     undefined if the backup does not exist.
    *
@@ -195,7 +272,7 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const myBackup = instance.backup('my-backup');
+   * const backup = instance.backup('my-backup');
    * const state = await backup.getState();
    * const backupCompleted = (state === 'READY');
    */
@@ -203,19 +280,26 @@ class Backup {
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
     | undefined
   > {
-    const [backupInfo] = await this.getBackupInfo();
-    const state = backupInfo.state;
-    return state === null || state === undefined ? undefined : state;
+    try {
+      const [backupInfo] = await this.getMetadata();
+      return backupInfo.state || undefined;
+    } catch (err) {
+      if (err.code === status.NOT_FOUND) {
+        return undefined;
+      }
+      // Some other error occurred, rethrow
+      throw err;
+    }
   }
 
   /**
    * Retrieves the expiry time of the backup.
    *
    * @see {@link #updateExpireTime}
-   * @see {@link #getBackupInfo}
+   * @see {@link #getMetadata}
    *
    * @method Backup#getExpireTime
-   * @returns {Promise<EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>>}
+   * @returns {Promise<PreciseDate | undefined>}
    *     when resolved, contains the current expire time of the backup if it exists,
    *     or undefined if the backup does not exist.
    *
@@ -225,18 +309,25 @@ class Backup {
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const expireTime = await backup.getExpireTime();
-   * console.log(`Backup ${backup.formattedName_} expires on ${expireTime.toISOString()}`);
+   * console.log(`Backup expires on ${expireTime.toISOString()}`);
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
-    const [backupInfo] = await this.getBackupInfo();
-    const expireTime = backupInfo.expireTime;
-    return expireTime ? new PreciseDate(expireTime as DateStruct) : undefined;
+    try {
+      const [backupInfo] = await this.getMetadata();
+      return new PreciseDate(backupInfo.expireTime as DateStruct);
+    } catch (err) {
+      if (err.code === status.NOT_FOUND) {
+        return undefined;
+      }
+      // Some other error occurred, rethrow
+      throw err;
+    }
   }
 
   /**
    * Checks whether the backup exists.
    *
-   * @see {@link #getBackupInfo}
+   * @see {@link #getMetadata}
    *
    * @method Backup#exists
    * @returns {Promise<boolean>} when resolved, contains true if the backup
@@ -246,20 +337,14 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const database = spanner.database('my-database');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', database.formattedName_, backupExpiryDate);
+   * const backup = instance.backup('my-backup');
    * const alreadyExists = await backup.exists();
-   *
-   * // Create new backup only when backup named 'my-backup' does not already exist
-   * if (!alreadyExists) {
-   *   await backup.create();
-   * }
+   * console.log(`Does backup exist? ${alreadyExists}`);
    */
   async exists(): Promise<boolean> {
     try {
       // Attempt to read metadata to determine whether backup exists
-      await this.getBackupInfo();
+      await this.getMetadata();
       // Found therefore it exists
       return true;
     } catch (err) {
@@ -271,12 +356,34 @@ class Backup {
     }
   }
 
+  updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    options?: CallOptions
+  ): Promise<Backup>;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    callback: UpdateExpireTimeCallback
+  ): void;
+  updateExpireTime(
+    expireTime: PreciseDate,
+    options: CallOptions,
+    callback: UpdateExpireTimeCallback
+  ): void;
+  /**
+   * @callback UpdateExpireTimeCallback
+   * @param {?Error} err Request error, if any.
+   * @param {IBackup} backup The updated {@link v1.IBackup}.
+   */
   /**
    * Sets the expiry time of a backup.
    *
    * @see {@link #getExpireTime}
    *
    * @method Backup#updateExpireTime
+   * @param {PreciseDate} expireTime The expiry time to update with.
+   * @param {object} [options] Configuration object.
+   * @param {UpdateExpireTimeCallback} [callback] Callback function.
    * @returns {Promise<Backup>} when resolved, the backup's expire time will
    *     have been updated.
    *
@@ -284,21 +391,24 @@ class Backup {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const myBackup = instance.backup('my-backup');
-   * const newExpireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
-   * await myBackup.updateExpireTime(newExpireTime);
+   * const backup = instance.backup('my-backup');
+   * const oneDay = 1000 * 60 * 60 * 24;
+   * const newExpireTime = new PreciseDate(Date.now() + oneDay);
+   * await backup.updateExpireTime(newExpireTime);
    */
-  updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
   updateExpireTime(
     expireTime: PreciseDate,
-    callback: UpdateExpireTimeCallback
-  ): void;
-  updateExpireTime(
-    expireTime: PreciseDate,
-    callback?: UpdateExpireTimeCallback
+    optionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
+    cb?: UpdateExpireTimeCallback
   ): void | Promise<Backup> {
-    this.expireTime = expireTime;
-
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as UpdateExpireTimeCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
         name: this.formattedName_,
@@ -313,29 +423,45 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'updateBackup',
         reqOpts,
+        gaxOpts,
       },
-      err => {
-        callback!(err, err ? undefined : this);
+      (err, response) => {
+        callback!(err, response);
       }
     );
   }
 
+  delete(): Promise<void>;
+  delete(options?: CallOptions): Promise<void>;
+  delete(callback: DeleteCallback): void;
+  delete(options: CallOptions, callback: DeleteCallback): void;
   /**
    * Deletes a backup.
    *
-   * @method Backup#deleteBackup
+   * @method Backup#delete
+   * @param {object} [options] Configuration object.
+   * @param {DeleteBackupCallback} [callback] Callback function.
    * @returns {Promise<void>} when resolved, the backup will have been deleted.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const myBackup = instance.backup('my-backup');
-   * await myBackup.deleteBackup();
+   * const backup = instance.backup('my-backup');
+   * await backup.delete();
    */
-  deleteBackup(): Promise<void>;
-  deleteBackup(callback: DeleteBackupCallback): void;
-  deleteBackup(callback?: DeleteBackupCallback): void | Promise<void> {
+  delete(
+    optionsOrCallback?: CallOptions | DeleteCallback,
+    cb?: DeleteCallback
+  ): void | Promise<void> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as DeleteCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
     };
@@ -344,11 +470,36 @@ class Backup {
         client: 'DatabaseAdminClient',
         method: 'deleteBackup',
         reqOpts,
+        gaxOpts,
       },
       err => {
         callback!(err, null);
       }
     );
+  }
+
+  /**
+   * Format the backup name to include the instance name.
+   *
+   * @private
+   *
+   * @param {string} instanceName The formatted instance name.
+   * @param {string} name The table name.
+   * @returns {string}
+   *
+   * @example
+   * Backup.formatName_(
+   *   'projects/grape-spaceship-123/instances/my-instance',
+   *   'my-backup'
+   * );
+   * // 'projects/grape-spaceship-123/instances/my-instance/backups/my-backup'
+   */
+  static formatName_(instanceName: string, name: string) {
+    if (name.indexOf('/') > -1) {
+      return name;
+    }
+    const backupName = name.split('/').pop();
+    return instanceName + '/backups/' + backupName;
   }
 }
 

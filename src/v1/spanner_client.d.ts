@@ -185,7 +185,7 @@ declare namespace SpannerClient {
     (error: null | ServiceError, response: ExecuteBatchDmlResponse): void;
   }
 
-  enum QueryMode {
+  const enum QueryMode {
     NORMAL,
     PLAN,
     PROFILE

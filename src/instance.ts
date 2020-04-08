@@ -35,12 +35,12 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
-import {google, google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {google as spannerClient} from '../proto/spanner';
 import {Backup} from './backup';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import IBackup = google.spanner.admin.database.v1.IBackup;
 
+export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
 export type IOperation = instanceAdmin.longrunning.IOperation;
@@ -57,15 +57,15 @@ export type GetDatabasesResponse = PagedResponse<
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
 >;
 export type SetInstanceMetadataResponse = [GaxOperation, IOperation];
-export type ListBackupsResponse = PagedResponse<
+export type GetBackupsResponse = PagedResponse<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-export type ListBackupOperationsResponse = PagedResponse<
+export type GetBackupOperationsResponse = PagedResponse<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-export type ListDatabaseOperationsResponse = PagedResponse<
+export type GetDatabaseOperationsResponse = PagedResponse<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
 >;
@@ -85,19 +85,19 @@ export interface GetDatabasesRequest
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface ListBackupsRequest
+export interface GetBackupsRequest
   extends databaseAdmin.spanner.admin.database.v1.IListBackupsRequest {
   autoPaginate?: boolean;
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface ListBackupOperationsRequest
+export interface GetBackupOperationsRequest
   extends databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest {
   autoPaginate?: boolean;
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface ListDatabaseOperationsRequest
+export interface GetDatabaseOperationsRequest
   extends databaseAdmin.spanner.admin.database.v1
     .IListDatabaseOperationsRequest {
   autoPaginate?: boolean;
@@ -121,15 +121,15 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
-export type ListBackupsCallback = RequestCallback<
+export type GetBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-export type ListBackupOperationsCallback = RequestCallback<
+export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-export type ListDatabaseOperationsCallback = RequestCallback<
+export type GetDatabaseOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
 >;
@@ -244,33 +244,29 @@ class Instance extends common.GrpcServiceObject {
    * @throws {Error} If any parameter is not provided.
    *
    * @param {string} backupId The name of the backup.
-   * @param {string} databasePath the path of the backup.  Only needs to be specified for new backups.
-   * @param {PreciseDate} expireTime expiry time of the backup.  Only needs to be specified for new backups.
    * @return {Backup} A Backup object.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const backupExpiryDate = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24)
-   * const backup = instance.backup('my-backup', 'projects/my-project/instances/my-instance/databases/my-database', backupExpiryDate);
+   * const backup = instance.backup('my-backup');
    */
-  backup(
-    backupId: string,
-    databasePath: string,
-    expireTime: PreciseDate
-  ): Backup {
+  backup(backupId: string): Backup {
     if (!backupId) {
-      throw new Error('A backup ID is required to create a backup.');
+      throw new Error('A backup ID is required to create a Backup.');
     }
 
-    return new Backup(this, backupId, databasePath, expireTime);
+    return new Backup(this, backupId);
   }
 
+  getBackups(query?: GetBackupsRequest): Promise<GetBackupsResponse>;
+  getBackups(callback: GetBackupsCallback): void;
+  getBackups(query: GetBackupsRequest, callback: GetBackupsCallback): void;
   /**
    * Query object for listing backups.
    *
-   * @typedef {object} ListBackupsRequest
+   * @typedef {object} GetBackupsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -280,7 +276,7 @@ class Instance extends common.GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListBackupsResponse
+   * @typedef {array} GetBackupsResponse
    * @property {Backup[]} 0 Array of {@link Backup} instances.
    * @property {object} 1 The full API response.
    */
@@ -292,28 +288,24 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #backup}
    *
    * @param query query object for listing backups.
-   * @returns {Promise<ListBackupsResponse>} when resolved, contains a paged list of backups.
+   * @returns {Promise<GetBackupsResponse>} when resolved, contains a paged list of backups.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [backups] = await instance.listBackups();
+   * const [backups] = await instance.getBackups();
    */
-  listBackups(query?: ListBackupsRequest): Promise<ListBackupsResponse>;
-  listBackups(callback: ListBackupsCallback): void;
-  listBackups(query: ListBackupsRequest, callback: ListBackupsCallback): void;
-
-  listBackups(
-    queryOrCallback?: ListBackupsRequest | ListBackupsCallback,
-    cb?: ListBackupsCallback
-  ): void | Promise<ListBackupsResponse> {
+  getBackups(
+    queryOrCallback?: GetBackupsRequest | GetBackupsCallback,
+    cb?: GetBackupsCallback
+  ): void | Promise<GetBackupsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
       typeof queryOrCallback === 'object'
         ? queryOrCallback
-        : ({} as ListBackupsRequest);
+        : ({} as GetBackupsRequest);
 
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
@@ -329,15 +321,7 @@ class Instance extends common.GrpcServiceObject {
         let backups: Backup[] | null = null;
         if (rowBackups) {
           backups = rowBackups.map(rowBackup => {
-            const rowBackupName = rowBackup.name!;
-            const backupId = rowBackupName.substring(
-              rowBackupName.lastIndexOf('/') + 1
-            );
-            return this.backup(
-              backupId,
-              rowBackup.database!,
-              new PreciseDate(rowBackup.expireTime as DateStruct)
-            );
+            return this.backup(rowBackup.name!);
           });
         }
 
@@ -346,10 +330,18 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
+  getBackupOperations(
+    query?: GetBackupOperationsRequest
+  ): Promise<GetBackupOperationsResponse>;
+  getBackupOperations(callback: GetBackupOperationsCallback): void;
+  getBackupOperations(
+    query: GetBackupOperationsRequest,
+    callback: GetBackupOperationsCallback
+  ): void;
   /**
    * Query object for listing backup operations.
    *
-   * @typedef {object} ListBackupOperationsRequest
+   * @typedef {object} GetBackupOperationsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -359,7 +351,7 @@ class Instance extends common.GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListBackupOperationsResponse
+   * @typedef {array} GetBackupOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 The full API response.
    */
@@ -369,41 +361,30 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #listOperations}
    *
    * @param query query object for listing backup operations.
-   * @returns {Promise<ListBackupOperationsResponse>} when resolved, contains a
+   * @returns {Promise<GetBackupOperationsResponse>} when resolved, contains a
    *     paged list of backup operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [operations] = await instance.listBackupOperations();
+   * const [operations] = await instance.getBackupOperations();
    */
-  listBackupOperations(
-    query?: ListBackupOperationsRequest
-  ): Promise<ListBackupOperationsResponse>;
-  listBackupOperations(callback: ListBackupOperationsCallback): void;
-  listBackupOperations(
-    query: ListBackupOperationsRequest,
-    callback: ListBackupOperationsCallback
-  ): void;
-
-  listBackupOperations(
-    queryOrCallback?:
-      | ListBackupOperationsRequest
-      | ListBackupOperationsCallback,
-    cb?: ListBackupOperationsCallback
-  ): void | Promise<ListBackupOperationsResponse> {
+  getBackupOperations(
+    queryOrCallback?: GetBackupOperationsRequest | GetBackupOperationsCallback,
+    cb?: GetBackupOperationsCallback
+  ): void | Promise<GetBackupOperationsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
       typeof queryOrCallback === 'object'
         ? queryOrCallback
-        : ({} as ListBackupOperationsRequest);
+        : ({} as GetBackupOperationsRequest);
 
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
     });
-    this.request<IBackup[]>(
+    this.request<IOperation[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
@@ -416,10 +397,18 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
+  getDatabaseOperations(
+    query?: GetDatabaseOperationsRequest
+  ): Promise<GetDatabaseOperationsResponse>;
+  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
+  getDatabaseOperations(
+    query: GetDatabaseOperationsRequest,
+    callback: GetDatabaseOperationsCallback
+  ): void;
   /**
    * Query object for listing database operations.
    *
-   * @typedef {object} ListDatabaseOperationsRequest
+   * @typedef {object} GetDatabaseOperationsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -429,51 +418,42 @@ class Instance extends common.GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListDatabaseOperationsResponse
+   * @typedef {array} GetDatabaseOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 The full API response.
    */
   /**
    * List pending and completed operations for all databases in the instance.
    *
-   * @see {@link Database.listDatabaseOperations}
+   * @see {@link Database.getDatabaseOperations}
    *
    * @param query query object for listing database operations.
-   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
+   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const [operations] = await instance.listDatabaseOperations();
+   * const [operations] = await instance.getDatabaseOperations();
    * // ... then do something with the operations
    */
-  listDatabaseOperations(
-    query?: ListDatabaseOperationsRequest
-  ): Promise<ListDatabaseOperationsResponse>;
-  listDatabaseOperations(callback: ListDatabaseOperationsCallback): void;
-  listDatabaseOperations(
-    query: ListDatabaseOperationsRequest,
-    callback: ListDatabaseOperationsCallback
-  ): void;
-
-  listDatabaseOperations(
+  getDatabaseOperations(
     queryOrCallback?:
-      | ListDatabaseOperationsRequest
-      | ListDatabaseOperationsCallback,
-    cb?: ListDatabaseOperationsCallback
-  ): void | Promise<ListDatabaseOperationsResponse> {
+      | GetDatabaseOperationsRequest
+      | GetDatabaseOperationsCallback,
+    cb?: GetDatabaseOperationsCallback
+  ): void | Promise<GetDatabaseOperationsResponse> {
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
     const query =
       typeof queryOrCallback === 'object'
         ? queryOrCallback
-        : ({} as ListDatabaseOperationsRequest);
+        : ({} as GetDatabaseOperationsRequest);
 
     const reqOpts = extend({}, query, {
       parent: this.formattedName_,
     });
-    this.request<IBackup[]>(
+    this.request<IOperation[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',

@@ -15,17 +15,15 @@
 
 'use strict';
 
-async function listBackupOperations(instanceId, databaseId, projectId) {
-  // [START spanner_list_backup_operations]
+async function getDatabaseOperations(instanceId, projectId) {
+  // [START spanner_list_database_operations]
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-  const {google} = require('../protos/protos');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
   // const projectId = 'my-project-id';
-  // const databaseId = 'my-database';
   // const instanceId = 'my-instance';
 
   // Creates a client
@@ -36,28 +34,26 @@ async function listBackupOperations(instanceId, databaseId, projectId) {
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
 
-  // List backup operations
+  // List database operations
   try {
-    const [backupOperations] = await instance.listBackupOperations({
-      filter: `(metadata.database:${databaseId}) AND (metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
+    const [databaseOperations] = await instance.getDatabaseOperations({
+      filter:
+        '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)',
     });
-    console.log('Backup Operations:');
-    backupOperations.forEach(backupOperation => {
+    console.log('Optimize Database Operations:');
+    databaseOperations.forEach(databaseOperation => {
+      const metadata = protos.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
+        databaseOperation.metadata.value
+      );
       console.log(
-        backupOperation.name +
-          (backupOperation.done
-            ? ' (completed)'
-            : ` (in progress - ${
-                google.spanner.admin.database.v1.CreateBackupMetadata.decode(
-                  backupOperation.metadata.value
-                ).progress.progressPercent
-              }%)`)
+        `Database ${metadata.name} restored from backup is ` +
+          `${metadata.progress.progressPercent}% optimized.`
       );
     });
   } catch (err) {
     console.error('ERROR:', err);
   }
-  // [END spanner_list_backup_operations]
+  // [END spanner_list_database_operations]
 }
 
-module.exports.listBackupOperations = listBackupOperations;
+module.exports.getDatabaseOperations = getDatabaseOperations;

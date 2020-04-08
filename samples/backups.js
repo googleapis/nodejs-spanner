@@ -17,17 +17,10 @@
 
 const {createBackup} = require('./backups-create');
 const {cancelBackup} = require('./backups-cancel');
-const {
-  listBackups,
-  listBackupsByDatabase,
-  listBackupsByName,
-  listSmallBackups,
-  listNewBackups,
-  listBackupsPaginated,
-} = require('./backups-list');
-const {listBackupOperations} = require('./backups-list-operations');
-const {listDatabaseOperations} = require('./backups-list-database-operations');
-const {updateBackupExpireTime} = require('./backups-update');
+const {getBackups} = require('./backups-get');
+const {getBackupOperations} = require('./backups-get-operations');
+const {getDatabaseOperations} = require('./backups-get-database-operations');
+const {updateBackup} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
 const {deleteBackup} = require('./backups-delete');
 
@@ -58,66 +51,35 @@ require(`yargs`)
       )
   )
   .command(
-    `listBackups <instanceName> <projectId>`,
-    `Lists all backups in the instance.`,
-    {},
-    opts => listBackups(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listBackupsByDatabase <instanceName> <databaseId> <projectId>`,
-    `Lists all backups for the specified database.`,
+    `getBackups <instanceName> <databaseName> <backupName> <projectId>`,
+    `Lists backups in the instance with filters.`,
     {},
     opts =>
-      listBackupsByDatabase(opts.instanceName, opts.databaseId, opts.projectId)
-  )
-  .command(
-    `listBackupsByName <instanceName> <backupId> <projectId>`,
-    `Lists backups by backup name.`,
-    {},
-    opts => listBackupsByName(opts.instanceName, opts.backupId, opts.projectId)
-  )
-  .command(
-    `listSmallBackups <instanceName> <projectId>`,
-    `Lists all backups in the instance that are under 64K.`,
-    {},
-    opts => listSmallBackups(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listNewBackups <instanceName> <projectId>`,
-    `Lists all backups in the instance created recently and which expire soon.`,
-    {},
-    opts => listNewBackups(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listBackupsPaginated <instanceName> <projectId>`,
-    `Lists all backups in the instance using pagination.`,
-    {},
-    opts => listBackupsPaginated(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `listBackupOperations <instanceName> <databaseName> <projectId>`,
-    `Lists all backup operations in the instance.`,
-    {},
-    opts =>
-      listBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
-  )
-  .command(
-    `listDatabaseOperations <instanceName> <projectId>`,
-    `Lists all database operations in the instance.`,
-    {},
-    opts => listDatabaseOperations(opts.instanceName, opts.projectId)
-  )
-  .command(
-    `updateBackupExpireTime <instanceName> <databaseName> <backupName> <projectId>`,
-    `Updates the expire time of a backup.`,
-    {},
-    opts =>
-      updateBackupExpireTime(
+      getBackups(
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
         opts.projectId
       )
+  )
+  .command(
+    `getBackupOperations <instanceName> <databaseName> <projectId>`,
+    `Lists all backup operations in the instance.`,
+    {},
+    opts =>
+      getBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    `getDatabaseOperations <instanceName> <projectId>`,
+    `Lists all database operations in the instance.`,
+    {},
+    opts => getDatabaseOperations(opts.instanceName, opts.projectId)
+  )
+  .command(
+    `updateBackup <instanceName> <backupName> <projectId>`,
+    `Updates the expire time of a backup.`,
+    {},
+    opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId)
   )
   .command(
     `restoreBackup <instanceName> <databaseName> <backupName> <projectId>`,

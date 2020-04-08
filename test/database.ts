@@ -43,7 +43,7 @@ const fakePfy = extend({}, pfy, {
       'getMetadata',
       'getRestoreInfo',
       'getState',
-      'listDatabaseOperations',
+      'getDatabaseOperations',
       'runTransaction',
       'table',
       'updateSchema',
@@ -2222,34 +2222,31 @@ describe('Database', () => {
     });
   });
 
-  describe('listDatabaseOperations', () => {
+  describe('getOperations', () => {
     it('should create filter for querying the database', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
-      database.instance.listDatabaseOperations = async query => {
-        assert.strictEqual(
-          query.filter,
-          `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})`
-        );
+      database.instance.getDatabaseOperations = async query => {
+        assert.strictEqual(query.filter, `name:${DATABASE_FORMATTED_NAME}`);
         return [operations, {}];
       };
 
-      const [results] = await database.listDatabaseOperations();
+      const [results] = await database.getOperations();
       assert.deepStrictEqual(results, operations);
     });
 
     it('should create filter for querying the database in combination with user supplied filter', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
-      database.instance.listDatabaseOperations = async query => {
+      database.instance.getDatabaseOperations = async query => {
         assert.strictEqual(
           query.filter,
-          `((metadata.@type:CreateDatabaseMetadata AND metadata.database:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:RestoreDatabaseMetadata AND metadata.name:${DATABASE_FORMATTED_NAME}) OR (metadata.@type:UpdateDatabaseDdl AND metadata.database:${DATABASE_FORMATTED_NAME})) AND (someOtherAttribute: aValue)`
+          `(name:${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`
         );
         return [operations, {}];
       };
 
-      const [results] = await database.listDatabaseOperations({
+      const [results] = await database.getOperations({
         filter: 'someOtherAttribute: aValue',
       });
       assert.deepStrictEqual(results, operations);
@@ -2281,6 +2278,23 @@ describe('Database', () => {
       };
 
       await database.restore(BACKUP_FORMATTED_NAME);
+    });
+
+    it('should accept a backup name', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        databaseId: NAME,
+        parent: INSTANCE.formattedName_,
+        backup: BACKUP_FORMATTED_NAME,
+      });
+
+      database.id = NAME;
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+      };
+
+      await database.restore(BACKUP_NAME);
     });
 
     describe('error', () => {

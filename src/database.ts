@@ -29,14 +29,15 @@ import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';
+import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../proto/spanner_database_admin';
 import {
   Instance,
   CreateDatabaseOptions,
   CreateDatabaseCallback,
-  ListDatabaseOperationsRequest,
-  ListDatabaseOperationsResponse,
+  GetDatabaseOperationsRequest,
+  GetDatabaseOperationsResponse,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -55,6 +56,7 @@ import {
   ExecuteSqlRequest,
   RunUpdateCallback,
   RunResponse,
+  RunCallback,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -72,6 +74,7 @@ import {
   ResourceCallback,
   PagedResponse,
   NormalCallback,
+  LongRunningCallback,
 } from './common';
 import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
@@ -114,7 +117,6 @@ export type UpdateSchemaResponse = [
 
 type PoolRequestCallback = RequestCallback<Session>;
 
-type RunCallback = RequestCallback<Row[]>;
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
@@ -201,12 +203,10 @@ export interface CancelableDuplex extends Duplex {
   cancel(): void;
 }
 
-export type RestoreDatabaseCallback = ResourceCallback<
-  GaxOperation,
-  databaseAdmin.longrunning.IOperation
->;
+export type RestoreDatabaseCallback = LongRunningCallback<Database>;
 
 export type RestoreDatabaseResponse = [
+  Database,
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
@@ -1011,21 +1011,56 @@ class Database extends GrpcServiceObject {
     );
   }
 
+  /**
+   * Retrieves the restore information of the database.
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getRestoreInfo
+   * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>}
+   *     when resolved, contains the restore information for the database if it exists,
+   *     or undefined if the database does not exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const restoreInfo = await database.getRestoreInfo();
+   * console.log(`Database restored from ${restoreInfo.backupInfo.backup}`);
+   */
   async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
     const [metadata] = await this.getMetadata();
-    return metadata.restoreInfo === null || metadata.restoreInfo === undefined
-      ? undefined
-      : metadata.restoreInfo;
+    return metadata.restoreInfo ? metadata.restoreInfo : undefined;
   }
 
+  /**
+   * Retrieves the state of the database.
+   *
+   * The database state indicates if the database is ready after creation or
+   * after being restored from a backup.
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getState
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
+   *     when resolved, contains the current state of the database if it exists, or
+   *     undefined if the database does not exist.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const state = await database.getState();
+   * const isReady = (state === 'READY');
+   */
   async getState(): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
     | undefined
   > {
     const [metadata] = await this.getMetadata();
-    return metadata.state === null || metadata.state === undefined
-      ? undefined
-      : metadata.state;
+    return metadata.state ? metadata.state : undefined;
   }
 
   getSchema(): Promise<GetSchemaResponse>;
@@ -1363,7 +1398,7 @@ class Database extends GrpcServiceObject {
   /**
    * Query object for listing database operations.
    *
-   * @typedef {object} ListDatabaseOperationsRequest
+   * @typedef {object} GetDatabaseOperationsRequest
    * @property {boolean} [autoPaginate=true] Have pagination handled
    *     automatically.
    * @property {number} [maxApiCalls] Maximum number of API calls to make.
@@ -1373,17 +1408,17 @@ class Database extends GrpcServiceObject {
    *     representing part of the larger set of results to view.
    */
   /**
-   * @typedef {array} ListDatabaseOperationsResponse
+   * @typedef {array} GetDatabaseOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 The full API response.
    */
   /**
    * List pending and completed operations for the database.
    *
-   * @see {@link Instance.listDatabaseOperations}
+   * @see {@link Instance.getDatabaseOperations}
    *
    * @param query query object for listing database operations.
-   * @returns {Promise<ListDatabaseOperationsResponse>} when resolved, contains
+   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains
    *     a paged list of database operations.
    *
    * @example
@@ -1391,27 +1426,24 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [operations] = await database.listDatabaseOperations();
+   * const [operations] = await database.getOperations();
    */
-  async listDatabaseOperations(
-    query?: ListDatabaseOperationsRequest
-  ): Promise<ListDatabaseOperationsResponse> {
+  async getOperations(
+    query?: GetDatabaseOperationsRequest
+  ): Promise<GetDatabaseOperationsResponse> {
     // Create a query that lists database operations only on this database from
     // the instance. Operation name will be prefixed with the database path for
     // all operations on this database
-    let dbSpecificFilter =
-      `(metadata.@type:CreateDatabaseMetadata AND metadata.database:${this.formattedName_}) OR ` +
-      `(metadata.@type:RestoreDatabaseMetadata AND metadata.name:${this.formattedName_}) OR ` +
-      `(metadata.@type:UpdateDatabaseDdl AND metadata.database:${this.formattedName_})`;
+    let dbSpecificFilter = `name:${this.formattedName_}`;
     if (query && query.filter) {
       dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
     }
-    const dbSpecificQuery: ListDatabaseOperationsRequest = {
+    const dbSpecificQuery: GetDatabaseOperationsRequest = {
       ...query,
       filter: dbSpecificFilter,
     };
 
-    return this.instance.listDatabaseOperations(dbSpecificQuery);
+    return this.instance.getDatabaseOperations(dbSpecificQuery);
   }
 
   makePooledRequest_(config: RequestConfig): Promise<Session>;
@@ -1494,6 +1526,23 @@ class Database extends GrpcServiceObject {
     return waitForSessionStream;
   }
 
+  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
+  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
+  /**
+   * @typedef {array} RestoreDatabaseResponse
+   * @property {Backup} 0 The new {@link Database}.
+   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback RestoreDatabaseCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Database} database The new {@link Database}.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
   /**
    * Restore a backup into this database.
    *
@@ -1508,22 +1557,20 @@ class Database extends GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const [restoreOperation] = await restoreDatabase.restore('projects/my-project/instances/my-instance/backups/my-backup');
+   * const backupName = 'projects/my-project/instances/my-instance/backups/my-backup';
+   * const [, restoreOperation] = await database.restore(backupName);
    * // Wait for restore to complete
    * await restoreOperation.promise();
    */
-  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
-  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
-
   restore(
-    backupPath: string,
+    backupName: string,
     callback?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = extend(
       {
         parent: this.instance.formattedName_,
         databaseId: this.id,
-        backup: backupPath,
+        backup: Backup.formatName_(this.instance.formattedName_, backupName),
       }
     );
     return this.request(
@@ -1532,7 +1579,13 @@ class Database extends GrpcServiceObject {
         method: 'restoreDatabase',
         reqOpts,
       },
-      callback!
+      (err, resp) => {
+        if (err) {
+          callback!(err, null, resp!, resp!);
+          return;
+        }
+        callback!(null, this, resp, resp);
+      }
     );
   }
 
@@ -1703,6 +1756,7 @@ class Database extends GrpcServiceObject {
     optionsOrCallback?: TimestampBounds | RunCallback,
     cb?: RunCallback
   ): void | Promise<RunResponse> {
+    let stats: ResultSetStats;
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'
@@ -1715,11 +1769,12 @@ class Database extends GrpcServiceObject {
 
     this.runStream(query, options)
       .on('error', callback!)
+      .on('stats', _stats => (stats = _stats))
       .on('data', row => {
         rows.push(row);
       })
       .on('end', () => {
-        callback!(null, rows);
+        callback!(null, rows, stats);
       });
   }
   runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
@@ -1933,6 +1988,7 @@ class Database extends GrpcServiceObject {
             snapshot.end();
           }
         })
+        .on('stats', stats => proxyStream.emit('stats', stats))
         .once('end', endListener)
         .pipe(proxyStream);
     });
@@ -2334,7 +2390,7 @@ promisifyAll(Database, {
     'getMetadata',
     'getRestoreInfo',
     'getState',
-    'listDatabaseOperations',
+    'getDatabaseOperations',
     'runTransaction',
     'table',
     'updateSchema',

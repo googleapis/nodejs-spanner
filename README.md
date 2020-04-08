@@ -57,25 +57,25 @@ npm install @google-cloud/spanner
 ### Using the client library
 
 ```javascript
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+// Imports the Google Cloud client library
+const {Spanner} = require('@google-cloud/spanner');
 
-  // Creates a client
-  const spanner = new Spanner({projectId});
+// Creates a client
+const spanner = new Spanner({projectId});
 
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+// Gets a reference to a Cloud Spanner instance and database
+const instance = spanner.instance(instanceId);
+const database = instance.database(databaseId);
 
-  // The query to execute
-  const query = {
-    sql: 'SELECT 1',
-  };
+// The query to execute
+const query = {
+  sql: 'SELECT 1',
+};
 
-  // Execute a simple SQL statement
-  const [rows] = await database.run(query);
-  console.log(`Query: ${rows.length} found.`);
-  rows.forEach(row => console.log(row));
+// Execute a simple SQL statement
+const [rows] = await database.run(query);
+console.log(`Query: ${rows.length} found.`);
+rows.forEach(row => console.log(row));
 
 ```
 
@@ -104,6 +104,27 @@ has instructions for running the samples.
 
 The [Cloud Spanner Node.js Client API Reference][client-docs] documentation
 also contains samples.
+
+## Supported Node.js Versions
+
+Our client libraries follow the [Node.js release schedule](https://nodejs.org/en/about/releases/).
+Libraries are compatible with all current _active_ and _maintenance_ versions of
+Node.js.
+
+Client libraries targetting some end-of-life versions of Node.js are available, and
+can be installed via npm [dist-tags](https://docs.npmjs.com/cli/dist-tag).
+The dist-tags follow the naming convention `legacy-(version)`.
+
+_Legacy Node.js versions are supported as a best effort:_
+
+* Legacy versions will not be tested in continuous integration.
+* Some security patches may not be able to be backported.
+* Dependencies will not be kept up-to-date, and features will not be backported.
+
+#### Legacy tags available
+
+* `legacy-8`: install client libraries from this dist-tag for versions
+  compatible with Node.js 8.
 
 ## Versioning
 
