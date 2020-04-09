@@ -258,53 +258,31 @@ describe('Backup', () => {
       await backup.getMetadata(options, assert.ifError);
     });
 
-    describe('error', () => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
-
-      beforeEach(() => {
-        backup.request = (config, callback: Function) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
-        };
-      });
-
-      it('should execute callback with original arguments', done => {
-        backup.getMetadata((...args) => {
-          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
-          done();
-        });
-      });
-    });
-
-    describe('success', () => {
+    it('should get backup info', done => {
       const INFO = {
         name: 'backup-name',
         database: 'database-name',
+        expireTime: BACKUP_EXPIRE_TIME,
+      };
+      const fakeInfo = {
+        name: BACKUP_NAME,
+        database: DATABASE_NAME,
         expireTime: BACKUP_EXPIRE_TIME,
       };
 
       // tslint:disable-next-line no-any
       const REQUEST_RESPONSE_ARGS: any = [null, INFO, {}];
 
-      beforeEach(() => {
-        backup.request = (config, callback: Function) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
-        };
-      });
+      backup.request = (config, callback: Function) => {
+        callback.apply(null, REQUEST_RESPONSE_ARGS);
+      };
 
-      it('should get backup info', done => {
-        const fakeInfo = {
-          name: BACKUP_NAME,
-          database: DATABASE_NAME,
-          expireTime: BACKUP_EXPIRE_TIME,
-        };
-
-        backup.getMetadata((...args) => {
-          assert.ifError(args[0]);
-          assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
-          const backupInfo = args[1];
-          assert.deepStrictEqual(backupInfo, fakeInfo);
-          done();
-        });
+      backup.getMetadata((...args) => {
+        assert.ifError(args[0]);
+        assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
+        const backupInfo = args[1];
+        assert.deepStrictEqual(backupInfo, fakeInfo);
+        done();
       });
     });
   });
