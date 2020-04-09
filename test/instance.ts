@@ -1051,32 +1051,6 @@ describe('Instance', () => {
         'projects/project-id/instances/instance-name/backups/backup-name'
       );
     });
-
-    it('should create a backup from a Backup instance', done => {
-      const expectedReqOpts = {
-        parent: instance.formattedName_,
-        backupId: BACKUP_NAME,
-        backup: {
-          name:
-            'projects/project-id/instances/instance-name/backups/backup-name',
-          database:
-            'projects/project-id/instances/instance-name/database/database-name',
-          expireTime: {seconds: 3, nanos: 5},
-        },
-      };
-      instance.request = config => {
-        assert.strictEqual(config.client, 'DatabaseAdminClient');
-        assert.strictEqual(config.method, 'createBackup');
-        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        done();
-      };
-
-      const backup = new Backup(instance, BACKUP_NAME);
-      backup.create(
-        'projects/project-id/instances/instance-name/database/database-name',
-        EXPIRE_TIME
-      );
-    });
   });
 
   describe('getBackupOperations', () => {
