@@ -47,9 +47,9 @@ export type CreateBackupResponse = [
 ];
 
 export interface CreateBackupOptions {
-  databasePath: string,
-  expireTime: PreciseDate,
-  gaxOptions?: CallOptions
+  databasePath: string;
+  expireTime: PreciseDate;
+  gaxOptions?: CallOptions;
 }
 
 /**
@@ -98,13 +98,8 @@ class Backup {
     this.id = this.formattedName_.split('/').pop() || '';
   }
 
-  create(
-    options: CreateBackupOptions
-  ): Promise<CreateBackupResponse>;
-  create(
-    options: CreateBackupOptions,
-    callback: CreateBackupCallback
-  ): void;
+  create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
+  create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
   /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.

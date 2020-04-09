@@ -1527,9 +1527,16 @@ class Database extends GrpcServiceObject {
   }
 
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
-  restore(backupPath: string, options?: CallOptions): Promise<RestoreDatabaseResponse>;
+  restore(
+    backupPath: string,
+    options?: CallOptions
+  ): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
-  restore(backupPath: string, options: CallOptions, callback: RestoreDatabaseCallback): void;
+  restore(
+    backupPath: string,
+    options: CallOptions,
+    callback: RestoreDatabaseCallback
+  ): void;
   /**
    * @typedef {array} RestoreDatabaseResponse
    * @property {Database} 0 The new {@link Database}.

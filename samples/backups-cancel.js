@@ -48,7 +48,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
     const [, operation] = await backup.create({
       databasePath: databasePath,
-      expireTime: expireTime
+      expireTime: expireTime,
     });
 
     // Cancel the backup

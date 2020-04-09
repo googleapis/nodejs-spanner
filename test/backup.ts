@@ -108,7 +108,10 @@ describe('Backup', () => {
     });
 
     it('should localize the formatted instance name', () => {
-      assert.strictEqual(backup.instanceFormattedName_, INSTANCE.formattedName_);
+      assert.strictEqual(
+        backup.instanceFormattedName_,
+        INSTANCE.formattedName_
+      );
     });
 
     it('should format the name', () => {
@@ -161,7 +164,7 @@ describe('Backup', () => {
 
       await backup.create({
         databasePath: DATABASE_FORMATTED_NAME,
-        expireTime: BACKUP_EXPIRE_TIME
+        expireTime: BACKUP_EXPIRE_TIME,
       });
     });
 
@@ -178,7 +181,7 @@ describe('Backup', () => {
         {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
-          gaxOptions: gaxOptions,
+          gaxOptions,
         },
         assert.ifError
       );
@@ -221,7 +224,7 @@ describe('Backup', () => {
         backup.create(
           {
             databasePath: DATABASE_FORMATTED_NAME,
-            expireTime: BACKUP_EXPIRE_TIME
+            expireTime: BACKUP_EXPIRE_TIME,
           },
           (err, bk, op, resp) => {
             assert.ifError(err);

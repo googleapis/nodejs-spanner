@@ -2309,7 +2309,6 @@ describe('Database', () => {
       await database.restore(BACKUP_NAME, options, assert.ifError);
     });
 
-
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};

@@ -1019,11 +1019,11 @@ describe('Spanner', () => {
       backup2 = instance.backup(backup2Name);
       const [, backup1Operation] = await backup1.create({
         databasePath: database1.formattedName_,
-        expireTime: backupExpiryDate
+        expireTime: backupExpiryDate,
       });
       const [, backup2Operation] = await backup2.create({
         databasePath: database2.formattedName_,
-        expireTime: backupExpiryDate
+        expireTime: backupExpiryDate,
       });
 
       assert.strictEqual(
@@ -1099,7 +1099,7 @@ describe('Spanner', () => {
       try {
         const [, backupOperation] = await backup.create({
           databasePath: database1.formattedName_,
-          expireTime: backupExpiryDate
+          expireTime: backupExpiryDate,
         });
         assert.fail(
           'Backup should have failed for expiration time in the past'
