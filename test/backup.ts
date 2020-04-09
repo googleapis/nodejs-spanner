@@ -170,6 +170,29 @@ describe('Backup', () => {
         );
       });
     });
+
+    describe('success', () => {
+      const OPERATION = {};
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        backup.request = (config, callback: Function) => {
+          callback(null, [OPERATION, API_RESPONSE]);
+        };
+      });
+
+      it('should execute callback with a Backup and Operation', done => {
+        backup.create(
+          DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME, (err, bk, op, resp) => {
+            assert.ifError(err);
+            assert.strictEqual(bk, backup);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
+      });
+    });
   });
 
   describe('getMetadata', () => {
