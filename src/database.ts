@@ -1532,7 +1532,7 @@ class Database extends GrpcServiceObject {
   restore(backupPath: string, options: CallOptions, callback: RestoreDatabaseCallback): void;
   /**
    * @typedef {array} RestoreDatabaseResponse
-   * @property {Backup} 0 The new {@link Database}.
+   * @property {Database} 0 The new {@link Database}.
    * @property {Operation} 1 An {@link Operation} object that can be used to check
    *     the status of the request.
    * @property {object} 2 The full API response.
@@ -1597,7 +1597,7 @@ class Database extends GrpcServiceObject {
           callback!(err, null, resp!, resp!);
           return;
         }
-        callback!(null, this, resp, resp);
+        callback!(null, this, resp[0], resp[1]);
       }
     );
   }

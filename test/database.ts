@@ -2328,5 +2328,26 @@ describe('Database', () => {
         });
       });
     });
+
+    describe('success', () => {
+      const OPERATION = {};
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        database.request = (config, callback: Function) => {
+          callback(null, [OPERATION, API_RESPONSE]);
+        };
+      });
+
+      it('should execute callback with a Database and Operation', done => {
+        database.restore(BACKUP_FORMATTED_NAME, (err, db, op, resp) => {
+          assert.ifError(err);
+          assert.strictEqual(db, database);
+          assert.strictEqual(op, OPERATION);
+          assert.strictEqual(resp, API_RESPONSE);
+          done();
+        });
+      });
+    });
   });
 });
