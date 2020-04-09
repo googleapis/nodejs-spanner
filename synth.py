@@ -6,6 +6,8 @@ import subprocess
 
 logging.basicConfig(level=logging.DEBUG)
 
+AUTOSYNTH_MULTIPLE_COMMITS = True
+
 gapic = gcp.GAPICMicrogenerator()
 
 spanner = gapic.typescript_library(
@@ -36,8 +38,8 @@ spanner_admin_instance = gapic.typescript_library(
 # nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and
 # SpannerAdminInstance, all 3 are exported in src/v1/index.js
 # Excluding auto-generated system test since Spanner has its own packing test
-excludes=["src/index.ts", "src/v1/index.ts", "README.md", "package.json", 
-          "system-test/*", "system-test/fixtures/sample/*", "system-test/fixtures/sample/src/*", 
+excludes=["src/index.ts", "src/v1/index.ts", "README.md", "package.json",
+          "system-test/*", "system-test/fixtures/sample/*", "system-test/fixtures/sample/src/*",
           "tsconfig.json"]
 s.copy(spanner, excludes=excludes)
 s.copy(spanner_admin_database, excludes=excludes+["webpack.config.js"])

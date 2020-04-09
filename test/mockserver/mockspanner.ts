@@ -26,6 +26,7 @@ import ExecuteBatchDmlResponse = google.spanner.v1.ExecuteBatchDmlResponse;
 import ResultSet = google.spanner.v1.ResultSet;
 import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
+import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -477,7 +478,8 @@ export class MockSpanner {
           switch (res.type) {
             case StatementResultType.RESULT_SET:
               partialResultSets = MockSpanner.toPartialResultSets(
-                res.resultSet
+                res.resultSet,
+                call.request.queryMode
               );
               // Resume on the next index after the last one seen by the client.
               resumeIndex =
@@ -530,9 +532,13 @@ export class MockSpanner {
   /**
    * Splits a ResultSet into one PartialResultSet per row. This ensure that we can also test returning multiple partial results sets from a streaming method.
    * @param resultSet The ResultSet to split.
+   * @param queryMode The query mode that was used to execute the query.
    */
   private static toPartialResultSets(
-    resultSet: protobuf.ResultSet
+    resultSet: protobuf.ResultSet,
+    queryMode:
+      | google.spanner.v1.ExecuteSqlRequest.QueryMode
+      | keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode
   ): protobuf.PartialResultSet[] {
     const res: protobuf.PartialResultSet[] = [];
     let first = true;
@@ -547,6 +553,13 @@ export class MockSpanner {
         first = false;
       }
       res.push(partial);
+    }
+    if (queryMode === QueryMode.PROFILE || queryMode === 'PROFILE') {
+      // Include an empty query plan and statistics.
+      res[res.length - 1].stats = {
+        queryStats: {fields: {}},
+        queryPlan: {planNodes: []},
+      };
     }
     return res;
   }
