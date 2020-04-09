@@ -294,7 +294,9 @@ export class PartialResultStream extends Transform implements ResultEvents {
   ): Value[] {
     if (
       type.code === google.spanner.v1.TypeCode.ARRAY ||
-      type.code === google.spanner.v1.TypeCode.STRUCT
+      type.code === 'ARRAY' ||
+      type.code === google.spanner.v1.TypeCode.STRUCT ||
+      type.code === 'STRUCT'
     ) {
       return [PartialResultStream.mergeLists(type, head, tail)];
     }
@@ -323,7 +325,10 @@ export class PartialResultStream extends Transform implements ResultEvents {
   ): Value[] {
     let listType: google.spanner.v1.Type;
 
-    if (type.code === 'ARRAY') {
+    if (
+      type.code === 'ARRAY' ||
+      type.code === google.spanner.v1.TypeCode.ARRAY
+    ) {
       listType = type.arrayElementType as google.spanner.v1.Type;
     } else {
       listType = type.structType!.fields![head.length - 1]

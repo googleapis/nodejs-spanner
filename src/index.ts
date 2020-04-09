@@ -41,7 +41,7 @@ import {
   gcpCallInvocationTransformer,
   gcpChannelFactoryOverride,
 } from 'grpc-gcp';
-import * as gapic from './gapic';
+import * as v1 from './v1';
 import * as grpc from 'grpc';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -145,9 +145,9 @@ class Spanner extends GrpcService {
   constructor(options?: SpannerOptions) {
     const scopes: Array<{}> = [];
     const clientClasses = [
-      gapic.v1.DatabaseAdminClient,
-      gapic.v1.InstanceAdminClient,
-      gapic.v1.SpannerClient,
+      v1.DatabaseAdminClient,
+      v1.InstanceAdminClient,
+      v1.SpannerClient,
     ];
     for (const clientClass of clientClasses) {
       for (const scope of clientClass.scopes) {
@@ -183,7 +183,7 @@ class Spanner extends GrpcService {
       baseUrl:
         options.apiEndpoint ||
         options.servicePath ||
-        gapic.v1.SpannerClient.servicePath,
+        v1.SpannerClient.servicePath,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
@@ -673,7 +673,7 @@ class Spanner extends GrpcService {
       }
       const clientName = config.client;
       if (!this.clients_.has(clientName)) {
-        this.clients_.set(clientName, new gapic.v1[clientName](this.options));
+        this.clients_.set(clientName, new v1[clientName](this.options));
       }
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
@@ -997,7 +997,5 @@ export {Transaction};
  *   Reference to {@link v1.SpannerClient}
  */
 import * as protos from '../protos/protos';
-export {protos};
-const v1 = gapic.v1;
-export {v1};
+export {v1, protos};
 export default {Spanner};

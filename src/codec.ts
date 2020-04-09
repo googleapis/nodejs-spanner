@@ -72,7 +72,7 @@ export class SpannerDate extends Date {
     const yearOrDateString = dateFields[0];
 
     // yearOrDateString could be 0 (number).
-    if (yearOrDateString === null) {
+    if (yearOrDateString === null || yearOrDateString === undefined) {
       dateFields[0] = new Date().toDateString();
     }
 
@@ -288,21 +288,27 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
 
   switch (type.code) {
     case spannerClient.spanner.v1.TypeCode.BYTES:
+    case 'BYTES':
       decoded = Buffer.from(decoded, 'base64');
       break;
     case spannerClient.spanner.v1.TypeCode.FLOAT64:
+    case 'FLOAT64':
       decoded = new Float(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.INT64:
+    case 'INT64':
       decoded = new Int(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.TIMESTAMP:
+    case 'TIMESTAMP':
       decoded = new PreciseDate(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.DATE:
+    case 'DATE':
       decoded = new SpannerDate(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.ARRAY:
+    case 'ARRAY':
       decoded = decoded.map(value => {
         return decode(
           value,
@@ -311,6 +317,7 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
       });
       break;
     case spannerClient.spanner.v1.TypeCode.STRUCT:
+    case 'STRUCT':
       fields = type.structType!.fields!.map(({name, type}, index) => {
         const value = decode(
           decoded[name!] || decoded[index],
@@ -383,18 +390,20 @@ function encodeValue(value: Value): Value {
  * @private
  * @enum {string}
  */
-enum TypeCode {
-  unspecified = spannerClient.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED,
-  bool = spannerClient.spanner.v1.TypeCode.BOOL,
-  int64 = spannerClient.spanner.v1.TypeCode.INT64,
-  float64 = spannerClient.spanner.v1.TypeCode.FLOAT64,
-  timestamp = spannerClient.spanner.v1.TypeCode.TIMESTAMP,
-  date = spannerClient.spanner.v1.TypeCode.DATE,
-  string = spannerClient.spanner.v1.TypeCode.STRING,
-  bytes = spannerClient.spanner.v1.TypeCode.BYTES,
-  array = spannerClient.spanner.v1.TypeCode.ARRAY,
-  struct = spannerClient.spanner.v1.TypeCode.STRUCT,
-}
+const TypeCode: {
+  [name: string]: keyof typeof spannerClient.spanner.v1.TypeCode;
+} = {
+  unspecified: 'TYPE_CODE_UNSPECIFIED',
+  bool: 'BOOL',
+  int64: 'INT64',
+  float64: 'FLOAT64',
+  timestamp: 'TIMESTAMP',
+  date: 'DATE',
+  string: 'STRING',
+  bytes: 'BYTES',
+  array: 'ARRAY',
+  struct: 'STRUCT',
+};
 
 /**
  * Conveniece Type object that simplifies specifying the data type, the array
@@ -573,17 +582,17 @@ function createTypeObject(
   }
 
   const config: Type = friendlyType as Type;
-  const code: spannerClient.spanner.v1.TypeCode =
+  const code: keyof typeof spannerClient.spanner.v1.TypeCode =
     TypeCode[config.type] || TypeCode.unspecified;
   const type: spannerClient.spanner.v1.Type = {
     code,
   } as spannerClient.spanner.v1.Type;
 
-  if (code === spannerClient.spanner.v1.TypeCode.ARRAY) {
+  if (code === 'ARRAY') {
     type.arrayElementType = codec.createTypeObject(config.child);
   }
 
-  if (code === spannerClient.spanner.v1.TypeCode.STRUCT) {
+  if (code === 'STRUCT') {
     type.structType = {
       fields: arrify(config.fields!).map(field => {
         return {name: field.name, type: codec.createTypeObject(field)};

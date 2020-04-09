@@ -261,6 +261,9 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fakeCheckpointStream as any).reset = () => {};
+
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();
@@ -315,6 +318,8 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fakeCheckpointStream as any).reset = () => {};
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();

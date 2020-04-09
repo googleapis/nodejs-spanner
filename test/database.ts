@@ -1372,9 +1372,13 @@ describe('Database', () => {
         .stub(fakeSession, 'snapshot')
         .returns(fakeSnapshot);
 
+      sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
+
       runStreamStub = sandbox
         .stub(fakeSnapshot, 'runStream')
         .returns(fakeStream);
+
+      sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
     });
 
     it('should get a read session via `getReadSession`', () => {
@@ -1965,6 +1969,8 @@ describe('Database', () => {
       ) as sinon.SinonStub).callsFake(callback => {
         callback(null, fakeSession);
       });
+
+      sandbox.stub(fakeSession, 'partitionedDml').returns(fakePartitionedDml);
 
       beginStub = (sandbox.stub(
         fakePartitionedDml,
