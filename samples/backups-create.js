@@ -46,7 +46,10 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     const databasePath = database.formattedName_;
     // Expire backup 14 days in the future
     const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24 * 14);
-    const [, operation] = await backup.create(databasePath, expireTime);
+    const [, operation] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime
+    });
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
     await operation.promise();

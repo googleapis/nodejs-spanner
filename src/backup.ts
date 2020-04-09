@@ -46,6 +46,12 @@ export type CreateBackupResponse = [
   databaseAdmin.longrunning.IOperation
 ];
 
+export interface CreateBackupOptions {
+  databasePath: string,
+  expireTime: PreciseDate,
+  gaxOptions?: CallOptions
+}
+
 /**
  * IBackup structure with backup state enum translated to string form.
  */
@@ -93,23 +99,10 @@ class Backup {
   }
 
   create(
-    databasePath: string,
-    expireTime: PreciseDate
+    options: CreateBackupOptions
   ): Promise<CreateBackupResponse>;
   create(
-    databasePath: string,
-    expireTime: PreciseDate,
-    options?: CallOptions
-  ): Promise<CreateBackupResponse>;
-  create(
-    databasePath: string,
-    expireTime: PreciseDate,
-    callback: CreateBackupCallback
-  ): void;
-  create(
-    databasePath: string,
-    expireTime: PreciseDate,
-    options: CallOptions,
+    options: CreateBackupOptions,
     callback: CreateBackupCallback
   ): void;
   /**
@@ -131,9 +124,7 @@ class Backup {
    * Create a backup.
    *
    * @method Backup#create
-   * @param {string} databasePath The path of the database.
-   * @param {PreciseDate} expireTime The expiry time of the backup.
-   * @param {object} [options] Configuration object.
+   * @param {CreateBackupOptions} options Configuration object.
    * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} when resolved, the backup
    *     operation will have started, but will not have necessarily completed.
@@ -153,25 +144,16 @@ class Backup {
    * await backupOperation.promise();
    */
   create(
-    databasePath: string,
-    expireTime: PreciseDate,
-    optionsOrCallback?: CallOptions | CreateBackupCallback,
-    cb?: CreateBackupCallback
+    options: CreateBackupOptions,
+    callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-    const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as CreateBackupCallback)
-        : cb;
-    const gaxOpts =
-      typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as CallOptions)
-        : {};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
       parent: this.instanceFormattedName_,
       backupId: this.id,
       backup: {
-        database: databasePath,
-        expireTime: expireTime.toStruct(),
+        database: options.databasePath,
+        expireTime: options.expireTime.toStruct(),
         name: this.formattedName_,
       },
     };

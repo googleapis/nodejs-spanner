@@ -159,22 +159,27 @@ describe('Backup', () => {
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
       };
 
-      await backup.create(DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME);
+      await backup.create({
+        databasePath: DATABASE_FORMATTED_NAME,
+        expireTime: BACKUP_EXPIRE_TIME
+      });
     });
 
     it('should accept gaxOptions and a callback', async () => {
-      const options = {
+      const gaxOptions = {
         timeout: 1000,
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, options);
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
       };
 
       await backup.create(
-        DATABASE_FORMATTED_NAME,
-        BACKUP_EXPIRE_TIME,
-        options,
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+          expireTime: BACKUP_EXPIRE_TIME,
+          gaxOptions: gaxOptions,
+        },
         assert.ifError
       );
     });
@@ -190,8 +195,10 @@ describe('Backup', () => {
 
       it('should execute callback with original arguments', done => {
         backup.create(
-          DATABASE_FORMATTED_NAME,
-          BACKUP_EXPIRE_TIME,
+          {
+            databasePath: DATABASE_FORMATTED_NAME,
+            expireTime: BACKUP_EXPIRE_TIME,
+          },
           (...args) => {
             assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
             done();
@@ -212,7 +219,11 @@ describe('Backup', () => {
 
       it('should execute callback with a Backup and Operation', done => {
         backup.create(
-          DATABASE_FORMATTED_NAME, BACKUP_EXPIRE_TIME, (err, bk, op, resp) => {
+          {
+            databasePath: DATABASE_FORMATTED_NAME,
+            expireTime: BACKUP_EXPIRE_TIME
+          },
+          (err, bk, op, resp) => {
             assert.ifError(err);
             assert.strictEqual(bk, backup);
             assert.strictEqual(op, OPERATION);
