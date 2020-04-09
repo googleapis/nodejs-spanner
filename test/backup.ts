@@ -102,6 +102,35 @@ describe('Backup', () => {
     it('should promisify all the things', () => {
       assert(promisified);
     });
+
+    it('should localize the request function', () => {
+      assert.strictEqual(backup.request, INSTANCE.request);
+    });
+
+    it('should localize the formatted instance name', () => {
+      assert.strictEqual(backup.instanceFormattedName_, INSTANCE.formattedName_);
+    });
+
+    it('should format the name', () => {
+      const formatName_ = Backup.formatName_;
+      const formattedName = 'formatted-name';
+
+      Backup.formatName_ = (instanceName, name) => {
+        Backup.formatName_ = formatName_;
+
+        assert.strictEqual(instanceName, INSTANCE.formattedName_);
+        assert.strictEqual(name, BACKUP_NAME);
+
+        return formattedName;
+      };
+
+      const backup = new Backup(INSTANCE, BACKUP_NAME);
+      assert(backup.formattedName_, formattedName);
+    });
+
+    it('should set the backup id', () => {
+      assert.strictEqual(backup.id, BACKUP_NAME);
+    });
   });
 
   describe('create', () => {
