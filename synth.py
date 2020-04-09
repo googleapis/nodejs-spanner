@@ -15,7 +15,8 @@ spanner = gapic.typescript_library(
     proto_path='google/spanner/v1',
     generator_args={
       'grpc-service-config': 'google/spanner/v1/spanner_grpc_service_config.json',
-      'main-service': 'spanner'
+      'main-service': 'spanner',
+      'package-name': '@google-cloud/spanner'
     }
 )
 

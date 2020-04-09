@@ -1993,7 +1993,9 @@ class Database extends GrpcServiceObject {
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
-    for (;;) {
+    // (and yes, we like while (true) more than for (;;) here)
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
       try {
         const [session, transaction] = await promisify(getWriteSession)();
         const runner = new AsyncTransactionRunner<T>(

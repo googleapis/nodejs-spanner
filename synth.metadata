@@ -1,12 +1,13 @@
 {
-  "updateTime": "2020-04-09T21:00:59.062898Z",
+  "updateTime": "2020-04-09T21:34:30.852151Z",
   "sources": [
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "9af7212bc2cba8a7184f032e1ab6662ccf604b3a",
-        "internalRef": "305751417"
+        "sha": "ac1f904979899bc598fb0567cf7a367f08b40b43",
+        "internalRef": "305760190",
+        "log": "ac1f904979899bc598fb0567cf7a367f08b40b43\nfix (breaking change): reorder Company and Job resources in talent API to be consistent with old gapic config.\n\ncommitter: @hzyi-google\nPiperOrigin-RevId: 305760190\n\n"
       }
     },
     {
