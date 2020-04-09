@@ -166,17 +166,15 @@ class Backup {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as CallOptions)
         : {};
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = extend(
-      {
-        parent: this.instanceFormattedName_,
-        backupId: this.id,
-        backup: {
-          database: databasePath,
-          expireTime: expireTime.toStruct(),
-          name: this.formattedName_,
-        },
-      }
-    );
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
+      parent: this.instanceFormattedName_,
+      backupId: this.id,
+      backup: {
+        database: databasePath,
+        expireTime: expireTime.toStruct(),
+        name: this.formattedName_,
+      },
+    };
     return this.request(
       {
         client: 'DatabaseAdminClient',
