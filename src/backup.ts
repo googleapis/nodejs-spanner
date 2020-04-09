@@ -177,7 +177,7 @@ class Backup {
         },
       }
     );
-    return this.request<CreateBackupGaxOperation>(
+    return this.request(
       {
         client: 'DatabaseAdminClient',
         method: 'createBackup',
@@ -189,7 +189,7 @@ class Backup {
           callback!(err, null, null, resp!);
           return;
         }
-        callback!(null, this, resp, resp || undefined);
+        callback!(null, this, resp[0], resp[1]);
       }
     );
   }
