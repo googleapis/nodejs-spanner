@@ -328,16 +328,7 @@ describe('Backup', () => {
       assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
     });
 
-    it('should return undefined when backup does not exist', async () => {
-      backup.getMetadata = async () => {
-        throw {code: grpc.status.NOT_FOUND};
-      };
-
-      const result = await backup.getExpireTime();
-      assert.strictEqual(result, undefined);
-    });
-
-    it('should rethrow other errors', async () => {
+    it('should throw errors', async () => {
       const err = {code: grpc.status.INTERNAL};
       backup.getMetadata = async () => {
         throw err;

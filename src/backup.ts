@@ -288,9 +288,9 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getExpireTime
-   * @returns {Promise<PreciseDate | undefined>}
-   *     when resolved, contains the current expire time of the backup if it exists,
-   *     or undefined if the backup does not exist.
+   * @returns {Promise<PreciseDate>}
+   *     when resolved, contains the current expire time of the backup if it
+   *     exists.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -301,16 +301,8 @@ class Backup {
    * console.log(`Backup expires on ${expireTime.toISOString()}`);
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
-    try {
-      const [backupInfo] = await this.getMetadata();
-      return new PreciseDate(backupInfo.expireTime as DateStruct);
-    } catch (err) {
-      if (err.code === status.NOT_FOUND) {
-        return undefined;
-      }
-      // Some other error occurred, rethrow
-      throw err;
-    }
+    const [backupInfo] = await this.getMetadata();
+    return new PreciseDate(backupInfo.expireTime as DateStruct);
   }
 
   /**
