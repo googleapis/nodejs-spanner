@@ -42,8 +42,8 @@ excludes=["src/index.ts", "src/v1/index.ts", "README.md", "package.json",
           "system-test/*", "system-test/fixtures/sample/*", "system-test/fixtures/sample/src/*",
           "tsconfig.json"]
 s.copy(spanner, excludes=excludes)
-s.copy(spanner_admin_database, excludes=excludes+["webpack.config.js"])
-s.copy(spanner_admin_instance, excludes=excludes+["webpack.config.js"])
+s.copy(spanner_admin_database, excludes=excludes+["webpack.config.js", ".jsdoc.js"])
+s.copy(spanner_admin_instance, excludes=excludes+["webpack.config.js", ".jsdoc.js"])
 
 common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library(source_location='build/src')

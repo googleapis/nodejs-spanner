@@ -43,7 +43,7 @@ module.exports = {
     copyright: 'Copyright 2020 Google LLC',
     includeDate: false,
     sourceFiles: false,
-    systemName: 'instance',
+    systemName: 'spanner',
     theme: 'lumen',
     default: {
       outputSourceFiles: false
