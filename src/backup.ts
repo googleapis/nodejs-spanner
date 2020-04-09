@@ -263,8 +263,7 @@ class Backup {
    *
    * @method Backup#getState
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
-   *     when resolved, contains the current state of the backup if it exists, or
-   *     undefined if the backup does not exist.
+   *     when resolved, contains the current state of the backup if it exists.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -278,16 +277,8 @@ class Backup {
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
     | undefined
   > {
-    try {
-      const [backupInfo] = await this.getMetadata();
-      return backupInfo.state || undefined;
-    } catch (err) {
-      if (err.code === status.NOT_FOUND) {
-        return undefined;
-      }
-      // Some other error occurred, rethrow
-      throw err;
-    }
+    const [backupInfo] = await this.getMetadata();
+    return backupInfo.state || undefined;
   }
 
   /**
