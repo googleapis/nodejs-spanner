@@ -40,16 +40,11 @@ import {
   SessionPoolOptions,
 } from '../src/session-pool';
 import {Json} from '../src/codec';
-<<<<<<< HEAD
-=======
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import Done = Mocha.Done;
->>>>>>> master
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
-import {SpannerClient as s} from '../src/v1';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -183,7 +178,7 @@ describe('Spanner with mock server', () => {
       try {
         const [rows, stats] = await database.run({
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         });
         assert.strictEqual(rows.length, 3);
         assert.ok(stats);
@@ -199,7 +194,7 @@ describe('Spanner with mock server', () => {
         const [snapshot] = await database.getSnapshot();
         const [rows, stats] = await snapshot.run({
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         });
         assert.strictEqual(rows.length, 3);
         assert.ok(stats);
@@ -217,7 +212,7 @@ describe('Spanner with mock server', () => {
       database
         .runStream({
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         })
         .on('data', () => rowCount++)
         .on('stats', _stats => (stats = _stats))
@@ -238,7 +233,7 @@ describe('Spanner with mock server', () => {
         snapshot
           .runStream({
             sql: selectSql,
-            queryMode: s.QueryMode.PROFILE,
+            queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
           })
           .on('data', () => rowCount++)
           .on('stats', _stats => (stats = _stats))
@@ -257,7 +252,7 @@ describe('Spanner with mock server', () => {
       database.run(
         {
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         },
         (err, rows, stats) => {
           assert.ifError(err);

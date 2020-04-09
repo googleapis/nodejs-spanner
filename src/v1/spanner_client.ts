@@ -2020,9 +2020,9 @@ export class SpannerClient {
    */
   databasePath(project: string, instance: string, database: string) {
     return this.pathTemplates.databasePathTemplate.render({
-      project,
-      instance,
-      database,
+      project: project,
+      instance: instance,
+      database: database,
     });
   }
 
@@ -2075,10 +2075,10 @@ export class SpannerClient {
     session: string
   ) {
     return this.pathTemplates.sessionPathTemplate.render({
-      project,
-      instance,
-      database,
-      session,
+      project: project,
+      instance: instance,
+      database: database,
+      session: session,
     });
   }
 
