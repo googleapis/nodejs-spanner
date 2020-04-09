@@ -1060,7 +1060,7 @@ class Database extends GrpcServiceObject {
     | undefined
   > {
     const [metadata] = await this.getMetadata();
-    return metadata.state ? metadata.state : undefined;
+    return metadata.state || undefined;
   }
 
   getSchema(): Promise<GetSchemaResponse>;
