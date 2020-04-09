@@ -1604,7 +1604,7 @@ class Database extends GrpcServiceObject {
           callback!(err, null, resp!, resp!);
           return;
         }
-        callback!(null, this, resp[0], resp[1]);
+        callback!(null, this, resp, resp);
       }
     );
   }
