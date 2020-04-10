@@ -24,9 +24,10 @@ import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
 import {google as instanceAdmin} from '../proto/spanner_instance_admin';
 import {Spanner, RequestConfig} from '.';
-import {ServiceError} from 'grpc';
+import {CallOptions, ServiceError} from 'grpc';
 import {
   RequestCallback,
+  PagedRequest,
   PagedResponse,
   LongRunningCallback,
   NormalCallback,
@@ -120,6 +121,9 @@ export type GetInstanceMetadataCallback = NormalCallback<IInstance>;
 export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
+>;
+type GetBackupsOptions = PagedRequest<
+  databaseAdmin.spanner.admin.database.v1.IListBackupsRequest
 >;
 export type GetBackupsCallback = RequestCallback<
   Backup,
@@ -260,9 +264,9 @@ class Instance extends common.GrpcServiceObject {
     return new Backup(this, backupId);
   }
 
-  getBackups(query?: GetBackupsRequest): Promise<GetBackupsResponse>;
+  getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
   getBackups(callback: GetBackupsCallback): void;
-  getBackups(query: GetBackupsRequest, callback: GetBackupsCallback): void;
+  getBackups(query: GetBackupsOptions, callback: GetBackupsCallback): void;
   /**
    * Query object for listing backups.
    *
@@ -287,7 +291,9 @@ class Instance extends common.GrpcServiceObject {
    *
    * @see {@link #backup}
    *
-   * @param query query object for listing backups.
+   * @param {GetBackupsOptions} [options] Contains query object for listing
+   *     backups and request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns {Promise<GetBackupsResponse>} when resolved, contains a paged list of backups.
    *
    * @example
@@ -297,25 +303,29 @@ class Instance extends common.GrpcServiceObject {
    * const [backups] = await instance.getBackups();
    */
   getBackups(
-    queryOrCallback?: GetBackupsRequest | GetBackupsCallback,
+    optionsOrCallback?: GetBackupsOptions | GetBackupsCallback,
     cb?: GetBackupsCallback
   ): void | Promise<GetBackupsResponse> {
     const callback =
-      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
-    const query =
-      typeof queryOrCallback === 'object'
-        ? queryOrCallback
-        : ({} as GetBackupsRequest);
-
-    const reqOpts = extend({}, query, {
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetBackupsCallback)
+        : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetBackupsOptions)
+        : {gaxOptions: {}};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
+    delete reqOpts.gaxOptions;
+
     this.request<IBackup[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackups',
         reqOpts,
-        gaxOpts: query,
+        gaxOpts: gaxOpts,
       },
       (err, rowBackups, ...args) => {
         let backups: Backup[] | null = null;
