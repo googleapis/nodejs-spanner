@@ -129,6 +129,9 @@ export type GetBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
+type GetBackupOperationsOptions = PagedRequest<
+  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest
+>;
 export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
@@ -341,11 +344,11 @@ class Instance extends common.GrpcServiceObject {
   }
 
   getBackupOperations(
-    query?: GetBackupOperationsRequest
+    options?: GetBackupOperationsOptions
   ): Promise<GetBackupOperationsResponse>;
   getBackupOperations(callback: GetBackupOperationsCallback): void;
   getBackupOperations(
-    query: GetBackupOperationsRequest,
+    options: GetBackupOperationsOptions,
     callback: GetBackupOperationsCallback
   ): void;
   /**
@@ -370,7 +373,9 @@ class Instance extends common.GrpcServiceObject {
    *
    * @see {@link #listOperations}
    *
-   * @param query query object for listing backup operations.
+   * @param {GetBackupOperationsOptions} [options] Contains query object for
+   *     listing backup operations and request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns {Promise<GetBackupOperationsResponse>} when resolved, contains a
    *     paged list of backup operations.
    *
@@ -381,25 +386,29 @@ class Instance extends common.GrpcServiceObject {
    * const [operations] = await instance.getBackupOperations();
    */
   getBackupOperations(
-    queryOrCallback?: GetBackupOperationsRequest | GetBackupOperationsCallback,
+    optionsOrCallback?: GetBackupOperationsOptions | GetBackupOperationsCallback,
     cb?: GetBackupOperationsCallback
   ): void | Promise<GetBackupOperationsResponse> {
     const callback =
-      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
-    const query =
-      typeof queryOrCallback === 'object'
-        ? queryOrCallback
-        : ({} as GetBackupOperationsRequest);
-
-    const reqOpts = extend({}, query, {
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetBackupOperationsCallback)
+        : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetBackupOperationsOptions)
+        : {gaxOptions: {}};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
+    delete reqOpts.gaxOptions;
+
     this.request<IOperation[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
         reqOpts,
-        gaxOpts: query,
+        gaxOpts: gaxOpts,
       },
       (err, operations, ...args) => {
         callback!(err, operations, ...args);
