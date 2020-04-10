@@ -1108,6 +1108,11 @@ describe('Instance', () => {
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
+      const gaxOpts = {
+        timeout: 1000,
+      };
+      const options = {a: 'b', gaxOptions: gaxOpts};
+
       const expectedReqOpts = extend({}, QUERY, {
         parent: instance.formattedName_,
       });
@@ -1120,10 +1125,10 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
 
-        assert.strictEqual(config.gaxOpts, QUERY);
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
       };
 
-      await instance.getDatabaseOperations(QUERY);
+      await instance.getDatabaseOperations(options);
     });
 
     it('should not require a query', async () => {

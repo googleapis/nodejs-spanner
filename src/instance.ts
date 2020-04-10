@@ -136,6 +136,9 @@ export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
+type GetDatabaseOperationsOptions = PagedRequest<
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest
+>;
 export type GetDatabaseOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
@@ -417,11 +420,11 @@ class Instance extends common.GrpcServiceObject {
   }
 
   getDatabaseOperations(
-    query?: GetDatabaseOperationsRequest
+    options?: GetDatabaseOperationsOptions
   ): Promise<GetDatabaseOperationsResponse>;
   getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
   getDatabaseOperations(
-    query: GetDatabaseOperationsRequest,
+    options: GetDatabaseOperationsOptions,
     callback: GetDatabaseOperationsCallback
   ): void;
   /**
@@ -446,8 +449,11 @@ class Instance extends common.GrpcServiceObject {
    *
    * @see {@link Database.getDatabaseOperations}
    *
-   * @param query query object for listing database operations.
-   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains a paged list of database operations.
+   * @param {GetDatabaseOperationsOptions} [options] Contains query object for
+   *     listing database operations and request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains a
+   *     paged list of database operations.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -457,27 +463,31 @@ class Instance extends common.GrpcServiceObject {
    * // ... then do something with the operations
    */
   getDatabaseOperations(
-    queryOrCallback?:
-      | GetDatabaseOperationsRequest
+    optionsOrCallback?:
+      | GetDatabaseOperationsOptions
       | GetDatabaseOperationsCallback,
     cb?: GetDatabaseOperationsCallback
   ): void | Promise<GetDatabaseOperationsResponse> {
     const callback =
-      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
-    const query =
-      typeof queryOrCallback === 'object'
-        ? queryOrCallback
-        : ({} as GetDatabaseOperationsRequest);
-
-    const reqOpts = extend({}, query, {
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseOperationsCallback)
+        : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetDatabaseOperationsOptions)
+        : {gaxOptions: {}};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
+    delete reqOpts.gaxOptions;
+
     this.request<IOperation[]>(
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',
         reqOpts,
-        gaxOpts: query,
+        gaxOpts: gaxOpts,
       },
       (err, operations, ...args) => {
         callback!(err, operations, ...args);
