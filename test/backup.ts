@@ -430,44 +430,20 @@ describe('Backup', () => {
       await backup.updateExpireTime(NEW_EXPIRE_TIME, options, assert.ifError);
     });
 
-    describe('error', () => {
-      const ERROR = new Error('Error.');
-      const API_RESPONSE = {};
-
-      beforeEach(() => {
-        backup.request = (config, callback: Function) => {
-          callback(ERROR, null, API_RESPONSE);
-        };
-      });
-
-      it('should execute callback with error & API response', done => {
-        backup.updateExpireTime(NEW_EXPIRE_TIME, (err, resp) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(resp, null);
-          done();
-        });
-      });
-    });
-
-    describe('success', () => {
+    it('should return backup object with updated expire time', () => {
       const API_RESPONSE = {
         name: 'backup-name',
         database: 'database-name',
         expireTime: NEW_EXPIRE_TIME,
       };
 
-      beforeEach(() => {
-        backup.request = (config, callback: Function) => {
-          callback(null, API_RESPONSE);
-        };
-      });
+      backup.request = (config, callback: Function) => {
+        callback(null, API_RESPONSE);
+      };
 
-      it('should return backup object with updated expire time', done => {
-        backup.updateExpireTime(NEW_EXPIRE_TIME, (...args) => {
-          assert.ifError(args[0]);
-          assert.strictEqual(args[1]!.expireTime, NEW_EXPIRE_TIME);
-          done();
-        });
+      backup.updateExpireTime(NEW_EXPIRE_TIME, (...args) => {
+        assert.ifError(args[0]);
+        assert.strictEqual(args[1]!.expireTime, NEW_EXPIRE_TIME);
       });
     });
   });
@@ -504,20 +480,16 @@ describe('Backup', () => {
       await backup.delete(options, assert.ifError);
     });
 
-    describe('error', () => {
+    it('should execute callback with original arguments', done => {
       const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
 
-      beforeEach(() => {
-        backup.request = (config, callback: Function) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
-        };
-      });
+      backup.request = (config, callback: Function) => {
+        callback.apply(null, REQUEST_RESPONSE_ARGS);
+      };
 
-      it('should execute callback with original arguments', done => {
-        backup.delete((...args) => {
-          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
-          done();
-        });
+      backup.delete((...args) => {
+        assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+        done();
       });
     });
   });
