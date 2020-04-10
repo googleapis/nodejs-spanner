@@ -331,7 +331,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackups',
         reqOpts,
-        gaxOpts: gaxOpts,
+        gaxOpts,
       },
       (err, rowBackups, ...args) => {
         let backups: Backup[] | null = null;
@@ -389,7 +389,9 @@ class Instance extends common.GrpcServiceObject {
    * const [operations] = await instance.getBackupOperations();
    */
   getBackupOperations(
-    optionsOrCallback?: GetBackupOperationsOptions | GetBackupOperationsCallback,
+    optionsOrCallback?:
+      | GetBackupOperationsOptions
+      | GetBackupOperationsCallback,
     cb?: GetBackupOperationsCallback
   ): void | Promise<GetBackupOperationsResponse> {
     const callback =
@@ -411,7 +413,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
         reqOpts,
-        gaxOpts: gaxOpts,
+        gaxOpts,
       },
       (err, operations, ...args) => {
         callback!(err, operations, ...args);
@@ -487,7 +489,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',
         reqOpts,
-        gaxOpts: gaxOpts,
+        gaxOpts,
       },
       (err, operations, ...args) => {
         callback!(err, operations, ...args);
