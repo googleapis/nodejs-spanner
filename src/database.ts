@@ -36,6 +36,7 @@ import {
   Instance,
   CreateDatabaseOptions,
   CreateDatabaseCallback,
+  GetDatabaseOperationsOptions,
   GetDatabaseOperationsRequest,
   GetDatabaseOperationsResponse,
 } from './instance';
@@ -1417,7 +1418,9 @@ class Database extends GrpcServiceObject {
    *
    * @see {@link Instance.getDatabaseOperations}
    *
-   * @param query query object for listing database operations.
+   * @param {GetDatabaseOperationsOptions} [options] Contains query object for
+   *     listing database operations and request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains
    *     a paged list of database operations.
    *
@@ -1429,17 +1432,17 @@ class Database extends GrpcServiceObject {
    * const [operations] = await database.getOperations();
    */
   async getOperations(
-    query?: GetDatabaseOperationsRequest
+    options?: GetDatabaseOperationsOptions
   ): Promise<GetDatabaseOperationsResponse> {
     // Create a query that lists database operations only on this database from
     // the instance. Operation name will be prefixed with the database path for
     // all operations on this database
     let dbSpecificFilter = `name:${this.formattedName_}`;
-    if (query && query.filter) {
-      dbSpecificFilter = `(${dbSpecificFilter}) AND (${query.filter})`;
+    if (options && options.filter) {
+      dbSpecificFilter = `(${dbSpecificFilter}) AND (${options.filter})`;
     }
     const dbSpecificQuery: GetDatabaseOperationsRequest = {
-      ...query,
+      ...options,
       filter: dbSpecificFilter,
     };
 

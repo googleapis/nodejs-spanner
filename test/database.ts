@@ -2226,8 +2226,8 @@ describe('Database', () => {
     it('should create filter for querying the database', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
-      database.instance.getDatabaseOperations = async query => {
-        assert.strictEqual(query.filter, `name:${DATABASE_FORMATTED_NAME}`);
+      database.instance.getDatabaseOperations = async options => {
+        assert.strictEqual(options.filter, `name:${DATABASE_FORMATTED_NAME}`);
         return [operations, {}];
       };
 
@@ -2238,9 +2238,9 @@ describe('Database', () => {
     it('should create filter for querying the database in combination with user supplied filter', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
 
-      database.instance.getDatabaseOperations = async query => {
+      database.instance.getDatabaseOperations = async options => {
         assert.strictEqual(
-          query.filter,
+          options.filter,
           `(name:${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`
         );
         return [operations, {}];
@@ -2248,6 +2248,24 @@ describe('Database', () => {
 
       const [results] = await database.getOperations({
         filter: 'someOtherAttribute: aValue',
+      });
+      assert.deepStrictEqual(results, operations);
+    });
+
+    it('should options with given gaxOptions', async () => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+      const gaxOpts = {
+        timeout: 1000,
+      };
+
+      database.instance.getDatabaseOperations = async options => {
+        assert.strictEqual(options.gaxOptions, gaxOpts);
+        return [operations, {}];
+      };
+
+      const [results] = await database.getOperations({
+        filter: 'someOtherAttribute: aValue',
+        gaxOptions: gaxOpts,
       });
       assert.deepStrictEqual(results, operations);
     });
