@@ -122,21 +122,21 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
-type GetBackupsOptions = PagedRequest<
+export type GetBackupsOptions = PagedRequest<
   databaseAdmin.spanner.admin.database.v1.IListBackupsRequest
 >;
 export type GetBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-type GetBackupOperationsOptions = PagedRequest<
+export type GetBackupOperationsOptions = PagedRequest<
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest
 >;
 export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-type GetDatabaseOperationsOptions = PagedRequest<
+export type GetDatabaseOperationsOptions = PagedRequest<
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest
 >;
 export type GetDatabaseOperationsCallback = RequestCallback<
