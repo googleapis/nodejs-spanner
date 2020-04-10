@@ -181,7 +181,7 @@ describe('Backup', () => {
         {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
-          gaxOptions,
+          gaxOptions: gaxOptions,
         },
         assert.ifError
       );
