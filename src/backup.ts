@@ -119,7 +119,9 @@ class Backup {
    * Create a backup.
    *
    * @method Backup#create
-   * @param {CreateBackupOptions} options Configuration object.
+   * @param {CreateBackupOptions} options Parameters for creating a backup as
+   *    well as request configuration options, outlined here:
+   *    https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} when resolved, the backup
    *     operation will have started, but will not have necessarily completed.
@@ -170,9 +172,9 @@ class Backup {
   }
 
   getMetadata(): Promise<GetMetadataResponse>;
-  getMetadata(options?: CallOptions): Promise<GetMetadataResponse>;
+  getMetadata(gaxOptions?: CallOptions): Promise<GetMetadataResponse>;
   getMetadata(callback: GetMetadataCallback): void;
-  getMetadata(options: CallOptions, callback: GetMetadataCallback): void;
+  getMetadata(gaxOptions: CallOptions, callback: GetMetadataCallback): void;
   /**
    * @typedef {array} GetMetadataResponse
    * @property {object} 0 The {@link Backup} metadata.
@@ -191,7 +193,8 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#getMetadata
-   * @param {object} [options] Configuration object.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {GetMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetMetadataResponse>}
    *
@@ -204,16 +207,16 @@ class Backup {
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    */
   getMetadata(
-    optionsOrCallback?: CallOptions | GetMetadataCallback,
+    gaxOptionsOrCallback?: CallOptions | GetMetadataCallback,
     cb?: GetMetadataCallback
   ): void | Promise<GetMetadataResponse> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as GetMetadataCallback)
+      typeof gaxOptionsOrCallback === 'function'
+        ? (gaxOptionsOrCallback as GetMetadataCallback)
         : cb;
     const gaxOpts =
-      typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as CallOptions)
+      typeof gaxOptionsOrCallback === 'object'
+        ? (gaxOptionsOrCallback as CallOptions)
         : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
@@ -317,7 +320,7 @@ class Backup {
   updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
   updateExpireTime(
     expireTime: PreciseDate,
-    options?: CallOptions
+    gaxOptions?: CallOptions
   ): Promise<Backup>;
   updateExpireTime(
     expireTime: PreciseDate,
@@ -325,7 +328,7 @@ class Backup {
   ): void;
   updateExpireTime(
     expireTime: PreciseDate,
-    options: CallOptions,
+    gaxOptions: CallOptions,
     callback: UpdateExpireTimeCallback
   ): void;
   /**
@@ -340,7 +343,8 @@ class Backup {
    *
    * @method Backup#updateExpireTime
    * @param {PreciseDate} expireTime The expiry time to update with.
-   * @param {object} [options] Configuration object.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
    * @returns {Promise<Backup>} when resolved, the backup's expire time will
    *     have been updated.
@@ -356,16 +360,16 @@ class Backup {
    */
   updateExpireTime(
     expireTime: PreciseDate,
-    optionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
+    gaxOptionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
     cb?: UpdateExpireTimeCallback
   ): void | Promise<Backup> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as UpdateExpireTimeCallback)
+      typeof gaxOptionsOrCallback === 'function'
+        ? (gaxOptionsOrCallback as UpdateExpireTimeCallback)
         : cb;
     const gaxOpts =
-      typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as CallOptions)
+      typeof gaxOptionsOrCallback === 'object'
+        ? (gaxOptionsOrCallback as CallOptions)
         : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
@@ -390,14 +394,15 @@ class Backup {
   }
 
   delete(): Promise<void>;
-  delete(options?: CallOptions): Promise<void>;
+  delete(gaxOptions?: CallOptions): Promise<void>;
   delete(callback: DeleteCallback): void;
-  delete(options: CallOptions, callback: DeleteCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteCallback): void;
   /**
    * Deletes a backup.
    *
    * @method Backup#delete
-   * @param {object} [options] Configuration object.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {DeleteBackupCallback} [callback] Callback function.
    * @returns {Promise<void>} when resolved, the backup will have been deleted.
    *
@@ -409,16 +414,16 @@ class Backup {
    * await backup.delete();
    */
   delete(
-    optionsOrCallback?: CallOptions | DeleteCallback,
+    gaxOptionsOrCallback?: CallOptions | DeleteCallback,
     cb?: DeleteCallback
   ): void | Promise<void> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as DeleteCallback)
+      typeof gaxOptionsOrCallback === 'function'
+        ? (gaxOptionsOrCallback as DeleteCallback)
         : cb;
     const gaxOpts =
-      typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as CallOptions)
+      typeof gaxOptionsOrCallback === 'object'
+        ? (gaxOptionsOrCallback as CallOptions)
         : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
