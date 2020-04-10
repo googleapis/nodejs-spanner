@@ -58,7 +58,7 @@ export class GrpcServiceObject extends ServiceObject {
   delete(): Promise<[Response]>;
   delete(callback: RequestCallback): void;
   delete(callback?: RequestCallback): void | Promise<[Response]> {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const protoOpts = (this.methods.delete as any).protoOpts;
     const reqOpts = this.getOpts(this.methods.delete);
     this.request(protoOpts, reqOpts, callback || util.noop);
@@ -74,7 +74,7 @@ export class GrpcServiceObject extends ServiceObject {
   getMetadata(): Promise<Metadata>;
   getMetadata(callback: MetadataCallback): void;
   getMetadata(callback?: MetadataCallback): void | Promise<Metadata> {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const protoOpts = (this.methods.getMetadata as any).protoOpts;
     const reqOpts = this.getOpts(this.methods.getMetadata);
     this.request(protoOpts, reqOpts, (err: Error, resp: Response) => {
@@ -100,7 +100,7 @@ export class GrpcServiceObject extends ServiceObject {
     metadata: Metadata,
     callback?: ResponseCallback
   ): void | Promise<SetMetadataResponse> {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const protoOpts = (this.methods.setMetadata as any).protoOpts;
     const reqOpts = extend(
       true,
@@ -117,7 +117,7 @@ export class GrpcServiceObject extends ServiceObject {
    * @private
    */
   request(...args: Array<{}>) {
-    return this.parent.request.apply(this.parent, args);
+    return this.parent.request(...args);
   }
 
   /**
@@ -126,7 +126,7 @@ export class GrpcServiceObject extends ServiceObject {
    * @private
    */
   requestStream(...args: Array<{}>) {
-    return this.parent.requestStream.apply(this.parent, args);
+    return this.parent.requestStream(...args);
   }
 
   /**
@@ -135,7 +135,7 @@ export class GrpcServiceObject extends ServiceObject {
    * @private
    */
   requestWritableStream(...args: Array<{}>) {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (this.parent as any).requestWritableStream.apply(this.parent, args);
   }
 

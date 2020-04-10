@@ -8,71 +8,47 @@ logging.basicConfig(level=logging.DEBUG)
 
 AUTOSYNTH_MULTIPLE_COMMITS = True
 
+gapic = gcp.GAPICMicrogenerator()
 
-gapic = gcp.GAPICGenerator()
-
-spanner = gapic.node_library(
+spanner = gapic.typescript_library(
     'spanner', 'v1',
-    config_path='/google/spanner/artman_spanner.yaml')
+    proto_path='google/spanner/v1',
+    generator_args={
+      'grpc-service-config': 'google/spanner/v1/spanner_grpc_service_config.json',
+      'main-service': 'spanner',
+      'package-name': '@google-cloud/spanner'
+    }
+)
 
-spanner_admin_database = gapic.node_library(
+spanner_admin_database = gapic.typescript_library(
     'spanner-admin-database', 'v1',
-    config_path='/google/spanner/admin/database/artman_spanner_admin_database.yaml')
+    proto_path='google/spanner/admin/database/v1',
+    generator_args={
+      'grpc-service-config': 'google/spanner/admin/database/v1/spanner_admin_database_grpc_service_config.json'
+    }
+)
 
-spanner_admin_instance = gapic.node_library(
+spanner_admin_instance = gapic.typescript_library(
     'spanner-admin-instance', 'v1',
-    config_path='/google/spanner/admin/instance/artman_spanner_admin_instance.yaml')
+    proto_path='google/spanner/admin/instance/v1',
+    generator_args={
+      'grpc-service-config': 'google/spanner/admin/instance/v1/spanner_admin_instance_grpc_service_config.json'
+    }
+)
 
-# Copy all files except for 'README.md' and 'package.json'
-s.copy(spanner, excludes=["src/index.js", "README.md", "package.json"])
-s.copy(spanner_admin_database, excludes=["src/v1/index.js", "src/index.js", "README.md", "package.json"])
-s.copy(spanner_admin_instance, excludes=["src/v1/index.js", "src/index.js", "README.md", "package.json"])
+# nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and
+# SpannerAdminInstance, all 3 are exported in src/v1/index.js
+# Excluding auto-generated system test since Spanner has its own packing test
+excludes=["src/index.ts", "src/v1/index.ts", "README.md", "package.json",
+          "system-test/*", "system-test/fixtures/sample/*", "system-test/fixtures/sample/src/*",
+          "tsconfig.json"]
+s.copy(spanner, excludes=excludes)
+s.copy(spanner_admin_database, excludes=excludes+["webpack.config.js", ".jsdoc.js"])
+s.copy(spanner_admin_instance, excludes=excludes+["webpack.config.js", ".jsdoc.js"])
 
 common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library(source_location='build/src')
 s.copy(templates)
-
-# nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and
-# SpannerAdminInstance, export all 3 in src/v1/index.js
-s.replace(
-    "src/v1/index.js",
-    "(const SpannerClient = require\('\./spanner_client\'\);)",
-    """const DatabaseAdminClient = require('./database_admin_client');
-const InstanceAdminClient = require('./instance_admin_client');
-\g<1>""")
-
-s.replace(
-    "src/v1/index.js",
-    "(module\.exports\.SpannerClient = SpannerClient;)",
-    """module.exports.DatabaseAdminClient = DatabaseAdminClient;
-module.exports.InstanceAdminClient = InstanceAdminClient;
-\g<1>""")
-
-# Update path discovery due to build/ dir and TypeScript conversion.
-s.replace("src/v1/database_admin_client.js", "../../package.json", "../../../package.json")
-s.replace("src/v1/instance_admin_client.js", "../../package.json", "../../../package.json")
-s.replace("src/v1/spanner_client.js", "../../package.json", "../../../package.json")
-
-
-# [START fix-dead-link]
-s.replace('**/doc/google/protobuf/doc_timestamp.js',
-        'https:\/\/cloud\.google\.com[\s\*]*http:\/\/(.*)[\s\*]*\)',
-        r"https://\1)")
-
-s.replace('**/doc/google/protobuf/doc_timestamp.js',
-        'toISOString\]',
-        'toISOString)')
-
-# Fix a dead link issue with specifying regex in comments that looks
-# similar to a Markdown link.
-s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
-    "`\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?`",
-    "`\[a-z]([-a-z0-9]*[a-z0-9])?`")
-
-s.replace("src/v1/doc/google/spanner/**/doc_spanner*.js",
-    "`\(\[a-z\]\(https:\/\/cloud\.google\.com\[-a-z0-9\]\*\[a-z0-9\]\)\?\)\?`",
-    "`(\[a-z]([-a-z0-9]*[a-z0-9])?)?`")
-# [END fix-dead-link]
 
 # '''
 # Node.js specific cleanup

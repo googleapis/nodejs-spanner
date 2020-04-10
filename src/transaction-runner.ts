@@ -25,6 +25,7 @@ import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
@@ -140,7 +141,7 @@ export abstract class Runner<T> {
     const retryInfo = err.metadata && err.metadata.get(RETRY_INFO);
 
     if (retryInfo && retryInfo.length) {
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const {retryDelay} = (RetryInfo as any).decode(retryInfo[0]);
       let {seconds} = retryDelay;
 

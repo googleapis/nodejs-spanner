@@ -607,89 +607,89 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // [END spanner_query_with_timestamp_parameter]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `createVenuesTable <instanceName> <databaseName> <projectId>`,
-    `Creates sample "Venues" table containing example datatype columns in a Cloud Spanner database.`,
+    'createVenuesTable <instanceName> <databaseName> <projectId>',
+    'Creates sample "Venues" table containing example datatype columns in a Cloud Spanner database.',
     {},
     opts =>
       createVenuesTable(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `insertData <instanceName> <databaseName> <projectId>`,
-    `Inserts new rows of data into an sample "Venues" Cloud Spanner table.`,
+    'insertData <instanceName> <databaseName> <projectId>',
+    'Inserts new rows of data into an sample "Venues" Cloud Spanner table.',
     {},
     opts => insertData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithArray <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with an ARRAY datatype.`,
+    'queryWithArray <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with an ARRAY datatype.",
     {},
     opts => queryWithArray(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithBool <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a BOOL datatype.`,
+    'queryWithBool <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a BOOL datatype.",
     {},
     opts => queryWithBool(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithBytes <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a BYTES datatype.`,
+    'queryWithBytes <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a BYTES datatype.",
     {},
     opts => queryWithBytes(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithDate <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a DATE datatype.`,
+    'queryWithDate <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a DATE datatype.",
     {},
     opts => queryWithDate(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithFloat <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a FLOAT64 datatype.`,
+    'queryWithFloat <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a FLOAT64 datatype.",
     {},
     opts => queryWithFloat(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithInt <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a INT64 datatype.`,
+    'queryWithInt <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a INT64 datatype.",
     {},
     opts => queryWithInt(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithString <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a STRING datatype.`,
+    'queryWithString <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a STRING datatype.",
     {},
     opts =>
       queryWithString(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithTimestamp <instanceName> <databaseName> <projectId>`,
-    `Query data from the sample 'Venues' table with a TIMESTAMP datatype.`,
+    'queryWithTimestamp <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a TIMESTAMP datatype.",
     {},
     opts =>
       queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .example(
-    `node $0 createVenuesTable "my-instance" "my-database" "my-project-id"`
+    'node $0 createVenuesTable "my-instance" "my-database" "my-project-id"'
   )
-  .example(`node $0 insertData "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryWithArray "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryWithBool "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryWithBytes "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryWithDate "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryWithFloat "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 queryWithInt "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 insertData "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithArray "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithBool "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithBytes "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithDate "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithFloat "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithInt "my-instance" "my-database" "my-project-id"')
   .example(
-    `node $0 queryWithString "my-instance" "my-database" "my-project-id"`
+    'node $0 queryWithString "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

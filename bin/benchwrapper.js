@@ -72,7 +72,7 @@ function Read(call, callback) {
 function Insert(call, callback) {
   const instance = spannerClient.instance('someinstance');
   const database = instance.database('somedatabase');
-  database.runTransaction(function(err, transaction) {
+  database.runTransaction((err, transaction) => {
     if (err) {
       callback(err);
       return;
@@ -83,7 +83,7 @@ function Insert(call, callback) {
         age: user.age,
       });
     });
-    transaction.commit(function(err) {
+    transaction.commit(err => {
       if (err) {
         callback(err);
       } else {
@@ -116,7 +116,7 @@ function Update(call, callback) {
       }
       // Iterate over all rowCounts.
       rowCounts.forEach(() => {});
-      transaction.commit(function(err) {
+      transaction.commit(err => {
         if (err) {
           callback(err);
         } else {

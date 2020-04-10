@@ -301,52 +301,52 @@ async function readStaleData(instanceId, databaseId, projectId) {
   // [END spanner_read_stale_data]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `update <instanceName> <databaseName> <projectId>`,
-    `Modifies existing rows of data in an example Cloud Spanner table.`,
+    'update <instanceName> <databaseName> <projectId>',
+    'Modifies existing rows of data in an example Cloud Spanner table.',
     {},
     opts => updateData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `query <instanceName> <databaseName> <projectId>`,
-    `Executes a read-only SQL query against an example Cloud Spanner table.`,
+    'query <instanceName> <databaseName> <projectId>',
+    'Executes a read-only SQL query against an example Cloud Spanner table.',
     {},
     opts => queryData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `insert <instanceName> <databaseName> <projectId>`,
-    `Inserts new rows of data into an example Cloud Spanner table.`,
+    'insert <instanceName> <databaseName> <projectId>',
+    'Inserts new rows of data into an example Cloud Spanner table.',
     {},
     opts => insertData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `delete <instanceName> <databaseName> <projectId>`,
-    `Deletes rows from an example Cloud Spanner table.`,
+    'delete <instanceName> <databaseName> <projectId>',
+    'Deletes rows from an example Cloud Spanner table.',
     {},
     opts => deleteData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `read <instanceName> <databaseName> <projectId>`,
-    `Reads data in an example Cloud Spanner table.`,
+    'read <instanceName> <databaseName> <projectId>',
+    'Reads data in an example Cloud Spanner table.',
     {},
     opts => readData(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `read-stale <instanceName> <databaseName> <projectId>`,
-    `Reads stale data in an example Cloud Spanner table.`,
+    'read-stale <instanceName> <databaseName> <projectId>',
+    'Reads stale data in an example Cloud Spanner table.',
     {},
     opts => readStaleData(opts.instanceName, opts.databaseName, opts.projectId)
   )
-  .example(`node $0 update "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 query "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 insert "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 delete "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 read "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 read-stale "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 update "my-instance" "my-database" "my-project-id"')
+  .example('node $0 query "my-instance" "my-database" "my-project-id"')
+  .example('node $0 insert "my-instance" "my-database" "my-project-id"')
+  .example('node $0 delete "my-instance" "my-database" "my-project-id"')
+  .example('node $0 read "my-instance" "my-database" "my-project-id"')
+  .example('node $0 read-stale "my-instance" "my-database" "my-project-id"')
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

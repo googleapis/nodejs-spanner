@@ -15,8 +15,10 @@
  */
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const checkpointStream = require('checkpoint-stream');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -79,7 +81,7 @@ describe('PartialResultStream', () => {
 
     TESTS.forEach(test => {
       it(`should pass acceptance test: ${test.name}`, done => {
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const values: any[] = [];
         const stream = new PartialResultStream();
 
@@ -259,8 +261,9 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
-      // tslint:disable-next-line no-any
-      const resetStub = ((fakeCheckpointStream as any).reset = () => {});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fakeCheckpointStream as any).reset = () => {};
+
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();
@@ -315,8 +318,8 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
-      // tslint:disable-next-line no-any
-      const resetStub = ((fakeCheckpointStream as any).reset = () => {});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fakeCheckpointStream as any).reset = () => {};
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();
@@ -371,8 +374,6 @@ describe('PartialResultStream', () => {
     it('should emit non-retryable error', done => {
       // This test will emit two rows and then an error.
       const fakeCheckpointStream = through.obj();
-      // tslint:disable-next-line no-any
-      const resetStub = ((fakeCheckpointStream as any).reset = () => {});
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const fakeRequestStream = through.obj();

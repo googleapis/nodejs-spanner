@@ -16,7 +16,7 @@
 
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {describe, it, before, after, beforeEach} from 'mocha';
 import pLimit from 'p-limit';
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
@@ -62,7 +62,7 @@ describe('Spanner', () => {
   after(deleteTestInstances);
 
   describe('types', () => {
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const database = instance.database(generateName('database')) as any;
     const table = database.table('TypeCheck');
 
@@ -1047,7 +1047,7 @@ describe('Spanner', () => {
               rows.push(row);
             })
             .on('end', () => {
-              // tslint:disable-next-line no-any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               rows = rows.map(x => (x as any).toJSON());
 
               assert.deepStrictEqual(rows, [
@@ -1110,7 +1110,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          // tslint:disable-next-line no-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const rows: any[] = [];
 
           table
@@ -1146,7 +1146,7 @@ describe('Spanner', () => {
 
           table.deleteRows([id], err => {
             assert.ifError(err);
-            // tslint:disable-next-line no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const rows: any[] = [];
 
             table
@@ -1190,7 +1190,7 @@ describe('Spanner', () => {
           table.deleteRows([id, id2], err => {
             assert.ifError(err);
 
-            // tslint:disable-next-line no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const rows: any[] = [];
 
             table
@@ -3116,7 +3116,7 @@ describe('Spanner', () => {
           }
 
           if (query.ranges) {
-            // tslint:disable-next-line no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query.ranges = (query as any).ranges.map(range_ => {
               const range = extend({}, range_);
               Object.keys(range).forEach(bound => {
@@ -3290,7 +3290,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          // tslint:disable-next-line no-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let rows: any[] = [];
 
           table
@@ -3367,7 +3367,7 @@ describe('Spanner', () => {
       ) PRIMARY KEY (Key)
     `;
 
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const records: any[] = [];
 
     before(async () => {
@@ -3792,7 +3792,7 @@ describe('Spanner', () => {
               });
             })
             .then(data => {
-              // tslint:disable-next-line: no-any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const rows = data[0].map(row => (row as any).toJSON());
               assert.notStrictEqual(rows[0].StringValue, str);
               done();
@@ -3877,7 +3877,8 @@ describe('Spanner', () => {
           })
           .then(() => {
             return database.runPartitionedUpdate({
-              sql: `UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'`,
+              sql:
+                "UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'",
               params: {str},
             });
           })
@@ -3885,7 +3886,7 @@ describe('Spanner', () => {
             assert.strictEqual(rowCount, count);
 
             return database.run({
-              sql: `SELECT Key FROM TxnTable WHERE StringValue = @str`,
+              sql: 'SELECT Key FROM TxnTable WHERE StringValue = @str',
               params: {str},
             });
           })
@@ -4036,7 +4037,7 @@ describe('Spanner', () => {
           ];
 
           const expectedErrorMessage = [
-            `Row at index 0 does not contain the correct number of columns.`,
+            'Row at index 0 does not contain the correct number of columns.',
             `Missing columns: ${JSON.stringify(['NumberValue'])}`,
           ].join('\n\n');
           let caughtErrorMessage;
@@ -4421,7 +4422,9 @@ function execAfterOperationComplete(callback) {
   // tslint:disable-next-line only-arrow-functions
   return function(err) {
     // arguments = [..., op, apiResponse]
+    // eslint-disable-next-line prefer-rest-params
     const operation = arguments[arguments.length - 2];
+    // eslint-disable-next-line prefer-rest-params
     const apiResponse = arguments[arguments.length - 1];
 
     if (err) {
@@ -4544,9 +4547,4 @@ function wait(time) {
   return new Promise(resolve => {
     setTimeout(resolve, time);
   });
-}
-
-function fromProtoToDate(obj) {
-  const milliseconds = Math.floor(obj.nanos) / 1e6;
-  return new Date(Math.floor(obj.seconds) * 1000 + milliseconds);
 }

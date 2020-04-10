@@ -1,1 +1,9 @@
-["../../protos/google/spanner/v1/spanner.proto"]
+[
+  "../../protos/google/spanner/v1/keys.proto",
+  "../../protos/google/spanner/v1/mutation.proto",
+  "../../protos/google/spanner/v1/query_plan.proto",
+  "../../protos/google/spanner/v1/result_set.proto",
+  "../../protos/google/spanner/v1/spanner.proto",
+  "../../protos/google/spanner/v1/transaction.proto",
+  "../../protos/google/spanner/v1/type.proto"
+]

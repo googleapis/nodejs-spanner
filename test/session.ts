@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+/* eslint-disable prefer-rest-params */
+
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 
@@ -56,12 +58,12 @@ class FakeTransaction extends FakeSnapshot {}
 class FakePartitionedDml extends FakeSnapshot {}
 
 describe('Session', () => {
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Session: any;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let session: any;
 
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const DATABASE: any = {
     request: () => {},
     formattedName_: 'formatted-database-name',
