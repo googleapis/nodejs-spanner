@@ -133,10 +133,10 @@ class Backup {
    * const oneDay = 1000 * 60 * 60 * 24;
    * const expiryTime = new PreciseDate(Date.now() + oneDay);
    * const backup = instance.backup('my-backup');
-   * const [, backupOperation] = await backup.create(
-   *   'projects/my-project/instances/my-instance/databases/my-database',
-   *   expiryTime
-   * );
+   * const [, backupOperation] = await backup.create({
+   *   databasePath: 'projects/my-project/instances/my-instance/databases/my-database',
+   *   expireTime: expiryTime,
+   * });
    * // Await completion of the backup operation.
    * await backupOperation.promise();
    */
