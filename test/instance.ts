@@ -64,6 +64,13 @@ class FakeGrpcServiceObject {
   }
 }
 
+class FakeBackup {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+}
+
 describe('Instance', () => {
   // tslint:disable-next-line variable-name
   let Instance: typeof inst.Instance;
@@ -87,6 +94,7 @@ describe('Instance', () => {
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/paginator': fakePaginator,
       './database.js': {Database: FakeDatabase},
+      './backup.js': {Backup: FakeBackup},
     }).Instance;
   });
 
@@ -1040,8 +1048,6 @@ describe('Instance', () => {
 
   describe('backup', () => {
     const BACKUP_NAME = 'backup-name';
-    const DATABASE_NAME = 'database-name';
-    const EXPIRE_TIME = new PreciseDate({seconds: 3, nanos: 5});
 
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
@@ -1049,12 +1055,11 @@ describe('Instance', () => {
       }, /A backup ID is required to create a Backup\./);
     });
 
-    it('should create a Backup instance', () => {
-      const backup = instance.backup(BACKUP_NAME);
-      assert.strictEqual(
-        backup.formattedName_,
-        'projects/project-id/instances/instance-name/backups/backup-name'
-      );
+    it('should return an instance of Backup', () => {
+      const backup = (instance.backup(BACKUP_NAME) as {}) as FakeBackup;
+      assert(backup instanceof FakeBackup);
+      assert.strictEqual(backup.calledWith_[0], instance);
+      assert.strictEqual(backup.calledWith_[1], BACKUP_NAME);
     });
   });
 
