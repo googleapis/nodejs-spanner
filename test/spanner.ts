@@ -33,6 +33,7 @@ import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
+import {GetDatabaseOperationsRequest} from '../src/instance';
 import {
   isSessionNotFoundError,
   SessionLeakError,
@@ -45,7 +46,6 @@ import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
-import {GetDatabaseOperationsRequest} from '../src/instance';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
