@@ -46,10 +46,10 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   );
 
   // Wait for restore to complete
-  console.log(`Waiting for database restore to complete...`);
+  console.log('Waiting for database restore to complete...');
   await restoreOperation.promise();
 
-  console.log(`Database restored from backup.`);
+  console.log('Database restored from backup.');
   const restoreInfo = await database.getRestoreInfo();
   console.log(
     `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +

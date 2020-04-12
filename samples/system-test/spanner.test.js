@@ -31,7 +31,7 @@ const timestampCmd = 'node timestamp.js';
 const structCmd = 'node struct.js';
 const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node datatypes.js';
-const backupsCmd = `node backups.js`;
+const backupsCmd = 'node backups.js';
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -696,7 +696,7 @@ describe('Spanner', () => {
   });
 
   // create_backup
-  it(`should create a backup of the database`, async () => {
+  it('should create a backup of the database', async () => {
     const output = execSync(
       `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
@@ -704,7 +704,7 @@ describe('Spanner', () => {
   });
 
   // cancel_backup
-  it(`should cancel a backup of the database`, async () => {
+  it('should cancel a backup of the database', async () => {
     const output = execSync(
       `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`
     );
@@ -712,7 +712,7 @@ describe('Spanner', () => {
   });
 
   // get_backups
-  it(`should list backups in the instance`, async () => {
+  it('should list backups in the instance', async () => {
     const output = execSync(
       `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
@@ -730,7 +730,7 @@ describe('Spanner', () => {
   });
 
   // list_backup_operations
-  it(`should list backup operations in the instance`, async () => {
+  it('should list backup operations in the instance', async () => {
     const output = execSync(
       `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -742,7 +742,7 @@ describe('Spanner', () => {
   });
 
   // update_backup_expire_time
-  it(`should update the expire time of a backup`, async () => {
+  it('should update the expire time of a backup', async () => {
     const output = execSync(
       `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
@@ -750,7 +750,7 @@ describe('Spanner', () => {
   });
 
   // restore_backup
-  it(`should restore database from a backup`, async () => {
+  it('should restore database from a backup', async () => {
     const output = execSync(
       `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
@@ -765,7 +765,7 @@ describe('Spanner', () => {
   });
 
   // list_database_operations
-  it(`should list database operations in the instance`, async () => {
+  it('should list database operations in the instance', async () => {
     const output = execSync(
       `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
     );
@@ -780,7 +780,7 @@ describe('Spanner', () => {
   });
 
   // delete_backup
-  it(`should delete a backup`, async () => {
+  it('should delete a backup', async () => {
     function sleep(timeMillis) {
       return new Promise(resolve => setTimeout(resolve, timeMillis));
     }

@@ -944,7 +944,7 @@ describe('Spanner', () => {
         'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata'
       );
       const createMeta = CreateDatabaseMetadata.decode(
-        databaseCreateOperation.metadata!.value!
+        databaseCreateOperation.metadata!.value! as Uint8Array
       );
       assert.strictEqual(createMeta.database, databaseFullName);
     });
@@ -965,7 +965,7 @@ describe('Spanner', () => {
           'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata'
       );
       const createMeta = CreateDatabaseMetadata.decode(
-        databaseCreateOperation!.metadata!.value!
+        databaseCreateOperation!.metadata!.value! as Uint8Array
       );
       assert.strictEqual(createMeta.database, databaseFullName);
     });
@@ -1097,7 +1097,7 @@ describe('Spanner', () => {
       const backupExpiryDate = futureDateByHours(-12);
       const backup = instance.backup(backupName);
       try {
-        const [, backupOperation] = await backup.create({
+        await backup.create({
           databasePath: database1.formattedName_,
           expireTime: backupExpiryDate,
         });
@@ -1113,7 +1113,6 @@ describe('Spanner', () => {
     it('should return false for a backup that does not exist', async () => {
       // This backup won't exist, we're just generating the name without creating the backup itself.
       const backupName = generateName('backup');
-      const backupExpiryDate = futureDateByHours(12);
       const backup = instance.backup(backupName);
 
       const exists = await backup.exists();
@@ -1284,7 +1283,7 @@ describe('Spanner', () => {
         'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata'
       );
       const operationForCurrentBackupWithFilterMetadata = CreateBackupMetadata.decode(
-        operationForCurrentBackupWithFilter!.metadata!.value!
+        operationForCurrentBackupWithFilter!.metadata!.value! as Uint8Array
       );
       assert.strictEqual(
         operationForCurrentBackupWithFilterMetadata.database,

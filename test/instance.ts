@@ -998,7 +998,7 @@ describe('Instance', () => {
 
       beforeEach(() => {
         instance.request = (config, callback: Function) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
+          callback(...REQUEST_RESPONSE_ARGS);
         };
       });
 
@@ -1019,12 +1019,12 @@ describe('Instance', () => {
         },
       ];
 
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, {}];
 
       beforeEach(() => {
         instance.request = (config, callback) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
+          callback(...REQUEST_RESPONSE_ARGS);
         };
       });
 

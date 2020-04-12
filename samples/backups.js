@@ -24,11 +24,11 @@ const {updateBackup} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
 const {deleteBackup} = require('./backups-delete');
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `createBackup <instanceName> <databaseName> <backupName> <projectId>`,
-    `Creates a backup of a Cloud Spanner database.`,
+    'createBackup <instanceName> <databaseName> <backupName> <projectId>',
+    'Creates a backup of a Cloud Spanner database.',
     {},
     opts =>
       createBackup(
@@ -39,8 +39,8 @@ require(`yargs`)
       )
   )
   .command(
-    `cancelBackup <instanceName> <databaseName> <backupName> <projectId>`,
-    `Creates and cancels a backup of a Cloud Spanner database.`,
+    'cancelBackup <instanceName> <databaseName> <backupName> <projectId>',
+    'Creates and cancels a backup of a Cloud Spanner database.',
     {},
     opts =>
       cancelBackup(
@@ -51,8 +51,8 @@ require(`yargs`)
       )
   )
   .command(
-    `getBackups <instanceName> <databaseName> <backupName> <projectId>`,
-    `Lists backups in the instance with filters.`,
+    'getBackups <instanceName> <databaseName> <backupName> <projectId>',
+    'Lists backups in the instance with filters.',
     {},
     opts =>
       getBackups(
@@ -63,27 +63,27 @@ require(`yargs`)
       )
   )
   .command(
-    `getBackupOperations <instanceName> <databaseName> <projectId>`,
-    `Lists all backup operations in the instance.`,
+    'getBackupOperations <instanceName> <databaseName> <projectId>',
+    'Lists all backup operations in the instance.',
     {},
     opts =>
       getBackupOperations(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `getDatabaseOperations <instanceName> <projectId>`,
-    `Lists all database operations in the instance.`,
+    'getDatabaseOperations <instanceName> <projectId>',
+    'Lists all database operations in the instance.',
     {},
     opts => getDatabaseOperations(opts.instanceName, opts.projectId)
   )
   .command(
-    `updateBackup <instanceName> <backupName> <projectId>`,
-    `Updates the expire time of a backup.`,
+    'updateBackup <instanceName> <backupName> <projectId>',
+    'Updates the expire time of a backup.',
     {},
     opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId)
   )
   .command(
-    `restoreBackup <instanceName> <databaseName> <backupName> <projectId>`,
-    `Restores a Cloud Spanner database from a backup.`,
+    'restoreBackup <instanceName> <databaseName> <backupName> <projectId>',
+    'Restores a Cloud Spanner database from a backup.',
     {},
     opts =>
       restoreBackup(
@@ -94,8 +94,8 @@ require(`yargs`)
       )
   )
   .command(
-    `deleteBackup <instanceName> <databaseName> <backupName> <projectId>`,
-    `Deletes a backup.`,
+    'deleteBackup <instanceName> <databaseName> <backupName> <projectId>',
+    'Deletes a backup.',
     {},
     opts =>
       deleteBackup(
@@ -106,10 +106,10 @@ require(`yargs`)
       )
   )
   .example(
-    `node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"`
+    'node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

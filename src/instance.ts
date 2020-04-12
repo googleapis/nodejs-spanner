@@ -37,7 +37,6 @@ import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
 import {Backup} from './backup';
-import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';

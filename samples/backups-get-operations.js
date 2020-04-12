@@ -40,7 +40,7 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
     const [backupOperations] = await instance.getBackupOperations({
       filter:
         `(metadata.database:${databaseId}) AND ` +
-        `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)`,
+        '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata)',
     });
     console.log('Create Backup Operations:');
     backupOperations.forEach(backupOperation => {

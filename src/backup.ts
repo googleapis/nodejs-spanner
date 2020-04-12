@@ -18,7 +18,6 @@ import {Instance} from './instance';
 import {IOperation, RequestCallback} from './common';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
-import * as extend from 'extend';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {CallOptions, ServiceError, status} from 'grpc';
 import {google as databaseAdmin} from '../protos/protos';

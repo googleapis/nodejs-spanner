@@ -22,10 +22,11 @@ import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {Instance} from '../src';
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
-import {Backup, GetMetadataResponse} from '../src/backup';
+import {GetMetadataResponse} from '../src/backup';
 import * as grpc from 'grpc';
 
 let promisified = false;
@@ -44,14 +45,16 @@ const fakePfy = extend({}, pfy, {
 });
 
 class FakeGrpcServiceObject extends EventEmitter {
-  calledWith_: IArguments;
-  constructor() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  calledWith_: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(...args: any[]) {
     super();
-    this.calledWith_ = arguments;
+    this.calledWith_ = args;
   }
 }
 
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fakeCodec: any = {
   encode: util.noop,
   Int() {},
@@ -192,7 +195,7 @@ describe('Backup', () => {
 
       beforeEach(() => {
         backup.request = (config, callback: Function) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
+          callback(...REQUEST_RESPONSE_ARGS);
         };
       });
 
@@ -226,11 +229,10 @@ describe('Backup', () => {
             databasePath: DATABASE_FORMATTED_NAME,
             expireTime: BACKUP_EXPIRE_TIME,
           },
-          (err, bk, op, resp) => {
+          (err, bk, op) => {
             assert.ifError(err);
             assert.strictEqual(bk, backup);
             assert.strictEqual(op, OPERATION);
-            // assert.strictEqual(resp, API_RESPONSE);
             done();
           }
         );
@@ -284,11 +286,11 @@ describe('Backup', () => {
         expireTime: BACKUP_EXPIRE_TIME,
       };
 
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const REQUEST_RESPONSE_ARGS: any = [null, INFO, {}];
 
       backup.request = (config, callback: Function) => {
-        callback.apply(null, REQUEST_RESPONSE_ARGS);
+        callback(...REQUEST_RESPONSE_ARGS);
       };
 
       backup.getMetadata((...args) => {
@@ -484,7 +486,7 @@ describe('Backup', () => {
       const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
 
       backup.request = (config, callback: Function) => {
-        callback.apply(null, REQUEST_RESPONSE_ARGS);
+        callback(...REQUEST_RESPONSE_ARGS);
       };
 
       backup.delete((...args) => {

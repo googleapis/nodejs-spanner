@@ -46,7 +46,7 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
   if (exists) {
     console.error('Error: backup still exists.');
   } else {
-    console.log(`Backup deleted.`);
+    console.log('Backup deleted.');
   }
   // [END spanner_delete_backup]
 }

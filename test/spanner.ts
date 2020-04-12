@@ -2094,7 +2094,8 @@ describe('Spanner with mock server', () => {
     });
 
     it('should list database operations', async () => {
-      const dbSpecificFilter = `name:projects/p/instances/i/databases/test-database`;
+      const dbSpecificFilter =
+        'name:projects/p/instances/i/databases/test-database';
       const dbSpecificQuery: GetDatabaseOperationsRequest = {
         filter: dbSpecificFilter,
       };
