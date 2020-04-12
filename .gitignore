@@ -1,6 +1,7 @@
 **/*.log
 **/node_modules
 .coverage
+coverage
 .nyc_output
 docs/
 out/
@@ -10,7 +11,4 @@ system-test/*key.json
 *.lock
 .DS_Store
 package-lock.json
-.vscode
-yarn.lock
 __pycache__
-.idea

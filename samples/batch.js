@@ -84,10 +84,10 @@ async function executePartition(
   // [END spanner_batch_execute_partitions]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `create-query-partitions <instanceName> <databaseName> <identifier> <projectId>`,
+    'create-query-partitions <instanceName> <databaseName> <identifier> <projectId>',
     'Creates query partitions.',
     {},
     opts =>
@@ -99,7 +99,7 @@ require(`yargs`)
       )
   )
   .command(
-    `execute-partition <instanceName> <databaseName> <identifier> <partition> <projectId>`,
+    'execute-partition <instanceName> <databaseName> <identifier> <partition> <projectId>',
     'Executes a partition.',
     {},
     opts =>
@@ -112,13 +112,13 @@ require(`yargs`)
       )
   )
   .example(
-    `node $0 create-query-partitions "my-instance" "my-database" "{}" "my-project-id"`
+    'node $0 create-query-partitions "my-instance" "my-database" "{}" "my-project-id"'
   )
   .example(
-    `node $0 execute-partition "my-instance" "my-database" "{}" "{}" "my-project-id"`
+    'node $0 execute-partition "my-instance" "my-database" "{}" "{}" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

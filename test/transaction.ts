@@ -16,14 +16,14 @@
 
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
-import {SpannerClient as s} from '../src/v1';
+import {google} from '../protos/protos';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -43,13 +43,13 @@ describe('Transaction', () => {
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
 
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Dml;
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Transaction;
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let PartitionedDml;
 
   before(() => {
@@ -808,14 +808,18 @@ describe('Transaction', () => {
       it('should encode param types', () => {
         const fakeTypes = {a: 'string', b: 'number'};
         const expectedTypes = {
-          a: {code: s.TypeCode.STRING},
-          b: {code: s.TypeCode.INT64},
+          a: {code: google.spanner.v1.TypeCode.STRING},
+          b: {code: google.spanner.v1.TypeCode.INT64},
         };
 
-        const stub = sandbox.stub(codec, 'createTypeObject');
+        const stub = sandbox.stub(codec, 'createTypeObject') as sinon.SinonStub;
 
-        stub.withArgs(fakeTypes.a).returns(expectedTypes.a);
-        stub.withArgs(fakeTypes.b).returns(expectedTypes.b);
+        stub
+          .withArgs(fakeTypes.a)
+          .returns(expectedTypes.a as google.spanner.v1.Type);
+        stub
+          .withArgs(fakeTypes.b)
+          .returns(expectedTypes.b as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({types: fakeTypes});
 
@@ -826,7 +830,7 @@ describe('Transaction', () => {
         const fakeParams = {a: 'foo', b: 3};
         const fakeTypes = {b: 'number'};
         const fakeMissingType = {type: 'string'};
-        const expectedType = {code: s.TypeCode.STRING};
+        const expectedType = {code: google.spanner.v1.TypeCode.STRING};
 
         sandbox
           .stub(codec, 'getType')
@@ -836,7 +840,7 @@ describe('Transaction', () => {
         sandbox
           .stub(codec, 'createTypeObject')
           .withArgs(fakeMissingType)
-          .returns(expectedType);
+          .returns(expectedType as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
@@ -964,8 +968,8 @@ describe('Transaction', () => {
 
     describe('batchUpdate', () => {
       const STRING_STATEMENTS = [
-        `INSERT INTO Table (Key, Str) VALUES('a', 'b')`,
-        `UPDATE Table t SET t.Str = 'c' WHERE t.Key = 'a'`,
+        "INSERT INTO Table (Key, Str) VALUES('a', 'b')",
+        "UPDATE Table t SET t.Str = 'c' WHERE t.Key = 'a'",
       ];
 
       const OBJ_STATEMENTS = [
@@ -1504,7 +1508,7 @@ describe('Transaction', () => {
         const table = 'my-table-123';
         const rows = [{name: 'dave', id: '1'}, {name: 'stephen'}];
 
-        const errorRegExp = /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns\: \[\"id\"\]/;
+        const errorRegExp = /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns: \["id"\]/;
 
         assert.throws(() => transaction.insert(table, rows), errorRegExp);
       });

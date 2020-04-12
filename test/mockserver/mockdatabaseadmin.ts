@@ -17,7 +17,7 @@
 import {google} from '../../protos/protos';
 import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
-import {createUnimplementedError, now} from './mockspanner';
+import {createUnimplementedError} from './mockspanner';
 import v1 = google.spanner.admin.database.v1;
 import iam = google.iam.v1;
 import longrunning = google.longrunning;

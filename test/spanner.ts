@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import {Done, describe, before, after, beforeEach, it} from 'mocha';
 import * as assert from 'assert';
 import * as grpc from 'grpc';
 import {status} from 'grpc';
-import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
+import {Database, Instance, SessionPool, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -31,7 +32,7 @@ import * as sinon from 'sinon';
 import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
-import {PartialResultStream, Row} from '../src/partial-result-stream';
+import {Row} from '../src/partial-result-stream';
 import {
   isSessionNotFoundError,
   SessionLeakError,
@@ -40,12 +41,10 @@ import {
 } from '../src/session-pool';
 import {Json} from '../src/codec';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import Done = Mocha.Done;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
-import {SpannerClient as s} from '../src/v1';
 import {GetDatabaseOperationsRequest} from '../src/instance';
 
 function numberToEnglishWord(num: number): string {
@@ -65,8 +64,8 @@ describe('Spanner with mock server', () => {
   let sandbox: sinon.SinonSandbox;
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
   const invalidSql = 'SELECT * FROM FOO';
-  const insertSql = `INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')`;
-  const updateSql = `UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)`;
+  const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
+  const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
@@ -180,7 +179,7 @@ describe('Spanner with mock server', () => {
       try {
         const [rows, stats] = await database.run({
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         });
         assert.strictEqual(rows.length, 3);
         assert.ok(stats);
@@ -196,7 +195,7 @@ describe('Spanner with mock server', () => {
         const [snapshot] = await database.getSnapshot();
         const [rows, stats] = await snapshot.run({
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         });
         assert.strictEqual(rows.length, 3);
         assert.ok(stats);
@@ -214,7 +213,7 @@ describe('Spanner with mock server', () => {
       database
         .runStream({
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         })
         .on('data', () => rowCount++)
         .on('stats', _stats => (stats = _stats))
@@ -235,7 +234,7 @@ describe('Spanner with mock server', () => {
         snapshot
           .runStream({
             sql: selectSql,
-            queryMode: s.QueryMode.PROFILE,
+            queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
           })
           .on('data', () => rowCount++)
           .on('stats', _stats => (stats = _stats))
@@ -254,7 +253,7 @@ describe('Spanner with mock server', () => {
       database.run(
         {
           sql: selectSql,
-          queryMode: s.QueryMode.PROFILE,
+          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
         },
         (err, rows, stats) => {
           assert.ifError(err);
@@ -353,7 +352,7 @@ describe('Spanner with mock server', () => {
         spannerMock.executeStreamingSql,
         SimulatedExecutionTime.ofError(err)
       );
-      database.run(selectSql, (err, _) => {
+      database.run(selectSql, err => {
         assert.ok(err, 'Missing expected error');
         assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
         database
@@ -388,7 +387,6 @@ describe('Spanner with mock server', () => {
             assert.fail('Should not receive data');
           }
           assert.fail('Missing expected error');
-          done();
         });
     });
 
@@ -499,7 +497,7 @@ describe('Spanner with mock server', () => {
             spannerMock.executeStreamingSql,
             SimulatedExecutionTime.ofError(err)
           );
-          database.run(selectSql, (err, _) => {
+          database.run(selectSql, err => {
             assert.ok(err, 'Missing expected error');
             assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
             database
@@ -535,7 +533,6 @@ describe('Spanner with mock server', () => {
             .on('data', row => receivedRows.push(row))
             .on('end', () => {
               assert.fail('Missing expected error');
-              done();
             });
         });
       });
@@ -602,7 +599,7 @@ describe('Spanner with mock server', () => {
       database.runTransaction((err, tx) => {
         assert.ifError(err);
         attempts++;
-        tx!.runUpdate(insertSql, (err, _) => {
+        tx!.runUpdate(insertSql, err => {
           assert.ok(err, 'Missing expected error');
           assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
           // Only the update RPC should be retried and not the entire
@@ -990,15 +987,11 @@ describe('Spanner with mock server', () => {
       db.run(selectSql, (err, rows) => {
         if (err) {
           assert.fail(err);
-          done();
-          return;
         }
         assert.strictEqual(rows!.length, 3);
         db.getSessions((err, results) => {
           if (err) {
             assert.fail(err);
-            done();
-            return;
           }
           // The mock server should have exactly 2 sessions. The first one was
           // removed from the session pool because of the simulated
@@ -1013,7 +1006,7 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors for Database.runStream()', done => {
+    it('should retry "Session not found" errors for Database.runStream()', () => {
       const db = newTestDatabase();
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
@@ -1027,11 +1020,9 @@ describe('Spanner with mock server', () => {
         .on('data', () => rowCount++)
         .on('error', err => {
           assert.fail(err);
-          done();
         })
         .on('end', () => {
           assert.strictEqual(rowCount, 3);
-          done();
         });
     });
 
@@ -1049,8 +1040,6 @@ describe('Spanner with mock server', () => {
       db.run(selectSql, (err, rows) => {
         if (err) {
           assert.fail(err);
-          done();
-          return;
         }
         assert.strictEqual(rows!.length, 3);
         done();
@@ -1067,14 +1056,13 @@ describe('Spanner with mock server', () => {
           streamIndex: 1,
         } as MockError)
       );
-      db.run(selectSql, (err, rows) => {
+      db.run(selectSql, err => {
         if (err) {
           assert.ok(isSessionNotFoundError(err));
           done();
           return;
         }
         assert.fail('Missing expected "Session not found" error');
-        done();
       });
     });
 
@@ -1463,11 +1451,9 @@ describe('Spanner with mock server', () => {
         sql: selectSql,
       };
       const db = newTestDatabase();
-      let transaction: Snapshot;
       await db
         .getSnapshot({strong: true, returnReadTimestamp: true})
         .then(([tx]) => {
-          transaction = tx;
           return tx.run(query);
         })
         .then(([rows]) => {
@@ -1805,7 +1791,7 @@ describe('Spanner with mock server', () => {
           return transaction.run(selectSql).then(([rows]) => {
             let count = 0;
             rows.forEach(() => count++);
-            return transaction.commit().then(_ => count);
+            return transaction.commit().then(() => count);
           });
         }
       );
@@ -1853,7 +1839,7 @@ describe('Spanner with mock server', () => {
           attempts++;
           return transaction
             .runUpdate(insertSql)
-            .then(updateCount => transaction.commit().then(_ => updateCount));
+            .then(updateCount => transaction.commit().then(() => updateCount));
         }
       );
       assert.strictEqual(updated, 1);
@@ -1872,7 +1858,7 @@ describe('Spanner with mock server', () => {
         attempts++;
         transaction!.runUpdate(insertSql, (err, rowCount) => {
           assert.ifError(err);
-          transaction!.commit((err, _) => {
+          transaction!.commit(err => {
             assert.ifError(err);
             assert.strictEqual(rowCount, 1);
             assert.strictEqual(attempts, 2);
@@ -1901,7 +1887,7 @@ describe('Spanner with mock server', () => {
         attempts++;
         return transaction
           .batchUpdate([insertSql, updateSql])
-          .then(response => transaction.commit().then(_ => response));
+          .then(response => transaction.commit().then(() => response));
       });
       const updateCounts = response[0];
       assert.deepStrictEqual(updateCounts, [1, 2]);
@@ -1919,7 +1905,7 @@ describe('Spanner with mock server', () => {
               spannerMock.abortTransaction(transaction);
             }
             attempts++;
-            return transaction.commit().then(_ => updateCount);
+            return transaction.commit().then(() => updateCount);
           });
         }
       );
@@ -1939,7 +1925,7 @@ describe('Spanner with mock server', () => {
             return transaction.runUpdate(insertSql).then(updateCount => {
               // Always abort the transaction.
               spannerMock.abortTransaction(transaction);
-              return transaction.commit().then(_ => updateCount);
+              return transaction.commit().then(() => updateCount);
             });
           }
         );
@@ -1969,7 +1955,6 @@ describe('Spanner with mock server', () => {
       stream
         .on('error', err => {
           assert.fail(err);
-          done(err);
         })
         .on('data', () => count++)
         .on('end', () => {
@@ -2042,7 +2027,7 @@ describe('Spanner with mock server', () => {
           config: 'test-instance-config',
           nodes: 10,
         },
-        (err, resource, operation, _) => {
+        (err, resource, operation) => {
           assert.ifError(err);
           assert.ok(resource, 'no instance returned');
           assert.strictEqual(

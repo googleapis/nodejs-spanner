@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+/* eslint-disable prefer-rest-params */
+
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {ApiError} from '@google-cloud/common';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
@@ -137,7 +139,7 @@ describe('Instance', () => {
       };
 
       const instance = new Instance(spannerInstance, NAME);
-      // tslint:disable-next-line: no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (instance as any).request();
     });
 
@@ -693,7 +695,7 @@ describe('Instance', () => {
 
     it('should not auto create without error code 5', done => {
       const error = new Error('Error.') as ServiceError;
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (error as any).code = 'NOT-5';
 
       const options = {
@@ -807,7 +809,7 @@ describe('Instance', () => {
 
       beforeEach(() => {
         instance.request = (config, callback: Function) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
+          callback(...REQUEST_RESPONSE_ARGS);
         };
       });
 
@@ -826,12 +828,12 @@ describe('Instance', () => {
         },
       ];
 
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const REQUEST_RESPONSE_ARGS: any = [null, DATABASES, {}];
 
       beforeEach(() => {
         instance.request = (config, callback) => {
-          callback.apply(null, REQUEST_RESPONSE_ARGS);
+          callback(...REQUEST_RESPONSE_ARGS);
         };
       });
 

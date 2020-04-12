@@ -177,6 +177,7 @@ export function createUnimplementedError(msg: string): grpc.ServiceError {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Request {}
 
 /**
@@ -472,14 +473,16 @@ export class MockSpanner {
         }
         const res = this.statementResults.get(call.request.sql);
         if (res) {
+          let partialResultSets;
+          let resumeIndex;
           switch (res.type) {
             case StatementResultType.RESULT_SET:
-              const partialResultSets = MockSpanner.toPartialResultSets(
+              partialResultSets = MockSpanner.toPartialResultSets(
                 res.resultSet,
                 call.request.queryMode
               );
               // Resume on the next index after the last one seen by the client.
-              const resumeIndex =
+              resumeIndex =
                 call.request.resumeToken.length === 0
                   ? 0
                   : Number.parseInt(call.request.resumeToken.toString(), 10) +

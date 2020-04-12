@@ -33,13 +33,11 @@ import {
 } from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
-import {SpannerClient as s} from './v1';
-import {google as spannerClient} from '../proto/spanner';
+import {google as spannerClient} from '../protos/protos';
 import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import * as grpc from 'grpc';
-import {Database} from './database';
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
 export type Rows = Array<Row | Json>;
@@ -69,7 +67,7 @@ export interface Statement {
 
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
   resumeToken?: ResumeToken;
-  queryMode?: s.QueryMode;
+  queryMode?: spannerClient.spanner.v1.ExecuteSqlRequest.QueryMode;
   partitionToken?: Uint8Array | string;
   seqno?: number;
   queryOptions?: IQueryOptions;
@@ -100,7 +98,10 @@ export interface BatchUpdateError extends ServiceError {
 
 export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
-export type BatchUpdateResponse = [number[], s.ExecuteBatchDmlResponse];
+export type BatchUpdateResponse = [
+  number[],
+  spannerClient.spanner.v1.ExecuteBatchDmlResponse
+];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
 export type BeginTransactionCallback = NormalCallback<
@@ -116,7 +117,7 @@ export interface BatchUpdateCallback {
   (
     err: null | BatchUpdateError,
     rowCounts: number[],
-    response?: s.ExecuteBatchDmlResponse
+    response?: spannerClient.spanner.v1.ExecuteBatchDmlResponse
   ): void;
 }
 
@@ -1010,7 +1011,7 @@ export class Snapshot extends EventEmitter {
     const typeMap = request.types || {};
 
     const params: p.IStruct = {};
-    const paramTypes: {[field: string]: s.Type} = {};
+    const paramTypes: {[field: string]: spannerClient.spanner.v1.Type} = {};
 
     if (request.params) {
       const fields = {};
@@ -1162,7 +1163,7 @@ promisifyAll(Dml);
 export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
   commitTimestampProto?: spannerClient.protobuf.ITimestamp;
-  private _queuedMutations: s.Mutation[];
+  private _queuedMutations: spannerClient.spanner.v1.Mutation[];
 
   /**
    * Timestamp at which the transaction was committed. Will be populated once
@@ -1204,7 +1205,7 @@ export class Transaction extends Dml {
    */
   constructor(
     session: Session,
-    options = {} as s.ReadWrite,
+    options = {} as spannerClient.spanner.v1.TransactionOptions.ReadWrite,
     queryOptions?: IQueryOptions
   ) {
     super(session, undefined, queryOptions);
@@ -1286,21 +1287,23 @@ export class Transaction extends Dml {
       return;
     }
 
-    const statements: s.Statement[] = queries.map(query => {
-      if (typeof query === 'string') {
-        return {sql: query};
+    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] = queries.map(
+      query => {
+        if (typeof query === 'string') {
+          return {sql: query};
+        }
+        const {sql} = query;
+        const {params, paramTypes} = Snapshot.encodeParams(query);
+        return {sql, params, paramTypes};
       }
-      const {sql} = query;
-      const {params, paramTypes} = Snapshot.encodeParams(query);
-      return {sql, params, paramTypes};
-    });
+    );
 
-    const reqOpts: s.ExecuteBatchDmlRequest = {
+    const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
       transaction: {id: this.id!},
       seqno: this._seqno++,
       statements,
-    };
+    } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
     this.request(
       {
@@ -1308,7 +1311,10 @@ export class Transaction extends Dml {
         method: 'executeBatchDml',
         reqOpts,
       },
-      (err: null | ServiceError, resp: s.ExecuteBatchDmlResponse) => {
+      (
+        err: null | ServiceError,
+        resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
+      ) => {
         let batchUpdateError: BatchUpdateError;
 
         if (err) {
@@ -1320,16 +1326,24 @@ export class Transaction extends Dml {
 
         const {resultSets, status} = resp;
         const rowCounts: number[] = resultSets.map(({stats}) => {
-          return (stats && Number(stats[stats.rowCount])) || 0;
+          return (
+            (stats &&
+              Number(
+                stats[
+                  (stats as spannerClient.spanner.v1.ResultSetStats).rowCount!
+                ]
+              )) ||
+            0
+          );
         });
 
         if (status && status.code !== 0) {
-          const error = new Error(status.message);
+          const error = new Error(status.message!);
           batchUpdateError = Object.assign(error, {
             code: status.code,
-            metadata: Transaction.extractKnownMetadata(status.details),
+            metadata: Transaction.extractKnownMetadata(status.details!),
             rowCounts,
-          });
+          }) as BatchUpdateError;
         }
 
         callback!(batchUpdateError!, rowCounts, resp);
@@ -1474,10 +1488,14 @@ export class Transaction extends Dml {
    * ];
    */
   deleteRows(table: string, keys: Key[]): void {
-    const keySet: s.KeySet = {keys: arrify(keys).map(codec.convertToListValue)};
-    const mutation: s.Mutation = {delete: {table, keySet}};
+    const keySet: spannerClient.spanner.v1.IKeySet = {
+      keys: arrify(keys).map(codec.convertToListValue),
+    };
+    const mutation: spannerClient.spanner.v1.IMutation = {
+      delete: {table, keySet},
+    };
 
-    this._queuedMutations.push(mutation);
+    this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
   }
 
   /**
@@ -1579,7 +1597,7 @@ export class Transaction extends Dml {
   }
 
   rollback(): Promise<void>;
-  rollback(callback: s.RollbackCallback): void;
+  rollback(callback: spannerClient.spanner.v1.Spanner.RollbackCallback): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -1606,7 +1624,9 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  rollback(callback?: s.RollbackCallback): void | Promise<void> {
+  rollback(
+    callback?: spannerClient.spanner.v1.Spanner.RollbackCallback
+  ): void | Promise<void> {
     if (!this.id) {
       callback!(
         new Error(
@@ -1618,7 +1638,10 @@ export class Transaction extends Dml {
 
     const session = this.session.formattedName_!;
     const transactionId = this.id;
-    const reqOpts: s.RollbackRequest = {session, transactionId};
+    const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
+      session,
+      transactionId,
+    };
 
     this.request(
       {
@@ -1741,11 +1764,11 @@ export class Transaction extends Dml {
       return codec.convertToListValue(values);
     });
 
-    const mutation: s.Mutation = {
+    const mutation: spannerClient.spanner.v1.IMutation = {
       [method]: {table, columns, values},
     };
 
-    this._queuedMutations.push(mutation);
+    this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
   }
 
   /**
@@ -1788,7 +1811,10 @@ promisifyAll(Transaction, {
  * @see Database#runPartitionedUpdate
  */
 export class PartitionedDml extends Dml {
-  constructor(session: Session, options = {} as s.PartitionedDml) {
+  constructor(
+    session: Session,
+    options = {} as spannerClient.spanner.v1.TransactionOptions.PartitionedDml
+  ) {
     super(session);
     this._options = {partitionedDml: options};
   }

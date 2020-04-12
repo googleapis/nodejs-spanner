@@ -358,11 +358,11 @@ async function queryNestedStructField(instanceId, databaseId, projectId) {
   // [END spanner_field_access_on_nested_struct_parameters]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `writeDataForStructQueries <instanceName> <databaseName> <projectId>`,
-    `Inserts sample data to an existing table Singers.`,
+    'writeDataForStructQueries <instanceName> <databaseName> <projectId>',
+    'Inserts sample data to an existing table Singers.',
     {},
     opts =>
       writeDataForStructQueries(
@@ -372,15 +372,15 @@ require(`yargs`)
       )
   )
   .command(
-    `queryDataWithStruct <instanceName> <databaseName> <projectId>`,
-    `Queries Singers table using STRUCT parameters.`,
+    'queryDataWithStruct <instanceName> <databaseName> <projectId>',
+    'Queries Singers table using STRUCT parameters.',
     {},
     opts =>
       queryDataWithStruct(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithArrayOfStruct <instanceName> <databaseName> <projectId>`,
-    `Queries Singers table with an array of STRUCT parameters.`,
+    'queryWithArrayOfStruct <instanceName> <databaseName> <projectId>',
+    'Queries Singers table with an array of STRUCT parameters.',
     {},
     opts =>
       queryWithArrayofStruct(
@@ -390,15 +390,15 @@ require(`yargs`)
       )
   )
   .command(
-    `queryStructField <instanceName> <databaseName> <projectId>`,
-    `Queries Singers table using a STRUCT parameter field.`,
+    'queryStructField <instanceName> <databaseName> <projectId>',
+    'Queries Singers table using a STRUCT parameter field.',
     {},
     opts =>
       queryStructField(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryNestedStructField <instanceName> <databaseName> <projectId>`,
-    `Queries Singers table using a nested STRUCT parameter field.`,
+    'queryNestedStructField <instanceName> <databaseName> <projectId>',
+    'Queries Singers table using a nested STRUCT parameter field.',
     {},
     opts =>
       queryNestedStructField(
@@ -409,6 +409,6 @@ require(`yargs`)
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

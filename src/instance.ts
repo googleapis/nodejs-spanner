@@ -16,13 +16,13 @@
 
 import arrify = require('arrify');
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
 import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
-import {google as instanceAdmin} from '../proto/spanner_instance_admin';
 import {Spanner, RequestConfig} from '.';
 import {CallOptions, ServiceError} from 'grpc';
 import {
@@ -36,10 +36,11 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
-import {google as spannerClient} from '../proto/spanner';
 import {Backup} from './backup';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
+import {google as instanceAdmin} from '../protos/protos';
+import {google as databaseAdmin} from '../protos/protos';
+import {google as spannerClient} from '../protos/protos';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -983,6 +984,7 @@ class Instance extends common.GrpcServiceObject {
     queryOrCallback?: GetDatabasesRequest | GetDatabasesCallback,
     cb?: GetDatabasesCallback
   ): void | Promise<GetDatabasesResponse> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const callback =
       typeof queryOrCallback === 'function' ? queryOrCallback : cb!;

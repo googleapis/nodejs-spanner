@@ -14,23 +14,23 @@
 
 'use strict';
 
-const {Spanner} = require(`@google-cloud/spanner`);
+const {Spanner} = require('@google-cloud/spanner');
 const {assert} = require('chai');
 const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
-const batchCmd = `node batch.js`;
-const crudCmd = `node crud.js`;
-const schemaCmd = `node schema.js`;
-const indexingCmd = `node indexing.js`;
-const queryOptionsCmd = `node queryoptions.js`;
-const transactionCmd = `node transaction.js`;
-const timestampCmd = `node timestamp.js`;
-const structCmd = `node struct.js`;
-const dmlCmd = `node dml.js`;
-const datatypesCmd = `node datatypes.js`;
+const batchCmd = 'node batch.js';
+const crudCmd = 'node crud.js';
+const schemaCmd = 'node schema.js';
+const indexingCmd = 'node indexing.js';
+const queryOptionsCmd = 'node queryoptions.js';
+const transactionCmd = 'node transaction.js';
+const timestampCmd = 'node timestamp.js';
+const structCmd = 'node struct.js';
+const dmlCmd = 'node dml.js';
+const datatypesCmd = 'node datatypes.js';
 const backupsCmd = `node backups.js`;
 
 const date = Date.now();
@@ -115,7 +115,7 @@ describe('Spanner', () => {
   });
 
   // create_database
-  it(`should create an example database`, async () => {
+  it('should create an example database', async () => {
     const output = execSync(
       `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
@@ -141,7 +141,7 @@ describe('Spanner', () => {
   });
 
   // insert_data
-  it(`should insert rows into an example table`, async () => {
+  it('should insert rows into an example table', async () => {
     const output = execSync(
       `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -149,7 +149,7 @@ describe('Spanner', () => {
   });
 
   // delete_data
-  it(`should delete and then insert rows in the example tables`, async () => {
+  it('should delete and then insert rows in the example tables', async () => {
     let output = execSync(
       `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -161,7 +161,7 @@ describe('Spanner', () => {
   });
 
   // query_data
-  it(`should query an example table and return matching rows`, async () => {
+  it('should query an example table and return matching rows', async () => {
     const output = execSync(
       `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -169,7 +169,7 @@ describe('Spanner', () => {
   });
 
   // read_data
-  it(`should read an example table`, async () => {
+  it('should read an example table', async () => {
     const output = execSync(
       `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -177,7 +177,7 @@ describe('Spanner', () => {
   });
 
   // add_column
-  it(`should add a column to a table`, async () => {
+  it('should add a column to a table', async () => {
     const output = execSync(
       `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -186,7 +186,7 @@ describe('Spanner', () => {
   });
 
   // update_data
-  it(`should update existing rows in an example table`, async () => {
+  it('should update existing rows in an example table', async () => {
     const output = execSync(
       `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -194,7 +194,7 @@ describe('Spanner', () => {
   });
 
   // read_stale_data
-  it(`should read stale data from an example table`, async () => {
+  it('should read stale data from an example table', async () => {
     // read-stale-data reads data that is exactly 15 seconds old.  So, make sure
     // 15 seconds have elapsed since the update_data test.
     await new Promise(r => setTimeout(r, 16000));
@@ -212,7 +212,7 @@ describe('Spanner', () => {
   });
 
   // query_data_with_new_column
-  it(`should query an example table with an additional column and return matching rows`, async () => {
+  it('should query an example table with an additional column and return matching rows', async () => {
     const output = execSync(
       `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -221,7 +221,7 @@ describe('Spanner', () => {
   });
 
   // create_index
-  it(`should create an index in an example table`, async () => {
+  it('should create an index in an example table', async () => {
     const output = execSync(
       `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -230,7 +230,7 @@ describe('Spanner', () => {
   });
 
   // create_storing_index
-  it(`should create a storing index in an example table`, async () => {
+  it('should create a storing index in an example table', async () => {
     const output = execSync(
       `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -239,7 +239,7 @@ describe('Spanner', () => {
   });
 
   // query_data_with_index
-  it(`should query an example table with an index and return matching rows`, async () => {
+  it('should query an example table with an index and return matching rows', async () => {
     const output = execSync(
       `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -253,7 +253,7 @@ describe('Spanner', () => {
     );
   });
 
-  it(`should respect query boundaries when querying an example table with an index`, async () => {
+  it('should respect query boundaries when querying an example table with an index', async () => {
     const output = execSync(
       `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`
     );
@@ -268,7 +268,7 @@ describe('Spanner', () => {
   });
 
   // read_data_with_index
-  it(`should read an example table with an index`, async () => {
+  it('should read an example table with an index', async () => {
     const output = execSync(
       `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -276,7 +276,7 @@ describe('Spanner', () => {
   });
 
   // read_data_with_storing_index
-  it(`should read an example table with a storing index`, async () => {
+  it('should read an example table with a storing index', async () => {
     const output = execSync(
       `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -284,7 +284,7 @@ describe('Spanner', () => {
   });
 
   // spanner_create_client_with_query_options
-  it(`should use query options from a database reference`, async () => {
+  it('should use query options from a database reference', async () => {
     const output = execSync(
       `${queryOptionsCmd} databaseWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -295,7 +295,7 @@ describe('Spanner', () => {
   });
 
   // spanner_query_with_query_options
-  it(`should use query options on request`, async () => {
+  it('should use query options on request', async () => {
     const output = execSync(
       `${queryOptionsCmd} queryWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -306,7 +306,7 @@ describe('Spanner', () => {
   });
 
   // read_only_transaction
-  it(`should read an example table using transactions`, async () => {
+  it('should read an example table using transactions', async () => {
     const output = execSync(
       `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -315,7 +315,7 @@ describe('Spanner', () => {
   });
 
   // read_write_transaction
-  it(`should read from and write to an example table using transactions`, async () => {
+  it('should read from and write to an example table using transactions', async () => {
     let output = execSync(
       `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -333,7 +333,7 @@ describe('Spanner', () => {
   });
 
   // create_query_partitions
-  it(`should create query partitions`, async () => {
+  it('should create query partitions', async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
     const [transaction] = await database.createBatchTransaction();
@@ -347,13 +347,13 @@ describe('Spanner', () => {
   });
 
   // execute_partition
-  it(`should execute a partition`, async () => {
+  it('should execute a partition', async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
     const [transaction] = await database.createBatchTransaction();
     const identifier = JSON.stringify(transaction.identifier());
 
-    const query = `SELECT SingerId FROM Albums`;
+    const query = 'SELECT SingerId FROM Albums';
     const [partitions] = await transaction.createQueryPartitions(query);
     const partition = JSON.stringify(partitions[0]);
 
@@ -365,7 +365,7 @@ describe('Spanner', () => {
   });
 
   // add_timestamp_column
-  it(`should add a timestamp column to a table`, async () => {
+  it('should add a timestamp column to a table', async () => {
     const output = execSync(
       `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -377,7 +377,7 @@ describe('Spanner', () => {
   });
 
   // update_data_with_timestamp_column
-  it(`should update existing rows in an example table with commit timestamp column`, async () => {
+  it('should update existing rows in an example table with commit timestamp column', async () => {
     const output = execSync(
       `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -385,7 +385,7 @@ describe('Spanner', () => {
   });
 
   // query_data_with_timestamp_column
-  it(`should query an example table with an additional timestamp column and return matching rows`, async () => {
+  it('should query an example table with an additional timestamp column and return matching rows', async () => {
     const output = execSync(
       `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -400,7 +400,7 @@ describe('Spanner', () => {
   });
 
   // create_table_with_timestamp_column
-  it(`should create an example table with a timestamp column`, async () => {
+  it('should create an example table with a timestamp column', async () => {
     const output = execSync(
       `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
@@ -416,7 +416,7 @@ describe('Spanner', () => {
   });
 
   // insert_data_with_timestamp
-  it(`should insert rows into an example table with timestamp column`, async () => {
+  it('should insert rows into an example table with timestamp column', async () => {
     const output = execSync(
       `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -424,7 +424,7 @@ describe('Spanner', () => {
   });
 
   // query_new_table_with_timestamp
-  it(`should query an example table with a non-null timestamp column and return matching rows`, async () => {
+  it('should query an example table with a non-null timestamp column and return matching rows', async () => {
     const output = execSync(
       `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -433,7 +433,7 @@ describe('Spanner', () => {
   });
 
   // write_data_for_struct_queries
-  it(`should insert rows into an example table for use with struct query examples`, async () => {
+  it('should insert rows into an example table for use with struct query examples', async () => {
     const output = execSync(
       `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -441,7 +441,7 @@ describe('Spanner', () => {
   });
 
   // query_with_struct_param
-  it(`should query an example table with a STRUCT param`, async () => {
+  it('should query an example table with a STRUCT param', async () => {
     const output = execSync(
       `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -449,7 +449,7 @@ describe('Spanner', () => {
   });
 
   // query_with_array_of_struct_param
-  it(`should query an example table with an array of STRUCT param`, async () => {
+  it('should query an example table with an array of STRUCT param', async () => {
     const output = execSync(
       `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -457,7 +457,7 @@ describe('Spanner', () => {
   });
 
   // query_with_struct_field_param
-  it(`should query an example table with a STRUCT field param`, async () => {
+  it('should query an example table with a STRUCT field param', async () => {
     const output = execSync(
       `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -465,7 +465,7 @@ describe('Spanner', () => {
   });
 
   // query_with_nested_struct_param
-  it(`should query an example table with a nested STRUCT param`, async () => {
+  it('should query an example table with a nested STRUCT param', async () => {
     const output = execSync(
       `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -476,7 +476,7 @@ describe('Spanner', () => {
   });
 
   // dml_standard_insert
-  it(`should insert rows into an example table using a DML statement`, async () => {
+  it('should insert rows into an example table using a DML statement', async () => {
     const output = execSync(
       `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -487,7 +487,7 @@ describe('Spanner', () => {
   });
 
   // dml_standard_update
-  it(`should update a row in an example table using a DML statement`, async () => {
+  it('should update a row in an example table using a DML statement', async () => {
     const output = execSync(
       `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -495,7 +495,7 @@ describe('Spanner', () => {
   });
 
   // dml_standard_delete
-  it(`should delete a row from an example table using a DML statement`, async () => {
+  it('should delete a row from an example table using a DML statement', async () => {
     const output = execSync(
       `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -503,7 +503,7 @@ describe('Spanner', () => {
   });
 
   // dml_standard_update_with_timestamp
-  it(`should update the timestamp of multiple records in an example table using a DML statement`, async () => {
+  it('should update the timestamp of multiple records in an example table using a DML statement', async () => {
     const output = execSync(
       `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -511,7 +511,7 @@ describe('Spanner', () => {
   });
 
   // dml_write_then_read
-  it(`should insert a record in an example table using a DML statement and then query the record`, async () => {
+  it('should insert a record in an example table using a DML statement and then query the record', async () => {
     const output = execSync(
       `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -519,7 +519,7 @@ describe('Spanner', () => {
   });
 
   // dml_structs
-  it(`should update a record in an example table using a DML statement along with a struct value`, async () => {
+  it('should update a record in an example table using a DML statement along with a struct value', async () => {
     const output = execSync(
       `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -527,7 +527,7 @@ describe('Spanner', () => {
   });
 
   // dml_getting_started_insert
-  it(`should insert multiple records into an example table using a DML statement`, async () => {
+  it('should insert multiple records into an example table using a DML statement', async () => {
     const output = execSync(
       `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -535,7 +535,7 @@ describe('Spanner', () => {
   });
 
   // dml_query_with_parameter
-  it(`should use a parameter query to query record that was inserted using a DML statement`, async () => {
+  it('should use a parameter query to query record that was inserted using a DML statement', async () => {
     const output = execSync(
       `${dmlCmd} queryWithParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -543,7 +543,7 @@ describe('Spanner', () => {
   });
 
   // dml_getting_started_update
-  it(`should transfer value from one record to another using DML statements within a transaction`, async () => {
+  it('should transfer value from one record to another using DML statements within a transaction', async () => {
     const output = execSync(
       `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -554,7 +554,7 @@ describe('Spanner', () => {
   });
 
   //  dml_partitioned_update
-  it(`should update multiple records using a partitioned DML statement`, async () => {
+  it('should update multiple records using a partitioned DML statement', async () => {
     const output = execSync(
       `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -562,7 +562,7 @@ describe('Spanner', () => {
   });
 
   //  dml_partitioned_delete
-  it(`should delete multiple records using a partitioned DML statement`, async () => {
+  it('should delete multiple records using a partitioned DML statement', async () => {
     const output = execSync(
       `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -570,7 +570,7 @@ describe('Spanner', () => {
   });
 
   //  dml_batch_update
-  it(`should insert and update records using Batch DML`, async () => {
+  it('should insert and update records using Batch DML', async () => {
     const output = execSync(
       `${dmlCmd} updateUsingBatchDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -581,7 +581,7 @@ describe('Spanner', () => {
   });
 
   // create_table_with_datatypes
-  it(`should create Venues example table with supported datatype columns`, async () => {
+  it('should create Venues example table with supported datatype columns', async () => {
     const output = execSync(
       `${datatypesCmd} createVenuesTable "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
@@ -597,7 +597,7 @@ describe('Spanner', () => {
   });
 
   // insert_datatypes_data
-  it(`should insert multiple records into Venues example table`, async () => {
+  it('should insert multiple records into Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} insertData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -605,7 +605,7 @@ describe('Spanner', () => {
   });
 
   // query_with_array_parameter
-  it(`should use an ARRAY query parameter to query record from the Venues example table`, async () => {
+  it('should use an ARRAY query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithArray ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -620,7 +620,7 @@ describe('Spanner', () => {
   });
 
   // query_with_bool_parameter
-  it(`should use a BOOL query parameter to query record from the Venues example table`, async () => {
+  it('should use a BOOL query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithBool ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -631,7 +631,7 @@ describe('Spanner', () => {
   });
 
   // query_with_bytes_parameter
-  it(`should use a BYTES query parameter to query record from the Venues example table`, async () => {
+  it('should use a BYTES query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithBytes ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -639,7 +639,7 @@ describe('Spanner', () => {
   });
 
   // query_with_date_parameter
-  it(`should use a DATE query parameter to query record from the Venues example table`, async () => {
+  it('should use a DATE query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithDate ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -654,7 +654,7 @@ describe('Spanner', () => {
   });
 
   // query_with_float_parameter
-  it(`should use a FLOAT64 query parameter to query record from the Venues example table`, async () => {
+  it('should use a FLOAT64 query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithFloat ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -669,7 +669,7 @@ describe('Spanner', () => {
   });
 
   // query_with_int_parameter
-  it(`should use a INT64 query parameter to query record from the Venues example table`, async () => {
+  it('should use a INT64 query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithInt ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -678,7 +678,7 @@ describe('Spanner', () => {
   });
 
   // query_with_string_parameter
-  it(`should use a STRING query parameter to query record from the Venues example table`, async () => {
+  it('should use a STRING query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithString ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -686,7 +686,7 @@ describe('Spanner', () => {
   });
 
   // query_with_timestamp_parameter
-  it(`should use a TIMESTAMP query parameter to query record from the Venues example table`, async () => {
+  it('should use a TIMESTAMP query parameter to query record from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
