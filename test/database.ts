@@ -2372,10 +2372,11 @@ describe('Database', () => {
       });
 
       it('should execute callback with a Database and Operation', done => {
-        database.restore(BACKUP_FORMATTED_NAME, (err, db, op) => {
+        database.restore(BACKUP_FORMATTED_NAME, (err, db, op, resp) => {
           assert.ifError(err);
           assert.strictEqual(db, database);
           assert.strictEqual(op, OPERATION);
+          assert.strictEqual(resp, API_RESPONSE);
           done();
         });
       });

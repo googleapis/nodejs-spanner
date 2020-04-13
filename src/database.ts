@@ -69,6 +69,7 @@ import {
 
 import {google} from '../protos/protos';
 import {
+  IOperation,
   Schema,
   RequestCallback,
   PagedRequest,
@@ -212,6 +213,14 @@ export type RestoreDatabaseResponse = [
   databaseAdmin.longrunning.IOperation
 ];
 
+interface DatabaseRequest {
+  (
+    config: RequestConfig,
+    callback: ResourceCallback<GaxOperation, IOperation>
+  ): void;
+  <T>(config: RequestConfig, callback: RequestCallback<T>): void;
+  <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
+}
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -234,10 +243,7 @@ class Database extends GrpcServiceObject {
   formattedName_: string;
   pool_: SessionPoolInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
-  request: <T, R = void>(
-    config: RequestConfig,
-    callback: RequestCallback<T, R>
-  ) => void;
+  request: DatabaseRequest;
   constructor(
     instance: Instance,
     name: string,
@@ -1604,12 +1610,12 @@ class Database extends GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, resp) => {
+      (err, operation, resp) => {
         if (err) {
-          callback!(err, null, resp!, resp!);
+          callback!(err, null, null, resp);
           return;
         }
-        callback!(null, this, resp, resp);
+        callback!(null, this, operation, resp);
       }
     );
   }
