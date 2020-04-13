@@ -2354,9 +2354,11 @@ describe('Database', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        database.restore(BACKUP_FORMATTED_NAME, (err, resp) => {
+        database.restore(BACKUP_FORMATTED_NAME, (err, db, op, resp) => {
           assert.strictEqual(err, ERROR);
-          assert.strictEqual(resp, null);
+          assert.strictEqual(db, null);
+          assert.strictEqual(op, null);
+          assert.strictEqual(resp, API_RESPONSE);
           done();
         });
       });
