@@ -1570,7 +1570,8 @@ class Database extends GrpcServiceObject {
    * necessarily have completed.
    *
    * @param backupPath the path of the backup to restore.
-   * @param {object} [options] Configuration object.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns Promise<RestoreDatabaseResponse> when resolved, contains the restore operation.
    *
    * @example
@@ -1596,13 +1597,11 @@ class Database extends GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as CallOptions)
         : {};
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = extend(
-      {
-        parent: this.instance.formattedName_,
-        databaseId: this.id,
-        backup: Backup.formatName_(this.instance.formattedName_, backupName),
-      }
-    );
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
+      parent: this.instance.formattedName_,
+      databaseId: this.id,
+      backup: Backup.formatName_(this.instance.formattedName_, backupName),
+    };
     return this.request(
       {
         client: 'DatabaseAdminClient',
