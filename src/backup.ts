@@ -100,6 +100,13 @@ class Backup {
   create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
   create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
   /**
+   * @typedef {array} CreateBackupOptions
+   * @property {string} 0 The database path.
+   * @property {PreciseDate} 1 The expire tiem of the backup.
+   * @property {CallOptions} 2 The request configuration options outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   */
+  /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.
    * @property {Operation} 1 An {@link Operation} object that can be used to check
@@ -118,9 +125,10 @@ class Backup {
    * Create a backup.
    *
    * @method Backup#create
-   * @param {CreateBackupOptions} options Parameters for creating a backup as
-   *    well as request configuration options, outlined here:
-   *    https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   * @param {CreateBackupOptions} options Parameters for creating a backup.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} when resolved, the backup
    *     operation will have started, but will not have necessarily completed.

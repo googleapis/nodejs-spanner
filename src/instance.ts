@@ -298,8 +298,9 @@ class Instance extends common.GrpcServiceObject {
    *
    * @see {@link #backup}
    *
-   * @param {GetBackupsOptions} [options] Contains query object for listing
-   *     backups and request configuration options, outlined here:
+   * @param {GetBackupsOptions} [options] The query object for listing backups.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns {Promise<GetBackupsResponse>} when resolved, contains a paged list of backups.
    *
@@ -380,9 +381,11 @@ class Instance extends common.GrpcServiceObject {
    *
    * @see {@link #listOperations}
    *
-   * @param {GetBackupOperationsOptions} [options] Contains query object for
-   *     listing backup operations and request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   * @param {GetBackupOperationsOptions} [options] The query object for listing
+   *     backup operations.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns {Promise<GetBackupOperationsResponse>} when resolved, contains a
    *     paged list of backup operations.
    *
@@ -458,9 +461,11 @@ class Instance extends common.GrpcServiceObject {
    *
    * @see {@link Database.getDatabaseOperations}
    *
-   * @param {GetDatabaseOperationsOptions} [options] Contains query object for
-   *     listing database operations and request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   * @param {GetDatabaseOperationsOptions} [options] The query object for
+   *     listing database operations.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains a
    *     paged list of database operations.
    *
