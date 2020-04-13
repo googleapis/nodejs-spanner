@@ -229,10 +229,11 @@ describe('Backup', () => {
             databasePath: DATABASE_FORMATTED_NAME,
             expireTime: BACKUP_EXPIRE_TIME,
           },
-          (err, bk, op) => {
+          (err, bk, op, resp) => {
             assert.ifError(err);
             assert.strictEqual(bk, backup);
             assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
             done();
           }
         );

@@ -15,23 +15,19 @@
 
 import {promisifyAll} from '@google-cloud/promisify';
 import {Instance} from './instance';
-import {IOperation, RequestCallback} from './common';
+import {
+  IOperation,
+  LongRunningCallback,
+  RequestCallback,
+  ResourceCallback,
+} from './common';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {CallOptions, ServiceError, status} from 'grpc';
+import {CallOptions, status} from 'grpc';
 import {google as databaseAdmin} from '../protos/protos';
 
-// Like LongRunningCallback<Backup> but with more specific type for operation parameter
-export interface CreateBackupCallback {
-  (
-    err: ServiceError | null,
-    resource?: Backup | null,
-    // More specific type for CreateBackup operation
-    operation?: CreateBackupGaxOperation | null,
-    apiResponse?: IOperation
-  ): void;
-}
+export type CreateBackupCallback = LongRunningCallback<Backup>;
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
@@ -39,11 +35,7 @@ export interface CreateBackupGaxOperation extends GaxOperation {
     databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata;
 }
 
-export type CreateBackupResponse = [
-  Backup,
-  CreateBackupGaxOperation,
-  databaseAdmin.longrunning.IOperation
-];
+export type CreateBackupResponse = [Backup, CreateBackupGaxOperation, IOperation];
 
 export interface CreateBackupOptions {
   databasePath: string;
@@ -69,6 +61,13 @@ type UpdateExpireTimeCallback = RequestCallback<
 
 type DeleteCallback = RequestCallback<void>;
 
+interface BackupRequest {
+  (
+    config: RequestConfig,
+    callback: ResourceCallback<GaxOperation, IOperation>
+  ): void;
+  <T>(config: RequestConfig, callback: RequestCallback<T>): void;
+}
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
  *
@@ -86,10 +85,7 @@ class Backup {
   id: string;
   formattedName_: string;
   instanceFormattedName_: string;
-  request: <T, R = void>(
-    config: RequestConfig,
-    callback: RequestCallback<T, R>
-  ) => void;
+  request: BackupRequest;
   constructor(instance: Instance, name: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
@@ -160,12 +156,12 @@ class Backup {
         reqOpts,
         gaxOpts,
       },
-      (err, resp) => {
+      (err, operation, resp) => {
         if (err) {
-          callback!(err, null, null, resp!);
+          callback!(err, null, null, resp);
           return;
         }
-        callback!(null, this, resp, resp);
+        callback!(null, this, operation, resp);
       }
     );
   }
