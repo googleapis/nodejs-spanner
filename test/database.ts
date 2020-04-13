@@ -2330,13 +2330,14 @@ describe('Database', () => {
       await database.restore(BACKUP_NAME);
     });
 
-    it('should accept gaxOpts and a callback', async () => {
+    it('should accept gaxOpts and a callback', async done => {
       const options = {
         timeout: 1000,
       };
 
       database.request = config => {
         assert.deepStrictEqual(config.gaxOpts, options);
+        done();
       };
 
       await database.restore(BACKUP_NAME, options, assert.ifError);

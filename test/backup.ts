@@ -171,13 +171,14 @@ describe('Backup', () => {
       });
     });
 
-    it('should accept gaxOptions and a callback', async () => {
+    it('should accept gaxOptions and a callback', async done => {
       const gaxOptions = {
         timeout: 1000,
       };
 
       backup.request = config => {
         assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        done();
       };
 
       await backup.create(
@@ -263,13 +264,14 @@ describe('Backup', () => {
       await backup.getMetadata();
     });
 
-    it('should accept gaxOpts and a callback', async () => {
+    it('should accept gaxOpts and a callback', async done => {
       const options = {
         timeout: 1000,
       };
 
       backup.request = config => {
         assert.deepStrictEqual(config.gaxOpts, options);
+        done();
       };
 
       await backup.getMetadata(options, assert.ifError);
@@ -421,13 +423,14 @@ describe('Backup', () => {
       await backup.updateExpireTime(NEW_EXPIRE_TIME);
     });
 
-    it('should accept gaxOpts and a callback', async () => {
+    it('should accept gaxOpts and a callback', async done => {
       const options = {
         timeout: 1000,
       };
 
       backup.request = config => {
         assert.deepStrictEqual(config.gaxOpts, options);
+        done();
       };
 
       await backup.updateExpireTime(NEW_EXPIRE_TIME, options, assert.ifError);
@@ -471,13 +474,14 @@ describe('Backup', () => {
       await backup.delete();
     });
 
-    it('should accept gaxOpts and a callback', async () => {
+    it('should accept gaxOpts and a callback', async done => {
       const options = {
         timeout: 1000,
       };
 
       backup.request = config => {
         assert.deepStrictEqual(config.gaxOpts, options);
+        done();
       };
 
       await backup.delete(options, assert.ifError);
