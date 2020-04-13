@@ -35,7 +35,11 @@ export interface CreateBackupGaxOperation extends GaxOperation {
     databaseAdmin.spanner.admin.database.v1.ICreateBackupMetadata;
 }
 
-export type CreateBackupResponse = [Backup, CreateBackupGaxOperation, IOperation];
+export type CreateBackupResponse = [
+  Backup,
+  CreateBackupGaxOperation,
+  IOperation
+];
 
 export interface CreateBackupOptions {
   databasePath: string;
