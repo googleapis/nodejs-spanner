@@ -153,6 +153,7 @@ interface InstanceRequest {
     callback: ResourceCallback<GaxOperation, IOperation>
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
+  <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
 }
 /**
  * The {@link Instance} class represents a [Cloud Spanner
@@ -326,22 +327,25 @@ class Instance extends common.GrpcServiceObject {
     });
     delete reqOpts.gaxOptions;
 
-    this.request<IBackup[]>(
+    this.request<
+      IBackup,
+      databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+    >(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackups',
         reqOpts,
         gaxOpts,
       },
-      (err, rowBackups, ...args) => {
-        let backups: Backup[] | null = null;
-        if (rowBackups) {
-          backups = rowBackups.map(rowBackup => {
-            return this.backup(rowBackup.name!);
+      (err, backups, ...args) => {
+        let backupInstances: Backup[] | null = null;
+        if (backups) {
+          backupInstances = backups.map(backup => {
+            return this.backup(backup.name!);
           });
         }
 
-        callback(err, backups, ...args);
+        callback(err, backupInstances, ...args);
       }
     );
   }
@@ -408,7 +412,10 @@ class Instance extends common.GrpcServiceObject {
     });
     delete reqOpts.gaxOptions;
 
-    this.request<IOperation[]>(
+    this.request<
+      IOperation,
+      databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
+    >(
       {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
@@ -484,7 +491,10 @@ class Instance extends common.GrpcServiceObject {
     });
     delete reqOpts.gaxOptions;
 
-    this.request<IOperation[]>(
+    this.request<
+      IOperation,
+      databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
+    >(
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',
