@@ -443,7 +443,7 @@ class Backup {
         gaxOpts,
       },
       err => {
-        callback!(err, null);
+        callback!(err);
       }
     );
   }

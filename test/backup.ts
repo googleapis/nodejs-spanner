@@ -488,7 +488,7 @@ describe('Backup', () => {
     });
 
     it('should execute callback with original arguments', done => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null];
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.')];
 
       backup.request = (config, callback: Function) => {
         callback(...REQUEST_RESPONSE_ARGS);
