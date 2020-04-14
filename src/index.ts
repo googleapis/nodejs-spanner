@@ -260,7 +260,7 @@ class Spanner extends GrpcService {
    *
    * @typedef {object} CreateInstanceRequest
    * @property {string} config The name of the instance's configuration.
-   * @property {number} [nodes] The number of nodes allocated to this instance.
+   * @property {number} [nodes=1] The number of nodes allocated to this instance.
    *     Defaults to 1.
    * @property {Object.<string, string>} [labels] Labels are a flexible and
    *     lightweight mechanism for organizing cloud resources into groups that
