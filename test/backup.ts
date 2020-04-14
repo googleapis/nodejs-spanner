@@ -192,7 +192,8 @@ describe('Backup', () => {
     });
 
     describe('error', () => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, null, null];
+      const API_RESPONSE = {};
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, API_RESPONSE];
 
       beforeEach(() => {
         backup.request = (config, callback: Function) => {
@@ -206,8 +207,11 @@ describe('Backup', () => {
             databasePath: DATABASE_FORMATTED_NAME,
             expireTime: BACKUP_EXPIRE_TIME,
           },
-          (...args) => {
-            assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+          (err, bk, op, resp) => {
+            assert.deepStrictEqual(err, REQUEST_RESPONSE_ARGS[0]);
+            assert.strictEqual(bk, null);
+            assert.strictEqual(op, null);
+            assert.deepStrictEqual(resp, API_RESPONSE);
             done();
           }
         );
@@ -436,7 +440,7 @@ describe('Backup', () => {
       await backup.updateExpireTime(NEW_EXPIRE_TIME, options, assert.ifError);
     });
 
-    it('should return backup object with updated expire time', () => {
+    it('should execute callback with the API resonse', done => {
       const API_RESPONSE = {
         name: 'backup-name',
         database: 'database-name',
@@ -447,9 +451,10 @@ describe('Backup', () => {
         callback(null, API_RESPONSE);
       };
 
-      backup.updateExpireTime(NEW_EXPIRE_TIME, (...args) => {
-        assert.ifError(args[0]);
-        assert.strictEqual(args[1]!.expireTime, NEW_EXPIRE_TIME);
+      backup.updateExpireTime(NEW_EXPIRE_TIME, (err, resp) => {
+        assert.ifError(err);
+        assert.strictEqual(resp, API_RESPONSE);
+        done();
       });
     });
   });
@@ -494,8 +499,8 @@ describe('Backup', () => {
         callback(...REQUEST_RESPONSE_ARGS);
       };
 
-      backup.delete((...args) => {
-        assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+      backup.delete((err) => {
+        assert.deepStrictEqual(err, REQUEST_RESPONSE_ARGS[0]);
         done();
       });
     });
