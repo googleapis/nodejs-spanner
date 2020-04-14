@@ -499,7 +499,7 @@ describe('Backup', () => {
         callback(...REQUEST_RESPONSE_ARGS);
       };
 
-      backup.delete((err) => {
+      backup.delete(err => {
         assert.deepStrictEqual(err, REQUEST_RESPONSE_ARGS[0]);
         done();
       });
