@@ -324,11 +324,13 @@ class Backup {
     }
   }
 
-  updateExpireTime(expireTime: PreciseDate): Promise<Backup>;
+  updateExpireTime(
+    expireTime: PreciseDate
+  ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
     expireTime: PreciseDate,
     gaxOptions?: CallOptions
-  ): Promise<Backup>;
+  ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
     expireTime: PreciseDate,
     callback: UpdateExpireTimeCallback
@@ -353,7 +355,7 @@ class Backup {
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
-   * @returns {Promise<Backup>} when resolved, the backup's expire time will
+   * @returns {Promise<IBackup>} when resolved, the backup's expire time will
    *     have been updated.
    *
    * @example
@@ -369,7 +371,7 @@ class Backup {
     expireTime: PreciseDate,
     gaxOptionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
     cb?: UpdateExpireTimeCallback
-  ): void | Promise<Backup> {
+  ): void | Promise<databaseAdmin.spanner.admin.database.v1.IBackup> {
     const callback =
       typeof gaxOptionsOrCallback === 'function'
         ? (gaxOptionsOrCallback as UpdateExpireTimeCallback)
