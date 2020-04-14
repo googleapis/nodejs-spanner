@@ -104,7 +104,6 @@
     "mv": "^2.1.1",
     "ncp": "^2.0.0",
     "p-limit": "^2.2.0",
-    "prettier": "^1.13.7",
     "proxyquire": "^2.0.1",
     "retry-request": "^4.1.1",
     "sinon": "^9.0.0",
