@@ -115,11 +115,11 @@ async function queryWithQueryOptions(instanceId, databaseId, projectId) {
   // [END spanner_query_with_query_options]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `databaseWithQueryOptions <instanceName> <databaseName> <projectId>`,
-    `Gets a database reference with default query options and executes a query`,
+    'databaseWithQueryOptions <instanceName> <databaseName> <projectId>',
+    'Gets a database reference with default query options and executes a query',
     {},
     opts =>
       databaseWithQueryOptions(
@@ -129,8 +129,8 @@ require(`yargs`)
       )
   )
   .command(
-    `queryWithQueryOptions <instanceName> <databaseName> <projectId>`,
-    `Executes a query using specific query options`,
+    'queryWithQueryOptions <instanceName> <databaseName> <projectId>',
+    'Executes a query using specific query options',
     {},
     opts =>
       queryWithQueryOptions(
@@ -140,13 +140,13 @@ require(`yargs`)
       )
   )
   .example(
-    `node $0 databaseWithQueryOptions "my-instance" "my-database" "my-project-id"`
+    'node $0 databaseWithQueryOptions "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 queryWithQueryOptions "my-instance" "my-database" "my-project-id"`
+    'node $0 queryWithQueryOptions "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+/* eslint-disable prefer-rest-params */
+
 import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -44,7 +46,7 @@ class FakeTimestamp {
   }
 }
 
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fakeCodec: any = {
   encode: util.noop,
   Timestamp: FakeTimestamp,
@@ -61,10 +63,10 @@ class FakeTransaction {
     this.calledWith_ = arguments;
     this.session = session;
   }
-  static encodeKeySet(query: object): object {
+  static encodeKeySet(): object {
     return {};
   }
-  static encodeParams(request: object): object {
+  static encodeParams(): object {
     return {};
   }
   run() {}
@@ -78,7 +80,7 @@ describe('BatchTransaction', () => {
   let BatchTransaction: typeof bt.BatchTransaction;
   let batchTransaction: bt.BatchTransaction;
 
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const SESSION: any = {};
 
   before(() => {
@@ -135,8 +137,7 @@ describe('BatchTransaction', () => {
       const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-      sandbox
-        .stub(FakeTransaction, 'encodeParams')
+      (sandbox.stub(FakeTransaction, 'encodeParams') as sinon.SinonStub)
         .withArgs(QUERY)
         .returns(fakeParams);
 
@@ -155,8 +156,7 @@ describe('BatchTransaction', () => {
       const expectedQuery = Object.assign({}, {sql: query});
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-      sandbox
-        .stub(FakeTransaction, 'encodeParams')
+      (sandbox.stub(FakeTransaction, 'encodeParams') as sinon.SinonStub)
         .withArgs({sql: query})
         .returns({sql: query});
 
@@ -276,8 +276,7 @@ describe('BatchTransaction', () => {
 
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
 
-      sandbox
-        .stub(FakeTransaction, 'encodeKeySet')
+      (sandbox.stub(FakeTransaction, 'encodeKeySet') as sinon.SinonStub)
         .withArgs(QUERY)
         .returns(fakeKeySet);
 

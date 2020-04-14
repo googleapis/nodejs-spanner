@@ -16,7 +16,7 @@ import {util} from '@google-cloud/common';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as grpcProtoLoader from '@grpc/proto-loader';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, after, afterEach, describe, it} from 'mocha';
 import * as duplexify from 'duplexify';
 import * as extend from 'extend';
 import * as grpc from 'grpc';
@@ -31,44 +31,34 @@ const glob = (global as {}) as {GCLOUD_SANDBOX_ENV: boolean | {}};
 
 let getUserAgentFromPackageJsonOverride: Function | null;
 const fakeUtil = Object.assign({}, util, {
-  getUserAgentFromPackageJson: (...args) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getUserAgentFromPackageJson: (...args: any[]) => {
     return (
       getUserAgentFromPackageJsonOverride || util.getUserAgentFromPackageJson
-    ).apply(null, args);
+    )(...args);
   },
 });
 
 class FakeService {
   calledWith_: IArguments;
   constructor() {
+    // eslint-disable-next-line prefer-rest-params
     this.calledWith_ = arguments;
   }
 }
 
 let replaceProjectIdTokenOverride;
-function fakeReplaceProjectIdTokenOverride() {
-  return (replaceProjectIdTokenOverride || replaceProjectIdToken).apply(
-    null,
-    arguments
-  );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fakeReplaceProjectIdTokenOverride(...args: any[]) {
+  return (replaceProjectIdTokenOverride || replaceProjectIdToken)(...args);
 }
 
 let retryRequestOverride;
-function fakeRetryRequest() {
-  return (retryRequestOverride || retryRequest).apply(null, arguments);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fakeRetryRequest(...args: any[]) {
+  return (retryRequestOverride || retryRequest)(...args);
 }
 
-class FakeMetadata {
-  constructor() {
-    if (GrpcMetadataOverride) {
-      return new GrpcMetadataOverride();
-    }
-    return new grpc.Metadata();
-  }
-}
-
-// tslint:disable-next-line:variable-name
-let GrpcMetadataOverride;
 let grpcProtoLoadOverride: typeof grpcProtoLoader.loadSync | null = null;
 
 const fakeGrpcProtoLoader = {
@@ -145,7 +135,6 @@ describe('GrpcService', () => {
   });
 
   beforeEach(() => {
-    GrpcMetadataOverride = null;
     retryRequestOverride = null;
     getUserAgentFromPackageJsonOverride = null;
     grpcProtoLoadOverride = () => {
@@ -1196,7 +1185,7 @@ describe('GrpcService', () => {
 
     it('should get the proto service', done => {
       ProtoService.prototype.method = () => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (duplexify as any).obj();
       };
       grpcService.getService_ = protoOpts => {
@@ -1283,7 +1272,7 @@ describe('GrpcService', () => {
         });
 
         it('should make the gRPC request again', done => {
-          // tslint:disable-next-line:no-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const stream = (duplexify as any).obj();
           ProtoService.prototype.method = () => {
             return stream;
@@ -1359,7 +1348,7 @@ describe('GrpcService', () => {
       });
 
       it('should emit response', done => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const stream = (duplexify as any).obj();
         ProtoService.prototype.method = () => {
           return stream;
@@ -1397,7 +1386,7 @@ describe('GrpcService', () => {
       });
 
       it('should emit a decorated error', done => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const grpcStream = (duplexify as any).obj();
         ProtoService.prototype.method = () => {
           return grpcStream;
@@ -1430,7 +1419,7 @@ describe('GrpcService', () => {
       });
 
       it('should emit the original error', done => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const grpcStream = (duplexify as any).obj();
         ProtoService.prototype.method = () => grpcStream;
         grpcService.getService_ = () => {
@@ -1504,7 +1493,7 @@ describe('GrpcService', () => {
 
     it('should decorate an Error object', () => {
       const grpcError = new Error('Hello');
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (grpcError as any).code = 2;
 
       const decoratedError = GrpcService.decorateError_(grpcError);
@@ -1907,7 +1896,7 @@ describe('GrpcService', () => {
     describe('instantiation', () => {
       it('should not require an options object', () => {
         assert.doesNotThrow(() => {
-          const x = new ObjectToStructConverter();
+          new ObjectToStructConverter();
         });
       });
 

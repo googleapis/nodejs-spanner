@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+/* eslint-disable prefer-rest-params */
+
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
@@ -26,9 +28,9 @@ import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
+import * as grpc from 'grpc';
 
-const grpc = require('grpc');
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
 
 function getFake(obj: {}) {
@@ -38,16 +40,13 @@ function getFake(obj: {}) {
 }
 
 function asAny(obj) {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return obj as any;
 }
 
 let replaceProjectIdTokenOverride;
 function fakeReplaceProjectIdToken(...args) {
-  return (replaceProjectIdTokenOverride || replaceProjectIdToken).apply(
-    null,
-    args
-  );
+  return (replaceProjectIdTokenOverride || replaceProjectIdToken)(...args);
 }
 
 const fakeGrpcGcp = {
@@ -88,10 +87,10 @@ const fakePfy = extend({}, pfy, {
 });
 
 let fakeGapicClient = util.noop;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (fakeGapicClient as any).scopes = [];
 
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fakeV1: any = {
   DatabaseAdminClient: fakeGapicClient,
   InstanceAdminClient: fakeGapicClient,
@@ -104,17 +103,10 @@ function fakeGoogleAuth() {
   };
 }
 
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fakeCodec: any = {
   SpannerDate: util.noop,
 };
-
-class FakeGrpcOperation {
-  calledWith_: IArguments;
-  constructor() {
-    this.calledWith_ = arguments;
-  }
-}
 
 class FakeGrpcService {
   calledWith_: IArguments;
@@ -145,9 +137,6 @@ describe('Spanner', () => {
 
   before(() => {
     Spanner = proxyquire('../src', {
-      './common-grpc/operation': {
-        GrpcOperation: FakeGrpcOperation,
-      },
       './common-grpc/service': {
         GrpcService: FakeGrpcService,
       },
@@ -169,7 +158,7 @@ describe('Spanner', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     fakeGapicClient = util.noop;
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (fakeGapicClient as any).scopes = [];
     fakeV1.DatabaseAdminClient = fakeGapicClient;
     fakeV1.InstanceAdminClient = fakeGapicClient;
@@ -494,7 +483,7 @@ describe('Spanner', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
       spanner.createInstance(PATH, CONFIG, assert.ifError);
 
-      const [projectId, name] = stub.lastCall.args;
+      const [, name] = stub.lastCall.args;
       assert.strictEqual(name, PATH);
     });
 
@@ -631,7 +620,7 @@ describe('Spanner', () => {
 
       beforeEach(() => {
         spanner.request = (config, callback) => {
-          callback.apply(null, GAX_RESPONSE_ARGS);
+          callback(...GAX_RESPONSE_ARGS);
         };
       });
 
@@ -654,7 +643,7 @@ describe('Spanner', () => {
 
       beforeEach(() => {
         spanner.request = (config, callback) => {
-          callback.apply(null, GAX_RESPONSE_ARGS);
+          callback(...GAX_RESPONSE_ARGS);
         };
       });
 
@@ -788,24 +777,6 @@ describe('Spanner', () => {
     });
   });
 
-  describe('operation', () => {
-    const NAME = 'op-name';
-
-    it('should throw if a name is not provided', () => {
-      assert.throws(() => {
-        spanner.operation(null!);
-      }, /A name is required to access an Operation object\./);
-    });
-
-    it('should return an Operation object', () => {
-      // tslint:disable-next-line no-any
-      const operation: any = spanner.operation(NAME);
-      assert(operation instanceof FakeGrpcOperation);
-      assert.strictEqual(operation.calledWith_[0], spanner);
-      assert.strictEqual(operation.calledWith_[1], NAME);
-    });
-  });
-
   describe('prepareGapicRequest_', () => {
     const PROJECT_ID = 'project-id';
     const CONFIG = {
@@ -818,7 +789,7 @@ describe('Spanner', () => {
       gaxOpts: {},
     };
 
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const FAKE_GAPIC_CLIENT: any = {
       [CONFIG.method]: util.noop,
     };

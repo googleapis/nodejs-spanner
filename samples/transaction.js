@@ -118,7 +118,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
     }
     let firstBudget, secondBudget;
     const queryOne = {
-      columns: [`MarketingBudget`],
+      columns: ['MarketingBudget'],
       keys: [[2, 2]], // SingerId: 2, AlbumId: 2
     };
 
@@ -196,26 +196,26 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   // [END spanner_read_write_transaction]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `readOnly <instanceName> <databaseName> <projectId>`,
-    `Execute a read-only transaction on an example Cloud Spanner table.`,
+    'readOnly <instanceName> <databaseName> <projectId>',
+    'Execute a read-only transaction on an example Cloud Spanner table.',
     {},
     opts =>
       readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `readWrite <instanceName> <databaseName> <projectId>`,
-    `Execute a read-write transaction on an example Cloud Spanner table.`,
+    'readWrite <instanceName> <databaseName> <projectId>',
+    'Execute a read-write transaction on an example Cloud Spanner table.',
     {},
     opts =>
       readWriteTransaction(opts.instanceName, opts.databaseName, opts.projectId)
   )
-  .example(`node $0 readOnly "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 readWrite "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 readOnly "my-instance" "my-database" "my-project-id"')
+  .example('node $0 readWrite "my-instance" "my-database" "my-project-id"')
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

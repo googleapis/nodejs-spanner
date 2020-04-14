@@ -24,7 +24,7 @@ import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
-import {SpannerClient as s} from './v1';
+import {google} from '../protos/protos';
 import {ServiceError, status} from 'grpc';
 
 export type ResumeToken = string | Uint8Array;
@@ -84,7 +84,7 @@ interface RowCallback {
  * @param {object} stats The result stats.
  */
 interface StatsCallback {
-  (stats: s.ResultSetStats): void;
+  (stats: google.spanner.v1.ResultSetStats): void;
 }
 
 /**
@@ -92,7 +92,7 @@ interface StatsCallback {
  * @param {object} response The full API response.
  */
 interface ResponseCallback {
-  (response: s.PartialResultSet): void;
+  (response: google.spanner.v1.PartialResultSet): void;
 }
 
 interface ResultEvents {
@@ -101,8 +101,8 @@ interface ResultEvents {
   addListener(event: 'response', listener: ResponseCallback): this;
 
   emit(event: 'data', data: Row | Json): boolean;
-  emit(event: 'stats', data: s.ResultSetStats): boolean;
-  emit(event: 'response', data: s.PartialResultSet): boolean;
+  emit(event: 'stats', data: google.spanner.v1.ResultSetStats): boolean;
+  emit(event: 'response', data: google.spanner.v1.PartialResultSet): boolean;
 
   on(event: 'data', listener: RowCallback): this;
   on(event: 'stats', listener: StatsCallback): this;
@@ -132,7 +132,7 @@ interface ResultEvents {
  */
 export class PartialResultStream extends Transform implements ResultEvents {
   private _destroyed: boolean;
-  private _fields!: s.Field[];
+  private _fields!: google.spanner.v1.StructType.Field[];
   private _options: RowOptions;
   private _pendingValue?: p.IValue;
   private _values: p.IValue[];
@@ -171,7 +171,11 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {string} encoding Chunk encoding (Not used in object streams).
    * @param {function} next Function to be called upon completion.
    */
-  _transform(chunk: s.PartialResultSet, enc: string, next: Function): void {
+  _transform(
+    chunk: google.spanner.v1.PartialResultSet,
+    enc: string,
+    next: Function
+  ): void {
     this.emit('response', chunk);
 
     if (chunk.stats) {
@@ -179,7 +183,8 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
 
     if (!this._fields && chunk.metadata) {
-      this._fields = chunk.metadata.rowType!.fields;
+      this._fields = chunk.metadata.rowType!
+        .fields as google.spanner.v1.StructType.Field[];
     }
 
     if (!is.empty(chunk.values)) {
@@ -195,7 +200,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
    *
    * @param {object} chunk The partial result set.
    */
-  private _addChunk(chunk: s.PartialResultSet): void {
+  private _addChunk(chunk: google.spanner.v1.PartialResultSet): void {
     const values: Value[] = chunk.values.map(GrpcService.decodeValue_);
 
     // If we have a chunk to merge, merge the values now.
@@ -203,7 +208,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       const currentField = this._values.length % this._fields.length;
       const field = this._fields[currentField];
       const merged = PartialResultStream.merge(
-        field.type!,
+        field.type as google.spanner.v1.Type,
         this._pendingValue,
         values.shift()
       );
@@ -259,7 +264,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _createRow(values: Value[]): Row {
     const fields = values.map((value, index) => {
       const {name, type} = this._fields[index];
-      return {name, value: codec.decode(value, type!)};
+      return {name, value: codec.decode(value, type as google.spanner.v1.Type)};
     });
 
     Object.defineProperty(fields, 'toJSON', {
@@ -281,9 +286,18 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {*} tail The tail of the combined value.
    * @returns {Array.<*>}
    */
-  // tslint:disable-next-line no-any
-  static merge(type: s.Type, head: Value, tail: Value): Value[] {
-    if (type.code === s.TypeCode.ARRAY || type.code === s.TypeCode.STRUCT) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static merge(
+    type: google.spanner.v1.Type,
+    head: Value,
+    tail: Value
+  ): Value[] {
+    if (
+      type.code === google.spanner.v1.TypeCode.ARRAY ||
+      type.code === 'ARRAY' ||
+      type.code === google.spanner.v1.TypeCode.STRUCT ||
+      type.code === 'STRUCT'
+    ) {
       return [PartialResultStream.mergeLists(type, head, tail)];
     }
 
@@ -304,13 +318,21 @@ export class PartialResultStream extends Transform implements ResultEvents {
    * @param {Array.<*>} tail The end of the list.
    * @returns {Array.<*>}
    */
-  static mergeLists(type: s.Type, head: Value[], tail: Value[]): Value[] {
-    let listType: s.Type;
+  static mergeLists(
+    type: google.spanner.v1.Type,
+    head: Value[],
+    tail: Value[]
+  ): Value[] {
+    let listType: google.spanner.v1.Type;
 
-    if (type.code === 'ARRAY') {
-      listType = type.arrayElementType!;
+    if (
+      type.code === 'ARRAY' ||
+      type.code === google.spanner.v1.TypeCode.ARRAY
+    ) {
+      listType = type.arrayElementType as google.spanner.v1.Type;
     } else {
-      listType = type.structType!.fields[head.length - 1].type!;
+      listType = type.structType!.fields![head.length - 1]
+        .type as google.spanner.v1.Type;
     }
 
     const merged = PartialResultStream.merge(
@@ -354,7 +376,7 @@ export function partialResultStream(
   const userStream = streamEvents(new PartialResultStream(options));
   const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
-    isCheckpointFn: (row: s.PartialResultSet): boolean => {
+    isCheckpointFn: (row: google.spanner.v1.PartialResultSet): boolean => {
       return is.defined(row.resumeToken);
     },
   });
@@ -397,7 +419,7 @@ export function partialResultStream(
   eventsIntercept.patch(requestsStream);
 
   // need types for events-intercept
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (requestsStream as any).intercept('error', retry);
 
   return (
@@ -407,7 +429,7 @@ export function partialResultStream(
       // it had queued. We can now destroy the user's stream, as our retry
       // attempts are over.
       .on('error', (err: Error) => userStream.destroy(err))
-      .on('checkpoint', (row: s.PartialResultSet) => {
+      .on('checkpoint', (row: google.spanner.v1.PartialResultSet) => {
         lastResumeToken = row.resumeToken;
       })
       .pipe(userStream)

@@ -47,7 +47,7 @@ export interface ServiceRequestCallback {
 
 interface RetryOptions {
   objectMode?: boolean;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request?: any;
   retries?: number;
   noResponseRetries?: number;
@@ -404,9 +404,7 @@ export class GrpcService extends Service {
     );
     if (config.grpcMetadata) {
       for (const prop in config.grpcMetadata) {
-        if (config.grpcMetadata.hasOwnProperty(prop)) {
-          this.grpcMetadata!.add(prop, config.grpcMetadata[prop]);
-        }
+        this.grpcMetadata!.add(prop, config.grpcMetadata[prop]);
       }
     }
 
@@ -661,7 +659,7 @@ export class GrpcService extends Service {
       protoOpts.retryOpts
     );
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (retryRequest(null!, retryOpts) as any)
       .on('error', err => {
         const grpcError = GrpcService.decorateError_(err);
@@ -683,13 +681,14 @@ export class GrpcService extends Service {
    */
   requestWritableStream(protoOpts, reqOpts) {
     const stream =
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (protoOpts.stream = protoOpts.stream || (duplexify as any).obj());
 
     if (global['GCLOUD_SANDBOX_ENV']) {
       return stream;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
 
     if (!this.grpcCredentials) {
@@ -951,10 +950,8 @@ export class GrpcService extends Service {
     const convertedObject = {};
 
     for (const prop in struct.fields) {
-      if (struct.fields.hasOwnProperty(prop)) {
-        const value = struct.fields[prop];
-        convertedObject[prop] = GrpcService.decodeValue_(value);
-      }
+      const value = struct.fields[prop];
+      convertedObject[prop] = GrpcService.decodeValue_(value);
     }
 
     return convertedObject;

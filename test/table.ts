@@ -16,7 +16,7 @@
 
 import * as pfy from '@google-cloud/promisify';
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -44,12 +44,12 @@ class FakeTransaction {
   createReadStream() {
     return through.obj();
   }
-  deleteRows(name, keys) {}
+  deleteRows() {}
   end() {}
-  insert(table, row) {}
-  replace(table, row) {}
-  upsert(table, row) {}
-  update(table, row) {}
+  insert() {}
+  replace() {}
+  upsert() {}
+  update() {}
 }
 
 interface GetSnapshotCallback {
@@ -60,9 +60,9 @@ interface GetSnapshotCallback {
 describe('Table', () => {
   const sandbox = sinon.createSandbox();
 
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Table: any;
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let TableCached: any;
   let table;
   let transaction: FakeTransaction;
@@ -235,9 +235,10 @@ describe('Table', () => {
     });
 
     it('should delete the rows via transaction', done => {
-      const stub = sandbox
-        .stub(transaction, 'deleteRows')
-        .withArgs(table.name, KEYS);
+      const stub = (sandbox.stub(
+        transaction,
+        'deleteRows'
+      ) as sinon.SinonStub).withArgs(table.name, KEYS);
 
       sandbox.stub(transaction, 'commit').callsFake(callback => callback());
 
@@ -281,9 +282,10 @@ describe('Table', () => {
     });
 
     it('should insert via transaction', done => {
-      const stub = sandbox
-        .stub(transaction, 'insert')
-        .withArgs(table.name, ROW);
+      const stub = (sandbox.stub(
+        transaction,
+        'insert'
+      ) as sinon.SinonStub).withArgs(table.name, ROW);
 
       table.insert(ROW, err => {
         assert.ifError(err);
@@ -374,9 +376,10 @@ describe('Table', () => {
     });
 
     it('should replace via transaction', done => {
-      const stub = sandbox
-        .stub(transaction, 'replace')
-        .withArgs(table.name, ROW);
+      const stub = (sandbox.stub(
+        transaction,
+        'replace'
+      ) as sinon.SinonStub).withArgs(table.name, ROW);
 
       table.replace(ROW, err => {
         assert.ifError(err);
@@ -403,9 +406,10 @@ describe('Table', () => {
     });
 
     it('should update via transaction', done => {
-      const stub = sandbox
-        .stub(transaction, 'update')
-        .withArgs(table.name, ROW);
+      const stub = (sandbox.stub(
+        transaction,
+        'update'
+      ) as sinon.SinonStub).withArgs(table.name, ROW);
 
       table.update(ROW, err => {
         assert.ifError(err);
@@ -432,9 +436,10 @@ describe('Table', () => {
     });
 
     it('should upsert via transaction', done => {
-      const stub = sandbox
-        .stub(transaction, 'upsert')
-        .withArgs(table.name, ROW);
+      const stub = (sandbox.stub(
+        transaction,
+        'upsert'
+      ) as sinon.SinonStub).withArgs(table.name, ROW);
 
       table.upsert(ROW, err => {
         assert.ifError(err);

@@ -16,8 +16,8 @@
 
 import {ServiceError, CallOptions} from 'grpc';
 import {Operation as GaxOperation} from 'google-gax';
-import {google as instanceAdmin} from '../proto/spanner_instance_admin';
-import {google as databaseAdmin} from '../proto/spanner_database_admin';
+import {google as instanceAdmin} from '../protos/protos';
+import {google as databaseAdmin} from '../protos/protos';
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 

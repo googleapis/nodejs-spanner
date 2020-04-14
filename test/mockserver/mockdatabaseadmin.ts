@@ -17,12 +17,11 @@
 import {google} from '../../protos/protos';
 import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
-import {createUnimplementedError, now} from './mockspanner';
+import {createUnimplementedError} from './mockspanner';
 import v1 = google.spanner.admin.database.v1;
 import iam = google.iam.v1;
 import longrunning = google.longrunning;
 import Any = google.protobuf.Any;
-import Empty = google.protobuf.Empty;
 
 const PROTO_PATH = 'spanner_database_admin.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';

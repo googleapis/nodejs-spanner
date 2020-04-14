@@ -140,7 +140,7 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql: `DELETE Singers WHERE FirstName = 'Alice'`,
+        sql: "DELETE Singers WHERE FirstName = 'Alice'",
       });
 
       console.log(`Successfully deleted ${rowCount} record.`);
@@ -233,7 +233,7 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
       });
 
       const [rows] = await transaction.run({
-        sql: `SELECT FirstName, LastName FROM Singers`,
+        sql: 'SELECT FirstName, LastName FROM Singers',
       });
       rows.forEach(row => {
         const json = row.toJSON();
@@ -532,7 +532,7 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
 
   try {
     const [rowCount] = await database.runPartitionedUpdate({
-      sql: `UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 1`,
+      sql: 'UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 1',
     });
     console.log(`Successfully updated ${rowCount} records.`);
   } catch (err) {
@@ -567,7 +567,7 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
 
   try {
     const [rowCount] = await database.runPartitionedUpdate({
-      sql: `DELETE Singers WHERE SingerId > 10`,
+      sql: 'DELETE Singers WHERE SingerId > 10',
     });
     console.log(`Successfully deleted ${rowCount} records.`);
   } catch (err) {
@@ -630,29 +630,29 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_batch_update]
 }
 
-require(`yargs`)
+require('yargs')
   .demand(1)
   .command(
-    `insertUsingDml <instanceName> <databaseName> <projectId>`,
-    `Inserts one record using DML into an example Cloud Spanner table.`,
+    'insertUsingDml <instanceName> <databaseName> <projectId>',
+    'Inserts one record using DML into an example Cloud Spanner table.',
     {},
     opts => insertUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `updateUsingDml <instanceName> <databaseName> <projectId>`,
-    `Updates one record using DML.`,
+    'updateUsingDml <instanceName> <databaseName> <projectId>',
+    'Updates one record using DML.',
     {},
     opts => updateUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `deleteUsingDml <instanceName> <databaseName> <projectId>`,
-    `Deletes one record using DML.`,
+    'deleteUsingDml <instanceName> <databaseName> <projectId>',
+    'Deletes one record using DML.',
     {},
     opts => deleteUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `updateUsingDmlWithTimestamp <instanceName> <databaseName> <projectId>`,
-    `Updates records with timestamp using DML.`,
+    'updateUsingDmlWithTimestamp <instanceName> <databaseName> <projectId>',
+    'Updates records with timestamp using DML.',
     {},
     opts =>
       updateUsingDmlWithTimestamp(
@@ -662,15 +662,15 @@ require(`yargs`)
       )
   )
   .command(
-    `writeAndReadUsingDml <instanceName> <databaseName> <projectId>`,
-    `Inserts and reads one record using DML.`,
+    'writeAndReadUsingDml <instanceName> <databaseName> <projectId>',
+    'Inserts and reads one record using DML.',
     {},
     opts =>
       writeAndReadUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `updateUsingDmlWithStruct <instanceName> <databaseName> <projectId>`,
-    `Updates one record using DML and a struct value.`,
+    'updateUsingDmlWithStruct <instanceName> <databaseName> <projectId>',
+    'Updates one record using DML and a struct value.',
     {},
     opts =>
       updateUsingDmlWithStruct(
@@ -680,14 +680,14 @@ require(`yargs`)
       )
   )
   .command(
-    `writeUsingDml <instanceName> <databaseName> <projectId>`,
-    `Inserts multiple records using DML.`,
+    'writeUsingDml <instanceName> <databaseName> <projectId>',
+    'Inserts multiple records using DML.',
     {},
     opts => writeUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    `queryWithParameter <instanceName> <databaseName> <projectId>`,
-    `Query record inserted using DML with a query parameter.`,
+    'queryWithParameter <instanceName> <databaseName> <projectId>',
+    'Query record inserted using DML with a query parameter.',
     {},
     opts =>
       queryDataWithParameter(
@@ -697,8 +697,8 @@ require(`yargs`)
       )
   )
   .command(
-    `writeWithTransactionUsingDml <instanceName> <databaseName> <projectId>`,
-    `Execute a read-write transaction using DML.`,
+    'writeWithTransactionUsingDml <instanceName> <databaseName> <projectId>',
+    'Execute a read-write transaction using DML.',
     {},
     opts =>
       writeWithTransactionUsingDml(
@@ -708,8 +708,8 @@ require(`yargs`)
       )
   )
   .command(
-    `updateUsingPartitionedDml <instanceName> <databaseName> <projectId>`,
-    `Updates multiple records using DML.`,
+    'updateUsingPartitionedDml <instanceName> <databaseName> <projectId>',
+    'Updates multiple records using DML.',
     {},
     opts =>
       updateUsingPartitionedDml(
@@ -719,8 +719,8 @@ require(`yargs`)
       )
   )
   .command(
-    `deleteUsingPartitionedDml <instanceName> <databaseName> <projectId>`,
-    `Deletes multilple records using DML.`,
+    'deleteUsingPartitionedDml <instanceName> <databaseName> <projectId>',
+    'Deletes multilple records using DML.',
     {},
     opts =>
       deleteUsingPartitionedDml(
@@ -730,42 +730,42 @@ require(`yargs`)
       )
   )
   .command(
-    `updateUsingBatchDml <instanceName> <databaseName> <projectId>`,
-    `Insert and Update records using Batch DML.`,
+    'updateUsingBatchDml <instanceName> <databaseName> <projectId>',
+    'Insert and Update records using Batch DML.',
     {},
     opts =>
       updateUsingBatchDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
-  .example(`node $0 insertUsingDml "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 updateUsingDml "my-instance" "my-database" "my-project-id"`)
-  .example(`node $0 deleteUsingDml "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 insertUsingDml "my-instance" "my-database" "my-project-id"')
+  .example('node $0 updateUsingDml "my-instance" "my-database" "my-project-id"')
+  .example('node $0 deleteUsingDml "my-instance" "my-database" "my-project-id"')
   .example(
-    `node $0 updateUsingDmlWithTimestamp "my-instance" "my-database" "my-project-id"`
+    'node $0 updateUsingDmlWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 writeAndReadUsingDml "my-instance" "my-database" "my-project-id"`
+    'node $0 writeAndReadUsingDml "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 updateUsingDmlWithStruct "my-instance" "my-database" "my-project-id"`
+    'node $0 updateUsingDmlWithStruct "my-instance" "my-database" "my-project-id"'
   )
-  .example(`node $0 writeUsingDml "my-instance" "my-database" "my-project-id"`)
+  .example('node $0 writeUsingDml "my-instance" "my-database" "my-project-id"')
   .example(
-    `node $0 queryWithParameter "my-instance" "my-database" "my-project-id"`
-  )
-  .example(
-    `node $0 writeWithTransactionUsingDml "my-instance" "my-database" "my-project-id"`
+    'node $0 queryWithParameter "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 updateUsingPartitionedDml "my-instance" "my-database" "my-project-id"`
+    'node $0 writeWithTransactionUsingDml "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 deleteUsingPartitionedDml "my-instance" "my-database" "my-project-id"`
+    'node $0 updateUsingPartitionedDml "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    `node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"`
+    'node $0 deleteUsingPartitionedDml "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
-  .epilogue(`For more information, see https://cloud.google.com/spanner/docs`)
+  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
   .strict()
   .help().argv;

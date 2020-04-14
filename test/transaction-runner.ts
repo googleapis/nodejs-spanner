@@ -15,19 +15,20 @@
  */
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import {Metadata, ServiceError, status} from 'grpc';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as through from 'through2';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
 
 class FakeTransaction extends EventEmitter {
   async begin(): Promise<void> {}
-  request(config, callback) {}
-  requestStream(config) {}
+  request() {}
+  requestStream() {}
 }
 
 describe('TransactionRunner', () => {
@@ -51,11 +52,11 @@ describe('TransactionRunner', () => {
     transaction: () => fakeTransaction,
   };
 
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Runner;
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let TransactionRunner;
-  // tslint:disable-next-line no-any variable-name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let AsyncTransactionRunner;
 
   let fakeTransaction;
@@ -80,7 +81,7 @@ describe('TransactionRunner', () => {
   afterEach(() => sandbox.restore());
 
   describe('Runner', () => {
-    // tslint:disable-next-line no-any variable-name
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let ExtendedRunner;
 
     let runFn;
