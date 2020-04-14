@@ -15,7 +15,6 @@
  */
 
 import {GrpcService, GrpcServiceConfig} from './common-grpc/service';
-import {GrpcOperation} from './common-grpc/operation';
 import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
@@ -657,27 +656,6 @@ class Spanner extends GrpcService {
       this.instances_.set(key, new Instance(this, name));
     }
     return this.instances_.get(key)!;
-  }
-
-  /**
-   * Get a reference to an Operation object.
-   *
-   * @throws {Error} If a name is not provided.
-   *
-   * @param {string} name The name of the operation.
-   * @returns {Operation} An Operation object.
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   * const operation = spanner.operation('operation-name');
-   */
-  operation(name) {
-    if (!name) {
-      throw new Error('A name is required to access an Operation object.');
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new GrpcOperation(this as any, name);
   }
 
   /**

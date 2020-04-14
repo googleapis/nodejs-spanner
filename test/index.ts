@@ -108,13 +108,6 @@ const fakeCodec: any = {
   SpannerDate: util.noop,
 };
 
-class FakeGrpcOperation {
-  calledWith_: IArguments;
-  constructor() {
-    this.calledWith_ = arguments;
-  }
-}
-
 class FakeGrpcService {
   calledWith_: IArguments;
   constructor() {
@@ -144,9 +137,6 @@ describe('Spanner', () => {
 
   before(() => {
     Spanner = proxyquire('../src', {
-      './common-grpc/operation': {
-        GrpcOperation: FakeGrpcOperation,
-      },
       './common-grpc/service': {
         GrpcService: FakeGrpcService,
       },
@@ -784,24 +774,6 @@ describe('Spanner', () => {
 
       const instance = spanner.instance(NAME);
       assert.strictEqual(instance, fakeInstance);
-    });
-  });
-
-  describe('operation', () => {
-    const NAME = 'op-name';
-
-    it('should throw if a name is not provided', () => {
-      assert.throws(() => {
-        spanner.operation(null!);
-      }, /A name is required to access an Operation object\./);
-    });
-
-    it('should return an Operation object', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const operation: any = spanner.operation(NAME);
-      assert(operation instanceof FakeGrpcOperation);
-      assert.strictEqual(operation.calledWith_[0], spanner);
-      assert.strictEqual(operation.calledWith_[1], NAME);
     });
   });
 
