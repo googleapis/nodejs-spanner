@@ -31,7 +31,6 @@ import * as spnr from '../src';
 import * as grpc from 'grpc';
 import {CreateInstanceRequest} from '../src/instance';
 import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
-import {SpannerDate} from '../src/codec';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -591,13 +590,17 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(instance, null);
-          assert.strictEqual(op, null);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          {config: 'projects/p/instanceConfigs/config1'},
+          (err, instance, op, resp) => {
+            assert.strictEqual(err, ERROR);
+            assert.strictEqual(instance, null);
+            assert.strictEqual(op, null);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
 
@@ -619,15 +622,19 @@ describe('Spanner', () => {
           .stub(spanner, 'instance')
           .returns(fakeInstanceInstance);
 
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.ifError(err);
-          const [instanceName] = instanceStub.lastCall.args;
-          assert.strictEqual(instanceName, formattedName);
-          assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(op, OPERATION);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          {config: 'projects/p/instanceConfigs/config1'},
+          (err, instance, op, resp) => {
+            assert.ifError(err);
+            const [instanceName] = instanceStub.lastCall.args;
+            assert.strictEqual(instanceName, formattedName);
+            assert.strictEqual(instance, fakeInstanceInstance);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
   });
@@ -946,7 +953,7 @@ describe('Spanner', () => {
         return reqOpts;
       };
 
-      FAKE_GAPIC_CLIENT[CONFIG.method] = function(reqOpts, gaxOpts, arg) {
+      FAKE_GAPIC_CLIENT[CONFIG.method] = function (reqOpts, gaxOpts, arg) {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);

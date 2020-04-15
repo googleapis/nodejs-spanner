@@ -23,7 +23,7 @@ import * as extend from 'extend';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as is from 'is';
 import * as path from 'path';
-import {common as p, util} from 'protobufjs';
+import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {codec, Float, Int, SpannerDate, Struct} from './codec';
@@ -33,6 +33,9 @@ import {
   CreateInstanceRequest,
   Instance,
 } from './instance';
+import {Operation as GaxOperation} from 'google-gax';
+import {google as instanceAdmin} from '../protos/protos';
+import {PagedRequest, PagedResponse, PagedCallback} from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -73,11 +76,11 @@ export type GetInstanceConfigsRequest = PagedRequest<
   }
 >;
 export type GetInstanceConfigsResponse = PagedResponse<
-  InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
 >;
 export type GetInstanceConfigsCallback = PagedCallback<
-  InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
 >;
 
@@ -491,18 +494,15 @@ class Spanner extends GrpcService {
    * });
    */
   getInstances(
-    queryOrCallback?: GetInstancesRequest | GetInstancesCallback,
-    cb?: GetInstancesCallback
+    query?: GetInstancesRequest | GetInstancesCallback,
+    callback?: GetInstancesCallback
   ): Promise<GetInstancesResponse> | void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
-    const callback =
-      typeof queryOrCallback === 'function'
-        ? (queryOrCallback as GetInstancesCallback)
-        : cb;
-    const query =
-      typeof queryOrCallback === 'object'
-        ? (queryOrCallback as GetInstancesRequest)
-        : {};
+    if (is.fn(query)) {
+      callback = query as GetInstancesCallback;
+      query = {};
+    }
     const reqOpts = extend({}, query, {
       parent: 'projects/' + this.projectId,
     });
@@ -703,26 +703,6 @@ class Spanner extends GrpcService {
       this.instances_.set(key, new Instance(this, name));
     }
     return this.instances_.get(key)!;
-  }
-
-  /**
-   * Get a reference to an Operation object.
-   *
-   * @throws {Error} If a name is not provided.
-   *
-   * @param {string} name The name of the operation.
-   * @returns {Operation} An Operation object.
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   * const operation = spanner.operation('operation-name');
-   */
-  operation(name: string): GrpcOperation {
-    if (!name) {
-      throw new Error('A name is required to access an Operation object.');
-    }
-    return new GrpcOperation(this, name);
   }
 
   /**

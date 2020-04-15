@@ -41,10 +41,7 @@ describe('TransactionRunner', () => {
     decode: DECODE,
   };
 
-  const LOOKUP = sandbox
-    .stub()
-    .withArgs(RETRY_KEY)
-    .returns(RETRY_INFO);
+  const LOOKUP = sandbox.stub().withArgs(RETRY_KEY).returns(RETRY_INFO);
   const FROM_JSON = sandbox.stub().returns({lookup: LOOKUP});
 
   const SESSION = {
