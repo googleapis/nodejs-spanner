@@ -592,7 +592,7 @@ describe('Spanner', () => {
       it('should execute callback with error & API response', done => {
         spanner.createInstance(
           NAME,
-          {config: 'projects/p/instanceConfigs/config1'},
+          CONFIG as CreateInstanceRequest,
           (err, instance, op, resp) => {
             assert.strictEqual(err, ERROR);
             assert.strictEqual(instance, null);
@@ -624,7 +624,7 @@ describe('Spanner', () => {
 
         spanner.createInstance(
           NAME,
-          {config: 'projects/p/instanceConfigs/config1'},
+          CONFIG as CreateInstanceRequest,
           (err, instance, op, resp) => {
             assert.ifError(err);
             const [instanceName] = instanceStub.lastCall.args;
@@ -953,7 +953,7 @@ describe('Spanner', () => {
         return reqOpts;
       };
 
-      FAKE_GAPIC_CLIENT[CONFIG.method] = function (reqOpts, gaxOpts, arg) {
+      FAKE_GAPIC_CLIENT[CONFIG.method] = function(reqOpts, gaxOpts, arg) {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);

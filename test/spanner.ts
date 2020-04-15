@@ -1278,7 +1278,9 @@ describe('Spanner with mock server', () => {
             message: 'Session not found',
           } as MockError)
         );
-        runAsyncTransactionWithExpectedSessionRetry(db).then(done).catch(done);
+        runAsyncTransactionWithExpectedSessionRetry(db)
+          .then(done)
+          .catch(done);
       });
     });
 
@@ -1295,7 +1297,9 @@ describe('Spanner with mock server', () => {
             message: 'Session not found',
           } as MockError)
         );
-        runAsyncTransactionWithExpectedSessionRetry(db).then(done).catch(done);
+        runAsyncTransactionWithExpectedSessionRetry(db)
+          .then(done)
+          .catch(done);
       });
     });
 

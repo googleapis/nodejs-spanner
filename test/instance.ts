@@ -123,7 +123,7 @@ describe('Instance', () => {
     it('should localize the request function', done => {
       const spannerInstance = extend({}, SPANNER);
 
-      spannerInstance.request = function () {
+      spannerInstance.request = function() {
         assert.strictEqual(this, spannerInstance);
         done();
       };
@@ -136,7 +136,7 @@ describe('Instance', () => {
     it('should localize the requestStream function', done => {
       const spannerInstance = extend({}, SPANNER);
 
-      spannerInstance.requestStream = function () {
+      spannerInstance.requestStream = function() {
         assert.strictEqual(this, spannerInstance);
         done();
       };
