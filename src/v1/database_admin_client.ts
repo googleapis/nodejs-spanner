@@ -1051,8 +1051,13 @@ export class DatabaseAdminClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
+    const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this.innerApiCalls.listBackups(request, options, callback);
+    return this.descriptors.page.listDatabaseOperations.createStream(
+      this.innerApiCalls.listDatabaseOperations as gax.GaxCall,
+      request,
+      callSettings
+    );
   }
   updateDatabaseDdl(
       request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
@@ -1146,8 +1151,14 @@ export class DatabaseAdminClient {
     ] = gax.routingHeader.fromParams({
       'database': request.database || '',
     });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this.innerApiCalls.listDatabaseOperations(request, options, callback);
+    return this.descriptors.page.listDatabaseOperations.asyncIterate(
+      this.innerApiCalls['listDatabaseOperations'] as GaxCall,
+      request as unknown as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   createBackup(
       request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
@@ -1225,13 +1236,8 @@ export class DatabaseAdminClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this.descriptors.page.listDatabaseOperations.createStream(
-      this.innerApiCalls.listDatabaseOperations as gax.GaxCall,
-      request,
-      callSettings
-    );
+    return this.innerApiCalls.listBackupOperations(request, options, callback);
   }
   restoreDatabase(
       request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
@@ -1325,14 +1331,13 @@ export class DatabaseAdminClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this.descriptors.page.listDatabaseOperations.asyncIterate(
-      this.innerApiCalls['listDatabaseOperations'] as GaxCall,
-      request as unknown as RequestType,
+    return this.descriptors.page.listBackupOperations.createStream(
+      this.innerApiCalls.listBackupOperations as gax.GaxCall,
+      request,
       callSettings
-    ) as AsyncIterable<protos.google.longrunning.IOperation>;
+    );
   }
   listDatabases(
       request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -1421,7 +1426,7 @@ export class DatabaseAdminClient {
       'parent': request.parent || '',
     });
     this.initialize();
-    return this.innerApiCalls.listBackupOperations(request, options, callback);
+    return this.innerApiCalls.listBackups(request, options, callback);
   }
 
 /**
@@ -1469,8 +1474,8 @@ export class DatabaseAdminClient {
     });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
-    return this.descriptors.page.listBackupOperations.createStream(
-      this.innerApiCalls.listBackupOperations as gax.GaxCall,
+    return this.descriptors.page.listBackups.createStream(
+      this.innerApiCalls.listBackups as gax.GaxCall,
       request,
       callSettings
     );
@@ -1518,7 +1523,7 @@ export class DatabaseAdminClient {
       this.innerApiCalls['listDatabases'] as GaxCall,
       request as unknown as RequestType,
       callSettings
-    ) as AsyncIterable<protos.google.longrunning.IOperation>;
+    ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
   }
   listBackups(
       request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
