@@ -527,13 +527,10 @@ describe('Transaction', () => {
           resumeToken: undefined,
         };
 
-        sandbox
-          .stub(Snapshot, 'encodeParams')
-          .withArgs(fakeQuery)
-          .returns({
-            params: fakeParams,
-            paramTypes: fakeParamTypes,
-          });
+        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+        });
 
         snapshot.id = id;
         snapshot.runStream(fakeQuery);

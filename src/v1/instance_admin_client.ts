@@ -564,28 +564,30 @@ export class InstanceAdminClient {
           protos.google.iam.v1.ISetIamPolicyRequest|null|undefined,
           {}|null|undefined>): void;
   setIamPolicy(
-      request: protos.google.iam.v1.ISetIamPolicyRequest,
-      callback: Callback<
-          protos.google.iam.v1.IPolicy,
-          protos.google.iam.v1.ISetIamPolicyRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Sets the access control policy on an instance resource. Replaces any
- * existing policy.
- *
- * Authorization requires `spanner.instances.setIamPolicy` on
- * {@link google.iam.v1.SetIamPolicyRequest.resource|resource}.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {} request.
- * @param {} request.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    callback: Callback<
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Sets the access control policy on an instance resource. Replaces any
+   * existing policy.
+   *
+   * Authorization requires `spanner.instances.setIamPolicy` on
+   * {@link google.iam.v1.SetIamPolicyRequest.resource|resource}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   setIamPolicy(
       request: protos.google.iam.v1.ISetIamPolicyRequest,
       optionsOrCallback?: gax.CallOptions|Callback<
@@ -635,28 +637,30 @@ export class InstanceAdminClient {
           protos.google.iam.v1.IGetIamPolicyRequest|null|undefined,
           {}|null|undefined>): void;
   getIamPolicy(
-      request: protos.google.iam.v1.IGetIamPolicyRequest,
-      callback: Callback<
-          protos.google.iam.v1.IPolicy,
-          protos.google.iam.v1.IGetIamPolicyRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Gets the access control policy for an instance resource. Returns an empty
- * policy if an instance exists but does not have a policy set.
- *
- * Authorization requires `spanner.instances.getIamPolicy` on
- * {@link google.iam.v1.GetIamPolicyRequest.resource|resource}.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {} request.
- * @param {} request.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    callback: Callback<
+      protos.google.iam.v1.IPolicy,
+      protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Gets the access control policy for an instance resource. Returns an empty
+   * policy if an instance exists but does not have a policy set.
+   *
+   * Authorization requires `spanner.instances.getIamPolicy` on
+   * {@link google.iam.v1.GetIamPolicyRequest.resource|resource}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   getIamPolicy(
       request: protos.google.iam.v1.IGetIamPolicyRequest,
       optionsOrCallback?: gax.CallOptions|Callback<
@@ -706,29 +710,31 @@ export class InstanceAdminClient {
           protos.google.iam.v1.ITestIamPermissionsRequest|null|undefined,
           {}|null|undefined>): void;
   testIamPermissions(
-      request: protos.google.iam.v1.ITestIamPermissionsRequest,
-      callback: Callback<
-          protos.google.iam.v1.ITestIamPermissionsResponse,
-          protos.google.iam.v1.ITestIamPermissionsRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Returns permissions that the caller has on the specified instance resource.
- *
- * Attempting this RPC on a non-existent Cloud Spanner instance resource will
- * result in a NOT_FOUND error if the user has `spanner.instances.list`
- * permission on the containing Google Cloud Project. Otherwise returns an
- * empty set of permissions.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {} request.
- * @param {} request.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    callback: Callback<
+      protos.google.iam.v1.ITestIamPermissionsResponse,
+      protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Returns permissions that the caller has on the specified instance resource.
+   *
+   * Attempting this RPC on a non-existent Cloud Spanner instance resource will
+   * result in a NOT_FOUND error if the user has `spanner.instances.list`
+   * permission on the containing Google Cloud Project. Otherwise returns an
+   * empty set of permissions.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   testIamPermissions(
       request: protos.google.iam.v1.ITestIamPermissionsRequest,
       optionsOrCallback?: gax.CallOptions|Callback<

@@ -4403,10 +4403,7 @@ describe('Spanner', () => {
 });
 
 function shortUUID() {
-  return uuid
-    .v4()
-    .split('-')
-    .shift();
+  return uuid.v4().split('-').shift();
 }
 
 function generateName(resourceType) {
@@ -4420,7 +4417,7 @@ function onPromiseOperationComplete(data) {
 
 function execAfterOperationComplete(callback) {
   // tslint:disable-next-line only-arrow-functions
-  return function(err) {
+  return function (err) {
     // arguments = [..., op, apiResponse]
     // eslint-disable-next-line prefer-rest-params
     const operation = arguments[arguments.length - 2];
