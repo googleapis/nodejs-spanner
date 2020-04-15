@@ -98,9 +98,9 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     console.log('Get backups paginated:');
     do {
       const [backups, , response] = await instance.getBackups({
-        autoPaginate: false,
         pageSize: 3,
         pageToken,
+        gaxOptions: {autoPaginate: false},
       });
       backups.forEach(backup => {
         console.log(backup.id);
