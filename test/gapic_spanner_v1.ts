@@ -20,7 +20,7 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import {describe, it} from 'mocha';
+import { describe, it } from 'mocha';
 import * as spannerModule from '../src';
 
 import {PassThrough} from 'stream';
@@ -28,2163 +28,1619 @@ import {PassThrough} from 'stream';
 import {protobuf} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
-  const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
-    instance as protobuf.Message<T>,
-    {defaults: true}
-  );
-  return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject
-  ) as T;
+    const filledObject = (instance.constructor as typeof protobuf.Message)
+        .toObject(instance as protobuf.Message<T>, {defaults: true});
+    return (instance.constructor as typeof protobuf.Message).fromObject(filledObject) as T;
 }
 
 function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
-  return error
-    ? sinon.stub().rejects(error)
-    : sinon.stub().resolves([response]);
+    return error ? sinon.stub().rejects(error) : sinon.stub().resolves([response]);
 }
 
-function stubSimpleCallWithCallback<ResponseType>(
-  response?: ResponseType,
-  error?: Error
-) {
-  return error
-    ? sinon.stub().callsArgWith(2, error)
-    : sinon.stub().callsArgWith(2, null, response);
+function stubSimpleCallWithCallback<ResponseType>(response?: ResponseType, error?: Error) {
+    return error ? sinon.stub().callsArgWith(2, error) : sinon.stub().callsArgWith(2, null, response);
 }
 
-function stubServerStreamingCall<ResponseType>(
-  response?: ResponseType,
-  error?: Error
-) {
-  const transformStub = error
-    ? sinon.stub().callsArgWith(2, error)
-    : sinon.stub().callsArgWith(2, null, response);
-  const mockStream = new PassThrough({
-    objectMode: true,
-    transform: transformStub,
-  });
-  // write something to the stream to trigger transformStub and send the response back to the client
-  setImmediate(() => {
-    mockStream.write({});
-  });
-  setImmediate(() => {
-    mockStream.end();
-  });
-  return sinon.stub().returns(mockStream);
+function stubServerStreamingCall<ResponseType>(response?: ResponseType, error?: Error) {
+    const transformStub = error ? sinon.stub().callsArgWith(2, error) : sinon.stub().callsArgWith(2, null, response);
+    const mockStream = new PassThrough({
+        objectMode: true,
+        transform: transformStub,
+    });
+    // write something to the stream to trigger transformStub and send the response back to the client
+    setImmediate(() => { mockStream.write({}); });
+    setImmediate(() => { mockStream.end(); });
+    return sinon.stub().returns(mockStream);
 }
 
-function stubPageStreamingCall<ResponseType>(
-  responses?: ResponseType[],
-  error?: Error
-) {
-  const pagingStub = sinon.stub();
-  if (responses) {
-    for (let i = 0; i < responses.length; ++i) {
-      pagingStub.onCall(i).callsArgWith(2, null, responses[i]);
+function stubPageStreamingCall<ResponseType>(responses?: ResponseType[], error?: Error) {
+    const pagingStub = sinon.stub();
+    if (responses) {
+        for (let i = 0; i < responses.length; ++i) {
+            pagingStub.onCall(i).callsArgWith(2, null, responses[i]);
+        }
     }
-  }
-  const transformStub = error
-    ? sinon.stub().callsArgWith(2, error)
-    : pagingStub;
-  const mockStream = new PassThrough({
-    objectMode: true,
-    transform: transformStub,
-  });
-  // trigger as many responses as needed
-  if (responses) {
-    for (let i = 0; i < responses.length; ++i) {
-      setImmediate(() => {
-        mockStream.write({});
-      });
+    const transformStub = error ? sinon.stub().callsArgWith(2, error) : pagingStub;
+    const mockStream = new PassThrough({
+        objectMode: true,
+        transform: transformStub,
+    });
+    // trigger as many responses as needed
+    if (responses) {
+        for (let i = 0; i < responses.length; ++i) {
+            setImmediate(() => { mockStream.write({}); });
+        }
+        setImmediate(() => { mockStream.end(); });
+    } else {
+        setImmediate(() => { mockStream.write({}); });
+        setImmediate(() => { mockStream.end(); });
     }
-    setImmediate(() => {
-      mockStream.end();
-    });
-  } else {
-    setImmediate(() => {
-      mockStream.write({});
-    });
-    setImmediate(() => {
-      mockStream.end();
-    });
-  }
-  return sinon.stub().returns(mockStream);
+    return sinon.stub().returns(mockStream);
 }
 
-function stubAsyncIterationCall<ResponseType>(
-  responses?: ResponseType[],
-  error?: Error
-) {
-  let counter = 0;
-  const asyncIterable = {
-    [Symbol.asyncIterator]() {
-      return {
-        async next() {
-          if (error) {
-            return Promise.reject(error);
-          }
-          if (counter >= responses!.length) {
-            return Promise.resolve({done: true, value: undefined});
-          }
-          return Promise.resolve({done: false, value: responses![counter++]});
-        },
-      };
-    },
-  };
-  return sinon.stub().returns(asyncIterable);
+function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?: Error) {
+    let counter = 0;
+    const asyncIterable = {
+        [Symbol.asyncIterator]() {
+            return {
+                async next() {
+                    if (error) {
+                        return Promise.reject(error);
+                    }
+                    if (counter >= responses!.length) {
+                        return Promise.resolve({done: true, value: undefined});
+                    }
+                    return Promise.resolve({done: false, value: responses![counter++]});
+                }
+            };
+        }
+    };
+    return sinon.stub().returns(asyncIterable);
 }
 
 describe('v1.SpannerClient', () => {
-  it('has servicePath', () => {
-    const servicePath = spannerModule.v1.SpannerClient.servicePath;
-    assert(servicePath);
-  });
-
-  it('has apiEndpoint', () => {
-    const apiEndpoint = spannerModule.v1.SpannerClient.apiEndpoint;
-    assert(apiEndpoint);
-  });
-
-  it('has port', () => {
-    const port = spannerModule.v1.SpannerClient.port;
-    assert(port);
-    assert(typeof port === 'number');
-  });
-
-  it('should create a client with no option', () => {
-    const client = new spannerModule.v1.SpannerClient();
-    assert(client);
-  });
-
-  it('should create a client with gRPC fallback', () => {
-    const client = new spannerModule.v1.SpannerClient({
-      fallback: true,
-    });
-    assert(client);
-  });
-
-  it('has initialize method and supports deferred initialization', async () => {
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
-    });
-    assert.strictEqual(client.spannerStub, undefined);
-    await client.initialize();
-    assert(client.spannerStub);
-  });
-
-  it('has close method', () => {
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
-    });
-    client.close();
-  });
-
-  it('has getProjectId method', async () => {
-    const fakeProjectId = 'fake-project-id';
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
-    });
-    client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-    const result = await client.getProjectId();
-    assert.strictEqual(result, fakeProjectId);
-    assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-  });
-
-  it('has getProjectId method with callback', async () => {
-    const fakeProjectId = 'fake-project-id';
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
-    });
-    client.auth.getProjectId = sinon
-      .stub()
-      .callsArgWith(0, null, fakeProjectId);
-    const promise = new Promise((resolve, reject) => {
-      client.getProjectId((err?: Error | null, projectId?: string | null) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(projectId);
-        }
-      });
-    });
-    const result = await promise;
-    assert.strictEqual(result, fakeProjectId);
-  });
-
-  describe('createSession', () => {
-    it('invokes createSession without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CreateSessionRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.Session()
-      );
-      client.innerApiCalls.createSession = stubSimpleCall(expectedResponse);
-      const [response] = await client.createSession(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+    it('has servicePath', () => {
+        const servicePath = spannerModule.v1.SpannerClient.servicePath;
+        assert(servicePath);
     });
 
-    it('invokes createSession without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CreateSessionRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.Session()
-      );
-      client.innerApiCalls.createSession = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.createSession(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.ISession | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+    it('has apiEndpoint', () => {
+        const apiEndpoint = spannerModule.v1.SpannerClient.apiEndpoint;
+        assert(apiEndpoint);
     });
 
-    it('invokes createSession with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CreateSessionRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.createSession = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.createSession(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.createSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('batchCreateSessions', () => {
-    it('invokes batchCreateSessions without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BatchCreateSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.BatchCreateSessionsResponse()
-      );
-      client.innerApiCalls.batchCreateSessions = stubSimpleCall(
-        expectedResponse
-      );
-      const [response] = await client.batchCreateSessions(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.batchCreateSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+    it('has port', () => {
+        const port = spannerModule.v1.SpannerClient.port;
+        assert(port);
+        assert(typeof port === 'number');
     });
 
-    it('invokes batchCreateSessions without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BatchCreateSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.BatchCreateSessionsResponse()
-      );
-      client.innerApiCalls.batchCreateSessions = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.batchCreateSessions(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.IBatchCreateSessionsResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.batchCreateSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+    it('should create a client with no option', () => {
+        const client = new spannerModule.v1.SpannerClient();
+        assert(client);
     });
 
-    it('invokes batchCreateSessions with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BatchCreateSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.batchCreateSessions = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.batchCreateSessions(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.batchCreateSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('getSession', () => {
-    it('invokes getSession without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.GetSessionRequest()
-      );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.Session()
-      );
-      client.innerApiCalls.getSession = stubSimpleCall(expectedResponse);
-      const [response] = await client.getSession(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes getSession without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.GetSessionRequest()
-      );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.Session()
-      );
-      client.innerApiCalls.getSession = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.getSession(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.ISession | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes getSession with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.GetSessionRequest()
-      );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.getSession = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.getSession(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.getSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('deleteSession', () => {
-    it('invokes deleteSession without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.DeleteSessionRequest()
-      );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
-      );
-      client.innerApiCalls.deleteSession = stubSimpleCall(expectedResponse);
-      const [response] = await client.deleteSession(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.deleteSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes deleteSession without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.DeleteSessionRequest()
-      );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
-      );
-      client.innerApiCalls.deleteSession = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.deleteSession(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.protobuf.IEmpty | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.deleteSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes deleteSession with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.DeleteSessionRequest()
-      );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.deleteSession = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.deleteSession(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.deleteSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('executeSql', () => {
-    it('invokes executeSql without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.ResultSet()
-      );
-      client.innerApiCalls.executeSql = stubSimpleCall(expectedResponse);
-      const [response] = await client.executeSql(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes executeSql without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.ResultSet()
-      );
-      client.innerApiCalls.executeSql = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.executeSql(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.IResultSet | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes executeSql with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.executeSql = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.executeSql(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.executeSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('executeBatchDml', () => {
-    it('invokes executeBatchDml without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteBatchDmlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteBatchDmlResponse()
-      );
-      client.innerApiCalls.executeBatchDml = stubSimpleCall(expectedResponse);
-      const [response] = await client.executeBatchDml(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeBatchDml as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes executeBatchDml without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteBatchDmlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteBatchDmlResponse()
-      );
-      client.innerApiCalls.executeBatchDml = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.executeBatchDml(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.IExecuteBatchDmlResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeBatchDml as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes executeBatchDml with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteBatchDmlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.executeBatchDml = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.executeBatchDml(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.executeBatchDml as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('read', () => {
-    it('invokes read without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.ResultSet()
-      );
-      client.innerApiCalls.read = stubSimpleCall(expectedResponse);
-      const [response] = await client.read(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.read as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes read without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.ResultSet()
-      );
-      client.innerApiCalls.read = stubSimpleCallWithCallback(expectedResponse);
-      const promise = new Promise((resolve, reject) => {
-        client.read(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.IResultSet | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.read as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes read with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.read = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.read(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.read as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('beginTransaction', () => {
-    it('invokes beginTransaction without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BeginTransactionRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.Transaction()
-      );
-      client.innerApiCalls.beginTransaction = stubSimpleCall(expectedResponse);
-      const [response] = await client.beginTransaction(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.beginTransaction as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes beginTransaction without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BeginTransactionRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.Transaction()
-      );
-      client.innerApiCalls.beginTransaction = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.beginTransaction(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.ITransaction | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.beginTransaction as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes beginTransaction with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BeginTransactionRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.beginTransaction = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.beginTransaction(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.beginTransaction as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('commit', () => {
-    it('invokes commit without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CommitRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.CommitResponse()
-      );
-      client.innerApiCalls.commit = stubSimpleCall(expectedResponse);
-      const [response] = await client.commit(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.commit as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes commit without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CommitRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.CommitResponse()
-      );
-      client.innerApiCalls.commit = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.commit(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.ICommitResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.commit as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes commit with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CommitRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.commit = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.commit(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.commit as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('rollback', () => {
-    it('invokes rollback without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.RollbackRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
-      );
-      client.innerApiCalls.rollback = stubSimpleCall(expectedResponse);
-      const [response] = await client.rollback(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.rollback as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes rollback without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.RollbackRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
-      );
-      client.innerApiCalls.rollback = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.rollback(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.protobuf.IEmpty | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.rollback as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes rollback with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.RollbackRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.rollback = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.rollback(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.rollback as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('partitionQuery', () => {
-    it('invokes partitionQuery without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionQueryRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionResponse()
-      );
-      client.innerApiCalls.partitionQuery = stubSimpleCall(expectedResponse);
-      const [response] = await client.partitionQuery(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionQuery as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes partitionQuery without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionQueryRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionResponse()
-      );
-      client.innerApiCalls.partitionQuery = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.partitionQuery(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.IPartitionResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionQuery as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes partitionQuery with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionQueryRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.partitionQuery = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.partitionQuery(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.partitionQuery as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('partitionRead', () => {
-    it('invokes partitionRead without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionResponse()
-      );
-      client.innerApiCalls.partitionRead = stubSimpleCall(expectedResponse);
-      const [response] = await client.partitionRead(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes partitionRead without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionResponse()
-      );
-      client.innerApiCalls.partitionRead = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.partitionRead(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.IPartitionResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes partitionRead with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.partitionRead = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.partitionRead(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.partitionRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('executeStreamingSql', () => {
-    it('invokes executeStreamingSql without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.PartialResultSet()
-      );
-      client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(
-        expectedResponse
-      );
-      const stream = client.executeStreamingSql(request);
-      const promise = new Promise((resolve, reject) => {
-        stream.on(
-          'data',
-          (response: protos.google.spanner.v1.PartialResultSet) => {
-            resolve(response);
-          }
-        );
-        stream.on('error', (err: Error) => {
-          reject(err);
+    it('should create a client with gRPC fallback', () => {
+        const client = new spannerModule.v1.SpannerClient({
+            fallback: true,
         });
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeStreamingSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+        assert(client);
     });
 
-    it('invokes executeStreamingSql with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(
-        undefined,
-        expectedError
-      );
-      const stream = client.executeStreamingSql(request);
-      const promise = new Promise((resolve, reject) => {
-        stream.on(
-          'data',
-          (response: protos.google.spanner.v1.PartialResultSet) => {
-            resolve(response);
-          }
-        );
-        stream.on('error', (err: Error) => {
-          reject(err);
+    it('has initialize method and supports deferred initialization', async () => {
+        const client = new spannerModule.v1.SpannerClient({
+            credentials: { client_email: 'bogus', private_key: 'bogus' },
+            projectId: 'bogus',
         });
-      });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.executeStreamingSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+        assert.strictEqual(client.spannerStub, undefined);
+        await client.initialize();
+        assert(client.spannerStub);
     });
-  });
 
-  describe('streamingRead', () => {
-    it('invokes streamingRead without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.v1.PartialResultSet()
-      );
-      client.innerApiCalls.streamingRead = stubServerStreamingCall(
-        expectedResponse
-      );
-      const stream = client.streamingRead(request);
-      const promise = new Promise((resolve, reject) => {
-        stream.on(
-          'data',
-          (response: protos.google.spanner.v1.PartialResultSet) => {
-            resolve(response);
-          }
-        );
-        stream.on('error', (err: Error) => {
-          reject(err);
+    it('has close method', () => {
+        const client = new spannerModule.v1.SpannerClient({
+            credentials: { client_email: 'bogus', private_key: 'bogus' },
+            projectId: 'bogus',
         });
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.streamingRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+        client.close();
     });
 
-    it('invokes streamingRead with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.streamingRead = stubServerStreamingCall(
-        undefined,
-        expectedError
-      );
-      const stream = client.streamingRead(request);
-      const promise = new Promise((resolve, reject) => {
-        stream.on(
-          'data',
-          (response: protos.google.spanner.v1.PartialResultSet) => {
-            resolve(response);
-          }
-        );
-        stream.on('error', (err: Error) => {
-          reject(err);
+    it('has getProjectId method', async () => {
+        const fakeProjectId = 'fake-project-id';
+        const client = new spannerModule.v1.SpannerClient({
+            credentials: { client_email: 'bogus', private_key: 'bogus' },
+            projectId: 'bogus',
         });
-      });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.streamingRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
-    });
-  });
-
-  describe('listSessions', () => {
-    it('invokes listSessions without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = [
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-      ];
-      client.innerApiCalls.listSessions = stubSimpleCall(expectedResponse);
-      const [response] = await client.listSessions(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+        const result = await client.getProjectId();
+        assert.strictEqual(result, fakeProjectId);
+        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
     });
 
-    it('invokes listSessions without error using callback', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = [
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-      ];
-      client.innerApiCalls.listSessions = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.listSessions(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.v1.ISession[] | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
+    it('has getProjectId method with callback', async () => {
+        const fakeProjectId = 'fake-project-id';
+        const client = new spannerModule.v1.SpannerClient({
+            credentials: { client_email: 'bogus', private_key: 'bogus' },
+            projectId: 'bogus',
+        });
+        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+        const promise = new Promise((resolve, reject) => {
+            client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(projectId);
+                }
+            });
+        });
+        const result = await promise;
+        assert.strictEqual(result, fakeProjectId);
+    });
+
+    describe('createSession', () => {
+        it('invokes createSession without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.CreateSessionRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.Session());
+            client.innerApiCalls.createSession = stubSimpleCall(expectedResponse);
+            const [response] = await client.createSession(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.createSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createSession without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.CreateSessionRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.Session());
+            client.innerApiCalls.createSession = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.createSession(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.ISession|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.createSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes createSession with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.CreateSessionRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.createSession = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.createSession(request); }, expectedError);
+            assert((client.innerApiCalls.createSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('batchCreateSessions', () => {
+        it('invokes batchCreateSessions without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.BatchCreateSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.BatchCreateSessionsResponse());
+            client.innerApiCalls.batchCreateSessions = stubSimpleCall(expectedResponse);
+            const [response] = await client.batchCreateSessions(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateSessions as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes batchCreateSessions without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.BatchCreateSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.BatchCreateSessionsResponse());
+            client.innerApiCalls.batchCreateSessions = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.batchCreateSessions(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.IBatchCreateSessionsResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateSessions as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes batchCreateSessions with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.BatchCreateSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.batchCreateSessions = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.batchCreateSessions(request); }, expectedError);
+            assert((client.innerApiCalls.batchCreateSessions as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('getSession', () => {
+        it('invokes getSession without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.GetSessionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.Session());
+            client.innerApiCalls.getSession = stubSimpleCall(expectedResponse);
+            const [response] = await client.getSession(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getSession without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.GetSessionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.Session());
+            client.innerApiCalls.getSession = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getSession(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.ISession|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes getSession with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.GetSessionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getSession = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.getSession(request); }, expectedError);
+            assert((client.innerApiCalls.getSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('deleteSession', () => {
+        it('invokes deleteSession without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.DeleteSessionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            client.innerApiCalls.deleteSession = stubSimpleCall(expectedResponse);
+            const [response] = await client.deleteSession(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.deleteSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteSession without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.DeleteSessionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            client.innerApiCalls.deleteSession = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.deleteSession(
+                    request,
+                    (err?: Error|null, result?: protos.google.protobuf.IEmpty|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.deleteSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes deleteSession with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.DeleteSessionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.deleteSession = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.deleteSession(request); }, expectedError);
+            assert((client.innerApiCalls.deleteSession as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('executeSql', () => {
+        it('invokes executeSql without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteSqlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.ResultSet());
+            client.innerApiCalls.executeSql = stubSimpleCall(expectedResponse);
+            const [response] = await client.executeSql(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.executeSql as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes executeSql without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteSqlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.ResultSet());
+            client.innerApiCalls.executeSql = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.executeSql(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.IResultSet|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.executeSql as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes executeSql with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteSqlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.executeSql = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.executeSql(request); }, expectedError);
+            assert((client.innerApiCalls.executeSql as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('executeBatchDml', () => {
+        it('invokes executeBatchDml without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteBatchDmlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.ExecuteBatchDmlResponse());
+            client.innerApiCalls.executeBatchDml = stubSimpleCall(expectedResponse);
+            const [response] = await client.executeBatchDml(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.executeBatchDml as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes executeBatchDml without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteBatchDmlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.ExecuteBatchDmlResponse());
+            client.innerApiCalls.executeBatchDml = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.executeBatchDml(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.IExecuteBatchDmlResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.executeBatchDml as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes executeBatchDml with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteBatchDmlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.executeBatchDml = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.executeBatchDml(request); }, expectedError);
+            assert((client.innerApiCalls.executeBatchDml as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('read', () => {
+        it('invokes read without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.ResultSet());
+            client.innerApiCalls.read = stubSimpleCall(expectedResponse);
+            const [response] = await client.read(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.read as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes read without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.ResultSet());
+            client.innerApiCalls.read = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.read(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.IResultSet|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.read as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes read with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.read = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.read(request); }, expectedError);
+            assert((client.innerApiCalls.read as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('beginTransaction', () => {
+        it('invokes beginTransaction without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.BeginTransactionRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.Transaction());
+            client.innerApiCalls.beginTransaction = stubSimpleCall(expectedResponse);
+            const [response] = await client.beginTransaction(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.beginTransaction as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes beginTransaction without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.BeginTransactionRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.Transaction());
+            client.innerApiCalls.beginTransaction = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.beginTransaction(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.ITransaction|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.beginTransaction as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes beginTransaction with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.BeginTransactionRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.beginTransaction = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.beginTransaction(request); }, expectedError);
+            assert((client.innerApiCalls.beginTransaction as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('commit', () => {
+        it('invokes commit without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.CommitRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.CommitResponse());
+            client.innerApiCalls.commit = stubSimpleCall(expectedResponse);
+            const [response] = await client.commit(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.commit as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes commit without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.CommitRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.CommitResponse());
+            client.innerApiCalls.commit = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.commit(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.ICommitResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.commit as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes commit with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.CommitRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.commit = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.commit(request); }, expectedError);
+            assert((client.innerApiCalls.commit as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('rollback', () => {
+        it('invokes rollback without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.RollbackRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            client.innerApiCalls.rollback = stubSimpleCall(expectedResponse);
+            const [response] = await client.rollback(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.rollback as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes rollback without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.RollbackRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            client.innerApiCalls.rollback = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.rollback(
+                    request,
+                    (err?: Error|null, result?: protos.google.protobuf.IEmpty|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.rollback as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes rollback with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.RollbackRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.rollback = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.rollback(request); }, expectedError);
+            assert((client.innerApiCalls.rollback as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('partitionQuery', () => {
+        it('invokes partitionQuery without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.PartitionQueryRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.PartitionResponse());
+            client.innerApiCalls.partitionQuery = stubSimpleCall(expectedResponse);
+            const [response] = await client.partitionQuery(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.partitionQuery as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes partitionQuery without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.PartitionQueryRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.PartitionResponse());
+            client.innerApiCalls.partitionQuery = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.partitionQuery(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.IPartitionResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.partitionQuery as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes partitionQuery with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.PartitionQueryRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.partitionQuery = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.partitionQuery(request); }, expectedError);
+            assert((client.innerApiCalls.partitionQuery as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('partitionRead', () => {
+        it('invokes partitionRead without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.PartitionReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.PartitionResponse());
+            client.innerApiCalls.partitionRead = stubSimpleCall(expectedResponse);
+            const [response] = await client.partitionRead(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.partitionRead as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes partitionRead without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.PartitionReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.PartitionResponse());
+            client.innerApiCalls.partitionRead = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.partitionRead(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.IPartitionResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.partitionRead as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes partitionRead with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.PartitionReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.partitionRead = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.partitionRead(request); }, expectedError);
+            assert((client.innerApiCalls.partitionRead as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('executeStreamingSql', () => {
+        it('invokes executeStreamingSql without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteSqlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.PartialResultSet());
+            client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(expectedResponse);
+            const stream = client.executeStreamingSql(request);
+            const promise = new Promise((resolve, reject) => {
+                stream.on('data', (response: protos.google.spanner.v1.PartialResultSet) => {
+                    resolve(response);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.executeStreamingSql as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions));
+        });
+
+        it('invokes executeStreamingSql with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ExecuteSqlRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(undefined, expectedError);
+            const stream = client.executeStreamingSql(request);
+            const promise = new Promise((resolve, reject) => {
+                stream.on('data', (response: protos.google.spanner.v1.PartialResultSet) => {
+                    resolve(response);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            await assert.rejects(async () => { await promise; }, expectedError);
+            assert((client.innerApiCalls.executeStreamingSql as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions));
+        });
+    });
+
+    describe('streamingRead', () => {
+        it('invokes streamingRead without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.google.spanner.v1.PartialResultSet());
+            client.innerApiCalls.streamingRead = stubServerStreamingCall(expectedResponse);
+            const stream = client.streamingRead(request);
+            const promise = new Promise((resolve, reject) => {
+                stream.on('data', (response: protos.google.spanner.v1.PartialResultSet) => {
+                    resolve(response);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.streamingRead as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions));
+        });
+
+        it('invokes streamingRead with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ReadRequest());
+            request.session = '';
+            const expectedHeaderRequestParams = "session=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.streamingRead = stubServerStreamingCall(undefined, expectedError);
+            const stream = client.streamingRead(request);
+            const promise = new Promise((resolve, reject) => {
+                stream.on('data', (response: protos.google.spanner.v1.PartialResultSet) => {
+                    resolve(response);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            await assert.rejects(async () => { await promise; }, expectedError);
+            assert((client.innerApiCalls.streamingRead as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions));
+        });
+    });
+
+    describe('listSessions', () => {
+        it('invokes listSessions without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = [
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+            ];
+            client.innerApiCalls.listSessions = stubSimpleCall(expectedResponse);
+            const [response] = await client.listSessions(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.listSessions as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes listSessions without error using callback', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = [
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+            ];
+            client.innerApiCalls.listSessions = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.listSessions(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.v1.ISession[]|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.listSessions as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes listSessions with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.listSessions = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(async () => { await client.listSessions(request); }, expectedError);
+            assert((client.innerApiCalls.listSessions as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes listSessionsStream without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedResponse = [
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+            ];
+            client.descriptors.page.listSessions.createStream = stubPageStreamingCall(expectedResponse);
+            const stream = client.listSessionsStream(request);
+            const promise = new Promise((resolve, reject) => {
+                const responses: protos.google.spanner.v1.Session[] = [];
+                stream.on('data', (response: protos.google.spanner.v1.Session) => {
+                    responses.push(response);
+                });
+                stream.on('end', () => {
+                    resolve(responses);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            const responses = await promise;
+            assert.deepStrictEqual(responses, expectedResponse);
+            assert((client.descriptors.page.listSessions.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listSessions, request));
+            assert.strictEqual(
+                (client.descriptors.page.listSessions.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
+        });
+
+        it('invokes listSessionsStream with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";
+            const expectedError = new Error('expected');
+            client.descriptors.page.listSessions.createStream = stubPageStreamingCall(undefined, expectedError);
+            const stream = client.listSessionsStream(request);
+            const promise = new Promise((resolve, reject) => {
+                const responses: protos.google.spanner.v1.Session[] = [];
+                stream.on('data', (response: protos.google.spanner.v1.Session) => {
+                    responses.push(response);
+                });
+                stream.on('end', () => {
+                    resolve(responses);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            await assert.rejects(async () => { await promise; }, expectedError);
+            assert((client.descriptors.page.listSessions.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listSessions, request));
+            assert.strictEqual(
+                (client.descriptors.page.listSessions.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
+        });
+
+        it('uses async iteration with listSessions without error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";const expectedResponse = [
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+              generateSampleMessage(new protos.google.spanner.v1.Session()),
+            ];
+            client.descriptors.page.listSessions.asyncIterate = stubAsyncIterationCall(expectedResponse);
+            const responses: protos.google.spanner.v1.ISession[] = [];
+            const iterable = client.listSessionsAsync(request);
+            for await (const resource of iterable) {
+                responses.push(resource!);
             }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes listSessions with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.listSessions = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.listSessions(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.listSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes listSessionsStream without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedResponse = [
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-      ];
-      client.descriptors.page.listSessions.createStream = stubPageStreamingCall(
-        expectedResponse
-      );
-      const stream = client.listSessionsStream(request);
-      const promise = new Promise((resolve, reject) => {
-        const responses: protos.google.spanner.v1.Session[] = [];
-        stream.on('data', (response: protos.google.spanner.v1.Session) => {
-          responses.push(response);
+            assert.deepStrictEqual(responses, expectedResponse);
+            assert.deepStrictEqual(
+                (client.descriptors.page.listSessions.asyncIterate as SinonStub)
+                    .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listSessions.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
-        stream.on('end', () => {
-          resolve(responses);
+
+        it('uses async iteration with listSessions with error', async () => {
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.spanner.v1.ListSessionsRequest());
+            request.database = '';
+            const expectedHeaderRequestParams = "database=";const expectedError = new Error('expected');
+            client.descriptors.page.listSessions.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
+            const iterable = client.listSessionsAsync(request);
+            await assert.rejects(async () => {
+                const responses: protos.google.spanner.v1.ISession[] = [];
+                for await (const resource of iterable) {
+                    responses.push(resource!);
+                }
+            });
+            assert.deepStrictEqual(
+                (client.descriptors.page.listSessions.asyncIterate as SinonStub)
+                    .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listSessions.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
-        stream.on('error', (err: Error) => {
-          reject(err);
+    });
+
+    describe('Path templates', () => {
+
+        describe('database', () => {
+            const fakePath = "/rendered/path/database";
+            const expectedParameters = {
+                project: "projectValue",
+                instance: "instanceValue",
+                database: "databaseValue",
+            };
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            client.pathTemplates.databasePathTemplate.render =
+                sinon.stub().returns(fakePath);
+            client.pathTemplates.databasePathTemplate.match =
+                sinon.stub().returns(expectedParameters);
+
+            it('databasePath', () => {
+                const result = client.databasePath("projectValue", "instanceValue", "databaseValue");
+                assert.strictEqual(result, fakePath);
+                assert((client.pathTemplates.databasePathTemplate.render as SinonStub)
+                    .getCall(-1).calledWith(expectedParameters));
+            });
+
+            it('matchProjectFromDatabaseName', () => {
+                const result = client.matchProjectFromDatabaseName(fakePath);
+                assert.strictEqual(result, "projectValue");
+                assert((client.pathTemplates.databasePathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchInstanceFromDatabaseName', () => {
+                const result = client.matchInstanceFromDatabaseName(fakePath);
+                assert.strictEqual(result, "instanceValue");
+                assert((client.pathTemplates.databasePathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchDatabaseFromDatabaseName', () => {
+                const result = client.matchDatabaseFromDatabaseName(fakePath);
+                assert.strictEqual(result, "databaseValue");
+                assert((client.pathTemplates.databasePathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
         });
-      });
-      const responses = await promise;
-      assert.deepStrictEqual(responses, expectedResponse);
-      assert(
-        (client.descriptors.page.listSessions.createStream as SinonStub)
-          .getCall(0)
-          .calledWith(client.innerApiCalls.listSessions, request)
-      );
-      assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
-        expectedHeaderRequestParams
-      );
-    });
 
-    it('invokes listSessionsStream with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedError = new Error('expected');
-      client.descriptors.page.listSessions.createStream = stubPageStreamingCall(
-        undefined,
-        expectedError
-      );
-      const stream = client.listSessionsStream(request);
-      const promise = new Promise((resolve, reject) => {
-        const responses: protos.google.spanner.v1.Session[] = [];
-        stream.on('data', (response: protos.google.spanner.v1.Session) => {
-          responses.push(response);
+        describe('session', () => {
+            const fakePath = "/rendered/path/session";
+            const expectedParameters = {
+                project: "projectValue",
+                instance: "instanceValue",
+                database: "databaseValue",
+                session: "sessionValue",
+            };
+            const client = new spannerModule.v1.SpannerClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            client.pathTemplates.sessionPathTemplate.render =
+                sinon.stub().returns(fakePath);
+            client.pathTemplates.sessionPathTemplate.match =
+                sinon.stub().returns(expectedParameters);
+
+            it('sessionPath', () => {
+                const result = client.sessionPath("projectValue", "instanceValue", "databaseValue", "sessionValue");
+                assert.strictEqual(result, fakePath);
+                assert((client.pathTemplates.sessionPathTemplate.render as SinonStub)
+                    .getCall(-1).calledWith(expectedParameters));
+            });
+
+            it('matchProjectFromSessionName', () => {
+                const result = client.matchProjectFromSessionName(fakePath);
+                assert.strictEqual(result, "projectValue");
+                assert((client.pathTemplates.sessionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchInstanceFromSessionName', () => {
+                const result = client.matchInstanceFromSessionName(fakePath);
+                assert.strictEqual(result, "instanceValue");
+                assert((client.pathTemplates.sessionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchDatabaseFromSessionName', () => {
+                const result = client.matchDatabaseFromSessionName(fakePath);
+                assert.strictEqual(result, "databaseValue");
+                assert((client.pathTemplates.sessionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchSessionFromSessionName', () => {
+                const result = client.matchSessionFromSessionName(fakePath);
+                assert.strictEqual(result, "sessionValue");
+                assert((client.pathTemplates.sessionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
         });
-        stream.on('end', () => {
-          resolve(responses);
-        });
-        stream.on('error', (err: Error) => {
-          reject(err);
-        });
-      });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
-      assert(
-        (client.descriptors.page.listSessions.createStream as SinonStub)
-          .getCall(0)
-          .calledWith(client.innerApiCalls.listSessions, request)
-      );
-      assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
-        expectedHeaderRequestParams
-      );
     });
-
-    it('uses async iteration with listSessions without error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedResponse = [
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-        generateSampleMessage(new protos.google.spanner.v1.Session()),
-      ];
-      client.descriptors.page.listSessions.asyncIterate = stubAsyncIterationCall(
-        expectedResponse
-      );
-      const responses: protos.google.spanner.v1.ISession[] = [];
-      const iterable = client.listSessionsAsync(request);
-      for await (const resource of iterable) {
-        responses.push(resource!);
-      }
-      assert.deepStrictEqual(responses, expectedResponse);
-      assert.deepStrictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[1],
-        request
-      );
-      assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
-        expectedHeaderRequestParams
-      );
-    });
-
-    it('uses async iteration with listSessions with error', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ListSessionsRequest()
-      );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedError = new Error('expected');
-      client.descriptors.page.listSessions.asyncIterate = stubAsyncIterationCall(
-        undefined,
-        expectedError
-      );
-      const iterable = client.listSessionsAsync(request);
-      await assert.rejects(async () => {
-        const responses: protos.google.spanner.v1.ISession[] = [];
-        for await (const resource of iterable) {
-          responses.push(resource!);
-        }
-      });
-      assert.deepStrictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[1],
-        request
-      );
-      assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
-        expectedHeaderRequestParams
-      );
-    });
-  });
-
-  describe('Path templates', () => {
-    describe('database', () => {
-      const fakePath = '/rendered/path/database';
-      const expectedParameters = {
-        project: 'projectValue',
-        instance: 'instanceValue',
-        database: 'databaseValue',
-      };
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      client.pathTemplates.databasePathTemplate.render = sinon
-        .stub()
-        .returns(fakePath);
-      client.pathTemplates.databasePathTemplate.match = sinon
-        .stub()
-        .returns(expectedParameters);
-
-      it('databasePath', () => {
-        const result = client.databasePath(
-          'projectValue',
-          'instanceValue',
-          'databaseValue'
-        );
-        assert.strictEqual(result, fakePath);
-        assert(
-          (client.pathTemplates.databasePathTemplate.render as SinonStub)
-            .getCall(-1)
-            .calledWith(expectedParameters)
-        );
-      });
-
-      it('matchProjectFromDatabaseName', () => {
-        const result = client.matchProjectFromDatabaseName(fakePath);
-        assert.strictEqual(result, 'projectValue');
-        assert(
-          (client.pathTemplates.databasePathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-
-      it('matchInstanceFromDatabaseName', () => {
-        const result = client.matchInstanceFromDatabaseName(fakePath);
-        assert.strictEqual(result, 'instanceValue');
-        assert(
-          (client.pathTemplates.databasePathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-
-      it('matchDatabaseFromDatabaseName', () => {
-        const result = client.matchDatabaseFromDatabaseName(fakePath);
-        assert.strictEqual(result, 'databaseValue');
-        assert(
-          (client.pathTemplates.databasePathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-    });
-
-    describe('session', () => {
-      const fakePath = '/rendered/path/session';
-      const expectedParameters = {
-        project: 'projectValue',
-        instance: 'instanceValue',
-        database: 'databaseValue',
-        session: 'sessionValue',
-      };
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      client.pathTemplates.sessionPathTemplate.render = sinon
-        .stub()
-        .returns(fakePath);
-      client.pathTemplates.sessionPathTemplate.match = sinon
-        .stub()
-        .returns(expectedParameters);
-
-      it('sessionPath', () => {
-        const result = client.sessionPath(
-          'projectValue',
-          'instanceValue',
-          'databaseValue',
-          'sessionValue'
-        );
-        assert.strictEqual(result, fakePath);
-        assert(
-          (client.pathTemplates.sessionPathTemplate.render as SinonStub)
-            .getCall(-1)
-            .calledWith(expectedParameters)
-        );
-      });
-
-      it('matchProjectFromSessionName', () => {
-        const result = client.matchProjectFromSessionName(fakePath);
-        assert.strictEqual(result, 'projectValue');
-        assert(
-          (client.pathTemplates.sessionPathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-
-      it('matchInstanceFromSessionName', () => {
-        const result = client.matchInstanceFromSessionName(fakePath);
-        assert.strictEqual(result, 'instanceValue');
-        assert(
-          (client.pathTemplates.sessionPathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-
-      it('matchDatabaseFromSessionName', () => {
-        const result = client.matchDatabaseFromSessionName(fakePath);
-        assert.strictEqual(result, 'databaseValue');
-        assert(
-          (client.pathTemplates.sessionPathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-
-      it('matchSessionFromSessionName', () => {
-        const result = client.matchSessionFromSessionName(fakePath);
-        assert.strictEqual(result, 'sessionValue');
-        assert(
-          (client.pathTemplates.sessionPathTemplate.match as SinonStub)
-            .getCall(-1)
-            .calledWith(fakePath)
-        );
-      });
-    });
-  });
 });
