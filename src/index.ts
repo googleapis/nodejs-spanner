@@ -687,7 +687,7 @@ class Spanner extends GrpcService {
         }
       });
     } else {
-      return new this.Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         this.prepareGapicRequest_(config, (err, requestFn) => {
           if (err) {
             reject(err);
