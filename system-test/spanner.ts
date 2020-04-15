@@ -1130,16 +1130,16 @@ describe('Spanner', () => {
     it('should list backups with pagination', async () => {
       const [page1, , resp1] = await instance.getBackups({
         pageSize: 1,
-        autoPaginate: false,
+        gaxOptions: {autoPaginate: false},
       });
       const [page2] = await instance.getBackups({
         pageSize: 1,
-        autoPaginate: false,
         pageToken: resp1!.nextPageToken,
+        gaxOptions: {autoPaginate: false},
       });
       const [page3] = await instance.getBackups({
         pageSize: 2,
-        autoPaginate: false,
+        gaxOptions: {autoPaginate: false},
       });
       assert.strictEqual(page1.length, 1);
       assert.strictEqual(page2.length, 1);
