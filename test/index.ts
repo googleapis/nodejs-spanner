@@ -898,7 +898,6 @@ describe('Spanner', () => {
 
     beforeEach(() => {
       spanner.prepareGapicRequest_ = util.noop;
-      spanner.Promise = Promise;
     });
 
     describe('callback mode', () => {
