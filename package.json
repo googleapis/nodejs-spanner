@@ -51,7 +51,7 @@
     "@google-cloud/common": "^2.2.2",
     "@google-cloud/paginator": "^2.0.0",
     "@google-cloud/precise-date": "^1.0.0",
-    "@google-cloud/projectify": "^1.0.0",
+    "@google-cloud/projectify": "^2.0.0",
     "@google-cloud/promisify": "^2.0.0",
     "@types/stack-trace": "0.0.29",
     "arrify": "^2.0.0",
