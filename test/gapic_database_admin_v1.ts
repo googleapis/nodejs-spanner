@@ -1254,236 +1254,6 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
-  describe('listBackups', () => {
-    it('invokes listBackups without error', async () => {
-      const client = new databaseadminModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
-      );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupsResponse()
-      );
-      client.innerApiCalls.listBackups = stubSimpleCall(expectedResponse);
-      const [response] = await client.listBackups(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackups as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes listBackups without error using callback', async () => {
-      const client = new databaseadminModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
-      );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupsResponse()
-      );
-      client.innerApiCalls.listBackups = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.listBackups(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.admin.database.v1.IListBackupsResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackups as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes listBackups with error', async () => {
-      const client = new databaseadminModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
-      );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.listBackups = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.listBackups(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.listBackups as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
-  describe('listBackupOperations', () => {
-    it('invokes listBackupOperations without error', async () => {
-      const client = new databaseadminModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
-      );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupOperationsResponse()
-      );
-      client.innerApiCalls.listBackupOperations = stubSimpleCall(
-        expectedResponse
-      );
-      const [response] = await client.listBackupOperations(request);
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackupOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-
-    it('invokes listBackupOperations without error using callback', async () => {
-      const client = new databaseadminModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
-      );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupOperationsResponse()
-      );
-      client.innerApiCalls.listBackupOperations = stubSimpleCallWithCallback(
-        expectedResponse
-      );
-      const promise = new Promise((resolve, reject) => {
-        client.listBackupOperations(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.spanner.admin.database.v1.IListBackupOperationsResponse | null
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-      });
-      const response = await promise;
-      assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackupOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
-    });
-
-    it('invokes listBackupOperations with error', async () => {
-      const client = new databaseadminModule.v1.DatabaseAdminClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
-      );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
-      const expectedError = new Error('expected');
-      client.innerApiCalls.listBackupOperations = stubSimpleCall(
-        undefined,
-        expectedError
-      );
-      await assert.rejects(async () => {
-        await client.listBackupOperations(request);
-      }, expectedError);
-      assert(
-        (client.innerApiCalls.listBackupOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
-    });
-  });
-
   describe('createDatabase', () => {
     it('invokes createDatabase without error', async () => {
       const client = new databaseadminModule.v1.DatabaseAdminClient({
@@ -2436,6 +2206,322 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
+  describe('listBackups', () => {
+    it('invokes listBackups without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+      ];
+      client.innerApiCalls.listBackups = stubSimpleCall(expectedResponse);
+      const [response] = await client.listBackups(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.listBackups as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes listBackups without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+      ];
+      client.innerApiCalls.listBackups = stubSimpleCallWithCallback(
+        expectedResponse
+      );
+      const promise = new Promise((resolve, reject) => {
+        client.listBackups(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.database.v1.IBackup[] | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.listBackups as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions /*, callback defined above */)
+      );
+    });
+
+    it('invokes listBackups with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listBackups = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(async () => {
+        await client.listBackups(request);
+      }, expectedError);
+      assert(
+        (client.innerApiCalls.listBackups as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes listBackupsStream without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+      ];
+      client.descriptors.page.listBackups.createStream = stubPageStreamingCall(
+        expectedResponse
+      );
+      const stream = client.listBackupsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.database.v1.Backup[] = [];
+        stream.on(
+          'data',
+          (response: protos.google.spanner.admin.database.v1.Backup) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (client.descriptors.page.listBackups.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listBackups, request)
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackups.createStream as SinonStub).getCall(
+          0
+        ).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('invokes listBackupsStream with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedError = new Error('expected');
+      client.descriptors.page.listBackups.createStream = stubPageStreamingCall(
+        undefined,
+        expectedError
+      );
+      const stream = client.listBackupsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.database.v1.Backup[] = [];
+        stream.on(
+          'data',
+          (response: protos.google.spanner.admin.database.v1.Backup) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(async () => {
+        await promise;
+      }, expectedError);
+      assert(
+        (client.descriptors.page.listBackups.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listBackups, request)
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackups.createStream as SinonStub).getCall(
+          0
+        ).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('uses async iteration with listBackups without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.Backup()
+        ),
+      ];
+      client.descriptors.page.listBackups.asyncIterate = stubAsyncIterationCall(
+        expectedResponse
+      );
+      const responses: protos.google.spanner.admin.database.v1.IBackup[] = [];
+      const iterable = client.listBackupsAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (client.descriptors.page.listBackups.asyncIterate as SinonStub).getCall(
+          0
+        ).args[1],
+        request
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackups.asyncIterate as SinonStub).getCall(
+          0
+        ).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('uses async iteration with listBackups with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedError = new Error('expected');
+      client.descriptors.page.listBackups.asyncIterate = stubAsyncIterationCall(
+        undefined,
+        expectedError
+      );
+      const iterable = client.listBackupsAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.spanner.admin.database.v1.IBackup[] = [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (client.descriptors.page.listBackups.asyncIterate as SinonStub).getCall(
+          0
+        ).args[1],
+        request
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackups.asyncIterate as SinonStub).getCall(
+          0
+        ).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+  });
+
   describe('listDatabaseOperations', () => {
     it('invokes listDatabaseOperations without error', async () => {
       const client = new databaseadminModule.v1.DatabaseAdminClient({
@@ -2720,6 +2806,296 @@ describe('v1.DatabaseAdminClient', () => {
       );
       assert.strictEqual(
         (client.descriptors.page.listDatabaseOperations
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
+        expectedHeaderRequestParams
+      );
+    });
+  });
+
+  describe('listBackupOperations', () => {
+    it('invokes listBackupOperations without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.innerApiCalls.listBackupOperations = stubSimpleCall(
+        expectedResponse
+      );
+      const [response] = await client.listBackupOperations(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.listBackupOperations as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes listBackupOperations without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.innerApiCalls.listBackupOperations = stubSimpleCallWithCallback(
+        expectedResponse
+      );
+      const promise = new Promise((resolve, reject) => {
+        client.listBackupOperations(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.longrunning.IOperation[] | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.listBackupOperations as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions /*, callback defined above */)
+      );
+    });
+
+    it('invokes listBackupOperations with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listBackupOperations = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(async () => {
+        await client.listBackupOperations(request);
+      }, expectedError);
+      assert(
+        (client.innerApiCalls.listBackupOperations as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes listBackupOperationsStream without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.descriptors.page.listBackupOperations.createStream = stubPageStreamingCall(
+        expectedResponse
+      );
+      const stream = client.listBackupOperationsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.longrunning.Operation[] = [];
+        stream.on('data', (response: protos.google.longrunning.Operation) => {
+          responses.push(response);
+        });
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (client.descriptors.page.listBackupOperations.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listBackupOperations, request)
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackupOperations
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('invokes listBackupOperationsStream with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedError = new Error('expected');
+      client.descriptors.page.listBackupOperations.createStream = stubPageStreamingCall(
+        undefined,
+        expectedError
+      );
+      const stream = client.listBackupOperationsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.longrunning.Operation[] = [];
+        stream.on('data', (response: protos.google.longrunning.Operation) => {
+          responses.push(response);
+        });
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(async () => {
+        await promise;
+      }, expectedError);
+      assert(
+        (client.descriptors.page.listBackupOperations.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listBackupOperations, request)
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackupOperations
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('uses async iteration with listBackupOperations without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.descriptors.page.listBackupOperations.asyncIterate = stubAsyncIterationCall(
+        expectedResponse
+      );
+      const responses: protos.google.longrunning.IOperation[] = [];
+      const iterable = client.listBackupOperationsAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[1],
+        request
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('uses async iteration with listBackupOperations with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedError = new Error('expected');
+      client.descriptors.page.listBackupOperations.asyncIterate = stubAsyncIterationCall(
+        undefined,
+        expectedError
+      );
+      const iterable = client.listBackupOperationsAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.longrunning.IOperation[] = [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[1],
+        request
+      );
+      assert.strictEqual(
+        (client.descriptors.page.listBackupOperations
           .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
           'x-goog-request-params'
         ],
