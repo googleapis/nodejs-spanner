@@ -17,11 +17,18 @@
 // ** All changes to this file may be overwritten. **
 
 import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
+import {
+  Callback,
+  CallOptions,
+  Descriptors,
+  ClientOptions,
+  PaginationCallback,
+  GaxCall,
+} from 'google-gax';
 import * as path from 'path';
 
-import { Transform } from 'stream';
-import { RequestType } from 'google-gax/build/src/apitypes';
+import {Transform} from 'stream';
+import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
 import * as gapicConfig from './spanner_client_config.json';
 
@@ -43,7 +50,12 @@ export class SpannerClient {
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
   auth: gax.GoogleAuth;
-  descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}, batching: {}};
+  descriptors: Descriptors = {
+    page: {},
+    stream: {},
+    longrunning: {},
+    batching: {},
+  };
   innerApiCalls: {[name: string]: Function};
   pathTemplates: {[name: string]: gax.PathTemplate};
   spannerStub?: Promise<{[name: string]: Function}>;
@@ -77,10 +89,12 @@ export class SpannerClient {
   constructor(opts?: ClientOptions) {
     // Ensure that options include the service address and port.
     const staticMembers = this.constructor as typeof SpannerClient;
-    const servicePath = opts && opts.servicePath ?
-        opts.servicePath :
-        ((opts && opts.apiEndpoint) ? opts.apiEndpoint :
-                                      staticMembers.servicePath);
+    const servicePath =
+      opts && opts.servicePath
+        ? opts.servicePath
+        : opts && opts.apiEndpoint
+        ? opts.apiEndpoint
+        : staticMembers.servicePath;
     const port = opts && opts.port ? opts.port : staticMembers.port;
 
     if (!opts) {
@@ -90,8 +104,8 @@ export class SpannerClient {
     opts.port = opts.port || port;
     opts.clientConfig = opts.clientConfig || {};
 
-    const isBrowser = (typeof window !== 'undefined');
-    if (isBrowser){
+    const isBrowser = typeof window !== 'undefined';
+    if (isBrowser) {
       opts.fallback = true;
     }
     // If we are in browser, we are already using fallback because of the
@@ -108,13 +122,10 @@ export class SpannerClient {
     this._opts = opts;
 
     // Save the auth object to the client, for use by other methods.
-    this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+    this.auth = this._gaxGrpc.auth as gax.GoogleAuth;
 
     // Determine the client header string.
-    const clientHeader = [
-      `gax/${this._gaxModule.version}`,
-      `gapic/${version}`,
-    ];
+    const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
     if (typeof process !== 'undefined' && 'versions' in process) {
       clientHeader.push(`gl-node/${process.versions.node}`);
     } else {
@@ -130,12 +141,18 @@ export class SpannerClient {
     // For Node.js, pass the path to JSON proto file.
     // For browsers, pass the JSON content.
 
-    const nodejsProtoPath = path.join(__dirname, '..', '..', 'protos', 'protos.json');
+    const nodejsProtoPath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'protos',
+      'protos.json'
+    );
     this._protos = this._gaxGrpc.loadProto(
-      opts.fallback ?
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        require("../../protos/protos.json") :
-        nodejsProtoPath
+      opts.fallback
+        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
+          require('../../protos/protos.json')
+        : nodejsProtoPath
     );
 
     // This API contains "path templates"; forward-slash-separated
@@ -154,21 +171,31 @@ export class SpannerClient {
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
     this.descriptors.page = {
-      listSessions:
-          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'sessions')
+      listSessions: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'sessions'
+      ),
     };
 
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this.descriptors.stream = {
-      executeStreamingSql: new this._gaxModule.StreamDescriptor(gax.StreamType.SERVER_STREAMING),
-      streamingRead: new this._gaxModule.StreamDescriptor(gax.StreamType.SERVER_STREAMING)
+      executeStreamingSql: new this._gaxModule.StreamDescriptor(
+        gax.StreamType.SERVER_STREAMING
+      ),
+      streamingRead: new this._gaxModule.StreamDescriptor(
+        gax.StreamType.SERVER_STREAMING
+      ),
     };
 
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-        'google.spanner.v1.Spanner', gapicConfig as gax.ClientConfig,
-        opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
+      'google.spanner.v1.Spanner',
+      gapicConfig as gax.ClientConfig,
+      opts.clientConfig || {},
+      {'x-goog-api-client': clientHeader.join(' ')}
+    );
 
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
@@ -196,16 +223,34 @@ export class SpannerClient {
     // Put together the "service stub" for
     // google.spanner.v1.Spanner.
     this.spannerStub = this._gaxGrpc.createStub(
-        this._opts.fallback ?
-          (this._protos as protobuf.Root).lookupService('google.spanner.v1.Spanner') :
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this._opts.fallback
+        ? (this._protos as protobuf.Root).lookupService(
+            'google.spanner.v1.Spanner'
+          )
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.v1.Spanner,
-        this._opts) as Promise<{[method: string]: Function}>;
+      this._opts
+    ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const spannerStubMethods =
-        ['createSession', 'batchCreateSessions', 'getSession', 'listSessions', 'deleteSession', 'executeSql', 'executeStreamingSql', 'executeBatchDml', 'read', 'streamingRead', 'beginTransaction', 'commit', 'rollback', 'partitionQuery', 'partitionRead'];
+    const spannerStubMethods = [
+      'createSession',
+      'batchCreateSessions',
+      'getSession',
+      'listSessions',
+      'deleteSession',
+      'executeSql',
+      'executeStreamingSql',
+      'executeBatchDml',
+      'read',
+      'streamingRead',
+      'beginTransaction',
+      'commit',
+      'rollback',
+      'partitionQuery',
+      'partitionRead',
+    ];
     for (const methodName of spannerStubMethods) {
       const callPromise = this.spannerStub.then(
         stub => (...args: Array<{}>) => {
@@ -215,16 +260,17 @@ export class SpannerClient {
           const func = stub[methodName];
           return func.apply(stub, args);
         },
-        (err: Error|null|undefined) => () => {
+        (err: Error | null | undefined) => () => {
           throw err;
-        });
+        }
+      );
 
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
         this._defaults[methodName],
         this.descriptors.page[methodName] ||
-            this.descriptors.stream[methodName] ||
-            this.descriptors.longrunning[methodName]
+          this.descriptors.stream[methodName] ||
+          this.descriptors.longrunning[methodName]
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -262,7 +308,7 @@ export class SpannerClient {
   static get scopes() {
     return [
       'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/spanner.data'
+      'https://www.googleapis.com/auth/spanner.data',
     ];
   }
 
@@ -273,8 +319,9 @@ export class SpannerClient {
    * @param {function(Error, string)} callback - the callback to
    *   be called with the current project Id.
    */
-  getProjectId(callback?: Callback<string, undefined, undefined>):
-      Promise<string>|void {
+  getProjectId(
+    callback?: Callback<string, undefined, undefined>
+  ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
       return;
@@ -286,79 +333,92 @@ export class SpannerClient {
   // -- Service calls --
   // -------------------
   createSession(
-      request: protos.google.spanner.v1.ICreateSessionRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.ISession,
-        protos.google.spanner.v1.ICreateSessionRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.ICreateSessionRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.ICreateSessionRequest | undefined,
+      {} | undefined
+    ]
+  >;
   createSession(
-      request: protos.google.spanner.v1.ICreateSessionRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.ICreateSessionRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.ICreateSessionRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   createSession(
-      request: protos.google.spanner.v1.ICreateSessionRequest,
-      callback: Callback<
-          protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.ICreateSessionRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Creates a new session. A session can be used to perform
- * transactions that read and/or modify data in a Cloud Spanner database.
- * Sessions are meant to be reused for many consecutive
- * transactions.
- *
- * Sessions can only execute one transaction at a time. To execute
- * multiple concurrent read-write/write-only transactions, create
- * multiple sessions. Note that standalone reads and queries use a
- * transaction internally, and count toward the one transaction
- * limit.
- *
- * Active sessions use additional server resources, so it is a good idea to
- * delete idle and unneeded sessions.
- * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
- * operations are sent for more than an hour. If a session is deleted,
- * requests to it return `NOT_FOUND`.
- *
- * Idle sessions can be kept alive by sending a trivial SQL query
- * periodically, e.g., `"SELECT 1"`.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.database
- *   Required. The database in which the new session is created.
- * @param {google.spanner.v1.Session} request.session
- *   The session to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.ICreateSessionRequest,
+    callback: Callback<
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Creates a new session. A session can be used to perform
+   * transactions that read and/or modify data in a Cloud Spanner database.
+   * Sessions are meant to be reused for many consecutive
+   * transactions.
+   *
+   * Sessions can only execute one transaction at a time. To execute
+   * multiple concurrent read-write/write-only transactions, create
+   * multiple sessions. Note that standalone reads and queries use a
+   * transaction internally, and count toward the one transaction
+   * limit.
+   *
+   * Active sessions use additional server resources, so it is a good idea to
+   * delete idle and unneeded sessions.
+   * Aside from explicit deletes, Cloud Spanner may delete sessions for which no
+   * operations are sent for more than an hour. If a session is deleted,
+   * requests to it return `NOT_FOUND`.
+   *
+   * Idle sessions can be kept alive by sending a trivial SQL query
+   * periodically, e.g., `"SELECT 1"`.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database in which the new session is created.
+   * @param {google.spanner.v1.Session} request.session
+   *   The session to create.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   createSession(
-      request: protos.google.spanner.v1.ICreateSessionRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.ICreateSessionRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.ICreateSessionRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.ICreateSessionRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.ISession,
-        protos.google.spanner.v1.ICreateSessionRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.ICreateSessionRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -367,76 +427,91 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'database': request.database || '',
+      database: request.database || '',
     });
     this.initialize();
     return this.innerApiCalls.createSession(request, options, callback);
   }
   batchCreateSessions(
-      request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.IBatchCreateSessionsResponse,
-        protos.google.spanner.v1.IBatchCreateSessionsRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.IBatchCreateSessionsResponse,
+      protos.google.spanner.v1.IBatchCreateSessionsRequest | undefined,
+      {} | undefined
+    ]
+  >;
   batchCreateSessions(
-      request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.IBatchCreateSessionsResponse,
-          protos.google.spanner.v1.IBatchCreateSessionsRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.IBatchCreateSessionsResponse,
+      protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   batchCreateSessions(
-      request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-      callback: Callback<
-          protos.google.spanner.v1.IBatchCreateSessionsResponse,
-          protos.google.spanner.v1.IBatchCreateSessionsRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Creates multiple new sessions.
- *
- * This API can be used to initialize a session cache on the clients.
- * See https://goo.gl/TgSFN2 for best practices on session cache management.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.database
- *   Required. The database in which the new sessions are created.
- * @param {google.spanner.v1.Session} request.sessionTemplate
- *   Parameters to be applied to each created session.
- * @param {number} request.sessionCount
- *   Required. The number of sessions to be created in this batch call.
- *   The API may return fewer than the requested number of sessions. If a
- *   specific number of sessions are desired, the client can make additional
- *   calls to BatchCreateSessions (adjusting
- *   {@link google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count} as necessary).
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [BatchCreateSessionsResponse]{@link google.spanner.v1.BatchCreateSessionsResponse}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
+    callback: Callback<
+      protos.google.spanner.v1.IBatchCreateSessionsResponse,
+      protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Creates multiple new sessions.
+   *
+   * This API can be used to initialize a session cache on the clients.
+   * See https://goo.gl/TgSFN2 for best practices on session cache management.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database in which the new sessions are created.
+   * @param {google.spanner.v1.Session} request.sessionTemplate
+   *   Parameters to be applied to each created session.
+   * @param {number} request.sessionCount
+   *   Required. The number of sessions to be created in this batch call.
+   *   The API may return fewer than the requested number of sessions. If a
+   *   specific number of sessions are desired, the client can make additional
+   *   calls to BatchCreateSessions (adjusting
+   *   {@link google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count} as necessary).
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [BatchCreateSessionsResponse]{@link google.spanner.v1.BatchCreateSessionsResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   batchCreateSessions(
-      request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.IBatchCreateSessionsResponse,
-          protos.google.spanner.v1.IBatchCreateSessionsRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.IBatchCreateSessionsResponse,
-          protos.google.spanner.v1.IBatchCreateSessionsRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.IBatchCreateSessionsResponse,
-        protos.google.spanner.v1.IBatchCreateSessionsRequest|undefined, {}|undefined
-      ]>|void {
+          | protos.google.spanner.v1.IBatchCreateSessionsRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.IBatchCreateSessionsResponse,
+      protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.IBatchCreateSessionsResponse,
+      protos.google.spanner.v1.IBatchCreateSessionsRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -445,67 +520,80 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'database': request.database || '',
+      database: request.database || '',
     });
     this.initialize();
     return this.innerApiCalls.batchCreateSessions(request, options, callback);
   }
   getSession(
-      request: protos.google.spanner.v1.IGetSessionRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.ISession,
-        protos.google.spanner.v1.IGetSessionRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IGetSessionRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.IGetSessionRequest | undefined,
+      {} | undefined
+    ]
+  >;
   getSession(
-      request: protos.google.spanner.v1.IGetSessionRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.IGetSessionRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IGetSessionRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.IGetSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   getSession(
-      request: protos.google.spanner.v1.IGetSessionRequest,
-      callback: Callback<
-          protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.IGetSessionRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Gets a session. Returns `NOT_FOUND` if the session does not exist.
- * This is mainly useful for determining whether a session is still
- * alive.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   Required. The name of the session to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IGetSessionRequest,
+    callback: Callback<
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.IGetSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Gets a session. Returns `NOT_FOUND` if the session does not exist.
+   * This is mainly useful for determining whether a session is still
+   * alive.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the session to retrieve.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   getSession(
-      request: protos.google.spanner.v1.IGetSessionRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IGetSessionRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.IGetSessionRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.ISession,
-          protos.google.spanner.v1.IGetSessionRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.ISession,
-        protos.google.spanner.v1.IGetSessionRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IGetSessionRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.IGetSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.ISession,
+      protos.google.spanner.v1.IGetSessionRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -514,67 +602,80 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
+      name: request.name || '',
     });
     this.initialize();
     return this.innerApiCalls.getSession(request, options, callback);
   }
   deleteSession(
-      request: protos.google.spanner.v1.IDeleteSessionRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.protobuf.IEmpty,
-        protos.google.spanner.v1.IDeleteSessionRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IDeleteSessionRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IDeleteSessionRequest | undefined,
+      {} | undefined
+    ]
+  >;
   deleteSession(
-      request: protos.google.spanner.v1.IDeleteSessionRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IDeleteSessionRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IDeleteSessionRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   deleteSession(
-      request: protos.google.spanner.v1.IDeleteSessionRequest,
-      callback: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IDeleteSessionRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Ends a session, releasing server resources associated with it. This will
- * asynchronously trigger cancellation of any operations that are running with
- * this session.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   Required. The name of the session to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IDeleteSessionRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Ends a session, releasing server resources associated with it. This will
+   * asynchronously trigger cancellation of any operations that are running with
+   * this session.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the session to delete.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   deleteSession(
-      request: protos.google.spanner.v1.IDeleteSessionRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IDeleteSessionRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IDeleteSessionRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IDeleteSessionRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.protobuf.IEmpty,
-        protos.google.spanner.v1.IDeleteSessionRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IDeleteSessionRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -583,139 +684,152 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
+      name: request.name || '',
     });
     this.initialize();
     return this.innerApiCalls.deleteSession(request, options, callback);
   }
   executeSql(
-      request: protos.google.spanner.v1.IExecuteSqlRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.IResultSet,
-        protos.google.spanner.v1.IExecuteSqlRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IExecuteSqlRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IExecuteSqlRequest | undefined,
+      {} | undefined
+    ]
+  >;
   executeSql(
-      request: protos.google.spanner.v1.IExecuteSqlRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IExecuteSqlRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IExecuteSqlRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   executeSql(
-      request: protos.google.spanner.v1.IExecuteSqlRequest,
-      callback: Callback<
-          protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IExecuteSqlRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Executes an SQL statement, returning all results in a single reply. This
- * method cannot be used to return a result set larger than 10 MiB;
- * if the query yields more data than that, the query fails with
- * a `FAILED_PRECONDITION` error.
- *
- * Operations inside read-write transactions might return `ABORTED`. If
- * this occurs, the application should restart the transaction from
- * the beginning. See {@link google.spanner.v1.Transaction|Transaction} for more details.
- *
- * Larger result sets can be fetched in streaming fashion by calling
- * {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} instead.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the SQL query should be performed.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   The transaction to use.
- *
- *   For queries, if none is provided, the default is a temporary read-only
- *   transaction with strong concurrency.
- *
- *   Standard DML statements require a read-write transaction. To protect
- *   against replays, single-use transactions are not supported.  The caller
- *   must either supply an existing transaction ID or begin a new transaction.
- *
- *   Partitioned DML requires an existing Partitioned DML transaction ID.
- * @param {string} request.sql
- *   Required. The SQL string.
- * @param {google.protobuf.Struct} request.params
- *   Parameter names and values that bind to placeholders in the SQL string.
- *
- *   A parameter placeholder consists of the `@` character followed by the
- *   parameter name (for example, `@firstName`). Parameter names can contain
- *   letters, numbers, and underscores.
- *
- *   Parameters can appear anywhere that a literal value is expected.  The same
- *   parameter name can be used more than once, for example:
- *
- *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
- *
- *   It is an error to execute a SQL statement with unbound parameters.
- * @param {number[]} request.paramTypes
- *   It is not always possible for Cloud Spanner to infer the right SQL type
- *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in {@link google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
- *
- *   In these cases, `param_types` can be used to specify the exact
- *   SQL type for some or all of the SQL statement parameters. See the
- *   definition of {@link google.spanner.v1.Type|Type} for more information
- *   about SQL types.
- * @param {Buffer} request.resumeToken
- *   If this request is resuming a previously interrupted SQL statement
- *   execution, `resume_token` should be copied from the last
- *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
- *   enables the new SQL statement execution to resume where the last one left
- *   off. The rest of the request parameters must exactly match the
- *   request that yielded this token.
- * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
- *   Used to control the amount of debugging information returned in
- *   {@link google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
- *   be set to {@link google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
- * @param {Buffer} request.partitionToken
- *   If present, results will be restricted to the specified partition
- *   previously created using PartitionQuery().  There must be an exact
- *   match for the values of fields common to this message and the
- *   PartitionQueryRequest message used to create this partition_token.
- * @param {number} request.seqno
- *   A per-transaction sequence number used to identify this request. This field
- *   makes each request idempotent such that if the request is received multiple
- *   times, at most one will succeed.
- *
- *   The sequence number must be monotonically increasing within the
- *   transaction. If a request arrives for the first time with an out-of-order
- *   sequence number, the transaction may be aborted. Replays of previously
- *   handled requests will yield the same response as the first execution.
- *
- *   Required for DML statements. Ignored for queries.
- * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
- *   Query optimizer configuration to use for the given query.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IExecuteSqlRequest,
+    callback: Callback<
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Executes an SQL statement, returning all results in a single reply. This
+   * method cannot be used to return a result set larger than 10 MiB;
+   * if the query yields more data than that, the query fails with
+   * a `FAILED_PRECONDITION` error.
+   *
+   * Operations inside read-write transactions might return `ABORTED`. If
+   * this occurs, the application should restart the transaction from
+   * the beginning. See {@link google.spanner.v1.Transaction|Transaction} for more details.
+   *
+   * Larger result sets can be fetched in streaming fashion by calling
+   * {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} instead.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the SQL query should be performed.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   The transaction to use.
+   *
+   *   For queries, if none is provided, the default is a temporary read-only
+   *   transaction with strong concurrency.
+   *
+   *   Standard DML statements require a read-write transaction. To protect
+   *   against replays, single-use transactions are not supported.  The caller
+   *   must either supply an existing transaction ID or begin a new transaction.
+   *
+   *   Partitioned DML requires an existing Partitioned DML transaction ID.
+   * @param {string} request.sql
+   *   Required. The SQL string.
+   * @param {google.protobuf.Struct} request.params
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
+   *
+   *   Parameters can appear anywhere that a literal value is expected.  The same
+   *   parameter name can be used more than once, for example:
+   *
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
+   *
+   *   It is an error to execute a SQL statement with unbound parameters.
+   * @param {number[]} request.paramTypes
+   *   It is not always possible for Cloud Spanner to infer the right SQL type
+   *   from a JSON value.  For example, values of type `BYTES` and values
+   *   of type `STRING` both appear in {@link google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
+   *
+   *   In these cases, `param_types` can be used to specify the exact
+   *   SQL type for some or all of the SQL statement parameters. See the
+   *   definition of {@link google.spanner.v1.Type|Type} for more information
+   *   about SQL types.
+   * @param {Buffer} request.resumeToken
+   *   If this request is resuming a previously interrupted SQL statement
+   *   execution, `resume_token` should be copied from the last
+   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   enables the new SQL statement execution to resume where the last one left
+   *   off. The rest of the request parameters must exactly match the
+   *   request that yielded this token.
+   * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
+   *   Used to control the amount of debugging information returned in
+   *   {@link google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
+   *   be set to {@link google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
+   * @param {Buffer} request.partitionToken
+   *   If present, results will be restricted to the specified partition
+   *   previously created using PartitionQuery().  There must be an exact
+   *   match for the values of fields common to this message and the
+   *   PartitionQueryRequest message used to create this partition_token.
+   * @param {number} request.seqno
+   *   A per-transaction sequence number used to identify this request. This field
+   *   makes each request idempotent such that if the request is received multiple
+   *   times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
+   *
+   *   Required for DML statements. Ignored for queries.
+   * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
+   *   Query optimizer configuration to use for the given query.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   executeSql(
-      request: protos.google.spanner.v1.IExecuteSqlRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IExecuteSqlRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IExecuteSqlRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IExecuteSqlRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.IResultSet,
-        protos.google.spanner.v1.IExecuteSqlRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IExecuteSqlRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -724,97 +838,110 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.executeSql(request, options, callback);
   }
   executeBatchDml(
-      request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.IExecuteBatchDmlResponse,
-        protos.google.spanner.v1.IExecuteBatchDmlRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.IExecuteBatchDmlResponse,
+      protos.google.spanner.v1.IExecuteBatchDmlRequest | undefined,
+      {} | undefined
+    ]
+  >;
   executeBatchDml(
-      request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.IExecuteBatchDmlResponse,
-          protos.google.spanner.v1.IExecuteBatchDmlRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.IExecuteBatchDmlResponse,
+      protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   executeBatchDml(
-      request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-      callback: Callback<
-          protos.google.spanner.v1.IExecuteBatchDmlResponse,
-          protos.google.spanner.v1.IExecuteBatchDmlRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Executes a batch of SQL DML statements. This method allows many statements
- * to be run with lower latency than submitting them sequentially with
- * {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.
- *
- * Statements are executed in sequential order. A request can succeed even if
- * a statement fails. The {@link google.spanner.v1.ExecuteBatchDmlResponse.status|ExecuteBatchDmlResponse.status} field in the
- * response provides information about the statement that failed. Clients must
- * inspect this field to determine whether an error occurred.
- *
- * Execution stops after the first failed statement; the remaining statements
- * are not executed.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the DML statements should be performed.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   Required. The transaction to use. Must be a read-write transaction.
- *
- *   To protect against replays, single-use transactions are not supported. The
- *   caller must either supply an existing transaction ID or begin a new
- *   transaction.
- * @param {number[]} request.statements
- *   Required. The list of statements to execute in this batch. Statements are executed
- *   serially, such that the effects of statement `i` are visible to statement
- *   `i+1`. Each statement must be a DML statement. Execution stops at the
- *   first failed statement; the remaining statements are not executed.
- *
- *   Callers must provide at least one statement.
- * @param {number} request.seqno
- *   Required. A per-transaction sequence number used to identify this request. This field
- *   makes each request idempotent such that if the request is received multiple
- *   times, at most one will succeed.
- *
- *   The sequence number must be monotonically increasing within the
- *   transaction. If a request arrives for the first time with an out-of-order
- *   sequence number, the transaction may be aborted. Replays of previously
- *   handled requests will yield the same response as the first execution.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
+    callback: Callback<
+      protos.google.spanner.v1.IExecuteBatchDmlResponse,
+      protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Executes a batch of SQL DML statements. This method allows many statements
+   * to be run with lower latency than submitting them sequentially with
+   * {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.
+   *
+   * Statements are executed in sequential order. A request can succeed even if
+   * a statement fails. The {@link google.spanner.v1.ExecuteBatchDmlResponse.status|ExecuteBatchDmlResponse.status} field in the
+   * response provides information about the statement that failed. Clients must
+   * inspect this field to determine whether an error occurred.
+   *
+   * Execution stops after the first failed statement; the remaining statements
+   * are not executed.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the DML statements should be performed.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   Required. The transaction to use. Must be a read-write transaction.
+   *
+   *   To protect against replays, single-use transactions are not supported. The
+   *   caller must either supply an existing transaction ID or begin a new
+   *   transaction.
+   * @param {number[]} request.statements
+   *   Required. The list of statements to execute in this batch. Statements are executed
+   *   serially, such that the effects of statement `i` are visible to statement
+   *   `i+1`. Each statement must be a DML statement. Execution stops at the
+   *   first failed statement; the remaining statements are not executed.
+   *
+   *   Callers must provide at least one statement.
+   * @param {number} request.seqno
+   *   Required. A per-transaction sequence number used to identify this request. This field
+   *   makes each request idempotent such that if the request is received multiple
+   *   times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   executeBatchDml(
-      request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.IExecuteBatchDmlResponse,
-          protos.google.spanner.v1.IExecuteBatchDmlRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.IExecuteBatchDmlResponse,
-          protos.google.spanner.v1.IExecuteBatchDmlRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.IExecuteBatchDmlResponse,
-        protos.google.spanner.v1.IExecuteBatchDmlRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.IExecuteBatchDmlResponse,
+      protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.IExecuteBatchDmlResponse,
+      protos.google.spanner.v1.IExecuteBatchDmlRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -823,118 +950,131 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.executeBatchDml(request, options, callback);
   }
   read(
-      request: protos.google.spanner.v1.IReadRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.IResultSet,
-        protos.google.spanner.v1.IReadRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IReadRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IReadRequest | undefined,
+      {} | undefined
+    ]
+  >;
   read(
-      request: protos.google.spanner.v1.IReadRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IReadRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IReadRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IReadRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   read(
-      request: protos.google.spanner.v1.IReadRequest,
-      callback: Callback<
-          protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IReadRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Reads rows from the database using key lookups and scans, as a
- * simple key/value style alternative to
- * {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.  This method cannot be used to
- * return a result set larger than 10 MiB; if the read matches more
- * data than that, the read fails with a `FAILED_PRECONDITION`
- * error.
- *
- * Reads inside read-write transactions might return `ABORTED`. If
- * this occurs, the application should restart the transaction from
- * the beginning. See {@link google.spanner.v1.Transaction|Transaction} for more details.
- *
- * Larger result sets can be yielded in streaming fashion by calling
- * {@link google.spanner.v1.Spanner.StreamingRead|StreamingRead} instead.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the read should be performed.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   The transaction to use. If none is provided, the default is a
- *   temporary read-only transaction with strong concurrency.
- * @param {string} request.table
- *   Required. The name of the table in the database to be read.
- * @param {string} request.index
- *   If non-empty, the name of an index on {@link google.spanner.v1.ReadRequest.table|table}. This index is
- *   used instead of the table primary key when interpreting {@link google.spanner.v1.ReadRequest.key_set|key_set}
- *   and sorting result rows. See {@link google.spanner.v1.ReadRequest.key_set|key_set} for further information.
- * @param {string[]} request.columns
- *   Required. The columns of {@link google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
- *   this request.
- * @param {google.spanner.v1.KeySet} request.keySet
- *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in {@link google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.ReadRequest.index|index}
- *   is present. If {@link google.spanner.v1.ReadRequest.index|index} is present, then {@link google.spanner.v1.ReadRequest.key_set|key_set} instead names
- *   index keys in {@link google.spanner.v1.ReadRequest.index|index}.
- *
- *   If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
- *   in table primary key order (if {@link google.spanner.v1.ReadRequest.index|index} is empty) or index key order
- *   (if {@link google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
- *   empty, rows will be yielded in an unspecified order.
- *
- *   It is not an error for the `key_set` to name rows that do not
- *   exist in the database. Read yields nothing for nonexistent rows.
- * @param {number} request.limit
- *   If greater than zero, only the first `limit` rows are yielded. If `limit`
- *   is zero, the default is no limit. A limit cannot be specified if
- *   `partition_token` is set.
- * @param {Buffer} request.resumeToken
- *   If this request is resuming a previously interrupted read,
- *   `resume_token` should be copied from the last
- *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
- *   enables the new read to resume where the last read left off. The
- *   rest of the request parameters must exactly match the request
- *   that yielded this token.
- * @param {Buffer} request.partitionToken
- *   If present, results will be restricted to the specified partition
- *   previously created using PartitionRead().    There must be an exact
- *   match for the values of fields common to this message and the
- *   PartitionReadRequest message used to create this partition_token.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IReadRequest,
+    callback: Callback<
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IReadRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Reads rows from the database using key lookups and scans, as a
+   * simple key/value style alternative to
+   * {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.  This method cannot be used to
+   * return a result set larger than 10 MiB; if the read matches more
+   * data than that, the read fails with a `FAILED_PRECONDITION`
+   * error.
+   *
+   * Reads inside read-write transactions might return `ABORTED`. If
+   * this occurs, the application should restart the transaction from
+   * the beginning. See {@link google.spanner.v1.Transaction|Transaction} for more details.
+   *
+   * Larger result sets can be yielded in streaming fashion by calling
+   * {@link google.spanner.v1.Spanner.StreamingRead|StreamingRead} instead.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the read should be performed.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   The transaction to use. If none is provided, the default is a
+   *   temporary read-only transaction with strong concurrency.
+   * @param {string} request.table
+   *   Required. The name of the table in the database to be read.
+   * @param {string} request.index
+   *   If non-empty, the name of an index on {@link google.spanner.v1.ReadRequest.table|table}. This index is
+   *   used instead of the table primary key when interpreting {@link google.spanner.v1.ReadRequest.key_set|key_set}
+   *   and sorting result rows. See {@link google.spanner.v1.ReadRequest.key_set|key_set} for further information.
+   * @param {string[]} request.columns
+   *   Required. The columns of {@link google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
+   *   this request.
+   * @param {google.spanner.v1.KeySet} request.keySet
+   *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
+   *   primary keys of the rows in {@link google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.ReadRequest.index|index}
+   *   is present. If {@link google.spanner.v1.ReadRequest.index|index} is present, then {@link google.spanner.v1.ReadRequest.key_set|key_set} instead names
+   *   index keys in {@link google.spanner.v1.ReadRequest.index|index}.
+   *
+   *   If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
+   *   in table primary key order (if {@link google.spanner.v1.ReadRequest.index|index} is empty) or index key order
+   *   (if {@link google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
+   *   empty, rows will be yielded in an unspecified order.
+   *
+   *   It is not an error for the `key_set` to name rows that do not
+   *   exist in the database. Read yields nothing for nonexistent rows.
+   * @param {number} request.limit
+   *   If greater than zero, only the first `limit` rows are yielded. If `limit`
+   *   is zero, the default is no limit. A limit cannot be specified if
+   *   `partition_token` is set.
+   * @param {Buffer} request.resumeToken
+   *   If this request is resuming a previously interrupted read,
+   *   `resume_token` should be copied from the last
+   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   enables the new read to resume where the last read left off. The
+   *   rest of the request parameters must exactly match the request
+   *   that yielded this token.
+   * @param {Buffer} request.partitionToken
+   *   If present, results will be restricted to the specified partition
+   *   previously created using PartitionRead().    There must be an exact
+   *   match for the values of fields common to this message and the
+   *   PartitionReadRequest message used to create this partition_token.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   read(
-      request: protos.google.spanner.v1.IReadRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IReadRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IReadRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.IResultSet,
-          protos.google.spanner.v1.IReadRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.IResultSet,
-        protos.google.spanner.v1.IReadRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IReadRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IReadRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.IResultSet,
+      protos.google.spanner.v1.IReadRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -943,70 +1083,83 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.read(request, options, callback);
   }
   beginTransaction(
-      request: protos.google.spanner.v1.IBeginTransactionRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.ITransaction,
-        protos.google.spanner.v1.IBeginTransactionRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IBeginTransactionRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.ITransaction,
+      protos.google.spanner.v1.IBeginTransactionRequest | undefined,
+      {} | undefined
+    ]
+  >;
   beginTransaction(
-      request: protos.google.spanner.v1.IBeginTransactionRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.ITransaction,
-          protos.google.spanner.v1.IBeginTransactionRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IBeginTransactionRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.ITransaction,
+      protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   beginTransaction(
-      request: protos.google.spanner.v1.IBeginTransactionRequest,
-      callback: Callback<
-          protos.google.spanner.v1.ITransaction,
-          protos.google.spanner.v1.IBeginTransactionRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Begins a new transaction. This step can often be skipped:
- * {@link google.spanner.v1.Spanner.Read|Read}, {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} and
- * {@link google.spanner.v1.Spanner.Commit|Commit} can begin a new transaction as a
- * side-effect.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the transaction runs.
- * @param {google.spanner.v1.TransactionOptions} request.options
- *   Required. Options for the new transaction.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Transaction]{@link google.spanner.v1.Transaction}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IBeginTransactionRequest,
+    callback: Callback<
+      protos.google.spanner.v1.ITransaction,
+      protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Begins a new transaction. This step can often be skipped:
+   * {@link google.spanner.v1.Spanner.Read|Read}, {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} and
+   * {@link google.spanner.v1.Spanner.Commit|Commit} can begin a new transaction as a
+   * side-effect.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the transaction runs.
+   * @param {google.spanner.v1.TransactionOptions} request.options
+   *   Required. Options for the new transaction.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Transaction]{@link google.spanner.v1.Transaction}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   beginTransaction(
-      request: protos.google.spanner.v1.IBeginTransactionRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IBeginTransactionRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.ITransaction,
-          protos.google.spanner.v1.IBeginTransactionRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.ITransaction,
-          protos.google.spanner.v1.IBeginTransactionRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.ITransaction,
-        protos.google.spanner.v1.IBeginTransactionRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.ITransaction,
+      protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.ITransaction,
+      protos.google.spanner.v1.IBeginTransactionRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -1015,88 +1168,101 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.beginTransaction(request, options, callback);
   }
   commit(
-      request: protos.google.spanner.v1.ICommitRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.ICommitResponse,
-        protos.google.spanner.v1.ICommitRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.ICommitRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.ICommitResponse,
+      protos.google.spanner.v1.ICommitRequest | undefined,
+      {} | undefined
+    ]
+  >;
   commit(
-      request: protos.google.spanner.v1.ICommitRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.ICommitResponse,
-          protos.google.spanner.v1.ICommitRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.ICommitRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.ICommitResponse,
+      protos.google.spanner.v1.ICommitRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   commit(
-      request: protos.google.spanner.v1.ICommitRequest,
-      callback: Callback<
-          protos.google.spanner.v1.ICommitResponse,
-          protos.google.spanner.v1.ICommitRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Commits a transaction. The request includes the mutations to be
- * applied to rows in the database.
- *
- * `Commit` might return an `ABORTED` error. This can occur at any time;
- * commonly, the cause is conflicts with concurrent
- * transactions. However, it can also happen for a variety of other
- * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
- * the transaction from the beginning, re-using the same session.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the transaction to be committed is running.
- * @param {Buffer} request.transactionId
- *   Commit a previously-started transaction.
- * @param {google.spanner.v1.TransactionOptions} request.singleUseTransaction
- *   Execute mutations in a temporary transaction. Note that unlike
- *   commit of a previously-started transaction, commit with a
- *   temporary transaction is non-idempotent. That is, if the
- *   `CommitRequest` is sent to Cloud Spanner more than once (for
- *   instance, due to retries in the application, or in the
- *   transport library), it is possible that the mutations are
- *   executed more than once. If this is undesirable, use
- *   {@link google.spanner.v1.Spanner.BeginTransaction|BeginTransaction} and
- *   {@link google.spanner.v1.Spanner.Commit|Commit} instead.
- * @param {number[]} request.mutations
- *   The mutations to be executed when this transaction commits. All
- *   mutations are applied atomically, in the order they appear in
- *   this list.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [CommitResponse]{@link google.spanner.v1.CommitResponse}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.ICommitRequest,
+    callback: Callback<
+      protos.google.spanner.v1.ICommitResponse,
+      protos.google.spanner.v1.ICommitRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Commits a transaction. The request includes the mutations to be
+   * applied to rows in the database.
+   *
+   * `Commit` might return an `ABORTED` error. This can occur at any time;
+   * commonly, the cause is conflicts with concurrent
+   * transactions. However, it can also happen for a variety of other
+   * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
+   * the transaction from the beginning, re-using the same session.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the transaction to be committed is running.
+   * @param {Buffer} request.transactionId
+   *   Commit a previously-started transaction.
+   * @param {google.spanner.v1.TransactionOptions} request.singleUseTransaction
+   *   Execute mutations in a temporary transaction. Note that unlike
+   *   commit of a previously-started transaction, commit with a
+   *   temporary transaction is non-idempotent. That is, if the
+   *   `CommitRequest` is sent to Cloud Spanner more than once (for
+   *   instance, due to retries in the application, or in the
+   *   transport library), it is possible that the mutations are
+   *   executed more than once. If this is undesirable, use
+   *   {@link google.spanner.v1.Spanner.BeginTransaction|BeginTransaction} and
+   *   {@link google.spanner.v1.Spanner.Commit|Commit} instead.
+   * @param {number[]} request.mutations
+   *   The mutations to be executed when this transaction commits. All
+   *   mutations are applied atomically, in the order they appear in
+   *   this list.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [CommitResponse]{@link google.spanner.v1.CommitResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   commit(
-      request: protos.google.spanner.v1.ICommitRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.ICommitRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.ICommitResponse,
-          protos.google.spanner.v1.ICommitRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.ICommitResponse,
-          protos.google.spanner.v1.ICommitRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.ICommitResponse,
-        protos.google.spanner.v1.ICommitRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.ICommitRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.ICommitResponse,
+      protos.google.spanner.v1.ICommitRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.ICommitResponse,
+      protos.google.spanner.v1.ICommitRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -1105,74 +1271,87 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.commit(request, options, callback);
   }
   rollback(
-      request: protos.google.spanner.v1.IRollbackRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.protobuf.IEmpty,
-        protos.google.spanner.v1.IRollbackRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IRollbackRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IRollbackRequest | undefined,
+      {} | undefined
+    ]
+  >;
   rollback(
-      request: protos.google.spanner.v1.IRollbackRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IRollbackRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IRollbackRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IRollbackRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   rollback(
-      request: protos.google.spanner.v1.IRollbackRequest,
-      callback: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IRollbackRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Rolls back a transaction, releasing any locks it holds. It is a good
- * idea to call this for any transaction that includes one or more
- * {@link google.spanner.v1.Spanner.Read|Read} or {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} requests and
- * ultimately decides not to commit.
- *
- * `Rollback` returns `OK` if it successfully aborts the transaction, the
- * transaction was already aborted, or the transaction is not
- * found. `Rollback` never returns `ABORTED`.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the transaction to roll back is running.
- * @param {Buffer} request.transactionId
- *   Required. The transaction to roll back.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IRollbackRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IRollbackRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Rolls back a transaction, releasing any locks it holds. It is a good
+   * idea to call this for any transaction that includes one or more
+   * {@link google.spanner.v1.Spanner.Read|Read} or {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} requests and
+   * ultimately decides not to commit.
+   *
+   * `Rollback` returns `OK` if it successfully aborts the transaction, the
+   * transaction was already aborted, or the transaction is not
+   * found. `Rollback` never returns `ABORTED`.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the transaction to roll back is running.
+   * @param {Buffer} request.transactionId
+   *   Required. The transaction to roll back.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   rollback(
-      request: protos.google.spanner.v1.IRollbackRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IRollbackRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IRollbackRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.google.spanner.v1.IRollbackRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.protobuf.IEmpty,
-        protos.google.spanner.v1.IRollbackRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IRollbackRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IRollbackRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      protos.google.spanner.v1.IRollbackRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -1181,113 +1360,126 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.rollback(request, options, callback);
   }
   partitionQuery(
-      request: protos.google.spanner.v1.IPartitionQueryRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.IPartitionResponse,
-        protos.google.spanner.v1.IPartitionQueryRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IPartitionQueryRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionQueryRequest | undefined,
+      {} | undefined
+    ]
+  >;
   partitionQuery(
-      request: protos.google.spanner.v1.IPartitionQueryRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionQueryRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IPartitionQueryRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   partitionQuery(
-      request: protos.google.spanner.v1.IPartitionQueryRequest,
-      callback: Callback<
-          protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionQueryRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Creates a set of partition tokens that can be used to execute a query
- * operation in parallel.  Each of the returned partition tokens can be used
- * by {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} to specify a subset
- * of the query result to read.  The same session and read-only transaction
- * must be used by the PartitionQueryRequest used to create the
- * partition tokens and the ExecuteSqlRequests that use the partition tokens.
- *
- * Partition tokens become invalid when the session used to create them
- * is deleted, is idle for too long, begins a new transaction, or becomes too
- * old.  When any of these happen, it is not possible to resume the query, and
- * the whole operation must be restarted from the beginning.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session used to create the partitions.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   Read only snapshot transactions are supported, read/write and single use
- *   transactions are not.
- * @param {string} request.sql
- *   Required. The query request to generate partitions for. The request will fail if
- *   the query is not root partitionable. The query plan of a root
- *   partitionable query has a single distributed union operator. A distributed
- *   union operator conceptually divides one or more tables into multiple
- *   splits, remotely evaluates a subquery independently on each split, and
- *   then unions all results.
- *
- *   This must not contain DML commands, such as INSERT, UPDATE, or
- *   DELETE. Use {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} with a
- *   PartitionedDml transaction for large, partition-friendly DML operations.
- * @param {google.protobuf.Struct} request.params
- *   Parameter names and values that bind to placeholders in the SQL string.
- *
- *   A parameter placeholder consists of the `@` character followed by the
- *   parameter name (for example, `@firstName`). Parameter names can contain
- *   letters, numbers, and underscores.
- *
- *   Parameters can appear anywhere that a literal value is expected.  The same
- *   parameter name can be used more than once, for example:
- *
- *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
- *
- *   It is an error to execute a SQL statement with unbound parameters.
- * @param {number[]} request.paramTypes
- *   It is not always possible for Cloud Spanner to infer the right SQL type
- *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in {@link google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
- *
- *   In these cases, `param_types` can be used to specify the exact
- *   SQL type for some or all of the SQL query parameters. See the
- *   definition of {@link google.spanner.v1.Type|Type} for more information
- *   about SQL types.
- * @param {google.spanner.v1.PartitionOptions} request.partitionOptions
- *   Additional options that affect how many partitions are created.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IPartitionQueryRequest,
+    callback: Callback<
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Creates a set of partition tokens that can be used to execute a query
+   * operation in parallel.  Each of the returned partition tokens can be used
+   * by {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} to specify a subset
+   * of the query result to read.  The same session and read-only transaction
+   * must be used by the PartitionQueryRequest used to create the
+   * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+   *
+   * Partition tokens become invalid when the session used to create them
+   * is deleted, is idle for too long, begins a new transaction, or becomes too
+   * old.  When any of these happen, it is not possible to resume the query, and
+   * the whole operation must be restarted from the beginning.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session used to create the partitions.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   Read only snapshot transactions are supported, read/write and single use
+   *   transactions are not.
+   * @param {string} request.sql
+   *   Required. The query request to generate partitions for. The request will fail if
+   *   the query is not root partitionable. The query plan of a root
+   *   partitionable query has a single distributed union operator. A distributed
+   *   union operator conceptually divides one or more tables into multiple
+   *   splits, remotely evaluates a subquery independently on each split, and
+   *   then unions all results.
+   *
+   *   This must not contain DML commands, such as INSERT, UPDATE, or
+   *   DELETE. Use {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} with a
+   *   PartitionedDml transaction for large, partition-friendly DML operations.
+   * @param {google.protobuf.Struct} request.params
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
+   *
+   *   Parameters can appear anywhere that a literal value is expected.  The same
+   *   parameter name can be used more than once, for example:
+   *
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
+   *
+   *   It is an error to execute a SQL statement with unbound parameters.
+   * @param {number[]} request.paramTypes
+   *   It is not always possible for Cloud Spanner to infer the right SQL type
+   *   from a JSON value.  For example, values of type `BYTES` and values
+   *   of type `STRING` both appear in {@link google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
+   *
+   *   In these cases, `param_types` can be used to specify the exact
+   *   SQL type for some or all of the SQL query parameters. See the
+   *   definition of {@link google.spanner.v1.Type|Type} for more information
+   *   about SQL types.
+   * @param {google.spanner.v1.PartitionOptions} request.partitionOptions
+   *   Additional options that affect how many partitions are created.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   partitionQuery(
-      request: protos.google.spanner.v1.IPartitionQueryRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IPartitionQueryRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionQueryRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionQueryRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.IPartitionResponse,
-        protos.google.spanner.v1.IPartitionQueryRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionQueryRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -1296,99 +1488,112 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.partitionQuery(request, options, callback);
   }
   partitionRead(
-      request: protos.google.spanner.v1.IPartitionReadRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.IPartitionResponse,
-        protos.google.spanner.v1.IPartitionReadRequest|undefined, {}|undefined
-      ]>;
+    request: protos.google.spanner.v1.IPartitionReadRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionReadRequest | undefined,
+      {} | undefined
+    ]
+  >;
   partitionRead(
-      request: protos.google.spanner.v1.IPartitionReadRequest,
-      options: gax.CallOptions,
-      callback: Callback<
-          protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionReadRequest|null|undefined,
-          {}|null|undefined>): void;
+    request: protos.google.spanner.v1.IPartitionReadRequest,
+    options: gax.CallOptions,
+    callback: Callback<
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   partitionRead(
-      request: protos.google.spanner.v1.IPartitionReadRequest,
-      callback: Callback<
-          protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionReadRequest|null|undefined,
-          {}|null|undefined>): void;
-/**
- * Creates a set of partition tokens that can be used to execute a read
- * operation in parallel.  Each of the returned partition tokens can be used
- * by {@link google.spanner.v1.Spanner.StreamingRead|StreamingRead} to specify a subset of the read
- * result to read.  The same session and read-only transaction must be used by
- * the PartitionReadRequest used to create the partition tokens and the
- * ReadRequests that use the partition tokens.  There are no ordering
- * guarantees on rows returned among the returned partition tokens, or even
- * within each individual StreamingRead call issued with a partition_token.
- *
- * Partition tokens become invalid when the session used to create them
- * is deleted, is idle for too long, begins a new transaction, or becomes too
- * old.  When any of these happen, it is not possible to resume the read, and
- * the whole operation must be restarted from the beginning.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session used to create the partitions.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   Read only snapshot transactions are supported, read/write and single use
- *   transactions are not.
- * @param {string} request.table
- *   Required. The name of the table in the database to be read.
- * @param {string} request.index
- *   If non-empty, the name of an index on {@link google.spanner.v1.PartitionReadRequest.table|table}. This index is
- *   used instead of the table primary key when interpreting {@link google.spanner.v1.PartitionReadRequest.key_set|key_set}
- *   and sorting result rows. See {@link google.spanner.v1.PartitionReadRequest.key_set|key_set} for further information.
- * @param {string[]} request.columns
- *   The columns of {@link google.spanner.v1.PartitionReadRequest.table|table} to be returned for each row matching
- *   this request.
- * @param {google.spanner.v1.KeySet} request.keySet
- *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in {@link google.spanner.v1.PartitionReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.PartitionReadRequest.index|index}
- *   is present. If {@link google.spanner.v1.PartitionReadRequest.index|index} is present, then {@link google.spanner.v1.PartitionReadRequest.key_set|key_set} instead names
- *   index keys in {@link google.spanner.v1.PartitionReadRequest.index|index}.
- *
- *   It is not an error for the `key_set` to name rows that do not
- *   exist in the database. Read yields nothing for nonexistent rows.
- * @param {google.spanner.v1.PartitionOptions} request.partitionOptions
- *   Additional options that affect how many partitions are created.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IPartitionReadRequest,
+    callback: Callback<
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Creates a set of partition tokens that can be used to execute a read
+   * operation in parallel.  Each of the returned partition tokens can be used
+   * by {@link google.spanner.v1.Spanner.StreamingRead|StreamingRead} to specify a subset of the read
+   * result to read.  The same session and read-only transaction must be used by
+   * the PartitionReadRequest used to create the partition tokens and the
+   * ReadRequests that use the partition tokens.  There are no ordering
+   * guarantees on rows returned among the returned partition tokens, or even
+   * within each individual StreamingRead call issued with a partition_token.
+   *
+   * Partition tokens become invalid when the session used to create them
+   * is deleted, is idle for too long, begins a new transaction, or becomes too
+   * old.  When any of these happen, it is not possible to resume the read, and
+   * the whole operation must be restarted from the beginning.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session used to create the partitions.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   Read only snapshot transactions are supported, read/write and single use
+   *   transactions are not.
+   * @param {string} request.table
+   *   Required. The name of the table in the database to be read.
+   * @param {string} request.index
+   *   If non-empty, the name of an index on {@link google.spanner.v1.PartitionReadRequest.table|table}. This index is
+   *   used instead of the table primary key when interpreting {@link google.spanner.v1.PartitionReadRequest.key_set|key_set}
+   *   and sorting result rows. See {@link google.spanner.v1.PartitionReadRequest.key_set|key_set} for further information.
+   * @param {string[]} request.columns
+   *   The columns of {@link google.spanner.v1.PartitionReadRequest.table|table} to be returned for each row matching
+   *   this request.
+   * @param {google.spanner.v1.KeySet} request.keySet
+   *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
+   *   primary keys of the rows in {@link google.spanner.v1.PartitionReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.PartitionReadRequest.index|index}
+   *   is present. If {@link google.spanner.v1.PartitionReadRequest.index|index} is present, then {@link google.spanner.v1.PartitionReadRequest.key_set|key_set} instead names
+   *   index keys in {@link google.spanner.v1.PartitionReadRequest.index|index}.
+   *
+   *   It is not an error for the `key_set` to name rows that do not
+   *   exist in the database. Read yields nothing for nonexistent rows.
+   * @param {google.spanner.v1.PartitionOptions} request.partitionOptions
+   *   Additional options that affect how many partitions are created.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   partitionRead(
-      request: protos.google.spanner.v1.IPartitionReadRequest,
-      optionsOrCallback?: gax.CallOptions|Callback<
+    request: protos.google.spanner.v1.IPartitionReadRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
           protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionReadRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.spanner.v1.IPartitionResponse,
-          protos.google.spanner.v1.IPartitionReadRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.spanner.v1.IPartitionResponse,
-        protos.google.spanner.v1.IPartitionReadRequest|undefined, {}|undefined
-      ]>|void {
+          protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.IPartitionResponse,
+      protos.google.spanner.v1.IPartitionReadRequest | undefined,
+      {} | undefined
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -1397,96 +1602,96 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.partitionRead(request, options, callback);
   }
 
-/**
- * Like {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, except returns the result
- * set as a stream. Unlike {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, there
- * is no limit on the size of the returned result set. However, no
- * individual row in the result set can exceed 100 MiB, and no
- * column value can exceed 10 MiB.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the SQL query should be performed.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   The transaction to use.
- *
- *   For queries, if none is provided, the default is a temporary read-only
- *   transaction with strong concurrency.
- *
- *   Standard DML statements require a read-write transaction. To protect
- *   against replays, single-use transactions are not supported.  The caller
- *   must either supply an existing transaction ID or begin a new transaction.
- *
- *   Partitioned DML requires an existing Partitioned DML transaction ID.
- * @param {string} request.sql
- *   Required. The SQL string.
- * @param {google.protobuf.Struct} request.params
- *   Parameter names and values that bind to placeholders in the SQL string.
- *
- *   A parameter placeholder consists of the `@` character followed by the
- *   parameter name (for example, `@firstName`). Parameter names can contain
- *   letters, numbers, and underscores.
- *
- *   Parameters can appear anywhere that a literal value is expected.  The same
- *   parameter name can be used more than once, for example:
- *
- *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
- *
- *   It is an error to execute a SQL statement with unbound parameters.
- * @param {number[]} request.paramTypes
- *   It is not always possible for Cloud Spanner to infer the right SQL type
- *   from a JSON value.  For example, values of type `BYTES` and values
- *   of type `STRING` both appear in {@link google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
- *
- *   In these cases, `param_types` can be used to specify the exact
- *   SQL type for some or all of the SQL statement parameters. See the
- *   definition of {@link google.spanner.v1.Type|Type} for more information
- *   about SQL types.
- * @param {Buffer} request.resumeToken
- *   If this request is resuming a previously interrupted SQL statement
- *   execution, `resume_token` should be copied from the last
- *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
- *   enables the new SQL statement execution to resume where the last one left
- *   off. The rest of the request parameters must exactly match the
- *   request that yielded this token.
- * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
- *   Used to control the amount of debugging information returned in
- *   {@link google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
- *   be set to {@link google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
- * @param {Buffer} request.partitionToken
- *   If present, results will be restricted to the specified partition
- *   previously created using PartitionQuery().  There must be an exact
- *   match for the values of fields common to this message and the
- *   PartitionQueryRequest message used to create this partition_token.
- * @param {number} request.seqno
- *   A per-transaction sequence number used to identify this request. This field
- *   makes each request idempotent such that if the request is received multiple
- *   times, at most one will succeed.
- *
- *   The sequence number must be monotonically increasing within the
- *   transaction. If a request arrives for the first time with an out-of-order
- *   sequence number, the transaction may be aborted. Replays of previously
- *   handled requests will yield the same response as the first execution.
- *
- *   Required for DML statements. Ignored for queries.
- * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
- *   Query optimizer configuration to use for the given query.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Stream}
- *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
- */
+  /**
+   * Like {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, except returns the result
+   * set as a stream. Unlike {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, there
+   * is no limit on the size of the returned result set. However, no
+   * individual row in the result set can exceed 100 MiB, and no
+   * column value can exceed 10 MiB.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the SQL query should be performed.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   The transaction to use.
+   *
+   *   For queries, if none is provided, the default is a temporary read-only
+   *   transaction with strong concurrency.
+   *
+   *   Standard DML statements require a read-write transaction. To protect
+   *   against replays, single-use transactions are not supported.  The caller
+   *   must either supply an existing transaction ID or begin a new transaction.
+   *
+   *   Partitioned DML requires an existing Partitioned DML transaction ID.
+   * @param {string} request.sql
+   *   Required. The SQL string.
+   * @param {google.protobuf.Struct} request.params
+   *   Parameter names and values that bind to placeholders in the SQL string.
+   *
+   *   A parameter placeholder consists of the `@` character followed by the
+   *   parameter name (for example, `@firstName`). Parameter names can contain
+   *   letters, numbers, and underscores.
+   *
+   *   Parameters can appear anywhere that a literal value is expected.  The same
+   *   parameter name can be used more than once, for example:
+   *
+   *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
+   *
+   *   It is an error to execute a SQL statement with unbound parameters.
+   * @param {number[]} request.paramTypes
+   *   It is not always possible for Cloud Spanner to infer the right SQL type
+   *   from a JSON value.  For example, values of type `BYTES` and values
+   *   of type `STRING` both appear in {@link google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
+   *
+   *   In these cases, `param_types` can be used to specify the exact
+   *   SQL type for some or all of the SQL statement parameters. See the
+   *   definition of {@link google.spanner.v1.Type|Type} for more information
+   *   about SQL types.
+   * @param {Buffer} request.resumeToken
+   *   If this request is resuming a previously interrupted SQL statement
+   *   execution, `resume_token` should be copied from the last
+   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   enables the new SQL statement execution to resume where the last one left
+   *   off. The rest of the request parameters must exactly match the
+   *   request that yielded this token.
+   * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
+   *   Used to control the amount of debugging information returned in
+   *   {@link google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
+   *   be set to {@link google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
+   * @param {Buffer} request.partitionToken
+   *   If present, results will be restricted to the specified partition
+   *   previously created using PartitionQuery().  There must be an exact
+   *   match for the values of fields common to this message and the
+   *   PartitionQueryRequest message used to create this partition_token.
+   * @param {number} request.seqno
+   *   A per-transaction sequence number used to identify this request. This field
+   *   makes each request idempotent such that if the request is received multiple
+   *   times, at most one will succeed.
+   *
+   *   The sequence number must be monotonically increasing within the
+   *   transaction. If a request arrives for the first time with an out-of-order
+   *   sequence number, the transaction may be aborted. Replays of previously
+   *   handled requests will yield the same response as the first execution.
+   *
+   *   Required for DML statements. Ignored for queries.
+   * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
+   *   Query optimizer configuration to use for the given query.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
+   */
   executeStreamingSql(
-      request?: protos.google.spanner.v1.IExecuteSqlRequest,
-      options?: gax.CallOptions):
-    gax.CancellableStream{
+    request?: protos.google.spanner.v1.IExecuteSqlRequest,
+    options?: gax.CallOptions
+  ): gax.CancellableStream {
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1494,73 +1699,73 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.executeStreamingSql(request, options);
   }
 
-/**
- * Like {@link google.spanner.v1.Spanner.Read|Read}, except returns the result set as a
- * stream. Unlike {@link google.spanner.v1.Spanner.Read|Read}, there is no limit on the
- * size of the returned result set. However, no individual row in
- * the result set can exceed 100 MiB, and no column value can exceed
- * 10 MiB.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.session
- *   Required. The session in which the read should be performed.
- * @param {google.spanner.v1.TransactionSelector} request.transaction
- *   The transaction to use. If none is provided, the default is a
- *   temporary read-only transaction with strong concurrency.
- * @param {string} request.table
- *   Required. The name of the table in the database to be read.
- * @param {string} request.index
- *   If non-empty, the name of an index on {@link google.spanner.v1.ReadRequest.table|table}. This index is
- *   used instead of the table primary key when interpreting {@link google.spanner.v1.ReadRequest.key_set|key_set}
- *   and sorting result rows. See {@link google.spanner.v1.ReadRequest.key_set|key_set} for further information.
- * @param {string[]} request.columns
- *   Required. The columns of {@link google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
- *   this request.
- * @param {google.spanner.v1.KeySet} request.keySet
- *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
- *   primary keys of the rows in {@link google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.ReadRequest.index|index}
- *   is present. If {@link google.spanner.v1.ReadRequest.index|index} is present, then {@link google.spanner.v1.ReadRequest.key_set|key_set} instead names
- *   index keys in {@link google.spanner.v1.ReadRequest.index|index}.
- *
- *   If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
- *   in table primary key order (if {@link google.spanner.v1.ReadRequest.index|index} is empty) or index key order
- *   (if {@link google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
- *   empty, rows will be yielded in an unspecified order.
- *
- *   It is not an error for the `key_set` to name rows that do not
- *   exist in the database. Read yields nothing for nonexistent rows.
- * @param {number} request.limit
- *   If greater than zero, only the first `limit` rows are yielded. If `limit`
- *   is zero, the default is no limit. A limit cannot be specified if
- *   `partition_token` is set.
- * @param {Buffer} request.resumeToken
- *   If this request is resuming a previously interrupted read,
- *   `resume_token` should be copied from the last
- *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
- *   enables the new read to resume where the last read left off. The
- *   rest of the request parameters must exactly match the request
- *   that yielded this token.
- * @param {Buffer} request.partitionToken
- *   If present, results will be restricted to the specified partition
- *   previously created using PartitionRead().    There must be an exact
- *   match for the values of fields common to this message and the
- *   PartitionReadRequest message used to create this partition_token.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Stream}
- *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
- */
+  /**
+   * Like {@link google.spanner.v1.Spanner.Read|Read}, except returns the result set as a
+   * stream. Unlike {@link google.spanner.v1.Spanner.Read|Read}, there is no limit on the
+   * size of the returned result set. However, no individual row in
+   * the result set can exceed 100 MiB, and no column value can exceed
+   * 10 MiB.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the read should be performed.
+   * @param {google.spanner.v1.TransactionSelector} request.transaction
+   *   The transaction to use. If none is provided, the default is a
+   *   temporary read-only transaction with strong concurrency.
+   * @param {string} request.table
+   *   Required. The name of the table in the database to be read.
+   * @param {string} request.index
+   *   If non-empty, the name of an index on {@link google.spanner.v1.ReadRequest.table|table}. This index is
+   *   used instead of the table primary key when interpreting {@link google.spanner.v1.ReadRequest.key_set|key_set}
+   *   and sorting result rows. See {@link google.spanner.v1.ReadRequest.key_set|key_set} for further information.
+   * @param {string[]} request.columns
+   *   Required. The columns of {@link google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
+   *   this request.
+   * @param {google.spanner.v1.KeySet} request.keySet
+   *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
+   *   primary keys of the rows in {@link google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.ReadRequest.index|index}
+   *   is present. If {@link google.spanner.v1.ReadRequest.index|index} is present, then {@link google.spanner.v1.ReadRequest.key_set|key_set} instead names
+   *   index keys in {@link google.spanner.v1.ReadRequest.index|index}.
+   *
+   *   If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
+   *   in table primary key order (if {@link google.spanner.v1.ReadRequest.index|index} is empty) or index key order
+   *   (if {@link google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
+   *   empty, rows will be yielded in an unspecified order.
+   *
+   *   It is not an error for the `key_set` to name rows that do not
+   *   exist in the database. Read yields nothing for nonexistent rows.
+   * @param {number} request.limit
+   *   If greater than zero, only the first `limit` rows are yielded. If `limit`
+   *   is zero, the default is no limit. A limit cannot be specified if
+   *   `partition_token` is set.
+   * @param {Buffer} request.resumeToken
+   *   If this request is resuming a previously interrupted read,
+   *   `resume_token` should be copied from the last
+   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   enables the new read to resume where the last read left off. The
+   *   rest of the request parameters must exactly match the request
+   *   that yielded this token.
+   * @param {Buffer} request.partitionToken
+   *   If present, results will be restricted to the specified partition
+   *   previously created using PartitionRead().    There must be an exact
+   *   match for the values of fields common to this message and the
+   *   PartitionReadRequest message used to create this partition_token.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
+   */
   streamingRead(
-      request?: protos.google.spanner.v1.IReadRequest,
-      options?: gax.CallOptions):
-    gax.CancellableStream{
+    request?: protos.google.spanner.v1.IReadRequest,
+    options?: gax.CallOptions
+  ): gax.CancellableStream {
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1568,98 +1773,109 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'session': request.session || '',
+      session: request.session || '',
     });
     this.initialize();
     return this.innerApiCalls.streamingRead(request, options);
   }
 
   listSessions(
-      request: protos.google.spanner.v1.IListSessionsRequest,
-      options?: gax.CallOptions):
-      Promise<[
-        protos.google.spanner.v1.ISession[],
-        protos.google.spanner.v1.IListSessionsRequest|null,
-        protos.google.spanner.v1.IListSessionsResponse
-      ]>;
+    request: protos.google.spanner.v1.IListSessionsRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.v1.ISession[],
+      protos.google.spanner.v1.IListSessionsRequest | null,
+      protos.google.spanner.v1.IListSessionsResponse
+    ]
+  >;
   listSessions(
-      request: protos.google.spanner.v1.IListSessionsRequest,
-      options: gax.CallOptions,
-      callback: PaginationCallback<
-          protos.google.spanner.v1.IListSessionsRequest,
-          protos.google.spanner.v1.IListSessionsResponse|null|undefined,
-          protos.google.spanner.v1.ISession>): void;
+    request: protos.google.spanner.v1.IListSessionsRequest,
+    options: gax.CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.v1.IListSessionsRequest,
+      protos.google.spanner.v1.IListSessionsResponse | null | undefined,
+      protos.google.spanner.v1.ISession
+    >
+  ): void;
   listSessions(
-      request: protos.google.spanner.v1.IListSessionsRequest,
-      callback: PaginationCallback<
-          protos.google.spanner.v1.IListSessionsRequest,
-          protos.google.spanner.v1.IListSessionsResponse|null|undefined,
-          protos.google.spanner.v1.ISession>): void;
-/**
- * Lists all sessions in a given database.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.database
- *   Required. The database in which to list sessions.
- * @param {number} request.pageSize
- *   Number of sessions to be returned in the response. If 0 or less, defaults
- *   to the server's maximum allowed page size.
- * @param {string} request.pageToken
- *   If non-empty, `page_token` should contain a
- *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
- *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
- * @param {string} request.filter
- *   An expression for filtering the results of the request. Filter rules are
- *   case insensitive. The fields eligible for filtering are:
- *
- *     * `labels.key` where key is the name of a label
- *
- *   Some examples of using filters are:
- *
- *     * `labels.env:*` --> The session has the label "env".
- *     * `labels.env:dev` --> The session has the label "env" and the value of
- *                          the label contains the string "dev".
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is Array of [Session]{@link google.spanner.v1.Session}.
- *   The client library support auto-pagination by default: it will call the API as many
- *   times as needed and will merge results from all the pages into this array.
- *
- *   When autoPaginate: false is specified through options, the array has three elements.
- *   The first element is Array of [Session]{@link google.spanner.v1.Session} that corresponds to
- *   the one page received from the API server.
- *   If the second element is not null it contains the request object of type [ListSessionsRequest]{@link google.spanner.v1.ListSessionsRequest}
- *   that can be used to obtain the next page of the results.
- *   If it is null, the next page does not exist.
- *   The third element contains the raw response received from the API server. Its type is
- *   [ListSessionsResponse]{@link google.spanner.v1.ListSessionsResponse}.
- *
- *   The promise has a method named "cancel" which cancels the ongoing API call.
- */
+    request: protos.google.spanner.v1.IListSessionsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.v1.IListSessionsRequest,
+      protos.google.spanner.v1.IListSessionsResponse | null | undefined,
+      protos.google.spanner.v1.ISession
+    >
+  ): void;
+  /**
+   * Lists all sessions in a given database.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database in which to list sessions.
+   * @param {number} request.pageSize
+   *   Number of sessions to be returned in the response. If 0 or less, defaults
+   *   to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
+   * @param {string} request.filter
+   *   An expression for filtering the results of the request. Filter rules are
+   *   case insensitive. The fields eligible for filtering are:
+   *
+   *     * `labels.key` where key is the name of a label
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `labels.env:*` --> The session has the label "env".
+   *     * `labels.env:dev` --> The session has the label "env" and the value of
+   *                          the label contains the string "dev".
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Session]{@link google.spanner.v1.Session}.
+   *   The client library support auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Session]{@link google.spanner.v1.Session} that corresponds to
+   *   the one page received from the API server.
+   *   If the second element is not null it contains the request object of type [ListSessionsRequest]{@link google.spanner.v1.ListSessionsRequest}
+   *   that can be used to obtain the next page of the results.
+   *   If it is null, the next page does not exist.
+   *   The third element contains the raw response received from the API server. Its type is
+   *   [ListSessionsResponse]{@link google.spanner.v1.ListSessionsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
   listSessions(
-      request: protos.google.spanner.v1.IListSessionsRequest,
-      optionsOrCallback?: gax.CallOptions|PaginationCallback<
+    request: protos.google.spanner.v1.IListSessionsRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | PaginationCallback<
           protos.google.spanner.v1.IListSessionsRequest,
-          protos.google.spanner.v1.IListSessionsResponse|null|undefined,
-          protos.google.spanner.v1.ISession>,
-      callback?: PaginationCallback<
-          protos.google.spanner.v1.IListSessionsRequest,
-          protos.google.spanner.v1.IListSessionsResponse|null|undefined,
-          protos.google.spanner.v1.ISession>):
-      Promise<[
-        protos.google.spanner.v1.ISession[],
-        protos.google.spanner.v1.IListSessionsRequest|null,
-        protos.google.spanner.v1.IListSessionsResponse
-      ]>|void {
+          protos.google.spanner.v1.IListSessionsResponse | null | undefined,
+          protos.google.spanner.v1.ISession
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.v1.IListSessionsRequest,
+      protos.google.spanner.v1.IListSessionsResponse | null | undefined,
+      protos.google.spanner.v1.ISession
+    >
+  ): Promise<
+    [
+      protos.google.spanner.v1.ISession[],
+      protos.google.spanner.v1.IListSessionsRequest | null,
+      protos.google.spanner.v1.IListSessionsResponse
+    ]
+  > | void {
     request = request || {};
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    }
-    else {
+    } else {
       options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
@@ -1668,56 +1884,56 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'database': request.database || '',
+      database: request.database || '',
     });
     this.initialize();
     return this.innerApiCalls.listSessions(request, options, callback);
   }
 
-/**
- * Equivalent to {@link listSessions}, but returns a NodeJS Stream object.
- *
- * This fetches the paged responses for {@link listSessions} continuously
- * and invokes the callback registered for 'data' event for each element in the
- * responses.
- *
- * The returned object has 'end' method when no more elements are required.
- *
- * autoPaginate option will be ignored.
- *
- * @see {@link https://nodejs.org/api/stream.html}
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.database
- *   Required. The database in which to list sessions.
- * @param {number} request.pageSize
- *   Number of sessions to be returned in the response. If 0 or less, defaults
- *   to the server's maximum allowed page size.
- * @param {string} request.pageToken
- *   If non-empty, `page_token` should contain a
- *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
- *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
- * @param {string} request.filter
- *   An expression for filtering the results of the request. Filter rules are
- *   case insensitive. The fields eligible for filtering are:
- *
- *     * `labels.key` where key is the name of a label
- *
- *   Some examples of using filters are:
- *
- *     * `labels.env:*` --> The session has the label "env".
- *     * `labels.env:dev` --> The session has the label "env" and the value of
- *                          the label contains the string "dev".
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Stream}
- *   An object stream which emits an object representing [Session]{@link google.spanner.v1.Session} on 'data' event.
- */
+  /**
+   * Equivalent to {@link listSessions}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listSessions} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database in which to list sessions.
+   * @param {number} request.pageSize
+   *   Number of sessions to be returned in the response. If 0 or less, defaults
+   *   to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
+   * @param {string} request.filter
+   *   An expression for filtering the results of the request. Filter rules are
+   *   case insensitive. The fields eligible for filtering are:
+   *
+   *     * `labels.key` where key is the name of a label
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `labels.env:*` --> The session has the label "env".
+   *     * `labels.env:dev` --> The session has the label "env" and the value of
+   *                          the label contains the string "dev".
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Session]{@link google.spanner.v1.Session} on 'data' event.
+   */
   listSessionsStream(
-      request?: protos.google.spanner.v1.IListSessionsRequest,
-      options?: gax.CallOptions):
-    Transform{
+    request?: protos.google.spanner.v1.IListSessionsRequest,
+    options?: gax.CallOptions
+  ): Transform {
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1725,7 +1941,7 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'database': request.database || '',
+      database: request.database || '',
     });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
@@ -1736,42 +1952,42 @@ export class SpannerClient {
     );
   }
 
-/**
- * Equivalent to {@link listSessions}, but returns an iterable object.
- *
- * for-await-of syntax is used with the iterable to recursively get response element on-demand.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.database
- *   Required. The database in which to list sessions.
- * @param {number} request.pageSize
- *   Number of sessions to be returned in the response. If 0 or less, defaults
- *   to the server's maximum allowed page size.
- * @param {string} request.pageToken
- *   If non-empty, `page_token` should contain a
- *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
- *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
- * @param {string} request.filter
- *   An expression for filtering the results of the request. Filter rules are
- *   case insensitive. The fields eligible for filtering are:
- *
- *     * `labels.key` where key is the name of a label
- *
- *   Some examples of using filters are:
- *
- *     * `labels.env:*` --> The session has the label "env".
- *     * `labels.env:dev` --> The session has the label "env" and the value of
- *                          the label contains the string "dev".
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Object}
- *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
- */
+  /**
+   * Equivalent to {@link listSessions}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database in which to list sessions.
+   * @param {number} request.pageSize
+   *   Number of sessions to be returned in the response. If 0 or less, defaults
+   *   to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
+   * @param {string} request.filter
+   *   An expression for filtering the results of the request. Filter rules are
+   *   case insensitive. The fields eligible for filtering are:
+   *
+   *     * `labels.key` where key is the name of a label
+   *
+   *   Some examples of using filters are:
+   *
+   *     * `labels.env:*` --> The session has the label "env".
+   *     * `labels.env:dev` --> The session has the label "env" and the value of
+   *                          the label contains the string "dev".
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
   listSessionsAsync(
-      request?: protos.google.spanner.v1.IListSessionsRequest,
-      options?: gax.CallOptions):
-    AsyncIterable<protos.google.spanner.v1.ISession>{
+    request?: protos.google.spanner.v1.IListSessionsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.spanner.v1.ISession> {
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1779,14 +1995,14 @@ export class SpannerClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'database': request.database || '',
+      database: request.database || '',
     });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
-      request as unknown as RequestType,
+      (request as unknown) as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.spanner.v1.ISession>;
   }
@@ -1802,7 +2018,7 @@ export class SpannerClient {
    * @param {string} database
    * @returns {string} Resource name string.
    */
-  databasePath(project:string,instance:string,database:string) {
+  databasePath(project: string, instance: string, database: string) {
     return this.pathTemplates.databasePathTemplate.render({
       project: project,
       instance: instance,
@@ -1852,7 +2068,12 @@ export class SpannerClient {
    * @param {string} session
    * @returns {string} Resource name string.
    */
-  sessionPath(project:string,instance:string,database:string,session:string) {
+  sessionPath(
+    project: string,
+    instance: string,
+    database: string,
+    session: string
+  ) {
     return this.pathTemplates.sessionPathTemplate.render({
       project: project,
       instance: instance,
