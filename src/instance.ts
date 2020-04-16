@@ -78,7 +78,7 @@ export interface CreateDatabaseOptions
   schema?: string;
 }
 export interface CreateInstanceRequest extends IInstance {
-  nodes: number;
+  nodes?: number;
 }
 export interface GetDatabasesRequest
   extends databaseAdmin.spanner.admin.database.v1.IListDatabasesRequest {

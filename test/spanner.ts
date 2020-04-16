@@ -2031,11 +2031,11 @@ describe('Spanner with mock server', () => {
           assert.ifError(err);
           assert.ok(resource, 'no instance returned');
           assert.strictEqual(
-            resource.formattedName_,
+            resource!.formattedName_,
             `projects/${spanner.projectId}/instances/new-instance`
           );
           assert.ok(operation, 'no operation returned');
-          operation.on('error', assert.ifError).on('complete', instance => {
+          operation!.on('error', assert.ifError).on('complete', instance => {
             // Instance created successfully.
             assert.strictEqual(
               instance.name,
