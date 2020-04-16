@@ -1018,6 +1018,12 @@ class Database extends GrpcServiceObject {
   }
 
   /**
+   * {@link google.spanner.admin.database.v1#RestoreInfo} structure with restore
+   * source type enum translated to string form.
+   *
+   * @typedef {object} IRestoreInfoTranslatedEnum
+   */
+  /**
    * Retrieves the restore information of the database.
    *
    * @see {@link #getMetadata}
