@@ -365,7 +365,7 @@ class Backup {
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const oneDay = 1000 * 60 * 60 * 24;
-   * const newExpireTime = new PreciseDate(Date.now() + oneDay);
+   * const newExpireTime = Spanner.timestamp(Date.now() + oneDay);
    * await backup.updateExpireTime(newExpireTime);
    */
   updateExpireTime(
