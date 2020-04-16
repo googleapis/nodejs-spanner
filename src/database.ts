@@ -1024,9 +1024,9 @@ class Database extends GrpcServiceObject {
    * @see {@link #getMetadata}
    *
    * @method Database#getRestoreInfo
-   * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>}
-   *     when resolved, contains the restore information for the database if it exists,
-   *     or undefined if the database does not exist.
+   * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>} When resolved,
+   *     contains the restore information for the database if it was restored
+   *     from a backup.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -1051,8 +1051,8 @@ class Database extends GrpcServiceObject {
    *
    * @method Database#getState
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
-   *     when resolved, contains the current state of the database if it exists, or
-   *     undefined if the database does not exist.
+   *     When resolved, contains the current state of the database if the state
+   *     is defined.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
