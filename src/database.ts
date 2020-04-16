@@ -1427,8 +1427,8 @@ class Database extends GrpcServiceObject {
    *
    * @param {GetDatabaseOperationsOptions} [options] Contains query object for
    *     listing database operations and request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
-   * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains
+   *     here: https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains
    *     a paged list of database operations.
    *
    * @example
@@ -1569,10 +1569,10 @@ class Database extends GrpcServiceObject {
    * When this call completes, the restore will have commenced but will not
    * necessarily have completed.
    *
-   * @param backupPath the path of the backup to restore.
+   * @param backupPath The path of the backup to restore.
    * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
-   * @returns Promise<RestoreDatabaseResponse> when resolved, contains the restore operation.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns Promise<RestoreDatabaseResponse> When resolved, contains the restore operation.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');

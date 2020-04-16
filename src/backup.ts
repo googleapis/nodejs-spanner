@@ -106,7 +106,7 @@ class Backup {
    * @property {string|number|google.protobuf.Timestamp} expireTime The expire time of the backup.
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    */
   /**
    * @typedef {array} CreateBackupResponse
@@ -130,7 +130,7 @@ class Backup {
    * @param {CreateBackupOptions} options Parameters for creating a backup.
    * @param {CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} When resolved, the backup
    *     operation will have started, but will not have necessarily completed.
@@ -203,7 +203,7 @@ class Backup {
    *
    * @method Backup#getMetadata
    * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {GetMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetMetadataResponse>}
    *
@@ -355,7 +355,7 @@ class Backup {
    * @method Backup#updateExpireTime
    * @param {external:PreciseDate} expireTime The expiry time to update with.
    * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
    * @returns {Promise<google.spanner.admin.database.v1.IBackup>} When resolved,
    *     the backup's expire time will have been updated.
@@ -413,7 +413,7 @@ class Backup {
    *
    * @method Backup#delete
    * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {DeleteBackupCallback} [callback] Callback function.
    * @returns {Promise<void>} When resolved, the backup will have been deleted.
    *

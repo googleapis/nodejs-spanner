@@ -301,7 +301,7 @@ class Instance extends common.GrpcServiceObject {
    * @param {GetBackupsOptions} [options] The query object for listing backups.
    * @param {CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupsResponse>} when resolved, contains a paged list of backups.
    *
    * @example
@@ -385,7 +385,7 @@ class Instance extends common.GrpcServiceObject {
    *     backup operations.
    * @param {CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupOperationsResponse>} when resolved, contains a
    *     paged list of backup operations.
    *
@@ -465,7 +465,7 @@ class Instance extends common.GrpcServiceObject {
    *     listing database operations.
    * @param {CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetDatabaseOperationsResponse>} when resolved, contains a
    *     paged list of database operations.
    *
