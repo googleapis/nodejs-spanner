@@ -44,7 +44,7 @@ export type CreateBackupResponse = [
 
 export interface CreateBackupOptions {
   databasePath: string;
-  expireTime: string|number|p.ITimestamp;
+  expireTime: string | number | p.ITimestamp;
   gaxOptions?: CallOptions;
 }
 
