@@ -344,7 +344,8 @@ class Backup {
   /**
    * @callback UpdateExpireTimeCallback
    * @param {?Error} err Request error, if any.
-   * @param {IBackup} backup The updated {@link v1.IBackup}.
+   * @param {google.spanner.admin.database.v1.IBackup} backup The updated
+   *     backup.
    */
   /**
    * Sets the expiry time of a backup.
@@ -356,8 +357,8 @@ class Backup {
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
-   * @returns {Promise<IBackup>} When resolved, the backup's expire time will
-   *     have been updated.
+   * @returns {Promise<google.spanner.admin.database.v1.IBackup>} When resolved,
+   *     the backup's expire time will have been updated.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
