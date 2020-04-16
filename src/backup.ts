@@ -100,10 +100,11 @@ class Backup {
   create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
   create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
   /**
-   * @typedef {array} CreateBackupOptions
-   * @property {string} 0 The database path.
-   * @property {PreciseDate} 1 The expire tiem of the backup.
-   * @property {CallOptions} 2 The request configuration options outlined here:
+   * @typedef {object} CreateBackupOptions
+   * @property {string} databasePath The database path.
+   * @property {PreciseDate} expireTime The expire time of the backup.
+   * @property {CallOptions} [gaxOptions] The request configuration options
+   *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    */
   /**
@@ -130,7 +131,7 @@ class Backup {
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {CreateBackupCallback} [callback] Callback function.
-   * @returns {Promise<CreateBackupResponse>} when resolved, the backup
+   * @returns {Promise<CreateBackupResponse>} When resolved, the backup
    *     operation will have started, but will not have necessarily completed.
    *
    * @example
@@ -250,7 +251,7 @@ class Backup {
    *
    * @method Backup#getState
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
-   *     when resolved, contains the current state of the backup if it exists.
+   *     When resolved, contains the current state of the backup if it exists.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -275,9 +276,8 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getExpireTime
-   * @returns {Promise<PreciseDate>}
-   *     when resolved, contains the current expire time of the backup if it
-   *     exists.
+   * @returns {Promise<PreciseDate>} When resolved, contains the current expire
+   *     time of the backup if it exists.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -298,7 +298,7 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#exists
-   * @returns {Promise<boolean>} when resolved, contains true if the backup
+   * @returns {Promise<boolean>} When resolved, contains true if the backup
    *     exists and false if it does not exist.
    *
    * @example
@@ -355,7 +355,7 @@ class Backup {
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
-   * @returns {Promise<IBackup>} when resolved, the backup's expire time will
+   * @returns {Promise<IBackup>} When resolved, the backup's expire time will
    *     have been updated.
    *
    * @example
@@ -413,7 +413,7 @@ class Backup {
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {DeleteBackupCallback} [callback] Callback function.
-   * @returns {Promise<void>} when resolved, the backup will have been deleted.
+   * @returns {Promise<void>} When resolved, the backup will have been deleted.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
