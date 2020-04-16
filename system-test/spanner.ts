@@ -982,6 +982,7 @@ describe('Spanner', () => {
     const backup1Name = generateName('backup');
     const backup2Name = generateName('backup');
     const backupExpiryDate = futureDateByHours(12);
+    const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
     before(async () => {
       database1 = instance.database(generateName('database'));
@@ -1059,8 +1060,8 @@ describe('Spanner', () => {
       await database2.delete();
     });
 
-    function futureDateByHours(futureHours: number): PreciseDate {
-      return new PreciseDate(Date.now() + 1000 * 60 * 60 * futureHours);
+    function futureDateByHours(futureHours: number): number {
+      return Date.now() + 1000 * 60 * 60 * futureHours;
     }
 
     it('should have completed a backup', async () => {
@@ -1075,7 +1076,7 @@ describe('Spanner', () => {
       assert.ok(backupInfo.createTime);
       assert.deepStrictEqual(
         Number(backupInfo.expireTime!.seconds),
-        backupExpiryDate.toStruct().seconds
+        backupExpiryPreciseDate.toStruct().seconds
       );
       assert.ok(backupInfo.sizeBytes! > 0);
 
@@ -1085,7 +1086,7 @@ describe('Spanner', () => {
       const expireTime = await backup1.getExpireTime();
       assert.deepStrictEqual(
         expireTime!.getFullTime(),
-        backupExpiryDate.getFullTime()
+        backupExpiryPreciseDate.getFullTime()
       );
       const exists = await backup1.exists();
       assert.strictEqual(exists, true);
@@ -1214,7 +1215,7 @@ describe('Spanner', () => {
 
     it('should update backup expiry', async () => {
       // Update backup expiry date.
-      const updatedBackupExpiryDate = futureDateByHours(24);
+      const updatedBackupExpiryDate = Spanner.timestamp(futureDateByHours(24));
       await backup1.updateExpireTime(updatedBackupExpiryDate);
 
       // Read metadata, verify expiry date was updated.
@@ -1231,7 +1232,7 @@ describe('Spanner', () => {
 
     it('should not update backup expiry to the past', async () => {
       // Attempt to update expiry date to the past.
-      const expiryDateInPast = futureDateByHours(-24);
+      const expiryDateInPast = Spanner.timestamp(futureDateByHours(-24));
       try {
         await backup1.updateExpireTime(expiryDateInPast);
         assert.fail(

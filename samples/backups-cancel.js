@@ -45,7 +45,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     console.log(`Creating backup of database ${database.formattedName_}.`);
     const databasePath = database.formattedName_;
     // Expire backup one day in the future
-    const expireTime = new PreciseDate(Date.now() + 1000 * 60 * 60 * 24);
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24;
     const [, operation] = await backup.create({
       databasePath: databasePath,
       expireTime: expireTime,

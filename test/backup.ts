@@ -23,7 +23,7 @@ import * as sinon from 'sinon';
 import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import {Instance} from '../src';
+import {Instance, Spanner} from '../src';
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
@@ -81,7 +81,8 @@ describe('Backup', () => {
     INSTANCE.formattedName_ + '/databases/' + DATABASE_NAME;
   const BACKUP_FORMATTED_NAME =
     INSTANCE.formattedName_ + '/backups/' + BACKUP_NAME;
-  const BACKUP_EXPIRE_TIME = new PreciseDate(1977, 1, 9);
+  const BACKUP_EXPIRE_TIME = '2019-02-08T10:34:29.481145231Z';
+  const EXP_BACKUP_EXPIRE_TIME = Spanner.timestamp(BACKUP_EXPIRE_TIME);
 
   let backup: bu.Backup;
 
@@ -152,7 +153,7 @@ describe('Backup', () => {
         backup: {
           name: BACKUP_FORMATTED_NAME,
           database: DATABASE_FORMATTED_NAME,
-          expireTime: BACKUP_EXPIRE_TIME.toStruct(),
+          expireTime: EXP_BACKUP_EXPIRE_TIME.toStruct(),
         },
       });
 
@@ -342,13 +343,13 @@ describe('Backup', () => {
     it('should return the expire time from backup info', async () => {
       const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
         {
-          expireTime: BACKUP_EXPIRE_TIME.toStruct(),
+          expireTime: EXP_BACKUP_EXPIRE_TIME.toStruct(),
         },
       ];
       backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
 
       const result = await backup.getExpireTime();
-      assert.deepStrictEqual(result, BACKUP_EXPIRE_TIME);
+      assert.deepStrictEqual(result, EXP_BACKUP_EXPIRE_TIME);
     });
 
     it('should throw errors', async () => {

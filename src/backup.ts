@@ -21,11 +21,12 @@ import {
   RequestCallback,
   ResourceCallback,
 } from './common';
-import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import {EnumKey, Spanner, RequestConfig, TranslateEnumKeys} from '.';
 import {Metadata, Operation as GaxOperation} from 'google-gax';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {CallOptions, status} from 'grpc';
 import {google as databaseAdmin} from '../protos/protos';
+import {common as p} from 'protobufjs';
 
 export type CreateBackupCallback = LongRunningCallback<Backup>;
 
@@ -43,7 +44,7 @@ export type CreateBackupResponse = [
 
 export interface CreateBackupOptions {
   databasePath: string;
-  expireTime: PreciseDate;
+  expireTime: string|number|p.ITimestamp;
   gaxOptions?: CallOptions;
 }
 
@@ -102,7 +103,7 @@ class Backup {
   /**
    * @typedef {object} CreateBackupOptions
    * @property {string} databasePath The database path.
-   * @property {PreciseDate} expireTime The expire time of the backup.
+   * @property {string|number|google.protobuf.Timestamp} expireTime The expire time of the backup.
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
@@ -139,11 +140,11 @@ class Backup {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const oneDay = 1000 * 60 * 60 * 24;
-   * const expiryTime = new PreciseDate(Date.now() + oneDay);
+   * const expireTime = Date.now() + oneDay;
    * const backup = instance.backup('my-backup');
    * const [, backupOperation] = await backup.create({
    *   databasePath: 'projects/my-project/instances/my-instance/databases/my-database',
-   *   expireTime: expiryTime,
+   *   expireTime: expireTime,
    * });
    * // Await completion of the backup operation.
    * await backupOperation.promise();
@@ -158,7 +159,7 @@ class Backup {
       backupId: this.id,
       backup: {
         database: options.databasePath,
-        expireTime: options.expireTime.toStruct(),
+        expireTime: Spanner.timestamp(options.expireTime).toStruct(),
         name: this.formattedName_,
       },
     };
@@ -276,8 +277,8 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getExpireTime
-   * @returns {Promise<PreciseDate>} When resolved, contains the current expire
-   *     time of the backup if it exists.
+   * @returns {Promise<external:PreciseDate>} When resolved, contains the
+   *     current expire time of the backup if it exists.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -351,7 +352,7 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#updateExpireTime
-   * @param {PreciseDate} expireTime The expiry time to update with.
+   * @param {external:PreciseDate} expireTime The expiry time to update with.
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
