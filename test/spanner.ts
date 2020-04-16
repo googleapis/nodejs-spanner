@@ -33,7 +33,7 @@ import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
-import {GetDatabaseOperationsRequest} from '../src/instance';
+import {GetDatabaseOperationsOptions} from '../src/instance';
 import {
   isSessionNotFoundError,
   SessionLeakError,
@@ -2096,7 +2096,7 @@ describe('Spanner with mock server', () => {
     it('should list database operations', async () => {
       const dbSpecificFilter =
         'name:projects/p/instances/i/databases/test-database';
-      const dbSpecificQuery: GetDatabaseOperationsRequest = {
+      const dbSpecificQuery: GetDatabaseOperationsOptions = {
         filter: dbSpecificFilter,
       };
       const [operations1] = await instance.getDatabaseOperations(

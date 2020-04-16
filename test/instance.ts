@@ -954,7 +954,7 @@ describe('Instance', () => {
   describe('getBackups', () => {
     const QUERY = {
       a: 'b',
-    } as inst.GetBackupsRequest;
+    } as inst.GetBackupsOptions;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -1068,7 +1068,7 @@ describe('Instance', () => {
   describe('getBackupOperations', () => {
     const QUERY = {
       a: 'b',
-    } as inst.GetBackupOperationsRequest;
+    } as inst.GetBackupOperationsOptions;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {
@@ -1111,7 +1111,7 @@ describe('Instance', () => {
   describe('getDatabaseOperations', () => {
     const QUERY = {
       a: 'b',
-    } as inst.GetDatabaseOperationsRequest;
+    } as inst.GetDatabaseOperationsOptions;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', async () => {

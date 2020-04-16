@@ -37,7 +37,6 @@ import {
   CreateDatabaseOptions,
   CreateDatabaseCallback,
   GetDatabaseOperationsOptions,
-  GetDatabaseOperationsRequest,
   GetDatabaseOperationsResponse,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
@@ -1406,11 +1405,10 @@ class Database extends GrpcServiceObject {
   /**
    * Query object for listing database operations.
    *
-   * @typedef {object} GetDatabaseOperationsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
+   * @typedef {object} GetDatabaseOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listDatabaseOperations}.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
@@ -1448,7 +1446,7 @@ class Database extends GrpcServiceObject {
     if (options && options.filter) {
       dbSpecificFilter = `(${dbSpecificFilter}) AND (${options.filter})`;
     }
-    const dbSpecificQuery: GetDatabaseOperationsRequest = {
+    const dbSpecificQuery: GetDatabaseOperationsOptions = {
       ...options,
       filter: dbSpecificFilter,
     };

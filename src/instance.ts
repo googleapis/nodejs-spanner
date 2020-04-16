@@ -86,25 +86,6 @@ export interface GetDatabasesRequest
   maxApiCalls?: number;
   maxResults?: number;
 }
-export interface GetBackupsRequest
-  extends databaseAdmin.spanner.admin.database.v1.IListBackupsRequest {
-  autoPaginate?: boolean;
-  maxApiCalls?: number;
-  maxResults?: number;
-}
-export interface GetBackupOperationsRequest
-  extends databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest {
-  autoPaginate?: boolean;
-  maxApiCalls?: number;
-  maxResults?: number;
-}
-export interface GetDatabaseOperationsRequest
-  extends databaseAdmin.spanner.admin.database.v1
-    .IListDatabaseOperationsRequest {
-  autoPaginate?: boolean;
-  maxApiCalls?: number;
-  maxResults?: number;
-}
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
 export type DeleteInstanceCallback = NormalCallback<
@@ -277,11 +258,10 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Query object for listing backups.
    *
-   * @typedef {object} GetBackupsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
+   * @typedef {object} GetBackupsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listBackups}.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
@@ -302,7 +282,8 @@ class Instance extends common.GrpcServiceObject {
    * @param {CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
-   * @returns {Promise<GetBackupsResponse>} when resolved, contains a paged list of backups.
+   * @returns {Promise<GetBackupsResponse>} when resolved, contains a paged list
+   *     of backups.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -362,11 +343,10 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Query object for listing backup operations.
    *
-   * @typedef {object} GetBackupOperationsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
+   * @typedef {object} GetBackupOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listBackupOperations}.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
@@ -442,11 +422,10 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Query object for listing database operations.
    *
-   * @typedef {object} GetDatabaseOperationsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
+   * @typedef {object} GetDatabaseOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listDatabaseOperations}.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
