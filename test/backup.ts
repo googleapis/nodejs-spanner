@@ -401,7 +401,8 @@ describe('Backup', () => {
   });
 
   describe('updateExpireTime', () => {
-    const NEW_EXPIRE_TIME = new PreciseDate(1977, 1, 10);
+    const NEW_EXPIRE_TIME = '2019-03-08T10:34:29.481145231Z';
+    const EXP_NEW_EXPIRE_TIME = Spanner.timestamp(NEW_EXPIRE_TIME);
 
     it('should make the correct request', async () => {
       const QUERY = {};
@@ -409,7 +410,7 @@ describe('Backup', () => {
       const expectedReqOpts = extend({}, QUERY, {
         backup: {
           name: BACKUP_FORMATTED_NAME,
-          expireTime: NEW_EXPIRE_TIME.toStruct(),
+          expireTime: EXP_NEW_EXPIRE_TIME.toStruct(),
         },
         updateMask: {
           paths: ['expire_time'],
@@ -445,7 +446,7 @@ describe('Backup', () => {
       const API_RESPONSE = {
         name: 'backup-name',
         database: 'database-name',
-        expireTime: NEW_EXPIRE_TIME,
+        expireTime: EXP_NEW_EXPIRE_TIME,
       };
 
       backup.request = (config, callback: Function) => {

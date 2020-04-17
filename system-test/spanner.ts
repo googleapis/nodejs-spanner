@@ -1215,7 +1215,7 @@ describe('Spanner', () => {
 
     it('should update backup expiry', async () => {
       // Update backup expiry date.
-      const updatedBackupExpiryDate = Spanner.timestamp(futureDateByHours(24));
+      const updatedBackupExpiryDate = futureDateByHours(24);
       await backup1.updateExpireTime(updatedBackupExpiryDate);
 
       // Read metadata, verify expiry date was updated.
@@ -1226,13 +1226,13 @@ describe('Spanner', () => {
 
       assert.deepStrictEqual(
         expiryDateFromMetadataAfterUpdate,
-        updatedBackupExpiryDate
+        Spanner.timestamp(updatedBackupExpiryDate)
       );
     });
 
     it('should not update backup expiry to the past', async () => {
       // Attempt to update expiry date to the past.
-      const expiryDateInPast = Spanner.timestamp(futureDateByHours(-24));
+      const expiryDateInPast = futureDateByHours(-24);
       try {
         await backup1.updateExpireTime(expiryDateInPast);
         assert.fail(

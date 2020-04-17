@@ -326,18 +326,18 @@ class Backup {
   }
 
   updateExpireTime(
-    expireTime: PreciseDate
+    expireTime: string | number | p.ITimestamp
   ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
-    expireTime: PreciseDate,
+    expireTime: string | number | p.ITimestamp,
     gaxOptions?: CallOptions
   ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
-    expireTime: PreciseDate,
+    expireTime: string | number | p.ITimestamp,
     callback: UpdateExpireTimeCallback
   ): void;
   updateExpireTime(
-    expireTime: PreciseDate,
+    expireTime: string | number | p.ITimestamp,
     gaxOptions: CallOptions,
     callback: UpdateExpireTimeCallback
   ): void;
@@ -353,7 +353,8 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#updateExpireTime
-   * @param {external:PreciseDate} expireTime The expiry time to update with.
+   * @param {string|number|google.protobuf.Timestamp} expireTime The expiry time
+   *     to update with.
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
@@ -370,7 +371,7 @@ class Backup {
    * await backup.updateExpireTime(newExpireTime);
    */
   updateExpireTime(
-    expireTime: PreciseDate,
+    expireTime: string | number | p.ITimestamp,
     gaxOptionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
     cb?: UpdateExpireTimeCallback
   ): void | Promise<databaseAdmin.spanner.admin.database.v1.IBackup> {
@@ -385,7 +386,7 @@ class Backup {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
         name: this.formattedName_,
-        expireTime: expireTime.toStruct(),
+        expireTime: Spanner.timestamp(expireTime).toStruct(),
       },
       updateMask: {
         paths: ['expire_time'],
