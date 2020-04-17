@@ -1441,6 +1441,22 @@ class Database extends GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const [operations] = await database.getOperations();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await database.getOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
    */
   async getOperations(
     options?: GetDatabaseOperationsOptions

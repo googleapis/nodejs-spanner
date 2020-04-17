@@ -290,6 +290,22 @@ class Instance extends common.GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const [backups] = await instance.getBackups();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [backups, , response] = await instance.getBackups({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   backups.forEach(backup => {
+   *     // Do something with backup
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
    */
   getBackups(
     optionsOrCallback?: GetBackupsOptions | GetBackupsCallback,
@@ -374,6 +390,22 @@ class Instance extends common.GrpcServiceObject {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const [operations] = await instance.getBackupOperations();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await instance.getBackupOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
    */
   getBackupOperations(
     optionsOrCallback?:
@@ -454,6 +486,22 @@ class Instance extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const [operations] = await instance.getDatabaseOperations();
    * // ... then do something with the operations
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await instance.getDatabaseOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
    */
   getDatabaseOperations(
     optionsOrCallback?:
