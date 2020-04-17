@@ -24,7 +24,6 @@ import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {Instance, Spanner} from '../src';
-import {PreciseDate} from '@google-cloud/precise-date';
 import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
 import * as grpc from 'grpc';
