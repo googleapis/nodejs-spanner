@@ -15,7 +15,6 @@
  */
 
 import {GrpcService, GrpcServiceConfig} from './common-grpc/service';
-import {GrpcOperation} from './common-grpc/operation';
 import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
@@ -27,9 +26,16 @@ import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {codec} from './codec';
+import {codec, Float, Int, SpannerDate, Struct} from './codec';
 import {Database} from './database';
-import {Instance} from './instance';
+import {
+  CreateInstanceCallback,
+  CreateInstanceRequest,
+  Instance,
+} from './instance';
+import {Operation as GaxOperation} from 'google-gax';
+import {google as instanceAdmin} from '../protos/protos';
+import {PagedRequest, PagedResponse, PagedCallback} from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -46,6 +52,37 @@ import * as grpc from 'grpc';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
+
+export type IOperation = instanceAdmin.longrunning.IOperation;
+export type CreateInstanceResponse = [Instance, GaxOperation, IOperation];
+
+export type GetInstancesRequest = PagedRequest<
+  instanceAdmin.spanner.admin.instance.v1.IListInstancesRequest & {
+    maxResults?: number;
+  }
+>;
+export type GetInstancesResponse = PagedResponse<
+  Instance,
+  instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
+>;
+export type GetInstancesCallback = PagedCallback<
+  Instance,
+  instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
+>;
+
+export type GetInstanceConfigsRequest = PagedRequest<
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsRequest & {
+    maxResults?: number;
+  }
+>;
+export type GetInstanceConfigsResponse = PagedResponse<
+  instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
+>;
+export type GetInstanceConfigsCallback = PagedCallback<
+  instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
+>;
 
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -238,6 +275,15 @@ class Spanner extends GrpcService {
     this.getInstancesStream = paginator.streamify('getInstances');
   }
 
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest
+  ): Promise<CreateInstanceResponse>;
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback: CreateInstanceCallback
+  ): void;
   /**
    * Config for the new instance.
    *
@@ -248,17 +294,17 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {Operation} 1 A {@link GaxOperation} object that can be used to check
    *     the status of the request.
-   * @property {object} 2 The full API response.
+   * @property {IOperation} 2 The full API response.
    */
   /**
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {Operation} operation A {@link GaxOperation} object that can be used to
    *     check the status of the request.
-   * @param {object} apiResponse The full API response.
+   * @param {IOperation} apiResponse The full API response.
    */
   /**
    * Create an instance.
@@ -312,8 +358,11 @@ class Spanner extends GrpcService {
    *     // Instance created successfully.
    *   });
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createInstance(name: string, config?, callback?): any {
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback?: CreateInstanceCallback
+  ): void | Promise<CreateInstanceResponse> {
     if (!name) {
       throw new Error('A name is required to create an instance.');
     }
@@ -350,15 +399,21 @@ class Spanner extends GrpcService {
       },
       (err, operation, resp) => {
         if (err) {
-          callback(err, null, null, resp);
+          callback!(err, null, null, resp);
           return;
         }
         const instance = this.instance(formattedName);
-        callback(null, instance, operation, resp);
+        callback!(null, instance, operation, resp);
       }
     );
   }
 
+  getInstances(query?: GetInstancesRequest): Promise<GetInstancesResponse>;
+  getInstances(callback: GetInstancesCallback): void;
+  getInstances(
+    query: GetInstancesRequest,
+    callback: GetInstancesCallback
+  ): void;
   /**
    * Query object for listing instances.
    *
@@ -438,12 +493,14 @@ class Spanner extends GrpcService {
    *   const instances = data[0];
    * });
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getInstances(query?, callback?): any {
+  getInstances(
+    query?: GetInstancesRequest | GetInstancesCallback,
+    callback?: GetInstancesCallback
+  ): Promise<GetInstancesResponse> | void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     if (is.fn(query)) {
-      callback = query;
+      callback = query as GetInstancesCallback;
       query = {};
     }
     const reqOpts = extend({}, query, {
@@ -456,23 +513,28 @@ class Spanner extends GrpcService {
         reqOpts,
         gaxOpts: query,
       },
-      // tslint:disable-next-line only-arrow-functions
-      function(err, instances) {
+      (err, instances, ...args) => {
+        let instanceInstances: Instance[] | null = null;
         if (instances) {
-          // eslint-disable-next-line prefer-rest-params
-          arguments[1] = instances.map(instance => {
+          instanceInstances = instances.map(instance => {
             const instanceInstance = self.instance(instance.name);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (instanceInstance as any).metadata = instance;
+            instanceInstance.metadata = instance;
             return instanceInstance;
           });
         }
-        // eslint-disable-next-line prefer-spread, prefer-rest-params
-        callback.apply(null, arguments);
+        callback!(err, instanceInstances, ...args);
       }
     );
   }
 
+  getInstanceConfigs(
+    query?: GetInstanceConfigsRequest
+  ): Promise<GetInstanceConfigsResponse>;
+  getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
+  getInstanceConfigs(
+    query: GetInstanceConfigsRequest,
+    callback: GetInstanceConfigsCallback
+  ): void;
   /**
    * Query object for listing instance configs.
    *
@@ -546,12 +608,18 @@ class Spanner extends GrpcService {
    *   const instanceConfigs = data[0];
    * });
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getInstanceConfigs(query?, callback?): any {
-    if (is.fn(query)) {
-      callback = query;
-      query = {};
-    }
+  getInstanceConfigs(
+    queryOrCallback?: GetInstanceConfigsRequest | GetInstanceConfigsCallback,
+    cb?: GetInstanceConfigsCallback
+  ): Promise<GetInstanceConfigsResponse> | void {
+    const callback =
+      typeof queryOrCallback === 'function'
+        ? (queryOrCallback as GetInstanceConfigsCallback)
+        : cb;
+    const query =
+      typeof queryOrCallback === 'object'
+        ? (queryOrCallback as GetInstanceConfigsRequest)
+        : {};
     const reqOpts = extend({}, query, {
       parent: 'projects/' + this.projectId,
     });
@@ -599,7 +667,9 @@ class Spanner extends GrpcService {
    *     this.end();
    *   });
    */
-  getInstanceConfigsStream(query?) {
+  getInstanceConfigsStream(
+    query?: GetInstanceConfigsRequest
+  ): NodeJS.ReadableStream {
     const reqOpts = extend({}, query, {
       parent: 'projects/' + this.projectId,
     });
@@ -624,7 +694,7 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    */
-  instance(name: string) {
+  instance(name: string): Instance {
     if (!name) {
       throw new Error('A name is required to access an Instance object.');
     }
@@ -633,27 +703,6 @@ class Spanner extends GrpcService {
       this.instances_.set(key, new Instance(this, name));
     }
     return this.instances_.get(key)!;
-  }
-
-  /**
-   * Get a reference to an Operation object.
-   *
-   * @throws {Error} If a name is not provided.
-   *
-   * @param {string} name The name of the operation.
-   * @returns {Operation} An Operation object.
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   * const operation = spanner.operation('operation-name');
-   */
-  operation(name) {
-    if (!name) {
-      throw new Error('A name is required to access an Operation object.');
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new GrpcOperation(this as any, name);
   }
 
   /**
@@ -709,7 +758,7 @@ class Spanner extends GrpcService {
         }
       });
     } else {
-      return new this.Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         this.prepareGapicRequest_(config, (err, requestFn) => {
           if (err) {
             reject(err);
@@ -774,9 +823,15 @@ class Spanner extends GrpcService {
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static date(...dateFields: any[]) {
-    return new codec.SpannerDate(...dateFields);
+  static date(
+    dateStringOrYear?: string | number,
+    month?: number,
+    date?: number
+  ): SpannerDate {
+    if (typeof dateStringOrYear === 'number') {
+      return new codec.SpannerDate(dateStringOrYear, month!, date!);
+    }
+    return new codec.SpannerDate(dateStringOrYear);
   }
 
   /**
@@ -820,13 +875,13 @@ class Spanner extends GrpcService {
    * Helper function to get a Cloud Spanner Float64 object.
    *
    * @param {string|number} value The float as a number or string.
-   * @returns {object}
+   * @returns {Float}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const float = Spanner.float(10);
    */
-  static float(value) {
+  static float(value): Float {
     return new codec.Float(value);
   }
 
@@ -834,13 +889,13 @@ class Spanner extends GrpcService {
    * Helper function to get a Cloud Spanner Int64 object.
    *
    * @param {string|number} value The int as a number or string.
-   * @returns {object}
+   * @returns {Int}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const int = Spanner.int(10);
    */
-  static int(value) {
+  static int(value): Int {
     return new codec.Int(value);
   }
 
@@ -848,7 +903,7 @@ class Spanner extends GrpcService {
    * Helper function to get a Cloud Spanner Struct object.
    *
    * @param {object} value The struct as a JSON object.
-   * @returns {object}
+   * @returns {Struct}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -857,7 +912,7 @@ class Spanner extends GrpcService {
    *   age: 32
    * });
    */
-  static struct(value?) {
+  static struct(value?): Struct {
     if (Array.isArray(value)) {
       return codec.Struct.fromArray(value);
     }

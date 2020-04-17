@@ -29,6 +29,8 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import * as grpc from 'grpc';
+import {CreateInstanceRequest} from '../src/instance';
+import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -108,13 +110,6 @@ const fakeCodec: any = {
   SpannerDate: util.noop,
 };
 
-class FakeGrpcOperation {
-  calledWith_: IArguments;
-  constructor() {
-    this.calledWith_ = arguments;
-  }
-}
-
 class FakeGrpcService {
   calledWith_: IArguments;
   constructor() {
@@ -144,9 +139,6 @@ describe('Spanner', () => {
 
   before(() => {
     Spanner = proxyquire('../src', {
-      './common-grpc/operation': {
-        GrpcOperation: FakeGrpcOperation,
-      },
       './common-grpc/service': {
         GrpcService: FakeGrpcService,
       },
@@ -346,6 +338,19 @@ describe('Spanner', () => {
   });
 
   describe('date', () => {
+    it('should create a default SpannerDate instance', () => {
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor() {
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date();
+      assert.strictEqual(date, customValue);
+    });
+
     it('should create a SpannerDate instance', () => {
       const value = '1999-1-1';
       const customValue = {};
@@ -358,6 +363,44 @@ describe('Spanner', () => {
       };
 
       const date = Spanner.date(value);
+      assert.strictEqual(date, customValue);
+    });
+
+    it('should create a SpannerDate instance from year/month/day', () => {
+      const year = 1999;
+      const month = 1;
+      const day = 1;
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor(year_, month_, day_) {
+          assert.strictEqual(year_, year);
+          assert.strictEqual(month_, month);
+          assert.strictEqual(day_, day);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date(year, month, day);
+      assert.strictEqual(date, customValue);
+    });
+
+    it('should create a SpannerDate instance in year 0', () => {
+      const year = 0;
+      const month = 1;
+      const day = 1;
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor(year_, month_, day_) {
+          assert.strictEqual(year_, year);
+          assert.strictEqual(month_, month);
+          assert.strictEqual(day_, day);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date(year, month, day);
       assert.strictEqual(date, customValue);
     });
   });
@@ -450,13 +493,13 @@ describe('Spanner', () => {
 
     it('should throw if a name is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(null!);
+        spanner.createInstance(null!, {});
       }, /A name is required to create an instance\./);
     });
 
     it('should throw if a config object is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(NAME);
+        spanner.createInstance(NAME, null!);
       }, /A configuration object is required to create an instance\./);
     });
 
@@ -486,12 +529,20 @@ describe('Spanner', () => {
         });
         done();
       };
-      spanner.createInstance(NAME, CONFIG, assert.ifError);
+      spanner.createInstance(
+        NAME,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
     });
 
     it('should accept a path', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
-      spanner.createInstance(PATH, CONFIG, assert.ifError);
+      spanner.createInstance(
+        PATH,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
 
       const [, name] = stub.lastCall.args;
       assert.strictEqual(name, PATH);
@@ -539,13 +590,17 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(instance, null);
-          assert.strictEqual(op, null);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          CONFIG as CreateInstanceRequest,
+          (err, instance, op, resp) => {
+            assert.strictEqual(err, ERROR);
+            assert.strictEqual(instance, null);
+            assert.strictEqual(op, null);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
 
@@ -567,15 +622,19 @@ describe('Spanner', () => {
           .stub(spanner, 'instance')
           .returns(fakeInstanceInstance);
 
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.ifError(err);
-          const [instanceName] = instanceStub.lastCall.args;
-          assert.strictEqual(instanceName, formattedName);
-          assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(op, OPERATION);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          CONFIG as CreateInstanceRequest,
+          (err, instance, op, resp) => {
+            assert.ifError(err);
+            const [instanceName] = instanceStub.lastCall.args;
+            assert.strictEqual(instanceName, formattedName);
+            assert.strictEqual(instance, fakeInstanceInstance);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
   });
@@ -608,7 +667,7 @@ describe('Spanner', () => {
         done();
       };
 
-      spanner.getInstances(QUERY, assert.ifError);
+      spanner.getInstances(QUERY as GetInstancesRequest, assert.ifError);
     });
 
     it('should not require a query', done => {
@@ -635,7 +694,7 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        spanner.getInstances(QUERY, (...args) => {
+        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
           assert.deepStrictEqual(args, GAX_RESPONSE_ARGS);
           done();
         });
@@ -665,12 +724,12 @@ describe('Spanner', () => {
           return fakeInstanceInstance;
         };
 
-        spanner.getInstances(QUERY, (...args) => {
+        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], GAX_RESPONSE_ARGS[0]);
-          const instance = args[1].pop();
+          const instance = args[1]!.pop();
           assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1]![0]);
+          assert.strictEqual(instance!.metadata, GAX_RESPONSE_ARGS[1]![0]);
           assert.strictEqual(args[2], GAX_RESPONSE_ARGS[2]);
           done();
         });
@@ -709,7 +768,10 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigs(query, callback);
+      const returnedValue = spanner.getInstanceConfigs(
+        query as GetInstanceConfigsRequest,
+        callback
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
 
@@ -752,7 +814,9 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigsStream(query);
+      const returnedValue = spanner.getInstanceConfigsStream(
+        query as GetInstanceConfigsRequest
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
   });
@@ -784,24 +848,6 @@ describe('Spanner', () => {
 
       const instance = spanner.instance(NAME);
       assert.strictEqual(instance, fakeInstance);
-    });
-  });
-
-  describe('operation', () => {
-    const NAME = 'op-name';
-
-    it('should throw if a name is not provided', () => {
-      assert.throws(() => {
-        spanner.operation(null!);
-      }, /A name is required to access an Operation object\./);
-    });
-
-    it('should return an Operation object', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const operation: any = spanner.operation(NAME);
-      assert(operation instanceof FakeGrpcOperation);
-      assert.strictEqual(operation.calledWith_[0], spanner);
-      assert.strictEqual(operation.calledWith_[1], NAME);
     });
   });
 
@@ -926,7 +972,6 @@ describe('Spanner', () => {
 
     beforeEach(() => {
       spanner.prepareGapicRequest_ = util.noop;
-      spanner.Promise = Promise;
     });
 
     describe('callback mode', () => {
