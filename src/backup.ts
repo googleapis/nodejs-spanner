@@ -44,7 +44,7 @@ export type CreateBackupResponse = [
 
 export interface CreateBackupOptions {
   databasePath: string;
-  expireTime: string | number | p.ITimestamp;
+  expireTime: string | number | p.ITimestamp | PreciseDate;
   gaxOptions?: CallOptions;
 }
 
@@ -103,7 +103,8 @@ class Backup {
   /**
    * @typedef {object} CreateBackupOptions
    * @property {string} databasePath The database path.
-   * @property {string|number|google.protobuf.Timestamp} expireTime The expire time of the backup.
+   * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
+   *     expireTime The expire time of the backup.
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
@@ -326,18 +327,18 @@ class Backup {
   }
 
   updateExpireTime(
-    expireTime: string | number | p.ITimestamp
+    expireTime: string | number | p.ITimestamp | PreciseDate
   ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
-    expireTime: string | number | p.ITimestamp,
+    expireTime: string | number | p.ITimestamp | PreciseDate,
     gaxOptions?: CallOptions
   ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
-    expireTime: string | number | p.ITimestamp,
+    expireTime: string | number | p.ITimestamp | PreciseDate,
     callback: UpdateExpireTimeCallback
   ): void;
   updateExpireTime(
-    expireTime: string | number | p.ITimestamp,
+    expireTime: string | number | p.ITimestamp | PreciseDate,
     gaxOptions: CallOptions,
     callback: UpdateExpireTimeCallback
   ): void;
@@ -353,8 +354,8 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#updateExpireTime
-   * @param {string|number|google.protobuf.Timestamp} expireTime The expiry time
-   *     to update with.
+   * @param {string|number|google.protobuf.Timestamp|external:PreciseDate}
+   *     expireTime The expiry time to update with.
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
@@ -371,7 +372,7 @@ class Backup {
    * await backup.updateExpireTime(newExpireTime);
    */
   updateExpireTime(
-    expireTime: string | number | p.ITimestamp,
+    expireTime: string | number | p.ITimestamp | PreciseDate,
     gaxOptionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
     cb?: UpdateExpireTimeCallback
   ): void | Promise<databaseAdmin.spanner.admin.database.v1.IBackup> {

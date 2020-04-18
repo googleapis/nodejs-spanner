@@ -46,7 +46,7 @@ async function updateBackup(instanceId, backupId, projectId) {
       `Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`
     );
     console.log(`Updating expire time to ${newExpireTime.toISOString()}`);
-    await backup.updateExpireTime(newExpireTime.toStruct());
+    await backup.updateExpireTime(newExpireTime);
     console.log('Expire time updated.');
   } catch (err) {
     console.error('ERROR:', err);
