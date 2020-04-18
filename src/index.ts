@@ -42,16 +42,14 @@ import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import {GrpcClientOptions} from 'google-gax';
 import {ChannelCredentials} from 'grpc';
-import {
-  createGcpApiConfig,
-  gcpCallInvocationTransformer,
-  gcpChannelFactoryOverride,
-} from 'grpc-gcp';
 import * as v1 from './v1';
 import * as grpc from 'grpc';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const grpcGcp = require('grpc-gcp')(grpc);
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 export type CreateInstanceResponse = [Instance, GaxOperation, IOperation];
@@ -199,9 +197,9 @@ class Spanner extends GrpcService {
         libVersion: require('../../package.json').version,
         scopes,
         // Enable grpc-gcp support
-        'grpc.callInvocationTransformer': gcpCallInvocationTransformer,
-        'grpc.channelFactoryOverride': gcpChannelFactoryOverride,
-        'grpc.gcpApiConfig': createGcpApiConfig(gcpApiConfig),
+        'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
+        'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
+        'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
         grpc,
       },
       options || {}
