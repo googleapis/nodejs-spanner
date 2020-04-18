@@ -46,6 +46,71 @@ const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 
+function deleteInstance(instance) {
+  return new Promise((resolve, reject) => {
+    // Backups must be deleted before an instance can be deleted.
+    instance.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts: {
+          parent: instance.formattedName_,
+        },
+      },
+      async (err, backups) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (backups.length > 0) {
+          try {
+            await deleteInstanceBackups(instance, backups);
+          } catch (e) {
+            reject(err);
+            return;
+          }
+
+          deleteInstance(instance).then(resolve, reject);
+          return;
+        }
+
+        try {
+          await instance.delete();
+        } catch (e) {
+          reject(e);
+          return;
+        }
+
+        resolve();
+      }
+    );
+  });
+}
+
+function deleteInstanceBackups(instance, instanceBackups) {
+  const deleteInstanceBackupPromises = instanceBackups.map(instanceBackup => {
+    return new Promise((resolve, reject) => {
+      instance.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'deleteBackup',
+          reqOpts: {name: instanceBackup.name},
+        },
+        err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        }
+      );
+    });
+  });
+
+  return Promise.all(deleteInstanceBackupPromises);
+}
+
 describe('Spanner', () => {
   before(async () => {
     const instance = spanner.instance(INSTANCE_ID);
@@ -97,7 +162,7 @@ describe('Spanner', () => {
                 const instanceCreated = new Date(operation.metadata.startTime);
                 return instanceCreated < yesterday;
               })
-              .map(() => instance.delete())
+              .map(() => deleteInstance(instance))
           );
         })
       );
