@@ -191,6 +191,32 @@ describe('Backup', () => {
       );
     });
 
+    it('should call Spanner.timestamp() with expireTime', async done => {
+      const spanner_timestamp_ = Spanner.timestamp;
+
+      Spanner.timestamp = timestamp => {
+        Spanner.timestamp = spanner_timestamp_;
+
+        assert.deepStrictEqual(timestamp, BACKUP_EXPIRE_TIME);
+
+        return EXP_BACKUP_EXPIRE_TIME;
+      };
+
+      backup.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.backup.expireTime, EXP_BACKUP_EXPIRE_TIME.toStruct());
+        done();
+      };
+
+      await backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+          expireTime: BACKUP_EXPIRE_TIME,
+        },
+        assert.ifError
+      );
+    });
+
     describe('error', () => {
       const API_RESPONSE = {};
       const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, API_RESPONSE];
