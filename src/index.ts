@@ -891,7 +891,9 @@ class Spanner extends GrpcService {
    * @example <caption>With a Date timestamp</caption>
    * const timestamp = Spanner.timestamp(Date.now());
    */
-  static timestamp(value?: string | number | p.ITimestamp | PreciseDate): PreciseDate {
+  static timestamp(
+    value?: string | number | p.ITimestamp | PreciseDate
+  ): PreciseDate {
     value = value || Date.now();
     if (value instanceof PreciseDate) {
       return value;

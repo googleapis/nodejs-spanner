@@ -204,7 +204,9 @@ describe('Backup', () => {
 
       backup.request = config => {
         assert.deepStrictEqual(
-          config.reqOpts.backup.expireTime, EXP_BACKUP_EXPIRE_TIME.toStruct());
+          config.reqOpts.backup.expireTime,
+          EXP_BACKUP_EXPIRE_TIME.toStruct()
+        );
         done();
       };
 
