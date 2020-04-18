@@ -1195,7 +1195,10 @@
                           "fields": {
                             "database": {
                               "type": "string",
-                              "id": 2
+                              "id": 2,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
                             },
                             "expireTime": {
                               "type": "google.protobuf.Timestamp",

@@ -1,12 +1,25 @@
 {
-  "updateTime": "2020-04-11T00:56:45.691191Z",
   "sources": [
+    {
+      "git": {
+        "name": ".",
+        "remote": "https://github.com/googleapis/nodejs-spanner.git",
+        "sha": "568a244dc03854ff120fa943930bf4fb2e25a927"
+      }
+    },
+    {
+      "git": {
+        "name": "googleapis",
+        "remote": "https://github.com/googleapis/googleapis.git",
+        "sha": "bcc476396e799806d3355e87246c6becf6250a70",
+        "internalRef": "306974763"
+      }
+    },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "6f32150677c9784f3c3a7e1949472bd29c9d72c5",
-        "log": "6f32150677c9784f3c3a7e1949472bd29c9d72c5\nfix: installs test_utils from its common repo (#480)\n\n\n"
+        "sha": "682c0c37d1054966ca662a44259e96cc7aea4413"
       }
     }
   ],
