@@ -410,6 +410,13 @@ describe('Spanner', () => {
       const date = Spanner.timestamp();
       assert(date instanceof PreciseDate);
     });
+
+    it('should return same instance if a PreciseData was given', () => {
+      const timestamp = new PreciseDate('2019-02-08T10:34:29.481145231Z');
+      const converted_timestamp = Spanner.timestamp(timestamp);
+      assert(timestamp instanceof PreciseDate);
+      assert.deepStrictEqual(converted_timestamp, timestamp);
+    });
   });
 
   describe('float', () => {
