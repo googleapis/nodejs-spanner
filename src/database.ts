@@ -29,12 +29,15 @@ import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {Operation as GaxOperation} from 'google-gax';
+import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../protos/protos';
 import {
   Instance,
   CreateDatabaseOptions,
   CreateDatabaseCallback,
+  GetDatabaseOperationsOptions,
+  GetDatabaseOperationsResponse,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -65,18 +68,20 @@ import {
 
 import {google} from '../protos/protos';
 import {
+  IOperation,
   Schema,
   RequestCallback,
   PagedRequest,
   ResourceCallback,
   PagedResponse,
   NormalCallback,
+  LongRunningCallback,
 } from './common';
 import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../protos/protos';
-import {RequestConfig} from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -117,10 +122,29 @@ type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
 type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
 
-type GetMetadataResponse = [databaseAdmin.spanner.admin.database.v1.IDatabase];
-type GetMetadataCallback = RequestCallback<
-  databaseAdmin.spanner.admin.database.v1.IDatabase
+/**
+ * IDatabase structure with database state enum translated to string form.
+ */
+type IDatabaseTranslatedEnum = Omit<
+  TranslateEnumKeys<
+    databaseAdmin.spanner.admin.database.v1.IDatabase,
+    'state',
+    typeof databaseAdmin.spanner.admin.database.v1.Database.State
+  >,
+  'restoreInfo'
+> & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
+
+/**
+ * IRestoreInfo structure with restore source type enum translated to string form.
+ */
+type IRestoreInfoTranslatedEnum = TranslateEnumKeys<
+  databaseAdmin.spanner.admin.database.v1.IRestoreInfo,
+  'sourceType',
+  typeof databaseAdmin.spanner.admin.database.v1.RestoreSourceType
 >;
+
+type GetMetadataResponse = [IDatabaseTranslatedEnum];
+type GetMetadataCallback = RequestCallback<IDatabaseTranslatedEnum>;
 
 type GetSchemaCallback = RequestCallback<
   string,
@@ -179,6 +203,23 @@ export type DatabaseDeleteCallback = NormalCallback<r.Response>;
 export interface CancelableDuplex extends Duplex {
   cancel(): void;
 }
+
+export type RestoreDatabaseCallback = LongRunningCallback<Database>;
+
+export type RestoreDatabaseResponse = [
+  Database,
+  GaxOperation,
+  databaseAdmin.longrunning.IOperation
+];
+
+interface DatabaseRequest {
+  (
+    config: RequestConfig,
+    callback: ResourceCallback<GaxOperation, IOperation>
+  ): void;
+  <T>(config: RequestConfig, callback: RequestCallback<T>): void;
+  <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
+}
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -197,13 +238,11 @@ export interface CancelableDuplex extends Duplex {
  * const database = instance.database('my-database');
  */
 class Database extends GrpcServiceObject {
+  private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
-  request: <T, R = void>(
-    config: RequestConfig,
-    callback: RequestCallback<T, R>
-  ) => void;
+  request: DatabaseRequest;
   constructor(
     instance: Instance,
     name: string,
@@ -274,6 +313,7 @@ class Database extends GrpcServiceObject {
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
+    this.instance = instance;
     this.request = instance.request;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
@@ -976,6 +1016,65 @@ class Database extends GrpcServiceObject {
       callback!
     );
   }
+
+  /**
+   * {@link google.spanner.admin.database.v1#RestoreInfo} structure with restore
+   * source type enum translated to string form.
+   *
+   * @typedef {object} IRestoreInfoTranslatedEnum
+   */
+  /**
+   * Retrieves the restore information of the database.
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getRestoreInfo
+   * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>} When resolved,
+   *     contains the restore information for the database if it was restored
+   *     from a backup.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const restoreInfo = await database.getRestoreInfo();
+   * console.log(`Database restored from ${restoreInfo.backupInfo.backup}`);
+   */
+  async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
+    const [metadata] = await this.getMetadata();
+    return metadata.restoreInfo ? metadata.restoreInfo : undefined;
+  }
+
+  /**
+   * Retrieves the state of the database.
+   *
+   * The database state indicates if the database is ready after creation or
+   * after being restored from a backup.
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getState
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
+   *     When resolved, contains the current state of the database if the state
+   *     is defined.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const state = await database.getState();
+   * const isReady = (state === 'READY');
+   */
+  async getState(): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
+    | undefined
+  > {
+    const [metadata] = await this.getMetadata();
+    return metadata.state || undefined;
+  }
+
   getSchema(): Promise<GetSchemaResponse>;
   getSchema(callback: GetSchemaCallback): void;
   /**
@@ -1308,6 +1407,75 @@ class Database extends GrpcServiceObject {
       callback!(err, transaction);
     });
   }
+
+  /**
+   * Query object for listing database operations.
+   *
+   * @typedef {object} GetDatabaseOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listDatabaseOperations}.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} GetDatabaseOperationsResponse
+   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List pending and completed operations for the database.
+   *
+   * @see {@link Instance.getDatabaseOperations}
+   *
+   * @param {GetDatabaseOperationsOptions} [options] Contains query object for
+   *     listing database operations and request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains
+   *     a paged list of database operations.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const [operations] = await database.getOperations();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await database.getOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
+   */
+  async getOperations(
+    options?: GetDatabaseOperationsOptions
+  ): Promise<GetDatabaseOperationsResponse> {
+    // Create a query that lists database operations only on this database from
+    // the instance. Operation name will be prefixed with the database path for
+    // all operations on this database
+    let dbSpecificFilter = `name:${this.formattedName_}`;
+    if (options && options.filter) {
+      dbSpecificFilter = `(${dbSpecificFilter}) AND (${options.filter})`;
+    }
+    const dbSpecificQuery: GetDatabaseOperationsOptions = {
+      ...options,
+      filter: dbSpecificFilter,
+    };
+
+    return this.instance.getDatabaseOperations(dbSpecificQuery);
+  }
+
   makePooledRequest_(config: RequestConfig): Promise<Session>;
   makePooledRequest_(
     config: RequestConfig,
@@ -1388,6 +1556,89 @@ class Database extends GrpcServiceObject {
     });
     return waitForSessionStream;
   }
+
+  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
+  restore(
+    backupPath: string,
+    options?: CallOptions
+  ): Promise<RestoreDatabaseResponse>;
+  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
+  restore(
+    backupPath: string,
+    options: CallOptions,
+    callback: RestoreDatabaseCallback
+  ): void;
+  /**
+   * @typedef {array} RestoreDatabaseResponse
+   * @property {Database} 0 The new {@link Database}.
+   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback RestoreDatabaseCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Database} database The new {@link Database}.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Restore a backup into this database.
+   *
+   * When this call completes, the restore will have commenced but will not
+   * necessarily have completed.
+   *
+   * @param backupPath The path of the backup to restore.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns Promise<RestoreDatabaseResponse> When resolved, contains the restore operation.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const backupName = 'projects/my-project/instances/my-instance/backups/my-backup';
+   * const [, restoreOperation] = await database.restore(backupName);
+   * // Wait for restore to complete
+   * await restoreOperation.promise();
+   */
+  restore(
+    backupName: string,
+    optionsOrCallback?: CallOptions | RestoreDatabaseCallback,
+    cb?: RestoreDatabaseCallback
+  ): Promise<RestoreDatabaseResponse> | void {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as RestoreDatabaseCallback)
+        : cb;
+    const gaxOpts =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
+      parent: this.instance.formattedName_,
+      databaseId: this.id,
+      backup: Backup.formatName_(this.instance.formattedName_, backupName),
+    };
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'restoreDatabase',
+        reqOpts,
+        gaxOpts,
+      },
+      (err, operation, resp) => {
+        if (err) {
+          callback!(err, null, null, resp);
+          return;
+        }
+        callback!(null, this, operation, resp);
+      }
+    );
+  }
+
   run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
   run(
     query: string | ExecuteSqlRequest,
@@ -2169,7 +2420,7 @@ class Database extends GrpcServiceObject {
    *   'projects/grape-spaceship-123/instances/my-instance',
    *   'my-database'
    * );
-   * // 'projects/grape-spaceship-123/instances/my-instance/tables/my-database'
+   * // 'projects/grape-spaceship-123/instances/my-instance/databases/my-database'
    */
   static formatName_(instanceName: string, name: string) {
     if (name.indexOf('/') > -1) {
@@ -2189,6 +2440,9 @@ promisifyAll(Database, {
   exclude: [
     'batchTransaction',
     'getMetadata',
+    'getRestoreInfo',
+    'getState',
+    'getOperations',
     'runTransaction',
     'table',
     'updateSchema',

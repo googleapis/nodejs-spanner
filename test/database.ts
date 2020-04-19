@@ -30,6 +30,7 @@ import * as db from '../src/database';
 import {Instance} from '../src';
 import {ServiceError, status} from 'grpc';
 import {MockError} from './mockserver/mockspanner';
+import {IOperation} from '../src/instance';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -41,6 +42,9 @@ const fakePfy = extend({}, pfy, {
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
       'getMetadata',
+      'getRestoreInfo',
+      'getState',
+      'getOperations',
       'runTransaction',
       'table',
       'updateSchema',
@@ -2214,6 +2218,171 @@ describe('Database', () => {
       assert(session instanceof FakeSession);
       assert.strictEqual(session.calledWith_[0], database);
       assert.strictEqual(session.calledWith_[1], NAME);
+    });
+  });
+
+  describe('getState', () => {
+    it('should get state from database metadata', async () => {
+      database.getMetadata = async () => [{state: 'READY'}];
+      const result = await database.getState();
+      assert.strictEqual(result, 'READY');
+    });
+  });
+
+  describe('getRestoreInfo', () => {
+    it('should get restore info from database metadata', async () => {
+      const restoreInfo = {sourceType: 'BACKUP'};
+      database.getMetadata = async () => [{restoreInfo}];
+      const result = await database.getRestoreInfo();
+      assert.deepStrictEqual(result, restoreInfo);
+    });
+  });
+
+  describe('getOperations', () => {
+    it('should create filter for querying the database', async () => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+
+      database.instance.getDatabaseOperations = async options => {
+        assert.strictEqual(options.filter, `name:${DATABASE_FORMATTED_NAME}`);
+        return [operations, {}];
+      };
+
+      const [results] = await database.getOperations();
+      assert.deepStrictEqual(results, operations);
+    });
+
+    it('should create filter for querying the database in combination with user supplied filter', async () => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+
+      database.instance.getDatabaseOperations = async options => {
+        assert.strictEqual(
+          options.filter,
+          `(name:${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`
+        );
+        return [operations, {}];
+      };
+
+      const [results] = await database.getOperations({
+        filter: 'someOtherAttribute: aValue',
+      });
+      assert.deepStrictEqual(results, operations);
+    });
+
+    it('should options with given gaxOptions', async () => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+      const gaxOpts = {
+        timeout: 1000,
+      };
+
+      database.instance.getDatabaseOperations = async options => {
+        assert.strictEqual(options.gaxOptions, gaxOpts);
+        return [operations, {}];
+      };
+
+      const [results] = await database.getOperations({
+        filter: 'someOtherAttribute: aValue',
+        gaxOptions: gaxOpts,
+      });
+      assert.deepStrictEqual(results, operations);
+    });
+  });
+
+  describe('restore', () => {
+    const BACKUP_NAME = 'backup-name';
+    const BACKUP_FORMATTED_NAME =
+      INSTANCE.formattedName_ + '/backups/' + BACKUP_NAME;
+
+    it('should make the correct request', async () => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        databaseId: NAME,
+        parent: INSTANCE.formattedName_,
+        backup: BACKUP_FORMATTED_NAME,
+      });
+
+      database.id = NAME;
+      database.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'restoreDatabase');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+      };
+
+      await database.restore(BACKUP_FORMATTED_NAME);
+    });
+
+    it('should accept a backup name', async () => {
+      const QUERY = {};
+      const expectedReqOpts = extend({}, QUERY, {
+        databaseId: NAME,
+        parent: INSTANCE.formattedName_,
+        backup: BACKUP_FORMATTED_NAME,
+      });
+
+      database.id = NAME;
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+      };
+
+      await database.restore(BACKUP_NAME);
+    });
+
+    it('should accept gaxOpts and a callback', async done => {
+      const options = {
+        timeout: 1000,
+      };
+
+      database.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, options);
+        done();
+      };
+
+      await database.restore(BACKUP_NAME, options, assert.ifError);
+    });
+
+    describe('error', () => {
+      const ERROR = new Error('Error.');
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        database.request = (config, callback: Function) => {
+          callback(ERROR, null, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with error & API response', done => {
+        database.restore(BACKUP_FORMATTED_NAME, (err, db, op, resp) => {
+          assert.strictEqual(err, ERROR);
+          assert.strictEqual(db, null);
+          assert.strictEqual(op, null);
+          assert.strictEqual(resp, API_RESPONSE);
+          done();
+        });
+      });
+    });
+
+    describe('success', () => {
+      const OPERATION = {};
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        database.request = (config, callback: Function) => {
+          callback(null, OPERATION, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with a Database and Operation', done => {
+        database.restore(BACKUP_FORMATTED_NAME, (err, db, op, resp) => {
+          assert.ifError(err);
+          assert.strictEqual(db, database);
+          assert.strictEqual(op, OPERATION);
+          assert.strictEqual(resp, API_RESPONSE);
+          done();
+        });
+      });
     });
   });
 });

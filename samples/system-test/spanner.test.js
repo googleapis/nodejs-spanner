@@ -31,24 +31,97 @@ const timestampCmd = 'node timestamp.js';
 const structCmd = 'node struct.js';
 const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node datatypes.js';
+const backupsCmd = 'node backups.js';
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
-const INSTANCE_ID = `test-instance-${date}`;
+const INSTANCE_ID = process.env.SPANNERTEST_INSTANCE || `test-instance-${date}`;
+const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${date}`;
+const RESTORE_DATABASE_ID = `test-database-${date}-r`;
+const BACKUP_ID = `test-backup-${date}`;
+const CANCELLED_BACKUP_ID = `test-backup-${date}-c`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 
+function deleteInstance(instance) {
+  return new Promise((resolve, reject) => {
+    // Backups must be deleted before an instance can be deleted.
+    instance.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts: {
+          parent: instance.formattedName_,
+        },
+      },
+      async (err, backups) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (backups.length > 0) {
+          try {
+            await deleteInstanceBackups(instance, backups);
+          } catch (e) {
+            reject(err);
+            return;
+          }
+
+          deleteInstance(instance).then(resolve, reject);
+          return;
+        }
+
+        try {
+          await instance.delete();
+        } catch (e) {
+          reject(e);
+          return;
+        }
+
+        resolve();
+      }
+    );
+  });
+}
+
+function deleteInstanceBackups(instance, instanceBackups) {
+  const deleteInstanceBackupPromises = instanceBackups.map(instanceBackup => {
+    return new Promise((resolve, reject) => {
+      instance.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'deleteBackup',
+          reqOpts: {name: instanceBackup.name},
+        },
+        err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        }
+      );
+    });
+  });
+
+  return Promise.all(deleteInstanceBackupPromises);
+}
+
 describe('Spanner', () => {
   before(async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
-    try {
-      await instance.delete();
-    } catch (err) {
-      // Ignore error
+
+    if (!INSTANCE_ALREADY_EXISTS) {
+      try {
+        await instance.delete();
+      } catch (err) {
+        // Ignore error
+      }
     }
     try {
       await database.delete();
@@ -56,49 +129,54 @@ describe('Spanner', () => {
       // Ignore error
     }
 
-    const [, operation] = await instance.create({
-      config: 'regional-us-central1',
-      nodes: 1,
-      labels: {
-        'gcloud-sample-tests': 'true',
-      },
-    });
+    if (!INSTANCE_ALREADY_EXISTS) {
+      const [, operation] = await instance.create({
+        config: 'regional-us-central1',
+        nodes: 1,
+        labels: {
+          'gcloud-sample-tests': 'true',
+        },
+      });
 
-    await operation.promise();
+      await operation.promise();
 
-    const [instances] = await spanner.getInstances({
-      filter: 'labels.gcloud-sample-tests:true',
-    });
+      const [instances] = await spanner.getInstances({
+        filter: 'labels.gcloud-sample-tests:true',
+      });
 
-    await Promise.all(
-      instances.map(async instance => {
-        const instanceName = instance.metadata.name;
-        const res = await spanner.auth.request({
-          url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
-        });
-        const operations = res.data.operations;
-        await Promise.all(
-          operations
-            .filter(operation => {
-              return operation.metadata['@type'].includes('CreateInstance');
-            })
-            .filter(operation => {
-              const yesterday = new Date();
-              yesterday.setHours(-24);
-              const instanceCreated = new Date(operation.metadata.startTime);
-              return instanceCreated < yesterday;
-            })
-            .map(() => instance.delete())
-        );
-      })
-    );
+      await Promise.all(
+        instances.map(async instance => {
+          const instanceName = instance.metadata.name;
+          const res = await spanner.auth.request({
+            url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
+          });
+          const operations = res.data.operations;
+          await Promise.all(
+            operations
+              .filter(operation => {
+                return operation.metadata['@type'].includes('CreateInstance');
+              })
+              .filter(operation => {
+                const yesterday = new Date();
+                yesterday.setHours(-24);
+                const instanceCreated = new Date(operation.metadata.startTime);
+                return instanceCreated < yesterday;
+              })
+              .map(() => deleteInstance(instance))
+          );
+        })
+      );
+    }
   });
 
   after(async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const database = instance.database(DATABASE_ID);
     await database.delete();
-    await instance.delete();
+
+    if (!INSTANCE_ALREADY_EXISTS) {
+      await instance.delete();
+    }
   });
 
   // create_database
@@ -680,5 +758,108 @@ describe('Spanner', () => {
     assert.match(output, /VenueId: 4, VenueName: Venue 4, LastUpdateTime:/);
     assert.match(output, /VenueId: 19, VenueName: Venue 19, LastUpdateTime:/);
     assert.match(output, /VenueId: 42, VenueName: Venue 42, LastUpdateTime:/);
+  });
+
+  // create_backup
+  it('should create a backup of the database', async () => {
+    const output = execSync(
+      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
+  });
+
+  // cancel_backup
+  it('should cancel a backup of the database', async () => {
+    const output = execSync(
+      `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backup cancelled./);
+  });
+
+  // get_backups
+  it('should list backups in the instance', async () => {
+    const output = execSync(
+      `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.include(output, 'All backups:');
+    assert.include(output, 'Backups matching backup name:');
+    assert.include(output, 'Backups expiring within 30 days:');
+    assert.include(output, 'Backups matching database name:');
+    assert.include(output, 'Backups filtered by size:');
+    assert.include(output, 'Ready backups filtered by create time:');
+    assert.include(output, 'Get backups paginated:');
+    // BACKUP_ID should appear in each getBackups() call in the sample so it
+    // should appear 7 times.
+    const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
+    assert.equal(count, 7);
+  });
+
+  // list_backup_operations
+  it('should list backup operations in the instance', async () => {
+    const output = execSync(
+      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Create Backup Operations:/);
+    assert.match(
+      output,
+      new RegExp(`Backup (.+)${BACKUP_ID} (.+) is 100% complete`)
+    );
+  });
+
+  // update_backup_expire_time
+  it('should update the expire time of a backup', async () => {
+    const output = execSync(
+      `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Expire time updated./);
+  });
+
+  // restore_backup
+  it('should restore database from a backup', async () => {
+    const output = execSync(
+      `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Database restored from backup./);
+    assert.match(
+      output,
+      new RegExp(
+        `Database (.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
+          `(.+)${BACKUP_ID}`
+      )
+    );
+  });
+
+  // list_database_operations
+  it('should list database operations in the instance', async () => {
+    const output = execSync(
+      `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Optimize Database Operations:/);
+    assert.match(
+      output,
+      new RegExp(
+        `Database (.+)${RESTORE_DATABASE_ID} restored from backup is (\\d+)% ` +
+          'optimized'
+      )
+    );
+  });
+
+  // delete_backup
+  it('should delete a backup', async () => {
+    function sleep(timeMillis) {
+      return new Promise(resolve => setTimeout(resolve, timeMillis));
+    }
+
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(RESTORE_DATABASE_ID);
+    while ((await database.getState()) === 'READY_OPTIMIZING') {
+      await sleep(1000);
+    }
+
+    const output = execSync(
+      `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Backup deleted./);
   });
 });
