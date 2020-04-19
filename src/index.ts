@@ -27,6 +27,7 @@ import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {codec, Float, Int, SpannerDate, Struct} from './codec';
+import {Backup} from './backup';
 import {Database} from './database';
 import {
   CreateInstanceCallback,
@@ -97,6 +98,29 @@ export interface RequestConfig {
   reqOpts: any;
   gaxOpts?: {};
 }
+
+/**
+ * Translates enum values to string keys.
+ *
+ * @param E enum type.
+ */
+export type EnumKey<E extends {[index: string]: unknown}> = keyof E;
+
+/**
+ * Translates an enum property of an object from enum value to enum key, leaving
+ * all other properties as-is.
+ *
+ * @param T type containing properties to translate.
+ * @param U name of the enum property.
+ * @param E enum type to translate.
+ */
+export type TranslateEnumKeys<
+  T,
+  U extends keyof T,
+  E extends {[index: string]: unknown}
+> = {
+  [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
+};
 
 /**
  * [Cloud Spanner](https://cloud.google.com/spanner) is a highly scalable,
@@ -851,9 +875,10 @@ class Spanner extends GrpcService {
    *
    * @see https://cloud.google.com/spanner/docs/data-types#timestamp-type
    *
-   * @param {string|number|google.protobuf.Timestamp} [timestamp] Either a
-   *      RFC 3339 timestamp formatted string or
-   *      {@link google.protobuf.Timestamp} object.
+   * @param {string|number|google.protobuf.Timestamp|external:PreciseDate}
+   *     [timestamp] Either a RFC 3339 timestamp formatted string or a
+   *     {@link google.protobuf.Timestamp} object. If a PreciseDate is given, it
+   *     will return that timestamp as is.
    * @returns {external:PreciseDate}
    *
    * @example
@@ -866,8 +891,13 @@ class Spanner extends GrpcService {
    * @example <caption>With a Date timestamp</caption>
    * const timestamp = Spanner.timestamp(Date.now());
    */
-  static timestamp(value?: string | number | p.ITimestamp): PreciseDate {
+  static timestamp(
+    value?: string | number | p.ITimestamp | PreciseDate
+  ): PreciseDate {
     value = value || Date.now();
+    if (value instanceof PreciseDate) {
+      return value;
+    }
     return new PreciseDate(value as number);
   }
 
@@ -987,6 +1017,15 @@ export {Instance};
  * @type {Constructor}
  */
 export {Database};
+
+/**
+ * {@link Backup} class.
+ *
+ * @name Spanner.Backup
+ * @see Backup
+ * @type {Constructor}
+ */
+export {Backup};
 
 /**
  * {@link Session} class.

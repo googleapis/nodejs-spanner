@@ -30,6 +30,8 @@ import * as inst from '../src/instance';
 import {Spanner, Database} from '../src';
 import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
+import {Backup} from '../src/backup';
+import {PreciseDate} from '@google-cloud/precise-date';
 
 const fakePaginator = {
   paginator: {
@@ -46,7 +48,7 @@ const fakePfy = extend({}, pfy, {
       return;
     }
     promisified = true;
-    assert.deepStrictEqual(options.exclude, ['database']);
+    assert.deepStrictEqual(options.exclude, ['database', 'backup']);
   },
 });
 
@@ -58,6 +60,13 @@ class FakeDatabase {
 }
 
 class FakeGrpcServiceObject {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+}
+
+class FakeBackup {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
@@ -87,6 +96,7 @@ describe('Instance', () => {
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/paginator': fakePaginator,
       './database.js': {Database: FakeDatabase},
+      './backup.js': {Backup: FakeBackup},
     }).Instance;
   });
 
@@ -938,6 +948,206 @@ describe('Instance', () => {
       assert.doesNotThrow(() => {
         instance.setMetadata(METADATA);
       });
+    });
+  });
+
+  describe('getBackups', () => {
+    const QUERY = {
+      a: 'b',
+    } as inst.GetBackupsOptions;
+    const ORIGINAL_QUERY = extend({}, QUERY);
+
+    it('should make the correct request', async () => {
+      const gaxOpts = {
+        timeout: 1000,
+      };
+      const options = {a: 'b', gaxOptions: gaxOpts};
+
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: instance.formattedName_,
+      });
+
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listBackups');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
+      };
+
+      await instance.getBackups(options);
+    });
+
+    it('should not require a query', async () => {
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+      };
+
+      await instance.getBackups();
+    });
+
+    describe('error', () => {
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+
+      beforeEach(() => {
+        instance.request = (config, callback: Function) => {
+          callback(...REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should execute callback with original arguments', done => {
+        instance.getBackups(QUERY, (...args) => {
+          assert.deepStrictEqual(args, REQUEST_RESPONSE_ARGS);
+          done();
+        });
+      });
+    });
+
+    describe('success', () => {
+      const BACKUPS = [
+        {
+          name: 'backup-name',
+          database: 'database-name',
+          expireTime: new PreciseDate(1000),
+        },
+      ];
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, {}];
+
+      beforeEach(() => {
+        instance.request = (config, callback) => {
+          callback(...REQUEST_RESPONSE_ARGS);
+        };
+      });
+
+      it('should create and return Backup objects', done => {
+        const fakeBackupInstance = {};
+
+        instance.backup = backupId => {
+          assert.strictEqual(backupId, BACKUPS[0].name);
+          return fakeBackupInstance as Backup;
+        };
+
+        instance.getBackups(QUERY, (...args) => {
+          assert.ifError(args[0]);
+          assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
+          const backup = args[1]!.pop();
+          assert.strictEqual(backup, fakeBackupInstance);
+          assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('backup', () => {
+    const BACKUP_NAME = 'backup-name';
+
+    it('should throw if a backup ID is not provided', () => {
+      assert.throws(() => {
+        instance.backup(null!);
+      }, /A backup ID is required to create a Backup\./);
+    });
+
+    it('should return an instance of Backup', () => {
+      const backup = (instance.backup(BACKUP_NAME) as {}) as FakeBackup;
+      assert(backup instanceof FakeBackup);
+      assert.strictEqual(backup.calledWith_[0], instance);
+      assert.strictEqual(backup.calledWith_[1], BACKUP_NAME);
+    });
+  });
+
+  describe('getBackupOperations', () => {
+    const QUERY = {
+      a: 'b',
+    } as inst.GetBackupOperationsOptions;
+    const ORIGINAL_QUERY = extend({}, QUERY);
+
+    it('should make the correct request', async () => {
+      const gaxOpts = {
+        timeout: 1000,
+      };
+      const options = {a: 'b', gaxOptions: gaxOpts};
+
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: instance.formattedName_,
+      });
+
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listBackupOperations');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
+      };
+
+      await instance.getBackupOperations(options);
+    });
+
+    it('should not require a query', async () => {
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+      };
+
+      await instance.getBackupOperations();
+    });
+  });
+
+  describe('getDatabaseOperations', () => {
+    const QUERY = {
+      a: 'b',
+    } as inst.GetDatabaseOperationsOptions;
+    const ORIGINAL_QUERY = extend({}, QUERY);
+
+    it('should make the correct request', async () => {
+      const gaxOpts = {
+        timeout: 1000,
+      };
+      const options = {a: 'b', gaxOptions: gaxOpts};
+
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: instance.formattedName_,
+      });
+
+      instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'listDatabaseOperations');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
+      };
+
+      await instance.getDatabaseOperations(options);
+    });
+
+    it('should not require a query', async () => {
+      instance.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: instance.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+      };
+
+      await instance.getDatabaseOperations();
     });
   });
 });

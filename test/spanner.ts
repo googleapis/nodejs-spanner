@@ -33,6 +33,7 @@ import {google} from '../protos/protos';
 import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
+import {GetDatabaseOperationsOptions} from '../src/instance';
 import {
   isSessionNotFoundError,
   SessionLeakError,
@@ -2086,6 +2087,23 @@ describe('Spanner with mock server', () => {
         createdDatabase.name,
         `${instance.formattedName_}/databases/new-database`
       );
+    });
+
+    it('should list database operations', async () => {
+      const dbSpecificFilter =
+        'name:projects/p/instances/i/databases/test-database';
+      const dbSpecificQuery: GetDatabaseOperationsOptions = {
+        filter: dbSpecificFilter,
+      };
+      const [operations1] = await instance.getDatabaseOperations(
+        dbSpecificQuery
+      );
+
+      const database = instance.database('test-database');
+      const [operations2] = await database.getOperations();
+      assert.strictEqual(operations1.length, 2);
+      assert.strictEqual(operations2.length, 2);
+      assert.deepStrictEqual(operations1, operations2);
     });
   });
 });
