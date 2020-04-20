@@ -183,7 +183,17 @@ export class DatabaseAdminClient {
         'nextPageToken',
         'databases'
       ),
+      listBackups: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'backups'
+      ),
       listDatabaseOperations: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'operations'
+      ),
+      listBackupOperations: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
         'operations'
@@ -712,6 +722,8 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -797,6 +809,8 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -884,6 +898,8 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -966,6 +982,7 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1052,6 +1069,8 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1138,6 +1157,7 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1187,195 +1207,6 @@ export class DatabaseAdminClient {
     });
     this.initialize();
     return this.innerApiCalls.deleteBackup(request, options, callback);
-  }
-  listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
-  ): Promise<
-    [
-      protos.google.spanner.admin.database.v1.IListBackupsResponse,
-      protos.google.spanner.admin.database.v1.IListBackupsRequest | undefined,
-      {} | undefined
-    ]
-  >;
-  listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options: gax.CallOptions,
-    callback: Callback<
-      protos.google.spanner.admin.database.v1.IListBackupsResponse,
-      | protos.google.spanner.admin.database.v1.IListBackupsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    callback: Callback<
-      protos.google.spanner.admin.database.v1.IListBackupsResponse,
-      | protos.google.spanner.admin.database.v1.IListBackupsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  /**
-   * Lists completed and pending backups.
-   * Backups returned are ordered by `create_time` in descending order,
-   * starting from the most recent `create_time`.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ListBackupsResponse]{@link google.spanner.admin.database.v1.ListBackupsResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   */
-  listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    optionsOrCallback?:
-      | gax.CallOptions
-      | Callback<
-          protos.google.spanner.admin.database.v1.IListBackupsResponse,
-          | protos.google.spanner.admin.database.v1.IListBackupsRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.spanner.admin.database.v1.IListBackupsResponse,
-      | protos.google.spanner.admin.database.v1.IListBackupsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.spanner.admin.database.v1.IListBackupsResponse,
-      protos.google.spanner.admin.database.v1.IListBackupsRequest | undefined,
-      {} | undefined
-    ]
-  > | void {
-    request = request || {};
-    let options: gax.CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as gax.CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
-    this.initialize();
-    return this.innerApiCalls.listBackups(request, options, callback);
-  }
-  listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
-  ): Promise<
-    [
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      (
-        | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
-        | undefined
-      ),
-      {} | undefined
-    ]
-  >;
-  listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options: gax.CallOptions,
-    callback: Callback<
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    callback: Callback<
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  /**
-   * Lists the backup {@link google.longrunning.Operation|long-running operations} in
-   * the given instance. A backup operation has a name of the form
-   * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation>`.
-   * The long-running operation
-   * {@link google.longrunning.Operation.metadata|metadata} field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned
-   * include those that have completed/failed/canceled within the last 7 days,
-   * and pending operations. Operations returned are ordered by
-   * `operation.metadata.value.progress.start_time` in descending order starting
-   * from the most recently started operation.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ListBackupOperationsResponse]{@link google.spanner.admin.database.v1.ListBackupOperationsResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   */
-  listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    optionsOrCallback?:
-      | gax.CallOptions
-      | Callback<
-          protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-          | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
-      (
-        | protos.google.spanner.admin.database.v1.IListBackupOperationsRequest
-        | undefined
-      ),
-      {} | undefined
-    ]
-  > | void {
-    request = request || {};
-    let options: gax.CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as gax.CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
-    this.initialize();
-    return this.innerApiCalls.listBackupOperations(request, options, callback);
   }
 
   createDatabase(
@@ -1673,6 +1504,9 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2059,6 +1893,195 @@ export class DatabaseAdminClient {
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
   }
+  listBackups(
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackup[],
+      protos.google.spanner.admin.database.v1.IListBackupsRequest | null,
+      protos.google.spanner.admin.database.v1.IListBackupsResponse
+    ]
+  >;
+  listBackups(
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    options: gax.CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupsRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IBackup
+    >
+  ): void;
+  listBackups(
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupsRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IBackup
+    >
+  ): void;
+  /**
+   * Lists completed and pending backups.
+   * Backups returned are ordered by `create_time` in descending order,
+   * starting from the most recent `create_time`.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *   The client library support auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Backup]{@link google.spanner.admin.database.v1.Backup} that corresponds to
+   *   the one page received from the API server.
+   *   If the second element is not null it contains the request object of type [ListBackupsRequest]{@link google.spanner.admin.database.v1.ListBackupsRequest}
+   *   that can be used to obtain the next page of the results.
+   *   If it is null, the next page does not exist.
+   *   The third element contains the raw response received from the API server. Its type is
+   *   [ListBackupsResponse]{@link google.spanner.admin.database.v1.ListBackupsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
+  listBackups(
+    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListBackupsRequest,
+          | protos.google.spanner.admin.database.v1.IListBackupsResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IBackup
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupsRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IBackup
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackup[],
+      protos.google.spanner.admin.database.v1.IListBackupsRequest | null,
+      protos.google.spanner.admin.database.v1.IListBackupsResponse
+    ]
+  > | void {
+    request = request || {};
+    let options: gax.CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.listBackups(request, options, callback);
+  }
+
+  /**
+   * Equivalent to {@link listBackups}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listBackups} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Backup]{@link google.spanner.admin.database.v1.Backup} on 'data' event.
+   */
+  listBackupsStream(
+    request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    options?: gax.CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listBackups.createStream(
+      this.innerApiCalls.listBackups as gax.GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to {@link listBackups}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listBackupsAsync(
+    request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.database.v1.IBackup> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listBackups.asyncIterate(
+      this.innerApiCalls['listBackups'] as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
+  }
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     options?: gax.CallOptions
@@ -2397,6 +2420,202 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.longrunning.IOperation>;
+  }
+  listBackupOperations(
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    options?: gax.CallOptions
+  ): Promise<
+    [
+      protos.google.longrunning.IOperation[],
+      protos.google.spanner.admin.database.v1.IListBackupOperationsRequest | null,
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+    ]
+  >;
+  listBackupOperations(
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    options: gax.CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): void;
+  listBackupOperations(
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): void;
+  /**
+   * Lists the backup {@link google.longrunning.Operation|long-running operations} in
+   * the given instance. A backup operation has a name of the form
+   * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation>`.
+   * The long-running operation
+   * {@link google.longrunning.Operation.metadata|metadata} field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned
+   * include those that have completed/failed/canceled within the last 7 days,
+   * and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.progress.start_time` in descending order starting
+   * from the most recently started operation.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [Operation]{@link google.longrunning.Operation}.
+   *   The client library support auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Operation]{@link google.longrunning.Operation} that corresponds to
+   *   the one page received from the API server.
+   *   If the second element is not null it contains the request object of type [ListBackupOperationsRequest]{@link google.spanner.admin.database.v1.ListBackupOperationsRequest}
+   *   that can be used to obtain the next page of the results.
+   *   If it is null, the next page does not exist.
+   *   The third element contains the raw response received from the API server. Its type is
+   *   [ListBackupOperationsResponse]{@link google.spanner.admin.database.v1.ListBackupOperationsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
+   */
+  listBackupOperations(
+    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+          | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): Promise<
+    [
+      protos.google.longrunning.IOperation[],
+      protos.google.spanner.admin.database.v1.IListBackupOperationsRequest | null,
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+    ]
+  > | void {
+    request = request || {};
+    let options: gax.CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.listBackupOperations(request, options, callback);
+  }
+
+  /**
+   * Equivalent to {@link listBackupOperations}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listBackupOperations} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
+   */
+  listBackupOperationsStream(
+    request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    options?: gax.CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listBackupOperations.createStream(
+      this.innerApiCalls.listBackupOperations as gax.GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to {@link listBackupOperations}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {} request.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listBackupOperationsAsync(
+    request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      parent: request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listBackupOperations.asyncIterate(
+      this.innerApiCalls['listBackupOperations'] as GaxCall,
       (request as unknown) as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
