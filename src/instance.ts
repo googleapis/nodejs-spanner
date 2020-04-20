@@ -23,11 +23,11 @@ import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
-import {google as instanceAdmin} from '../protos/protos';
 import {Spanner, RequestConfig} from '.';
-import {ServiceError} from 'grpc';
+import {CallOptions, ServiceError} from 'grpc';
 import {
   RequestCallback,
+  PagedRequest,
   PagedResponse,
   LongRunningCallback,
   NormalCallback,
@@ -36,10 +36,13 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {Operation as GaxOperation} from 'google-gax';
+import {Backup} from './backup';
+import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
 
+export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
 export type IOperation = instanceAdmin.longrunning.IOperation;
@@ -57,6 +60,18 @@ export type GetDatabasesResponse = PagedResponse<
   databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
 >;
 export type SetInstanceMetadataResponse = [GaxOperation, IOperation];
+export type GetBackupsResponse = PagedResponse<
+  Backup,
+  databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+>;
+export type GetBackupOperationsResponse = PagedResponse<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
+>;
+export type GetDatabaseOperationsResponse = PagedResponse<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
+>;
 
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
@@ -87,6 +102,27 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
+export type GetBackupsOptions = PagedRequest<
+  databaseAdmin.spanner.admin.database.v1.IListBackupsRequest
+>;
+export type GetBackupsCallback = RequestCallback<
+  Backup,
+  databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+>;
+export type GetBackupOperationsOptions = PagedRequest<
+  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest
+>;
+export type GetBackupOperationsCallback = RequestCallback<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
+>;
+export type GetDatabaseOperationsOptions = PagedRequest<
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest
+>;
+export type GetDatabaseOperationsCallback = RequestCallback<
+  IOperation,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
+>;
 export interface GetInstanceConfig
   extends GetConfig,
     GetInstanceMetadataOptions {}
@@ -97,6 +133,7 @@ interface InstanceRequest {
     callback: ResourceCallback<GaxOperation, IOperation>
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
+  <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
 }
 /**
  * The {@link Instance} class represents a [Cloud Spanner
@@ -190,6 +227,315 @@ class Instance extends common.GrpcServiceObject {
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);
     this.databases_ = new Map<string, Database>();
+  }
+
+  /**
+   * Get a reference to a Backup object.
+   *
+   * @throws {Error} If any parameter is not provided.
+   *
+   * @param {string} backupId The name of the backup.
+   * @return {Backup} A Backup object.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const backup = instance.backup('my-backup');
+   */
+  backup(backupId: string): Backup {
+    if (!backupId) {
+      throw new Error('A backup ID is required to create a Backup.');
+    }
+
+    return new Backup(this, backupId);
+  }
+
+  getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
+  getBackups(callback: GetBackupsCallback): void;
+  getBackups(query: GetBackupsOptions, callback: GetBackupsCallback): void;
+  /**
+   * Query object for listing backups.
+   *
+   * @typedef {object} GetBackupsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listBackups}.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} GetBackupsResponse
+   * @property {Backup[]} 0 Array of {@link Backup} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List backups on the instance.
+   *
+   * Both completed and in-progress backups are listed if no filter is supplied.
+   *
+   * @see {@link #backup}
+   *
+   * @param {GetBackupsOptions} [options] The query object for listing backups.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns {Promise<GetBackupsResponse>} When resolved, contains a paged list
+   *     of backups.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [backups] = await instance.getBackups();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [backups, , response] = await instance.getBackups({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   backups.forEach(backup => {
+   *     // Do something with backup
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
+   */
+  getBackups(
+    optionsOrCallback?: GetBackupsOptions | GetBackupsCallback,
+    cb?: GetBackupsCallback
+  ): void | Promise<GetBackupsResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetBackupsCallback)
+        : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetBackupsOptions)
+        : {gaxOptions: {}};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const reqOpts = extend({}, options, {
+      parent: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    this.request<
+      IBackup,
+      databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
+    >(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackups',
+        reqOpts,
+        gaxOpts,
+      },
+      (err, backups, ...args) => {
+        let backupInstances: Backup[] | null = null;
+        if (backups) {
+          backupInstances = backups.map(backup => {
+            return this.backup(backup.name!);
+          });
+        }
+
+        callback(err, backupInstances, ...args);
+      }
+    );
+  }
+
+  getBackupOperations(
+    options?: GetBackupOperationsOptions
+  ): Promise<GetBackupOperationsResponse>;
+  getBackupOperations(callback: GetBackupOperationsCallback): void;
+  getBackupOperations(
+    options: GetBackupOperationsOptions,
+    callback: GetBackupOperationsCallback
+  ): void;
+  /**
+   * Query object for listing backup operations.
+   *
+   * @typedef {object} GetBackupOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listBackupOperations}.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} GetBackupOperationsResponse
+   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List pending and completed backup operations for all databases in the instance.
+   *
+   * @see {@link #listOperations}
+   *
+   * @param {GetBackupOperationsOptions} [options] The query object for listing
+   *     backup operations.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns {Promise<GetBackupOperationsResponse>} When resolved, contains a
+   *     paged list of backup operations.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [operations] = await instance.getBackupOperations();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await instance.getBackupOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
+   */
+  getBackupOperations(
+    optionsOrCallback?:
+      | GetBackupOperationsOptions
+      | GetBackupOperationsCallback,
+    cb?: GetBackupOperationsCallback
+  ): void | Promise<GetBackupOperationsResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetBackupOperationsCallback)
+        : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetBackupOperationsOptions)
+        : {gaxOptions: {}};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const reqOpts = extend({}, options, {
+      parent: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    this.request<
+      IOperation,
+      databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
+    >(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listBackupOperations',
+        reqOpts,
+        gaxOpts,
+      },
+      (err, operations, ...args) => {
+        callback!(err, operations, ...args);
+      }
+    );
+  }
+
+  getDatabaseOperations(
+    options?: GetDatabaseOperationsOptions
+  ): Promise<GetDatabaseOperationsResponse>;
+  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
+  getDatabaseOperations(
+    options: GetDatabaseOperationsOptions,
+    callback: GetDatabaseOperationsCallback
+  ): void;
+  /**
+   * Query object for listing database operations.
+   *
+   * @typedef {object} GetDatabaseOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listDatabaseOperations}.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   */
+  /**
+   * @typedef {array} GetDatabaseOperationsResponse
+   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * List pending and completed operations for all databases in the instance.
+   *
+   * @see {@link Database.getDatabaseOperations}
+   *
+   * @param {GetDatabaseOperationsOptions} [options] The query object for
+   *     listing database operations.
+   * @param {CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains a
+   *     paged list of database operations.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const [operations] = await instance.getDatabaseOperations();
+   * // ... then do something with the operations
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await instance.getDatabaseOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
+   */
+  getDatabaseOperations(
+    optionsOrCallback?:
+      | GetDatabaseOperationsOptions
+      | GetDatabaseOperationsCallback,
+    cb?: GetDatabaseOperationsCallback
+  ): void | Promise<GetDatabaseOperationsResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseOperationsCallback)
+        : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetDatabaseOperationsOptions)
+        : {gaxOptions: {}};
+    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const reqOpts = extend({}, options, {
+      parent: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    this.request<
+      IOperation,
+      databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse
+    >(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listDatabaseOperations',
+        reqOpts,
+        gaxOpts,
+      },
+      (err, operations, ...args) => {
+        callback!(err, operations, ...args);
+      }
+    );
   }
 
   createDatabase(
@@ -941,7 +1287,7 @@ Instance.prototype.getDatabasesStream = paginator.streamify('getDatabases');
  * that a callback is omitted.
  */
 promisifyAll(Instance, {
-  exclude: ['database'],
+  exclude: ['database', 'backup'],
 });
 
 /**

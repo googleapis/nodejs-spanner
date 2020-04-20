@@ -30,6 +30,7 @@ import * as sinon from 'sinon';
 import * as spnr from '../src';
 import * as grpc from 'grpc';
 import {CreateInstanceRequest} from '../src/index';
+import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -337,6 +338,19 @@ describe('Spanner', () => {
   });
 
   describe('date', () => {
+    it('should create a default SpannerDate instance', () => {
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor() {
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date();
+      assert.strictEqual(date, customValue);
+    });
+
     it('should create a SpannerDate instance', () => {
       const value = '1999-1-1';
       const customValue = {};
@@ -351,12 +365,57 @@ describe('Spanner', () => {
       const date = Spanner.date(value);
       assert.strictEqual(date, customValue);
     });
+
+    it('should create a SpannerDate instance from year/month/day', () => {
+      const year = 1999;
+      const month = 1;
+      const day = 1;
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor(year_, month_, day_) {
+          assert.strictEqual(year_, year);
+          assert.strictEqual(month_, month);
+          assert.strictEqual(day_, day);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date(year, month, day);
+      assert.strictEqual(date, customValue);
+    });
+
+    it('should create a SpannerDate instance in year 0', () => {
+      const year = 0;
+      const month = 1;
+      const day = 1;
+      const customValue = {};
+
+      fakeCodec.SpannerDate = class {
+        constructor(year_, month_, day_) {
+          assert.strictEqual(year_, year);
+          assert.strictEqual(month_, month);
+          assert.strictEqual(day_, day);
+          return customValue;
+        }
+      };
+
+      const date = Spanner.date(year, month, day);
+      assert.strictEqual(date, customValue);
+    });
   });
 
   describe('timestamp', () => {
     it('should create a PreciseDate instance', () => {
       const date = Spanner.timestamp();
       assert(date instanceof PreciseDate);
+    });
+
+    it('should return same instance if a PreciseData was given', () => {
+      const timestamp = new PreciseDate('2019-02-08T10:34:29.481145231Z');
+      const converted_timestamp = Spanner.timestamp(timestamp);
+      assert(timestamp instanceof PreciseDate);
+      assert.deepStrictEqual(converted_timestamp, timestamp);
     });
   });
 
@@ -476,12 +535,20 @@ describe('Spanner', () => {
         });
         done();
       };
-      spanner.createInstance(NAME, CONFIG, assert.ifError);
+      spanner.createInstance(
+        NAME,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
     });
 
     it('should accept a path', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
-      spanner.createInstance(PATH, CONFIG, assert.ifError);
+      spanner.createInstance(
+        PATH,
+        CONFIG as CreateInstanceRequest,
+        assert.ifError
+      );
 
       const [, name] = stub.lastCall.args;
       assert.strictEqual(name, PATH);
@@ -529,13 +596,17 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(instance, null);
-          assert.strictEqual(op, null);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          CONFIG as CreateInstanceRequest,
+          (err, instance, op, resp) => {
+            assert.strictEqual(err, ERROR);
+            assert.strictEqual(instance, null);
+            assert.strictEqual(op, null);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
 
@@ -557,15 +628,19 @@ describe('Spanner', () => {
           .stub(spanner, 'instance')
           .returns(fakeInstanceInstance);
 
-        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.ifError(err);
-          const [instanceName] = instanceStub.lastCall.args;
-          assert.strictEqual(instanceName, formattedName);
-          assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(op, OPERATION);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstance(
+          NAME,
+          CONFIG as CreateInstanceRequest,
+          (err, instance, op, resp) => {
+            assert.ifError(err);
+            const [instanceName] = instanceStub.lastCall.args;
+            assert.strictEqual(instanceName, formattedName);
+            assert.strictEqual(instance, fakeInstanceInstance);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
   });
@@ -598,7 +673,7 @@ describe('Spanner', () => {
         done();
       };
 
-      spanner.getInstances(QUERY, assert.ifError);
+      spanner.getInstances(QUERY as GetInstancesRequest, assert.ifError);
     });
 
     it('should not require a query', done => {
@@ -625,7 +700,7 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        spanner.getInstances(QUERY, (...args) => {
+        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
           assert.deepStrictEqual(args, GAX_RESPONSE_ARGS);
           done();
         });
@@ -655,12 +730,12 @@ describe('Spanner', () => {
           return fakeInstanceInstance;
         };
 
-        spanner.getInstances(QUERY, (...args) => {
+        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], GAX_RESPONSE_ARGS[0]);
-          const instance = args[1].pop();
+          const instance = args[1]!.pop();
           assert.strictEqual(instance, fakeInstanceInstance);
-          assert.strictEqual(instance.metadata, GAX_RESPONSE_ARGS[1]![0]);
+          assert.strictEqual(instance!.metadata, GAX_RESPONSE_ARGS[1]![0]);
           assert.strictEqual(args[2], GAX_RESPONSE_ARGS[2]);
           done();
         });
@@ -699,7 +774,10 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigs(query, callback);
+      const returnedValue = spanner.getInstanceConfigs(
+        query as GetInstanceConfigsRequest,
+        callback
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
 
@@ -742,7 +820,9 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigsStream(query);
+      const returnedValue = spanner.getInstanceConfigsStream(
+        query as GetInstanceConfigsRequest
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
   });
@@ -879,7 +959,7 @@ describe('Spanner', () => {
         return reqOpts;
       };
 
-      FAKE_GAPIC_CLIENT[CONFIG.method] = function(reqOpts, gaxOpts, arg) {
+      FAKE_GAPIC_CLIENT[CONFIG.method] = function (reqOpts, gaxOpts, arg) {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
@@ -898,7 +978,6 @@ describe('Spanner', () => {
 
     beforeEach(() => {
       spanner.prepareGapicRequest_ = util.noop;
-      spanner.Promise = Promise;
     });
 
     describe('callback mode', () => {
