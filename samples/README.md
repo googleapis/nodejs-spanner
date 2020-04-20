@@ -14,6 +14,15 @@ and automatic, synchronous replication for high availability.
 
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
+  * [Backups-cancel](#backups-cancel)
+  * [Backups-create](#backups-create)
+  * [Backups-delete](#backups-delete)
+  * [Backups-get-database-operations](#backups-get-database-operations)
+  * [Backups-get-operations](#backups-get-operations)
+  * [Backups-get](#backups-get)
+  * [Backups-restore](#backups-restore)
+  * [Backups-update](#backups-update)
+  * [Backups](#backups)
   * [Batch](#batch)
   * [CRUD](#crud)
   * [Datatypes](#datatypes)
@@ -38,6 +47,159 @@ Before running the samples, make sure you've followed the steps outlined in
 `cd ..`
 
 ## Samples
+
+
+
+### Backups-cancel
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-cancel.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-cancel.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-cancel.js`
+
+
+-----
+
+
+
+
+### Backups-create
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-create.js`
+
+
+-----
+
+
+
+
+### Backups-delete
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-delete.js`
+
+
+-----
+
+
+
+
+### Backups-get-database-operations
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-get-database-operations.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-get-database-operations.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-get-database-operations.js`
+
+
+-----
+
+
+
+
+### Backups-get-operations
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-get-operations.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-get-operations.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-get-operations.js`
+
+
+-----
+
+
+
+
+### Backups-get
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-get.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-get.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-get.js`
+
+
+-----
+
+
+
+
+### Backups-restore
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-restore.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-restore.js`
+
+
+-----
+
+
+
+
+### Backups-update
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-update.js`
+
+
+-----
+
+
+
+
+### Backups
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups.js`
+
+
+-----
+
 
 
 
