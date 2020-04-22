@@ -31,7 +31,6 @@ import {Backup} from './backup';
 import {Database} from './database';
 import {
   Instance,
-  IInstance,
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
@@ -418,10 +417,10 @@ class Spanner extends GrpcService {
           nodeCount: config.nodes || 1,
         },
         config
-      ) as IInstance,
+      ),
     };
-    // tslint:disable-next-line no-any
-    delete (reqOpts.instance as any).nodes;
+
+    delete reqOpts.instance.nodes;
 
     if (config.config.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
