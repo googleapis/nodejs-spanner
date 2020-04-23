@@ -29,7 +29,7 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import * as grpc from 'grpc';
-import {CreateInstanceRequest} from '../src/instance';
+import {CreateInstanceRequest} from '../src/index';
 import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -489,7 +489,7 @@ describe('Spanner', () => {
     let PATH;
 
     const CONFIG = {
-      a: 'b',
+      config: 'b',
     };
     const ORIGINAL_CONFIG = extend({}, CONFIG);
 
@@ -500,7 +500,7 @@ describe('Spanner', () => {
 
     it('should throw if a name is not provided', () => {
       assert.throws(() => {
-        spanner.createInstance(null!, {});
+        spanner.createInstance(null!, {} as CreateInstanceRequest);
       }, /A name is required to create an instance\./);
     });
 
@@ -526,13 +526,12 @@ describe('Spanner', () => {
         assert.deepStrictEqual(reqOpts, {
           parent: 'projects/' + spanner.projectId,
           instanceId: NAME,
-          instance: extend(
-            {
-              name: PATH,
-              displayName: NAME,
-            },
-            CONFIG
-          ),
+          instance: {
+            name: PATH,
+            displayName: NAME,
+            nodeCount: 1,
+            config: `projects/project-id/instanceConfigs/${CONFIG.config}`,
+          },
         });
         done();
       };
