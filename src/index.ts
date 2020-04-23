@@ -30,11 +30,10 @@ import {codec, Float, Int, SpannerDate, Struct} from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
-  CreateInstanceCallback,
-  CreateInstanceRequest,
   Instance,
+  CreateInstanceCallback,
+  CreateInstanceResponse,
 } from './instance';
-import {Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {PagedRequest, PagedResponse, PagedCallback} from './common';
 import {Session} from './session';
@@ -55,7 +54,6 @@ import * as grpc from 'grpc';
 const gcpApiConfig = require('./spanner_grpc_config.json');
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
-export type CreateInstanceResponse = [Instance, GaxOperation, IOperation];
 
 export type GetInstancesRequest = PagedRequest<
   instanceAdmin.spanner.admin.instance.v1.IListInstancesRequest & {
@@ -98,7 +96,11 @@ export interface RequestConfig {
   reqOpts: any;
   gaxOpts?: {};
 }
-
+export interface CreateInstanceRequest {
+  config: string;
+  nodes?: number;
+  labels?: {[k: string]: string} | null;
+}
 /**
  * Translates enum values to string keys.
  *
@@ -313,12 +315,20 @@ class Spanner extends GrpcService {
    *
    * @typedef {object} CreateInstanceRequest
    * @property {string} config The name of the instance's configuration.
-   * @property {number} nodes The number of nodes allocated to this instance.
+   * @property {number} [nodes=1] The number of nodes allocated to this instance.
+   *     Defaults to 1.
+   * @property {Object.<string, string>} [labels] Labels are a flexible and
+   *     lightweight mechanism for organizing cloud resources into groups that
+   *     reflect a customer's organizational needs and deployment strategies.
+   *     Cloud Labels can be used to filter collections of resources. They can
+   *     be used to control how resource metrics are aggregated. And they can
+   *     be used as arguments to policy management rules (e.g. route,
+   *     firewall, load balancing, etc.).
    */
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 A {@link GaxOperation} object that can be used to check
+   * @property {Operation} 1 An operation object that can be used to check
    *     the status of the request.
    * @property {IOperation} 2 The full API response.
    */
@@ -326,7 +336,7 @@ class Spanner extends GrpcService {
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation A {@link GaxOperation} object that can be used to
+   * @param {Operation} operation An operation object that can be used to
    *     check the status of the request.
    * @param {IOperation} apiResponse The full API response.
    */
@@ -404,15 +414,15 @@ class Spanner extends GrpcService {
         {
           name: formattedName,
           displayName: shortName,
+          nodeCount: config.nodes || 1,
         },
         config
       ),
     };
-    if (is.defined(config.nodes)) {
-      reqOpts.instance.nodeCount = config.nodes;
-      delete reqOpts.instance.nodes;
-    }
-    if (config.config && config.config.indexOf('/') === -1) {
+
+    delete reqOpts.instance.nodes;
+
+    if (config.config.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
     this.request(

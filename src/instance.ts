@@ -40,11 +40,13 @@ import {Backup} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
+import {CreateInstanceRequest} from './index';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
 export type IOperation = instanceAdmin.longrunning.IOperation;
+export type CreateInstanceResponse = [Instance, GaxOperation, IOperation];
 export type CreateDatabaseResponse = [Database, GaxOperation, IOperation];
 export type DeleteInstanceResponse = [instanceAdmin.protobuf.IEmpty];
 export type ExistsInstanceResponse = [boolean];
@@ -76,9 +78,6 @@ export interface CreateDatabaseOptions
   poolOptions?: SessionPoolOptions;
   poolCtor?: SessionPool;
   schema?: string;
-}
-export interface CreateInstanceRequest extends IInstance {
-  nodes?: number;
 }
 export interface GetDatabasesRequest
   extends databaseAdmin.spanner.admin.database.v1.IListDatabasesRequest {
