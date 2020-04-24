@@ -722,8 +722,14 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.resource
+   *   REQUIRED: The resource for which the policy is being specified.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {google.iam.v1.Policy} request.policy
+   *   REQUIRED: The complete policy to be applied to the `resource`. The size of
+   *   the policy is limited to a few 10s of KB. An empty policy is a
+   *   valid policy but certain Cloud Platform services (such as Projects)
+   *   might reject them.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -809,8 +815,12 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.resource
+   *   REQUIRED: The resource for which the policy is being requested.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {google.iam.v1.GetPolicyOptions} request.options
+   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+   *   `GetIamPolicy`. This field is only used by Cloud IAM.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -898,8 +908,14 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.resource
+   *   REQUIRED: The resource for which the policy detail is being requested.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {string[]} request.permissions
+   *   The set of permissions to check for the `resource`. Permissions with
+   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+   *   information see
+   *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -982,7 +998,10 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
+   * @param {string} request.name
+   *   Required. Name of the backup.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1069,8 +1088,17 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
+   * @param {google.spanner.admin.database.v1.Backup} request.backup
+   *   Required. The backup to update. `backup.name`, and the fields to be updated
+   *   as specified by `update_mask` are required. Other fields are ignored.
+   *   Update is only supported for the following fields:
+   *    * `backup.expire_time`.
+   * @param {google.protobuf.FieldMask} request.updateMask
+   *   Required. A mask specifying which fields (e.g. `expire_time`) in the
+   *   Backup resource should be updated. This mask is relative to the Backup
+   *   resource, not to the request message. The field mask must always be
+   *   specified; this prevents any future fields from being erased accidentally
+   *   by clients that do not know about them.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1157,7 +1185,10 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
+   * @param {string} request.name
+   *   Required. Name of the backup to delete.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1504,9 +1535,19 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The name of the instance in which the backup will be
+   *   created. This must be the same instance that contains the database the
+   *   backup will be created from. The backup will be stored in the
+   *   location(s) specified in the instance configuration of this
+   *   instance. Values are of the form
+   *   `projects/<project>/instances/<instance>`.
+   * @param {string} request.backupId
+   *   Required. The id of the backup to be created. The `backup_id` appended to
+   *   `parent` forms the full backup name of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup_id>`.
+   * @param {google.spanner.admin.database.v1.Backup} request.backup
+   *   Required. The backup to create.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1931,10 +1972,52 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The instance to list backups from.  Values are of the
+   *   form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned backups.
+   *
+   *   A filter expression consists of a field name, a comparison operator, and a
+   *   value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *
+   *     * `name`
+   *     * `database`
+   *     * `state`
+   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `size_bytes`
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `name:Howl` - The backup's name contains the string "howl".
+   *     * `database:prod`
+   *            - The database's name contains the string "prod".
+   *     * `state:CREATING` - The backup is pending creation.
+   *     * `state:READY` - The backup is fully created and ready for use.
+   *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
+   *            - The backup name contains the string "howl" and `create_time`
+   *                of the backup is before 2018-03-28T14:50:00Z.
+   *     * `expire_time < \"2018-03-28T14:50:00Z\"`
+   *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
+   * @param {number} request.pageSize
+   *   Number of backups to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
+   *   `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2013,10 +2096,52 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The instance to list backups from.  Values are of the
+   *   form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned backups.
+   *
+   *   A filter expression consists of a field name, a comparison operator, and a
+   *   value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *
+   *     * `name`
+   *     * `database`
+   *     * `state`
+   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `size_bytes`
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `name:Howl` - The backup's name contains the string "howl".
+   *     * `database:prod`
+   *            - The database's name contains the string "prod".
+   *     * `state:CREATING` - The backup is pending creation.
+   *     * `state:READY` - The backup is fully created and ready for use.
+   *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
+   *            - The backup name contains the string "howl" and `create_time`
+   *                of the backup is before 2018-03-28T14:50:00Z.
+   *     * `expire_time < \"2018-03-28T14:50:00Z\"`
+   *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
+   * @param {number} request.pageSize
+   *   Number of backups to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
+   *   `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2051,10 +2176,52 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The instance to list backups from.  Values are of the
+   *   form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned backups.
+   *
+   *   A filter expression consists of a field name, a comparison operator, and a
+   *   value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *
+   *     * `name`
+   *     * `database`
+   *     * `state`
+   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `size_bytes`
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `name:Howl` - The backup's name contains the string "howl".
+   *     * `database:prod`
+   *            - The database's name contains the string "prod".
+   *     * `state:CREATING` - The backup is pending creation.
+   *     * `state:READY` - The backup is fully created and ready for use.
+   *     * `(name:howl) AND (create_time < \"2018-03-28T14:50:00Z\")`
+   *            - The backup name contains the string "howl" and `create_time`
+   *                of the backup is before 2018-03-28T14:50:00Z.
+   *     * `expire_time < \"2018-03-28T14:50:00Z\"`
+   *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
+   *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
+   * @param {number} request.pageSize
+   *   Number of backups to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
+   *   `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2469,10 +2636,56 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The instance of the backup operations. Values are of
+   *   the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned backup operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.longrunning.Operation|operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `metadata.database:prod` - The database the backup was taken from has
+   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
+   *       `(metadata.name:howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The backup name contains the string "howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} request.pageSize
+   *   Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
+   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
+   *   same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2551,10 +2764,56 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The instance of the backup operations. Values are of
+   *   the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned backup operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.longrunning.Operation|operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `metadata.database:prod` - The database the backup was taken from has
+   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
+   *       `(metadata.name:howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The backup name contains the string "howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} request.pageSize
+   *   Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
+   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
+   *   same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2589,10 +2848,56 @@ export class DatabaseAdminClient {
    *
    * @param {Object} request
    *   The request object that will be sent.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
-   * @param {} request.
+   * @param {string} request.parent
+   *   Required. The instance of the backup operations. Values are of
+   *   the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.filter
+   *   An expression that filters the list of returned backup operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link google.longrunning.Operation|operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic, but
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `metadata.database:prod` - The database the backup was taken from has
+   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
+   *       `(metadata.name:howl) AND` <br/>
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The backup name contains the string "howl".
+   *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} request.pageSize
+   *   Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
+   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
+   *   same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
