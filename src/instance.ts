@@ -24,7 +24,7 @@ import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
 import {Spanner, RequestConfig} from '.';
-import {CallOptions, ServiceError} from 'grpc';
+import {ServiceError} from 'grpc';
 import {
   RequestCallback,
   PagedOptions,
