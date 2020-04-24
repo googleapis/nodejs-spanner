@@ -1902,7 +1902,7 @@ describe('Database', () => {
       database.getSessions(options, assert.ifError);
     });
 
-    it('should not require a query', done => {
+    it('should not require options', done => {
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,

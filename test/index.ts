@@ -676,7 +676,7 @@ describe('Spanner', () => {
       spanner.getInstances(OPTIONS as GetInstancesOptions, assert.ifError);
     });
 
-    it('should not require a query', done => {
+    it('should not require options', done => {
       spanner.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: 'projects/' + spanner.projectId,
@@ -782,7 +782,7 @@ describe('Spanner', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should not require a query', done => {
+    it('should not require options', done => {
       spanner.request = config => {
         const reqOpts = config.reqOpts;
         assert.deepStrictEqual(reqOpts, {

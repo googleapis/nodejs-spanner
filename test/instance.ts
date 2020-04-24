@@ -792,7 +792,7 @@ describe('Instance', () => {
       instance.getDatabases(QUERY, assert.ifError);
     });
 
-    it('should not require a query', done => {
+    it('should not require options', done => {
       instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
@@ -983,16 +983,16 @@ describe('Instance', () => {
       await instance.getBackups(options);
     });
 
-    it('should not require a query', async () => {
+    it('should not require options', done => {
       instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
         });
-
         assert.deepStrictEqual(config.gaxOpts, undefined);
+        done();
       };
 
-      await instance.getBackups();
+      instance.getBackups(assert.ifError);
     });
 
     describe('error', () => {
@@ -1097,16 +1097,17 @@ describe('Instance', () => {
       await instance.getBackupOperations(options);
     });
 
-    it('should not require a query', async () => {
+    it('should not require options', done => {
       instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
         });
 
         assert.deepStrictEqual(config.gaxOpts, undefined);
+        done();
       };
 
-      await instance.getBackupOperations();
+      instance.getBackupOperations(assert.ifError);
     });
   });
 
@@ -1140,16 +1141,17 @@ describe('Instance', () => {
       await instance.getDatabaseOperations(options);
     });
 
-    it('should not require a query', async () => {
+    it('should not require options', done => {
       instance.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
         });
 
         assert.deepStrictEqual(config.gaxOpts, undefined);
+        done();
       };
 
-      await instance.getDatabaseOperations();
+      instance.getDatabaseOperations(assert.ifError);
     });
   });
 });
