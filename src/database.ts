@@ -71,7 +71,7 @@ import {
   IOperation,
   Schema,
   RequestCallback,
-  PagedRequest,
+  PagedOptions,
   ResourceCallback,
   PagedResponse,
   NormalCallback,
@@ -120,7 +120,9 @@ type PoolRequestCallback = RequestCallback<Session>;
 
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
-type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
+interface GetSessionsOptions extends PagedOptions {
+  filter?: string;
+}
 
 /**
  * IDatabase structure with database state enum translated to string form.

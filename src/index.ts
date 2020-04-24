@@ -21,7 +21,6 @@ import {replaceProjectIdToken} from '@google-cloud/projectify';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-import * as is from 'is';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
@@ -35,7 +34,7 @@ import {
   CreateInstanceResponse,
 } from './instance';
 import {google as instanceAdmin} from '../protos/protos';
-import {PagedRequest, PagedResponse, PagedCallback} from './common';
+import {PagedOptions, PagedResponse, PagedCallback} from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -55,11 +54,9 @@ const gcpApiConfig = require('./spanner_grpc_config.json');
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 
-export type GetInstancesRequest = PagedRequest<
-  instanceAdmin.spanner.admin.instance.v1.IListInstancesRequest & {
-    maxResults?: number;
-  }
->;
+export interface GetInstancesOptions extends PagedOptions {
+  filter?: string;
+}
 export type GetInstancesResponse = PagedResponse<
   Instance,
   instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
@@ -69,11 +66,7 @@ export type GetInstancesCallback = PagedCallback<
   instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
 >;
 
-export type GetInstanceConfigsRequest = PagedRequest<
-  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsRequest & {
-    maxResults?: number;
-  }
->;
+export type GetInstanceConfigsOptions = PagedOptions;
 export type GetInstanceConfigsResponse = PagedResponse<
   instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
@@ -272,7 +265,7 @@ class Spanner extends GrpcService {
      * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
      *
      * @method Spanner#getInstancesStream
-     * @param {GetInstancesRequest} [query] Query object for listing instances.
+     * @param {GetInstancesOptions} [options] Query object for listing instances.
      * @returns {ReadableStream} A readable stream that emits {@link Instance}
      *     instances.
      *
@@ -442,18 +435,18 @@ class Spanner extends GrpcService {
     );
   }
 
-  getInstances(query?: GetInstancesRequest): Promise<GetInstancesResponse>;
+  getInstances(options?: GetInstancesOptions): Promise<GetInstancesResponse>;
   getInstances(callback: GetInstancesCallback): void;
   getInstances(
-    query: GetInstancesRequest,
+    query: GetInstancesOptions,
     callback: GetInstancesCallback
   ): void;
   /**
    * Query object for listing instances.
    *
-   * @typedef {object} GetInstancesRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
+   * @typedef {object} GetInstancesOptions
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    * @property {string} [filter] An expression for filtering the results of the
    *     request. Filter rules are case insensitive. The fields eligible for
    *     filtering are:
@@ -468,8 +461,6 @@ class Spanner extends GrpcService {
    *     - **`labels.env:dev`** The instance's label env has the value dev.
    *     - **`name:howl labels.env:dev`** The instance's name is howl and it has
    *       the label env with value dev.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
@@ -477,12 +468,14 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} GetInstancesResponse
    * @property {Instance[]} 0 Array of {@link Instance} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
    * @callback GetInstancesCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance[]} instances Array of {@link Instance} instances.
+   * @param {string} nextQuery A query object to to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -493,7 +486,7 @@ class Spanner extends GrpcService {
    * @see {@link v1.InstanceAdminClient#listInstances}
    * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
    *
-   * @param {GetInstancesRequest} [query] Query object for listing instances.
+   * @param {GetInstancesOptions} [options] Query object for listing instances.
    * @param {GetInstancesCallback} [callback] Callback function.
    * @returns {Promise<GetInstancesResponse>}
    *
@@ -517,7 +510,9 @@ class Spanner extends GrpcService {
    * }
    *
    * spanner.getInstances({
-   *   autoPaginate: false
+   *   gaxOptions: {
+   *     autoPaginate: false,
+   *   }
    * }, callback);
    *
    * //-
@@ -528,24 +523,30 @@ class Spanner extends GrpcService {
    * });
    */
   getInstances(
-    query?: GetInstancesRequest | GetInstancesCallback,
-    callback?: GetInstancesCallback
+    optionsOrCallback?: GetInstancesOptions | GetInstancesCallback,
+    cb?: GetInstancesCallback
   ): Promise<GetInstancesResponse> | void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
-    if (is.fn(query)) {
-      callback = query as GetInstancesCallback;
-      query = {};
-    }
-    const reqOpts = extend({}, query, {
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as GetInstancesOptions);
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
+    const reqOpts = extend({}, options, {
       parent: 'projects/' + this.projectId,
     });
+
+    delete reqOpts.gaxOptions;
+
     this.request(
       {
         client: 'InstanceAdminClient',
         method: 'listInstances',
         reqOpts,
-        gaxOpts: query,
+        gaxOpts: options.gaxOptions,
       },
       (err, instances, ...args) => {
         let instanceInstances: Instance[] | null = null;
@@ -562,24 +563,23 @@ class Spanner extends GrpcService {
   }
 
   getInstanceConfigs(
-    query?: GetInstanceConfigsRequest
+    query?: GetInstanceConfigsOptions
   ): Promise<GetInstanceConfigsResponse>;
   getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
   getInstanceConfigs(
-    query: GetInstanceConfigsRequest,
+    query: GetInstanceConfigsOptions,
     callback: GetInstanceConfigsCallback
   ): void;
   /**
-   * Query object for listing instance configs.
+   * Lists the supported instance configurations for a given project.
    *
-   * @typedef {object} GetInstanceConfigsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
+   * @typedef {object} GetInstanceConfigsOptions
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+
    */
   /**
    * @typedef {array} GetInstanceConfigsResponse
@@ -587,6 +587,7 @@ class Spanner extends GrpcService {
    * @property {string} 0.name The unique identifier for the instance config.
    * @property {string} 0.displayName The name of the instance config as it
    *     appears in UIs.
+   * @param {object} nextQuery A query object to to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
@@ -597,7 +598,7 @@ class Spanner extends GrpcService {
    *     config.
    * @param {string} instanceConfigs.displayName The name of the instance config
    *     as it appears in UIs.
-   * @param {object} apiResponse The full API response.
+   * @param {object} nextQuery A query object to to receive more results.   * @param {object} apiResponse The full API response.
    */
   /**
    * Get a list of instance configs.
@@ -607,7 +608,7 @@ class Spanner extends GrpcService {
    * @see {@link v1.InstanceAdminClient#listInstanceConfigs}
    * @see [ListInstanceConfigs API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs)
    *
-   * @param {GetInstanceConfigsRequest} [query] Query object for listing instance
+   * @param {GetInstanceConfigsOptions} [options] Query object for listing instance
    *     configs.
    * @param {GetInstanceConfigsCallback} [callback] Callback function.
    * @returns {Promise<GetInstanceConfigsResponse>}
@@ -632,7 +633,9 @@ class Spanner extends GrpcService {
    * }
    *
    * spanner.getInstanceConfigs({
-   *   autoPaginate: false
+   *   gaxOptions: {
+   *     autoPaginate: false,
+   *   }
    * }, callback);
    *
    * //-
@@ -643,26 +646,26 @@ class Spanner extends GrpcService {
    * });
    */
   getInstanceConfigs(
-    queryOrCallback?: GetInstanceConfigsRequest | GetInstanceConfigsCallback,
+    optionsOrCallback?: GetInstanceConfigsOptions | GetInstanceConfigsCallback,
     cb?: GetInstanceConfigsCallback
   ): Promise<GetInstanceConfigsResponse> | void {
     const callback =
-      typeof queryOrCallback === 'function'
-        ? (queryOrCallback as GetInstanceConfigsCallback)
-        : cb;
-    const query =
-      typeof queryOrCallback === 'object'
-        ? (queryOrCallback as GetInstanceConfigsRequest)
-        : {};
-    const reqOpts = extend({}, query, {
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as GetInstanceConfigsOptions);
+    const reqOpts = extend({}, options, {
       parent: 'projects/' + this.projectId,
     });
+    delete reqOpts.gaxOptions;
+
     return this.request(
       {
         client: 'InstanceAdminClient',
         method: 'listInstanceConfigs',
         reqOpts,
-        gaxOpts: query,
+        gaxOpts: options.gaxOptions,
       },
       callback
     );
@@ -677,7 +680,7 @@ class Spanner extends GrpcService {
    * @see [ListInstanceConfigs API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs)
    *
    * @method Spanner#getInstanceConfigsStream
-   * @param {GetInstanceConfigsRequest} [query] Query object for listing instance
+   * @param {GetInstanceConfigsOptions} [options] Query object for listing instance
    *     configs.
    * @returns {ReadableStream} A readable stream that emits instance configs.
    *
@@ -702,16 +705,17 @@ class Spanner extends GrpcService {
    *   });
    */
   getInstanceConfigsStream(
-    query?: GetInstanceConfigsRequest
+    options?: GetInstanceConfigsOptions
   ): NodeJS.ReadableStream {
-    const reqOpts = extend({}, query, {
+    const reqOpts = extend({}, options, {
       parent: 'projects/' + this.projectId,
     });
+    delete reqOpts.gaxOptions;
     return this.requestStream({
       client: 'InstanceAdminClient',
       method: 'listInstanceConfigsStream',
       reqOpts,
-      gaxOpts: query,
+      gaxOpts: options?.gaxOptions,
     });
   }
 
@@ -783,7 +787,7 @@ class Spanner extends GrpcService {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request(config: any, callback?: any): any {
-    if (is.fn(callback)) {
+    if (typeof callback === 'function') {
       this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {
           callback(err);

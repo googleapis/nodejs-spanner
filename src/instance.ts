@@ -27,7 +27,7 @@ import {Spanner, RequestConfig} from '.';
 import {CallOptions, ServiceError} from 'grpc';
 import {
   RequestCallback,
-  PagedRequest,
+  PagedOptions,
   PagedResponse,
   LongRunningCallback,
   NormalCallback,
@@ -102,23 +102,23 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
-export type GetBackupsOptions = PagedRequest<
-  databaseAdmin.spanner.admin.database.v1.IListBackupsRequest
->;
+export interface GetBackupsOptions extends PagedOptions {
+  filter?: string;
+}
 export type GetBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-export type GetBackupOperationsOptions = PagedRequest<
-  databaseAdmin.spanner.admin.database.v1.IListBackupOperationsRequest
->;
+export interface GetBackupOperationsOptions extends PagedOptions {
+  filter?: string;
+}
 export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-export type GetDatabaseOperationsOptions = PagedRequest<
-  databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsRequest
->;
+export interface GetDatabaseOperationsOptions extends PagedOptions {
+  filter?: string;
+}
 export type GetDatabaseOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse

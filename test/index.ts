@@ -30,7 +30,7 @@ import * as sinon from 'sinon';
 import * as spnr from '../src';
 import * as grpc from 'grpc';
 import {CreateInstanceRequest} from '../src/index';
-import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
+import {GetInstanceConfigsOptions, GetInstancesOptions} from '../src';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -646,17 +646,17 @@ describe('Spanner', () => {
   });
 
   describe('getInstances', () => {
-    const QUERY = {
-      a: 'b',
+    const OPTIONS: GetInstancesOptions = {
+      filter: 'b',
     };
-    const ORIGINAL_QUERY = extend({}, QUERY);
+    const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
     beforeEach(() => {
       spanner.request = util.noop;
     });
 
     it('should make the correct request', done => {
-      const expectedReqOpts = extend({}, QUERY, {
+      const expectedReqOpts = extend({}, OPTIONS, {
         parent: 'projects/' + spanner.projectId,
       });
 
@@ -665,15 +665,15 @@ describe('Spanner', () => {
         assert.strictEqual(config.method, 'listInstances');
 
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        assert.notStrictEqual(config.reqOpts, QUERY);
-        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.notStrictEqual(config.reqOpts, OPTIONS);
+        assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.strictEqual(config.gaxOpts, QUERY);
+        assert.strictEqual(config.gaxOpts, OPTIONS.gaxOptions);
 
         done();
       };
 
-      spanner.getInstances(QUERY as GetInstancesRequest, assert.ifError);
+      spanner.getInstances(OPTIONS as GetInstancesOptions, assert.ifError);
     });
 
     it('should not require a query', done => {
@@ -682,7 +682,7 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.strictEqual(config.gaxOpts, undefined);
 
         done();
       };
@@ -700,7 +700,7 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with original arguments', done => {
-        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
+        spanner.getInstances(OPTIONS as GetInstancesOptions, (...args) => {
           assert.deepStrictEqual(args, GAX_RESPONSE_ARGS);
           done();
         });
@@ -730,7 +730,7 @@ describe('Spanner', () => {
           return fakeInstanceInstance;
         };
 
-        spanner.getInstances(QUERY as GetInstancesRequest, (...args) => {
+        spanner.getInstances(OPTIONS as GetInstancesOptions, (...args) => {
           assert.ifError(args[0]);
           assert.strictEqual(args[0], GAX_RESPONSE_ARGS[0]);
           const instance = args[1]!.pop();
@@ -749,10 +749,14 @@ describe('Spanner', () => {
     });
 
     it('should make and return the correct request', () => {
-      const query = {a: 'b'};
-      const expectedQuery = extend({}, query, {
+      const options: GetInstanceConfigsOptions = {
+        pageSize: 5,
+        gaxOptions: {autoPaginate: false},
+      };
+      const expectedQuery = extend({}, options, {
         parent: 'projects/' + spanner.projectId,
       });
+      delete expectedQuery.gaxOptions;
 
       function callback() {}
 
@@ -764,20 +768,17 @@ describe('Spanner', () => {
 
         const reqOpts = config.reqOpts;
         assert.deepStrictEqual(reqOpts, expectedQuery);
-        assert.notStrictEqual(reqOpts, query);
+        assert.notStrictEqual(reqOpts, options);
 
         const gaxOpts = config.gaxOpts;
-        assert.strictEqual(gaxOpts, query);
+        assert.strictEqual(gaxOpts, options.gaxOptions);
 
         assert.strictEqual(callback_, callback);
 
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfigs(
-        query as GetInstanceConfigsRequest,
-        callback
-      );
+      const returnedValue = spanner.getInstanceConfigs(options, callback);
       assert.strictEqual(returnedValue, returnValue);
     });
 
@@ -800,10 +801,14 @@ describe('Spanner', () => {
     });
 
     it('should make and return the correct gax API call', () => {
-      const query = {a: 'b'};
-      const expectedQuery = extend({}, query, {
+      const options: GetInstanceConfigsOptions = {
+        pageSize: 5,
+        gaxOptions: {autoPaginate: false},
+      };
+      const expectedQuery = extend({}, options, {
         parent: 'projects/' + spanner.projectId,
       });
+      delete expectedQuery.gaxOptions;
       const returnValue = {};
 
       spanner.requestStream = config => {
@@ -812,16 +817,16 @@ describe('Spanner', () => {
 
         const reqOpts = config.reqOpts;
         assert.deepStrictEqual(reqOpts, expectedQuery);
-        assert.notStrictEqual(reqOpts, query);
+        assert.notStrictEqual(reqOpts, options);
 
         const gaxOpts = config.gaxOpts;
-        assert.strictEqual(gaxOpts, query);
+        assert.strictEqual(gaxOpts, options.gaxOptions);
 
         return returnValue;
       };
 
       const returnedValue = spanner.getInstanceConfigsStream(
-        query as GetInstanceConfigsRequest
+        options as GetInstanceConfigsOptions
       );
       assert.strictEqual(returnedValue, returnValue);
     });
