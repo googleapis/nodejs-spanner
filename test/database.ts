@@ -26,9 +26,9 @@ import * as sinon from 'sinon';
 import {Transform} from 'stream';
 import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
+import {grpc} from 'google-gax';
 import * as db from '../src/database';
 import {Instance} from '../src';
-import {ServiceError, status} from 'grpc';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 
@@ -1463,9 +1463,9 @@ describe('Database', () => {
 
     it('should retry "Session not found" error', done => {
       const sessionNotFoundError = {
-        code: status.NOT_FOUND,
+        code: grpc.status.NOT_FOUND,
         message: 'Session not found',
-      } as ServiceError;
+      } as grpc.ServiceError;
       const endStub = sandbox.stub(fakeSnapshot, 'end');
       const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
       let rows = 0;
@@ -1740,7 +1740,7 @@ describe('Database', () => {
 
     it('should retry if `begin` errors with `Session not found`', done => {
       const fakeError = {
-        code: status.NOT_FOUND,
+        code: grpc.status.NOT_FOUND,
         message: 'Session not found',
       } as MockError;
 

@@ -34,21 +34,16 @@ import {
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
+import {Operation as GaxOperation, grpc, GrpcClientOptions} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {PagedRequest, PagedResponse, PagedCallback} from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
-import {GrpcClientOptions} from 'google-gax';
-import {ChannelCredentials} from 'grpc';
-import {
-  createGcpApiConfig,
-  gcpCallInvocationTransformer,
-  gcpChannelFactoryOverride,
-} from 'grpc-gcp';
+import grpcGcpModule = require('grpc-gcp');
+const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
-import * as grpc from 'grpc';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -87,7 +82,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
   servicePath?: string;
   port?: number;
-  sslCreds?: ChannelCredentials;
+  sslCreds?: grpc.ChannelCredentials;
 }
 export interface RequestConfig {
   client: string;
@@ -225,9 +220,9 @@ class Spanner extends GrpcService {
         libVersion: require('../../package.json').version,
         scopes,
         // Enable grpc-gcp support
-        'grpc.callInvocationTransformer': gcpCallInvocationTransformer,
-        'grpc.channelFactoryOverride': gcpChannelFactoryOverride,
-        'grpc.gcpApiConfig': createGcpApiConfig(gcpApiConfig),
+        'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
+        'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
+        'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
         grpc,
       },
       options || {}

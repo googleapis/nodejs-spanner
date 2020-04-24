@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ServiceError, CallOptions} from 'grpc';
-import {Operation as GaxOperation} from 'google-gax';
+import {grpc} from 'google-gax';
+import {CallOptions, Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 
@@ -28,7 +28,7 @@ export type Schema =
 
 export interface ResourceCallback<Resource, Response> {
   (
-    err: ServiceError | null,
+    err: grpc.ServiceError | null,
     resource?: Resource | null,
     response?: Response
   ): void;
@@ -42,12 +42,12 @@ export type RequestCallback<T, R = void> = R extends void
   : PagedCallback<T, R>;
 
 export interface NormalCallback<TResponse> {
-  (err: ServiceError | null, res?: TResponse | null): void;
+  (err: grpc.ServiceError | null, res?: TResponse | null): void;
 }
 
 export interface PagedCallback<Item, Response> {
   (
-    err: ServiceError | null,
+    err: grpc.ServiceError | null,
     results?: Item[] | null,
     nextQuery?: {} | null,
     response?: Response | null
@@ -56,7 +56,7 @@ export interface PagedCallback<Item, Response> {
 
 export interface LongRunningCallback<Resource> {
   (
-    err: ServiceError | null,
+    err: grpc.ServiceError | null,
     resource?: Resource | null,
     operation?: GaxOperation | null,
     apiResponse?: IOperation
