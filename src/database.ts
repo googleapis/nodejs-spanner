@@ -1152,9 +1152,7 @@ class Database extends GrpcServiceObject {
   /**
    * Options object for listing sessions.
    *
-   * @typedef {object} GetSessionsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
+   * @typedef {object} GetSessionsOptions
    * @property {string} [filter] An expression for filtering the results of the
    *     request. Filter rules are case insensitive. The fields eligible for
    *     filtering are:
@@ -1169,21 +1167,23 @@ class Database extends GrpcServiceObject {
    *     - **`labels.env:dev`** The instance's label env has the value dev.
    *     - **`name:howl labels.env:dev`** The instance's name is howl and it has
    *       the label env with value dev.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} GetSessionsResponse
    * @property {Session[]} 0 Array of {@link Session} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
    * @callback GetSessionsCallback
    * @param {?Error} err Request error, if any.
    * @param {Session[]} instances Array of {@link Session} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -1221,7 +1221,7 @@ class Database extends GrpcServiceObject {
    * }
    *
    * database.getInstances({
-   *   autoPaginate: false
+   *   gaxOptions: {autoPaginate: false}
    * }, callback);
    *
    * //-
@@ -1238,19 +1238,16 @@ class Database extends GrpcServiceObject {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as GetSessionsCallback)
-        : cb;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
     const options =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as GetSessionsOptions)
-        : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+        ? optionsOrCallback
+        : ({} as GetSessionsOptions);
     const reqOpts = extend({}, options, {
       database: this.formattedName_,
     });
-
     delete reqOpts.gaxOptions;
+
     this.request<
       google.spanner.v1.ISession,
       google.spanner.v1.IListSessionsResponse
@@ -1259,7 +1256,7 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'listSessions',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
       },
       (err, sessions, ...args) => {
         let sessionInstances: Session[] | null = null;

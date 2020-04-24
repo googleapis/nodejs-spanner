@@ -1907,6 +1907,7 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
+        assert.strictEqual(config.gaxOpts, undefined);
         done();
       };
       database.getSessions(assert.ifError);
