@@ -140,7 +140,7 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql: "DELETE Singers WHERE FirstName = 'Alice'",
+        sql: "DELETE FROM Singers WHERE FirstName = 'Alice'",
       });
 
       console.log(`Successfully deleted ${rowCount} record.`);
@@ -567,7 +567,7 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
 
   try {
     const [rowCount] = await database.runPartitionedUpdate({
-      sql: 'DELETE Singers WHERE SingerId > 10',
+      sql: 'DELETE FROM Singers WHERE SingerId > 10',
     });
     console.log(`Successfully deleted ${rowCount} records.`);
   } catch (err) {
