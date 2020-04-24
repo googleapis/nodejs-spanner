@@ -28,7 +28,7 @@ import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {Operation as GaxOperation} from 'google-gax';
+import {Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../protos/protos';
@@ -77,7 +77,7 @@ import {
   NormalCallback,
   LongRunningCallback,
 } from './common';
-import {ServiceError, CallOptions} from 'grpc';
+import {ServiceError} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../protos/protos';
@@ -177,8 +177,8 @@ export type CreateSessionResponse = [
 ];
 
 export interface CreateSessionOptions {
-  name?: string | null;
   labels?: {[k: string]: string} | null;
+  gaxOptions?: CallOptions;
 }
 
 export type CreateSessionCallback = ResourceCallback<
@@ -579,6 +579,18 @@ class Database extends GrpcServiceObject {
     callback: CreateSessionCallback
   ): void;
   /**
+   * Create a new session.
+   *
+   * @typedef {object} CreateSessionOptions
+   * @property {Object.<string, string>} [labels] The labels for the session.
+   *
+   *   * Label keys must be between 1 and 63 characters long and must conform to
+   *     the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *   * Label values must be between 0 and 63 characters long and must conform
+   *     to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *   * No more than 64 labels can be associated with a given session.
+   */
+  /**
    * @typedef {array} CreateSessionResponse
    * @property {Session} 0 The newly created session.
    * @property {object} 1 The full API response.
@@ -639,10 +651,8 @@ class Database extends GrpcServiceObject {
     cb?: CreateSessionCallback
   ): void | Promise<CreateSessionResponse> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as CreateSessionCallback)
-        : cb!;
-    const gaxOpts =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
       typeof optionsOrCallback === 'object' && optionsOrCallback
         ? extend({}, optionsOrCallback)
         : ({} as CreateSessionOptions);
@@ -651,9 +661,8 @@ class Database extends GrpcServiceObject {
       database: this.formattedName_,
     };
 
-    if (gaxOpts.labels) {
-      reqOpts.session = {labels: gaxOpts.labels};
-      delete gaxOpts.labels;
+    if (options.labels) {
+      reqOpts.session = {labels: options.labels};
     }
 
     this.request<google.spanner.v1.ISession>(
@@ -661,7 +670,7 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
       },
       (err, resp) => {
         if (err) {

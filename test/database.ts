@@ -1557,7 +1557,8 @@ describe('Database', () => {
   });
 
   describe('createSession', () => {
-    const OPTIONS = {};
+    const gaxOptions = {};
+    const OPTIONS = {gaxOptions};
 
     it('should make the correct request', done => {
       database.request = config => {
@@ -1567,7 +1568,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, OPTIONS);
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
 
         done();
       };
@@ -1581,7 +1582,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, undefined);
 
         done();
       };

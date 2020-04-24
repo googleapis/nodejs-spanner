@@ -79,12 +79,7 @@ export interface CreateDatabaseOptions
   poolCtor?: SessionPool;
   schema?: string;
 }
-export interface GetDatabasesRequest
-  extends databaseAdmin.spanner.admin.database.v1.IListDatabasesRequest {
-  autoPaginate?: boolean;
-  maxApiCalls?: number;
-  maxResults?: number;
-}
+export type GetDatabasesOptions = PagedOptions;
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
 export type DeleteInstanceCallback = NormalCallback<
@@ -253,7 +248,7 @@ class Instance extends common.GrpcServiceObject {
 
   getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
   getBackups(callback: GetBackupsCallback): void;
-  getBackups(query: GetBackupsOptions, callback: GetBackupsCallback): void;
+  getBackups(options: GetBackupsOptions, callback: GetBackupsCallback): void;
   /**
    * Query object for listing backups.
    *
@@ -264,11 +259,21 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} GetBackupsResponse
    * @property {Backup[]} 0 Array of {@link Backup} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback GetBackupsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Backup[]} 0 Array of {@link Backup} instances.
+   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} apiResponse The full API response.
    */
   /**
    * List backups on the instance.
@@ -278,9 +283,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #backup}
    *
    * @param {GetBackupsOptions} [options] The query object for listing backups.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {GetBackupsCallback} [callback] Callback function.
    * @returns {Promise<GetBackupsResponse>} When resolved, contains a paged list
    *     of backups.
    *
@@ -311,14 +314,11 @@ class Instance extends common.GrpcServiceObject {
     cb?: GetBackupsCallback
   ): void | Promise<GetBackupsResponse> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as GetBackupsCallback)
-        : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
     const options =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as GetBackupsOptions)
-        : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+        ? optionsOrCallback
+        : ({} as GetBackupsOptions);
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -332,7 +332,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackups',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
       },
       (err, backups, ...args) => {
         let backupInstances: Backup[] | null = null;
@@ -365,12 +365,23 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} GetBackupOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @property {object} 1 The full API response.
    */
+  /**
+   * @callback GetBackupOperationsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} apiResponse The full API response.
+   */
+
   /**
    * List pending and completed backup operations for all databases in the instance.
    *
@@ -378,9 +389,7 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetBackupOperationsOptions} [options] The query object for listing
    *     backup operations.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {GetBackupOperationsCallback} [callback] Callback function.
    * @returns {Promise<GetBackupOperationsResponse>} When resolved, contains a
    *     paged list of backup operations.
    *
@@ -413,14 +422,11 @@ class Instance extends common.GrpcServiceObject {
     cb?: GetBackupOperationsCallback
   ): void | Promise<GetBackupOperationsResponse> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as GetBackupOperationsCallback)
-        : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
     const options =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as GetBackupOperationsOptions)
-        : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+        ? optionsOrCallback
+        : ({} as GetBackupOperationsOptions);
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -434,11 +440,9 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
       },
-      (err, operations, ...args) => {
-        callback!(err, operations, ...args);
-      }
+      callback
     );
   }
 
@@ -460,12 +464,23 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} GetDatabaseOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @property {object} 1 The full API response.
    */
+  /**
+   * @callback GetDatabaseOperationsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} apiResponse The full API response.
+   */
+
   /**
    * List pending and completed operations for all databases in the instance.
    *
@@ -473,9 +488,7 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetDatabaseOperationsOptions} [options] The query object for
    *     listing database operations.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {GetDatabaseOperationsCallback} [callback] Callback function.
    * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains a
    *     paged list of database operations.
    *
@@ -509,14 +522,11 @@ class Instance extends common.GrpcServiceObject {
     cb?: GetDatabaseOperationsCallback
   ): void | Promise<GetDatabaseOperationsResponse> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as GetDatabaseOperationsCallback)
-        : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
     const options =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as GetDatabaseOperationsOptions)
-        : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+        ? optionsOrCallback
+        : ({} as GetDatabaseOperationsOptions);
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -530,11 +540,9 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
       },
-      (err, operations, ...args) => {
-        callback!(err, operations, ...args);
-      }
+      callback
     );
   }
 
@@ -947,33 +955,33 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getDatabases(query?: GetDatabasesRequest): Promise<GetDatabasesResponse>;
+  getDatabases(options?: GetDatabasesOptions): Promise<GetDatabasesResponse>;
   getDatabases(callback: GetDatabasesCallback): void;
   getDatabases(
-    query: GetDatabasesRequest,
+    options: GetDatabasesOptions,
     callback: GetDatabasesCallback
   ): void;
   /**
    * Query object for listing databases.
    *
    * @typedef {object} GetDatabasesRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} GetDatabasesResponse
    * @property {Database[]} 0 Array of {@link Database} instances.
-   * @property {object} 1 The full API response.
+   * @param {object} nextQuery A query object to to receive more results.
+   * @property {object} apiResponse The full API response.
    */
   /**
    * @callback GetDatabasesCallback
    * @param {?Error} err Request error, if any.
    * @param {Database[]} databases Array of {@link Database} instances.
+   * @param {object} nextQuery A query object to to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -984,7 +992,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.DatabaseAdminClient#listDatabases}
    * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
    *
-   * @param {GetDatabasesRequest} [query] Query object for listing databases.
+   * @param {GetDatabasesOptions} [query] Query object for listing databases.
    * @param {GetDatabasesCallback} [callback] Callback function.
    * @returns {Promise<GetDatabasesResponse>}
    *
@@ -1010,7 +1018,7 @@ class Instance extends common.GrpcServiceObject {
    * }
    *
    * instance.getDatabases({
-   *   autoPaginate: false
+   *   gaxOptions: {autoPaginate: false}
    * }, callback);
    *
    * //-
@@ -1021,27 +1029,31 @@ class Instance extends common.GrpcServiceObject {
    * });
    */
   getDatabases(
-    queryOrCallback?: GetDatabasesRequest | GetDatabasesCallback,
+    optionsOrCallback?: GetDatabasesOptions | GetDatabasesCallback,
     cb?: GetDatabasesCallback
   ): void | Promise<GetDatabasesResponse> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const callback =
-      typeof queryOrCallback === 'function' ? queryOrCallback : cb!;
-    const query =
-      typeof queryOrCallback === 'object'
-        ? queryOrCallback
-        : ({} as GetDatabasesRequest);
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as GetDatabasesOptions);
 
-    const reqOpts = extend({}, query, {
+    const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
-    this.request<IDatabase[]>(
+    delete reqOpts.gaxOptions;
+    this.request<
+      IDatabase,
+      databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
+    >(
       {
         client: 'DatabaseAdminClient',
         method: 'listDatabases',
         reqOpts,
-        gaxOpts: query,
+        gaxOpts: options.gaxOptions,
       },
       (err, rowDatabases, ...args) => {
         let databases: Database[] | null = null;
@@ -1251,7 +1263,7 @@ class Instance extends common.GrpcServiceObject {
  * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
  *
  * @method Spanner#getDatabasesStream
- * @param {GetDatabasesRequest} [query] Query object for listing databases.
+ * @param {GetDatabasesOptions} [options] Query object for listing databases.
  * @returns {ReadableStream} A readable stream that emits {@link Database}
  *     instances.
  *

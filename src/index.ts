@@ -39,7 +39,7 @@ import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {PartitionedDml, Snapshot, Transaction} from './transaction';
-import {GrpcClientOptions} from 'google-gax';
+import {GrpcClientOptions, CallOptions} from 'google-gax';
 import {ChannelCredentials} from 'grpc';
 import {
   createGcpApiConfig,
@@ -87,7 +87,7 @@ export interface RequestConfig {
   method: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reqOpts: any;
-  gaxOpts?: {};
+  gaxOpts?: CallOptions;
 }
 export interface CreateInstanceRequest {
   config: string;

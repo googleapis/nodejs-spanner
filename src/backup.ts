@@ -22,9 +22,9 @@ import {
   ResourceCallback,
 } from './common';
 import {EnumKey, Spanner, RequestConfig, TranslateEnumKeys} from '.';
-import {Metadata, Operation as GaxOperation} from 'google-gax';
+import {Metadata, Operation as GaxOperation, CallOptions} from 'google-gax';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {CallOptions, status} from 'grpc';
+import {status} from 'grpc';
 import {google as databaseAdmin} from '../protos/protos';
 import {common as p} from 'protobufjs';
 

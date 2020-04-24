@@ -765,14 +765,16 @@ describe('Instance', () => {
 
   describe('getDatabases', () => {
     const QUERY = {
-      a: 'b',
-    } as inst.GetDatabasesRequest;
+      pageSize: 3,
+      gaxOptions: {autoPaginate: false},
+    } as inst.GetDatabasesOptions;
     const ORIGINAL_QUERY = extend({}, QUERY);
 
     it('should make the correct request', done => {
       const expectedReqOpts = extend({}, QUERY, {
         parent: instance.formattedName_,
       });
+      delete expectedReqOpts.gaxOptions;
 
       instance.request = config => {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
@@ -782,7 +784,7 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
 
-        assert.strictEqual(config.gaxOpts, QUERY);
+        assert.strictEqual(config.gaxOpts, QUERY.gaxOptions);
 
         done();
       };
@@ -796,7 +798,7 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, undefined);
 
         done();
       };
@@ -987,7 +989,7 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, undefined);
       };
 
       await instance.getBackups();
@@ -1101,7 +1103,7 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, undefined);
       };
 
       await instance.getBackupOperations();
@@ -1144,7 +1146,7 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, undefined);
       };
 
       await instance.getDatabaseOperations();
