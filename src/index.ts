@@ -598,7 +598,8 @@ class Spanner extends GrpcService {
    *     config.
    * @param {string} instanceConfigs.displayName The name of the instance config
    *     as it appears in UIs.
-   * @param {object} nextQuery A query object to to receive more results.   * @param {object} apiResponse The full API response.
+   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} apiResponse The full API response.
    */
   /**
    * Get a list of instance configs.
