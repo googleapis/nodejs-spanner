@@ -685,7 +685,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should respect the FieldMask', async function() {
+    it('should respect the FieldMask', async function () {
       if (!emulatorEnabled) {
         const fieldNames = ['name', 'displayName'];
 
@@ -752,7 +752,7 @@ describe('Spanner', () => {
         );
     });
 
-    it('should update the metadata', function(done) {
+    it('should update the metadata', function (done) {
       if (!emulatorEnabled) {
         const newData = {
           displayName: 'new-display-name',
@@ -914,7 +914,7 @@ describe('Spanner', () => {
           FirstName STRING(1024),
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
-        ) PRIMARY KEY (SingerId)`;
+        ) PRIMARY KEY(SingerId)`;
 
       database.updateSchema(
         [createTableStatement],
@@ -4242,7 +4242,7 @@ describe('Spanner', () => {
     });
 
     describe('pdml', () => {
-      before(function() {
+      before(function () {
         if (emulatorEnabled) {
           this.skip();
         }
