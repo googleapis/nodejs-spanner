@@ -686,23 +686,22 @@ describe('Spanner', () => {
     });
 
     it('should respect the FieldMask', async function () {
-      if (!emulatorEnabled) {
-        const fieldNames = ['name', 'displayName'];
-
-        const [metadata] = await instance.getMetadata({fieldNames});
-        assert.deepStrictEqual(metadata['endpointUris'], []);
-        assert.deepStrictEqual(metadata['labels'], {});
-        assert.strictEqual(metadata.name, instance.formattedName_);
-        assert.ok(!metadata['config']);
-        assert.strictEqual(
-          metadata['displayName'],
-          instance.formattedName_.split('/').pop()
-        );
-        assert.strictEqual(metadata['nodeCount'], 0);
-        assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
-      } else {
+      if (emulatorEnabled) {
         this.skip();
       }
+      const fieldNames = ['name', 'displayName'];
+
+      const [metadata] = await instance.getMetadata({fieldNames});
+      assert.deepStrictEqual(metadata['endpointUris'], []);
+      assert.deepStrictEqual(metadata['labels'], {});
+      assert.strictEqual(metadata.name, instance.formattedName_);
+      assert.ok(!metadata['config']);
+      assert.strictEqual(
+        metadata['displayName'],
+        instance.formattedName_.split('/').pop()
+      );
+      assert.strictEqual(metadata['nodeCount'], 0);
+      assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
     });
 
     it('should auto create an instance', done => {
@@ -753,26 +752,25 @@ describe('Spanner', () => {
     });
 
     it('should update the metadata', function (done) {
-      if (!emulatorEnabled) {
-        const newData = {
-          displayName: 'new-display-name',
-        };
-
-        instance.setMetadata(
-          newData,
-          execAfterOperationComplete(err => {
-            assert.ifError(err);
-
-            instance.getMetadata((err, metadata) => {
-              assert.ifError(err);
-              assert.strictEqual(metadata!.displayName, newData.displayName);
-              done();
-            });
-          })
-        );
-      } else {
+      if (emulatorEnabled) {
         this.skip();
       }
+      const newData = {
+        displayName: 'new-display-name',
+      };
+
+      instance.setMetadata(
+        newData,
+        execAfterOperationComplete(err => {
+          assert.ifError(err);
+
+          instance.getMetadata((err, metadata) => {
+            assert.ifError(err);
+            assert.strictEqual(metadata!.displayName, newData.displayName);
+            done();
+          });
+        })
+      );
     });
 
     it('should return true for instances that exist', done => {
@@ -937,7 +935,10 @@ describe('Spanner', () => {
       );
     });
 
-    it('should list database operations on an instance', async () => {
+    it('should list database operations on an instance', async function () {
+      if (emulatorEnabled) {
+        this.skip();
+      }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
       const [databaseMetadata] = await database.getMetadata();
       const databaseFullName = databaseMetadata.name;
@@ -961,7 +962,10 @@ describe('Spanner', () => {
       assert.strictEqual(createMeta.database, databaseFullName);
     });
 
-    it('should list database operations on a database', async () => {
+    it('should list database operations on a database', async function () {
+      if (emulatorEnabled) {
+        this.skip();
+      }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
       const [databaseMetadata] = await database.getMetadata();
       const databaseFullName = databaseMetadata.name;
@@ -996,7 +1000,10 @@ describe('Spanner', () => {
     const backupExpiryDate = futureDateByHours(12);
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
-    before(async () => {
+    before(async function () {
+      if (emulatorEnabled) {
+        this.skip();
+      }
       database1 = instance.database(generateName('database'));
       const [, operation] = await database1.create({
         schema: `
@@ -1063,13 +1070,23 @@ describe('Spanner', () => {
     });
 
     after(async () => {
-      await restoreDatabase.delete();
+      if (restoreDatabase) {
+        await restoreDatabase.delete();
+      }
 
-      await backup1.delete();
-      await backup2.delete();
+      if (backup1) {
+        await backup1.delete();
+      }
+      if (backup2) {
+        await backup2.delete();
+      }
 
-      await database1.delete();
-      await database2.delete();
+      if (database1) {
+        await database1.delete();
+      }
+      if (database2) {
+        await database2.delete();
+      }
     });
 
     function futureDateByHours(futureHours: number): number {
@@ -4493,7 +4510,10 @@ describe('Spanner', () => {
           return table.update(defaultRowValues);
         });
 
-        it('should handle concurrent transactions with read', done => {
+        it('should handle concurrent transactions with read', function (done) {
+          if (emulatorEnabled) {
+            this.skip();
+          }
           database.runTransaction((err, transaction) => {
             assert.ifError(err);
 
@@ -4548,7 +4568,10 @@ describe('Spanner', () => {
           }
         });
 
-        it('should handle concurrent transactions with query', done => {
+        it('should handle concurrent transactions with query', function (done) {
+          if (emulatorEnabled) {
+            this.skip();
+          }
           database.runTransaction((err, transaction) => {
             assert.ifError(err);
 
@@ -4605,7 +4628,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('should retry an aborted txn when reading fails', done => {
+      it('should retry an aborted txn when reading fails', function (done) {
+        if (emulatorEnabled) {
+          this.skip();
+        }
         const key = 'k888';
         const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
 
@@ -4678,7 +4704,10 @@ describe('Spanner', () => {
         }
       });
 
-      it('should retry an aborted txn when commit fails', done => {
+      it('should retry an aborted txn when commit fails', function (done) {
+        if (emulatorEnabled) {
+          this.skip();
+        }
         const key = 'k9999';
         const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
         let attempts = 0;
@@ -4744,7 +4773,11 @@ describe('Spanner', () => {
         }
       });
 
-      it('should return a deadline error instead of aborted', done => {
+      it('should return a deadline error instead of aborted', function (done) {
+        if (emulatorEnabled) {
+          this.skip();
+        }
+
         const options = {
           timeout: 10,
         };
