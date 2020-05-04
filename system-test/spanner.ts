@@ -1710,7 +1710,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          database.run('SELECT * FROM Singers ORDER BY SingerId', (err, rows) => {
             assert.ifError(err);
 
             // We just want the two most recent ones.
@@ -3670,7 +3670,7 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          database.run('SELECT * FROM Singers ORDER BY SingerId', (err, rows) => {
             assert.ifError(err);
 
             // We just want the two most recent ones.
@@ -3896,7 +3896,7 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run('SELECT * FROM TxnTable ORDER BY Key', (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, 2);
 
