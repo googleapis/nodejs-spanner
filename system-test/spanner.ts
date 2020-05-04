@@ -1710,22 +1710,25 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers ORDER BY SingerId', (err, rows) => {
-            assert.ifError(err);
+          database.run(
+            'SELECT * FROM Singers ORDER BY SingerId',
+            (err, rows) => {
+              assert.ifError(err);
 
-            // We just want the two most recent ones.
-            rows!.splice(0, rows!.length - 2);
+              // We just want the two most recent ones.
+              rows!.splice(0, rows!.length - 2);
 
-            const rowJson = rows!.map(x => x.toJSON());
+              const rowJson = rows!.map(x => x.toJSON());
 
-            assert.strictEqual(rowJson[0].SingerId, id1);
-            assert.strictEqual(rowJson[0].Name, name1);
+              assert.strictEqual(rowJson[0].SingerId, id1);
+              assert.strictEqual(rowJson[0].Name, name1);
 
-            assert.strictEqual(rowJson[1].SingerId, id2);
-            assert.strictEqual(rowJson[1].Name, name2);
+              assert.strictEqual(rowJson[1].SingerId, id2);
+              assert.strictEqual(rowJson[1].Name, name2);
 
-            done();
-          });
+              done();
+            }
+          );
         }
       );
     });
@@ -3670,27 +3673,30 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers ORDER BY SingerId', (err, rows) => {
-            assert.ifError(err);
+          database.run(
+            'SELECT * FROM Singers ORDER BY SingerId',
+            (err, rows) => {
+              assert.ifError(err);
 
-            // We just want the two most recent ones.
-            rows!.splice(0, rows!.length - 2);
+              // We just want the two most recent ones.
+              rows!.splice(0, rows!.length - 2);
 
-            const rowJson = rows!.map(x => x.toJSON());
+              const rowJson = rows!.map(x => x.toJSON());
 
-            assert.deepStrictEqual(rowJson, [
-              {
-                SingerId: id1,
-                Name: name1,
-              },
-              {
-                SingerId: id2,
-                Name: name2,
-              },
-            ]);
+              assert.deepStrictEqual(rowJson, [
+                {
+                  SingerId: id1,
+                  Name: name1,
+                },
+                {
+                  SingerId: id2,
+                  Name: name2,
+                },
+              ]);
 
-            done();
-          });
+              done();
+            }
+          );
         }
       );
     });
@@ -3896,20 +3902,23 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable ORDER BY Key', (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 2);
+          transaction!.run(
+            'SELECT * FROM TxnTable ORDER BY Key',
+            (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, 2);
 
-            const rowJson = rows.map(x => x.toJSON());
+              const rowJson = rows.map(x => x.toJSON());
 
-            assert.strictEqual(rowJson[0].Key, 'k0');
-            assert.strictEqual(rowJson[0].StringValue, 'v0');
-            assert.strictEqual(rowJson[1].Key, 'k1');
-            assert.strictEqual(rowJson[1].StringValue, 'v1');
+              assert.strictEqual(rowJson[0].Key, 'k0');
+              assert.strictEqual(rowJson[0].StringValue, 'v0');
+              assert.strictEqual(rowJson[1].Key, 'k1');
+              assert.strictEqual(rowJson[1].StringValue, 'v1');
 
-            transaction!.end();
-            done();
-          });
+              transaction!.end();
+              done();
+            }
+          );
         });
       });
 
