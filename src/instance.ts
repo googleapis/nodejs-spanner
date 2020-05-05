@@ -319,10 +319,26 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetBackupsOptions);
-    const reqOpts = extend({}, options, {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
     delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     this.request<
       IBackup,
@@ -332,7 +348,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackups',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts,
       },
       (err, backups, ...args) => {
         let backupInstances: Backup[] | null = null;
@@ -427,10 +443,26 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetBackupOperationsOptions);
-    const reqOpts = extend({}, options, {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
     delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     this.request<
       IOperation,
@@ -440,7 +472,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listBackupOperations',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts,
       },
       callback
     );
@@ -527,10 +559,26 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetDatabaseOperationsOptions);
-    const reqOpts = extend({}, options, {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
     delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     this.request<
       IOperation,
@@ -540,7 +588,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listDatabaseOperations',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts,
       },
       callback
     );
@@ -1041,10 +1089,27 @@ class Instance extends common.GrpcServiceObject {
         ? optionsOrCallback
         : ({} as GetDatabasesOptions);
 
-    const reqOpts = extend({}, options, {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
     delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
     this.request<
       IDatabase,
       databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
@@ -1053,7 +1118,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'listDatabases',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts,
       },
       (err, rowDatabases, ...args) => {
         let databases: Database[] | null = null;

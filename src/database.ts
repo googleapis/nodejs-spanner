@@ -1243,10 +1243,26 @@ class Database extends GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetSessionsOptions);
-    const reqOpts = extend({}, options, {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
       database: this.formattedName_,
     });
     delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     this.request<
       google.spanner.v1.ISession,
@@ -1256,7 +1272,7 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'listSessions',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts,
       },
       (err, sessions, ...args) => {
         let sessionInstances: Session[] | null = null;
