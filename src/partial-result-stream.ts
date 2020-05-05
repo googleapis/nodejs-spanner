@@ -136,11 +136,13 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _options: RowOptions;
   private _pendingValue?: p.IValue;
   private _values: p.IValue[];
-  constructor(options = {}) {
+  private _requestStream: NodeJS.ReadWriteStream;
+  constructor(options = {}, requestStream: NodeJS.ReadWriteStream) {
     super({objectMode: true});
 
     this._destroyed = false;
     this._options = options;
+    this._requestStream = requestStream;
     this._values = [];
   }
   /**
@@ -187,12 +189,39 @@ export class PartialResultStream extends Transform implements ResultEvents {
         .fields as google.spanner.v1.StructType.Field[];
     }
 
+    let res = true;
     if (!is.empty(chunk.values)) {
-      this._addChunk(chunk);
+      res = this._addChunk(chunk);
     }
 
-    next();
+    if (res || !this._requestStream) {
+      next();
+    } else {
+      // Wait a little before we push any more data into the pipeline as a
+      // component downstream has indicated that a break is needed. Pause the
+      // request stream to prevent it from filling up the buffer while we are
+      // waiting.
+      setTimeout(() => {
+        this._tryResume(next, 4);
+      }, 2);
+    }
   }
+
+  private _tryResume(next: Function, timeout: number) {
+    // Try to push an empty chunk to check whether more data can be accepted.
+    if (this.push(undefined)) {
+      this._requestStream!.resume();
+      next();
+    } else {
+      // Downstream returned false indicating that it is still not ready for
+      // more data.
+      setTimeout(() => {
+        const nextTimeout = Math.min(timeout * 2, 1024);
+        this._tryResume(next, nextTimeout);
+      }, timeout);
+    }
+  }
+
   /**
    * Manages any chunked values.
    *
@@ -200,7 +229,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
    *
    * @param {object} chunk The partial result set.
    */
-  private _addChunk(chunk: google.spanner.v1.PartialResultSet): void {
+  private _addChunk(chunk: google.spanner.v1.PartialResultSet): boolean {
     const values: Value[] = chunk.values.map(GrpcService.decodeValue_);
 
     // If we have a chunk to merge, merge the values now.
@@ -223,7 +252,14 @@ export class PartialResultStream extends Transform implements ResultEvents {
       this._pendingValue = values.pop();
     }
 
-    values.forEach(value => this._addValue(value));
+    let res = true;
+    values.forEach(value => {
+      res = this._addValue(value) && res;
+      if (!res && !this._requestStream.isPaused()) {
+        this._requestStream.pause();
+      }
+    });
+    return res;
   }
   /**
    * Manages complete values, pushing a completed row into the stream once all
@@ -233,13 +269,13 @@ export class PartialResultStream extends Transform implements ResultEvents {
    *
    * @param {*} value The complete value.
    */
-  private _addValue(value: Value): void {
+  private _addValue(value: Value): boolean {
     const values = this._values;
 
     values.push(value);
 
     if (values.length !== this._fields.length) {
-      return;
+      return true;
     }
 
     this._values = [];
@@ -247,11 +283,10 @@ export class PartialResultStream extends Transform implements ResultEvents {
     const row: Row = this._createRow(values);
 
     if (this._options.json) {
-      this.push(row.toJSON(this._options.jsonOptions));
-      return;
+      return this.push(row.toJSON(this._options.jsonOptions));
     }
 
-    this.push(row);
+    return this.push(row);
   }
   /**
    * Converts an array of values into a row.
@@ -373,7 +408,8 @@ export function partialResultStream(
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
   const requestsStream = mergeStream();
-  const userStream = streamEvents(new PartialResultStream(options));
+  const partialRSStream = new PartialResultStream(options, requestsStream);
+  const userStream = streamEvents(partialRSStream);
   const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
     isCheckpointFn: (row: google.spanner.v1.PartialResultSet): boolean => {

@@ -29,6 +29,7 @@ import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
 import {ServiceError, status} from 'grpc';
 import {Row} from '../src/partial-result-stream';
+import * as Stream from 'stream';
 
 describe('PartialResultStream', () => {
   const sandbox = sinon.createSandbox();
@@ -83,7 +84,7 @@ describe('PartialResultStream', () => {
       it(`should pass acceptance test: ${test.name}`, done => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const values: any[] = [];
-        const stream = new PartialResultStream();
+        const stream = new PartialResultStream({}, new Stream.Duplex());
 
         stream
           .on('error', done)
@@ -113,13 +114,13 @@ describe('PartialResultStream', () => {
     let stream: prs.PartialResultStream;
 
     beforeEach(() => {
-      stream = new PartialResultStream();
+      stream = new PartialResultStream({}, new Stream.Duplex());
     });
 
     afterEach(() => stream.destroy());
 
     it('should emit the response', done => {
-      const stream = new PartialResultStream();
+      const stream = new PartialResultStream({}, new Stream.Duplex());
 
       stream.on('error', done).on('response', response => {
         assert.strictEqual(response, RESULT);
@@ -166,7 +167,10 @@ describe('PartialResultStream', () => {
 
     it('should emit rows as JSON', done => {
       const jsonOptions = {};
-      const stream = new PartialResultStream({json: true, jsonOptions});
+      const stream = new PartialResultStream(
+        {json: true, jsonOptions},
+        new Stream.Duplex()
+      );
 
       const fakeJson = {};
       const stub = sandbox.stub(codec, 'convertFieldsToJson').returns(fakeJson);
