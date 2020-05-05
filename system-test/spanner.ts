@@ -63,10 +63,7 @@ describe('Spanner', () => {
       created: CURRENT_TIME,
     },
   };
-
-  let emulatorEnabled: string | undefined;
-
-  beforeEach(() => (emulatorEnabled = process.env.SPANNER_EMULATOR_HOST));
+  const IS_EMULATOR_ENABLED = typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
 
   before(async () => {
     if (generateInstanceForTest) {
@@ -686,7 +683,7 @@ describe('Spanner', () => {
     });
 
     it('should respect the FieldMask', async function () {
-      if (emulatorEnabled) {
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       const fieldNames = ['name', 'displayName'];
@@ -752,7 +749,7 @@ describe('Spanner', () => {
     });
 
     it('should update the metadata', function (done) {
-      if (emulatorEnabled) {
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       const newData = {
@@ -936,7 +933,7 @@ describe('Spanner', () => {
     });
 
     it('should list database operations on an instance', async function () {
-      if (emulatorEnabled) {
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
@@ -963,7 +960,7 @@ describe('Spanner', () => {
     });
 
     it('should list database operations on a database', async function () {
-      if (emulatorEnabled) {
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
@@ -1001,7 +998,7 @@ describe('Spanner', () => {
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
     before(async function () {
-      if (emulatorEnabled) {
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       database1 = instance.database(generateName('database'));
@@ -4269,7 +4266,7 @@ describe('Spanner', () => {
 
     describe('pdml', () => {
       before(function () {
-        if (emulatorEnabled) {
+        if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
       });
@@ -4520,7 +4517,7 @@ describe('Spanner', () => {
         });
 
         it('should handle concurrent transactions with read', function (done) {
-          if (emulatorEnabled) {
+          if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
           database.runTransaction((err, transaction) => {
@@ -4578,7 +4575,7 @@ describe('Spanner', () => {
         });
 
         it('should handle concurrent transactions with query', function (done) {
-          if (emulatorEnabled) {
+          if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
           database.runTransaction((err, transaction) => {
@@ -4638,7 +4635,7 @@ describe('Spanner', () => {
       });
 
       it('should retry an aborted txn when reading fails', function (done) {
-        if (emulatorEnabled) {
+        if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         const key = 'k888';
@@ -4714,7 +4711,7 @@ describe('Spanner', () => {
       });
 
       it('should retry an aborted txn when commit fails', function (done) {
-        if (emulatorEnabled) {
+        if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         const key = 'k9999';
@@ -4783,7 +4780,7 @@ describe('Spanner', () => {
       });
 
       it('should return a deadline error instead of aborted', function (done) {
-        if (emulatorEnabled) {
+        if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
 
