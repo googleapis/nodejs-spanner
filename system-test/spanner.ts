@@ -63,7 +63,8 @@ describe('Spanner', () => {
       created: CURRENT_TIME,
     },
   };
-  const IS_EMULATOR_ENABLED = typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
+  const IS_EMULATOR_ENABLED =
+    typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
 
   before(async () => {
     if (generateInstanceForTest) {
