@@ -55,6 +55,8 @@ const fakePfy = extend({}, pfy, {
 
 class FakeBatchTransaction {
   calledWith_: IArguments;
+  id?: string;
+  readTimestamp?: {seconds: number; nanos: number};
   constructor() {
     this.calledWith_ = arguments;
   }
@@ -1646,7 +1648,8 @@ describe('Database', () => {
           assert.ifError(err);
 
           assert.strictEqual(session, sessionInstance);
-          assert.strictEqual(session.metadata, API_RESPONSE);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          assert.strictEqual((session as any).metadata, API_RESPONSE);
 
           assert.strictEqual(apiResponse, API_RESPONSE);
 
