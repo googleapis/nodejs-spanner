@@ -32,7 +32,7 @@ import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
 import * as gapicConfig from './instance_admin_client_config.json';
-
+import {operationsProtos} from 'google-gax';
 const version = require('../../../package.json').version;
 
 /**
@@ -1084,6 +1084,42 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.createInstance(request, options, callback);
   }
+  /**
+   * Check the status of the long running operation returned by the createInstance() method.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *
+   * @example:
+   *   const decodedOperation = await checkCreateInstanceProgress(name);
+   *   console.log(decodedOperation.result);
+   *   console.log(decodedOperation.done);
+   *   console.log(decodedOperation.metadata);
+   *
+   */
+  async checkCreateInstanceProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.instance.v1.Instance,
+      protos.google.spanner.admin.instance.v1.CreateInstanceMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.createInstance,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.instance.v1.Instance,
+      protos.google.spanner.admin.instance.v1.CreateInstanceMetadata
+    >;
+  }
   updateInstance(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     options?: gax.CallOptions
@@ -1226,6 +1262,42 @@ export class InstanceAdminClient {
     });
     this.initialize();
     return this.innerApiCalls.updateInstance(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by the updateInstance() method.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *
+   * @example:
+   *   const decodedOperation = await checkUpdateInstanceProgress(name);
+   *   console.log(decodedOperation.result);
+   *   console.log(decodedOperation.done);
+   *   console.log(decodedOperation.metadata);
+   *
+   */
+  async checkUpdateInstanceProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.instance.v1.Instance,
+      protos.google.spanner.admin.instance.v1.UpdateInstanceMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.updateInstance,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.instance.v1.Instance,
+      protos.google.spanner.admin.instance.v1.UpdateInstanceMetadata
+    >;
   }
   listInstanceConfigs(
     request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
