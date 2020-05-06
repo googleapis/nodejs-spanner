@@ -26,9 +26,9 @@ import {util} from '@google-cloud/common';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
+import {grpc} from 'google-gax';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
-import * as grpc from 'grpc';
 import {CreateInstanceRequest} from '../src/index';
 import {GetInstanceConfigsRequest, GetInstancesRequest} from '../src';
 
@@ -51,14 +51,16 @@ function fakeReplaceProjectIdToken(...args) {
   return (replaceProjectIdTokenOverride || replaceProjectIdToken)(...args);
 }
 
-const fakeGrpcGcp = {
-  gcpChannelFactoryOverride: {},
-  gcpCallInvocationTransformer: {},
-  createGcpApiConfig: apiConfig => {
-    return {
-      calledWith_: apiConfig,
-    };
-  },
+const fakeGrpcGcp = () => {
+  return {
+    gcpChannelFactoryOverride: {},
+    gcpCallInvocationTransformer: {},
+    createGcpApiConfig: apiConfig => {
+      return {
+        calledWith_: apiConfig,
+      };
+    },
+  };
 };
 
 const fakePaginator = {
@@ -180,9 +182,9 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
-      'grpc.callInvocationTransformer':
-        fakeGrpcGcp.gcpCallInvocationTransformer,
-      'grpc.channelFactoryOverride': fakeGrpcGcp.gcpChannelFactoryOverride,
+      'grpc.callInvocationTransformer': fakeGrpcGcp()
+        .gcpCallInvocationTransformer,
+      'grpc.channelFactoryOverride': fakeGrpcGcp().gcpChannelFactoryOverride,
       'grpc.gcpApiConfig': {
         calledWith_: apiConfig,
       },

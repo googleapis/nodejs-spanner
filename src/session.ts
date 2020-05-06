@@ -36,7 +36,7 @@ import {
 } from './database';
 import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
 import {NormalCallback} from './common';
-import {ServiceError} from 'grpc';
+import {grpc} from 'google-gax';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -100,7 +100,7 @@ export class Session extends GrpcServiceObject {
   type?: types;
   txn?: Transaction;
   lastUsed?: number;
-  lastError?: ServiceError;
+  lastError?: grpc.ServiceError;
   constructor(database: Database, name?: string) {
     const methods = {
       /**

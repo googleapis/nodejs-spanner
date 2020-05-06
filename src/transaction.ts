@@ -18,8 +18,7 @@ import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
-import {CallOptions} from 'google-gax';
-import {Metadata, ServiceError} from 'grpc';
+import {grpc, CallOptions, ServiceError} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable} from 'stream';
@@ -37,7 +36,6 @@ import {google as spannerClient} from '../protos/protos';
 import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
-import * as grpc from 'grpc';
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 
 export type Rows = Array<Row | Json>;
@@ -92,7 +90,7 @@ export interface ReadRequest extends RequestOptions {
   partitionToken?: Uint8Array | null;
 }
 
-export interface BatchUpdateError extends ServiceError {
+export interface BatchUpdateError extends grpc.ServiceError {
   rowCounts: number[];
 }
 
@@ -125,14 +123,14 @@ export type ReadCallback = NormalCallback<Rows>;
 
 export interface RunCallback {
   (
-    err: null | ServiceError,
+    err: null | grpc.ServiceError,
     rows: Rows,
     stats: spannerClient.spanner.v1.ResultSetStats
   ): void;
 }
 
 export interface RunUpdateCallback {
-  (err: null | ServiceError, rowCount: number): void;
+  (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
 export type CommitCallback = NormalCallback<
@@ -319,7 +317,7 @@ export class Snapshot extends EventEmitter {
         reqOpts,
       },
       (
-        err: null | ServiceError,
+        err: null | grpc.ServiceError,
         resp: spannerClient.spanner.v1.ITransaction
       ) => {
         if (err) {
@@ -1096,7 +1094,7 @@ export class Dml extends Snapshot {
     this.run(
       query,
       (
-        err: null | ServiceError,
+        err: null | grpc.ServiceError,
         rows: Rows,
         stats: spannerClient.spanner.v1.ResultSetStats
       ) => {
@@ -1282,7 +1280,7 @@ export class Transaction extends Dml {
       const batchError: BatchUpdateError = Object.assign(error, {
         code: 3, // invalid argument
         rowCounts,
-      });
+      }) as BatchUpdateError;
       callback!(batchError, rowCounts);
       return;
     }
@@ -1312,7 +1310,7 @@ export class Transaction extends Dml {
         reqOpts,
       },
       (
-        err: null | ServiceError,
+        err: null | grpc.ServiceError,
         resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
       ) => {
         let batchUpdateError: BatchUpdateError;
@@ -1351,7 +1349,9 @@ export class Transaction extends Dml {
     );
   }
 
-  private static extractKnownMetadata(details: IAny[]): Metadata | undefined {
+  private static extractKnownMetadata(
+    details: IAny[]
+  ): grpc.Metadata | undefined {
     if (details && typeof details[Symbol.iterator] === 'function') {
       const metadata = new grpc.Metadata();
       for (const detail of details) {
@@ -1439,7 +1439,7 @@ export class Transaction extends Dml {
           );
         }
 
-        callback!(err, resp);
+        callback!(err as ServiceError | null, resp);
       }
     );
   }
