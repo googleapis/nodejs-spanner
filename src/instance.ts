@@ -277,7 +277,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #backup}
    *
    * @param {GetBackupsOptions} [options] The query object for listing backups.
-   * @param {grpc.CallOptions} [options.gaxOptions] The request configuration
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupsResponse>} When resolved, contains a paged list
@@ -317,7 +317,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetBackupsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: grpc.CallOptions = options.gaxOptions as grpc.CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -377,7 +377,7 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetBackupOperationsOptions} [options] The query object for listing
    *     backup operations.
-   * @param {grpc.CallOptions} [options.gaxOptions] The request configuration
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupOperationsResponse>} When resolved, contains a
@@ -419,7 +419,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetBackupOperationsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: grpc.CallOptions = options.gaxOptions as grpc.CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -472,7 +472,7 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetDatabaseOperationsOptions} [options] The query object for
    *     listing database operations.
-   * @param {grpc.CallOptions} [options.gaxOptions] The request configuration
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains a
@@ -515,7 +515,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetDatabaseOperationsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: grpc.CallOptions = options.gaxOptions as grpc.CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });

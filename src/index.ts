@@ -34,7 +34,7 @@ import {
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
-import {Operation as GaxOperation, grpc, GrpcClientOptions} from 'google-gax';
+import {grpc, GrpcClientOptions} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {PagedRequest, PagedResponse, PagedCallback} from './common';
 import {Session} from './session';

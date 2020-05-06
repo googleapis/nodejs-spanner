@@ -28,7 +28,7 @@ import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {grpc, Operation as GaxOperation} from 'google-gax';
+import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../protos/protos';
@@ -1233,7 +1233,7 @@ class Database extends GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetSessionsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: grpc.CallOptions = options.gaxOptions as grpc.CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       database: this.formattedName_,
     });
@@ -1559,12 +1559,12 @@ class Database extends GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(
     backupPath: string,
-    options?: grpc.CallOptions
+    options?: CallOptions
   ): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   restore(
     backupPath: string,
-    options: grpc.CallOptions,
+    options: CallOptions,
     callback: RestoreDatabaseCallback
   ): void;
   /**
@@ -1605,7 +1605,7 @@ class Database extends GrpcServiceObject {
    */
   restore(
     backupName: string,
-    optionsOrCallback?: grpc.CallOptions | RestoreDatabaseCallback,
+    optionsOrCallback?: CallOptions | RestoreDatabaseCallback,
     cb?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
     const callback =
@@ -1614,7 +1614,7 @@ class Database extends GrpcServiceObject {
         : cb;
     const gaxOpts =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as grpc.CallOptions)
+        ? (optionsOrCallback as CallOptions)
         : {};
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
       parent: this.instance.formattedName_,

@@ -158,7 +158,7 @@ class Backup {
     options: CreateBackupOptions,
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-    const gaxOpts: CallOptions | undefined = options.gaxOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
       parent: this.instanceFormattedName_,
       backupId: this.id,

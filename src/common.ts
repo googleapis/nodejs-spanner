@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {grpc} from 'google-gax';
-import {CallOptions, Operation as GaxOperation} from 'google-gax';
+import {grpc, CallOptions, Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 
