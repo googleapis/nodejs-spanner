@@ -27,7 +27,7 @@ import * as through from 'through2';
 
 import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
-import {ServiceError, status} from 'grpc';
+import {grpc} from 'google-gax';
 import {Row} from '../src/partial-result-stream';
 
 describe('PartialResultStream', () => {
@@ -275,9 +275,9 @@ describe('PartialResultStream', () => {
         setTimeout(() => {
           // This causes a new request stream to be created.
           firstFakeRequestStream.emit('error', {
-            code: status.UNAVAILABLE,
+            code: grpc.status.UNAVAILABLE,
             message: 'Error.',
-          } as ServiceError);
+          } as grpc.ServiceError);
         }, 50);
 
         return firstFakeRequestStream;
@@ -337,9 +337,9 @@ describe('PartialResultStream', () => {
           setTimeout(() => {
             // This causes a new request stream to be created.
             firstFakeRequestStream.emit('error', {
-              code: status.UNAVAILABLE,
+              code: grpc.status.UNAVAILABLE,
               message: 'Error.',
-            } as ServiceError);
+            } as grpc.ServiceError);
           }, 50);
         }, 50);
 
@@ -389,9 +389,9 @@ describe('PartialResultStream', () => {
 
           setTimeout(() => {
             fakeRequestStream.emit('error', {
-              code: status.DATA_LOSS,
+              code: grpc.status.DATA_LOSS,
               message: 'Non-retryable error.',
-            } as ServiceError);
+            } as grpc.ServiceError);
           }, 50);
         }, 50);
 
@@ -406,7 +406,7 @@ describe('PartialResultStream', () => {
         .on('error', err => {
           // We should receive two rows before we get an error.
           assert.strictEqual(receivedRows.length, 2);
-          assert.strictEqual(err.code, status.DATA_LOSS);
+          assert.strictEqual(err.code, grpc.status.DATA_LOSS);
           assert.strictEqual(requestFnStub.callCount, 1);
           done();
         });
