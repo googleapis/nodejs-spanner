@@ -1068,23 +1068,17 @@ describe('Spanner', () => {
     });
 
     after(async () => {
-      if (restoreDatabase) {
-        await restoreDatabase.delete();
+      if (IS_EMULATOR_ENABLED) {
+        return;
       }
 
-      if (backup1) {
-        await backup1.delete();
-      }
-      if (backup2) {
-        await backup2.delete();
-      }
+      await restoreDatabase.delete();
 
-      if (database1) {
-        await database1.delete();
-      }
-      if (database2) {
-        await database2.delete();
-      }
+      await backup1.delete();
+      await backup2.delete();
+
+      await database1.delete();
+      await database2.delete();
     });
 
     function futureDateByHours(futureHours: number): number {
