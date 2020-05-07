@@ -1183,7 +1183,7 @@ class Database extends GrpcServiceObject {
    * @callback GetSessionsCallback
    * @param {?Error} err Request error, if any.
    * @param {Session[]} instances Array of {@link Session} instances.
-   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**
