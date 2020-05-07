@@ -18,7 +18,6 @@ import arrify = require('arrify');
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
-import {paginator} from '@google-cloud/paginator';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
@@ -149,7 +148,7 @@ interface InstanceRequest {
 class Instance extends common.GrpcServiceObject {
   formattedName_: string;
   request: InstanceRequest;
-  requestStream: (config?: RequestConfig) => Duplex;
+  requestStream: (config: RequestConfig) => Duplex;
   databases_: Map<string, Database>;
   metadata?: IInstance;
   constructor(spanner: Spanner, name: string) {
@@ -1040,7 +1039,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.DatabaseAdminClient#listDatabases}
    * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
    *
-   * @param {GetDatabasesOptions} [query] Query object for listing databases.
+   * @param {GetDatabasesOptions} [options] Query object for listing databases.
    * @param {GetDatabasesCallback} [callback] Callback function.
    * @returns {Promise<GetDatabasesResponse>}
    *
@@ -1133,6 +1132,75 @@ class Instance extends common.GrpcServiceObject {
       }
     );
   }
+
+  /**
+   * Get a list of databases as a readable object stream.
+   *
+   * Wrapper around {@link v1.DatabaseAdminClient#listDatabases}.
+   *
+   * @see {@link v1.DatabaseAdminClient#listDatabases}
+   * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
+   *
+   * @method Spanner#getDatabasesStream
+   * @param {GetDatabasesOptions} [options] Query object for listing databases.
+   * @returns {ReadableStream} A readable stream that emits {@link Database}
+   *     instances.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   *
+   * instance.getDatabasesStream()
+   *   .on('error', console.error)
+   *   .on('data', function(database) {
+   *     // `database` is a `Database` object.
+   *   })
+   *   .on('end', function() {
+   *     // All databases retrieved.
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * instance.getDatabasesStream()
+   *   .on('data', function(database) {
+   *     this.end();
+   *   });
+   */
+  getDatabasesStream(options: GetDatabasesOptions = {}): NodeJS.ReadableStream {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+
+    let reqOpts = extend({}, options, {
+      parent: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
+    return this.requestStream({
+      client: 'DatabaseAdminClient',
+      method: 'listDatabasesStream',
+      reqOpts,
+      gaxOpts,
+    });
+  }
+
   getMetadata(
     options?: GetInstanceMetadataOptions
   ): Promise<GetInstanceMetadataResponse>;
@@ -1318,45 +1386,6 @@ class Instance extends common.GrpcServiceObject {
     return 'projects/' + projectId + '/instances/' + instanceName;
   }
 }
-
-/**
- * Get a list of databases as a readable object stream.
- *
- * Wrapper around {@link v1.DatabaseAdminClient#listDatabases}.
- *
- * @see {@link v1.DatabaseAdminClient#listDatabases}
- * @see [ListDatabases API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases)
- *
- * @method Spanner#getDatabasesStream
- * @param {GetDatabasesOptions} [options] Query object for listing databases.
- * @returns {ReadableStream} A readable stream that emits {@link Database}
- *     instances.
- *
- * @example
- * const {Spanner} = require('@google-cloud/spanner');
- * const spanner = new Spanner();
- *
- * const instance = spanner.instance('my-instance');
- *
- * instance.getDatabasesStream()
- *   .on('error', console.error)
- *   .on('data', function(database) {
- *     // `database` is a `Database` object.
- *   })
- *   .on('end', function() {
- *     // All databases retrieved.
- *   });
- *
- * //-
- * // If you anticipate many results, you can end a stream early to prevent
- * // unnecessary processing and API requests.
- * //-
- * instance.getDatabasesStream()
- *   .on('data', function(database) {
- *     this.end();
- *   });
- */
-Instance.prototype.getDatabasesStream = paginator.streamify('getDatabases');
 
 /*! Developer Documentation
  *

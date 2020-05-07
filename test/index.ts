@@ -61,14 +61,6 @@ const fakeGrpcGcp = {
   },
 };
 
-const fakePaginator = {
-  paginator: {
-    streamify(methodName) {
-      return methodName;
-    },
-  },
-};
-
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -142,7 +134,6 @@ describe('Spanner', () => {
       './common-grpc/service': {
         GrpcService: FakeGrpcService,
       },
-      '@google-cloud/paginator': fakePaginator,
       '@google-cloud/promisify': fakePfy,
       '@google-cloud/projectify': {
         replaceProjectIdToken: fakeReplaceProjectIdToken,
@@ -200,10 +191,6 @@ describe('Spanner', () => {
 
     it('should promisify all the things', () => {
       assert(promisified);
-    });
-
-    it('should streamify the correct methods', () => {
-      assert.strictEqual(spanner.getInstancesStream, 'getInstances');
     });
 
     it('should create an auth instance from google-auth-library', () => {
@@ -922,12 +909,13 @@ describe('Spanner', () => {
       spanner.requestStream = util.noop;
     });
 
+    const OPTIONS = {
+      gaxOptions: {autoPaginate: false},
+    };
+    const returnValue = {};
+
     it('should make and return the correct gax API call', () => {
-      const options: GetInstanceConfigsOptions = {
-        pageSize: 5,
-        gaxOptions: {autoPaginate: false},
-      };
-      const expectedOptions = extend({}, options, {
+      const expectedOptions = extend({}, OPTIONS, {
         parent: 'projects/' + spanner.projectId,
       });
       delete expectedOptions.gaxOptions;
@@ -939,16 +927,16 @@ describe('Spanner', () => {
 
         const reqOpts = config.reqOpts;
         assert.deepStrictEqual(reqOpts, expectedOptions);
-        assert.notStrictEqual(reqOpts, options);
+        assert.notStrictEqual(reqOpts, OPTIONS);
 
         const gaxOpts = config.gaxOpts;
-        assert.deepStrictEqual(gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(gaxOpts, OPTIONS.gaxOptions);
 
         return returnValue;
       };
 
       const returnedValue = spanner.getInstanceConfigsStream(
-        options as GetInstanceConfigsOptions
+        OPTIONS as GetInstanceConfigsOptions
       );
       assert.strictEqual(returnedValue, returnValue);
     });
@@ -980,16 +968,17 @@ describe('Spanner', () => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
-      const options = Object.assign({}, OPTIONS, {gaxOptions});
+      const options = {gaxOptions};
       const expectedReqOpts = extend(
+        true,
         {},
-        OPTIONS,
+        options,
         {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
       );
-      const returnValue = {};
+      delete expectedReqOpts.gaxOptions;
 
       spanner.requestStream = config => {
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
@@ -1012,11 +1001,14 @@ describe('Spanner', () => {
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
-      const options = Object.assign({}, OPTIONS, {
-        pageSize: optionsPageSize,
-        pageToken: optionsPageToken,
-        gaxOptions,
-      });
+      const options = Object.assign(
+        {},
+        {
+          pageSize: optionsPageSize,
+          pageToken: optionsPageToken,
+          gaxOptions,
+        }
+      );
       const expectedReqOpts = extend(
         {},
         OPTIONS,
@@ -1025,7 +1017,7 @@ describe('Spanner', () => {
         },
         {pageSize: optionsPageSize, pageToken: optionsPageToken}
       );
-      const returnValue = {};
+      delete expectedReqOpts.gaxOptions;
 
       spanner.request = config => {
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
