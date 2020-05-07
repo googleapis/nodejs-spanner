@@ -119,7 +119,7 @@ type PoolRequestCallback = RequestCallback<Session>;
 
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
-type GetSessionsOptions = PagedOptionsWithFilter;
+export type GetSessionsOptions = PagedOptionsWithFilter;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -1286,6 +1286,76 @@ class Database extends GrpcServiceObject {
       }
     );
   }
+
+  /**
+   * Get a list of sessions as a readable object stream.
+   *
+   * Wrapper around {@link v1.SpannerClient#listSessions}
+   *
+   * @see {@link v1.SpannerClient#listSessions}
+   * @see [ListSessions API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ListSessions)
+   *
+   * @method Spanner#getSessionsStream
+   * @param {GetSessionsOptions} [options] Options object for listing sessions.
+   * @returns {ReadableStream} A readable stream that emits {@link Session}
+   *     instances.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * database.getSessionsStream()
+   *   .on('error', console.error)
+   *   .on('data', function(database) {
+   *     // `sessions` is a `Session` object.
+   *   })
+   *   .on('end', function() {
+   *     // All sessions retrieved.
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * database.getSessionsStream()
+   *   .on('data', function(session) {
+   *     this.end();
+   *   });
+   */
+  getSessionsStream(options: GetSessionsOptions = {}): NodeJS.ReadableStream {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+
+    let reqOpts = extend({}, options, {
+      database: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
+    return this.requestStream({
+      client: 'SpannerClient',
+      method: 'listSessionsStream',
+      reqOpts,
+      gaxOpts,
+    });
+  }
+
   getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
   getSnapshot(callback: GetSnapshotCallback): void;
   getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
