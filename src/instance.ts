@@ -362,6 +362,74 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
+  /**
+   * Get a list of backups as a readable object stream.
+   *
+   * Wrapper around {@link v1.DatabaseAdminClient#listBackups}.
+   *
+   * @see {@link v1.DatabaseAdminClient#listBackups}
+   * @see [ListBackups API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.ListBackups)
+   *
+   * @method Spanner#getBackupsStream
+   * @param {GetBackupOptions} [options] Query object for listing backups.
+   * @returns {ReadableStream} A readable stream that emits {@link Backup}
+   *     instances.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   *
+   * instance.getBackupsStream()
+   *   .on('error', console.error)
+   *   .on('data', function(database) {
+   *     // `backups` is a `Backup` object.
+   *   })
+   *   .on('end', function() {
+   *     // All backups retrieved.
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * instance.getBackupsStream()
+   *   .on('data', function(database) {
+   *     this.end();
+   *   });
+   */
+  getBackupsStream(options: GetBackupsOptions = {}): NodeJS.ReadableStream {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+
+    let reqOpts = extend({}, options, {
+      parent: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
+    return this.requestStream({
+      client: 'DatabaseAdminClient',
+      method: 'listBackupsStream',
+      reqOpts,
+      gaxOpts,
+    });
+  }
+
   getBackupOperations(
     options?: GetBackupOperationsOptions
   ): Promise<GetBackupOperationsResponse>;
