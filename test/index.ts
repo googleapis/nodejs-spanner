@@ -29,6 +29,7 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import * as grpc from 'grpc';
+import {Duplex} from 'stream';
 import {CreateInstanceRequest} from '../src/index';
 import {GetInstanceConfigsOptions, GetInstancesOptions} from '../src';
 
@@ -788,6 +789,111 @@ describe('Spanner', () => {
           done();
         });
       });
+    });
+  });
+
+  describe('getInstancesStream', () => {
+    const OPTIONS: GetInstancesOptions = {
+      filter: 'b',
+    };
+    const ORIGINAL_OPTIONS = extend({}, OPTIONS);
+    const returnValue = {};
+
+    it('should make and return the correct gax API call', () => {
+      const expectedReqOpts = extend({}, OPTIONS, {
+        parent: 'projects/' + spanner.projectId,
+      });
+
+      spanner.requestStream = config => {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'listInstancesStream');
+
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.reqOpts, OPTIONS);
+        assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+        return returnValue as Duplex;
+      };
+
+      const returnedValue = spanner.getInstancesStream(OPTIONS);
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', () => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+      const options = {gaxOptions};
+      const expectedReqOpts = extend(
+        {},
+        {
+          parent: 'projects/' + spanner.projectId,
+        },
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+
+      spanner.requestStream = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        return returnValue;
+      };
+
+      const returnedValue = spanner.getInstancesStream(options);
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('pageSize and pageToken in options should take precedence over over gaxOptions', () => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+
+      const optionsPageSize = 5;
+      const optionsPageToken = 'optionsToken';
+      const options = {
+        pageSize: optionsPageSize,
+        pageToken: optionsPageToken,
+        gaxOptions,
+      };
+      const expectedReqOpts = extend(
+        {},
+        {
+          parent: 'projects/' + spanner.projectId,
+        },
+        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+
+      spanner.requestStream = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        return returnValue;
+      };
+
+      const returnedValue = spanner.getInstancesStream(options);
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('should not require options', () => {
+      spanner.requestStream = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: 'projects/' + spanner.projectId,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+
+        return returnValue;
+      };
+
+      const returnedValue = spanner.getInstancesStream();
+      assert.strictEqual(returnedValue, returnValue);
     });
   });
 

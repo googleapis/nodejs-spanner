@@ -15,7 +15,6 @@
  */
 
 import {GrpcService, GrpcServiceConfig} from './common-grpc/service';
-import {paginator} from '@google-cloud/paginator';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import {promisifyAll} from '@google-cloud/promisify';
@@ -154,7 +153,6 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
-  getInstancesStream: Function;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -255,43 +253,6 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
-
-    /**
-     * Get a list of {@link Instance} objects as a readable object stream.
-     *
-     * Wrapper around {@link v1.InstanceAdminClient#listInstances}.
-     *
-     * @see {@link v1.InstanceAdminClient#listInstances}
-     * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
-     *
-     * @method Spanner#getInstancesStream
-     * @param {GetInstancesOptions} [options] Query object for listing instances.
-     * @returns {ReadableStream} A readable stream that emits {@link Instance}
-     *     instances.
-     *
-     * @example
-     * const {Spanner} = require('@google-cloud/spanner');
-     * const spanner = new Spanner();
-     *
-     * spanner.getInstancesStream()
-     *   .on('error', console.error)
-     *   .on('data', function(instance) {
-     *     // `instance` is an `Instance` object.
-     *   })
-     *   .on('end', function() {
-     *     // All instances retrieved.
-     *   });
-     *
-     * //-
-     * // If you anticipate many results, you can end a stream early to prevent
-     * // unnecessary processing and API requests.
-     * //-
-     * spanner.getInstancesStream()
-     *   .on('data', function(instance) {
-     *     this.end();
-     *   });
-     */
-    this.getInstancesStream = paginator.streamify('getInstances');
   }
 
   createInstance(
@@ -577,6 +538,72 @@ class Spanner extends GrpcService {
         callback!(err, instanceInstances, ...args);
       }
     );
+  }
+
+  /**
+   * Get a list of {@link Instance} objects as a readable object stream.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#listInstances}.
+   *
+   * @see {@link v1.InstanceAdminClient#listInstances}
+   * @see [ListInstances API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.ListInstances)
+   *
+   * @method Spanner#getInstancesStream
+   * @param {GetInstancesOptions} [options] Query object for listing instances.
+   * @returns {ReadableStream} A readable stream that emits {@link Instance}
+   *     instances.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * spanner.getInstancesStream()
+   *   .on('error', console.error)
+   *   .on('data', function(instance) {
+   *     // `instance` is an `Instance` object.
+   *   })
+   *   .on('end', function() {
+   *     // All instances retrieved.
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * spanner.getInstancesStream()
+   *   .on('data', function(instance) {
+   *     this.end();
+   *   });
+   */
+  getInstancesStream(options: GetInstancesOptions = {}): NodeJS.ReadableStream {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+
+    let reqOpts = extend({}, options, {
+      parent: 'projects/' + this.projectId,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
+    return this.requestStream({
+      client: 'InstanceAdminClient',
+      method: 'listInstancesStream',
+      reqOpts,
+      gaxOpts,
+    });
   }
 
   getInstanceConfigs(
