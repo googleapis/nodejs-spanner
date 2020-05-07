@@ -22,9 +22,13 @@ import {
   ResourceCallback,
 } from './common';
 import {EnumKey, Spanner, RequestConfig, TranslateEnumKeys} from '.';
-import {Metadata, Operation as GaxOperation, CallOptions} from 'google-gax';
+import {
+  grpc,
+  CallOptions,
+  Metadata,
+  Operation as GaxOperation,
+} from 'google-gax';
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import {status} from 'grpc';
 import {google as databaseAdmin} from '../protos/protos';
 import {common as p} from 'protobufjs';
 
@@ -154,7 +158,7 @@ class Backup {
     options: CreateBackupOptions,
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
       parent: this.instanceFormattedName_,
       backupId: this.id,
@@ -318,7 +322,7 @@ class Backup {
       // Found therefore it exists
       return true;
     } catch (err) {
-      if (err.code === status.NOT_FOUND) {
+      if (err.code === grpc.status.NOT_FOUND) {
         return false;
       }
       // Some other error occurred, rethrow

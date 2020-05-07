@@ -19,10 +19,10 @@
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {ApiError} from '@google-cloud/common';
+import {grpc} from 'google-gax';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as pfy from '@google-cloud/promisify';
-import {ServiceError} from 'grpc';
 import * as sinon from 'sinon';
 import snakeCase = require('lodash.snakecase');
 import {Duplex} from 'stream';
@@ -515,7 +515,7 @@ describe('Instance', () => {
             cb
           ) => {
             cb = typeof opts_ === 'function' ? opts_ : cb;
-            cb(error as ServiceError);
+            cb(error as grpc.ServiceError);
           }
         );
 
@@ -562,7 +562,7 @@ describe('Instance', () => {
           ) => {
             callback = typeof opts_ === 'function' ? opts_ : callback;
 
-            callback(error as ServiceError);
+            callback(error as grpc.ServiceError);
           }
         );
 
@@ -608,7 +608,7 @@ describe('Instance', () => {
     });
 
     describe('autoCreate', () => {
-      const error = new ApiError('Error.') as ServiceError;
+      const error = new ApiError('Error.') as grpc.ServiceError;
       error.code = 5;
 
       const OPTIONS = {
@@ -688,7 +688,7 @@ describe('Instance', () => {
     });
 
     it('should not auto create without error code 5', done => {
-      const error = new Error('Error.') as ServiceError;
+      const error = new Error('Error.') as grpc.ServiceError;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (error as any).code = 'NOT-5';
 
@@ -711,7 +711,7 @@ describe('Instance', () => {
     });
 
     it('should not auto create unless requested', done => {
-      const error = new ApiError('Error.') as ServiceError;
+      const error = new ApiError('Error.') as grpc.ServiceError;
       error.code = 5;
 
       sandbox
@@ -729,7 +729,7 @@ describe('Instance', () => {
     });
 
     it('should return an error from getMetadata', done => {
-      const error = new Error('Error.') as ServiceError;
+      const error = new Error('Error.') as grpc.ServiceError;
 
       sandbox
         .stub(instance, 'getMetadata')

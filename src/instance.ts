@@ -23,7 +23,6 @@ import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
 import {Spanner, RequestConfig} from '.';
-import {ServiceError} from 'grpc';
 import {
   RequestCallback,
   PagedOptions,
@@ -35,7 +34,7 @@ import {
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {Operation as GaxOperation} from 'google-gax';
+import {grpc, Operation as GaxOperation} from 'google-gax';
 import {Backup} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
@@ -280,7 +279,9 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #backup}
    *
    * @param {GetBackupsOptions} [options] The query object for listing backups.
-   * @param {GetBackupsCallback} [callback] Callback function.
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupsResponse>} When resolved, contains a paged list
    *     of backups.
    *
@@ -470,7 +471,9 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetBackupOperationsOptions} [options] The query object for listing
    *     backup operations.
-   * @param {GetBackupOperationsCallback} [callback] Callback function.
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupOperationsResponse>} When resolved, contains a
    *     paged list of backup operations.
    *
@@ -585,7 +588,9 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetDatabaseOperationsOptions} [options] The query object for
    *     listing database operations.
-   * @param {GetDatabaseOperationsCallback} [callback] Callback function.
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
+   *     options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains a
    *     paged list of database operations.
    *
@@ -1043,7 +1048,7 @@ class Instance extends common.GrpcServiceObject {
           this.create(
             options,
             (
-              err: ServiceError | null,
+              err: grpc.ServiceError | null,
               instance?: Instance,
               operation?: GaxOperation | null
             ) => {

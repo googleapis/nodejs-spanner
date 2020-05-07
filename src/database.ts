@@ -28,7 +28,7 @@ import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {Operation as GaxOperation, CallOptions} from 'google-gax';
+import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../protos/protos';
@@ -77,7 +77,6 @@ import {
   LongRunningCallback,
   PagedOptionsWithFilter,
 } from './common';
-import {ServiceError} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../protos/protos';
@@ -946,7 +945,7 @@ class Database extends GrpcServiceObject {
             options,
             (err, database: Database, operation: GaxOperation) => {
               if (err) {
-                callback!(err);
+                callback!(err as grpc.ServiceError);
                 return;
               }
               operation
@@ -1428,7 +1427,7 @@ class Database extends GrpcServiceObject {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      callback!(err, transaction);
+      callback!(err as grpc.ServiceError | null, transaction);
     });
   }
 
@@ -1553,7 +1552,7 @@ class Database extends GrpcServiceObject {
         requestStream.cancel();
       }
     };
-    function destroyStream(err: ServiceError) {
+    function destroyStream(err: grpc.ServiceError) {
       waitForSessionStream.destroy(err);
     }
     function releaseSession() {
@@ -2042,12 +2041,15 @@ class Database extends GrpcServiceObject {
       dataStream
         .once('data', () => (dataReceived = true))
         .once('error', err => {
-          if (!dataReceived && isSessionNotFoundError(err)) {
+          if (
+            !dataReceived &&
+            isSessionNotFoundError(err as grpc.ServiceError)
+          ) {
             // If it is a 'Session not found' error and we have not yet received
             // any data, we can safely retry the query on a new session.
             // Register the error on the session so the pool can discard it.
             if (session) {
-              session.lastError = err;
+              session.lastError = err as grpc.ServiceError;
             }
             // Remove the current data stream from the end user stream.
             dataStream.unpipe(proxyStream);
@@ -2165,12 +2167,12 @@ class Database extends GrpcServiceObject {
         : {};
 
     this.pool_.getWriteSession((err, session?, transaction?) => {
-      if (err && isSessionNotFoundError(err)) {
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
       }
       if (err) {
-        runFn!(err);
+        runFn!(err as grpc.ServiceError);
         return;
       }
 
