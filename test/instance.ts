@@ -787,7 +787,7 @@ describe('Instance', () => {
       instance.getDatabases(OPTIONS, assert.ifError);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
@@ -814,7 +814,7 @@ describe('Instance', () => {
       instance.getDatabases(options, assert.ifError);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', done => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
@@ -943,7 +943,7 @@ describe('Instance', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', () => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -970,7 +970,7 @@ describe('Instance', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', () => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1145,7 +1145,7 @@ describe('Instance', () => {
       await instance.getBackups(options);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1171,7 +1171,7 @@ describe('Instance', () => {
       instance.getBackups(options, assert.ifError);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', done => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1298,7 +1298,7 @@ describe('Instance', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', () => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1325,7 +1325,7 @@ describe('Instance', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', () => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1424,7 +1424,7 @@ describe('Instance', () => {
       await instance.getBackupOperations(options);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1451,7 +1451,7 @@ describe('Instance', () => {
       instance.getBackupOperations(options, assert.ifError);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', done => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1529,7 +1529,7 @@ describe('Instance', () => {
       await instance.getDatabaseOperations(options);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1556,7 +1556,7 @@ describe('Instance', () => {
       instance.getDatabaseOperations(options, assert.ifError);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', done => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};

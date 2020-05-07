@@ -66,3 +66,7 @@ export interface PagedOptions {
   pageToken?: string;
   gaxOptions?: CallOptions;
 }
+
+export interface PagedOptionsWithFilter extends PagedOptions {
+  filter?: string;
+}

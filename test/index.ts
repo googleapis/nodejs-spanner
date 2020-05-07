@@ -664,7 +664,7 @@ describe('Spanner', () => {
       spanner.getInstances(OPTIONS as GetInstancesOptions, assert.ifError);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -691,7 +691,7 @@ describe('Spanner', () => {
       spanner.getInstances(options, assert.ifError);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', done => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -820,7 +820,7 @@ describe('Spanner', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', () => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -847,7 +847,7 @@ describe('Spanner', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', () => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -936,7 +936,7 @@ describe('Spanner', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -963,7 +963,7 @@ describe('Spanner', () => {
       spanner.getInstanceConfigs(options, assert.ifError);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', done => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1069,7 +1069,7 @@ describe('Spanner', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('should respect pageSize & pageToken on gaxOptions, pass values in reqOpts only', () => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
@@ -1099,7 +1099,7 @@ describe('Spanner', () => {
       assert.strictEqual(returnedValue, returnValue);
     });
 
-    it('pageSize and pageToken in options should take precedence over over gaxOptions', () => {
+    it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};

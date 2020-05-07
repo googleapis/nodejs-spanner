@@ -31,6 +31,7 @@ import {
   LongRunningCallback,
   NormalCallback,
   ResourceCallback,
+  PagedOptionsWithFilter,
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
@@ -96,23 +97,20 @@ export type SetInstanceMetadataCallback = ResourceCallback<
   GaxOperation,
   IOperation
 >;
-export interface GetBackupsOptions extends PagedOptions {
-  filter?: string;
-}
+export type GetBackupsOptions = PagedOptionsWithFilter;
+
 export type GetBackupsCallback = RequestCallback<
   Backup,
   databaseAdmin.spanner.admin.database.v1.IListBackupsResponse
 >;
-export interface GetBackupOperationsOptions extends PagedOptions {
-  filter?: string;
-}
+export type GetBackupOperationsOptions = PagedOptionsWithFilter;
+
 export type GetBackupOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListBackupOperationsResponse
 >;
-export interface GetDatabaseOperationsOptions extends PagedOptions {
-  filter?: string;
-}
+export type GetDatabaseOperationsOptions = PagedOptionsWithFilter;
+
 export type GetDatabaseOperationsCallback = RequestCallback<
   IOperation,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseOperationsResponse

@@ -33,7 +33,12 @@ import {
   CreateInstanceResponse,
 } from './instance';
 import {google as instanceAdmin} from '../protos/protos';
-import {PagedOptions, PagedResponse, PagedCallback} from './common';
+import {
+  PagedOptions,
+  PagedResponse,
+  PagedCallback,
+  PagedOptionsWithFilter,
+} from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
@@ -53,9 +58,8 @@ const gcpApiConfig = require('./spanner_grpc_config.json');
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 
-export interface GetInstancesOptions extends PagedOptions {
-  filter?: string;
-}
+export type GetInstancesOptions = PagedOptionsWithFilter;
+
 export type GetInstancesResponse = PagedResponse<
   Instance,
   instanceAdmin.spanner.admin.instance.v1.IListInstancesResponse
@@ -429,14 +433,14 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} GetInstancesResponse
    * @property {Instance[]} 0 Array of {@link Instance} instances.
-   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
    * @callback GetInstancesCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance[]} instances Array of {@link Instance} instances.
-   * @param {string} nextQuery A query object to to receive more results.
+   * @param {string} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -631,7 +635,7 @@ class Spanner extends GrpcService {
    * @property {string} 0.name The unique identifier for the instance config.
    * @property {string} 0.displayName The name of the instance config as it
    *     appears in UIs.
-   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
@@ -642,7 +646,7 @@ class Spanner extends GrpcService {
    *     config.
    * @param {string} instanceConfigs.displayName The name of the instance config
    *     as it appears in UIs.
-   * @param {object} nextQuery A query object to to receive more results.
+   * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**

@@ -71,11 +71,11 @@ import {
   IOperation,
   Schema,
   RequestCallback,
-  PagedOptions,
   ResourceCallback,
   PagedResponse,
   NormalCallback,
   LongRunningCallback,
+  PagedOptionsWithFilter,
 } from './common';
 import {ServiceError} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
@@ -120,9 +120,7 @@ type PoolRequestCallback = RequestCallback<Session>;
 
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
-interface GetSessionsOptions extends PagedOptions {
-  filter?: string;
-}
+type GetSessionsOptions = PagedOptionsWithFilter;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -589,6 +587,8 @@ class Database extends GrpcServiceObject {
    *   * Label values must be between 0 and 63 characters long and must conform
    *     to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *   * No more than 64 labels can be associated with a given session.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} CreateSessionResponse
