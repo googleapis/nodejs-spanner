@@ -15,7 +15,7 @@
  */
 
 import {promisify} from '@google-cloud/promisify';
-import {ServiceError, status} from 'grpc';
+import {grpc} from 'google-gax';
 import {Root} from 'protobufjs';
 import * as through from 'through2';
 
@@ -29,7 +29,7 @@ import {Database} from './database';
 const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
-const RETRYABLE: status[] = [status.ABORTED, status.UNKNOWN];
+const RETRYABLE: grpc.status[] = [grpc.status.ABORTED, grpc.status.UNKNOWN];
 
 // tslint:disable-next-line variable-name
 const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
@@ -63,7 +63,7 @@ export interface AsyncRunTransactionCallback<T> {
 }
 
 interface ErrorCallback {
-  (err: ServiceError): void;
+  (err: grpc.ServiceError): void;
 }
 
 /**
@@ -74,13 +74,17 @@ interface ErrorCallback {
  *
  * @param {Error} [err] The last known retryable Error.
  */
-export class DeadlineError extends Error implements ServiceError {
-  code: status;
-  errors: ServiceError[];
-  constructor(error?: ServiceError) {
+export class DeadlineError extends Error implements grpc.ServiceError {
+  code: grpc.status;
+  details: string;
+  metadata: grpc.Metadata;
+  errors: grpc.ServiceError[];
+  constructor(error?: grpc.ServiceError) {
     super('Deadline for Transaction exceeded.');
 
-    this.code = status.DEADLINE_EXCEEDED;
+    this.code = grpc.status.DEADLINE_EXCEEDED;
+    this.details = error?.details || '';
+    this.metadata = error?.metadata || new grpc.Metadata();
     this.errors = [];
 
     if (error) {
@@ -137,7 +141,7 @@ export abstract class Runner<T> {
    * @param {Error} err The service error.
    * @returns {number} Delay in milliseconds.
    */
-  getNextDelay(err: ServiceError): number {
+  getNextDelay(err: grpc.ServiceError): number {
     const retryInfo = err.metadata && err.metadata.get(RETRY_INFO);
 
     if (retryInfo && retryInfo.length) {
@@ -167,7 +171,7 @@ export abstract class Runner<T> {
     );
   }
   /** Returns whether the given error should cause a transaction retry. */
-  shouldRetry(err: ServiceError): boolean {
+  shouldRetry(err: grpc.ServiceError): boolean {
     return RETRYABLE.includes(err.code!) || isSessionNotFoundError(err);
   }
   /**
@@ -202,7 +206,7 @@ export abstract class Runner<T> {
     const start = Date.now();
     const timeout = this.options.timeout!;
 
-    let lastError: ServiceError;
+    let lastError: grpc.ServiceError;
 
     // The transaction runner should always execute at least one attempt before
     // timing out.
@@ -271,7 +275,7 @@ export class TransactionRunner extends Runner<void> {
     const request = transaction.request;
 
     transaction.request = promisify((config: object, callback: Function) => {
-      request(config, (err: null | ServiceError, resp: object) => {
+      request(config, (err: null | grpc.ServiceError, resp: object) => {
         if (!err || !this.shouldRetry(err)) {
           callback(err, resp);
           return;
@@ -288,7 +292,7 @@ export class TransactionRunner extends Runner<void> {
       const stream = requestStream(config);
 
       stream
-        .on('error', (err: ServiceError) => {
+        .on('error', (err: grpc.ServiceError) => {
           if (!this.shouldRetry(err)) {
             proxyStream.destroy(err);
             return;

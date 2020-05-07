@@ -24,7 +24,6 @@ import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
 import {Database, SessionPoolConstructor} from './database';
 import {Spanner, RequestConfig} from '.';
-import {CallOptions, ServiceError} from 'grpc';
 import {
   RequestCallback,
   PagedRequest,
@@ -35,7 +34,7 @@ import {
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {Operation as GaxOperation} from 'google-gax';
+import {grpc, Operation as GaxOperation} from 'google-gax';
 import {Backup} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
@@ -278,7 +277,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link #backup}
    *
    * @param {GetBackupsOptions} [options] The query object for listing backups.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupsResponse>} When resolved, contains a paged list
@@ -318,7 +317,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetBackupsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -378,7 +377,7 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetBackupOperationsOptions} [options] The query object for listing
    *     backup operations.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetBackupOperationsResponse>} When resolved, contains a
@@ -420,7 +419,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetBackupOperationsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -473,7 +472,7 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetDatabaseOperationsOptions} [options] The query object for
    *     listing database operations.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
    *     options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains a
@@ -516,7 +515,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as GetDatabaseOperationsOptions)
         : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
+    const gaxOpts = options.gaxOptions;
     const reqOpts = extend({}, options, {
       parent: this.formattedName_,
     });
@@ -922,7 +921,7 @@ class Instance extends common.GrpcServiceObject {
           this.create(
             options,
             (
-              err: ServiceError | null,
+              err: grpc.ServiceError | null,
               instance?: Instance,
               operation?: GaxOperation | null
             ) => {

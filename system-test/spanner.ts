@@ -32,7 +32,7 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import {status} from 'grpc';
+import {grpc} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -1128,7 +1128,7 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
       }
     });
 
@@ -1230,7 +1230,7 @@ describe('Spanner', () => {
         assert.fail('Should not have restored backup over existing database');
       } catch (err) {
         // Expect to get error indicating database already exists.
-        assert.strictEqual(err.code, status.ALREADY_EXISTS);
+        assert.strictEqual(err.code, grpc.status.ALREADY_EXISTS);
       }
     });
 
@@ -1261,7 +1261,7 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date.
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
       }
     });
 
@@ -1275,7 +1275,7 @@ describe('Spanner', () => {
         const [deletedMetadata] = await backup2.getMetadata();
         assert.fail('Backup was not deleted: ' + deletedMetadata.name);
       } catch (err) {
-        assert.strictEqual(err.code, status.NOT_FOUND);
+        assert.strictEqual(err.code, grpc.status.NOT_FOUND);
       }
     });
 
@@ -4411,7 +4411,7 @@ describe('Spanner', () => {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
             // Re-throw if the transaction was aborted to trigger a retry.
-            if (e.code === status.ABORTED) {
+            if (e.code === grpc.status.ABORTED) {
               throw e;
             }
             err = e;
@@ -4421,7 +4421,7 @@ describe('Spanner', () => {
           return err;
         });
 
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
         assert.deepStrictEqual(err.rowCounts, [1]);
       });
 

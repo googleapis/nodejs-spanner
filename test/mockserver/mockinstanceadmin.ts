@@ -15,7 +15,7 @@
  */
 
 import {google} from '../../protos/protos';
-import * as grpc from 'grpc';
+import {grpc} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
 import {createUnimplementedError, now} from './mockspanner';
 import v1 = google.spanner.admin.instance.v1;
@@ -92,7 +92,7 @@ export class MockInstanceAdmin {
     const error = new Error(msg);
     return Object.assign(error, {
       code: grpc.status.NOT_FOUND,
-    });
+    }) as grpc.ServiceError;
   }
 
   private static createServiceError(msg: string, code: grpc.status) {
@@ -103,7 +103,10 @@ export class MockInstanceAdmin {
   }
 
   listInstanceConfigs(
-    call: grpc.ServerUnaryCall<v1.ListInstanceConfigsRequest>,
+    call: grpc.ServerUnaryCall<
+      v1.ListInstanceConfigsRequest,
+      v1.ListInstanceConfigsResponse
+    >,
     callback: v1.InstanceAdmin.ListInstanceConfigsCallback
   ) {
     callback(
@@ -115,47 +118,50 @@ export class MockInstanceAdmin {
   }
 
   getInstanceConfig(
-    call: grpc.ServerUnaryCall<v1.GetInstanceConfigRequest>,
+    call: grpc.ServerUnaryCall<v1.GetInstanceConfigRequest, v1.Instance>,
     callback: v1.InstanceAdmin.GetInstanceConfigCallback
   ) {
-    if (call.request.name === TEST_INSTANCE_CONFIG_NAME) {
+    if (call.request!!.name === TEST_INSTANCE_CONFIG_NAME) {
       callback(null, MockInstanceAdmin.TEST_INSTANCE_CONFIG);
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `InstanceConfig not found: ${call.request.name}`
+          `InstanceConfig not found: ${call.request!!.name}`
         )
       );
     }
   }
 
   listInstances(
-    call: grpc.ServerUnaryCall<v1.ListInstancesRequest>,
+    call: grpc.ServerUnaryCall<
+      v1.ListInstancesRequest,
+      v1.ListInstancesResponse
+    >,
     callback: v1.InstanceAdmin.ListInstancesCallback
   ) {
     let instances: google.spanner.admin.instance.v1.IInstance[] = [];
     if (
-      !call.request.filter ||
-      call.request.filter.includes(
+      !call.request!!.filter ||
+      call.request!!.filter.includes(
         `name:${MockInstanceAdmin.TEST_INSTANCE.name}`
       )
     ) {
       instances.push(MockInstanceAdmin.TEST_INSTANCE);
     }
     if (
-      !call.request.filter ||
-      call.request.filter.includes(
+      !call.request!.filter ||
+      call.request!.filter.includes(
         `name:${MockInstanceAdmin.PROD_INSTANCE.name}`
       )
     ) {
       instances.push(MockInstanceAdmin.PROD_INSTANCE);
     }
-    if (call.request.pageToken) {
-      const beginIndex = Number.parseInt(call.request.pageToken, 10);
+    if (call.request!.pageToken) {
+      const beginIndex = Number.parseInt(call.request!.pageToken, 10);
       instances = instances.slice(beginIndex);
     }
-    if (call.request.pageSize && call.request.pageSize < instances.length) {
-      instances = instances.slice(0, call.request.pageSize);
+    if (call.request!.pageSize && call.request!.pageSize < instances.length) {
+      instances = instances.slice(0, call.request!.pageSize);
     }
     callback(
       null,
@@ -166,36 +172,40 @@ export class MockInstanceAdmin {
   }
 
   getInstance(
-    call: grpc.ServerUnaryCall<v1.GetInstanceRequest>,
+    call: grpc.ServerUnaryCall<v1.GetInstanceRequest, v1.Instance>,
     callback: v1.InstanceAdmin.GetInstanceCallback
   ) {
-    if (call.request.name === TEST_INSTANCE_NAME) {
+    if (call.request!.name === TEST_INSTANCE_NAME) {
       callback(null, MockInstanceAdmin.TEST_INSTANCE);
-    } else if (call.request.name === PROD_INSTANCE_NAME) {
+    } else if (call.request!.name === PROD_INSTANCE_NAME) {
       callback(null, MockInstanceAdmin.PROD_INSTANCE);
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `Instance not found: ${call.request.name}`
+          `Instance not found: ${call.request!.name}`
         )
       );
     }
   }
 
   createInstance(
-    call: grpc.ServerUnaryCall<v1.CreateInstanceRequest>,
+    call: grpc.ServerUnaryCall<v1.CreateInstanceRequest, longrunning.Operation>,
     callback: v1.InstanceAdmin.CreateInstanceCallback
   ) {
     const instance = v1.Instance.create({
-      name: `${call.request.parent}/instances/${call.request.instanceId}`,
-      displayName: call.request.instance
-        ? call.request.instance.displayName
+      name: `${call.request!.parent}/instances/${call.request!.instanceId}`,
+      displayName: call.request!.instance
+        ? call.request!.instance.displayName
         : undefined,
-      config: call.request.instance ? call.request.instance.config : undefined,
-      nodeCount: call.request.instance
-        ? call.request.instance.nodeCount
+      config: call.request!.instance
+        ? call.request!.instance.config
         : undefined,
-      labels: call.request.instance ? call.request.instance.labels : undefined,
+      nodeCount: call.request!.instance
+        ? call.request!.instance.nodeCount
+        : undefined,
+      labels: call.request!.instance
+        ? call.request!.instance.labels
+        : undefined,
       state: v1.Instance.State.READY,
     });
     const metadataBuffer = v1.CreateInstanceMetadata.encode(
@@ -222,17 +232,17 @@ export class MockInstanceAdmin {
   }
 
   updateInstance(
-    call: grpc.ServerUnaryCall<v1.UpdateInstanceRequest>,
+    call: grpc.ServerUnaryCall<v1.UpdateInstanceRequest, longrunning.Operation>,
     callback: v1.InstanceAdmin.UpdateInstanceCallback
   ) {
-    if (call.request.instance) {
+    if (call.request!.instance) {
       if (
-        call.request.instance.name === PROD_INSTANCE_NAME ||
-        call.request.instance.name === TEST_INSTANCE_NAME
+        call.request!.instance.name === PROD_INSTANCE_NAME ||
+        call.request!.instance.name === TEST_INSTANCE_NAME
       ) {
         const metadataBuffer = v1.CreateInstanceMetadata.encode(
           v1.CreateInstanceMetadata.create({
-            instance: call.request.instance,
+            instance: call.request!.instance,
             startTime: now(),
             endTime: now(),
           })
@@ -246,14 +256,14 @@ export class MockInstanceAdmin {
               value: metadataBuffer,
             }),
             response: Any.create({
-              value: v1.Instance.encode(call.request.instance).finish(),
+              value: v1.Instance.encode(call.request!.instance).finish(),
             }),
           })
         );
       } else {
         callback(
           MockInstanceAdmin.createNotFoundError(
-            `Instance not found: ${call.request.instance.name}`
+            `Instance not found: ${call.request!.instance.name}`
           )
         );
       }
@@ -268,39 +278,39 @@ export class MockInstanceAdmin {
   }
 
   deleteInstance(
-    call: grpc.ServerUnaryCall<v1.DeleteInstanceRequest>,
+    call: grpc.ServerUnaryCall<v1.DeleteInstanceRequest, Empty>,
     callback: v1.InstanceAdmin.DeleteInstanceCallback
   ) {
     if (
-      call.request.name === PROD_INSTANCE_NAME ||
-      call.request.name === TEST_INSTANCE_NAME
+      call.request!.name === PROD_INSTANCE_NAME ||
+      call.request!.name === TEST_INSTANCE_NAME
     ) {
       callback(null, Empty.create({}));
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `Instance not found: ${call.request.name}`
+          `Instance not found: ${call.request!.name}`
         )
       );
     }
   }
 
   setIamPolicy(
-    call: grpc.ServerUnaryCall<iam.SetIamPolicyRequest>,
+    call: grpc.ServerUnaryCall<iam.SetIamPolicyRequest, {}>,
     callback: iam.IAMPolicy.SetIamPolicyCallback
   ) {
     callback(createUnimplementedError('SetIamPolicy is not yet implemented'));
   }
 
   getIamPolicy(
-    call: grpc.ServerUnaryCall<iam.GetIamPolicyRequest>,
+    call: grpc.ServerUnaryCall<iam.GetIamPolicyRequest, {}>,
     callback: iam.IAMPolicy.GetIamPolicyCallback
   ) {
     callback(createUnimplementedError('GetIamPolicy is not yet implemented'));
   }
 
   testIamPermissions(
-    call: grpc.ServerUnaryCall<iam.TestIamPermissionsRequest>,
+    call: grpc.ServerUnaryCall<iam.TestIamPermissionsRequest, {}>,
     callback: iam.IAMPolicy.TestIamPermissionsCallback
   ) {
     callback(

@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {EventEmitter} from 'events';
-import {Metadata, ServiceError, status} from 'grpc';
+import {grpc} from 'google-gax';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as through from 'through2';
@@ -127,8 +127,8 @@ describe('TransactionRunner', () => {
     describe('getNextDelay', () => {
       const FAKE_RETRY_INFO = Buffer.from('fake-retry-info');
 
-      const FAKE_ERROR = new Error('err') as ServiceError;
-      FAKE_ERROR.metadata = new Metadata();
+      const FAKE_ERROR = new Error('err') as grpc.ServiceError;
+      FAKE_ERROR.metadata = new grpc.Metadata();
       FAKE_ERROR.metadata.set(RETRY_KEY, FAKE_RETRY_INFO);
 
       it('should extract `retryInfo` when available', () => {
@@ -165,8 +165,8 @@ describe('TransactionRunner', () => {
         runner.attempts = 3;
         sandbox.stub(global.Math, 'random').returns(random);
 
-        const badError = new Error('err') as ServiceError;
-        badError.metadata = new Metadata();
+        const badError = new Error('err') as grpc.ServiceError;
+        badError.metadata = new grpc.Metadata();
 
         const expectedDelay = Math.pow(2, 3) * 1000 + Math.floor(random * 1000);
         const delay = runner.getNextDelay(badError);
@@ -180,8 +180,8 @@ describe('TransactionRunner', () => {
         runner.attempts = 10;
         sandbox.stub(global.Math, 'random').returns(random);
 
-        const badError = new Error('err') as ServiceError;
-        badError.metadata = new Metadata();
+        const badError = new Error('err') as grpc.ServiceError;
+        badError.metadata = new grpc.Metadata();
 
         const expectedDelay = Math.pow(2, 5) * 1000 + Math.floor(random * 1000);
         const delay = runner.getNextDelay(badError);
@@ -242,8 +242,8 @@ describe('TransactionRunner', () => {
       });
 
       it('should reject for non-retryable errors', done => {
-        const fakeError = new Error('err') as ServiceError;
-        fakeError.code = status.DEADLINE_EXCEEDED;
+        const fakeError = new Error('err') as grpc.ServiceError;
+        fakeError.code = grpc.status.DEADLINE_EXCEEDED;
 
         runFn.rejects(fakeError);
 
@@ -255,8 +255,8 @@ describe('TransactionRunner', () => {
 
       it('should retry on ABORTED errors', async () => {
         const fakeReturnValue = 11;
-        const fakeError = new Error('err') as ServiceError;
-        fakeError.code = status.ABORTED;
+        const fakeError = new Error('err') as grpc.ServiceError;
+        fakeError.code = grpc.status.ABORTED;
 
         runFn.onCall(0).rejects(fakeError);
         runFn.onCall(1).resolves(fakeReturnValue);
@@ -275,8 +275,8 @@ describe('TransactionRunner', () => {
 
       it('should retry on UNKNOWN errors', async () => {
         const fakeReturnValue = 12;
-        const fakeError = new Error('err') as ServiceError;
-        fakeError.code = status.UNKNOWN;
+        const fakeError = new Error('err') as grpc.ServiceError;
+        fakeError.code = grpc.status.UNKNOWN;
 
         runFn.onCall(0).rejects(fakeError);
         runFn.onCall(1).resolves(fakeReturnValue);
@@ -294,8 +294,8 @@ describe('TransactionRunner', () => {
       });
 
       it('should throw a DeadlineError if the timeout is exceeded', done => {
-        const fakeError = new Error('err') as ServiceError;
-        fakeError.code = status.ABORTED;
+        const fakeError = new Error('err') as grpc.ServiceError;
+        fakeError.code = grpc.status.ABORTED;
 
         runFn.onCall(0).rejects(fakeError);
         sandbox.stub(runner, 'getNextDelay').returns(2);
@@ -307,7 +307,7 @@ describe('TransactionRunner', () => {
             done(new Error('missing expected DEADLINE_EXCEEDED error'));
           })
           .catch(err => {
-            assert.strictEqual(err.code, status.DEADLINE_EXCEEDED);
+            assert.strictEqual(err.code, grpc.status.DEADLINE_EXCEEDED);
             assert.deepStrictEqual(err.errors, [fakeError]);
             done();
           });
@@ -393,8 +393,8 @@ describe('TransactionRunner', () => {
         });
 
         it('should return non-retryable request errors', async () => {
-          const fakeError = new Error('err') as ServiceError;
-          fakeError.code = status.DEADLINE_EXCEEDED;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.DEADLINE_EXCEEDED;
 
           fakeTransaction.request.withArgs(CONFIG).callsFake((_, callback) => {
             callback(fakeError);
@@ -411,8 +411,8 @@ describe('TransactionRunner', () => {
         });
 
         it('should intercept ABORTED request errors', async () => {
-          const fakeError = new Error('err') as ServiceError;
-          fakeError.code = status.ABORTED;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.ABORTED;
 
           fakeTransaction.request
             .onCall(0)
@@ -430,8 +430,8 @@ describe('TransactionRunner', () => {
         });
 
         it('should intercept UNKNOWN request errors', async () => {
-          const fakeError = new Error('err') as ServiceError;
-          fakeError.code = status.UNKNOWN;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.UNKNOWN;
 
           fakeTransaction.request
             .onCall(0)
@@ -478,8 +478,8 @@ describe('TransactionRunner', () => {
           const fakeStream = through.obj();
           fakeTransaction.requestStream.withArgs(CONFIG).returns(fakeStream);
 
-          const fakeError = new Error('err') as ServiceError;
-          fakeError.code = status.DEADLINE_EXCEEDED;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.DEADLINE_EXCEEDED;
 
           runFn.callsFake((err, transaction) => {
             assert.ifError(err);
@@ -498,8 +498,8 @@ describe('TransactionRunner', () => {
           const badStream = through.obj();
           const goodStream = through.obj();
 
-          const fakeError = new Error('err') as ServiceError;
-          fakeError.code = status.ABORTED;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.ABORTED;
 
           const fakeData = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
           fakeData.forEach(data => goodStream.push(data));
@@ -531,8 +531,8 @@ describe('TransactionRunner', () => {
           const badStream = through.obj();
           const goodStream = through.obj();
 
-          const fakeError = new Error('err') as ServiceError;
-          fakeError.code = status.UNKNOWN;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.UNKNOWN;
 
           const fakeData = [{a: 'b'}, {c: 'd'}, {e: 'f'}];
           fakeData.forEach(data => goodStream.push(data));
