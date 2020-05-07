@@ -318,9 +318,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.createSession(request);
-      }, expectedError);
+      await assert.rejects(client.createSession(request), expectedError);
       assert(
         (client.innerApiCalls.createSession as SinonStub)
           .getCall(0)
@@ -434,9 +432,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.batchCreateSessions(request);
-      }, expectedError);
+      await assert.rejects(client.batchCreateSessions(request), expectedError);
       assert(
         (client.innerApiCalls.batchCreateSessions as SinonStub)
           .getCall(0)
@@ -548,9 +544,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getSession(request);
-      }, expectedError);
+      await assert.rejects(client.getSession(request), expectedError);
       assert(
         (client.innerApiCalls.getSession as SinonStub)
           .getCall(0)
@@ -662,9 +656,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.deleteSession(request);
-      }, expectedError);
+      await assert.rejects(client.deleteSession(request), expectedError);
       assert(
         (client.innerApiCalls.deleteSession as SinonStub)
           .getCall(0)
@@ -776,9 +768,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.executeSql(request);
-      }, expectedError);
+      await assert.rejects(client.executeSql(request), expectedError);
       assert(
         (client.innerApiCalls.executeSql as SinonStub)
           .getCall(0)
@@ -890,9 +880,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.executeBatchDml(request);
-      }, expectedError);
+      await assert.rejects(client.executeBatchDml(request), expectedError);
       assert(
         (client.innerApiCalls.executeBatchDml as SinonStub)
           .getCall(0)
@@ -999,9 +987,7 @@ describe('v1.SpannerClient', () => {
       };
       const expectedError = new Error('expected');
       client.innerApiCalls.read = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.read(request);
-      }, expectedError);
+      await assert.rejects(client.read(request), expectedError);
       assert(
         (client.innerApiCalls.read as SinonStub)
           .getCall(0)
@@ -1113,9 +1099,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.beginTransaction(request);
-      }, expectedError);
+      await assert.rejects(client.beginTransaction(request), expectedError);
       assert(
         (client.innerApiCalls.beginTransaction as SinonStub)
           .getCall(0)
@@ -1224,9 +1208,7 @@ describe('v1.SpannerClient', () => {
       };
       const expectedError = new Error('expected');
       client.innerApiCalls.commit = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.commit(request);
-      }, expectedError);
+      await assert.rejects(client.commit(request), expectedError);
       assert(
         (client.innerApiCalls.commit as SinonStub)
           .getCall(0)
@@ -1335,9 +1317,7 @@ describe('v1.SpannerClient', () => {
       };
       const expectedError = new Error('expected');
       client.innerApiCalls.rollback = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.rollback(request);
-      }, expectedError);
+      await assert.rejects(client.rollback(request), expectedError);
       assert(
         (client.innerApiCalls.rollback as SinonStub)
           .getCall(0)
@@ -1449,9 +1429,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.partitionQuery(request);
-      }, expectedError);
+      await assert.rejects(client.partitionQuery(request), expectedError);
       assert(
         (client.innerApiCalls.partitionQuery as SinonStub)
           .getCall(0)
@@ -1563,9 +1541,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.partitionRead(request);
-      }, expectedError);
+      await assert.rejects(client.partitionRead(request), expectedError);
       assert(
         (client.innerApiCalls.partitionRead as SinonStub)
           .getCall(0)
@@ -1655,9 +1631,7 @@ describe('v1.SpannerClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.innerApiCalls.executeStreamingSql as SinonStub)
           .getCall(0)
@@ -1747,9 +1721,7 @@ describe('v1.SpannerClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.innerApiCalls.streamingRead as SinonStub)
           .getCall(0)
@@ -1865,9 +1837,7 @@ describe('v1.SpannerClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listSessions(request);
-      }, expectedError);
+      await assert.rejects(client.listSessions(request), expectedError);
       assert(
         (client.innerApiCalls.listSessions as SinonStub)
           .getCall(0)
@@ -1952,9 +1922,7 @@ describe('v1.SpannerClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listSessions.createStream as SinonStub)
           .getCall(0)

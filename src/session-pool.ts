@@ -22,7 +22,7 @@ import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
-import {ServiceError, status} from 'grpc';
+import {grpc} from 'google-gax';
 import trace = require('stack-trace');
 
 /**
@@ -204,11 +204,11 @@ export class SessionPoolExhaustedError extends Error {
  * @return true if the error is a 'Session not found' error, and otherwise false.
  */
 export function isSessionNotFoundError(
-  error: ServiceError | undefined
+  error: grpc.ServiceError | undefined
 ): boolean {
   return (
     error !== undefined &&
-    error.code === status.NOT_FOUND &&
+    error.code === grpc.status.NOT_FOUND &&
     error.message.includes('Session not found')
   );
 }

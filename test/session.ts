@@ -159,7 +159,8 @@ describe('Session', () => {
 
             assert.strictEqual(sess, session);
 
-            assert.strictEqual(session.uniqueProperty, true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            assert.strictEqual((session as any).uniqueProperty, true);
 
             assert.strictEqual(resp, apiResponse);
 

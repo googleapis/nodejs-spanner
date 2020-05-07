@@ -26,7 +26,7 @@ import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {Instance, Spanner} from '../src';
 import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
-import * as grpc from 'grpc';
+import {grpc} from 'google-gax';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {

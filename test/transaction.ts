@@ -1082,7 +1082,8 @@ describe('Transaction', () => {
           OBJ_STATEMENTS,
           (err, rowCounts, apiResponse) => {
             assert.strictEqual(err, fakeError);
-            assert.deepStrictEqual(err.rowCounts, []);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            assert.deepStrictEqual((err as any).rowCounts, []);
             assert.deepStrictEqual(rowCounts, []);
             assert.strictEqual(apiResponse, fakeResponse);
             done();
@@ -1153,9 +1154,11 @@ describe('Transaction', () => {
           OBJ_STATEMENTS,
           (err, rowCounts, apiResponse) => {
             assert(err instanceof Error);
-            assert.strictEqual(err.code, fakeResponse.status.code);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            assert.strictEqual((err as any).code, fakeResponse.status.code);
             assert.strictEqual(err.message, fakeResponse.status.message);
-            assert.deepStrictEqual(err.rowCounts, expectedRowCounts);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            assert.deepStrictEqual((err as any).rowCounts, expectedRowCounts);
             assert.deepStrictEqual(rowCounts, expectedRowCounts);
             assert.deepStrictEqual(apiResponse, fakeResponse);
             done();
