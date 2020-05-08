@@ -261,7 +261,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * @typedef {array} GetBackupsResponse
    * @property {Backup[]} 0 Array of {@link Backup} instances.
-   * @param {object} nextQuery A query object to receive more results.
+   * @property {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
@@ -453,7 +453,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * @typedef {array} GetBackupOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
-   * @param {object} nextQuery A query object to receive more results.
+   * @property {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
@@ -570,7 +570,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * @typedef {array} GetDatabaseOperationsResponse
    * @property {IOperation[]} 0 Array of {@link IOperation} instances.
-   * @param {object} nextQuery A query object to receive more results.
+   * @property {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
@@ -1092,7 +1092,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * @typedef {array} GetDatabasesResponse
    * @property {Database[]} 0 Array of {@link Database} instances.
-   * @param {object} nextQuery A query object to receive more results.
+   * @property {object} nextQuery A query object to receive more results.
    * @property {object} apiResponse The full API response.
    */
   /**

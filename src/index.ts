@@ -428,7 +428,7 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} GetInstancesResponse
    * @property {Instance[]} 0 Array of {@link Instance} instances.
-   * @param {object} nextQuery A query object to receive more results.
+   * @property {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
@@ -630,7 +630,7 @@ class Spanner extends GrpcService {
    * @property {string} 0.name The unique identifier for the instance config.
    * @property {string} 0.displayName The name of the instance config as it
    *     appears in UIs.
-   * @param {object} nextQuery A query object to receive more results.
+   * @property {object} nextQuery A query object to receive more results.
    * @property {object} 1 The full API response.
    */
   /**
