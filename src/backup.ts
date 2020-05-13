@@ -68,7 +68,7 @@ type UpdateExpireTimeCallback = RequestCallback<
   databaseAdmin.spanner.admin.database.v1.IBackup
 >;
 
-type DeleteCallback = RequestCallback<void>;
+type DeleteCallback = RequestCallback<databaseAdmin.protobuf.IEmpty>;
 
 interface BackupRequest {
   (
@@ -410,8 +410,7 @@ class Backup {
     );
   }
 
-  delete(): Promise<void>;
-  delete(gaxOptions?: CallOptions): Promise<void>;
+  delete(gaxOptions?: CallOptions): Promise<databaseAdmin.protobuf.IEmpty>;
   delete(callback: DeleteCallback): void;
   delete(gaxOptions: CallOptions, callback: DeleteCallback): void;
   /**
@@ -433,7 +432,7 @@ class Backup {
   delete(
     gaxOptionsOrCallback?: CallOptions | DeleteCallback,
     cb?: DeleteCallback
-  ): void | Promise<void> {
+  ): void | Promise<databaseAdmin.protobuf.IEmpty> {
     const callback =
       typeof gaxOptionsOrCallback === 'function'
         ? (gaxOptionsOrCallback as DeleteCallback)
