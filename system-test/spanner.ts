@@ -3499,7 +3499,7 @@ describe('Spanner', () => {
             });
           }
 
-          table.read(query, (err, rows) => {
+          table.read(query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
           });
