@@ -39,7 +39,7 @@ import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetad
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
-const LABEL = `gcloud-system-tests-${RUN_ID}`;
+const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
@@ -67,7 +67,7 @@ describe('Spanner', () => {
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
   const DATABASE = instance.database(generateName('database'));
-  RESOURCES_TO_CLEAN.push(DATABASE);
+  const TABLE_NAME = 'Singers';
 
   before(async () => {
     if (generateInstanceForTest) {
@@ -86,24 +86,35 @@ describe('Spanner', () => {
     }
     const [, operation] = await DATABASE.create({
       schema: `
-          CREATE TABLE Singers (
+          CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId)`,
     });
     await operation.promise();
+    RESOURCES_TO_CLEAN.push(DATABASE);
   });
 
   after(async () => {
     if (generateInstanceForTest) {
-      await deleteTestInstances();
+      await Promise.all(
+        RESOURCES_TO_CLEAN.filter(
+          resource => resource instanceof Backup
+        ).map(backup => backup.delete())
+      );
+      await Promise.all(
+        RESOURCES_TO_CLEAN.filter(
+          resource => resource instanceof Instance
+        ).map(instance => instance.delete())
+      );
     } else {
       await Promise.all(RESOURCES_TO_CLEAN.map(resource => resource.delete()));
     }
   });
 
   describe('types', () => {
-    const table = DATABASE.table('TypeCheck');
+    const TABLE_NAME = 'TypeCheck';
+    const table = DATABASE.table(TABLE_NAME);
 
     function insert(insertData, callback) {
       const id = generateName('id');
@@ -138,7 +149,7 @@ describe('Spanner', () => {
     before(done => {
       DATABASE.updateSchema(
         `
-            CREATE TABLE TypeCheck (
+            CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               BytesValue BYTES(MAX),
               BoolValue BOOL,
@@ -715,7 +726,6 @@ describe('Spanner', () => {
 
     it('should auto create an instance', done => {
       const instance = spanner.instance(generateName('instance'));
-      RESOURCES_TO_CLEAN.push(instance);
 
       const config = extend(
         {
@@ -726,6 +736,7 @@ describe('Spanner', () => {
 
       instance.get(config, err => {
         assert.ifError(err);
+        RESOURCES_TO_CLEAN.push(instance);
         instance.getMetadata(done);
       });
     });
@@ -834,12 +845,13 @@ describe('Spanner', () => {
   });
 
   describe('Databases', () => {
+    const TABLE_NAME = 'SingersTest';
     it('should auto create a database', done => {
       const database = instance.database(generateName('database'));
-      RESOURCES_TO_CLEAN.push(database);
 
       database.get({autoCreate: true} as GetDatabaseConfig, err => {
         assert.ifError(err);
+        RESOURCES_TO_CLEAN.push(database);
         database.getMetadata(done);
       });
     });
@@ -902,7 +914,7 @@ describe('Spanner', () => {
 
     it('should create a table', done => {
       const createTableStatement = `
-        CREATE TABLE SingersTest (
+        CREATE TABLE ${TABLE_NAME} (
           SingerId INT64 NOT NULL,
           FirstName STRING(1024),
           LastName STRING(1024),
@@ -1001,7 +1013,7 @@ describe('Spanner', () => {
       }
       database1 = DATABASE;
 
-      await database1.table('Singers').insert({
+      await database1.table(TABLE_NAME).insert({
         SingerId: generateName('id'),
         Name: generateName('name'),
       });
@@ -1009,24 +1021,22 @@ describe('Spanner', () => {
       // Create a second database since only one pending backup can be created
       // per database.
       database2 = instance.database(generateName('database'));
-      RESOURCES_TO_CLEAN.push(database2);
       const [, database2CreateOperation] = await database2.create({
         schema: `
-              CREATE TABLE Albums (
-                AlbumId STRING(1024) NOT NULL,
-                AlbumTitle STRING(1024) NOT NULL,
-              ) PRIMARY KEY(AlbumId)`,
+        CREATE TABLE Albums (
+          AlbumId STRING(1024) NOT NULL,
+          AlbumTitle STRING(1024) NOT NULL,
+          ) PRIMARY KEY(AlbumId)`,
       });
       await database2CreateOperation.promise();
+      RESOURCES_TO_CLEAN.push(database2);
 
       // Initialize a database instance to restore to.
       restoreDatabase = instance.database(generateName('database'));
-      RESOURCES_TO_CLEAN.push(restoreDatabase);
 
       // Create backups.
       backup1 = instance.backup(backup1Name);
       backup2 = instance.backup(backup2Name);
-      RESOURCES_TO_CLEAN.push(...[backup1, backup2]);
       const [, backup1Operation] = await backup1.create({
         databasePath: database1.formattedName_,
         expireTime: backupExpiryDate,
@@ -1057,6 +1067,7 @@ describe('Spanner', () => {
       // Wait for backups to finish.
       await backup1Operation.promise();
       await backup2Operation.promise();
+      RESOURCES_TO_CLEAN.push(...[backup1, backup2]);
     });
 
     function futureDateByHours(futureHours: number): number {
@@ -1161,6 +1172,7 @@ describe('Spanner', () => {
 
       // Wait for restore to complete.
       await restoreOperation.promise();
+      RESOURCES_TO_CLEAN.push(restoreDatabase);
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
       assert.ok(
@@ -1176,7 +1188,7 @@ describe('Spanner', () => {
 
       // Validate new database has restored data.
       const [rows] = await restoreDatabase
-        .table('Singers')
+        .table(TABLE_NAME)
         .read({columns: ['SingerId', 'Name']});
       const results = rows.map(row => row.toJSON);
       assert.strictEqual(results.length, 1);
@@ -1340,13 +1352,14 @@ describe('Spanner', () => {
   });
 
   describe('Tables', () => {
-    const table = DATABASE.table('SingersTables');
+    const TABLE_NAME = 'SingersTables';
+    const table = DATABASE.table(TABLE_NAME);
 
     before(() => {
       return table
         .create(
           `
-            CREATE TABLE SingersTables (
+            CREATE TABLE ${TABLE_NAME} (
               SingerId STRING(1024) NOT NULL,
               Name STRING(1024),
               Float FLOAT64,
@@ -1664,7 +1677,7 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           DATABASE.run(
-            'SELECT * FROM SingersTables ORDER BY SingerId',
+            `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
             (err, rows) => {
               assert.ifError(err);
 
@@ -1797,7 +1810,7 @@ describe('Spanner', () => {
 
         DATABASE.run(
           {
-            sql: 'SELECT * FROM SingersTables WHERE SingerId=@id',
+            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
             params: {id: ID},
           },
           options,
@@ -1816,7 +1829,7 @@ describe('Spanner', () => {
 
         DATABASE.run(
           {
-            sql: 'SELECT * FROM SingersTables WHERE SingerId=@id',
+            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
             params: {id: ID},
           },
           options
@@ -1837,7 +1850,7 @@ describe('Spanner', () => {
 
         const stream = DATABASE.runStream(
           {
-            sql: 'SELECT * FROM SingersTables WHERE SingerId=@id',
+            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
             params: {id: ID},
           },
           options
@@ -3054,7 +3067,8 @@ describe('Spanner', () => {
       });
 
       describe('large reads', () => {
-        const table = DATABASE.table('LargeReads');
+        const TABLE_NAME = 'LargeReads';
+        const table = DATABASE.table(TABLE_NAME);
 
         const expectedRow = {
           Key: generateName('key'),
@@ -3086,7 +3100,7 @@ describe('Spanner', () => {
           return table
             .create(
               `
-              CREATE TABLE LargeReads (
+              CREATE TABLE ${TABLE_NAME} (
                 Key STRING(MAX) NOT NULL,
                 StringValue STRING(MAX),
                 StringArray ARRAY<STRING(MAX)>,
@@ -3214,6 +3228,7 @@ describe('Spanner', () => {
     });
 
     describe('read', () => {
+      const TABLE_NAME = 'ReadTestTable';
       const table = DATABASE.table('ReadTestTable');
 
       const ALL_COLUMNS = ['Key', 'StringValue'];
@@ -3222,7 +3237,7 @@ describe('Spanner', () => {
         return table
           .create(
             `
-            CREATE TABLE ReadTestTable (
+            CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
             ) PRIMARY KEY (Key)`
@@ -3230,7 +3245,7 @@ describe('Spanner', () => {
           .then(onPromiseOperationComplete)
           .then(() => {
             return DATABASE.updateSchema(`
-              CREATE INDEX ReadByValue ON ReadTestTable(StringValue)`);
+              CREATE INDEX ReadByValue ON ${TABLE_NAME}(StringValue)`);
           })
           .then(onPromiseOperationComplete)
           .then(() => {
@@ -3508,7 +3523,7 @@ describe('Spanner', () => {
 
       it('should read over invalid database fails', done => {
         const database = instance.database(generateName('invalid'));
-        const table = database.table('ReadTestTable');
+        const table = database.table(TABLE_NAME);
 
         const query = {
           keys: ['k1'],
@@ -3565,7 +3580,7 @@ describe('Spanner', () => {
   });
 
   describe('SessionPool', () => {
-    const table = DATABASE.table('Singers');
+    const table = DATABASE.table(TABLE_NAME);
 
     it('should insert and query a row', done => {
       const id = generateName('id0');
@@ -3579,14 +3594,17 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          DATABASE.run('SELECT * FROM Singers', (err, rows) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(rows!.pop()!.toJSON(), {
-              SingerId: id,
-              Name: name,
-            });
-            done();
-          });
+          DATABASE.run(
+            `SELECT * FROM ${TABLE_NAME}  ORDER BY SingerId`,
+            (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows!.pop()!.toJSON(), {
+                SingerId: id,
+                Name: name,
+              });
+              done();
+            }
+          );
         }
       );
     });
@@ -3613,7 +3631,7 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           DATABASE.run(
-            'SELECT * FROM Singers ORDER BY SingerId',
+            `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
             (err, rows) => {
               assert.ifError(err);
 
@@ -3718,10 +3736,11 @@ describe('Spanner', () => {
   });
 
   describe('Transactions', () => {
-    const table = DATABASE.table('TxnTable');
+    const TABLE_NAME = 'TxnTable';
+    const table = DATABASE.table(TABLE_NAME);
 
     const schema = `
-      CREATE TABLE TxnTable (
+      CREATE TABLE ${TABLE_NAME} (
         Key STRING(MAX) NOT NULL,
         StringValue STRING(MAX),
         NumberValue INT64
@@ -3757,7 +3776,7 @@ describe('Spanner', () => {
         DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
@@ -3799,7 +3818,7 @@ describe('Spanner', () => {
         DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
             assert.ifError(err);
 
             assert.strictEqual(rows.length, 1);
@@ -3816,7 +3835,7 @@ describe('Spanner', () => {
       });
 
       it('should accept a min timestamp', done => {
-        const query = 'SELECT * FROM TxnTable';
+        const query = 'SELECT * FROM ' + TABLE_NAME;
 
         const options = {
           minReadTimestamp: new PreciseDate(),
@@ -3840,7 +3859,7 @@ describe('Spanner', () => {
           assert.ifError(err);
 
           transaction!.run(
-            'SELECT * FROM TxnTable ORDER BY Key',
+            'SELECT * FROM ' + TABLE_NAME + ' ORDER BY Key',
             (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows.length, 2);
@@ -3995,7 +4014,10 @@ describe('Spanner', () => {
 
           transaction!.runUpdate(
             {
-              sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+              sql:
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES(@key, @str)',
               params: {
                 key: 'k999',
                 str: 'abc',
@@ -4016,7 +4038,9 @@ describe('Spanner', () => {
           transaction!.runUpdate(
             {
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {
                 key: 'k999',
                 str: 'abcd',
@@ -4038,7 +4062,9 @@ describe('Spanner', () => {
           transaction!.run(
             {
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {
                 key: 'k999',
                 str: 'abcd',
@@ -4067,7 +4093,9 @@ describe('Spanner', () => {
           transaction!
             .runUpdate({
               sql:
-                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES (@key, @str)',
               params: {key, str},
             })
             .then(data => {
@@ -4076,7 +4104,9 @@ describe('Spanner', () => {
 
               return transaction!.runUpdate({
                 sql:
-                  'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+                  'UPDATE ' +
+                  TABLE_NAME +
+                  ' t SET t.NumberValue = @num WHERE t.KEY = @key',
                 params: {key, num},
               });
             })
@@ -4085,7 +4115,7 @@ describe('Spanner', () => {
               assert.strictEqual(rowCount, 1);
 
               return transaction!.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
                 params: {key},
               });
             })
@@ -4115,12 +4145,14 @@ describe('Spanner', () => {
           transaction!
             .runUpdate({
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {key, str},
             })
             .then(() => {
               return transaction!.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
                 params: {key},
               });
             })
@@ -4144,13 +4176,15 @@ describe('Spanner', () => {
           transaction!
             .runUpdate({
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {key, str},
             })
             .then(() => transaction!.rollback())
             .then(() => {
               return DATABASE.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
                 params: {key},
               });
             })
@@ -4173,7 +4207,9 @@ describe('Spanner', () => {
           transaction!
             .runUpdate({
               sql:
-                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES (@key, @str)',
               params: {
                 key: 'k1001',
                 str,
@@ -4189,7 +4225,8 @@ describe('Spanner', () => {
             })
             .then(() => {
               return DATABASE.run({
-                sql: 'SELECT * FROM TxnTable WHERE StringValue = @str',
+                sql:
+                  'SELECT * FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
                 params: {str},
               });
             })
@@ -4215,7 +4252,9 @@ describe('Spanner', () => {
         DATABASE.runPartitionedUpdate(
           {
             sql:
-              'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              'UPDATE ' +
+              TABLE_NAME +
+              ' t SET t.StringValue = @str WHERE t.Key = @key',
             params: {
               key: 'k1',
               str: 'abcde',
@@ -4246,7 +4285,7 @@ describe('Spanner', () => {
           .then(() => {
             return DATABASE.runPartitionedUpdate({
               sql:
-                "UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'",
+                "UPDATE ' + TABLE_NAME + ' t SET t.StringValue = @str WHERE t.StringValue = 'a'",
               params: {str},
             });
           })
@@ -4254,7 +4293,8 @@ describe('Spanner', () => {
             assert.strictEqual(rowCount, count);
 
             return DATABASE.run({
-              sql: 'SELECT Key FROM TxnTable WHERE StringValue = @str',
+              sql:
+                'SELECT Key FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
               params: {str},
             });
           })
@@ -4270,18 +4310,27 @@ describe('Spanner', () => {
       const num = 11;
 
       const insert = {
-        sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+        sql:
+          'INSERT INTO ' +
+          TABLE_NAME +
+          ' (Key, StringValue) VALUES (@key, @str)',
         params: {key, str},
       };
 
       const update = {
-        sql: 'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+        sql:
+          'UPDATE ' +
+          TABLE_NAME +
+          ' t SET t.NumberValue = @num WHERE t.KEY = @key',
         params: {key, num},
       };
 
       // this should fail since we're not binding params
       const borked = {
-        sql: 'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+        sql:
+          'UPDATE ' +
+          TABLE_NAME +
+          ' t SET t.NumberValue = @num WHERE t.KEY = @key',
       };
 
       it('should execute a single statement', async () => {
@@ -4817,14 +4866,6 @@ function execAfterOperationComplete(callback) {
       callback(null, metadata);
     });
   };
-}
-
-async function deleteTestInstances() {
-  const [instances] = await spanner.getInstances({
-    filter: `labels.${LABEL}:true`,
-  });
-
-  return deleteInstanceArray(instances);
 }
 
 async function deleteOldTestInstances() {
