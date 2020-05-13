@@ -1175,8 +1175,8 @@ class Database extends GrpcServiceObject {
   /**
    * @typedef {array} GetSessionsResponse
    * @property {Session[]} 0 Array of {@link Session} instances.
-   * @property {object} nextQuery A query object to receive more results.
-   * @property {object} 1 The full API response.
+   * @property {object} 1 A query object to receive more results.
+   * @property {object} 2 The full API response.
    */
   /**
    * @callback GetSessionsCallback
