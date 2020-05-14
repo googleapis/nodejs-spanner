@@ -270,9 +270,10 @@ class Backup {
   async getState(): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
     | undefined
+    | null
   > {
     const [backupInfo] = await this.getMetadata();
-    return backupInfo.state || undefined;
+    return backupInfo.state;
   }
 
   /**
