@@ -110,7 +110,15 @@ describe('Spanner', () => {
         ).map(instance => instance.delete())
       );
     } else {
-      await Promise.all(RESOURCES_TO_CLEAN.map(resource => resource.delete()));
+      /**
+       * Limit the number of concurrent 'Administrative requests per minute'
+       * Not to exceed quota
+       * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
+       */
+      const limit = pLimit(5);
+      await Promise.all(
+        RESOURCES_TO_CLEAN.map(resource => limit(() => resource.delete()))
+      );
     }
   });
 
