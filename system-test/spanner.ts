@@ -76,10 +76,6 @@ describe('Spanner', () => {
       await operation.promise();
       RESOURCES_TO_CLEAN.push(instance);
     } else {
-      // Update 'created' label timestamp on an existing instance
-      const [meta] = await instance.getMetadata();
-      const labels = Object.assign({}, meta.labels, {created: CURRENT_TIME});
-      await instance.setMetadata({labels});
       console.log(
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
@@ -932,9 +928,12 @@ describe('Spanner', () => {
 
           DATABASE.getSchema((err, statements) => {
             assert.ifError(err);
-            assert.strictEqual(
-              replaceNewLinesAndSpacing(statements![1]),
-              replaceNewLinesAndSpacing(createTableStatement)
+            assert.ok(
+              statements!.some(
+                s =>
+                  replaceNewLinesAndSpacing(s) ===
+                  replaceNewLinesAndSpacing(createTableStatement)
+              )
             );
             done();
           });
@@ -3583,7 +3582,7 @@ describe('Spanner', () => {
     const table = DATABASE.table(TABLE_NAME);
 
     it('should insert and query a row', done => {
-      const id = generateName('id0');
+      const id = generateName('id');
       const name = generateName('name');
 
       table.insert(
@@ -3594,17 +3593,17 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          DATABASE.run(
-            `SELECT * FROM ${TABLE_NAME}  ORDER BY SingerId`,
-            (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows!.pop()!.toJSON(), {
-                SingerId: id,
-                Name: name,
-              });
-              done();
-            }
-          );
+          DATABASE.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
+            assert.ifError(err);
+            assert.ok(
+              rows!.some(
+                r =>
+                  JSON.stringify(r.toJSON()) ===
+                  JSON.stringify({SingerId: id, Name: name})
+              )
+            );
+            done();
+          });
         }
       );
     });
