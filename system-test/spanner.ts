@@ -1156,7 +1156,7 @@ describe('Spanner', () => {
       });
       const [page2] = await instance.getBackups({
         pageSize: 1,
-        pageToken: resp1!.nextPageToken,
+        pageToken: resp1!.nextPageToken!,
         gaxOptions: {autoPaginate: false},
       });
       const [page3] = await instance.getBackups({
@@ -3540,7 +3540,7 @@ describe('Spanner', () => {
             });
           }
 
-          table.read(query, (err, rows) => {
+          table.read(query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
           });

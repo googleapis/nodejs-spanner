@@ -1986,14 +1986,13 @@ describe('Spanner with mock server', () => {
 
     it('should cap results', async () => {
       const [instances] = await spanner.getInstances({
-        maxResults: 1,
+        gaxOptions: {maxResults: 1},
       });
       assert.strictEqual(instances.length, 1);
     });
 
     it('should maximize api calls', async () => {
       const [instances] = await spanner.getInstances({
-        maxApiCalls: 1,
         pageSize: 1,
       });
       assert.strictEqual(instances.length, 1);
