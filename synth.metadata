@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "635ef4aafc6569897c7ae3f844a4569b76be10df"
+        "sha": "96813f81913322f6c9a84aa9c7757029ce5f48eb"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "42ee97c1b93a0e3759bbba3013da309f670a90ab",
-        "internalRef": "307114445"
+        "sha": "83816bb3093686a28af2891db5b7506614a820b1",
+        "internalRef": "310509915"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "19465d3ec5e5acdb01521d8f3bddd311bcbee28d"
+        "sha": "be74d3e532faa47eb59f1a0eaebde0860d1d8ab4"
       }
     }
   ],

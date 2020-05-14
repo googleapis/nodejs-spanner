@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const grpc = require('grpc');
+const {grpc} = require('google-gax');
 const protoLoader = require('@grpc/proto-loader');
 const {Spanner} = require('../build/src');
 
@@ -135,5 +135,14 @@ server.addService(spannerBenchWrapper['SpannerBenchWrapper']['service'], {
   Update: Update,
 });
 console.log('starting benchwrapper for Spanner on localhost:' + argv.port);
-server.bind('0.0.0.0:' + argv.port, grpc.ServerCredentials.createInsecure());
-server.start();
+server.bindAsync(
+  '0.0.0.0:' + argv.port,
+  grpc.ServerCredentials.createInsecure(),
+  err => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    server.start();
+  }
+);

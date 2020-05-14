@@ -130,16 +130,6 @@ describe('Spanner', () => {
     }
 
     if (!INSTANCE_ALREADY_EXISTS) {
-      const [, operation] = await instance.create({
-        config: 'regional-us-central1',
-        nodes: 1,
-        labels: {
-          'gcloud-sample-tests': 'true',
-        },
-      });
-
-      await operation.promise();
-
       const [instances] = await spanner.getInstances({
         filter: 'labels.gcloud-sample-tests:true',
       });
@@ -166,6 +156,16 @@ describe('Spanner', () => {
           );
         })
       );
+
+      const [, operation] = await instance.create({
+        config: 'regional-us-central1',
+        nodes: 1,
+        labels: {
+          'gcloud-sample-tests': 'true',
+        },
+      });
+
+      await operation.promise();
     }
   });
 

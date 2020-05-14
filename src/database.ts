@@ -28,7 +28,7 @@ import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {Operation as GaxOperation} from 'google-gax';
+import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {google as databaseAdmin} from '../protos/protos';
@@ -71,13 +71,12 @@ import {
   IOperation,
   Schema,
   RequestCallback,
-  PagedRequest,
   ResourceCallback,
   PagedResponse,
   NormalCallback,
   LongRunningCallback,
+  PagedOptionsWithFilter,
 } from './common';
-import {ServiceError, CallOptions} from 'grpc';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {google as spannerClient} from '../protos/protos';
@@ -120,7 +119,7 @@ type PoolRequestCallback = RequestCallback<Session>;
 
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 
-type GetSessionsOptions = PagedRequest<google.spanner.v1.IListSessionsRequest>;
+export type GetSessionsOptions = PagedOptionsWithFilter;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -175,8 +174,8 @@ export type CreateSessionResponse = [
 ];
 
 export interface CreateSessionOptions {
-  name?: string | null;
   labels?: {[k: string]: string} | null;
+  gaxOptions?: CallOptions;
 }
 
 export type CreateSessionCallback = ResourceCallback<
@@ -577,6 +576,20 @@ class Database extends GrpcServiceObject {
     callback: CreateSessionCallback
   ): void;
   /**
+   * Create a new session.
+   *
+   * @typedef {object} CreateSessionOptions
+   * @property {Object.<string, string>} [labels] The labels for the session.
+   *
+   *   * Label keys must be between 1 and 63 characters long and must conform to
+   *     the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *   * Label values must be between 0 and 63 characters long and must conform
+   *     to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *   * No more than 64 labels can be associated with a given session.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   */
+  /**
    * @typedef {array} CreateSessionResponse
    * @property {Session} 0 The newly created session.
    * @property {object} 1 The full API response.
@@ -637,10 +650,8 @@ class Database extends GrpcServiceObject {
     cb?: CreateSessionCallback
   ): void | Promise<CreateSessionResponse> {
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as CreateSessionCallback)
-        : cb!;
-    const gaxOpts =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
       typeof optionsOrCallback === 'object' && optionsOrCallback
         ? extend({}, optionsOrCallback)
         : ({} as CreateSessionOptions);
@@ -649,9 +660,8 @@ class Database extends GrpcServiceObject {
       database: this.formattedName_,
     };
 
-    if (gaxOpts.labels) {
-      reqOpts.session = {labels: gaxOpts.labels};
-      delete gaxOpts.labels;
+    if (options.labels) {
+      reqOpts.session = {labels: options.labels};
     }
 
     this.request<google.spanner.v1.ISession>(
@@ -659,7 +669,7 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
       },
       (err, resp) => {
         if (err) {
@@ -935,7 +945,7 @@ class Database extends GrpcServiceObject {
             options,
             (err, database: Database, operation: GaxOperation) => {
               if (err) {
-                callback!(err);
+                callback!(err as grpc.ServiceError);
                 return;
               }
               operation
@@ -1141,9 +1151,7 @@ class Database extends GrpcServiceObject {
   /**
    * Options object for listing sessions.
    *
-   * @typedef {object} GetSessionsRequest
-   * @property {boolean} [autoPaginate=true] Have pagination handled
-   *     automatically.
+   * @typedef {object} GetSessionsOptions
    * @property {string} [filter] An expression for filtering the results of the
    *     request. Filter rules are case insensitive. The fields eligible for
    *     filtering are:
@@ -1158,21 +1166,23 @@ class Database extends GrpcServiceObject {
    *     - **`labels.env:dev`** The instance's label env has the value dev.
    *     - **`name:howl labels.env:dev`** The instance's name is howl and it has
    *       the label env with value dev.
-   * @property {number} [maxApiCalls] Maximum number of API calls to make.
-   * @property {number} [maxResults] Maximum number of items to return.
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
    */
   /**
    * @typedef {array} GetSessionsResponse
    * @property {Session[]} 0 Array of {@link Session} instances.
-   * @property {object} 1 The full API response.
+   * @property {object} 1 A query object to receive more results.
+   * @property {object} 2 The full API response.
    */
   /**
    * @callback GetSessionsCallback
    * @param {?Error} err Request error, if any.
    * @param {Session[]} instances Array of {@link Session} instances.
+   * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -1210,7 +1220,7 @@ class Database extends GrpcServiceObject {
    * }
    *
    * database.getInstances({
-   *   autoPaginate: false
+   *   gaxOptions: {autoPaginate: false}
    * }, callback);
    *
    * //-
@@ -1227,19 +1237,32 @@ class Database extends GrpcServiceObject {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const callback =
-      typeof optionsOrCallback === 'function'
-        ? (optionsOrCallback as GetSessionsCallback)
-        : cb;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
     const options =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as GetSessionsOptions)
-        : {gaxOptions: {}};
-    const gaxOpts: CallOptions = options.gaxOptions as CallOptions;
-    const reqOpts = extend({}, options, {
+        ? optionsOrCallback
+        : ({} as GetSessionsOptions);
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
       database: this.formattedName_,
     });
-
     delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
     this.request<
       google.spanner.v1.ISession,
       google.spanner.v1.IListSessionsResponse
@@ -1263,6 +1286,76 @@ class Database extends GrpcServiceObject {
       }
     );
   }
+
+  /**
+   * Get a list of sessions as a readable object stream.
+   *
+   * Wrapper around {@link v1.SpannerClient#listSessions}
+   *
+   * @see {@link v1.SpannerClient#listSessions}
+   * @see [ListSessions API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ListSessions)
+   *
+   * @method Spanner#getSessionsStream
+   * @param {GetSessionsOptions} [options] Options object for listing sessions.
+   * @returns {ReadableStream} A readable stream that emits {@link Session}
+   *     instances.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * database.getSessionsStream()
+   *   .on('error', console.error)
+   *   .on('data', function(database) {
+   *     // `sessions` is a `Session` object.
+   *   })
+   *   .on('end', function() {
+   *     // All sessions retrieved.
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * database.getSessionsStream()
+   *   .on('data', function(session) {
+   *     this.end();
+   *   });
+   */
+  getSessionsStream(options: GetSessionsOptions = {}): NodeJS.ReadableStream {
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+
+    let reqOpts = extend({}, options, {
+      database: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
+    return this.requestStream({
+      client: 'SpannerClient',
+      method: 'listSessionsStream',
+      reqOpts,
+      gaxOpts,
+    });
+  }
+
   getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
   getSnapshot(callback: GetSnapshotCallback): void;
   getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
@@ -1404,7 +1497,7 @@ class Database extends GrpcServiceObject {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      callback!(err, transaction);
+      callback!(err as grpc.ServiceError | null, transaction);
     });
   }
 
@@ -1529,7 +1622,7 @@ class Database extends GrpcServiceObject {
         requestStream.cancel();
       }
     };
-    function destroyStream(err: ServiceError) {
+    function destroyStream(err: grpc.ServiceError) {
       waitForSessionStream.destroy(err);
     }
     function releaseSession() {
@@ -2018,12 +2111,15 @@ class Database extends GrpcServiceObject {
       dataStream
         .once('data', () => (dataReceived = true))
         .once('error', err => {
-          if (!dataReceived && isSessionNotFoundError(err)) {
+          if (
+            !dataReceived &&
+            isSessionNotFoundError(err as grpc.ServiceError)
+          ) {
             // If it is a 'Session not found' error and we have not yet received
             // any data, we can safely retry the query on a new session.
             // Register the error on the session so the pool can discard it.
             if (session) {
-              session.lastError = err;
+              session.lastError = err as grpc.ServiceError;
             }
             // Remove the current data stream from the end user stream.
             dataStream.unpipe(proxyStream);
@@ -2141,12 +2237,12 @@ class Database extends GrpcServiceObject {
         : {};
 
     this.pool_.getWriteSession((err, session?, transaction?) => {
-      if (err && isSessionNotFoundError(err)) {
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
       }
       if (err) {
-        runFn!(err);
+        runFn!(err as grpc.ServiceError);
         return;
       }
 

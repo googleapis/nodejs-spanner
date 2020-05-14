@@ -32,7 +32,7 @@ import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
 import * as gapicConfig from './database_admin_client_config.json';
-
+import {operationsProtos} from 'google-gax';
 const version = require('../../../package.json').version;
 
 /**
@@ -1357,6 +1357,42 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.innerApiCalls.createDatabase(request, options, callback);
   }
+  /**
+   * Check the status of the long running operation returned by the createDatabase() method.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *
+   * @example:
+   *   const decodedOperation = await checkCreateDatabaseProgress(name);
+   *   console.log(decodedOperation.result);
+   *   console.log(decodedOperation.done);
+   *   console.log(decodedOperation.metadata);
+   *
+   */
+  async checkCreateDatabaseProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.CreateDatabaseMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.createDatabase,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.CreateDatabaseMetadata
+    >;
+  }
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     options?: gax.CallOptions
@@ -1483,6 +1519,42 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.innerApiCalls.updateDatabaseDdl(request, options, callback);
   }
+  /**
+   * Check the status of the long running operation returned by the updateDatabaseDdl() method.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *
+   * @example:
+   *   const decodedOperation = await checkUpdateDatabaseDdlProgress(name);
+   *   console.log(decodedOperation.result);
+   *   console.log(decodedOperation.done);
+   *   console.log(decodedOperation.metadata);
+   *
+   */
+  async checkUpdateDatabaseDdlProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.protobuf.Empty,
+      protos.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.updateDatabaseDdl,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.protobuf.Empty,
+      protos.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+    >;
+  }
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     options?: gax.CallOptions
@@ -1602,6 +1674,42 @@ export class DatabaseAdminClient {
     });
     this.initialize();
     return this.innerApiCalls.createBackup(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by the createBackup() method.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *
+   * @example:
+   *   const decodedOperation = await checkCreateBackupProgress(name);
+   *   console.log(decodedOperation.result);
+   *   console.log(decodedOperation.done);
+   *   console.log(decodedOperation.metadata);
+   *
+   */
+  async checkCreateBackupProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Backup,
+      protos.google.spanner.admin.database.v1.CreateBackupMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.createBackup,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Backup,
+      protos.google.spanner.admin.database.v1.CreateBackupMetadata
+    >;
   }
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
@@ -1728,6 +1836,42 @@ export class DatabaseAdminClient {
     });
     this.initialize();
     return this.innerApiCalls.restoreDatabase(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by the restoreDatabase() method.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *
+   * @example:
+   *   const decodedOperation = await checkRestoreDatabaseProgress(name);
+   *   console.log(decodedOperation.result);
+   *   console.log(decodedOperation.done);
+   *   console.log(decodedOperation.metadata);
+   *
+   */
+  async checkRestoreDatabaseProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.restoreDatabase,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata
+    >;
   }
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,

@@ -35,7 +35,7 @@ import {
 import * as duplexify from 'duplexify';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
-import * as grpc from 'grpc';
+import {grpc, GrpcClient} from 'google-gax';
 import * as is from 'is';
 import {Request, Response} from 'teeny-request';
 import * as retryRequest from 'retry-request';
@@ -387,7 +387,7 @@ export class GrpcService extends Service {
       this.grpcVersion = config.grpcVersion || 'grpc/unknown';
     } else {
       this.grpc = grpc;
-      this.grpcVersion = 'grpc/' + require('grpc/package.json').version;
+      this.grpcVersion = 'grpc/' + new GrpcClient().grpcVersion;
     }
     if (config.customEndpoint) {
       this.grpcCredentials = this.grpc.credentials.createInsecure();

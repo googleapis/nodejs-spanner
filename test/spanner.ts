@@ -16,8 +16,7 @@
 
 import {Done, describe, before, after, beforeEach, it} from 'mocha';
 import * as assert from 'assert';
-import * as grpc from 'grpc';
-import {status} from 'grpc';
+import {grpc} from 'google-gax';
 import {Database, Instance, SessionPool, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
@@ -82,9 +81,21 @@ describe('Spanner with mock server', () => {
     return instance.database(`database-${dbCounter++}`, options);
   }
 
-  before(() => {
+  before(async () => {
     sandbox = sinon.createSandbox();
-    port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
+    port = await new Promise((resolve, reject) => {
+      server.bindAsync(
+        '0.0.0.0:0',
+        grpc.ServerCredentials.createInsecure(),
+        (err, assignedPort) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(assignedPort);
+          }
+        }
+      );
+    });
     server.start();
     spannerMock.putStatementResult(
       selectSql,
@@ -327,7 +338,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       const err = {
         message: 'Temporary unavailable',
-        code: status.UNAVAILABLE,
+        code: grpc.status.UNAVAILABLE,
       } as MockError;
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
@@ -394,7 +405,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       const err = {
         message: 'Temporary unavailable',
-        code: status.UNAVAILABLE,
+        code: grpc.status.UNAVAILABLE,
         details: 'Transient error',
       } as MockError;
       spannerMock.setExecutionTime(
@@ -435,7 +446,7 @@ describe('Spanner with mock server', () => {
           const database = newTestDatabase();
           const err = {
             message: 'Temporary unavailable',
-            code: status.UNAVAILABLE,
+            code: grpc.status.UNAVAILABLE,
             streamIndex: index,
           } as MockError;
           spannerMock.setExecutionTime(
@@ -470,7 +481,7 @@ describe('Spanner with mock server', () => {
           const database = newTestDatabase();
           const err = {
             message: 'Temporary unavailable',
-            code: status.UNAVAILABLE,
+            code: grpc.status.UNAVAILABLE,
             streamIndex: index,
           } as MockError;
           spannerMock.setExecutionTime(
@@ -530,7 +541,9 @@ describe('Spanner with mock server', () => {
             })
             // We will receive data for the partial result sets that are
             // returned before the error occurs.
-            .on('data', row => receivedRows.push(row))
+            .on('data', row => {
+              receivedRows.push(row);
+            })
             .on('end', () => {
               assert.fail('Missing expected error');
             });
@@ -544,7 +557,7 @@ describe('Spanner with mock server', () => {
       for (const index of [0, 1, 1, 2, 2]) {
         errors.push({
           message: 'Temporary unavailable',
-          code: status.UNAVAILABLE,
+          code: grpc.status.UNAVAILABLE,
           streamIndex: index,
         } as MockError);
       }
@@ -561,7 +574,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       const err = {
         message: 'Temporary unavailable',
-        code: status.UNAVAILABLE,
+        code: grpc.status.UNAVAILABLE,
       } as MockError;
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
@@ -589,7 +602,7 @@ describe('Spanner with mock server', () => {
         // We need to specify a non-retryable error code to prevent the entire
         // transaction to retry. Not specifying an error code, will result in
         // an error with code UNKNOWN, which again will retry the transaction.
-        code: status.INVALID_ARGUMENT,
+        code: grpc.status.INVALID_ARGUMENT,
       } as MockError;
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
@@ -601,7 +614,7 @@ describe('Spanner with mock server', () => {
         attempts++;
         tx!.runUpdate(insertSql, err => {
           assert.ok(err, 'Missing expected error');
-          assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
+          assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
           // Only the update RPC should be retried and not the entire
           // transaction.
           assert.strictEqual(attempts, 1);
@@ -980,7 +993,7 @@ describe('Spanner with mock server', () => {
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
         SimulatedExecutionTime.ofError({
-          code: status.NOT_FOUND,
+          code: grpc.status.NOT_FOUND,
           message: 'Session not found',
         } as MockError)
       );
@@ -1011,7 +1024,7 @@ describe('Spanner with mock server', () => {
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
         SimulatedExecutionTime.ofError({
-          code: status.NOT_FOUND,
+          code: grpc.status.NOT_FOUND,
           message: 'Session not found',
         } as MockError)
       );
@@ -1032,7 +1045,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1051,7 +1064,7 @@ describe('Spanner with mock server', () => {
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
         SimulatedExecutionTime.ofError({
-          code: status.NOT_FOUND,
+          code: grpc.status.NOT_FOUND,
           message: 'Session not found',
           streamIndex: 1,
         } as MockError)
@@ -1069,7 +1082,7 @@ describe('Spanner with mock server', () => {
     it('should retry "Session not found" errors for Database.getSnapshot() with callbacks', done => {
       const db = newTestDatabase();
       const sessionNotFound = {
-        code: status.NOT_FOUND,
+        code: grpc.status.NOT_FOUND,
         message: 'Session not found',
       } as MockError;
       // The beginTransaction call will fail 3 times with 'Session not found'
@@ -1102,7 +1115,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.beginTransaction,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1119,7 +1132,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1157,7 +1170,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.commit,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1181,7 +1194,7 @@ describe('Spanner with mock server', () => {
       spannerMock.setExecutionTime(
         spannerMock.beginTransaction,
         SimulatedExecutionTime.ofError({
-          code: status.NOT_FOUND,
+          code: grpc.status.NOT_FOUND,
           message: 'Session not found',
         } as MockError)
       );
@@ -1210,7 +1223,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1241,7 +1254,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeBatchDml,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1275,7 +1288,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.beginTransaction,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1292,7 +1305,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1331,7 +1344,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.commit,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1364,7 +1377,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1398,7 +1411,7 @@ describe('Spanner with mock server', () => {
         spannerMock.setExecutionTime(
           spannerMock.executeBatchDml,
           SimulatedExecutionTime.ofError({
-            code: status.NOT_FOUND,
+            code: grpc.status.NOT_FOUND,
             message: 'Session not found',
           } as MockError)
         );
@@ -1873,7 +1886,7 @@ describe('Spanner with mock server', () => {
       spannerMock.setExecutionTime(
         spannerMock.executeBatchDml,
         SimulatedExecutionTime.ofError({
-          code: status.ABORTED,
+          code: grpc.status.ABORTED,
           message: 'Transaction aborted',
           metadata: MockSpanner.createMinimalRetryDelayMetadata(),
           streamIndex: 1,
@@ -1929,7 +1942,7 @@ describe('Spanner with mock server', () => {
       } catch (e) {
         assert.strictEqual(
           e.code,
-          status.DEADLINE_EXCEEDED,
+          grpc.status.DEADLINE_EXCEEDED,
           `Got unexpected error ${e} with code ${e.code}`
         );
         // The transaction should be tried at least once before timing out.
@@ -1973,14 +1986,13 @@ describe('Spanner with mock server', () => {
 
     it('should cap results', async () => {
       const [instances] = await spanner.getInstances({
-        maxResults: 1,
+        gaxOptions: {maxResults: 1},
       });
       assert.strictEqual(instances.length, 1);
     });
 
     it('should maximize api calls', async () => {
       const [instances] = await spanner.getInstances({
-        maxApiCalls: 1,
         pageSize: 1,
       });
       assert.strictEqual(instances.length, 1);

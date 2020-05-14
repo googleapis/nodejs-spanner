@@ -25,7 +25,7 @@ import * as databaseadminModule from '../src';
 
 import {PassThrough} from 'stream';
 
-import {protobuf, LROperation} from 'google-gax';
+import {protobuf, LROperation, operationsProtos} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
@@ -329,9 +329,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getDatabase(request);
-      }, expectedError);
+      await assert.rejects(client.getDatabase(request), expectedError);
       assert(
         (client.innerApiCalls.getDatabase as SinonStub)
           .getCall(0)
@@ -443,9 +441,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.dropDatabase(request);
-      }, expectedError);
+      await assert.rejects(client.dropDatabase(request), expectedError);
       assert(
         (client.innerApiCalls.dropDatabase as SinonStub)
           .getCall(0)
@@ -557,9 +553,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getDatabaseDdl(request);
-      }, expectedError);
+      await assert.rejects(client.getDatabaseDdl(request), expectedError);
       assert(
         (client.innerApiCalls.getDatabaseDdl as SinonStub)
           .getCall(0)
@@ -671,9 +665,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.setIamPolicy(request);
-      }, expectedError);
+      await assert.rejects(client.setIamPolicy(request), expectedError);
       assert(
         (client.innerApiCalls.setIamPolicy as SinonStub)
           .getCall(0)
@@ -785,9 +777,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getIamPolicy(request);
-      }, expectedError);
+      await assert.rejects(client.getIamPolicy(request), expectedError);
       assert(
         (client.innerApiCalls.getIamPolicy as SinonStub)
           .getCall(0)
@@ -901,9 +891,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.testIamPermissions(request);
-      }, expectedError);
+      await assert.rejects(client.testIamPermissions(request), expectedError);
       assert(
         (client.innerApiCalls.testIamPermissions as SinonStub)
           .getCall(0)
@@ -1012,9 +1000,7 @@ describe('v1.DatabaseAdminClient', () => {
       };
       const expectedError = new Error('expected');
       client.innerApiCalls.getBackup = stubSimpleCall(undefined, expectedError);
-      await assert.rejects(async () => {
-        await client.getBackup(request);
-      }, expectedError);
+      await assert.rejects(client.getBackup(request), expectedError);
       assert(
         (client.innerApiCalls.getBackup as SinonStub)
           .getCall(0)
@@ -1129,9 +1115,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.updateBackup(request);
-      }, expectedError);
+      await assert.rejects(client.updateBackup(request), expectedError);
       assert(
         (client.innerApiCalls.updateBackup as SinonStub)
           .getCall(0)
@@ -1243,9 +1227,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.deleteBackup(request);
-      }, expectedError);
+      await assert.rejects(client.deleteBackup(request), expectedError);
       assert(
         (client.innerApiCalls.deleteBackup as SinonStub)
           .getCall(0)
@@ -1367,9 +1349,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.createDatabase(request);
-      }, expectedError);
+      await assert.rejects(client.createDatabase(request), expectedError);
       assert(
         (client.innerApiCalls.createDatabase as SinonStub)
           .getCall(0)
@@ -1402,14 +1382,53 @@ describe('v1.DatabaseAdminClient', () => {
         expectedError
       );
       const [operation] = await client.createDatabase(request);
-      await assert.rejects(async () => {
-        await operation.promise();
-      }, expectedError);
+      await assert.rejects(operation.promise(), expectedError);
       assert(
         (client.innerApiCalls.createDatabase as SinonStub)
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes checkCreateDatabaseProgress without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkCreateDatabaseProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkCreateDatabaseProgress with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkCreateDatabaseProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -1526,9 +1545,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.updateDatabaseDdl(request);
-      }, expectedError);
+      await assert.rejects(client.updateDatabaseDdl(request), expectedError);
       assert(
         (client.innerApiCalls.updateDatabaseDdl as SinonStub)
           .getCall(0)
@@ -1561,14 +1578,53 @@ describe('v1.DatabaseAdminClient', () => {
         expectedError
       );
       const [operation] = await client.updateDatabaseDdl(request);
-      await assert.rejects(async () => {
-        await operation.promise();
-      }, expectedError);
+      await assert.rejects(operation.promise(), expectedError);
       assert(
         (client.innerApiCalls.updateDatabaseDdl as SinonStub)
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes checkUpdateDatabaseDdlProgress without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkUpdateDatabaseDdlProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkUpdateDatabaseDdlProgress with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkUpdateDatabaseDdlProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -1683,9 +1739,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.createBackup(request);
-      }, expectedError);
+      await assert.rejects(client.createBackup(request), expectedError);
       assert(
         (client.innerApiCalls.createBackup as SinonStub)
           .getCall(0)
@@ -1718,14 +1772,50 @@ describe('v1.DatabaseAdminClient', () => {
         expectedError
       );
       const [operation] = await client.createBackup(request);
-      await assert.rejects(async () => {
-        await operation.promise();
-      }, expectedError);
+      await assert.rejects(operation.promise(), expectedError);
       assert(
         (client.innerApiCalls.createBackup as SinonStub)
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes checkCreateBackupProgress without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkCreateBackupProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkCreateBackupProgress with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.checkCreateBackupProgress(''), expectedError);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -1842,9 +1932,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.restoreDatabase(request);
-      }, expectedError);
+      await assert.rejects(client.restoreDatabase(request), expectedError);
       assert(
         (client.innerApiCalls.restoreDatabase as SinonStub)
           .getCall(0)
@@ -1877,14 +1965,53 @@ describe('v1.DatabaseAdminClient', () => {
         expectedError
       );
       const [operation] = await client.restoreDatabase(request);
-      await assert.rejects(async () => {
-        await operation.promise();
-      }, expectedError);
+      await assert.rejects(operation.promise(), expectedError);
       assert(
         (client.innerApiCalls.restoreDatabase as SinonStub)
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes checkRestoreDatabaseProgress without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkRestoreDatabaseProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkRestoreDatabaseProgress with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkRestoreDatabaseProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -2007,9 +2134,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listDatabases(request);
-      }, expectedError);
+      await assert.rejects(client.listDatabases(request), expectedError);
       assert(
         (client.innerApiCalls.listDatabases as SinonStub)
           .getCall(0)
@@ -2106,9 +2231,7 @@ describe('v1.DatabaseAdminClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listDatabases.createStream as SinonStub)
           .getCall(0)
@@ -2325,9 +2448,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listBackups(request);
-      }, expectedError);
+      await assert.rejects(client.listBackups(request), expectedError);
       assert(
         (client.innerApiCalls.listBackups as SinonStub)
           .getCall(0)
@@ -2423,9 +2544,7 @@ describe('v1.DatabaseAdminClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listBackups.createStream as SinonStub)
           .getCall(0)
@@ -2631,9 +2750,10 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listDatabaseOperations(request);
-      }, expectedError);
+      await assert.rejects(
+        client.listDatabaseOperations(request),
+        expectedError
+      );
       assert(
         (client.innerApiCalls.listDatabaseOperations as SinonStub)
           .getCall(0)
@@ -2719,9 +2839,7 @@ describe('v1.DatabaseAdminClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listDatabaseOperations
           .createStream as SinonStub)
@@ -2923,9 +3041,7 @@ describe('v1.DatabaseAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listBackupOperations(request);
-      }, expectedError);
+      await assert.rejects(client.listBackupOperations(request), expectedError);
       assert(
         (client.innerApiCalls.listBackupOperations as SinonStub)
           .getCall(0)
@@ -3010,9 +3126,7 @@ describe('v1.DatabaseAdminClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listBackupOperations.createStream as SinonStub)
           .getCall(0)
