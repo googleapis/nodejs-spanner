@@ -93,11 +93,17 @@ describe('Spanner', () => {
 
   after(async () => {
     if (generateInstanceForTest) {
+      // Deleting all backups before an instance can be deleted.
       await Promise.all(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Backup
         ).map(backup => backup.delete())
       );
+      /**
+       * Deleting instances created during this test.
+       * All databasess will automatically be deleted with instance.
+       * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+       */
       await Promise.all(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Instance
