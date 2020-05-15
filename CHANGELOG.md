@@ -4,6 +4,48 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.0.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.8.0...v5.0.0) (2020-05-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **types:** properly format listing methods with gaxOptions (#925)
+* **types:** types for createInstance (#805)
+* add typings for top level object (#781)
+* **deps:** update dependency @google-cloud/common to v3 (#875)
+* drop Node.js 8 support.
+
+### Features
+
+* add typings for top level object ([#781](https://www.github.com/googleapis/nodejs-spanner/issues/781)) ([c2b6f68](https://www.github.com/googleapis/nodejs-spanner/commit/c2b6f685c2f36866ddaa434c923be417de0f89ec))
+* check status of long running operation by its name ([#937](https://www.github.com/googleapis/nodejs-spanner/issues/937)) ([5035e11](https://www.github.com/googleapis/nodejs-spanner/commit/5035e11f55a28def0d524a8e6ea7671367cd345e))
+* run and runStream can return query stats ([#857](https://www.github.com/googleapis/nodejs-spanner/issues/857)) ([1656e4f](https://www.github.com/googleapis/nodejs-spanner/commit/1656e4f14f0dd24f530f36ecf1ccf34b51e726fb))
+* spanner backup and restore support ([#855](https://www.github.com/googleapis/nodejs-spanner/issues/855)) ([967903c](https://www.github.com/googleapis/nodejs-spanner/commit/967903c4152e283f5a09dbd1b8ab3c9bc66728d3))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/common to v3 ([#875](https://www.github.com/googleapis/nodejs-spanner/issues/875)) ([f3da343](https://www.github.com/googleapis/nodejs-spanner/commit/f3da3430645ae277ae40410b6494ea8477937610))
+* **deps:** update dependency @google-cloud/paginator to v3 ([#871](https://www.github.com/googleapis/nodejs-spanner/issues/871)) ([d3b2f2c](https://www.github.com/googleapis/nodejs-spanner/commit/d3b2f2c48a21e41700877677bb2041b368773e36))
+* **deps:** update dependency @google-cloud/precise-date to v2 ([#873](https://www.github.com/googleapis/nodejs-spanner/issues/873)) ([8e8b29c](https://www.github.com/googleapis/nodejs-spanner/commit/8e8b29c389d68d0f872726655c9022d899a3ea3c))
+* **deps:** update dependency @google-cloud/projectify to v2 ([#870](https://www.github.com/googleapis/nodejs-spanner/issues/870)) ([e77460b](https://www.github.com/googleapis/nodejs-spanner/commit/e77460b6cc005049833f206f3fa74fc722ee3536))
+* **deps:** update dependency @google-cloud/promisify to v2 ([#868](https://www.github.com/googleapis/nodejs-spanner/issues/868)) ([afe4b15](https://www.github.com/googleapis/nodejs-spanner/commit/afe4b1518aadee91fb339512470e550295f89c4d))
+* **types:** fix type of ReadRequest ([#876](https://www.github.com/googleapis/nodejs-spanner/issues/876)) ([990fec2](https://www.github.com/googleapis/nodejs-spanner/commit/990fec20c482e11f48b8b7fbaacae8f395e93db9))
+* **types:** properly format listing methods with gaxOptions ([#925](https://www.github.com/googleapis/nodejs-spanner/issues/925)) ([23958ae](https://www.github.com/googleapis/nodejs-spanner/commit/23958ae48f49306cf38755831db091fef16998fb))
+* delete old instances then create new instance ([#955](https://www.github.com/googleapis/nodejs-spanner/issues/955)) ([96813f8](https://www.github.com/googleapis/nodejs-spanner/commit/96813f81913322f6c9a84aa9c7757029ce5f48eb))
+* remove eslint, update gax, fix generated protos, run the generator ([#897](https://www.github.com/googleapis/nodejs-spanner/issues/897)) ([7cfba21](https://www.github.com/googleapis/nodejs-spanner/commit/7cfba215b436e997919a9816bd076c62cce90bbf))
+* remove src/common-grpc/operation.ts ([#879](https://www.github.com/googleapis/nodejs-spanner/issues/879)) ([a30d2b4](https://www.github.com/googleapis/nodejs-spanner/commit/a30d2b47b2ccbbdf0d473281a4f76584c4850659)), closes [#878](https://www.github.com/googleapis/nodejs-spanner/issues/878)
+* remove typescript conversion leftovers ([#901](https://www.github.com/googleapis/nodejs-spanner/issues/901)) ([ccf1b61](https://www.github.com/googleapis/nodejs-spanner/commit/ccf1b61bcf060a72c35712c5d0e529fad9684724))
+* skip some tests when run against the emulator ([#933](https://www.github.com/googleapis/nodejs-spanner/issues/933)) ([2d91757](https://www.github.com/googleapis/nodejs-spanner/commit/2d917575dade110cbb3418d5d48c6fd0e77fae63))
+* update spanner package in sample ([#930](https://www.github.com/googleapis/nodejs-spanner/issues/930)) ([5624b7b](https://www.github.com/googleapis/nodejs-spanner/commit/5624b7bafb585adcbd0a7c9d53f728ff77afb1fa))
+* use DELETE FROM for consistency ([#923](https://www.github.com/googleapis/nodejs-spanner/issues/923)) ([0854c70](https://www.github.com/googleapis/nodejs-spanner/commit/0854c70d810ea05e5077d4c1a801040347415cfd))
+* **types:** types for createInstance ([#805](https://www.github.com/googleapis/nodejs-spanner/issues/805)) ([67b0f54](https://www.github.com/googleapis/nodejs-spanner/commit/67b0f54c65b51ff9cec313f67c4ea54dab7c8123))
+
+
+### Build System
+
+* drop node8 and convert to TypeScript ([#888](https://www.github.com/googleapis/nodejs-spanner/issues/888)) ([4116f81](https://www.github.com/googleapis/nodejs-spanner/commit/4116f81ec9715fde14b48e0daa6930bb8c502dbe))
+
 ## [4.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.7.0...v4.8.0) (2020-03-12)
 
 
