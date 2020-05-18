@@ -1167,8 +1167,8 @@ describe('SessionPool', () => {
     it('should create a session if the pool is not full', async () => {
       const fakeSession = createSession();
       const stub = sandbox
-        .stub(sessionPool, '_createSession')
-        .withArgs(types.ReadOnly)
+        .stub(sessionPool, '_createSessions')
+        .withArgs({reads: 25, writes: 0})
         .callsFake(() => {
           // this will fire off via _createSessions
           setImmediate(() => sessionPool.emit('available'));
@@ -1176,6 +1176,7 @@ describe('SessionPool', () => {
         });
 
       sessionPool.options.max = 1;
+      sessionPool.options.incStep = 25;
       sandbox
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
@@ -1212,7 +1213,7 @@ describe('SessionPool', () => {
       const error = new Error('err');
 
       sessionPool.options.max = 1;
-      sandbox.stub(sessionPool, '_createSession').rejects(error);
+      sandbox.stub(sessionPool, '_createSessions').rejects(error);
 
       try {
         await sessionPool._getSession(types.ReadOnly, startTime);

@@ -139,7 +139,13 @@ export interface MockError extends grpc.ServiceError {
 
 export class SimulatedExecutionTime {
   private readonly _minimumExecutionTime?: number;
+  get minimumExecutionTime(): number | undefined {
+    return this._minimumExecutionTime;
+  }
   private readonly _randomExecutionTime?: number;
+  get randomExecutionTime(): number | undefined {
+    return this._randomExecutionTime;
+  }
   private readonly _errors?: grpc.ServiceError[];
   get errors(): MockError[] | undefined {
     return this._errors;
@@ -166,6 +172,25 @@ export class SimulatedExecutionTime {
 
   static ofErrors(errors: MockError[]): SimulatedExecutionTime {
     return new SimulatedExecutionTime({errors});
+  }
+
+  static ofMinAndRandomExecTime(minExecTime: number, randomExecTime: number) {
+    return new SimulatedExecutionTime({
+      minimumExecutionTime: minExecTime,
+      randomExecutionTime: randomExecTime,
+    });
+  }
+
+  async simulateExecutionTime() {
+    if (!(this.randomExecutionTime || this.minimumExecutionTime)) {
+      return;
+    }
+    const rnd = this.randomExecutionTime
+      ? Math.random() * this.randomExecutionTime
+      : 0;
+    const total =
+      (this.minimumExecutionTime ? this.minimumExecutionTime : 0) + rnd;
+    await MockSpanner.sleep(total);
   }
 }
 
@@ -333,7 +358,7 @@ export class MockSpanner {
     return metadata;
   }
 
-  private static sleep(ms): Promise<void> {
+  static sleep(ms): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
@@ -342,6 +367,9 @@ export class MockSpanner {
       await MockSpanner.sleep(10);
     }
     const execTime = this.executionTimes.get(functionName);
+    if (execTime) {
+      await execTime.simulateExecutionTime();
+    }
     if (
       execTime &&
       execTime.errors &&
@@ -462,12 +490,16 @@ export class MockSpanner {
     callback(createUnimplementedError('ExecuteSql is not yet implemented'));
   }
 
+  activeStreams = 0;
+
   executeStreamingSql(
     call: grpc.ServerWritableStream<
       protobuf.ExecuteSqlRequest,
       protobuf.PartialResultSet
     >
   ) {
+    this.activeStreams++;
+    // console.log(`Active streams: ${this.activeStreams}`);
     this.requests.push(call.request!);
     this.simulateExecutionTime(this.executeStreamingSql.name)
       .then(() => {
@@ -534,6 +566,7 @@ export class MockSpanner {
             new Error(`There is no result registered for ${call.request!.sql}`)
           );
         }
+        this.activeStreams--;
         call.end();
       })
       .catch(err => {

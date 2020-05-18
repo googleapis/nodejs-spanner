@@ -130,6 +130,8 @@ export interface SessionPoolInterface extends EventEmitter {
  *     any given time.
  * @property {number} [writes=0.0] Percentage of sessions to be pre-allocated as
  *     write sessions represented as a float.
+ * @property {number} [incStep=25] The number of new sessions to create when at
+ *     least one more session is needed.
  */
 export interface SessionPoolOptions {
   acquireTimeout?: number;
@@ -142,6 +144,7 @@ export interface SessionPoolOptions {
   maxIdle?: number;
   min?: number;
   writes?: number;
+  incStep?: number;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -155,6 +158,7 @@ const DEFAULTS: SessionPoolOptions = {
   maxIdle: 1,
   min: 0,
   writes: 0,
+  incStep: 25,
 };
 
 /**
@@ -615,7 +619,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   _createSession(type: types): Promise<void> {
     const kind = type === types.ReadOnly ? 'reads' : 'writes';
-    const options = {[kind]: 1};
+    const options = {
+      [kind]: 1,
+    };
 
     return this._createSessions(options);
   }
@@ -813,9 +819,17 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       !this.isFull &&
       this._pending + this._pendingPrepare <= this._numWaiters
     ) {
+      let reads = this.options.incStep
+        ? this.options.incStep
+        : DEFAULTS.incStep!;
+      let writes = 0;
+      if (type === types.ReadWrite) {
+        writes++;
+        reads--;
+      }
       promises.push(
         new Promise((_, reject) => {
-          this._createSession(type).catch(reject);
+          this._createSessions({reads, writes}).catch(reject);
         })
       );
     }
