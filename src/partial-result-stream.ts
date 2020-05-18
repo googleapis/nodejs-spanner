@@ -43,10 +43,16 @@ interface RequestFunction {
  * @property {boolean} [json=false] Indicates if the Row objects should be
  *     formatted into JSON.
  * @property {JSONOptions} [jsonOptions] JSON options.
+ * @property {number} [maxResumeRetries=20] The maximum number of times that the
+ *     stream will retry to push data downstream, when the downstream indicates
+ *     that it is not ready for any more data. Increase this value if you
+ *     experience 'Stream is still not ready to receive data' errors as a
+ *     result of a slow writer in your receiving stream.
  */
 export interface RowOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
+  maxResumeRetries?: number;
 }
 
 /**
@@ -137,11 +143,12 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _pendingValue?: p.IValue;
   private _values: p.IValue[];
   private _requestStream: NodeJS.ReadWriteStream;
+  private _numPushFailed = 0;
   constructor(options = {}, requestStream: NodeJS.ReadWriteStream) {
     super({objectMode: true});
 
     this._destroyed = false;
-    this._options = options;
+    this._options = Object.assign({maxResumeRetries: 20}, options);
     this._requestStream = requestStream;
     this._values = [];
   }
@@ -210,14 +217,24 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _tryResume(next: Function, timeout: number) {
     // Try to push an empty chunk to check whether more data can be accepted.
     if (this.push(undefined)) {
+      this._numPushFailed = 0;
       this._requestStream!.resume();
       next();
     } else {
       // Downstream returned false indicating that it is still not ready for
       // more data.
+      this._numPushFailed++;
       setTimeout(() => {
         const nextTimeout = Math.min(timeout * 2, 1024);
-        this._tryResume(next, nextTimeout);
+        if (this._numPushFailed === this._options.maxResumeRetries) {
+          this.destroy(
+            new Error(
+              `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`
+            )
+          );
+        } else {
+          this._tryResume(next, nextTimeout);
+        }
       }, timeout);
     }
   }
