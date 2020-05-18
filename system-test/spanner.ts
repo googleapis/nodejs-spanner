@@ -32,7 +32,7 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import {status} from 'grpc';
+import {grpc} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -63,6 +63,8 @@ describe('Spanner', () => {
       created: CURRENT_TIME,
     },
   };
+  const IS_EMULATOR_ENABLED =
+    typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
 
   before(async () => {
     if (generateInstanceForTest) {
@@ -681,7 +683,10 @@ describe('Spanner', () => {
       });
     });
 
-    it('should respect the FieldMask', async () => {
+    it('should respect the FieldMask', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       const fieldNames = ['name', 'displayName'];
 
       const [metadata] = await instance.getMetadata({fieldNames});
@@ -744,7 +749,10 @@ describe('Spanner', () => {
         );
     });
 
-    it('should update the metadata', done => {
+    it('should update the metadata', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       const newData = {
         displayName: 'new-display-name',
       };
@@ -925,7 +933,10 @@ describe('Spanner', () => {
       );
     });
 
-    it('should list database operations on an instance', async () => {
+    it('should list database operations on an instance', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
       const [databaseMetadata] = await database.getMetadata();
       const databaseFullName = databaseMetadata.name;
@@ -949,7 +960,10 @@ describe('Spanner', () => {
       assert.strictEqual(createMeta.database, databaseFullName);
     });
 
-    it('should list database operations on a database', async () => {
+    it('should list database operations on a database', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
       const [databaseMetadata] = await database.getMetadata();
       const databaseFullName = databaseMetadata.name;
@@ -984,7 +998,10 @@ describe('Spanner', () => {
     const backupExpiryDate = futureDateByHours(12);
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
-    before(async () => {
+    before(async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       database1 = instance.database(generateName('database'));
       const [, operation] = await database1.create({
         schema: `
@@ -1051,6 +1068,10 @@ describe('Spanner', () => {
     });
 
     after(async () => {
+      if (IS_EMULATOR_ENABLED) {
+        return;
+      }
+
       await restoreDatabase.delete();
 
       await backup1.delete();
@@ -1107,7 +1128,7 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
       }
     });
 
@@ -1135,7 +1156,7 @@ describe('Spanner', () => {
       });
       const [page2] = await instance.getBackups({
         pageSize: 1,
-        pageToken: resp1!.nextPageToken,
+        pageToken: resp1!.nextPageToken!,
         gaxOptions: {autoPaginate: false},
       });
       const [page3] = await instance.getBackups({
@@ -1209,7 +1230,7 @@ describe('Spanner', () => {
         assert.fail('Should not have restored backup over existing database');
       } catch (err) {
         // Expect to get error indicating database already exists.
-        assert.strictEqual(err.code, status.ALREADY_EXISTS);
+        assert.strictEqual(err.code, grpc.status.ALREADY_EXISTS);
       }
     });
 
@@ -1240,7 +1261,7 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date.
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
       }
     });
 
@@ -1254,7 +1275,7 @@ describe('Spanner', () => {
         const [deletedMetadata] = await backup2.getMetadata();
         assert.fail('Backup was not deleted: ' + deletedMetadata.name);
       } catch (err) {
-        assert.strictEqual(err.code, status.NOT_FOUND);
+        assert.strictEqual(err.code, grpc.status.NOT_FOUND);
       }
     });
 
@@ -1681,22 +1702,25 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers', (err, rows) => {
-            assert.ifError(err);
+          database.run(
+            'SELECT * FROM Singers ORDER BY SingerId',
+            (err, rows) => {
+              assert.ifError(err);
 
-            // We just want the two most recent ones.
-            rows!.splice(0, rows!.length - 2);
+              // We just want the two most recent ones.
+              rows!.splice(0, rows!.length - 2);
 
-            const rowJson = rows!.map(x => x.toJSON());
+              const rowJson = rows!.map(x => x.toJSON());
 
-            assert.strictEqual(rowJson[0].SingerId, id1);
-            assert.strictEqual(rowJson[0].Name, name1);
+              assert.strictEqual(rowJson[0].SingerId, id1);
+              assert.strictEqual(rowJson[0].Name, name1);
 
-            assert.strictEqual(rowJson[1].SingerId, id2);
-            assert.strictEqual(rowJson[1].Name, name2);
+              assert.strictEqual(rowJson[1].SingerId, id2);
+              assert.strictEqual(rowJson[1].Name, name2);
 
-            done();
-          });
+              done();
+            }
+          );
         }
       );
     });
@@ -3516,7 +3540,7 @@ describe('Spanner', () => {
             });
           }
 
-          table.read(query, (err, rows) => {
+          table.read(query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
           });
@@ -3569,7 +3593,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 1,
+            timeout: 0.1,
           },
         };
 
@@ -3641,27 +3665,30 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers', (err, rows) => {
-            assert.ifError(err);
+          database.run(
+            'SELECT * FROM Singers ORDER BY SingerId',
+            (err, rows) => {
+              assert.ifError(err);
 
-            // We just want the two most recent ones.
-            rows!.splice(0, rows!.length - 2);
+              // We just want the two most recent ones.
+              rows!.splice(0, rows!.length - 2);
 
-            const rowJson = rows!.map(x => x.toJSON());
+              const rowJson = rows!.map(x => x.toJSON());
 
-            assert.deepStrictEqual(rowJson, [
-              {
-                SingerId: id1,
-                Name: name1,
-              },
-              {
-                SingerId: id2,
-                Name: name2,
-              },
-            ]);
+              assert.deepStrictEqual(rowJson, [
+                {
+                  SingerId: id1,
+                  Name: name1,
+                },
+                {
+                  SingerId: id2,
+                  Name: name2,
+                },
+              ]);
 
-            done();
-          });
+              done();
+            }
+          );
         }
       );
     });
@@ -3867,20 +3894,23 @@ describe('Spanner', () => {
         database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 2);
+          transaction!.run(
+            'SELECT * FROM TxnTable ORDER BY Key',
+            (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, 2);
 
-            const rowJson = rows.map(x => x.toJSON());
+              const rowJson = rows.map(x => x.toJSON());
 
-            assert.strictEqual(rowJson[0].Key, 'k0');
-            assert.strictEqual(rowJson[0].StringValue, 'v0');
-            assert.strictEqual(rowJson[1].Key, 'k1');
-            assert.strictEqual(rowJson[1].StringValue, 'v1');
+              assert.strictEqual(rowJson[0].Key, 'k0');
+              assert.strictEqual(rowJson[0].StringValue, 'v0');
+              assert.strictEqual(rowJson[1].Key, 'k1');
+              assert.strictEqual(rowJson[1].StringValue, 'v1');
 
-            transaction!.end();
-            done();
-          });
+              transaction!.end();
+              done();
+            }
+          );
         });
       });
 
@@ -4230,6 +4260,12 @@ describe('Spanner', () => {
     });
 
     describe('pdml', () => {
+      before(function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
       it('should execute a simple pdml statement', done => {
         database.runPartitionedUpdate(
           {
@@ -4375,7 +4411,7 @@ describe('Spanner', () => {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
             // Re-throw if the transaction was aborted to trigger a retry.
-            if (e.code === status.ABORTED) {
+            if (e.code === grpc.status.ABORTED) {
               throw e;
             }
             err = e;
@@ -4385,7 +4421,7 @@ describe('Spanner', () => {
           return err;
         });
 
-        assert.strictEqual(err.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
         assert.deepStrictEqual(err.rowCounts, [1]);
       });
 
@@ -4475,7 +4511,10 @@ describe('Spanner', () => {
           return table.update(defaultRowValues);
         });
 
-        it('should handle concurrent transactions with read', done => {
+        it('should handle concurrent transactions with read', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
           database.runTransaction((err, transaction) => {
             assert.ifError(err);
 
@@ -4530,7 +4569,10 @@ describe('Spanner', () => {
           }
         });
 
-        it('should handle concurrent transactions with query', done => {
+        it('should handle concurrent transactions with query', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
           database.runTransaction((err, transaction) => {
             assert.ifError(err);
 
@@ -4587,7 +4629,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('should retry an aborted txn when reading fails', done => {
+      it('should retry an aborted txn when reading fails', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         const key = 'k888';
         const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
 
@@ -4660,7 +4705,10 @@ describe('Spanner', () => {
         }
       });
 
-      it('should retry an aborted txn when commit fails', done => {
+      it('should retry an aborted txn when commit fails', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         const key = 'k9999';
         const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
         let attempts = 0;
@@ -4726,7 +4774,11 @@ describe('Spanner', () => {
         }
       });
 
-      it('should return a deadline error instead of aborted', done => {
+      it('should return a deadline error instead of aborted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+
         const options = {
           timeout: 10,
         };

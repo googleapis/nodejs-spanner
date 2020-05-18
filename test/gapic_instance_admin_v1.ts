@@ -25,7 +25,7 @@ import * as instanceadminModule from '../src';
 
 import {PassThrough} from 'stream';
 
-import {protobuf, LROperation} from 'google-gax';
+import {protobuf, LROperation, operationsProtos} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
@@ -329,9 +329,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getInstanceConfig(request);
-      }, expectedError);
+      await assert.rejects(client.getInstanceConfig(request), expectedError);
       assert(
         (client.innerApiCalls.getInstanceConfig as SinonStub)
           .getCall(0)
@@ -443,9 +441,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getInstance(request);
-      }, expectedError);
+      await assert.rejects(client.getInstance(request), expectedError);
       assert(
         (client.innerApiCalls.getInstance as SinonStub)
           .getCall(0)
@@ -557,9 +553,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.deleteInstance(request);
-      }, expectedError);
+      await assert.rejects(client.deleteInstance(request), expectedError);
       assert(
         (client.innerApiCalls.deleteInstance as SinonStub)
           .getCall(0)
@@ -671,9 +665,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.setIamPolicy(request);
-      }, expectedError);
+      await assert.rejects(client.setIamPolicy(request), expectedError);
       assert(
         (client.innerApiCalls.setIamPolicy as SinonStub)
           .getCall(0)
@@ -785,9 +777,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.getIamPolicy(request);
-      }, expectedError);
+      await assert.rejects(client.getIamPolicy(request), expectedError);
       assert(
         (client.innerApiCalls.getIamPolicy as SinonStub)
           .getCall(0)
@@ -901,9 +891,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.testIamPermissions(request);
-      }, expectedError);
+      await assert.rejects(client.testIamPermissions(request), expectedError);
       assert(
         (client.innerApiCalls.testIamPermissions as SinonStub)
           .getCall(0)
@@ -1025,9 +1013,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.createInstance(request);
-      }, expectedError);
+      await assert.rejects(client.createInstance(request), expectedError);
       assert(
         (client.innerApiCalls.createInstance as SinonStub)
           .getCall(0)
@@ -1060,14 +1046,53 @@ describe('v1.InstanceAdminClient', () => {
         expectedError
       );
       const [operation] = await client.createInstance(request);
-      await assert.rejects(async () => {
-        await operation.promise();
-      }, expectedError);
+      await assert.rejects(operation.promise(), expectedError);
       assert(
         (client.innerApiCalls.createInstance as SinonStub)
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes checkCreateInstanceProgress without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkCreateInstanceProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkCreateInstanceProgress with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkCreateInstanceProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -1187,9 +1212,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.updateInstance(request);
-      }, expectedError);
+      await assert.rejects(client.updateInstance(request), expectedError);
       assert(
         (client.innerApiCalls.updateInstance as SinonStub)
           .getCall(0)
@@ -1223,14 +1246,53 @@ describe('v1.InstanceAdminClient', () => {
         expectedError
       );
       const [operation] = await client.updateInstance(request);
-      await assert.rejects(async () => {
-        await operation.promise();
-      }, expectedError);
+      await assert.rejects(operation.promise(), expectedError);
       assert(
         (client.innerApiCalls.updateInstance as SinonStub)
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes checkUpdateInstanceProgress without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkUpdateInstanceProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkUpdateInstanceProgress with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkUpdateInstanceProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -1357,9 +1419,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listInstanceConfigs(request);
-      }, expectedError);
+      await assert.rejects(client.listInstanceConfigs(request), expectedError);
       assert(
         (client.innerApiCalls.listInstanceConfigs as SinonStub)
           .getCall(0)
@@ -1460,9 +1520,7 @@ describe('v1.InstanceAdminClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
@@ -1679,9 +1737,7 @@ describe('v1.InstanceAdminClient', () => {
         undefined,
         expectedError
       );
-      await assert.rejects(async () => {
-        await client.listInstances(request);
-      }, expectedError);
+      await assert.rejects(client.listInstances(request), expectedError);
       assert(
         (client.innerApiCalls.listInstances as SinonStub)
           .getCall(0)
@@ -1778,9 +1834,7 @@ describe('v1.InstanceAdminClient', () => {
           reject(err);
         });
       });
-      await assert.rejects(async () => {
-        await promise;
-      }, expectedError);
+      await assert.rejects(promise, expectedError);
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)

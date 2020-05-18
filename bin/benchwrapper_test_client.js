@@ -14,7 +14,7 @@
 
 // This is a simple test client for the Spanner benchwrapper.
 
-const grpc = require('grpc');
+const {grpc} = require('google-gax');
 const protoLoader = require('@grpc/proto-loader');
 
 const argv = require('yargs')

@@ -15,8 +15,7 @@
  */
 
 import {google} from '../../protos/protos';
-import * as grpc from 'grpc';
-import {ServiceError, status} from 'grpc';
+import {grpc} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
 import {Transaction} from '../../src';
 import protobuf = google.spanner.v1;
@@ -134,14 +133,14 @@ export class StatementResult {
   }
 }
 
-export interface MockError extends ServiceError {
+export interface MockError extends grpc.ServiceError {
   streamIndex?: number;
 }
 
 export class SimulatedExecutionTime {
   private readonly _minimumExecutionTime?: number;
   private readonly _randomExecutionTime?: number;
-  private readonly _errors?: ServiceError[];
+  private readonly _errors?: grpc.ServiceError[];
   get errors(): MockError[] | undefined {
     return this._errors;
   }
@@ -152,7 +151,7 @@ export class SimulatedExecutionTime {
   private constructor(input: {
     minimumExecutionTime?: number;
     randomExecutionTime?: number;
-    errors?: ServiceError[];
+    errors?: grpc.ServiceError[];
     keepError?: boolean;
   }) {
     this._minimumExecutionTime = input.minimumExecutionTime;
@@ -174,7 +173,7 @@ export function createUnimplementedError(msg: string): grpc.ServiceError {
   const error = new Error(msg);
   return Object.assign(error, {
     code: grpc.status.UNIMPLEMENTED,
-  });
+  }) as grpc.ServiceError;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -299,7 +298,7 @@ export class MockSpanner {
     const error = new Error(`Session not found: ${name}`);
     return Object.assign(error, {
       code: grpc.status.NOT_FOUND,
-    });
+    }) as grpc.ServiceError;
   }
 
   private static createTransactionNotFoundError(
@@ -308,7 +307,7 @@ export class MockSpanner {
     const error = new Error(`Transaction not found: ${name}`);
     return Object.assign(error, {
       code: grpc.status.NOT_FOUND,
-    });
+    }) as grpc.ServiceError;
   }
 
   private static createTransactionAbortedError(
@@ -319,7 +318,7 @@ export class MockSpanner {
     });
     return Object.assign(error, {
       metadata: this.createMinimalRetryDelayMetadata(),
-    });
+    }) as grpc.ServiceError;
   }
 
   static createMinimalRetryDelayMetadata(): grpc.Metadata {
@@ -372,15 +371,18 @@ export class MockSpanner {
   }
 
   batchCreateSessions(
-    call: grpc.ServerUnaryCall<protobuf.BatchCreateSessionsRequest>,
+    call: grpc.ServerUnaryCall<
+      protobuf.BatchCreateSessionsRequest,
+      protobuf.BatchCreateSessionsResponse
+    >,
     callback: protobuf.Spanner.BatchCreateSessionsCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.batchCreateSessions.name)
       .then(() => {
         const sessions = new Array<protobuf.Session>();
-        for (let i = 0; i < call.request.sessionCount; i++) {
-          sessions.push(this.newSession(call.request.database));
+        for (let i = 0; i < call.request!.sessionCount; i++) {
+          sessions.push(this.newSession(call.request!.database));
         }
         callback(
           null,
@@ -393,41 +395,44 @@ export class MockSpanner {
   }
 
   createSession(
-    call: grpc.ServerUnaryCall<protobuf.CreateSessionRequest>,
+    call: grpc.ServerUnaryCall<protobuf.CreateSessionRequest, protobuf.Session>,
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.createSession.name).then(() => {
-      callback(null, this.newSession(call.request.database));
+      callback(null, this.newSession(call.request!.database));
     });
   }
 
   getSession(
-    call: grpc.ServerUnaryCall<protobuf.GetSessionRequest>,
+    call: grpc.ServerUnaryCall<protobuf.GetSessionRequest, protobuf.Session>,
     callback: protobuf.Spanner.GetSessionCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.getSession.name).then(() => {
-      const session = this.sessions[call.request.name];
+      const session = this.sessions[call.request!.name];
       if (session) {
         callback(null, session);
       } else {
-        callback(MockSpanner.createSessionNotFoundError(call.request.name));
+        callback(MockSpanner.createSessionNotFoundError(call.request!.name));
       }
     });
   }
 
   listSessions(
-    call: grpc.ServerUnaryCall<protobuf.ListSessionsRequest>,
+    call: grpc.ServerUnaryCall<
+      protobuf.ListSessionsRequest,
+      protobuf.ListSessionsResponse
+    >,
     callback: protobuf.Spanner.ListSessionsCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.listSessions.name).then(() => {
       callback(
         null,
         protobuf.ListSessionsResponse.create({
           sessions: Array.from(this.sessions.values()).filter(session => {
-            return session.name.startsWith(call.request.database);
+            return session.name.startsWith(call.request!.database);
           }),
         })
       );
@@ -435,33 +440,41 @@ export class MockSpanner {
   }
 
   deleteSession(
-    call: grpc.ServerUnaryCall<protobuf.DeleteSessionRequest>,
+    call: grpc.ServerUnaryCall<
+      protobuf.DeleteSessionRequest,
+      google.protobuf.Empty
+    >,
     callback: protobuf.Spanner.DeleteSessionCallback
   ) {
-    this.requests.push(call.request);
-    if (this.sessions.delete(call.request.name)) {
+    this.requests.push(call.request!);
+    if (this.sessions.delete(call.request!.name)) {
       callback(null, google.protobuf.Empty.create());
     } else {
-      callback(MockSpanner.createSessionNotFoundError(call.request.name));
+      callback(MockSpanner.createSessionNotFoundError(call.request!.name));
     }
   }
 
   executeSql(
-    call: grpc.ServerUnaryCall<protobuf.ExecuteSqlRequest>,
+    call: grpc.ServerUnaryCall<protobuf.ExecuteSqlRequest, {}>,
     callback: protobuf.Spanner.ExecuteSqlCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     callback(createUnimplementedError('ExecuteSql is not yet implemented'));
   }
 
   executeStreamingSql(
-    call: grpc.ServerWritableStream<protobuf.ExecuteSqlRequest>
+    call: grpc.ServerWritableStream<
+      protobuf.ExecuteSqlRequest,
+      protobuf.PartialResultSet
+    >
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.executeStreamingSql.name)
       .then(() => {
-        if (call.request.transaction && call.request.transaction.id) {
-          const fullTransactionId = `${call.request.session}/transactions/${call.request.transaction.id}`;
+        if (call.request!.transaction && call.request!.transaction.id) {
+          const fullTransactionId = `${call.request!.session}/transactions/${
+            call.request!.transaction.id
+          }`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             call.emit(
               'error',
@@ -471,7 +484,7 @@ export class MockSpanner {
             return;
           }
         }
-        const res = this.statementResults.get(call.request.sql);
+        const res = this.statementResults.get(call.request!.sql);
         if (res) {
           let partialResultSets;
           let resumeIndex;
@@ -479,13 +492,13 @@ export class MockSpanner {
             case StatementResultType.RESULT_SET:
               partialResultSets = MockSpanner.toPartialResultSets(
                 res.resultSet,
-                call.request.queryMode
+                call.request!.queryMode
               );
               // Resume on the next index after the last one seen by the client.
               resumeIndex =
-                call.request.resumeToken.length === 0
+                call.request!.resumeToken.length === 0
                   ? 0
-                  : Number.parseInt(call.request.resumeToken.toString(), 10) +
+                  : Number.parseInt(call.request!.resumeToken.toString(), 10) +
                     1;
               for (
                 let index = resumeIndex;
@@ -518,7 +531,7 @@ export class MockSpanner {
         } else {
           call.emit(
             'error',
-            new Error(`There is no result registered for ${call.request.sql}`)
+            new Error(`There is no result registered for ${call.request!.sql}`)
           );
         }
         call.end();
@@ -587,13 +600,18 @@ export class MockSpanner {
   }
 
   executeBatchDml(
-    call: grpc.ServerUnaryCall<protobuf.ExecuteBatchDmlRequest>,
+    call: grpc.ServerUnaryCall<
+      protobuf.ExecuteBatchDmlRequest,
+      protobuf.ExecuteBatchDmlResponse
+    >,
     callback: protobuf.Spanner.ExecuteBatchDmlCallback
   ) {
     this.simulateExecutionTime(this.executeBatchDml.name)
       .then(() => {
-        if (call.request.transaction && call.request.transaction.id) {
-          const fullTransactionId = `${call.request.session}/transactions/${call.request.transaction.id}`;
+        if (call.request!.transaction && call.request!.transaction.id) {
+          const fullTransactionId = `${call.request!.session}/transactions/${
+            call.request!.transaction.id
+          }`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             callback(
               MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
@@ -602,11 +620,11 @@ export class MockSpanner {
           }
         }
         const results: ResultSet[] = [];
-        let statementStatus = Status.create({code: status.OK});
+        let statementStatus = Status.create({code: grpc.status.OK});
         for (
           let i = 0;
-          i < call.request.statements.length &&
-          statementStatus.code === status.OK;
+          i < call.request!.statements.length &&
+          statementStatus.code === grpc.status.OK;
           i++
         ) {
           const streamErr = this.shiftStreamError(this.executeBatchDml.name, i);
@@ -626,7 +644,7 @@ export class MockSpanner {
             }
             continue;
           }
-          const statement = call.request.statements[i];
+          const statement = call.request!.statements[i];
           const res = this.statementResults.get(statement.sql!);
           if (res) {
             switch (res.type) {
@@ -637,15 +655,15 @@ export class MockSpanner {
                 results.push(MockSpanner.toResultSet(res.updateCount));
                 break;
               case StatementResultType.ERROR:
-                if ((res.error as ServiceError).code) {
-                  const serviceError = res.error as ServiceError;
+                if ((res.error as grpc.ServiceError).code) {
+                  const serviceError = res.error as grpc.ServiceError;
                   statementStatus = {
                     code: serviceError.code,
                     message: serviceError.message,
                   } as Status;
                 } else {
                   statementStatus = {
-                    code: status.INTERNAL,
+                    code: grpc.status.INTERNAL,
                     message: res.error.message,
                   } as Status;
                 }
@@ -675,15 +693,15 @@ export class MockSpanner {
   }
 
   read(
-    call: grpc.ServerUnaryCall<protobuf.ReadRequest>,
+    call: grpc.ServerUnaryCall<protobuf.ReadRequest, {}>,
     callback: protobuf.Spanner.ReadCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     callback(createUnimplementedError('Read is not yet implemented'));
   }
 
-  streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest>) {
-    this.requests.push(call.request);
+  streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
+    this.requests.push(call.request!);
     call.emit(
       'error',
       createUnimplementedError('StreamingRead is not yet implemented')
@@ -692,13 +710,16 @@ export class MockSpanner {
   }
 
   beginTransaction(
-    call: grpc.ServerUnaryCall<protobuf.BeginTransactionRequest>,
+    call: grpc.ServerUnaryCall<
+      protobuf.BeginTransactionRequest,
+      protobuf.Transaction
+    >,
     callback: protobuf.Spanner.BeginTransactionCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.beginTransaction.name)
       .then(() => {
-        const session = this.sessions.get(call.request.session);
+        const session = this.sessions.get(call.request!.session);
         if (session) {
           let counter = this.transactionCounters.get(session.name);
           if (!counter) {
@@ -710,7 +731,7 @@ export class MockSpanner {
           const fullTransactionId =
             session.name + '/transactions/' + transactionId;
           const readTimestamp =
-            call.request.options && call.request.options.readOnly
+            call.request!.options && call.request!.options.readOnly
               ? now()
               : undefined;
           const transaction = protobuf.Transaction.create({
@@ -718,11 +739,11 @@ export class MockSpanner {
             readTimestamp,
           });
           this.transactions.set(fullTransactionId, transaction);
-          this.transactionOptions.set(fullTransactionId, call.request.options);
+          this.transactionOptions.set(fullTransactionId, call.request!.options);
           callback(null, transaction);
         } else {
           callback(
-            MockSpanner.createSessionNotFoundError(call.request.session)
+            MockSpanner.createSessionNotFoundError(call.request!.session)
           );
         }
       })
@@ -732,13 +753,15 @@ export class MockSpanner {
   }
 
   commit(
-    call: grpc.ServerUnaryCall<protobuf.CommitRequest>,
+    call: grpc.ServerUnaryCall<protobuf.CommitRequest, protobuf.CommitResponse>,
     callback: protobuf.Spanner.CommitCallback
   ) {
     this.simulateExecutionTime(this.commit.name)
       .then(() => {
-        if (call.request.transactionId) {
-          const fullTransactionId = `${call.request.session}/transactions/${call.request.transactionId}`;
+        if (call.request!.transactionId) {
+          const fullTransactionId = `${call.request!.session}/transactions/${
+            call.request!.transactionId
+          }`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             callback(
               MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
@@ -746,9 +769,9 @@ export class MockSpanner {
             return;
           }
         }
-        const session = this.sessions.get(call.request.session);
+        const session = this.sessions.get(call.request!.session);
         if (session) {
-          const buffer = Buffer.from(call.request.transactionId as string);
+          const buffer = Buffer.from(call.request!.transactionId as string);
           const transactionId = buffer.toString();
           const fullTransactionId =
             session.name + '/transactions/' + transactionId;
@@ -769,7 +792,7 @@ export class MockSpanner {
           }
         } else {
           callback(
-            MockSpanner.createSessionNotFoundError(call.request.session)
+            MockSpanner.createSessionNotFoundError(call.request!.session)
           );
         }
       })
@@ -779,13 +802,13 @@ export class MockSpanner {
   }
 
   rollback(
-    call: grpc.ServerUnaryCall<protobuf.RollbackRequest>,
+    call: grpc.ServerUnaryCall<protobuf.RollbackRequest, google.protobuf.Empty>,
     callback: protobuf.Spanner.RollbackCallback
   ) {
-    this.requests.push(call.request);
-    const session = this.sessions.get(call.request.session);
+    this.requests.push(call.request!);
+    const session = this.sessions.get(call.request!.session);
     if (session) {
-      const buffer = Buffer.from(call.request.transactionId as string);
+      const buffer = Buffer.from(call.request!.transactionId as string);
       const transactionId = buffer.toString();
       const fullTransactionId = session.name + '/transactions/' + transactionId;
       const transaction = this.transactions.get(fullTransactionId);
@@ -797,23 +820,23 @@ export class MockSpanner {
         callback(MockSpanner.createTransactionNotFoundError(fullTransactionId));
       }
     } else {
-      callback(MockSpanner.createSessionNotFoundError(call.request.session));
+      callback(MockSpanner.createSessionNotFoundError(call.request!.session));
     }
   }
 
   partitionQuery(
-    call: grpc.ServerUnaryCall<protobuf.PartitionQueryRequest>,
+    call: grpc.ServerUnaryCall<protobuf.PartitionQueryRequest, {}>,
     callback: protobuf.Spanner.PartitionQueryCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     callback(createUnimplementedError('PartitionQuery is not yet implemented'));
   }
 
   partitionRead(
-    call: grpc.ServerUnaryCall<protobuf.PartitionReadRequest>,
+    call: grpc.ServerUnaryCall<protobuf.PartitionReadRequest, {}>,
     callback: protobuf.Spanner.PartitionReadCallback
   ) {
-    this.requests.push(call.request);
+    this.requests.push(call.request!);
     callback(createUnimplementedError('PartitionQuery is not yet implemented'));
   }
 }

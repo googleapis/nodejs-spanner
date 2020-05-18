@@ -19,7 +19,7 @@ import * as assert from 'assert';
 import {before, beforeEach, after, afterEach, describe, it} from 'mocha';
 import * as duplexify from 'duplexify';
 import * as extend from 'extend';
-import * as grpc from 'grpc';
+import {grpc, GrpcClient} from 'google-gax';
 import * as is from 'is';
 import * as proxyquire from 'proxyquire';
 import * as retryRequest from 'retry-request';
@@ -106,7 +106,7 @@ describe('GrpcService', () => {
     maxRetries: 3,
   };
 
-  const grpcJsVersion = require('grpc/package.json').version;
+  const grpcJsVersion = new GrpcClient().grpcVersion;
 
   const EXPECTED_API_CLIENT_HEADER = [
     'gl-node/' + process.versions.node,
@@ -309,6 +309,14 @@ describe('GrpcService', () => {
   });
 
   describe('instantiation', () => {
+    let sandbox: sn.SinonSandbox;
+    beforeEach(() => {
+      sandbox = sn.createSandbox();
+    });
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it('should inherit from Service', () => {
       assert(grpcService instanceof FakeService);
 
@@ -319,11 +327,9 @@ describe('GrpcService', () => {
 
     it('should set insecure credentials if using customEndpoint', () => {
       const config = Object.assign({}, CONFIG, {customEndpoint: true});
-      const grpcService = new GrpcService(config, OPTIONS);
-      assert.strictEqual(
-        grpcService.grpcCredentials.constructor.name,
-        'ChannelCredentials'
-      );
+      const spy = sandbox.spy(grpc.credentials, 'createInsecure');
+      new GrpcService(config, OPTIONS);
+      assert(spy.called);
     });
 
     it('should default grpcMetadata to empty metadata', () => {
@@ -1692,10 +1698,7 @@ describe('GrpcService', () => {
       it('should return grpcCredentials', done => {
         grpcService.getGrpcCredentials_((err, grpcCredentials) => {
           assert.ifError(err);
-          assert.strictEqual(
-            grpcCredentials.constructor.name,
-            'ChannelCredentials'
-          );
+          assert(grpcCredentials.constructor.name.match(/credentials/i));
           done();
         });
       });

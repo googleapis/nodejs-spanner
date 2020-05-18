@@ -22,10 +22,10 @@ import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
+import {grpc} from 'google-gax';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
-import {ServiceError, status} from 'grpc';
 
 export type ResumeToken = string | Uint8Array;
 
@@ -400,9 +400,9 @@ export function partialResultStream(
   requestFn: RequestFunction,
   options?: RowOptions
 ): PartialResultStream {
-  const retryableCodes = [status.UNAVAILABLE];
+  const retryableCodes = [grpc.status.UNAVAILABLE];
   let lastResumeToken: ResumeToken;
-  let lastRetriedErr: ServiceError | undefined;
+  let lastRetriedErr: grpc.ServiceError | undefined;
   let lastRequestStream: Readable;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
@@ -433,7 +433,7 @@ export function partialResultStream(
     requestsStream.add(lastRequestStream);
   };
 
-  const retry = (err: ServiceError): void => {
+  const retry = (err: grpc.ServiceError): void => {
     if (!(err.code && retryableCodes!.includes(err.code))) {
       // This is not a retryable error, so this will flush any rows the
       // checkpoint stream has queued. After that, we will destroy the
