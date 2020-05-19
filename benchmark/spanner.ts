@@ -33,6 +33,30 @@ let spanner: Spanner;
 let instance: Instance;
 let dbCounter = 1;
 
+/**
+ * This file contains four standardized benchmark tests for Spanner using an
+ * in-memory mock Spanner server. The simulated network latency and execution
+ * times have been selected to be realistic, but at the same time also equal
+ * and repeatable to different platforms for easy comparison.
+ *
+ * The four benchmarks are:
+ * 1. burstRead: Execute a burst of read-only operations using single-use
+ *    transactions. This is intended to benchmark the ability of the session
+ *    pool to quickly create and hand out new sessions on demand.
+ * 2. burstWrite: Execute a burst of read/write transactions containing one
+ *    update statement. This is intended to benchmark the ability of the session
+ *    pool to quickly create and hand out new write-prepared sessions on demand.
+ * 3. burstReadAndWrite: Execute a burst of read and write operations in
+ *    parallel. This is intended to benchmark the ability of the session pool
+ *    to quickly create and hand out both read and write-prepared sessions in
+ *    parallel on demand.
+ * 4. steadyIncrease: Execute a stream of read operations that all hold on to
+ *    the session for a while. This will force the session pool to grow
+ *    step-by-step up to the max number of sessions in the pool. This is
+ *    intended to benchmark the ability of the session pool to efficiently
+ *    increase the number of sessions in the pool, but not necessarily in
+ *    parallel.
+ */
 yargs
   .demand(1)
   .command('burstRead', 'Benchmarks a burst of read operations', {}, () =>
@@ -90,6 +114,11 @@ function newTestDatabase(options?: SessionPoolOptions): Database {
   return instance.database(`database-${dbCounter++}`, options);
 }
 
+/**
+ * Sets up the mocked benchmark server with standardized execution times and
+ * network latency. Results for both a simple SELECT and a simple UPDATE
+ * statement are mocked on the server.
+ */
 async function setup() {
   const NETWORK_LATENCY_TIME = 10;
   const BATCH_CREATE_SESSIONS_MIN_TIME = 10;
@@ -185,11 +214,17 @@ async function setup() {
   instance = spanner.instance('instance');
 }
 
+/**
+ * Shutdown the benchmark server.
+ */
 function shutdown() {
   server.tryShutdown(() => {});
   console.log('Server closed');
 }
 
+/**
+ * Executes the burstRead benchmark.
+ */
 async function burstRead() {
   console.log('Starting burstRead');
   const HOLD_SESSION_TIME = 100;
@@ -224,6 +259,9 @@ async function burstRead() {
   }
 }
 
+/**
+ * Executes the burstWrite benchmark.
+ */
 async function burstWrite() {
   console.log('Starting burstWrite');
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 10;
@@ -257,6 +295,9 @@ async function burstWrite() {
   }
 }
 
+/**
+ * Executes the burstReadAndWrite benchmark.
+ */
 async function burstReadAndWrite() {
   console.log('Starting burstReadAndWrite');
   const HOLD_SESSION_TIME = 100;
@@ -298,6 +339,9 @@ async function burstReadAndWrite() {
   }
 }
 
+/**
+ * Executes the steadyIncrease benchmark.
+ */
 async function steadyIncrease() {
   console.log('Starting steadyIncrease');
   // Value 'undefined' is used to warm up the compiler.
@@ -330,6 +374,21 @@ async function steadyIncrease() {
   }
 }
 
+/**
+ * Generates and submits read operations in parallel to the mock benchmark
+ * server.
+ * @param database The database to submit the queries to
+ * @param numRequests The number of read requests to submit.
+ * @param waitBetweenRequests The time to wait between each read request. This
+ *                            time will be used as the upper bound to get a
+ *                            randomized value for each request to simulate
+ *                            requests that come in at random intervals.
+ * @param holdSessionTime The time that the transaction should hold on to the
+ *                        session. This simulates the application performing
+ *                        calculations or other operations on the data that have
+ *                        been returned by Spanner. The time is used as an upper
+ *                        bound to get a randomized value for each request.
+ */
 function queueReadOperations(
   database: Database,
   numRequests: number,
@@ -362,6 +421,16 @@ function queueReadOperations(
   return promises;
 }
 
+/**
+ * Generates and submits write operations in parallel to the mock benchmark
+ * server.
+ * @param database The database to submit the updates to
+ * @param numRequests The number of write requests to submit.
+ * @param waitBetweenRequests The time to wait between each write request. This
+ *                            time will be used as the upper bound to get a
+ *                            randomized value for each request to simulate
+ *                            requests that come in at random intervals.
+ */
 function queueWriteOperations(
   database: Database,
   numRequests: number,

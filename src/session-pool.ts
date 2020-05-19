@@ -619,9 +619,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   _createSession(type: types): Promise<void> {
     const kind = type === types.ReadOnly ? 'reads' : 'writes';
-    const options = {
-      [kind]: 1,
-    };
+    const options = {[kind]: 1};
 
     return this._createSessions(options);
   }
@@ -823,9 +821,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         ? this.options.incStep
         : DEFAULTS.incStep!;
       let writes = 0;
+      // Only create 1 write session at a time.
       if (type === types.ReadWrite) {
         writes++;
         reads--;
+      }
+      // Make sure we don't create more sessions than the pool should have.
+      if (reads + writes + this.size > this.options.max!) {
+        reads = this.options.max! - this.size - writes;
       }
       promises.push(
         new Promise((_, reject) => {

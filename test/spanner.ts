@@ -17,7 +17,7 @@
 import {Done, describe, before, after, beforeEach, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc} from 'google-gax';
-import {Database, Instance, SessionPool, Spanner} from '../src';
+import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -1792,6 +1792,69 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.reads, expectedReads);
       assert.strictEqual(pool.writes, expectedWrites);
       assert.strictEqual(pool.size, expectedReads + expectedWrites);
+      await database.close();
+    });
+
+    it('should respect options.incStep', async () => {
+      const database = newTestDatabase({
+        min: 100,
+        max: 400,
+        incStep: 25,
+      });
+      const pool = database.pool_ as SessionPool;
+      assert.strictEqual(pool.size, pool.options.min);
+      // Request options.min + 1 sessions.
+      const snapshots: Snapshot[] = [];
+      for (let i = 0; i < pool.options.min! + 1; i++) {
+        const [snapshot] = await database.getSnapshot();
+        snapshots.unshift(snapshot);
+      }
+      // The pool should create a batch of sessions.
+      assert.strictEqual(pool.size, pool.options.min! + pool.options.incStep!);
+      for (const s of snapshots) {
+        s.end();
+      }
+      await database.close();
+    });
+
+    it('should respect options.max', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        max: 3,
+        incStep: 2,
+      });
+      const pool = database.pool_ as SessionPool;
+      const [tx1] = await database.getSnapshot();
+      assert.strictEqual(pool.size, pool.options.incStep);
+      const [tx2] = await database.getSnapshot();
+      const [tx3] = await database.getSnapshot();
+      assert.strictEqual(pool.size, pool.options.max);
+      tx1.end();
+      tx2.end();
+      tx3.end();
+      await database.close();
+    });
+
+    it('should respect options.max when a write session is requested', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        max: 3,
+        incStep: 2,
+      });
+      const pool = database.pool_ as SessionPool;
+      const [tx1] = await database.getSnapshot();
+      const [tx2] = await database.getSnapshot();
+      assert.strictEqual(pool.size, pool.options.incStep);
+      await database.runTransactionAsync(async tx => {
+        if (!tx) {
+          assert.fail('Transaction failed');
+        }
+        await tx.runUpdate(updateSql);
+        await tx.commit();
+      });
+      assert.strictEqual(pool.size, pool.options.max);
+      tx1.end();
+      tx2.end();
       await database.close();
     });
   });

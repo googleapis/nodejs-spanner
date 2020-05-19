@@ -490,16 +490,12 @@ export class MockSpanner {
     callback(createUnimplementedError('ExecuteSql is not yet implemented'));
   }
 
-  activeStreams = 0;
-
   executeStreamingSql(
     call: grpc.ServerWritableStream<
       protobuf.ExecuteSqlRequest,
       protobuf.PartialResultSet
     >
   ) {
-    this.activeStreams++;
-    // console.log(`Active streams: ${this.activeStreams}`);
     this.requests.push(call.request!);
     this.simulateExecutionTime(this.executeStreamingSql.name)
       .then(() => {
@@ -566,7 +562,6 @@ export class MockSpanner {
             new Error(`There is no result registered for ${call.request!.sql}`)
           );
         }
-        this.activeStreams--;
         call.end();
       })
       .catch(err => {

@@ -1168,7 +1168,7 @@ describe('SessionPool', () => {
       const fakeSession = createSession();
       const stub = sandbox
         .stub(sessionPool, '_createSessions')
-        .withArgs({reads: 25, writes: 0})
+        .withArgs({reads: 1, writes: 0})
         .callsFake(() => {
           // this will fire off via _createSessions
           setImmediate(() => sessionPool.emit('available'));
