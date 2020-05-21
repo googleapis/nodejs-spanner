@@ -36,6 +36,7 @@ import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
 assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
+import duplexify = require('duplexify');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -879,7 +880,7 @@ describe('Spanner', () => {
       filter: 'b',
     };
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
-    const returnValue = {};
+    const returnValue = through.obj();
 
     it('should make and return the correct gax API call', () => {
       const expectedReqOpts = extend({}, OPTIONS, {
@@ -900,7 +901,7 @@ describe('Spanner', () => {
       };
 
       const returnedValue = spanner.getInstancesStream(OPTIONS);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
@@ -928,7 +929,7 @@ describe('Spanner', () => {
       };
 
       const returnedValue = spanner.getInstancesStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
@@ -963,7 +964,7 @@ describe('Spanner', () => {
       };
 
       const returnedValue = spanner.getInstancesStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should not require options', () => {
@@ -978,7 +979,28 @@ describe('Spanner', () => {
       };
 
       const returnedValue = spanner.getInstancesStream();
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
+    });
+
+    it('should create and return Instance objects', done => {
+      const stream = through.obj();
+      spanner.requestStream = () => {
+        return stream;
+      };
+      const protoInstance = {name: 'instance'};
+      setImmediate(() => {
+        stream.push(protoInstance);
+        stream.push(null);
+      });
+      spanner
+        .getInstancesStream()
+        .on('error', assert.ifError)
+        .on('data', instance => {
+          assert.ok(instance instanceof FakeInstance);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          assert.strictEqual((instance as any).metadata, protoInstance);
+        })
+        .on('end', done);
     });
   });
 

@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance} from '../src';
+import {Backup, Database, Instance, Session, Spanner} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -114,7 +114,7 @@ describe('Spanner', () => {
   after(async () => {
     if (generateInstanceForTest) {
       // Deleting all backups before an instance can be deleted.
-      await Promise.all(
+      await Promise.all<google.protobuf.IEmpty>(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Backup
         ).map(backup => backup.delete(GAX_OPTIONS))
@@ -124,7 +124,7 @@ describe('Spanner', () => {
        * All databasess will automatically be deleted with instance.
        * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
        */
-      await Promise.all(
+      await Promise.all<google.protobuf.IEmpty>(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Instance
         ).map(instance => instance.delete(GAX_OPTIONS))
@@ -1269,6 +1269,23 @@ describe('Spanner', () => {
       );
     });
 
+    it('should list backups steaming', done => {
+      const backups: Backup[] = [];
+      instance
+        .getBackupsStream()
+        .on('error', assert.ifError)
+        .on('data', backup => {
+          backups.push(backup);
+        })
+        .on('end', () => {
+          assert.ok(backups.length > 0);
+          assert.ok(
+            backups.find(b => b.formattedName_ === backup1.formattedName_)
+          );
+          done();
+        });
+    });
+
     it('should list backups with pagination', async () => {
       const [page1, , resp1] = await instance.getBackups({
         pageSize: 1,
@@ -1479,6 +1496,26 @@ describe('Spanner', () => {
       assert.strictEqual(sessions.length, count);
 
       await Promise.all(sessions.map(session => session.delete()));
+    });
+
+    it('should list sessions', async () => {
+      const [sessions] = await DATABASE.getSessions();
+      assert.ok(sessions.length > 0);
+      assert.ok(sessions.find(s => s.id === session.id));
+    });
+
+    it('should list sessions streaming', done => {
+      const sessions: Session[] = [];
+      DATABASE.getSessionsStream()
+        .on('error', assert.ifError)
+        .on('data', sessionObj => {
+          sessions.push(sessionObj);
+        })
+        .on('end', () => {
+          assert.ok(sessions.length > 0);
+          assert.ok(sessions.find(s => s.id === session.id));
+          done();
+        });
     });
   });
 

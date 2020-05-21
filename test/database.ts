@@ -23,7 +23,7 @@ import * as extend from 'extend';
 import {ApiError, util} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {Transform, Duplex} from 'stream';
+import {Transform} from 'stream';
 import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
@@ -32,6 +32,7 @@ import {Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import duplexify = require('duplexify');
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -2184,7 +2185,7 @@ describe('Database', () => {
     const OPTIONS = {
       gaxOptions: {autoPaginate: false},
     } as db.GetSessionsOptions;
-    const returnValue = {} as Duplex;
+    const returnValue = through.obj();
 
     it('should make and return the correct gax API call', () => {
       const expectedReqOpts = extend({}, OPTIONS, {
@@ -2205,7 +2206,7 @@ describe('Database', () => {
       };
 
       const returnedValue = database.getSessionsStream(OPTIONS);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
@@ -2232,7 +2233,7 @@ describe('Database', () => {
       };
 
       const returnedValue = database.getSessionsStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
@@ -2266,7 +2267,7 @@ describe('Database', () => {
       };
 
       const returnedValue = database.getSessionsStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should not require options', () => {
@@ -2281,7 +2282,29 @@ describe('Database', () => {
       };
 
       const returnedValue = database.getSessionsStream();
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
+    });
+
+    it('should create and return Session objects', done => {
+      const stream = through.obj();
+      database.requestStream = () => {
+        return stream;
+      };
+      const protoSession = {name: 'session'};
+      setImmediate(() => {
+        stream.push(protoSession);
+        stream.push(null);
+      });
+
+      database
+        .getSessionsStream()
+        .on('error', assert.ifError)
+        .on('data', session => {
+          assert.ok(session instanceof FakeSession);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          assert.strictEqual((session as any).metadata, protoSession);
+        })
+        .on('end', done);
     });
   });
 

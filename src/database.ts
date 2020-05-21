@@ -31,6 +31,7 @@ import * as through from 'through2';
 import {CallOptions, grpc, Operation as GaxOperation} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
+import * as pumpify from 'pumpify';
 import {
   google as databaseAdmin,
   google,
@@ -1483,13 +1484,29 @@ class Database extends common.GrpcServiceObject {
       delete gaxOpts.pageToken;
     }
 
-    return this.requestStream({
-      client: 'SpannerClient',
-      method: 'listSessionsStream',
-      reqOpts,
-      gaxOpts,
-      headers: this.resourceHeader_,
-    });
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    const transform = function (
+      this: Transform,
+      chunk: databaseAdmin.spanner.v1.ISession,
+      enc: string,
+      callback: Function
+    ) {
+      const session = self.session(chunk.name!);
+      session.metadata = chunk;
+      this.push(session);
+      callback();
+    };
+
+    return new pumpify.obj([
+      this.requestStream({
+        client: 'SpannerClient',
+        method: 'listSessionsStream',
+        reqOpts,
+        gaxOpts,
+      }),
+      new Transform({objectMode: true, transform}),
+    ]);
   }
 
   getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
