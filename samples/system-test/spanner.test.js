@@ -18,6 +18,7 @@ const {Spanner} = require('@google-cloud/spanner');
 const {assert} = require('chai');
 const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
+const pLimit = require('p-limit');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
@@ -35,7 +36,8 @@ const backupsCmd = 'node backups.js';
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
-const INSTANCE_ID = process.env.SPANNERTEST_INSTANCE || `test-instance-${date}`;
+const PREFIX = 'test-instance';
+const INSTANCE_ID = process.env.SPANNERTEST_INSTANCE || `${PREFIX}-${date}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${date}`;
 const RESTORE_DATABASE_ID = `test-database-${date}-r`;
@@ -45,137 +47,83 @@ const CANCELLED_BACKUP_ID = `test-backup-${date}-c`;
 const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
+const LABEL = 'node-sample-tests';
+const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
-function deleteInstance(instance) {
-  return new Promise((resolve, reject) => {
-    // Backups must be deleted before an instance can be deleted.
-    instance.request(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'listBackups',
-        reqOpts: {
-          parent: instance.formattedName_,
-        },
-      },
-      async (err, backups) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+async function deleteStaleInstances() {
+  const [instances] = await spanner.getInstances();
+  const yesterday = new Date();
+  yesterday.setHours(-24);
+  const toDelete = instances.filter(
+    instance =>
+      instance.id.includes(PREFIX) &&
+      instance.metadata.labels.created < yesterday.getTime()
+  );
 
-        if (backups.length > 0) {
-          try {
-            await deleteInstanceBackups(instance, backups);
-          } catch (e) {
-            reject(err);
-            return;
-          }
-
-          deleteInstance(instance).then(resolve, reject);
-          return;
-        }
-
-        try {
-          await instance.delete();
-        } catch (e) {
-          reject(e);
-          return;
-        }
-
-        resolve();
-      }
-    );
-  });
+  return deleteInstanceArray(toDelete);
 }
 
-function deleteInstanceBackups(instance, instanceBackups) {
-  const deleteInstanceBackupPromises = instanceBackups.map(instanceBackup => {
-    return new Promise((resolve, reject) => {
-      instance.request(
-        {
-          client: 'DatabaseAdminClient',
-          method: 'deleteBackup',
-          reqOpts: {name: instanceBackup.name},
-        },
-        err => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }
-      );
-    });
-  });
+function deleteInstanceArray(instanceArray) {
+  /**
+   * Delay to allow instance and its databases to fully clear.
+   * Refer to "Soon afterwards"
+   *  @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+   */
+  const delay = 500;
+  const limit = pLimit(5);
+  return Promise.all(
+    instanceArray.map(instance =>
+      limit(() => setTimeout(deleteInstance, delay, instance))
+    )
+  );
+}
 
-  return Promise.all(deleteInstanceBackupPromises);
+async function deleteInstance(instance) {
+  const [backups] = await instance.getBackups();
+  await Promise.all(backups.map(backup => backup.delete()));
+  return instance.delete();
 }
 
 describe('Spanner', () => {
+  const instance = spanner.instance(INSTANCE_ID);
+
   before(async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
+    await deleteStaleInstances();
 
     if (!INSTANCE_ALREADY_EXISTS) {
-      try {
-        await instance.delete();
-      } catch (err) {
-        // Ignore error
-      }
-    }
-    try {
-      await database.delete();
-    } catch (err) {
-      // Ignore error
-    }
-
-    if (!INSTANCE_ALREADY_EXISTS) {
-      const [instances] = await spanner.getInstances({
-        filter: 'labels.gcloud-sample-tests:true',
-      });
-
-      await Promise.all(
-        instances.map(async instance => {
-          const instanceName = instance.metadata.name;
-          const res = await spanner.auth.request({
-            url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
-          });
-          const operations = res.data.operations;
-          await Promise.all(
-            operations
-              .filter(operation => {
-                return operation.metadata['@type'].includes('CreateInstance');
-              })
-              .filter(operation => {
-                const yesterday = new Date();
-                yesterday.setHours(-24);
-                const instanceCreated = new Date(operation.metadata.startTime);
-                return instanceCreated < yesterday;
-              })
-              .map(() => deleteInstance(instance))
-          );
-        })
-      );
-
       const [, operation] = await instance.create({
         config: 'regional-us-central1',
         nodes: 1,
         labels: {
-          'gcloud-sample-tests': 'true',
+          [LABEL]: 'true',
+          created: CURRENT_TIME,
         },
       });
-
       await operation.promise();
+    } else {
+      console.log(
+        `Not creating temp instance, using + ${instance.formattedName_}...`
+      );
     }
   });
 
   after(async () => {
     const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
-    await database.delete();
 
     if (!INSTANCE_ALREADY_EXISTS) {
+      // Make sure all backups are deleted before an instance can be deleted.
+      await Promise.all([
+        instance.backup(BACKUP_ID).delete(),
+        instance.backup(CANCELLED_BACKUP_ID).delete(),
+      ]);
       await instance.delete();
+    } else {
+      await Promise.all([
+        instance.database(DATABASE_ID).delete(),
+        instance.database(RESTORE_DATABASE_ID).delete(),
+        instance.backup(BACKUP_ID).delete(),
+        instance.backup(CANCELLED_BACKUP_ID).delete(),
+      ]);
     }
   });
 
