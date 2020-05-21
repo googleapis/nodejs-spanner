@@ -70,8 +70,8 @@ describe('Spanner', () => {
   const TABLE_NAME = 'Singers';
 
   before(async () => {
+    await deleteOldTestInstances();
     if (generateInstanceForTest) {
-      await deleteOldTestInstances();
       const [, operation] = await instance.create(INSTANCE_CONFIG);
       await operation.promise();
       RESOURCES_TO_CLEAN.push(instance);
