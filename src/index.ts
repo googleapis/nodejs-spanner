@@ -631,8 +631,7 @@ class Spanner extends GrpcService {
     ) {
       const instance = self.instance(chunk.name!);
       instance.metadata = chunk;
-      this.push(instance);
-      callback();
+      callback(null, instance);
     };
 
     return new pumpify.obj([

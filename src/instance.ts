@@ -443,8 +443,7 @@ class Instance extends common.GrpcServiceObject {
       enc: string,
       callback: Function
     ) {
-      this.push(self.backup(chunk.name!));
-      callback();
+      callback(null, self.backup(chunk.name!));
     };
 
     return new pumpify.obj([
@@ -1353,8 +1352,7 @@ class Instance extends common.GrpcServiceObject {
     ) {
       const database = self.database(chunk.name!);
       database.metadata = chunk;
-      this.push(database);
-      callback();
+      callback(null, database);
     };
 
     return new pumpify.obj([

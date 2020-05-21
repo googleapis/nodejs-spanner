@@ -1494,8 +1494,7 @@ class Database extends common.GrpcServiceObject {
     ) {
       const session = self.session(chunk.name!);
       session.metadata = chunk;
-      this.push(session);
-      callback();
+      callback(null, session);
     };
 
     return new pumpify.obj([
