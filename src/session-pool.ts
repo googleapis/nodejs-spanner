@@ -232,6 +232,11 @@ interface SessionInventory {
   borrowed: Set<Session>;
 }
 
+interface Waiters {
+  [types.ReadOnly]: number;
+  [types.ReadWrite]: number;
+}
+
 export interface CreateSessionsOptions {
   writes?: number;
   reads?: number;
@@ -256,7 +261,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _onClose!: Promise<void>;
   _pending = 0;
   _pendingPrepare = 0;
-  _numWaiters = 0;
+  _waiters: Waiters;
+  _numInProcessPrepare = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -289,6 +295,23 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const writes = this._inventory[types.ReadWrite];
 
     return reads.length + writes.length;
+  }
+
+  /**
+   * Current fraction of write-prepared sessions in the pool.
+   * @type {number}
+   */
+  get currentWriteFraction(): number {
+    if (this.available + this.pendingPrepare === 0) {
+      // There are no sessions in the pool. Define the current write fraction as
+      // 0.5. That means that if the user has configured a write fraction >= 0.5
+      // the first session to be created will be a write session, while it will
+      // otherwise be a read-only session.
+      return 0.5;
+    }
+    const writes =
+      this._inventory[types.ReadWrite].length + this.pendingPrepare;
+    return writes / (this.available + this.pendingPrepare);
   }
 
   /**
@@ -342,6 +365,57 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Number of sessions currently being created.
+   * @type {number}
+   */
+  get pending(): number {
+    return this._pending;
+  }
+
+  /**
+   * Number of sessions currently being prepared for a read/write transaction
+   * before being released into the pool. This number does not include the
+   * number of sessions being prepared for a read/write transaction that have
+   * already been checked out of the pool.
+   * @type {number}
+   */
+  get pendingPrepare(): number {
+    return this._pendingPrepare;
+  }
+
+  /**
+   * Number of sessions being created or prepared for a read/write transaction.
+   * @type {number}
+   */
+  get totalPending(): number {
+    return this._pending + this._pendingPrepare;
+  }
+
+  /**
+   * Current number of waiters for a read-only session.
+   * @type {number}
+   */
+  get numReadWaiters(): number {
+    return this._waiters[types.ReadOnly];
+  }
+
+  /**
+   * Current number of waiters for a read/write session.
+   * @type {number}
+   */
+  get numWriteWaiters(): number {
+    return this._waiters[types.ReadWrite];
+  }
+
+  /**
+   * Sum of read and write waiters.
+   * @type {number}
+   */
+  get totalWaiters(): number {
+    return this.numReadWaiters + this.numWriteWaiters;
+  }
+
+  /**
    * @constructor
    * @param {Database} database The DB instance.
    * @param {SessionPoolOptions} [options] Configuration options.
@@ -366,7 +440,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       [types.ReadWrite]: [],
       borrowed: new Set(),
     };
-
+    this._waiters = {
+      [types.ReadOnly]: 0,
+      [types.ReadWrite]: 0,
+    };
     this._requests = new PQueue({
       concurrency: this.options.concurrency!,
     });
@@ -462,6 +539,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @throws {Error} For unknown sessions.
    * @emits SessionPool#available
    * @emits SessionPool#error
+   * @emits SessionPool#readonly-available
+   * @emits SessionPool#readwrite-available
    * @param {Session} session The session to release.
    */
   release(session: Session): void {
@@ -481,7 +560,21 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
     session.lastError = undefined;
 
-    if (session.type === types.ReadOnly) {
+    // Release it into the pool as a read-only session in the following cases:
+    // 1. There are more waiters than there are sessions available. Releasing it
+    //    into the pool will ensure that a waiter will be unblocked as soon as
+    //    possible.
+    // 2. The user has not set a write fraction, but this session has been used
+    //    as a read/write session. This is an indication that the application
+    //    needs read/write sessions, and the pool should try to keep that number
+    //    of read/write sessions dynamically.
+    // 3. The user has set a write fraction and that fraction has been reached.
+    const shouldBeWrite =
+      (session.type === types.ReadWrite && this.options.writes === 0) ||
+      (this.options.writes! > 0 &&
+        this.currentWriteFraction < this.options.writes!);
+    if (this.totalWaiters > 0 || !shouldBeWrite) {
+      session.type = types.ReadOnly;
       this._release(session);
       return;
     }
@@ -491,6 +584,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // the pool is closed while the session is being prepared.
     this._traces.delete(session.id);
     this._pendingPrepare++;
+    session.type = types.ReadWrite;
     this._prepareTransaction(session)
       .catch(() => (session.type = types.ReadOnly))
       .then(() => {
@@ -539,6 +633,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const session = await this._acquires.add(getSession);
 
     if (type === types.ReadWrite && session.type === types.ReadOnly) {
+      this._numInProcessPrepare++;
       try {
         await this._prepareTransaction(session);
       } catch (e) {
@@ -550,6 +645,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         throw e;
       }
     }
+    // Mark the session as the type that was requested. This ensures that the
+    // fraction of read/write sessions in the pool is kept aligned with the
+    // actual need if the user has not specified a write fraction in the session
+    // pool options.
+    session.type = type;
 
     this._traces.set(session.id, frames);
     return session;
@@ -661,10 +761,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       sessions.forEach((session: Session) => {
         session.type = writes-- > 0 ? types.ReadWrite : types.ReadOnly;
 
-        this._inventory.borrowed.add(session);
-        this._pending -= 1;
-
-        this.release(session);
+        setImmediate(() => {
+          this._inventory.borrowed.add(session);
+          this._pending -= 1;
+          this.release(session);
+        });
       });
     }
   }
@@ -721,18 +822,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {Promise}
    */
   async _fill(): Promise<void> {
-    const minReadWrite = Math.floor(this.options.min! * this.options.writes!);
-    const writes = Math.max(minReadWrite - this.writes, 0);
-    const minReadOnly = Math.ceil(this.options.min! - minReadWrite);
-    const reads = Math.max(minReadOnly - this.reads, 0);
-    const totalNeeded = writes + reads;
-
-    if (totalNeeded === 0) {
+    const needed = this.options.min! - this.size;
+    if (!needed) {
       return;
     }
 
     try {
-      await this._createSessions({reads, writes});
+      await this._createSessions({reads: needed, writes: 0});
     } catch (e) {
       this.emit('error', e);
     }
@@ -767,6 +863,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Returns true if the pool has a session that is usable for the specified
+   * type, i.e. if a read-only session is requested, it returns true if the
+   * pool has a read-only or a read/write session. If a read/write session is
+   * requested, the method only returns true if the pool has a read/write
+   * session available.
+   * @param type The type of session.
+   * @private
+   */
+  _hasSessionUsableFor(type: types): boolean {
+    return (
+      this._inventory[type].length > 0 ||
+      this._inventory[types.ReadWrite].length > 0
+    );
+  }
+
+  /**
    * Attempts to get a session of a specific type. If the type is unavailable it
    * may try to use a different type.
    *
@@ -777,7 +889,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise<Session>}
    */
   async _getSession(type: types, startTime: number): Promise<Session> {
-    if (this.available) {
+    if (this._hasSessionUsableFor(type)) {
+      return this._borrowNextAvailableSession(type);
+    }
+    // If a read/write session is requested and the pool has a read-only session
+    // available, we should return that session unless there is a session
+    // currently being prepared for read/write that is not already claimed by
+    // another requester.
+    if (
+      type === types.ReadWrite &&
+      this._hasSessionUsableFor(types.ReadOnly) &&
+      this.numWriteWaiters >= this.pendingPrepare
+    ) {
       return this._borrowNextAvailableSession(type);
     }
 
@@ -787,13 +910,19 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     let removeListener: Function;
 
+    // Wait for the requested type of session to become available.
+    const availableEvent = type + '-available';
     const promises = [
       this._onClose.then(() => {
         throw new Error(errors.Closed);
       }),
       new Promise(resolve => {
-        this.once('available', resolve);
-        removeListener = this.removeListener.bind(this, 'available', resolve);
+        this.once(availableEvent, resolve);
+        removeListener = this.removeListener.bind(
+          this,
+          availableEvent,
+          resolve
+        );
       }),
     ];
 
@@ -813,38 +942,31 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     // Only create a new session if there are more waiters than sessions already
     // being created. The current requester will be waiter number _numWaiters+1.
-    if (
-      !this.isFull &&
-      this._pending + this._pendingPrepare <= this._numWaiters
-    ) {
+    if (!this.isFull && this.totalPending <= this.totalWaiters) {
       let reads = this.options.incStep
         ? this.options.incStep
         : DEFAULTS.incStep!;
-      let writes = 0;
-      // Only create 1 write session at a time.
-      if (type === types.ReadWrite) {
-        writes++;
-        reads--;
-      }
       // Make sure we don't create more sessions than the pool should have.
-      if (reads + writes + this.size > this.options.max!) {
-        reads = this.options.max! - this.size - writes;
+      if (reads + this.size > this.options.max!) {
+        reads = this.options.max! - this.size;
       }
+      this._pending += reads;
       promises.push(
         new Promise((_, reject) => {
-          this._createSessions({reads, writes}).catch(reject);
+          this._pending -= reads;
+          this._createSessions({reads, writes: 0}).catch(reject);
         })
       );
     }
 
     try {
-      this._numWaiters++;
+      this._waiters[type]++;
       await Promise.race(promises);
     } catch (e) {
       removeListener!();
       throw e;
     } finally {
-      this._numWaiters--;
+      this._waiters[type]--;
     }
 
     return this._borrowNextAvailableSession(type);
@@ -926,6 +1048,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    *
    * @fires SessionPool#available
+   * @fires SessionPool#readonly-available
+   * @fires SessionPool#readwrite-available
    * @param {Session} session The session object.
    */
   _release(session: Session): void {
@@ -936,6 +1060,24 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._traces.delete(session.id);
 
     this.emit('available');
+    // Determine the type of waiter to unblock.
+    let emitType: types;
+    if (
+      type === types.ReadOnly &&
+      !this.numReadWaiters &&
+      this.numWriteWaiters
+    ) {
+      emitType = types.ReadWrite;
+    } else if (
+      type === types.ReadWrite &&
+      !this.numWriteWaiters &&
+      this.numReadWaiters
+    ) {
+      emitType = types.ReadOnly;
+    } else {
+      emitType = type;
+    }
+    this.emit(emitType + '-available');
   }
 
   /**
