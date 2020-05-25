@@ -90,6 +90,7 @@ export interface RequestConfig {
 export interface CreateInstanceRequest {
   config: string;
   nodes?: number;
+  displayName?: string;
   labels?: {[k: string]: string} | null;
 }
 /**
@@ -277,6 +278,11 @@ class Spanner extends GrpcService {
    *     be used to control how resource metrics are aggregated. And they can
    *     be used as arguments to policy management rules (e.g. route,
    *     firewall, load balancing, etc.).
+   * @property {string} [displayName] The descriptive name for this instance
+   *     as it appears in UIs. Must be unique per project and between 4 and 30
+   *     characters in length.
+   *     Defaults to the instance unique identifier '<instance>' of the full
+   *     instance name of the form 'projects/<project>/instances/<instance>'.
    */
   /**
    * @typedef {array} CreateInstanceResponse
@@ -359,14 +365,14 @@ class Spanner extends GrpcService {
       );
     }
     const formattedName = Instance.formatName_(this.projectId, name);
-    const shortName = formattedName.split('/').pop();
+    const displayName = config.displayName || formattedName.split('/').pop();
     const reqOpts = {
       parent: 'projects/' + this.projectId,
-      instanceId: shortName,
+      instanceId: displayName,
       instance: extend(
         {
           name: formattedName,
-          displayName: shortName,
+          displayName,
           nodeCount: config.nodes || 1,
         },
         config
