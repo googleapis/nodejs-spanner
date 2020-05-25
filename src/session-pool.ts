@@ -573,7 +573,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       (session.type === types.ReadWrite && this.options.writes === 0) ||
       (this.options.writes! > 0 &&
         this.currentWriteFraction < this.options.writes!);
-    if (this.totalWaiters > 0 || !shouldBeWrite) {
+    if (this.totalWaiters > this.available || !shouldBeWrite) {
       session.type = types.ReadOnly;
       this._release(session);
       return;
