@@ -15,7 +15,7 @@
 # limitations under the License..
 
 # Fail on any error
-set -eo pipefail
+set -e
 
 # Display commands being run
 set -x
@@ -36,48 +36,6 @@ chmod u+x emulator_main
 EMULATOR_PID=$!
 
 # Stop the emulator & clean the environment variable
-function cleanup() {
-    kill -2 $EMULATOR_PID
-    unset SPANNER_EMULATOR_HOST
-    unset GCLOUD_PROJECT
-    echo "Cleanup the emulator";
-}
-trap cleanup EXIT
-
-cd $(dirname $0)/..
-
-# Run a pre-test hook, if a pre-system-test.sh is in the project
-if [ -f .kokoro/pre-system-test.sh ]; then
-    set +x
-    . .kokoro/pre-system-test.sh
-    set -x
-fi
-
-npm install
-
-# If tests are running against master, configure Build Cop
-# to open issues on failures:
-if [[ $KOKORO_BUILD_ARTIFACTS_SUBDIR = *"continuous"* ]]; then
-  export MOCHA_REPORTER_OUTPUT=test_output_sponge_log.xml
-  export MOCHA_REPORTER=xunit
-  cleanup() {
-    chmod +x $KOKORO_GFILE_DIR/linux_amd64/buildcop
-    $KOKORO_GFILE_DIR/linux_amd64/buildcop
-  }
-  trap cleanup EXIT HUP
-fi
+trap "kill -2 $EMULATOR_PID; unset SPANNER_EMULATOR_HOST; unset GCLOUD_TESTS_GOLANG_PROJECT_ID; echo \"Cleanup the emulator\";" EXIT
 
 npm run system-test
-
-# codecov combines coverage across integration and unit tests. Include
-# the logic below for any environment you wish to collect coverage for:
-COVERAGE_NODE=10
-if npx check-node-version@3.3.0 --silent --node $COVERAGE_NODE; then
-  NYC_BIN=./node_modules/nyc/bin/nyc.js
-  if [ -f "$NYC_BIN" ]; then
-    $NYC_BIN report || true
-  fi
-  bash $KOKORO_GFILE_DIR/codecov.sh
-else
-  echo "coverage is only reported for Node $COVERAGE_NODE"
-fi
