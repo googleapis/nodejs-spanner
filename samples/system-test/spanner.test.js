@@ -57,7 +57,7 @@ async function deleteStaleInstances() {
   const toDelete = instances.filter(
     instance =>
       instance.id.includes(PREFIX) &&
-      instance.metadata.labels.created < yesterday.getTime()
+      instance.metadata.labels.created < Math.round(yesterday.getTime() / 1000)
   );
 
   return deleteInstanceArray(toDelete);
