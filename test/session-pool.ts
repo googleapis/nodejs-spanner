@@ -241,7 +241,7 @@ describe('SessionPool', () => {
         assert.deepStrictEqual(sessionPool.options.labels, {});
         assert.strictEqual(sessionPool.options.max, 100);
         assert.strictEqual(sessionPool.options.maxIdle, 1);
-        assert.strictEqual(sessionPool.options.min, 0);
+        assert.strictEqual(sessionPool.options.min, 10);
         assert.strictEqual(sessionPool.options.writes, 0);
       });
 

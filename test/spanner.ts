@@ -1486,7 +1486,7 @@ describe('Spanner with mock server', () => {
     }
 
     it('should reuse sessions', async () => {
-      const database = newTestDatabase();
+      const database = newTestDatabase({min: 0});
       try {
         await verifyReadSessionReuse(database);
       } finally {
@@ -1496,6 +1496,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions when fail=true', async () => {
       const db = newTestDatabase({
+        min: 0,
         max: 10,
         concurrency: 5,
         writes: 0.1,
@@ -1533,6 +1534,7 @@ describe('Spanner with mock server', () => {
 
     async function testSessionPoolExhaustedError() {
       const database = newTestDatabase({
+        min: 0,
         max: 1,
         fail: true,
       });
@@ -1561,7 +1563,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: invalidSql,
       };
-      const database = newTestDatabase();
+      const database = newTestDatabase({min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         for (let i = 0; i < 10; i++) {
@@ -1586,7 +1588,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: selectSql,
       };
-      const database = newTestDatabase();
+      const database = newTestDatabase({min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         for (let i = 0; i < 10; i++) {
@@ -1604,7 +1606,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: invalidSql,
       };
-      const database = newTestDatabase();
+      const database = newTestDatabase({min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         for (let i = 0; i < 10; i++) {
@@ -1625,7 +1627,7 @@ describe('Spanner with mock server', () => {
     });
 
     it('should reuse write sessions', async () => {
-      const database = newTestDatabase();
+      const database = newTestDatabase({min: 0});
       try {
         await verifyWriteSessionReuse(database);
       } finally {
@@ -1635,6 +1637,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse write sessions when fail=true', async () => {
       const db = newTestDatabase({
+        min: 0,
         max: 10,
         concurrency: 5,
         writes: 0.1,
