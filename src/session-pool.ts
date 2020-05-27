@@ -156,7 +156,7 @@ const DEFAULTS: SessionPoolOptions = {
   labels: {},
   max: 100,
   maxIdle: 1,
-  min: 0,
+  min: 10,
   writes: 0,
   incStep: 25,
 };
@@ -349,9 +349,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   constructor(database: Database, options?: SessionPoolOptions) {
     super();
 
+    if (options && options.min && options.max && options.min > options.max) {
+      throw new TypeError('Min sessions may not be greater than max sessions.');
+    }
     this.isOpen = false;
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
+    this.options.min = Math.min(this.options.min!, this.options.max!);
 
     const {writes} = this.options;
 

@@ -241,13 +241,28 @@ describe('SessionPool', () => {
         assert.deepStrictEqual(sessionPool.options.labels, {});
         assert.strictEqual(sessionPool.options.max, 100);
         assert.strictEqual(sessionPool.options.maxIdle, 1);
-        assert.strictEqual(sessionPool.options.min, 0);
+        assert.strictEqual(sessionPool.options.min, 10);
         assert.strictEqual(sessionPool.options.writes, 0);
       });
 
       it('should not override user options', () => {
         sessionPool = new SessionPool(DATABASE, {acquireTimeout: 0});
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
+      });
+
+      describe('min and max', () => {
+        const minGtMax = /Min sessions may not be greater than max sessions\./;
+
+        it('should not accept min>max', () => {
+          assert.throws(() => {
+            return new SessionPool(DATABASE, {min: 20, max: 10});
+          }, minGtMax);
+        });
+
+        it('should accept max less than default min', () => {
+          sessionPool = new SessionPool(DATABASE, {max: 5});
+          assert.strictEqual(sessionPool.options.min, 5);
+        });
       });
 
       describe('writes', () => {
