@@ -3547,7 +3547,7 @@ describe('Spanner', () => {
 
         table.read(query, err => {
           assert.strictEqual(err.code, 5);
-          done();
+          database.close().then(() => done());
         });
       });
 
@@ -3582,7 +3582,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 0.1,
+            timeout: 2.0,
           },
         };
 
