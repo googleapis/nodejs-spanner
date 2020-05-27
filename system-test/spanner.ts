@@ -1045,7 +1045,7 @@ describe('Spanner', () => {
       RESOURCES_TO_CLEAN.push(database2);
 
       // Initialize a database instance to restore to.
-      restoreDatabase = instance.database(generateName('database'));
+      restoreDatabase = instance.database(generateName('database'), {min: 0});
 
       // Create backups.
       backup1 = instance.backup(backup1Name);
@@ -3582,7 +3582,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 1.0,
+            timeout: 1.5,
           },
         };
 
