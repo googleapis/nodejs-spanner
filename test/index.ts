@@ -525,23 +525,27 @@ describe('Spanner', () => {
         });
         done();
       };
-      spanner.createInstance(
-        NAME,
-        CONFIG as CreateInstanceRequest,
-        assert.ifError
-      );
+      spanner.createInstance(NAME, CONFIG, assert.ifError);
     });
 
     it('should accept a path', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').callThrough();
-      spanner.createInstance(
-        PATH,
-        CONFIG as CreateInstanceRequest,
-        assert.ifError
-      );
+      spanner.createInstance(PATH, CONFIG, assert.ifError);
 
       const [, name] = stub.lastCall.args;
       assert.strictEqual(name, PATH);
+    });
+
+    it('should accept the displayName', done => {
+      const displayName = 'my-instance';
+      const config = Object.assign({}, CONFIG, {displayName});
+
+      spanner.request = config => {
+        assert.strictEqual(config.reqOpts.instance.displayName, displayName);
+        done();
+      };
+
+      spanner.createInstance(NAME, config, assert.ifError);
     });
 
     describe('config.nodes', () => {
@@ -586,17 +590,13 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        spanner.createInstance(
-          NAME,
-          CONFIG as CreateInstanceRequest,
-          (err, instance, op, resp) => {
-            assert.strictEqual(err, ERROR);
-            assert.strictEqual(instance, null);
-            assert.strictEqual(op, null);
-            assert.strictEqual(resp, API_RESPONSE);
-            done();
-          }
-        );
+        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
+          assert.strictEqual(err, ERROR);
+          assert.strictEqual(instance, null);
+          assert.strictEqual(op, null);
+          assert.strictEqual(resp, API_RESPONSE);
+          done();
+        });
       });
     });
 
@@ -618,19 +618,15 @@ describe('Spanner', () => {
           .stub(spanner, 'instance')
           .returns(fakeInstanceInstance);
 
-        spanner.createInstance(
-          NAME,
-          CONFIG as CreateInstanceRequest,
-          (err, instance, op, resp) => {
-            assert.ifError(err);
-            const [instanceName] = instanceStub.lastCall.args;
-            assert.strictEqual(instanceName, formattedName);
-            assert.strictEqual(instance, fakeInstanceInstance);
-            assert.strictEqual(op, OPERATION);
-            assert.strictEqual(resp, API_RESPONSE);
-            done();
-          }
-        );
+        spanner.createInstance(NAME, CONFIG, (err, instance, op, resp) => {
+          assert.ifError(err);
+          const [instanceName] = instanceStub.lastCall.args;
+          assert.strictEqual(instanceName, formattedName);
+          assert.strictEqual(instance, fakeInstanceInstance);
+          assert.strictEqual(op, OPERATION);
+          assert.strictEqual(resp, API_RESPONSE);
+          done();
+        });
       });
     });
   });
