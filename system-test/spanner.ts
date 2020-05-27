@@ -1033,7 +1033,7 @@ describe('Spanner', () => {
 
       // Create a second database since only one pending backup can be created
       // per database.
-      database2 = instance.database(generateName('database'));
+      database2 = instance.database(generateName('database'), {min: 0});
       const [, database2CreateOperation] = await database2.create({
         schema: `
         CREATE TABLE Albums (
@@ -3582,7 +3582,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 2.0,
+            timeout: 1.0,
           },
         };
 
