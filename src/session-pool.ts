@@ -257,6 +257,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pending = 0;
   _pendingPrepare = 0;
   _numWaiters = 0;
+
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -635,6 +636,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {object} [options] Config specifying how many sessions to create.
    * @returns {Promise}
+   * @emits SessionPool#createError
    */
   async _createSessions({
     reads = 0,
@@ -658,6 +660,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
         needed -= sessions.length;
       } catch (e) {
+        this.emit('createError', e);
         this._pending -= needed;
         throw e;
       }
@@ -840,6 +843,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         })
       );
     }
+    promises.push(
+      new Promise((_, reject) => {
+        this.once('createError', reject);
+      })
+    );
 
     try {
       this._numWaiters++;

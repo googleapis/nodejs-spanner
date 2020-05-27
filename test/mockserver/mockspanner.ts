@@ -285,6 +285,10 @@ export class MockSpanner {
     this.executionTimes.set(fn.name, time);
   }
 
+  removeExecutionTimes() {
+    this.executionTimes.clear();
+  }
+
   abortTransaction(transaction: Transaction): void {
     const formattedId = `${transaction.session.formattedName_}/transactions/${transaction.id}`;
     if (this.transactions.has(formattedId)) {

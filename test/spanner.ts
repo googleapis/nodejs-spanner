@@ -16,7 +16,7 @@
 
 import {Done, describe, before, after, beforeEach, it} from 'mocha';
 import * as assert from 'assert';
-import {grpc} from 'google-gax';
+import {grpc, Status} from 'google-gax';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
@@ -135,6 +135,7 @@ describe('Spanner with mock server', () => {
 
   beforeEach(() => {
     spannerMock.resetRequests();
+    spannerMock.removeExecutionTimes();
   });
 
   describe('basics', () => {
@@ -1743,6 +1744,34 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.writes, expectedWrites);
       assert.strictEqual(pool.size, expectedReads + expectedWrites);
       await database.close();
+    });
+
+    it('should propagate database not found errors', async () => {
+      spannerMock.setExecutionTime(
+        spannerMock.batchCreateSessions,
+        SimulatedExecutionTime.ofErrors([
+          {
+            code: Status.NOT_FOUND,
+            message: 'Database not found',
+          },
+          {
+            code: Status.NOT_FOUND,
+            message: 'Database not found',
+          },
+        ] as MockError[])
+      );
+      const database = newTestDatabase({
+        min: 100,
+        max: 200,
+      }).on('error', () => {});
+      try {
+        await database.run(selectSql);
+        assert.fail('missing expected error');
+      } catch (err) {
+        assert.strictEqual(err.code, Status.NOT_FOUND);
+      } finally {
+        await database.close();
+      }
     });
 
     it('should create new session when numWaiters >= pending', async () => {
