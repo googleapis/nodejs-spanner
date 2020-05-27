@@ -3535,7 +3535,9 @@ describe('Spanner', () => {
       });
 
       it('should read over invalid database fails', done => {
-        const database = instance.database(generateName('invalid'));
+        const database = instance
+          .database(generateName('invalid'))
+          .on('error', () => {});
         const table = database.table(TABLE_NAME);
 
         const query = {
