@@ -34,7 +34,7 @@ import {
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {grpc, Operation as GaxOperation} from 'google-gax';
+import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Backup} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
@@ -53,6 +53,7 @@ export type GetInstanceResponse = [Instance, IInstance];
 export type GetInstanceMetadataResponse = [IInstance];
 export interface GetInstanceMetadataOptions {
   fieldNames?: string | string[];
+  gaxOptions?: CallOptions;
 }
 export type GetDatabasesResponse = PagedResponse<
   Database,
@@ -77,6 +78,7 @@ export interface CreateDatabaseOptions
   poolOptions?: SessionPoolOptions;
   poolCtor?: SessionPool;
   schema?: string;
+  gaxOptions?: CallOptions;
 }
 export type GetDatabasesOptions = PagedOptions;
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
@@ -116,6 +118,7 @@ export type GetDatabaseOperationsCallback = RequestCallback<
 >;
 export interface GetInstanceConfig
   extends GetConfig,
+    CreateInstanceRequest,
     GetInstanceMetadataOptions {}
 
 interface InstanceRequest {
@@ -774,9 +777,7 @@ class Instance extends common.GrpcServiceObject {
         : ({} as CreateDatabaseOptions);
 
     const poolOptions = options.poolOptions;
-    delete options.poolOptions;
     const poolCtor = options.poolCtor;
-    delete options.poolCtor;
     const reqOpts = extend(
       {
         parent: this.formattedName_,
@@ -784,6 +785,11 @@ class Instance extends common.GrpcServiceObject {
       },
       options
     );
+
+    delete reqOpts.poolOptions;
+    delete reqOpts.poolCtor;
+    delete reqOpts.gaxOptions;
+
     if (reqOpts.schema) {
       reqOpts.extraStatements = arrify(reqOpts.schema);
       delete reqOpts.schema;
@@ -793,6 +799,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'createDatabase',
         reqOpts,
+        gaxOpts: options.gaxOptions,
       },
       (err, operation, resp) => {
         if (err) {
@@ -854,8 +861,9 @@ class Instance extends common.GrpcServiceObject {
     return this.databases_.get(key!)!;
   }
 
-  delete(): Promise<DeleteInstanceResponse>;
+  delete(gaxOptions?: CallOptions): Promise<DeleteInstanceResponse>;
   delete(callback: DeleteInstanceCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteInstanceCallback): void;
   /**
    * @typedef {array} DeleteInstanceResponse
    * @property {object} 0 The full API response.
@@ -873,6 +881,8 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.InstanceAdminClient#deleteInstance}
    * @see [DeleteInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance)
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {DeleteInstanceCallback} [callback] Callback function.
    * @returns {Promise<DeleteInstanceResponse>}
    *
@@ -898,8 +908,14 @@ class Instance extends common.GrpcServiceObject {
    * });
    */
   delete(
-    callback?: DeleteInstanceCallback
+    optionsOrCallback?: CallOptions | DeleteInstanceCallback,
+    cb?: DeleteInstanceCallback
   ): void | Promise<DeleteInstanceResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -916,6 +932,7 @@ class Instance extends common.GrpcServiceObject {
             client: 'InstanceAdminClient',
             method: 'deleteInstance',
             reqOpts,
+            gaxOpts,
           },
           (err, resp) => {
             if (!err) {
@@ -927,8 +944,9 @@ class Instance extends common.GrpcServiceObject {
       });
   }
 
-  exists(): Promise<ExistsInstanceResponse>;
+  exists(gaxOptions?: CallOptions): Promise<ExistsInstanceResponse>;
   exists(callback: ExistsInstanceCallback): void;
+  exists(gaxOptions: CallOptions, callback: ExistsInstanceCallback): void;
   /**
    * @typedef {array} InstanceExistsResponse
    * @property {boolean} 0 Whether the {@link Instance} exists.
@@ -942,6 +960,8 @@ class Instance extends common.GrpcServiceObject {
    * Check if an instance exists.
    *
    * @method Instance#exists
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {InstanceExistsCallback} [callback] Callback function.
    * @returns {Promise<InstanceExistsResponse>}
    *
@@ -961,11 +981,17 @@ class Instance extends common.GrpcServiceObject {
    * });
    */
   exists(
-    callback?: ExistsInstanceCallback
+    optionsOrCallback?: CallOptions | ExistsInstanceCallback,
+    cb?: ExistsInstanceCallback
   ): void | Promise<ExistsInstanceResponse> {
+    const gaxOptions =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const NOT_FOUND = 5;
 
-    this.getMetadata(err => {
+    this.getMetadata({gaxOptions}, err => {
       if (err && err.code !== NOT_FOUND) {
         callback!(err, null);
         return;
@@ -1038,15 +1064,20 @@ class Instance extends common.GrpcServiceObject {
 
     const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
     if (options.fieldNames) {
-      getMetadataOptions.fieldNames = options['fieldNames'];
-      delete options.fieldNames;
+      getMetadataOptions.fieldNames = options.fieldNames;
+    }
+    if (options.gaxOptions) {
+      getMetadataOptions.gaxOptions = options.gaxOptions;
     }
 
     this.getMetadata(getMetadataOptions, (err, metadata) => {
       if (err) {
         if (err.code === 5 && options.autoCreate) {
+          const createOptions = extend(true, {}, options);
+          delete createOptions.fieldNames;
+          delete createOptions.autoCreate;
           this.create(
-            options,
+            createOptions,
             (
               err: grpc.ServiceError | null,
               instance?: Instance,
@@ -1362,13 +1393,22 @@ class Instance extends common.GrpcServiceObject {
         client: 'InstanceAdminClient',
         method: 'getInstance',
         reqOpts,
+        gaxOpts: options.gaxOptions,
       },
       callback!
     );
   }
 
-  setMetadata(metadata: IInstance): Promise<SetInstanceMetadataResponse>;
+  setMetadata(
+    metadata: IInstance,
+    gaxOptions?: CallOptions
+  ): Promise<SetInstanceMetadataResponse>;
   setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
+  setMetadata(
+    metadata: IInstance,
+    gaxOptions: CallOptions,
+    callback: SetInstanceMetadataCallback
+  ): void;
   /**
    * Update the metadata for this instance. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
@@ -1379,6 +1419,8 @@ class Instance extends common.GrpcServiceObject {
    * @see [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
    *
    * @param {object} metadata The metadata you wish to set.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {SetInstanceMetadataCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
@@ -1414,8 +1456,14 @@ class Instance extends common.GrpcServiceObject {
    */
   setMetadata(
     metadata: IInstance,
-    callback?: SetInstanceMetadataCallback
+    optionsOrCallback?: CallOptions | SetInstanceMetadataCallback,
+    cb?: SetInstanceMetadataCallback
   ): void | Promise<SetInstanceMetadataResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts = {
       instance: extend(
         {
@@ -1432,6 +1480,7 @@ class Instance extends common.GrpcServiceObject {
         client: 'InstanceAdminClient',
         method: 'updateInstance',
         reqOpts,
+        gaxOpts,
       },
       callback!
     );

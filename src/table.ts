@@ -16,7 +16,7 @@
 
 import {promisifyAll} from '@google-cloud/promisify';
 import * as through from 'through2';
-import {Operation as GaxOperation} from 'google-gax';
+import {Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Database, UpdateSchemaCallback, UpdateSchemaResponse} from './database';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {
@@ -236,8 +236,9 @@ class Table {
 
     return proxyStream as PartialResultStream;
   }
-  delete(): Promise<DropTableResponse>;
+  delete(gaxOptions?: CallOptions): Promise<DropTableResponse>;
   delete(callback: DropTableCallback): void;
+  delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * Delete the table. Not to be confused with {@link Table#deleteRows}.
    *
@@ -246,6 +247,8 @@ class Table {
    * @see {@link Database#updateSchema}
    *
    * @throws {TypeError} If any arguments are passed in.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {LongRunningOperationCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
@@ -281,20 +284,31 @@ class Table {
    *     // Table deleted successfully.
    *   });
    */
-  delete(callback?: DropTableCallback): Promise<DropTableResponse> | void {
-    if (callback && typeof callback !== 'function') {
-      throw new TypeError(
-        'Unexpected argument, please see Table#deleteRows to delete rows.'
-      );
-    }
+  delete(
+    gaxOptionsOrCallback?: CallOptions | DropTableCallback,
+    cb?: DropTableCallback
+  ): Promise<DropTableResponse> | void {
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
     return this.database.updateSchema(
       'DROP TABLE `' + this.name + '`',
+      gaxOptions,
       callback!
     );
   }
-  deleteRows(keys: Key[]): Promise<DeleteRowsResponse>;
+  deleteRows(
+    keys: Key[],
+    gaxOptions?: CallOptions
+  ): Promise<DeleteRowsResponse>;
   deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
+  deleteRows(
+    keys: Key[],
+    gaxOptions: CallOptions,
+    callback: DeleteRowsCallback
+  ): void;
   /**
    * Delete rows from this table.
    *
@@ -303,6 +317,8 @@ class Table {
    * @param {array} keys The keys for the rows to delete. If using a
    *     composite key, provide an array within this array. See the example
    * below.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -342,18 +358,27 @@ class Table {
    */
   deleteRows(
     keys: Key[],
-    callback?: DeleteRowsCallback
+    gaxOptionsOrCallback?: CallOptions | DeleteRowsCallback,
+    cb?: DeleteRowsCallback
   ): Promise<DeleteRowsResponse> | void {
-    return this._mutate('deleteRows', keys, callback!);
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    return this._mutate('deleteRows', keys, gaxOptions, callback!);
   }
-  drop(): Promise<DropTableResponse>;
+  drop(gaxOptions?: CallOptions): Promise<DropTableResponse>;
   drop(callback: DropTableCallback): void;
+  drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * Drop the table.
    *
    * @see {@link Table#delete}
    * @see {@link Database#updateSchema}
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {LongRunningOperationCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
@@ -389,11 +414,27 @@ class Table {
    *     // Table dropped successfully.
    *   });
    */
-  drop(callback?: DropTableCallback): Promise<DropTableResponse> | void {
-    return this.delete(callback!);
+  drop(
+    gaxOptionsOrCallback?: CallOptions | DropTableCallback,
+    cb?: DropTableCallback
+  ): Promise<DropTableResponse> | void {
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    return this.delete(gaxOptions, callback!);
   }
-  insert(rows: object | object[]): Promise<InsertRowsResponse>;
+  insert(
+    rows: object | object[],
+    gaxOptions?: CallOptions
+  ): Promise<InsertRowsResponse>;
   insert(rows: object | object[], callback: InsertRowsCallback): void;
+  insert(
+    rows: object | object[],
+    gaxOptions: CallOptions,
+    callback: InsertRowsCallback
+  ): void;
   /**
    * Insert rows of data into this table.
    *
@@ -401,6 +442,8 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -452,9 +495,15 @@ class Table {
    */
   insert(
     rows: object | object[],
-    callback?: InsertRowsCallback
+    gaxOptionsOrCallback?: CallOptions | InsertRowsCallback,
+    cb?: InsertRowsCallback
   ): Promise<InsertRowsResponse> | void {
-    this._mutate('insert', rows, callback!);
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    this._mutate('insert', rows, gaxOptions, callback!);
   }
   read(request: ReadRequest, options?: TimestampBounds): Promise<ReadResponse>;
   read(request: ReadRequest, callback: ReadCallback): void;
@@ -634,8 +683,16 @@ class Table {
       .on('data', (row: Row) => rows.push(row))
       .on('end', () => callback!(null, rows));
   }
-  replace(rows: object | object[]): Promise<ReplaceRowsResponse>;
+  replace(
+    rows: object | object[],
+    gaxOptions?: CallOptions
+  ): Promise<ReplaceRowsResponse>;
   replace(rows: object | object[], callback: ReplaceRowsCallback): void;
+  replace(
+    rows: object | object[],
+    gaxOptions: CallOptions,
+    callback: ReplaceRowsCallback
+  ): void;
   /**
    * Replace rows of data within this table.
    *
@@ -643,6 +700,8 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -677,12 +736,26 @@ class Table {
    */
   replace(
     rows: object | object[],
-    callback?: ReplaceRowsCallback
+    gaxOptionsOrCallback?: CallOptions | ReplaceRowsCallback,
+    cb?: ReplaceRowsCallback
   ): Promise<ReplaceRowsResponse> | void {
-    this._mutate('replace', rows, callback!);
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    this._mutate('replace', rows, gaxOptions, callback!);
   }
-  update(rows: object | object[]): Promise<UpdateRowsResponse>;
+  update(
+    rows: object | object[],
+    gaxOptions?: CallOptions
+  ): Promise<UpdateRowsResponse>;
   update(rows: object | object[], callback: UpdateRowsCallback): void;
+  update(
+    rows: object | object[],
+    gaxOptions: CallOptions,
+    callback: UpdateRowsCallback
+  ): void;
   /**
    * Update rows of data within this table.
    *
@@ -690,6 +763,8 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -728,12 +803,26 @@ class Table {
    */
   update(
     rows: object | object[],
-    callback?: UpdateRowsCallback
+    gaxOptionsOrCallback?: CallOptions | UpdateRowsCallback,
+    cb?: UpdateRowsCallback
   ): Promise<UpdateRowsResponse> | void {
-    this._mutate('update', rows, callback!);
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    this._mutate('update', rows, gaxOptions, callback!);
   }
-  upsert(rows: object | object[]): Promise<UpsertRowsResponse>;
+  upsert(
+    rows: object | object[],
+    gaxOptions?: CallOptions
+  ): Promise<UpsertRowsResponse>;
   upsert(rows: object | object[], callback: UpsertRowsCallback): void;
+  upsert(
+    rows: object | object[],
+    gaxOptions: CallOptions,
+    callback: UpsertRowsCallback
+  ): void;
   /**
    * Insert or update rows of data within this table.
    *
@@ -741,6 +830,9 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
+   *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -775,9 +867,15 @@ class Table {
    */
   upsert(
     rows: object | object[],
-    callback?: UpsertRowsCallback
+    gaxOptionsOrCallback?: CallOptions | UpsertRowsCallback,
+    cb?: UpsertRowsCallback
   ): Promise<UpsertRowsResponse> | void {
-    this._mutate('upsert', rows, callback!);
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    this._mutate('upsert', rows, gaxOptions, callback!);
   }
   /**
    * Creates a new transaction and applies the desired mutation via
@@ -795,6 +893,7 @@ class Table {
   private _mutate(
     method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
+    gaxOptions: CallOptions = {},
     callback: CommitCallback
   ): void {
     this.database.runTransaction((err, transaction) => {
@@ -804,7 +903,7 @@ class Table {
       }
 
       transaction![method](this.name, rows as Key[]);
-      transaction!.commit(callback);
+      transaction!.commit(gaxOptions, callback);
     });
   }
 }

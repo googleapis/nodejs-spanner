@@ -1015,6 +1015,15 @@ describe('Transaction', () => {
         },
       ];
 
+      it('should accept gaxOptions', done => {
+        const gaxOptions = {};
+        transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.batchUpdate(STRING_STATEMENTS, gaxOptions, assert.ifError);
+      });
+
       it('should return an error if statements are missing', done => {
         transaction.batchUpdate(null, err => {
           assert.strictEqual(
@@ -1181,6 +1190,15 @@ describe('Transaction', () => {
 
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
       });
+
+      it('should accept gaxOptions', done => {
+        const gaxOptions = {};
+        transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.begin(gaxOptions, assert.ifError);
+      });
     });
 
     describe('commit', () => {
@@ -1195,6 +1213,15 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'commit');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.mutations, []);
+      });
+
+      it('should accept gaxOptions', done => {
+        const gaxOptions = {};
+        transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.commit(gaxOptions, assert.ifError);
       });
 
       it('should use the transaction `id` when set', () => {
@@ -1385,6 +1412,15 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'rollback');
         assert.deepStrictEqual(reqOpts, expectedReqOpts);
+      });
+
+      it('should accept gaxOptions', done => {
+        const gaxOptions = {};
+        transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.rollback(gaxOptions, assert.ifError);
       });
 
       it('should call through to `end`', () => {

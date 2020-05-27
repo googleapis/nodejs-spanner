@@ -165,7 +165,9 @@ type GetSessionsResponse = PagedResponse<
 >;
 
 export type GetDatabaseConfig = GetConfig &
-  databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest;
+  databaseAdmin.spanner.admin.database.v1.GetDatabaseRequest & {
+    gaxOptions?: CallOptions;
+  };
 type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
 export type CreateSessionResponse = [
@@ -416,6 +418,7 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'batchCreateSessions',
         reqOpts,
+        gaxOpts: options.gaxOptions,
       },
       (err, resp) => {
         if (err) {
@@ -682,8 +685,16 @@ class Database extends GrpcServiceObject {
       }
     );
   }
-  createTable(schema: Schema): Promise<CreateTableResponse>;
-  createTable(schema: Schema, callback?: CreateTableCallback): void;
+  createTable(
+    schema: Schema,
+    gaxOptions?: CallOptions
+  ): Promise<CreateTableResponse>;
+  createTable(schema: Schema, callback: CreateTableCallback): void;
+  createTable(
+    schema: Schema,
+    gaxOptions: CallOptions,
+    callback: CreateTableCallback
+  ): void;
   /**
    * @typedef {array} CreateTableResponse
    * @property {Table} 0 The new {@link Table}.
@@ -707,6 +718,8 @@ class Database extends GrpcServiceObject {
    * @see {@link Database#updateSchema}
    *
    * @param {string} schema A DDL CREATE statement describing the table.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {CreateTableCallback} [callback] Callback function.
    * @returns {Promise<CreateTableResponse>}
    *
@@ -753,9 +766,15 @@ class Database extends GrpcServiceObject {
    */
   createTable(
     schema: Schema,
-    callback?: CreateTableCallback
+    gaxOptionsOrCallback?: CallOptions | CreateTableCallback,
+    cb?: CreateTableCallback
   ): void | Promise<CreateTableResponse> {
-    this.updateSchema(schema, (err, operation, resp) => {
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    this.updateSchema(schema, gaxOptions, (err, operation, resp) => {
       if (err) {
         callback!(err, null, null, resp!);
         return;
@@ -835,8 +854,9 @@ class Database extends GrpcServiceObject {
       );
     });
   }
-  exists(): Promise<[boolean]>;
+  exists(gaxOptions?: CallOptions): Promise<[boolean]>;
   exists(callback: ExistsCallback): void;
+  exists(gaxOptions: CallOptions, callback: ExistsCallback): void;
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
@@ -850,6 +870,8 @@ class Database extends GrpcServiceObject {
    * Check if a database exists.
    *
    * @method Database#exists
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {DatabaseExistsCallback} [callback] Callback function.
    * @returns {Promise<DatabaseExistsResponse>}
    *
@@ -869,10 +891,18 @@ class Database extends GrpcServiceObject {
    *   const exists = data[0];
    * });
    */
-  exists(callback?: ExistsCallback): void | Promise<[boolean]> {
+  exists(
+    gaxOptionsOrCallback?: CallOptions | ExistsCallback,
+    cb?: ExistsCallback
+  ): void | Promise<[boolean]> {
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
     const NOT_FOUND = 5;
 
-    this.getMetadata(err => {
+    this.getMetadata(gaxOptions, err => {
       if (err && (err as ApiError).code !== NOT_FOUND) {
         callback!(err);
         return;
@@ -938,7 +968,7 @@ class Database extends GrpcServiceObject {
         : ({} as GetDatabaseConfig);
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
-    this.getMetadata((err, metadata) => {
+    this.getMetadata(options.gaxOptions!, (err, metadata) => {
       if (err) {
         if (options.autoCreate && (err as ApiError).code === 5) {
           this.create(
@@ -964,8 +994,9 @@ class Database extends GrpcServiceObject {
       callback!(null, this, metadata as r.Response);
     });
   }
-  getMetadata(): Promise<GetMetadataResponse>;
+  getMetadata(gaxOptions?: CallOptions): Promise<GetMetadataResponse>;
   getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(gaxOptions: CallOptions, callback: GetMetadataCallback): void;
   /**
    * @typedef {array} GetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -984,7 +1015,8 @@ class Database extends GrpcServiceObject {
    *
    * @see {@link v1.DatabaseAdminClient#getDatabase}
    * @see [GetDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase)
-   *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {GetMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetMetadataResponse>}
    *
@@ -1012,8 +1044,18 @@ class Database extends GrpcServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetMetadataCallback
+    gaxOptionsOrCallback?: CallOptions | GetMetadataCallback,
+    cb?: GetMetadataCallback
   ): void | Promise<GetMetadataResponse> {
+    const callback =
+      typeof gaxOptionsOrCallback === 'function'
+        ? (gaxOptionsOrCallback as GetMetadataCallback)
+        : cb;
+    const gaxOpts =
+      typeof gaxOptionsOrCallback === 'object'
+        ? (gaxOptionsOrCallback as CallOptions)
+        : {};
+
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseRequest = {
       name: this.formattedName_,
     };
@@ -1022,6 +1064,7 @@ class Database extends GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'getDatabase',
         reqOpts,
+        gaxOpts,
       },
       callback!
     );
@@ -1039,6 +1082,8 @@ class Database extends GrpcServiceObject {
    * @see {@link #getMetadata}
    *
    * @method Database#getRestoreInfo
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>} When resolved,
    *     contains the restore information for the database if it was restored
    *     from a backup.
@@ -1051,8 +1096,10 @@ class Database extends GrpcServiceObject {
    * const restoreInfo = await database.getRestoreInfo();
    * console.log(`Database restored from ${restoreInfo.backupInfo.backup}`);
    */
-  async getRestoreInfo(): Promise<IRestoreInfoTranslatedEnum | undefined> {
-    const [metadata] = await this.getMetadata();
+  async getRestoreInfo(
+    options?: CallOptions
+  ): Promise<IRestoreInfoTranslatedEnum | undefined> {
+    const [metadata] = await this.getMetadata(options);
     return metadata.restoreInfo ? metadata.restoreInfo : undefined;
   }
 
@@ -1065,6 +1112,8 @@ class Database extends GrpcServiceObject {
    * @see {@link #getMetadata}
    *
    * @method Database#getState
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
    *     When resolved, contains the current state of the database if the state
    *     is defined.
@@ -1077,16 +1126,19 @@ class Database extends GrpcServiceObject {
    * const state = await database.getState();
    * const isReady = (state === 'READY');
    */
-  async getState(): Promise<
+  async getState(
+    options?: CallOptions
+  ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
     | undefined
   > {
-    const [metadata] = await this.getMetadata();
+    const [metadata] = await this.getMetadata(options);
     return metadata.state || undefined;
   }
 
-  getSchema(): Promise<GetSchemaResponse>;
+  getSchema(options?: CallOptions): Promise<GetSchemaResponse>;
   getSchema(callback: GetSchemaCallback): void;
+  getSchema(options: CallOptions, callback: GetSchemaCallback): void;
   /**
    * @typedef {array} GetSchemaResponse
    * @property {string[]} 0 An array of database DDL statements.
@@ -1107,6 +1159,8 @@ class Database extends GrpcServiceObject {
    * @see [Data Definition Language (DDL)](https://cloud.google.com/spanner/docs/data-definition-language)
    * @see [GetDatabaseDdl API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl)
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {GetSchemaCallback} [callback] Callback function.
    * @returns {Promise<GetSchemaResponse>}
    *
@@ -1127,7 +1181,15 @@ class Database extends GrpcServiceObject {
    *   const apiResponse = data[1];
    * });
    */
-  getSchema(callback?: GetSchemaCallback): void | Promise<GetSchemaResponse> {
+  getSchema(
+    optionsOrCallback?: CallOptions | GetSchemaCallback,
+    cb?: GetSchemaCallback
+  ): void | Promise<GetSchemaResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
@@ -1138,6 +1200,7 @@ class Database extends GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',
         reqOpts,
+        gaxOpts,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err, statements, ...args: any[]) => {
@@ -2403,8 +2466,16 @@ class Database extends GrpcServiceObject {
     }
     return new Table(this, name);
   }
-  updateSchema(statements: Schema): Promise<UpdateSchemaResponse>;
+  updateSchema(
+    statements: Schema,
+    gaxOptions?: CallOptions
+  ): Promise<UpdateSchemaResponse>;
   updateSchema(statements: Schema, callback: UpdateSchemaCallback): void;
+  updateSchema(
+    statements: Schema,
+    gaxOptions: CallOptions,
+    callback: UpdateSchemaCallback
+  ): void;
   /**
    * Update the schema of the database by creating/altering/dropping tables,
    * columns, indexes, etc.
@@ -2423,6 +2494,8 @@ class Database extends GrpcServiceObject {
    * @param {string|string[]|object} statements An array of database DDL
    *     statements, or an
    *     [`UpdateDatabaseDdlRequest` object](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.UpdateDatabaseDdlRequest).
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {LongRunningOperationCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
@@ -2480,8 +2553,14 @@ class Database extends GrpcServiceObject {
    */
   updateSchema(
     statements: Schema,
-    callback?: UpdateSchemaCallback
+    optionsOrCallback?: CallOptions | UpdateSchemaCallback,
+    cb?: UpdateSchemaCallback
   ): Promise<UpdateSchemaResponse> | void {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     if (typeof statements === 'string' || Array.isArray(statements)) {
       statements = {
         statements: arrify(statements) as string[],
@@ -2498,6 +2577,7 @@ class Database extends GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'updateDatabaseDdl',
         reqOpts,
+        gaxOpts,
       },
       callback!
     );

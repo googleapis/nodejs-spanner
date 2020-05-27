@@ -267,6 +267,15 @@ describe('Session', () => {
       const returnValue = session.getMetadata(callback);
       assert.strictEqual(returnValue, requestReturnValue);
     });
+
+    it('should accept and pass gaxOptions to getMetadata', done => {
+      const gaxOptions = {};
+      session.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      session.getMetadata(gaxOptions, assert.ifError);
+    });
   });
 
   describe('keepAlive', () => {
@@ -288,6 +297,15 @@ describe('Session', () => {
 
       const returnValue = session.keepAlive(callback);
       assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      session.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      session.keepAlive(gaxOptions, assert.ifError);
     });
   });
 

@@ -235,6 +235,38 @@ describe('Instance', () => {
       instance.createDatabase(NAME, OPTIONS, assert.ifError);
     });
 
+    it('should not alter the original options', done => {
+      const options = Object.assign({}, OPTIONS, {
+        poolOptions: {},
+        poolCtor: {},
+      });
+      const originalOptions = Object.assign({}, options);
+      instance.request = (config, callback: Function) => {
+        assert.strictEqual(config.reqOpts.poolOptions, undefined);
+        callback();
+      };
+
+      instance.createDatabase(NAME, options, err => {
+        if (err) {
+          assert.ifError(err);
+        }
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      });
+    });
+
+    it('should accept gaxOptions', done => {
+      const options = Object.assign({}, OPTIONS, {gaxOptions: {}});
+      instance.request = config => {
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
+        assert.strictEqual(config.reqOpts.gaxOptions, undefined);
+
+        done();
+      };
+
+      instance.createDatabase(NAME, options, assert.ifError);
+    });
+
     it('should only use the name in the createStatement', done => {
       instance.request = config => {
         const expectedReqOpts = extend(
@@ -253,7 +285,7 @@ describe('Instance', () => {
       instance.createDatabase(PATH, OPTIONS, assert.ifError);
     });
 
-    describe('options.poolOptions', () => {
+    describe('options.poolOptions/poolCtor', () => {
       it('should allow specifying session pool options', done => {
         const poolOptions = {};
 
@@ -268,6 +300,27 @@ describe('Instance', () => {
 
         instance.database = (name, poolOptions_) => {
           assert.strictEqual(poolOptions_, poolOptions);
+          done();
+          return {} as Database;
+        };
+
+        instance.createDatabase(PATH, options, assert.ifError);
+      });
+
+      it('should allow specifying session pool constructor', done => {
+        const poolCtor = {};
+
+        const options = extend({}, OPTIONS, {
+          poolCtor,
+        });
+
+        instance.request = (config, callback: Function) => {
+          assert.strictEqual(config.reqOpts.poolCtor, undefined);
+          callback();
+        };
+
+        instance.database = (name, poolOptions_) => {
+          assert.strictEqual(poolOptions_, poolCtor);
           done();
           return {} as Database;
         };
@@ -497,6 +550,17 @@ describe('Instance', () => {
         done();
       });
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+
+      instance.request = (config, callback: Function) => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        callback(); // done()
+      };
+
+      instance.delete(gaxOptions, done);
+    });
   });
 
   describe('exists', () => {
@@ -572,6 +636,15 @@ describe('Instance', () => {
         done();
       });
     });
+
+    it('should accept and pass gaxOptions to getMetadata', done => {
+      const gaxOptions = {};
+      (instance.getMetadata as Function) = options => {
+        assert.strictEqual(options.gaxOptions, gaxOptions);
+        done();
+      };
+      instance.exists(gaxOptions, assert.ifError);
+    });
   });
 
   describe('get', () => {
@@ -581,6 +654,16 @@ describe('Instance', () => {
       sandbox.stub(instance, 'getMetadata').callsFake(() => done());
 
       instance.get(options, assert.ifError);
+    });
+
+    it('should accept and pass gaxOptions to getMetadata', done => {
+      const gaxOptions = {};
+      (instance.getMetadata as Function) = options => {
+        assert.deepStrictEqual(options.gaxOptions, gaxOptions);
+        done();
+      };
+
+      instance.get({gaxOptions}, assert.ifError);
     });
 
     it('should not require an options object', done => {
@@ -635,9 +718,47 @@ describe('Instance', () => {
         };
       });
 
-      it('should call create', done => {
+      it('should accet and pass createInstanceRequest options to create', done => {
+        const config = 'config';
+        const nodes = 1;
+        const displayName = 'displayName';
+        const labels = {label: 'mayLabael'};
+
         instance.create = options => {
-          assert.strictEqual(options, OPTIONS);
+          assert.strictEqual(options.fieldNames, undefined);
+          assert.strictEqual(options.autoCreate, undefined);
+          assert.deepStrictEqual(options, {config, nodes, displayName, labels});
+          done();
+        };
+        instance.get(
+          {
+            autoCreate: true,
+            config,
+            nodes,
+            displayName,
+            labels,
+            fieldNames: 'labels',
+          },
+          assert.ifError
+        );
+      });
+
+      it('should accept and pass gaxOptions to instance#create', done => {
+        const gaxOptions = {};
+        const options = Object.assign({}, OPTIONS, {gaxOptions});
+        instance.create = options => {
+          assert.deepStrictEqual(options.gaxOptions, gaxOptions);
+          done();
+        };
+
+        instance.get(options, assert.ifError);
+      });
+
+      it('should call create', done => {
+        const createOptions = Object.assign({}, OPTIONS);
+        delete createOptions.autoCreate;
+        instance.create = options => {
+          assert.deepStrictEqual(options, createOptions);
           done();
         };
 
@@ -1071,6 +1192,15 @@ describe('Instance', () => {
       };
       instance.getMetadata({fieldNames}, assert.ifError);
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      instance.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      instance.getMetadata({gaxOptions}, assert.ifError);
+    });
   });
 
   describe('setMetadata', () => {
@@ -1106,6 +1236,15 @@ describe('Instance', () => {
 
       const returnValue = instance.setMetadata(METADATA, callback);
       assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      instance.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      instance.setMetadata(METADATA, gaxOptions, assert.ifError);
     });
 
     it('should not require a callback', () => {

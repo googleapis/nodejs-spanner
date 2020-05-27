@@ -523,6 +523,7 @@ describe('Spanner', () => {
             config: `projects/project-id/instanceConfigs/${CONFIG.config}`,
           },
         });
+        assert.strictEqual(config.gaxOpts, undefined);
         done();
       };
       spanner.createInstance(NAME, CONFIG, assert.ifError);
@@ -546,6 +547,15 @@ describe('Spanner', () => {
       };
 
       spanner.createInstance(NAME, config, assert.ifError);
+    });
+
+    it('should accept gaxOptions', done => {
+      const cfg = Object.assign({}, CONFIG, {gaxOptions: {}});
+      spanner.request = config => {
+        assert.strictEqual(config.gaxOpts, cfg.gaxOptions);
+        done();
+      };
+      spanner.createInstance(NAME, cfg, assert.ifError);
     });
 
     describe('config.nodes', () => {

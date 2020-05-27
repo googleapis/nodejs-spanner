@@ -88,10 +88,11 @@ export interface RequestConfig {
   gaxOpts?: CallOptions;
 }
 export interface CreateInstanceRequest {
-  config: string;
+  config?: string;
   nodes?: number;
   displayName?: string;
   labels?: {[k: string]: string} | null;
+  gaxOptions?: CallOptions;
 }
 /**
  * Translates enum values to string keys.
@@ -380,8 +381,9 @@ class Spanner extends GrpcService {
     };
 
     delete reqOpts.instance.nodes;
+    delete reqOpts.instance.gaxOptions;
 
-    if (config.config.indexOf('/') === -1) {
+    if (config.config!.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
     this.request(
@@ -389,6 +391,7 @@ class Spanner extends GrpcService {
         client: 'InstanceAdminClient',
         method: 'createInstance',
         reqOpts,
+        gaxOpts: config.gaxOptions,
       },
       (err, operation, resp) => {
         if (err) {
