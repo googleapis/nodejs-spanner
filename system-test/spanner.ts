@@ -3535,9 +3535,7 @@ describe('Spanner', () => {
       });
 
       it('should read over invalid database fails', done => {
-        const database = instance
-          .database(generateName('invalid'))
-          .on('error', () => {});
+        const database = instance.database(generateName('invalid'));
         const table = database.table(TABLE_NAME);
 
         const query = {
@@ -3582,7 +3580,7 @@ describe('Spanner', () => {
           keys: ['k1'],
           columns: ALL_COLUMNS,
           gaxOptions: {
-            timeout: 1.5,
+            timeout: 0.1,
           },
         };
 
