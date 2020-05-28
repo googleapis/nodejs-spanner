@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance} from '../src';
+import {Backup, Database, Spanner, Instance, SessionPool} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -66,7 +66,7 @@ describe('Spanner', () => {
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
-  const DATABASE = instance.database(generateName('database'));
+  const DATABASE = instance.database(generateName('database'), {incStep: 1});
   const TABLE_NAME = 'Singers';
 
   before(async () => {
