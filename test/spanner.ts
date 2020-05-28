@@ -1669,6 +1669,22 @@ describe('Spanner with mock server', () => {
       }
     }
 
+    it('should re-use write session as read-session', async () => {
+      const database = newTestDatabase({incStep: 1, max: 1});
+      const pool = database.pool_ as SessionPool;
+      try {
+        // Execute a simple read/write transaction to create 1 write session.
+        const w = executeSimpleUpdate(database, updateSql);
+        const r = database.run(selectSql);
+        await Promise.all([w, r]);
+        assert.strictEqual(pool.size, 1);
+        assert.strictEqual(pool.writes, 0);
+        assert.strictEqual(pool.reads, 1);
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should fail on session pool exhaustion and fail=true', async () => {
       const database = newTestDatabase({
         max: 1,

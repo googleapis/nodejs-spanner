@@ -365,14 +365,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Number of sessions currently being created.
-   * @type {number}
-   */
-  get pending(): number {
-    return this._pending;
-  }
-
-  /**
    * Number of sessions currently being prepared for a read/write transaction
    * before being released into the pool. This number does not include the
    * number of sessions being prepared for a read/write transaction that have
