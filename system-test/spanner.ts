@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance, SessionPool} from '../src';
+import {Backup, Database, Spanner, Instance} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -70,8 +70,8 @@ describe('Spanner', () => {
   const TABLE_NAME = 'Singers';
 
   before(async () => {
+    await deleteOldTestInstances();
     if (generateInstanceForTest) {
-      await deleteOldTestInstances();
       const [, operation] = await instance.create(INSTANCE_CONFIG);
       await operation.promise();
       RESOURCES_TO_CLEAN.push(instance);
