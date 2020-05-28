@@ -156,7 +156,7 @@ const DEFAULTS: SessionPoolOptions = {
   labels: {},
   max: 100,
   maxIdle: 1,
-  min: 10,
+  min: 0,
   writes: 0,
   incStep: 25,
 };

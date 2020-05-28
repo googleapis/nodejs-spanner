@@ -66,7 +66,7 @@ describe('Spanner', () => {
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
-  const DATABASE = instance.database(generateName('database'), {min: 0});
+  const DATABASE = instance.database(generateName('database'));
   const TABLE_NAME = 'Singers';
 
   before(async () => {
@@ -857,7 +857,7 @@ describe('Spanner', () => {
   describe('Databases', () => {
     const TABLE_NAME = 'SingersTest';
     it('should auto create a database', done => {
-      const database = instance.database(generateName('database'), {min: 0});
+      const database = instance.database(generateName('database'));
 
       database.get({autoCreate: true} as GetDatabaseConfig, err => {
         assert.ifError(err);
@@ -915,7 +915,7 @@ describe('Spanner', () => {
     });
 
     it('should return false for databases that do not exist', done => {
-      instance.database('bad-database', {min: 0}).exists((err, exists) => {
+      instance.database('bad-database').exists((err, exists) => {
         assert.ifError(err);
         assert.strictEqual(exists, false);
         done();
@@ -1033,7 +1033,7 @@ describe('Spanner', () => {
 
       // Create a second database since only one pending backup can be created
       // per database.
-      database2 = instance.database(generateName('database'), {min: 0});
+      database2 = instance.database(generateName('database'));
       const [, database2CreateOperation] = await database2.create({
         schema: `
         CREATE TABLE Albums (
@@ -1045,7 +1045,7 @@ describe('Spanner', () => {
       RESOURCES_TO_CLEAN.push(database2);
 
       // Initialize a database instance to restore to.
-      restoreDatabase = instance.database(generateName('database'), {min: 0});
+      restoreDatabase = instance.database(generateName('database'));
 
       // Create backups.
       backup1 = instance.backup(backup1Name);
