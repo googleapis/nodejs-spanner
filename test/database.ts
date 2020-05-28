@@ -23,7 +23,7 @@ import * as extend from 'extend';
 import {ApiError, util} from '@google-cloud/common';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {Transform} from 'stream';
+import {Transform, Duplex} from 'stream';
 import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
@@ -1559,7 +1559,8 @@ describe('Database', () => {
   });
 
   describe('createSession', () => {
-    const OPTIONS = {};
+    const gaxOptions = {};
+    const OPTIONS = {gaxOptions};
 
     it('should make the correct request', done => {
       database.request = config => {
@@ -1569,7 +1570,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, OPTIONS);
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
 
         done();
       };
@@ -1583,7 +1584,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.gaxOpts, undefined);
 
         done();
       };
@@ -1897,18 +1898,85 @@ describe('Database', () => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'listSessions');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        assert.strictEqual(config.gaxOpts, gaxOpts);
+        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
         done();
       };
 
       database.getSessions(options, assert.ifError);
     });
 
-    it('should not require a query', done => {
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+      const options = {a: 'a', gaxOptions: gaxOptions};
+      const expectedReqOpts = extend(
+        {},
+        options,
+        {
+          database: database.formattedName_,
+        },
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+      delete expectedReqOpts.gaxOptions;
+
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        done();
+      };
+
+      database.getSessions(options, assert.ifError);
+    });
+
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+
+      const optionsPageSize = 5;
+      const optionsPageToken = 'optionsToken';
+      const options = Object.assign(
+        {},
+        {
+          pageSize: optionsPageSize,
+          pageToken: optionsPageToken,
+          gaxOptions,
+        }
+      );
+      const expectedReqOpts = extend(
+        {},
+        options,
+        {
+          database: database.formattedName_,
+        },
+        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+      delete expectedReqOpts.gaxOptions;
+
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        done();
+      };
+
+      database.getSessions(options, assert.ifError);
+    });
+
+    it('should not require options', done => {
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
         done();
       };
       database.getSessions(assert.ifError);
@@ -1945,6 +2013,110 @@ describe('Database', () => {
         assert.strictEqual(resp, RESPONSE);
         done();
       });
+    });
+  });
+
+  describe('getSessionsStream', () => {
+    const OPTIONS = {
+      gaxOptions: {autoPaginate: false},
+    } as db.GetSessionsOptions;
+    const returnValue = {} as Duplex;
+
+    it('should make and return the correct gax API call', () => {
+      const expectedReqOpts = extend({}, OPTIONS, {
+        database: database.formattedName_,
+      });
+      delete expectedReqOpts.gaxOptions;
+
+      database.requestStream = config => {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'listSessionsStream');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, OPTIONS);
+
+        assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        return returnValue;
+      };
+
+      const returnedValue = database.getSessionsStream(OPTIONS);
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+      const options = {gaxOptions};
+      const expectedReqOpts = extend(
+        {},
+        {
+          database: database.formattedName_,
+        },
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+
+      database.requestStream = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        return returnValue;
+      };
+
+      const returnedValue = database.getSessionsStream(options);
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+
+      const optionsPageSize = 5;
+      const optionsPageToken = 'optionsToken';
+      const options = {
+        pageSize: optionsPageSize,
+        pageToken: optionsPageToken,
+        gaxOptions,
+      };
+      const expectedReqOpts = extend(
+        {},
+        {
+          database: database.formattedName_,
+        },
+        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+
+      database.requestStream = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        return returnValue;
+      };
+
+      const returnedValue = database.getSessionsStream(options);
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('should not require options', () => {
+      database.requestStream = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+
+        return returnValue;
+      };
+
+      const returnedValue = database.getSessionsStream();
+      assert.strictEqual(returnedValue, returnValue);
     });
   });
 

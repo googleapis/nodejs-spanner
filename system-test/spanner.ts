@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner} from '../src';
+import {Backup, Database, Spanner, Instance} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -39,7 +39,7 @@ import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetad
 
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
-const LABEL = `gcloud-tests-${RUN_ID}`;
+const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
@@ -65,29 +65,66 @@ describe('Spanner', () => {
   };
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
+  const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
+  const DATABASE = instance.database(generateName('database'));
+  const TABLE_NAME = 'Singers';
 
   before(async () => {
     if (generateInstanceForTest) {
       await deleteOldTestInstances();
       const [, operation] = await instance.create(INSTANCE_CONFIG);
       await operation.promise();
+      RESOURCES_TO_CLEAN.push(instance);
     } else {
       console.log(
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
     }
+    const [, operation] = await DATABASE.create({
+      schema: `
+          CREATE TABLE ${TABLE_NAME} (
+            SingerId STRING(1024) NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId)`,
+    });
+    await operation.promise();
+    RESOURCES_TO_CLEAN.push(DATABASE);
   });
 
   after(async () => {
     if (generateInstanceForTest) {
-      await deleteTestInstances();
+      // Deleting all backups before an instance can be deleted.
+      await Promise.all(
+        RESOURCES_TO_CLEAN.filter(
+          resource => resource instanceof Backup
+        ).map(backup => backup.delete())
+      );
+      /**
+       * Deleting instances created during this test.
+       * All databasess will automatically be deleted with instance.
+       * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+       */
+      await Promise.all(
+        RESOURCES_TO_CLEAN.filter(
+          resource => resource instanceof Instance
+        ).map(instance => instance.delete())
+      );
+    } else {
+      /**
+       * Limit the number of concurrent 'Administrative requests per minute'
+       * Not to exceed quota
+       * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
+       */
+      const limit = pLimit(5);
+      await Promise.all(
+        RESOURCES_TO_CLEAN.map(resource => limit(() => resource.delete()))
+      );
     }
   });
 
   describe('types', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const database = instance.database(generateName('database')) as any;
-    const table = database.table('TypeCheck');
+    const TABLE_NAME = 'TypeCheck';
+    const table = DATABASE.table(TABLE_NAME);
 
     function insert(insertData, callback) {
       const id = generateName('id');
@@ -100,7 +137,7 @@ describe('Spanner', () => {
           return;
         }
 
-        database.run(
+        DATABASE.run(
           {
             sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
             params: {
@@ -120,10 +157,9 @@ describe('Spanner', () => {
     }
 
     before(done => {
-      database.create(
-        {
-          schema: `
-            CREATE TABLE TypeCheck (
+      DATABASE.updateSchema(
+        `
+            CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               BytesValue BYTES(MAX),
               BoolValue BOOL,
@@ -142,7 +178,6 @@ describe('Spanner', () => {
               CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
             ) PRIMARY KEY (Key)
           `,
-        },
         execAfterOperationComplete(done)
       );
     });
@@ -165,7 +200,7 @@ describe('Spanner', () => {
         table.insert(data, err => {
           assert.ifError(err);
 
-          database.run(
+          DATABASE.run(
             {
               sql: `SELECT * FROM \`${table.name}\` WHERE Key = @a OR KEY = @b`,
               params: {
@@ -195,7 +230,7 @@ describe('Spanner', () => {
       it('should correctly decode structs', done => {
         const query = 'SELECT ARRAY(SELECT as struct 1, "hello")';
 
-        database.run(query, (err, rows) => {
+        DATABASE.run(query, (err, rows) => {
           assert.ifError(err);
 
           const expected = [
@@ -235,7 +270,7 @@ describe('Spanner', () => {
         const query =
           'SELECT 1 as id, ARRAY(select as struct 2 as id, "hello" as name)';
 
-        database.run(query, (err, rows) => {
+        DATABASE.run(query, (err, rows) => {
           assert.ifError(err);
 
           const expected = [
@@ -694,10 +729,7 @@ describe('Spanner', () => {
       assert.deepStrictEqual(metadata['labels'], {});
       assert.strictEqual(metadata.name, instance.formattedName_);
       assert.ok(!metadata['config']);
-      assert.strictEqual(
-        metadata['displayName'],
-        instance.formattedName_.split('/').pop()
-      );
+      assert.ok(metadata['displayName']);
       assert.strictEqual(metadata['nodeCount'], 0);
       assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
     });
@@ -714,6 +746,7 @@ describe('Spanner', () => {
 
       instance.get(config, err => {
         assert.ifError(err);
+        RESOURCES_TO_CLEAN.push(instance);
         instance.getMetadata(done);
       });
     });
@@ -754,7 +787,7 @@ describe('Spanner', () => {
         this.skip();
       }
       const newData = {
-        displayName: 'new-display-name',
+        displayName: 'new-display-name-' + shortUUID(),
       };
 
       instance.setMetadata(
@@ -822,35 +855,21 @@ describe('Spanner', () => {
   });
 
   describe('Databases', () => {
-    const database = instance.database(generateName('database'));
-
-    before(done => {
-      database.create(execAfterOperationComplete(done));
-    });
-
-    after(done => {
-      database.close(err => {
-        if (err) {
-          return done(err);
-        }
-
-        database.delete(done);
-      });
-    });
-
+    const TABLE_NAME = 'SingersTest';
     it('should auto create a database', done => {
       const database = instance.database(generateName('database'));
 
       database.get({autoCreate: true} as GetDatabaseConfig, err => {
         assert.ifError(err);
+        RESOURCES_TO_CLEAN.push(database);
         database.getMetadata(done);
       });
     });
 
     it('should have created the database', done => {
-      database.getMetadata((err, metadata) => {
+      DATABASE.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual(metadata!.name, database.formattedName_);
+        assert.strictEqual(metadata!.name, DATABASE.formattedName_);
         assert.strictEqual(metadata!.state, 'READY');
         done();
       });
@@ -888,7 +907,7 @@ describe('Spanner', () => {
     });
 
     it('should return true for databases that exist', done => {
-      database.exists((err, exists) => {
+      DATABASE.exists((err, exists) => {
         assert.ifError(err);
         assert.strictEqual(exists, true);
         done();
@@ -905,14 +924,14 @@ describe('Spanner', () => {
 
     it('should create a table', done => {
       const createTableStatement = `
-        CREATE TABLE Singers (
+        CREATE TABLE ${TABLE_NAME} (
           SingerId INT64 NOT NULL,
           FirstName STRING(1024),
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
         ) PRIMARY KEY(SingerId)`;
 
-      database.updateSchema(
+      DATABASE.updateSchema(
         [createTableStatement],
         execAfterOperationComplete(err => {
           assert.ifError(err);
@@ -921,11 +940,14 @@ describe('Spanner', () => {
             return str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
           }
 
-          database.getSchema((err, statements) => {
+          DATABASE.getSchema((err, statements) => {
             assert.ifError(err);
-            assert.strictEqual(
-              replaceNewLinesAndSpacing(statements![0]),
-              replaceNewLinesAndSpacing(createTableStatement)
+            assert.ok(
+              statements!.some(
+                s =>
+                  replaceNewLinesAndSpacing(s) ===
+                  replaceNewLinesAndSpacing(createTableStatement)
+              )
             );
             done();
           });
@@ -938,13 +960,13 @@ describe('Spanner', () => {
         this.skip();
       }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
-      const [databaseMetadata] = await database.getMetadata();
+      const [databaseMetadata] = await DATABASE.getMetadata();
       const databaseFullName = databaseMetadata.name;
 
       // List operations and ensure operation for creation of test database exists.
       const [databaseCreateOperations] = await instance.getDatabaseOperations({
         filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata) AND
-                 (metadata.database:${database.formattedName_})`,
+                 (metadata.database:${DATABASE.formattedName_})`,
       });
 
       // Validate operation and its metadata.
@@ -965,11 +987,11 @@ describe('Spanner', () => {
         this.skip();
       }
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
-      const [databaseMetadata] = await database.getMetadata();
+      const [databaseMetadata] = await DATABASE.getMetadata();
       const databaseFullName = databaseMetadata.name;
 
       // List operations.
-      const [databaseOperations] = await database.getOperations();
+      const [databaseOperations] = await DATABASE.getOperations();
 
       // Validate operation has at least the create operation for the database.
       assert.ok(databaseOperations.length > 0);
@@ -1002,17 +1024,9 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      database1 = instance.database(generateName('database'));
-      const [, operation] = await database1.create({
-        schema: `
-              CREATE TABLE Singers (
-                SingerId STRING(1024) NOT NULL,
-                Name STRING(1024),
-              ) PRIMARY KEY(SingerId)`,
-      });
-      await operation.promise();
+      database1 = DATABASE;
 
-      await database1.table('Singers').insert({
+      await database1.table(TABLE_NAME).insert({
         SingerId: generateName('id'),
         Name: generateName('name'),
       });
@@ -1022,12 +1036,13 @@ describe('Spanner', () => {
       database2 = instance.database(generateName('database'));
       const [, database2CreateOperation] = await database2.create({
         schema: `
-              CREATE TABLE Albums (
-                AlbumId STRING(1024) NOT NULL,
-                AlbumTitle STRING(1024) NOT NULL,
-              ) PRIMARY KEY(AlbumId)`,
+        CREATE TABLE Albums (
+          AlbumId STRING(1024) NOT NULL,
+          AlbumTitle STRING(1024) NOT NULL,
+          ) PRIMARY KEY(AlbumId)`,
       });
       await database2CreateOperation.promise();
+      RESOURCES_TO_CLEAN.push(database2);
 
       // Initialize a database instance to restore to.
       restoreDatabase = instance.database(generateName('database'));
@@ -1065,20 +1080,7 @@ describe('Spanner', () => {
       // Wait for backups to finish.
       await backup1Operation.promise();
       await backup2Operation.promise();
-    });
-
-    after(async () => {
-      if (IS_EMULATOR_ENABLED) {
-        return;
-      }
-
-      await restoreDatabase.delete();
-
-      await backup1.delete();
-      await backup2.delete();
-
-      await database1.delete();
-      await database2.delete();
+      RESOURCES_TO_CLEAN.push(...[backup1, backup2]);
     });
 
     function futureDateByHours(futureHours: number): number {
@@ -1156,7 +1158,7 @@ describe('Spanner', () => {
       });
       const [page2] = await instance.getBackups({
         pageSize: 1,
-        pageToken: resp1!.nextPageToken,
+        pageToken: resp1!.nextPageToken!,
         gaxOptions: {autoPaginate: false},
       });
       const [page3] = await instance.getBackups({
@@ -1183,6 +1185,7 @@ describe('Spanner', () => {
 
       // Wait for restore to complete.
       await restoreOperation.promise();
+      RESOURCES_TO_CLEAN.push(restoreDatabase);
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
       assert.ok(
@@ -1198,7 +1201,7 @@ describe('Spanner', () => {
 
       // Validate new database has restored data.
       const [rows] = await restoreDatabase
-        .table('Singers')
+        .table(TABLE_NAME)
         .read({columns: ['SingerId', 'Name']});
       const results = rows.map(row => row.toJSON);
       assert.strictEqual(results.length, 1);
@@ -1315,18 +1318,9 @@ describe('Spanner', () => {
   });
 
   describe('Sessions', () => {
-    const database = instance.database(generateName('database'));
-    const session = database.session();
+    const session = DATABASE.session();
 
     before(async () => {
-      const [, operation] = await database.create({
-        schema: `
-              CREATE TABLE Singers (
-                SingerId STRING(1024) NOT NULL,
-                Name STRING(1024),
-              ) PRIMARY KEY(SingerId)`,
-      });
-      await operation.promise();
       await session.create();
     });
 
@@ -1344,7 +1338,7 @@ describe('Spanner', () => {
 
     it('should get a session by name', done => {
       const shortName = session.formattedName_!.split('/').pop();
-      const sessionByShortName = database.session(shortName);
+      const sessionByShortName = DATABASE.session(shortName);
 
       sessionByShortName.getMetadata((err, metadataByName) => {
         assert.ifError(err);
@@ -1362,7 +1356,7 @@ describe('Spanner', () => {
 
     it('should batch create sessions', async () => {
       const count = 5;
-      const [sessions] = await database.batchCreateSessions({count});
+      const [sessions] = await DATABASE.batchCreateSessions({count});
 
       assert.strictEqual(sessions.length, count);
 
@@ -1371,16 +1365,14 @@ describe('Spanner', () => {
   });
 
   describe('Tables', () => {
-    const database = instance.database(generateName('database'));
-    const table = database.table('Singers');
+    const TABLE_NAME = 'SingersTables';
+    const table = DATABASE.table(TABLE_NAME);
 
     before(() => {
-      return database
-        .create()
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return table.create(`
-            CREATE TABLE Singers (
+      return table
+        .create(
+          `
+            CREATE TABLE ${TABLE_NAME} (
               SingerId STRING(1024) NOT NULL,
               Name STRING(1024),
               Float FLOAT64,
@@ -1391,22 +1383,17 @@ describe('Spanner', () => {
               Accents ARRAY<STRING(1024)>,
               PhoneNumbers ARRAY<INT64>,
               HasGear BOOL,
-            ) PRIMARY KEY(SingerId)`);
-        })
+            ) PRIMARY KEY(SingerId)`
+        )
         .then(onPromiseOperationComplete);
     });
 
     after(() => {
-      return table
-        .delete()
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return database.delete();
-        });
+      return table.delete().then(onPromiseOperationComplete);
     });
 
     it('should throw an error for non-existant tables', done => {
-      const table = database.table(generateName('nope'));
+      const table = DATABASE.table(generateName('nope'));
 
       table.insert(
         {
@@ -1627,7 +1614,7 @@ describe('Spanner', () => {
       const id2 = 2;
       const name2 = generateName('name2');
 
-      const table = database.table('SingersComposite');
+      const table = DATABASE.table('SingersComposite');
 
       const keys = ([
         [id1, name1],
@@ -1702,8 +1689,8 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run(
-            'SELECT * FROM Singers ORDER BY SingerId',
+          DATABASE.run(
+            `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
             (err, rows) => {
               assert.ifError(err);
 
@@ -1834,9 +1821,9 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        database.run(
+        DATABASE.run(
           {
-            sql: 'SELECT * FROM Singers WHERE SingerId=@id',
+            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
             params: {id: ID},
           },
           options,
@@ -1853,14 +1840,13 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        database
-          .run(
-            {
-              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-              params: {id: ID},
-            },
-            options
-          )
+        DATABASE.run(
+          {
+            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+            params: {id: ID},
+          },
+          options
+        )
           .then(data => {
             const rows = (data[0] as {}) as Row[];
             assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
@@ -1875,14 +1861,13 @@ describe('Spanner', () => {
         };
         let row;
 
-        const stream = database
-          .runStream(
-            {
-              sql: 'SELECT * FROM Singers WHERE SingerId=@id',
-              params: {id: ID},
-            },
-            options
-          )
+        const stream = DATABASE.runStream(
+          {
+            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+            params: {id: ID},
+          },
+          options
+        )
           .on('error', done)
           .once('data', row_ => {
             row = row_;
@@ -1895,11 +1880,11 @@ describe('Spanner', () => {
       });
 
       it('should allow "SELECT 1" queries', done => {
-        database.run('SELECT 1', done);
+        DATABASE.run('SELECT 1', done);
       });
 
       it('should fail invalid queries', done => {
-        database.run('SELECT Apples AND Oranges', err => {
+        DATABASE.run('SELECT Apples AND Oranges', err => {
           assert.strictEqual(err!.code, 3);
           done();
         });
@@ -1911,7 +1896,7 @@ describe('Spanner', () => {
             FROM (SELECT 'a' AS C1, 1 AS C2 UNION ALL SELECT 'b' AS C1, 2 AS C2)
             ORDER BY C1 ASC)`;
 
-        database.run(query, (err, rows) => {
+        DATABASE.run(query, (err, rows) => {
           assert.ifError(err);
 
           const values = rows![0][0].value;
@@ -1937,7 +1922,7 @@ describe('Spanner', () => {
         const query = `
           SELECT ARRAY(SELECT AS STRUCT * FROM (SELECT 'a', 1) WHERE 0 = 1)`;
 
-        database.run(query, (err, rows) => {
+        DATABASE.run(query, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows![0][0].value.length, 0);
           done();
@@ -1954,7 +1939,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, true);
               done();
@@ -1972,7 +1957,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, null);
               done();
@@ -1989,7 +1974,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, values);
               done();
@@ -2012,7 +1997,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2033,7 +2018,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2050,7 +2035,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value.value, '1234');
               done();
@@ -2068,7 +2053,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, null);
               done();
@@ -2085,7 +2070,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const expected = values.map(val => {
@@ -2116,7 +2101,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2137,7 +2122,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2154,7 +2139,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value.value, 2.2);
               done();
@@ -2172,7 +2157,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, null);
               done();
@@ -2189,7 +2174,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const expected = values.map(val => {
@@ -2220,7 +2205,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2241,7 +2226,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2256,7 +2241,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value.value, 'Infinity');
               done();
@@ -2271,7 +2256,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value.value, '-Infinity');
               done();
@@ -2286,7 +2271,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value.value, 'NaN');
               done();
@@ -2303,7 +2288,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const expected = values.map(val => {
@@ -2328,7 +2313,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, 'abc');
               done();
@@ -2346,7 +2331,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, null);
               done();
@@ -2363,7 +2348,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, values);
               done();
@@ -2386,7 +2371,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2407,7 +2392,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2426,7 +2411,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, buffer);
               done();
@@ -2444,7 +2429,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, null);
               done();
@@ -2461,7 +2446,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, values);
               done();
@@ -2484,7 +2469,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2505,7 +2490,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2524,7 +2509,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, timestamp);
               done();
@@ -2542,7 +2527,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, null);
               done();
@@ -2563,7 +2548,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows[0][0].value, values);
               done();
@@ -2586,7 +2571,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2607,7 +2592,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2626,7 +2611,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const returnedDate = Spanner.date(rows[0][0].value);
@@ -2647,7 +2632,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows[0][0].value, null);
               done();
@@ -2664,7 +2649,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const returnedValues = rows[0][0].value.map(val => {
@@ -2692,7 +2677,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, values);
               done();
@@ -2713,7 +2698,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
@@ -2734,7 +2719,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0].toJSON();
@@ -2767,7 +2752,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows![0];
@@ -2789,7 +2774,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0].toJSON();
@@ -2824,7 +2809,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows![0].toJSON();
@@ -2842,7 +2827,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0];
@@ -2863,7 +2848,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0];
@@ -2894,7 +2879,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows![0].toJSON();
@@ -2921,7 +2906,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0];
@@ -2939,7 +2924,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0];
@@ -2961,7 +2946,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0];
@@ -2982,7 +2967,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const row = rows[0];
@@ -3007,7 +2992,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               rows = rows.map(row => row.toJSON());
@@ -3055,7 +3040,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows!.length, 0);
 
@@ -3085,7 +3070,7 @@ describe('Spanner', () => {
               },
             };
 
-            database.run(query, (err, rows) => {
+            DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows!.length, 0);
               done();
@@ -3095,7 +3080,8 @@ describe('Spanner', () => {
       });
 
       describe('large reads', () => {
-        const table = database.table('LargeReads');
+        const TABLE_NAME = 'LargeReads';
+        const table = DATABASE.table(TABLE_NAME);
 
         const expectedRow = {
           Key: generateName('key'),
@@ -3127,7 +3113,7 @@ describe('Spanner', () => {
           return table
             .create(
               `
-              CREATE TABLE LargeReads (
+              CREATE TABLE ${TABLE_NAME} (
                 Key STRING(MAX) NOT NULL,
                 StringValue STRING(MAX),
                 StringArray ARRAY<STRING(MAX)>,
@@ -3181,7 +3167,7 @@ describe('Spanner', () => {
             },
           };
 
-          database.run(query, (err, rows) => {
+          DATABASE.run(query, (err, rows) => {
             assert.ifError(err);
 
             const row = rows[0].toJSON();
@@ -3255,7 +3241,8 @@ describe('Spanner', () => {
     });
 
     describe('read', () => {
-      const table = database.table('ReadTestTable');
+      const TABLE_NAME = 'ReadTestTable';
+      const table = DATABASE.table('ReadTestTable');
 
       const ALL_COLUMNS = ['Key', 'StringValue'];
 
@@ -3263,15 +3250,15 @@ describe('Spanner', () => {
         return table
           .create(
             `
-            CREATE TABLE ReadTestTable (
+            CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
             ) PRIMARY KEY (Key)`
           )
           .then(onPromiseOperationComplete)
           .then(() => {
-            return database.updateSchema(`
-              CREATE INDEX ReadByValue ON ReadTestTable(StringValue)`);
+            return DATABASE.updateSchema(`
+              CREATE INDEX ReadByValue ON ${TABLE_NAME}(StringValue)`);
           })
           .then(onPromiseOperationComplete)
           .then(() => {
@@ -3540,7 +3527,7 @@ describe('Spanner', () => {
             });
           }
 
-          table.read(query, (err, rows) => {
+          table.read(query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
           });
@@ -3549,7 +3536,7 @@ describe('Spanner', () => {
 
       it('should read over invalid database fails', done => {
         const database = instance.database(generateName('invalid'));
-        const table = database.table('ReadTestTable');
+        const table = database.table(TABLE_NAME);
 
         const query = {
           keys: ['k1'],
@@ -3563,7 +3550,7 @@ describe('Spanner', () => {
       });
 
       it('should read over invalid table fails', done => {
-        const table = database.table('ReadTestTablezzz');
+        const table = DATABASE.table('ReadTestTablezzz');
 
         const query = {
           keys: ['k1'],
@@ -3606,19 +3593,7 @@ describe('Spanner', () => {
   });
 
   describe('SessionPool', () => {
-    const database = instance.database(generateName('database'));
-    const table = database.table('Singers');
-
-    before(async () => {
-      const [, operation] = await database.create({
-        schema: `
-            CREATE TABLE Singers (
-              SingerId STRING(1024) NOT NULL,
-              Name STRING(1024),
-            ) PRIMARY KEY(SingerId)`,
-      });
-      await operation.promise();
-    });
+    const table = DATABASE.table(TABLE_NAME);
 
     it('should insert and query a row', done => {
       const id = generateName('id');
@@ -3632,12 +3607,15 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run('SELECT * FROM Singers', (err, rows) => {
+          DATABASE.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
             assert.ifError(err);
-            assert.deepStrictEqual(rows!.pop()!.toJSON(), {
-              SingerId: id,
-              Name: name,
-            });
+            assert.ok(
+              rows!.some(
+                r =>
+                  JSON.stringify(r.toJSON()) ===
+                  JSON.stringify({SingerId: id, Name: name})
+              )
+            );
             done();
           });
         }
@@ -3665,8 +3643,8 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          database.run(
-            'SELECT * FROM Singers ORDER BY SingerId',
+          DATABASE.run(
+            `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
             (err, rows) => {
               assert.ifError(err);
 
@@ -3771,11 +3749,11 @@ describe('Spanner', () => {
   });
 
   describe('Transactions', () => {
-    const database = instance.database(generateName('database'));
-    const table = database.table('TxnTable');
+    const TABLE_NAME = 'TxnTable';
+    const table = DATABASE.table(TABLE_NAME);
 
     const schema = `
-      CREATE TABLE TxnTable (
+      CREATE TABLE ${TABLE_NAME} (
         Key STRING(MAX) NOT NULL,
         StringValue STRING(MAX),
         NumberValue INT64
@@ -3786,7 +3764,6 @@ describe('Spanner', () => {
     const records: any[] = [];
 
     before(async () => {
-      await onPromiseOperationComplete(await database.create());
       await onPromiseOperationComplete(await table.create(schema));
 
       for (let i = 0; i < 5; i++) {
@@ -3809,10 +3786,10 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
+        DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
             assert.ifError(err);
             assert.strictEqual(rows.length, records.length);
 
@@ -3823,7 +3800,7 @@ describe('Spanner', () => {
       });
 
       it('should read keys from a table', done => {
-        database.getSnapshot((err, transaction) => {
+        DATABASE.getSnapshot((err, transaction) => {
           assert.ifError(err);
 
           const query = ({
@@ -3851,10 +3828,10 @@ describe('Spanner', () => {
           readTimestamp: records[0].commitTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
+        DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run('SELECT * FROM TxnTable', (err, rows) => {
+          transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
             assert.ifError(err);
 
             assert.strictEqual(rows.length, 1);
@@ -3871,7 +3848,7 @@ describe('Spanner', () => {
       });
 
       it('should accept a min timestamp', done => {
-        const query = 'SELECT * FROM TxnTable';
+        const query = 'SELECT * FROM ' + TABLE_NAME;
 
         const options = {
           minReadTimestamp: new PreciseDate(),
@@ -3879,7 +3856,7 @@ describe('Spanner', () => {
 
         // minTimestamp can only be used in single use transactions
         // so we can't use database.getSnapshot here
-        database.run(query, options, (err, rows) => {
+        DATABASE.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows!.length, records.length);
           done();
@@ -3891,11 +3868,11 @@ describe('Spanner', () => {
           exactStaleness: Date.now() - records[1].localTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
+        DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(
-            'SELECT * FROM TxnTable ORDER BY Key',
+            'SELECT * FROM ' + TABLE_NAME + ' ORDER BY Key',
             (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows.length, 2);
@@ -3923,7 +3900,7 @@ describe('Spanner', () => {
 
         // maxStaleness can only be used in single use transactions
         // so we can't use database.getSnapshot here
-        database.run(query, options, (err, rows) => {
+        DATABASE.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows!.length, records.length);
           done();
@@ -3935,7 +3912,7 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
+        DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -3972,7 +3949,7 @@ describe('Spanner', () => {
           readTimestamp: records[records.length - 1].commitTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
+        DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -4012,7 +3989,7 @@ describe('Spanner', () => {
           exactStaleness: Date.now() - records[0].localTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
+        DATABASE.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -4045,12 +4022,15 @@ describe('Spanner', () => {
 
     describe('dml', () => {
       before(done => {
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.runUpdate(
             {
-              sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+              sql:
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES(@key, @str)',
               params: {
                 key: 'k999',
                 str: 'abc',
@@ -4065,13 +4045,15 @@ describe('Spanner', () => {
       });
 
       it('should return rowCount from runUpdate', done => {
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.runUpdate(
             {
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {
                 key: 'k999',
                 str: 'abcd',
@@ -4087,13 +4069,15 @@ describe('Spanner', () => {
       });
 
       it('should return rowCount from run', done => {
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(
             {
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {
                 key: 'k999',
                 str: 'abcd',
@@ -4116,13 +4100,15 @@ describe('Spanner', () => {
         const str = 'abcd';
         const num = 11;
 
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
             .runUpdate({
               sql:
-                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES (@key, @str)',
               params: {key, str},
             })
             .then(data => {
@@ -4131,7 +4117,9 @@ describe('Spanner', () => {
 
               return transaction!.runUpdate({
                 sql:
-                  'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+                  'UPDATE ' +
+                  TABLE_NAME +
+                  ' t SET t.NumberValue = @num WHERE t.KEY = @key',
                 params: {key, num},
               });
             })
@@ -4140,7 +4128,7 @@ describe('Spanner', () => {
               assert.strictEqual(rowCount, 1);
 
               return transaction!.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
                 params: {key},
               });
             })
@@ -4164,18 +4152,20 @@ describe('Spanner', () => {
         const key = 'k999';
         const str = 'abcd';
 
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
             .runUpdate({
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {key, str},
             })
             .then(() => {
               return transaction!.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
                 params: {key},
               });
             })
@@ -4193,19 +4183,21 @@ describe('Spanner', () => {
         const key = 'k999';
         const str = 'abcd';
 
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
             .runUpdate({
               sql:
-                'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+                'UPDATE ' +
+                TABLE_NAME +
+                ' t SET t.StringValue = @str WHERE t.Key = @key',
               params: {key, str},
             })
             .then(() => transaction!.rollback())
             .then(() => {
-              return database.run({
-                sql: 'SELECT * FROM TxnTable WHERE Key = @key',
+              return DATABASE.run({
+                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
                 params: {key},
               });
             })
@@ -4222,13 +4214,15 @@ describe('Spanner', () => {
       it('should handle using both dml and insert methods', done => {
         const str = 'dml+mutation';
 
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
             .runUpdate({
               sql:
-                'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES (@key, @str)',
               params: {
                 key: 'k1001',
                 str,
@@ -4243,8 +4237,9 @@ describe('Spanner', () => {
               return transaction!.commit();
             })
             .then(() => {
-              return database.run({
-                sql: 'SELECT * FROM TxnTable WHERE StringValue = @str',
+              return DATABASE.run({
+                sql:
+                  'SELECT * FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
                 params: {str},
               });
             })
@@ -4267,10 +4262,12 @@ describe('Spanner', () => {
       });
 
       it('should execute a simple pdml statement', done => {
-        database.runPartitionedUpdate(
+        DATABASE.runPartitionedUpdate(
           {
             sql:
-              'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+              'UPDATE ' +
+              TABLE_NAME +
+              ' t SET t.StringValue = @str WHERE t.Key = @key',
             params: {
               key: 'k1',
               str: 'abcde',
@@ -4294,23 +4291,23 @@ describe('Spanner', () => {
 
         const str = new Array(1000).fill('b').join('\n');
 
-        return database
-          .runTransactionAsync(transaction => {
-            transaction.insert('TxnTable', tableData);
-            return transaction.commit();
-          })
+        return DATABASE.runTransactionAsync(transaction => {
+          transaction.insert('TxnTable', tableData);
+          return transaction.commit();
+        })
           .then(() => {
-            return database.runPartitionedUpdate({
+            return DATABASE.runPartitionedUpdate({
               sql:
-                "UPDATE TxnTable t SET t.StringValue = @str WHERE t.StringValue = 'a'",
+                "UPDATE ' + TABLE_NAME + ' t SET t.StringValue = @str WHERE t.StringValue = 'a'",
               params: {str},
             });
           })
           .then(([rowCount]) => {
             assert.strictEqual(rowCount, count);
 
-            return database.run({
-              sql: 'SELECT Key FROM TxnTable WHERE StringValue = @str',
+            return DATABASE.run({
+              sql:
+                'SELECT Key FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
               params: {str},
             });
           })
@@ -4326,22 +4323,31 @@ describe('Spanner', () => {
       const num = 11;
 
       const insert = {
-        sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES (@key, @str)',
+        sql:
+          'INSERT INTO ' +
+          TABLE_NAME +
+          ' (Key, StringValue) VALUES (@key, @str)',
         params: {key, str},
       };
 
       const update = {
-        sql: 'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+        sql:
+          'UPDATE ' +
+          TABLE_NAME +
+          ' t SET t.NumberValue = @num WHERE t.KEY = @key',
         params: {key, num},
       };
 
       // this should fail since we're not binding params
       const borked = {
-        sql: 'UPDATE TxnTable t SET t.NumberValue = @num WHERE t.KEY = @key',
+        sql:
+          'UPDATE ' +
+          TABLE_NAME +
+          ' t SET t.NumberValue = @num WHERE t.KEY = @key',
       };
 
       it('should execute a single statement', async () => {
-        const rowCounts = await database.runTransactionAsync(async txn => {
+        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
           const [rowCounts] = await txn.batchUpdate([insert]);
           await txn.rollback();
           return rowCounts;
@@ -4351,7 +4357,7 @@ describe('Spanner', () => {
       });
 
       it('should return an error when no statements are supplied', async () => {
-        const err = await database.runTransactionAsync(async txn => {
+        const err = await DATABASE.runTransactionAsync(async txn => {
           let err;
 
           try {
@@ -4372,7 +4378,7 @@ describe('Spanner', () => {
       });
 
       it('should run multiple statements that depend on each other', async () => {
-        const rowCounts = await database.runTransactionAsync(async txn => {
+        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
           const [rowCounts] = await txn.batchUpdate([insert, update]);
           await txn.rollback();
           return rowCounts;
@@ -4382,7 +4388,7 @@ describe('Spanner', () => {
       });
 
       it('should run after a runUpdate call', async () => {
-        const rowCounts = await database.runTransactionAsync(async txn => {
+        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
           await txn.runUpdate(insert);
           const [rowCounts] = await txn.batchUpdate([update]);
           await txn.rollback();
@@ -4393,7 +4399,7 @@ describe('Spanner', () => {
       });
 
       it('should run before a runUpdate call', async () => {
-        const rowCounts = await database.runTransactionAsync(async txn => {
+        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
           const [rowCounts] = await txn.batchUpdate([insert]);
           await txn.runUpdate(update);
           await txn.rollback();
@@ -4404,7 +4410,7 @@ describe('Spanner', () => {
       });
 
       it('should stop executing statements if an error occurs', async () => {
-        const err = await database.runTransactionAsync(async txn => {
+        const err = await DATABASE.runTransactionAsync(async txn => {
           let err;
 
           try {
@@ -4426,7 +4432,7 @@ describe('Spanner', () => {
       });
 
       it('should ignore any additional statement errors', async () => {
-        const err = await database.runTransactionAsync(async txn => {
+        const err = await DATABASE.runTransactionAsync(async txn => {
           let err;
 
           try {
@@ -4446,7 +4452,7 @@ describe('Spanner', () => {
 
     describe('read/write', () => {
       it('should throw an error for mismatched columns', done => {
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           const rows = [
@@ -4478,7 +4484,7 @@ describe('Spanner', () => {
       });
 
       it('should commit a transaction', done => {
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.insert(table.name, {
@@ -4491,7 +4497,7 @@ describe('Spanner', () => {
       });
 
       it('should rollback a transaction', done => {
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run('SELECT * FROM TxnTable', err => {
@@ -4515,7 +4521,7 @@ describe('Spanner', () => {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          database.runTransaction((err, transaction) => {
+          DATABASE.runTransaction((err, transaction) => {
             assert.ifError(err);
 
             incrementValue(err => {
@@ -4530,7 +4536,7 @@ describe('Spanner', () => {
           });
 
           function incrementValue(callback) {
-            database.runTransaction((err, transaction) => {
+            DATABASE.runTransaction((err, transaction) => {
               assert.ifError(err);
 
               getValue(transaction, (err, value) => {
@@ -4573,7 +4579,7 @@ describe('Spanner', () => {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          database.runTransaction((err, transaction) => {
+          DATABASE.runTransaction((err, transaction) => {
             assert.ifError(err);
 
             incrementValue(err => {
@@ -4588,7 +4594,7 @@ describe('Spanner', () => {
           });
 
           function incrementValue(callback) {
-            database.runTransaction((err, transaction) => {
+            DATABASE.runTransaction((err, transaction) => {
               assert.ifError(err);
 
               getValue(transaction, (err, value) => {
@@ -4644,7 +4650,7 @@ describe('Spanner', () => {
           StringValue: 'abc',
         };
 
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(query, err => {
@@ -4682,7 +4688,7 @@ describe('Spanner', () => {
         });
 
         function runOtherTransaction(callback) {
-          database.runTransaction((err, transaction) => {
+          DATABASE.runTransaction((err, transaction) => {
             if (err) {
               callback(err);
               return;
@@ -4719,7 +4725,7 @@ describe('Spanner', () => {
           StringValue: 'abc',
         };
 
-        database.runTransaction((err, transaction) => {
+        DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(query, (err, rows) => {
@@ -4755,7 +4761,7 @@ describe('Spanner', () => {
         });
 
         function runOtherTransaction(callback) {
-          database.runTransaction((err, transaction) => {
+          DATABASE.runTransaction((err, transaction) => {
             if (err) {
               callback(err);
               return;
@@ -4786,7 +4792,7 @@ describe('Spanner', () => {
         const query = `SELECT * FROM ${table.name}`;
         let attempts = 0;
 
-        database.runTransaction(options, (err, transaction) => {
+        DATABASE.runTransaction(options, (err, transaction) => {
           if (attempts++ === 1) {
             assert.strictEqual(err!.code, 4);
             assert(
@@ -4817,7 +4823,7 @@ describe('Spanner', () => {
         });
 
         function runOtherTransaction(callback) {
-          database.runTransaction((err, transaction) => {
+          DATABASE.runTransaction((err, transaction) => {
             if (err) {
               callback(err);
               return;
@@ -4875,26 +4881,18 @@ function execAfterOperationComplete(callback) {
   };
 }
 
-async function deleteTestInstances() {
-  const [instances] = await spanner.getInstances({
-    filter: `labels.${LABEL}:true`,
-  });
-
-  return deleteInstanceArray(instances);
-}
-
 async function deleteOldTestInstances() {
   const [instances] = await spanner.getInstances();
   const currentTimestampSeconds = Math.round(Date.now() / 1000);
   // Leave only instances that contain PREFIX in their name
   // and where created more that an hour ago.
-  function isHourOld(timestampCreated: number) {
-    return (currentTimestampSeconds - timestampCreated) / (60 * 60) > 1;
+  function isDayOld(timestampCreated: number) {
+    return (currentTimestampSeconds - timestampCreated) / (60 * 60 * 24) > 1;
   }
   const toDelete = instances.filter(
     instance =>
       instance.id.includes(PREFIX) &&
-      isHourOld(Number(instance.metadata!.labels!.created))
+      isDayOld(Number(instance.metadata!.labels!.created))
   );
 
   return deleteInstanceArray(toDelete);
@@ -4914,70 +4912,10 @@ function deleteInstanceArray(instanceArray) {
     )
   );
 }
-
-function deleteInstance(instance) {
-  return new Promise((resolve, reject) => {
-    // Backups must be deleted before an instance can be deleted.
-    instance.request(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'listBackups',
-        reqOpts: {
-          parent: instance.formattedName_,
-        },
-      },
-      async (err, backups) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        if (backups.length > 0) {
-          try {
-            await deleteInstanceBackups(instance, backups);
-          } catch (e) {
-            reject(err);
-            return;
-          }
-
-          deleteInstance(instance).then(resolve, reject);
-          return;
-        }
-
-        try {
-          await instance.delete();
-        } catch (e) {
-          reject(e);
-          return;
-        }
-
-        resolve();
-      }
-    );
-  });
-}
-
-function deleteInstanceBackups(instance, instanceBackups) {
-  const deleteInstanceBackupPromises = instanceBackups.map(instanceBackup => {
-    return new Promise((resolve, reject) => {
-      instance.request(
-        {
-          client: 'DatabaseAdminClient',
-          method: 'deleteBackup',
-          reqOpts: {name: instanceBackup.name},
-        },
-        err => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }
-      );
-    });
-  });
-
-  return Promise.all(deleteInstanceBackupPromises);
+async function deleteInstance(instance: Instance) {
+  const [backups] = await instance.getBackups();
+  await Promise.all(backups.map(backup => backup.delete()));
+  return instance.delete();
 }
 
 function wait(time) {
