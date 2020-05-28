@@ -250,6 +250,16 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
       });
 
+      describe('min and max', () => {
+        const minGtMax = /Min sessions may not be greater than max sessions\./;
+
+        it('should not accept min>max', () => {
+          assert.throws(() => {
+            return new SessionPool(DATABASE, {min: 20, max: 10});
+          }, minGtMax);
+        });
+      });
+
       describe('writes', () => {
         const writeErrReg = /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
 

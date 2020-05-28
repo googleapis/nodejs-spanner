@@ -26,8 +26,6 @@ import protobuf = google.spanner.v1;
 import * as yargs from 'yargs';
 import {performance} from 'perf_hooks';
 
-// process.env.UV_THREADPOOL_SIZE = '256';
-
 let spannerMock;
 const server = new grpc.Server();
 const selectSql = 'SELECT 1';
@@ -77,7 +75,7 @@ yargs
     {},
     () => runBurstReadAndWrite().then(() => console.log('Benchmark finished'))
   )
-  .example('node $0 burstWrite')
+  .example('node $0 burstReadAndWrite')
   .command(
     'multipleWriteBursts',
     'Benchmarks a burst of read and then write operations',

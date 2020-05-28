@@ -423,9 +423,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   constructor(database: Database, options?: SessionPoolOptions) {
     super();
 
+    if (options && options.min && options.max && options.min > options.max) {
+      throw new TypeError('Min sessions may not be greater than max sessions.');
+    }
     this.isOpen = false;
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
+    this.options.min = Math.min(this.options.min!, this.options.max!);
 
     const {writes} = this.options;
 
@@ -731,6 +735,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {object} [options] Config specifying how many sessions to create.
    * @returns {Promise}
+   * @emits SessionPool#createError
    */
   async _createSessions({
     reads = 0,
@@ -754,6 +759,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
         needed -= sessions.length;
       } catch (e) {
+        this.emit('createError', e);
         this._pending -= needed;
         throw e;
       }
@@ -958,6 +964,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         })
       );
     }
+    promises.push(
+      new Promise((_, reject) => {
+        this.once('createError', reject);
+      })
+    );
 
     try {
       this._waiters[type]++;
