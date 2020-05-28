@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance, SessionPool} from '../src';
+import {Backup, Database, Spanner, Instance} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
