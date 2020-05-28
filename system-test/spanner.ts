@@ -3575,7 +3575,12 @@ describe('Spanner', () => {
         });
       });
 
-      it('should fail if deadline exceeds', done => {
+      it('should fail if deadline exceeds', function (done) {
+        // This test case somehow causes the emulator to return a RESOURCE_EXHAUSTED
+        // error for this or following gRPC calls.
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         const query = {
           keys: ['k1'],
           columns: ALL_COLUMNS,
