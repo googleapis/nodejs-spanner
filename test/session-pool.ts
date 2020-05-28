@@ -250,6 +250,16 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
       });
 
+      describe('min and max', () => {
+        const minGtMax = /Min sessions may not be greater than max sessions\./;
+
+        it('should not accept min>max', () => {
+          assert.throws(() => {
+            return new SessionPool(DATABASE, {min: 20, max: 10});
+          }, minGtMax);
+        });
+      });
+
       describe('writes', () => {
         const writeErrReg = /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
 
@@ -610,7 +620,7 @@ describe('SessionPool', () => {
       sessionPool.options.acquireTimeout = 1;
 
       sessionPool._acquires.add = fn => {
-        return new Promise(r => setTimeout(r, 2)).then(fn);
+        return new Promise(r => setTimeout(r, 3)).then(fn);
       };
 
       try {
@@ -1167,8 +1177,8 @@ describe('SessionPool', () => {
     it('should create a session if the pool is not full', async () => {
       const fakeSession = createSession();
       const stub = sandbox
-        .stub(sessionPool, '_createSession')
-        .withArgs(types.ReadOnly)
+        .stub(sessionPool, '_createSessions')
+        .withArgs({reads: 1, writes: 0})
         .callsFake(() => {
           // this will fire off via _createSessions
           setImmediate(() => sessionPool.emit('available'));
@@ -1176,6 +1186,7 @@ describe('SessionPool', () => {
         });
 
       sessionPool.options.max = 1;
+      sessionPool.options.incStep = 25;
       sandbox
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
@@ -1212,7 +1223,7 @@ describe('SessionPool', () => {
       const error = new Error('err');
 
       sessionPool.options.max = 1;
-      sandbox.stub(sessionPool, '_createSession').rejects(error);
+      sandbox.stub(sessionPool, '_createSessions').rejects(error);
 
       try {
         await sessionPool._getSession(types.ReadOnly, startTime);

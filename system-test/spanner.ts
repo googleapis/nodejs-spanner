@@ -66,12 +66,12 @@ describe('Spanner', () => {
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
-  const DATABASE = instance.database(generateName('database'));
+  const DATABASE = instance.database(generateName('database'), {incStep: 1});
   const TABLE_NAME = 'Singers';
 
   before(async () => {
+    await deleteOldTestInstances();
     if (generateInstanceForTest) {
-      await deleteOldTestInstances();
       const [, operation] = await instance.create(INSTANCE_CONFIG);
       await operation.promise();
       RESOURCES_TO_CLEAN.push(instance);
@@ -3545,7 +3545,7 @@ describe('Spanner', () => {
 
         table.read(query, err => {
           assert.strictEqual(err.code, 5);
-          done();
+          database.close().then(() => done());
         });
       });
 
