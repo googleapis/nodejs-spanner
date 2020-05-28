@@ -18,7 +18,6 @@ const {Spanner} = require('@google-cloud/spanner');
 const {assert} = require('chai');
 const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
-const pLimit = require('p-limit');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
@@ -54,27 +53,35 @@ async function deleteStaleInstances() {
   const [instances] = await spanner.getInstances();
   const yesterday = new Date();
   yesterday.setHours(-24);
-  const toDelete = instances.filter(
-    instance =>
-      instance.id.includes(PREFIX) &&
-      instance.metadata.labels.created < Math.round(yesterday.getTime() / 1000)
-  );
+  const toDelete = instances.filter(instance => instance.id.includes(PREFIX));
 
-  return deleteInstanceArray(toDelete);
-}
+  toDelete.forEach(instance => {
+    console.log(instance.metadata.name);
+  });
 
-function deleteInstanceArray(instanceArray) {
-  /**
-   * Delay to allow instance and its databases to fully clear.
-   * Refer to "Soon afterwards"
-   *  @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
-   */
-  const delay = 500;
-  const limit = pLimit(5);
-  return Promise.all(
-    instanceArray.map(instance =>
-      limit(() => setTimeout(deleteInstance, delay, instance))
-    )
+  await Promise.all(
+    toDelete.map(async instance => {
+      const instanceName = instance.metadata.name;
+
+      const res = await spanner.auth.request({
+        url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
+      });
+      const operations = res.data.operations;
+
+      await Promise.all(
+        operations
+          .filter(operation => {
+            return operation.metadata['@type'].includes('CreateInstance');
+          })
+          .filter(operation => {
+            const yesterday = new Date();
+            yesterday.setHours(-24);
+            const instanceCreated = new Date(operation.metadata.startTime);
+            return instanceCreated < yesterday;
+          })
+          .map(() => deleteInstance(instance))
+      );
+    })
   );
 }
 
