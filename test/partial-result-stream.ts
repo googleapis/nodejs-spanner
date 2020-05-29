@@ -29,7 +29,6 @@ import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
 import {grpc} from 'google-gax';
 import {Row} from '../src/partial-result-stream';
-import * as Stream from 'stream';
 
 describe('PartialResultStream', () => {
   const sandbox = sinon.createSandbox();
@@ -84,7 +83,7 @@ describe('PartialResultStream', () => {
       it(`should pass acceptance test: ${test.name}`, done => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const values: any[] = [];
-        const stream = new PartialResultStream({}, new Stream.Duplex());
+        const stream = new PartialResultStream({});
 
         stream
           .on('error', done)
@@ -114,13 +113,13 @@ describe('PartialResultStream', () => {
     let stream: prs.PartialResultStream;
 
     beforeEach(() => {
-      stream = new PartialResultStream({}, new Stream.Duplex());
+      stream = new PartialResultStream({});
     });
 
     afterEach(() => stream.destroy());
 
     it('should emit the response', done => {
-      const stream = new PartialResultStream({}, new Stream.Duplex());
+      const stream = new PartialResultStream({});
 
       stream.on('error', done).on('response', response => {
         assert.strictEqual(response, RESULT);
@@ -167,10 +166,7 @@ describe('PartialResultStream', () => {
 
     it('should emit rows as JSON', done => {
       const jsonOptions = {};
-      const stream = new PartialResultStream(
-        {json: true, jsonOptions},
-        new Stream.Duplex()
-      );
+      const stream = new PartialResultStream({json: true, jsonOptions});
 
       const fakeJson = {};
       const stub = sandbox.stub(codec, 'convertFieldsToJson').returns(fakeJson);

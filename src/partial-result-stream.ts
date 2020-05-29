@@ -142,14 +142,12 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _options: RowOptions;
   private _pendingValue?: p.IValue;
   private _values: p.IValue[];
-  private _requestStream: NodeJS.ReadWriteStream;
   private _numPushFailed = 0;
-  constructor(options = {}, requestStream: NodeJS.ReadWriteStream) {
+  constructor(options = {}) {
     super({objectMode: true});
 
     this._destroyed = false;
     this._options = Object.assign({maxResumeRetries: 20}, options);
-    this._requestStream = requestStream;
     this._values = [];
   }
   /**
@@ -427,7 +425,7 @@ export function partialResultStream(
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
   const requestsStream = mergeStream();
-  const partialRSStream = new PartialResultStream(options, requestsStream);
+  const partialRSStream = new PartialResultStream(options);
   const userStream = streamEvents(partialRSStream);
   const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued: 10,
