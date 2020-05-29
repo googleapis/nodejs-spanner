@@ -38,7 +38,7 @@
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "BatchCreateSessions": {
-          "timeout_millis": 30000,
+          "timeout_millis": 60000,
           "retry_codes_name": "unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
@@ -48,7 +48,7 @@
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "ListSessions": {
-          "timeout_millis": 30000,
+          "timeout_millis": 3600000,
           "retry_codes_name": "unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
