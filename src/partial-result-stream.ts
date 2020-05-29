@@ -201,16 +201,19 @@ export class PartialResultStream extends Transform implements ResultEvents {
       res = this._addChunk(chunk);
     }
 
-    if (res || !this._requestStream) {
+    if (res) {
       next();
     } else {
       // Wait a little before we push any more data into the pipeline as a
       // component downstream has indicated that a break is needed. Pause the
       // request stream to prevent it from filling up the buffer while we are
       // waiting.
+      // The stream will initially pause for 2ms, and then double the pause time
+      // for each new pause.
+      const initialPauseMs = 2;
       setTimeout(() => {
-        this._tryResume(next, 4);
-      }, 2);
+        this._tryResume(next, 2 * initialPauseMs);
+      }, initialPauseMs);
     }
   }
 
@@ -218,23 +221,22 @@ export class PartialResultStream extends Transform implements ResultEvents {
     // Try to push an empty chunk to check whether more data can be accepted.
     if (this.push(undefined)) {
       this._numPushFailed = 0;
-      this._requestStream!.resume();
+      this.emit('resumed');
       next();
     } else {
       // Downstream returned false indicating that it is still not ready for
       // more data.
       this._numPushFailed++;
+      if (this._numPushFailed === this._options.maxResumeRetries) {
+        this.destroy(
+          new Error(
+            `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`
+          )
+        );
+      }
       setTimeout(() => {
         const nextTimeout = Math.min(timeout * 2, 1024);
-        if (this._numPushFailed === this._options.maxResumeRetries) {
-          this.destroy(
-            new Error(
-              `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`
-            )
-          );
-        } else {
-          this._tryResume(next, nextTimeout);
-        }
+        this._tryResume(next, nextTimeout);
       }, timeout);
     }
   }
@@ -272,8 +274,8 @@ export class PartialResultStream extends Transform implements ResultEvents {
     let res = true;
     values.forEach(value => {
       res = this._addValue(value) && res;
-      if (!res && !this._requestStream.isPaused()) {
-        this._requestStream.pause();
+      if (!res) {
+        this.emit('paused');
       }
     });
     return res;
@@ -486,5 +488,7 @@ export function partialResultStream(
         lastResumeToken = row.resumeToken;
       })
       .pipe(userStream)
+      .on('paused', () => requestsStream.pause())
+      .on('resumed', () => requestsStream.resume())
   );
 }
