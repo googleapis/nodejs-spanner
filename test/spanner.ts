@@ -22,6 +22,7 @@ import * as mock from './mockserver/mockspanner';
 import {
   MockError,
   MockSpanner,
+  NUM_ROWS_LARGE_RESULT_SET,
   SimulatedExecutionTime,
 } from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
@@ -45,6 +46,8 @@ import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
+import * as stream from 'stream';
+import * as util from 'util';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -180,6 +183,57 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(row.NUM, i);
           assert.strictEqual(row.NAME, numberToEnglishWord(i));
         });
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should pause on slow writer', async () => {
+      const largeSelect = 'select * from large_table';
+      spannerMock.putStatementResult(
+        largeSelect,
+        mock.StatementResult.resultSet(mock.createLargeResultSet())
+      );
+      const database = newTestDatabase();
+      let rowCount = 0;
+      let paused = false;
+      try {
+        const rs = database.runStream({
+          sql: largeSelect,
+        });
+        const pipeline = util.promisify(stream.pipeline);
+        const simulateSlowFlushInterval = Math.floor(
+          NUM_ROWS_LARGE_RESULT_SET / 10
+        );
+
+        await pipeline(
+          rs,
+          // Create an artificially slow transformer to simulate network latency.
+          new stream.Transform({
+            highWaterMark: 1,
+            objectMode: true,
+            transform(chunk, encoding, callback) {
+              rowCount++;
+              if (rowCount % simulateSlowFlushInterval === 0) {
+                // Simulate a slow flush.
+                setTimeout(() => {
+                  paused = paused || rs.isPaused();
+                  callback(null, chunk);
+                }, 50);
+              } else {
+                callback(null, chunk);
+              }
+            },
+          }),
+          new stream.Transform({
+            objectMode: true,
+            transform(chunk, encoding, callback) {
+              callback();
+            },
+          })
+        );
+        assert.strictEqual(rowCount, NUM_ROWS_LARGE_RESULT_SET);
+        assert.ok(paused, 'stream should have been paused');
       } finally {
         await database.close();
       }
