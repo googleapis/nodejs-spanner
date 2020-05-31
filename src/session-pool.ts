@@ -130,6 +130,8 @@ export interface SessionPoolInterface extends EventEmitter {
  *     any given time.
  * @property {number} [writes=0.0] Percentage of sessions to be pre-allocated as
  *     write sessions represented as a float.
+ * @property {number} [incStep=25] The number of new sessions to create when at
+ *     least one more session is needed.
  */
 export interface SessionPoolOptions {
   acquireTimeout?: number;
@@ -142,6 +144,7 @@ export interface SessionPoolOptions {
   maxIdle?: number;
   min?: number;
   writes?: number;
+  incStep?: number;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -155,6 +158,7 @@ const DEFAULTS: SessionPoolOptions = {
   maxIdle: 1,
   min: 0,
   writes: 0,
+  incStep: 25,
 };
 
 /**
@@ -253,6 +257,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pending = 0;
   _pendingPrepare = 0;
   _numWaiters = 0;
+
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -345,9 +350,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   constructor(database: Database, options?: SessionPoolOptions) {
     super();
 
+    if (options && options.min && options.max && options.min > options.max) {
+      throw new TypeError('Min sessions may not be greater than max sessions.');
+    }
     this.isOpen = false;
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
+    this.options.min = Math.min(this.options.min!, this.options.max!);
 
     const {writes} = this.options;
 
@@ -627,6 +636,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {object} [options] Config specifying how many sessions to create.
    * @returns {Promise}
+   * @emits SessionPool#createError
    */
   async _createSessions({
     reads = 0,
@@ -650,6 +660,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
         needed -= sessions.length;
       } catch (e) {
+        this.emit('createError', e);
         this._pending -= needed;
         throw e;
       }
@@ -813,12 +824,30 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       !this.isFull &&
       this._pending + this._pendingPrepare <= this._numWaiters
     ) {
+      let reads = this.options.incStep
+        ? this.options.incStep
+        : DEFAULTS.incStep!;
+      let writes = 0;
+      // Only create 1 write session at a time.
+      if (type === types.ReadWrite) {
+        writes++;
+        reads--;
+      }
+      // Make sure we don't create more sessions than the pool should have.
+      if (reads + writes + this.size > this.options.max!) {
+        reads = this.options.max! - this.size - writes;
+      }
       promises.push(
         new Promise((_, reject) => {
-          this._createSession(type).catch(reject);
+          this._createSessions({reads, writes}).catch(reject);
         })
       );
     }
+    promises.push(
+      new Promise((_, reject) => {
+        this.once('createError', reject);
+      })
+    );
 
     try {
       this._numWaiters++;
