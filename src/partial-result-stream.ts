@@ -231,6 +231,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
             `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`
           )
         );
+        return;
       }
       setTimeout(() => {
         const nextTimeout = Math.min(timeout * 2, 1024);
