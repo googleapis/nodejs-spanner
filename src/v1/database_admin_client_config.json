@@ -60,17 +60,17 @@
           "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
         },
         "SetIamPolicy": {
-          "timeout_millis": 3600000,
+          "timeout_millis": 30000,
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
         "GetIamPolicy": {
-          "timeout_millis": 3600000,
+          "timeout_millis": 30000,
           "retry_codes_name": "idempotent",
           "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
         },
         "TestIamPermissions": {
-          "timeout_millis": 3600000,
+          "timeout_millis": 30000,
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
@@ -86,8 +86,8 @@
         },
         "UpdateBackup": {
           "timeout_millis": 3600000,
-          "retry_codes_name": "idempotent",
-          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
         },
         "DeleteBackup": {
           "timeout_millis": 3600000,
@@ -101,8 +101,8 @@
         },
         "RestoreDatabase": {
           "timeout_millis": 3600000,
-          "retry_codes_name": "idempotent",
-          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
         },
         "ListDatabaseOperations": {
           "timeout_millis": 3600000,
