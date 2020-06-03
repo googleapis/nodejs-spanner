@@ -134,19 +134,54 @@ async function deleteData(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   // Instantiate Spanner table object
-  const singersTable = database.table('Singers');
+  const albumsTable = database.table('Albums');
 
-  // Deletes rows from the Singers table and the Albums table,
-  // because Albums table is defined with ON DELETE CASCADE.
+  // Deletes individual rows from the Albums table.
   try {
-    const keys = [1, 2, 3, 4, 5];
-    await singersTable.deleteRows(keys);
-    console.log('Deleted data.');
+    const keys = [[2, 1], [2, 3]];
+    await albumsTable.deleteRows(keys);
+    console.log('Deleted individual rows in Albums.');
   } catch (err) {
     console.error('ERROR:', err);
-  } finally {
-    await database.close();
   }
+
+  // Delete a range of rows where the column key is >=3 and <5
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const [rowCount] = await transaction.runUpdate({
+        sql: `DELETE FROM Singers WHERE SingerId >= 3`
+      });
+      console.log(`${rowCount} records deleted from Singers.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
+  });
+
+  // Deletes remaining rows from the Singers table and the Albums table,
+  // because Albums table is defined with ON DELETE CASCADE.
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const [rowCount] = await transaction.runUpdate({
+        sql: `DELETE FROM Singers WHERE true`
+      });
+      console.log(`${rowCount} records deleted from Singers.`);
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      await database.close();
+    }
+  });
   // [END spanner_delete_data]
 }
 
