@@ -156,7 +156,7 @@ async function deleteData(instanceId, databaseId, projectId) {
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql: 'DELETE FROM Singers WHERE SingerId >= 3',
+        sql: 'DELETE FROM Singers WHERE SingerId >= 3 AND SingerId < 5',
       });
       console.log(`${rowCount} records deleted from Singers.`);
       await transaction.commit();
