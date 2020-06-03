@@ -138,7 +138,10 @@ async function deleteData(instanceId, databaseId, projectId) {
 
   // Deletes individual rows from the Albums table.
   try {
-    const keys = [[2, 1], [2, 3]];
+    const keys = [
+      [2, 1],
+      [2, 3],
+    ];
     await albumsTable.deleteRows(keys);
     console.log('Deleted individual rows in Albums.');
   } catch (err) {
@@ -153,7 +156,7 @@ async function deleteData(instanceId, databaseId, projectId) {
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql: `DELETE FROM Singers WHERE SingerId >= 3`
+        sql: 'DELETE FROM Singers WHERE SingerId >= 3',
       });
       console.log(`${rowCount} records deleted from Singers.`);
       await transaction.commit();
@@ -171,7 +174,7 @@ async function deleteData(instanceId, databaseId, projectId) {
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql: `DELETE FROM Singers WHERE true`
+        sql: 'DELETE FROM Singers WHERE true',
       });
       console.log(`${rowCount} records deleted from Singers.`);
       await transaction.commit();
