@@ -29,6 +29,7 @@ import {GetMetadataResponse} from '../src/backup';
 import {grpc} from 'google-gax';
 
 let promisified = false;
+// let callbackified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
     if (klass.name !== 'Backup') {
@@ -364,6 +365,35 @@ describe('Backup', () => {
         assert.deepStrictEqual(thrown, err);
       }
     });
+
+    it('should accept callback and return state', done => {
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
+        {
+          state: 'CREATING',
+        },
+      ];
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
+
+      backup.getState((err, state) => {
+        if (err) {
+          assert.ifError(err);
+        }
+        assert.strictEqual(state, 'CREATING');
+        done();
+      });
+    });
+
+    it('should accept callback and return errors', done => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      backup.getState(error => {
+        assert.strictEqual(error, err);
+        done();
+      });
+    });
   });
 
   describe('getExpireTime', () => {
@@ -391,6 +421,32 @@ describe('Backup', () => {
       } catch (thrown) {
         assert.deepStrictEqual(thrown, err);
       }
+    });
+
+    it('should accept callback and return the expire time from backup info', done => {
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [
+        {
+          expireTime: EXP_BACKUP_EXPIRE_TIME.toStruct(),
+        },
+      ];
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
+
+      backup.getExpireTime((err, result) => {
+        assert.deepStrictEqual(result, EXP_BACKUP_EXPIRE_TIME);
+        done();
+      });
+    });
+
+    it('should accept callback and return errors', done => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      backup.getExpireTime(error => {
+        assert.deepStrictEqual(error, err);
+        done();
+      });
     });
   });
 
@@ -424,6 +480,45 @@ describe('Backup', () => {
       } catch (thrown) {
         assert.deepStrictEqual(thrown, err);
       }
+    });
+
+    it('should accept backup and return true when backup info indicates backup exists', done => {
+      const BACKUP_INFO_RESPONSE: GetMetadataResponse = [{}];
+      backup.getMetadata = async () => BACKUP_INFO_RESPONSE;
+
+      backup.exists((err, result) => {
+        if (err) {
+          assert.ifError(err);
+        }
+        assert.strictEqual(result, true);
+        done();
+      });
+    });
+
+    it('should accept callback and return false when backup does not exist', done => {
+      backup.getMetadata = async () => {
+        throw {code: grpc.status.NOT_FOUND};
+      };
+
+      backup.exists((err, result) => {
+        if (err) {
+          assert.ifError(err);
+        }
+        assert.strictEqual(result, false);
+        done();
+      });
+    });
+
+    it('should accept callback and return other errors', done => {
+      const err = {code: grpc.status.INTERNAL};
+      backup.getMetadata = async () => {
+        throw err;
+      };
+
+      backup.exists(error => {
+        assert.strictEqual(error, err);
+        done();
+      });
     });
   });
 
