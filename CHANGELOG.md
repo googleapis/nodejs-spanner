@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.1.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.0.0...v5.1.0) (2020-06-04)
+
+
+### Features
+
+* expose displayName in createInstance ([#798](https://www.github.com/googleapis/nodejs-spanner/issues/798)) ([39efda1](https://www.github.com/googleapis/nodejs-spanner/commit/39efda194d2d11a578f209e6c149b0ae2974ee27))
+* increase sessions in the pool in batches ([#963](https://www.github.com/googleapis/nodejs-spanner/issues/963)) ([91c53cb](https://www.github.com/googleapis/nodejs-spanner/commit/91c53cb6f6504f48ee3c974dbb8fb2821c226325))
+* support callbacks for exists(), getState(), getExpireTime() methods ([#1070](https://www.github.com/googleapis/nodejs-spanner/issues/1070)) ([7736080](https://www.github.com/googleapis/nodejs-spanner/commit/7736080f0e2a46c7ef8c44c278bff2bec2f28953))
+
+
+### Bug Fixes
+
+* always clean up stale instances if any ([#1030](https://www.github.com/googleapis/nodejs-spanner/issues/1030)) ([87c7edc](https://www.github.com/googleapis/nodejs-spanner/commit/87c7edcb2c3ba729b1e278bb191b695b0cd376cb))
+* pause request stream on backpressure ([#936](https://www.github.com/googleapis/nodejs-spanner/issues/936)) ([558692f](https://www.github.com/googleapis/nodejs-spanner/commit/558692f55cc551db2bd72464b130051a9b28378f)), closes [#934](https://www.github.com/googleapis/nodejs-spanner/issues/934)
+
 ## [5.0.0](https://www.github.com/googleapis/nodejs-spanner/compare/v4.8.0...v5.0.0) (2020-05-14)
 
 
