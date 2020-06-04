@@ -583,16 +583,24 @@ export class MockSpanner {
     resultSet: protobuf.ResultSet,
     queryMode:
       | google.spanner.v1.ExecuteSqlRequest.QueryMode
-      | keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode
+      | keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode,
+    rowsPerPartialResultSet = 1
   ): protobuf.PartialResultSet[] {
     const res: protobuf.PartialResultSet[] = [];
     let first = true;
-    for (let i = 0; i < resultSet.rows.length; i++) {
+    for (let i = 0; i < resultSet.rows.length; i += rowsPerPartialResultSet) {
       const token = i.toString().padStart(8, '0');
       const partial = protobuf.PartialResultSet.create({
         resumeToken: Buffer.from(token),
-        values: resultSet.rows[i].values,
+        values: [],
       });
+      for (
+        let row = i;
+        row < Math.min(i + rowsPerPartialResultSet, resultSet.rows.length);
+        row++
+      ) {
+        partial.values.push(...resultSet.rows[row].values!);
+      }
       if (first) {
         partial.metadata = resultSet.metadata;
         first = false;
@@ -935,6 +943,50 @@ export function createSimpleResultSet(): protobuf.ResultSet {
       {values: [{stringValue: '3'}, {stringValue: 'Three'}]},
     ],
   });
+}
+
+export const NUM_ROWS_LARGE_RESULT_SET = 100;
+
+export function createLargeResultSet(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'NUM',
+      type: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'NAME',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  const rows: google.protobuf.IListValue[] = [];
+  for (let num = 1; num <= NUM_ROWS_LARGE_RESULT_SET; num++) {
+    rows.push({
+      values: [
+        {stringValue: `${num}`},
+        {stringValue: generateRandomString(100)},
+      ],
+    });
+  }
+  return protobuf.ResultSet.create({
+    metadata,
+    rows,
+  });
+}
+
+function generateRandomString(length: number) {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 }
 
 /**
