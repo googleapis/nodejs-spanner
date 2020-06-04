@@ -173,6 +173,9 @@ async function deleteData(instanceId, databaseId, projectId) {
       return;
     }
     try {
+      // The WHERE clause is required for DELETE statements to prevent
+      // accidentally deleting all rows in a table.
+      // https://cloud.google.com/spanner/docs/dml-syntax#where_clause
       const [rowCount] = await transaction.runUpdate({
         sql: 'DELETE FROM Singers WHERE true',
       });
