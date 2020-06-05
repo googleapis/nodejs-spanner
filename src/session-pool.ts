@@ -425,10 +425,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetReadSessionCallback} callback The callback function.
    */
   getReadSession(callback: GetReadSessionCallback): void {
-    this._acquire(types.ReadOnly).then(
-      session => callback(null, session),
-      callback
-    );
+    this._acquire(types.ReadOnly)
+      .then(session => callback(null, session))
+      .catch(callback);
   }
 
   /**
@@ -437,10 +436,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetWriteSessionCallback} callback The callback function.
    */
   getWriteSession(callback: GetWriteSessionCallback): void {
-    this._acquire(types.ReadWrite).then(
-      session => callback(null, session, session.txn!),
-      callback
-    );
+    this._acquire(types.ReadWrite)
+      .then(session => callback(null, session, session.txn!))
+      .catch(callback);
   }
 
   /**
