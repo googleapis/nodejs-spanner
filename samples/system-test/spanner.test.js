@@ -193,7 +193,9 @@ describe('Spanner', () => {
     let output = execSync(
       `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Deleted data\./);
+    assert.include(output, 'Deleted individual rows in Albums.');
+    assert.include(output, '2 records deleted from Singers.');
+    assert.include(output, '3 records deleted from Singers.');
     output = execSync(
       `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
