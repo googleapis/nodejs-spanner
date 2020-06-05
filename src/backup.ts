@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-import {promisifyAll} from '@google-cloud/promisify';
+import {promisifyAll, callbackifyAll} from '@google-cloud/promisify';
 import {Instance} from './instance';
 import {
   IOperation,
   LongRunningCallback,
   RequestCallback,
   ResourceCallback,
+  NormalCallback,
 } from './common';
 import {EnumKey, Spanner, RequestConfig, TranslateEnumKeys} from '.';
 import {
@@ -77,6 +78,11 @@ interface BackupRequest {
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
 }
+export type GetStateCallback = NormalCallback<
+  EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
+>;
+export type GetExpireTimeCallback = NormalCallback<PreciseDate>;
+export type ExistsCallback = NormalCallback<boolean>;
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
  *
@@ -185,7 +191,6 @@ class Backup {
     );
   }
 
-  getMetadata(): Promise<GetMetadataResponse>;
   getMetadata(gaxOptions?: CallOptions): Promise<GetMetadataResponse>;
   getMetadata(callback: GetMetadataCallback): void;
   getMetadata(gaxOptions: CallOptions, callback: GetMetadataCallback): void;
@@ -248,6 +253,12 @@ class Backup {
     );
   }
 
+  getState(): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
+    | undefined
+    | null
+  >;
+  getState(callback: GetStateCallback): void;
   /**
    * Retrieves the state of the backup.
    *
@@ -256,6 +267,7 @@ class Backup {
    * @see {@link #getMetadata}
    *
    * @method Backup#getState
+   * @param {GetStateCallback} [callback] Callback function.
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Backup.State> | undefined>}
    *     When resolved, contains the current state of the backup if it exists.
    *
@@ -276,6 +288,8 @@ class Backup {
     return backupInfo.state;
   }
 
+  getExpireTime(): Promise<PreciseDate | undefined>;
+  getExpireTime(callback: GetExpireTimeCallback): void;
   /**
    * Retrieves the expiry time of the backup.
    *
@@ -299,6 +313,8 @@ class Backup {
     return new PreciseDate(backupInfo.expireTime as DateStruct);
   }
 
+  exists(): Promise<boolean>;
+  exists(callback: ExistsCallback): void;
   /**
    * Checks whether the backup exists.
    *
@@ -490,6 +506,15 @@ class Backup {
  */
 promisifyAll(Backup, {
   exclude: ['getState', 'getExpireTime', 'exists'],
+});
+
+/*! Developer Documentation
+ *
+ * All async methods (except for streams) will return a Promise in the event
+ * that a callback is omitted.
+ */
+callbackifyAll(Backup, {
+  exclude: ['create', 'getMetadata', 'updateExpireTime', 'delete'],
 });
 
 /**
