@@ -33,6 +33,7 @@ const structCmd = 'node struct.js';
 const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node datatypes.js';
 const backupsCmd = 'node backups.js';
+const instanceCmd = 'node instance.js';
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -125,6 +126,32 @@ describe('Spanner', () => {
         instance.backup(CANCELLED_BACKUP_ID).delete(),
       ]);
     }
+  });
+
+  describe('instance', () => {
+    const SAMPLE_INSTANCE_ID = 'my-sample-instance';
+
+    after(async () => {
+      const sample_instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await sample_instance.delete();
+    });
+
+    // create_instance
+    it('should create an example instance', async () => {
+      const output = execSync(
+        `${instanceCmd} createInstance "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+      );
+    });
   });
 
   // create_database
