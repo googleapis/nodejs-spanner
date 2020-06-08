@@ -174,7 +174,7 @@ class Backup {
         name: this.formattedName_,
       },
     };
-    return this.request(
+    this.request(
       {
         client: 'DatabaseAdminClient',
         method: 'createBackup',
@@ -240,7 +240,7 @@ class Backup {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
-    return this.request<IBackupTranslatedEnum>(
+    this.request<IBackupTranslatedEnum>(
       {
         client: 'DatabaseAdminClient',
         method: 'getBackup',
@@ -414,7 +414,7 @@ class Backup {
         paths: ['expire_time'],
       },
     };
-    return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
+    this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
         client: 'DatabaseAdminClient',
         method: 'updateBackup',
@@ -461,7 +461,7 @@ class Backup {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
     };
-    return this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
+    this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
         client: 'DatabaseAdminClient',
         method: 'deleteBackup',
