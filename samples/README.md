@@ -28,6 +28,7 @@ and automatic, synchronous replication for high availability.
   * [Datatypes](#datatypes)
   * [DML](#dml)
   * [Indexing](#indexing)
+  * [Instance](#instance)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Schema](#schema)
@@ -281,6 +282,23 @@ __Usage:__
 
 
 `node samples/indexing.js`
+
+
+-----
+
+
+
+
+### Instance
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance.js`
 
 
 -----
