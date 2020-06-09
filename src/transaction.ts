@@ -55,6 +55,7 @@ export interface RequestOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
+  maxResumeRetries?: number;
 }
 
 export interface Statement {
@@ -496,7 +497,7 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions} = request;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -511,6 +512,7 @@ export class Snapshot extends EventEmitter {
     delete request.gaxOptions;
     delete request.json;
     delete request.jsonOptions;
+    delete request.maxResumeRetries;
     delete request.keys;
     delete request.ranges;
 
@@ -530,7 +532,11 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {json, jsonOptions});
+    return partialResultStream(makeRequest, {
+      json,
+      jsonOptions,
+      maxResumeRetries,
+    });
   }
 
   /**
@@ -891,7 +897,7 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions} = query;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
     const {params, paramTypes} = Snapshot.encodeParams(query);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -904,6 +910,7 @@ export class Snapshot extends EventEmitter {
     delete query.gaxOptions;
     delete query.json;
     delete query.jsonOptions;
+    delete query.maxResumeRetries;
     delete query.types;
 
     const reqOpts: ExecuteSqlRequest = Object.assign(query, {
@@ -923,7 +930,11 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {json, jsonOptions});
+    return partialResultStream(makeRequest, {
+      json,
+      jsonOptions,
+      maxResumeRetries,
+    });
   }
 
   /**

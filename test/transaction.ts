@@ -315,10 +315,11 @@ describe('Transaction', () => {
         assert.strictEqual(stream, fakeStream);
       });
 
-      it('should pass along json options', () => {
+      it('should pass along row options', () => {
         const fakeOptions = {
           json: true,
           jsonOptions: {a: 'b'},
+          maxResumeRetries: 10,
         };
 
         snapshot.createReadStream(TABLE, fakeOptions);
@@ -327,6 +328,7 @@ describe('Transaction', () => {
 
         assert.strictEqual(reqOpts.json, undefined);
         assert.strictEqual(reqOpts.jsonOptions, undefined);
+        assert.strictEqual(reqOpts.maxResumeRetries, undefined);
 
         const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
 
@@ -606,10 +608,11 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.resumeToken, fakeToken);
       });
 
-      it('should pass along json options', () => {
+      it('should pass along row options', () => {
         const expectedOptions = {
           json: true,
           jsonOptions: {a: 'b'},
+          maxResumeRetries: 10,
         };
 
         const fakeQuery = Object.assign({}, QUERY, expectedOptions);
@@ -620,6 +623,7 @@ describe('Transaction', () => {
 
         assert.strictEqual(reqOpts.json, undefined);
         assert.strictEqual(reqOpts.jsonOptions, undefined);
+        assert.strictEqual(reqOpts.maxResumeRetries, undefined);
 
         const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
 

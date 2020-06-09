@@ -33,6 +33,7 @@ const structCmd = 'node struct.js';
 const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node datatypes.js';
 const backupsCmd = 'node backups.js';
+const instanceCmd = 'node instance.js';
 
 const date = Date.now();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -127,6 +128,32 @@ describe('Spanner', () => {
     }
   });
 
+  describe('instance', () => {
+    const SAMPLE_INSTANCE_ID = 'my-sample-instance';
+
+    after(async () => {
+      const sample_instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await sample_instance.delete();
+    });
+
+    // create_instance
+    it('should create an example instance', async () => {
+      const output = execSync(
+        `${instanceCmd} createInstance "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+      );
+    });
+  });
+
   // create_database
   it('should create an example database', async () => {
     const output = execSync(
@@ -166,7 +193,9 @@ describe('Spanner', () => {
     let output = execSync(
       `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Deleted data\./);
+    assert.include(output, 'Deleted individual rows in Albums.');
+    assert.include(output, '2 records deleted from Singers.');
+    assert.include(output, '3 records deleted from Singers.');
     output = execSync(
       `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
