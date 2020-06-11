@@ -108,13 +108,26 @@ describe('Table', () => {
       const schema = 'schema';
 
       table.database = {
-        createTable(schema_, callback) {
+        createTable(schema_, gaxOptions_, callback) {
           assert.strictEqual(schema_, schema);
           callback(); // done()
         },
       };
 
       table.create(schema, done);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOpts = {};
+
+      table.database = {
+        createTable(schema_, gaxOptions, callback) {
+          assert.strictEqual(gaxOptions, gaxOpts);
+          callback(); // done()
+        },
+      };
+
+      table.create('schema', gaxOpts, done);
     });
   });
 

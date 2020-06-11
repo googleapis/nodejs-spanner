@@ -90,8 +90,16 @@ class Table {
      */
     this.name = name;
   }
-  create(schema: Schema): Promise<CreateTableResponse>;
+  create(
+    schema: Schema,
+    gaxOptions?: CallOptions
+  ): Promise<CreateTableResponse>;
   create(schema: Schema, callback: CreateTableCallback): void;
+  create(
+    schema: Schema,
+    gaxOptions: CallOptions,
+    callback: CreateTableCallback
+  ): void;
   /**
    * Create a table.
    *
@@ -143,9 +151,15 @@ class Table {
    */
   create(
     schema: Schema,
-    callback?: CreateTableCallback
+    gaxOptionsOrCallback?: CallOptions | CreateTableCallback,
+    cb?: CreateTableCallback
   ): Promise<CreateTableResponse> | void {
-    this.database.createTable(schema, callback!);
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
+    this.database.createTable(schema, gaxOptions, callback!);
   }
   /**
    * Create a readable object stream to receive rows from the database using key
