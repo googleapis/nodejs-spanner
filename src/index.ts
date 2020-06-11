@@ -369,7 +369,7 @@ class Spanner extends GrpcService {
     const displayName = config.displayName || formattedName.split('/').pop();
     const reqOpts = {
       parent: 'projects/' + this.projectId,
-      instanceId: displayName,
+      instanceId: formattedName.split('/').pop(),
       instance: extend(
         {
           name: formattedName,

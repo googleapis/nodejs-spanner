@@ -1768,6 +1768,22 @@ describe('Spanner with mock server', () => {
       }
     }
 
+    it('should re-use write session as read-session', async () => {
+      const database = newTestDatabase({incStep: 1, max: 1});
+      const pool = database.pool_ as SessionPool;
+      try {
+        // Execute a simple read/write transaction to create 1 write session.
+        const w = executeSimpleUpdate(database, updateSql);
+        const r = database.run(selectSql);
+        await Promise.all([w, r]);
+        assert.strictEqual(pool.size, 1);
+        assert.strictEqual(pool.writes, 0);
+        assert.strictEqual(pool.reads, 1);
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should fail on session pool exhaustion and fail=true', async () => {
       const database = newTestDatabase({
         max: 1,
@@ -1791,6 +1807,43 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    it('should not create unnecessary write-prepared sessions', async () => {
+      const query = {
+        sql: selectSql,
+      };
+      const update = {
+        sql: insertSql,
+      };
+      const database = newTestDatabase({
+        writes: 0.2,
+        min: 100,
+      });
+      const pool = database.pool_ as SessionPool;
+      try {
+        // First execute three consecutive read/write transactions.
+        const promises: Array<Promise<RunResponse | number | [number]>> = [];
+        for (let i = 0; i < 3; i++) {
+          promises.push(executeSimpleUpdate(database, update));
+          const ms = Math.floor(Math.random() * 5) + 1;
+          await sleep(ms);
+        }
+        let maxWriteSessions = 0;
+        for (let i = 0; i < 1000; i++) {
+          if (Math.random() < 0.8) {
+            promises.push(database.run(query));
+          } else {
+            promises.push(executeSimpleUpdate(database, update));
+          }
+          maxWriteSessions = Math.max(maxWriteSessions, pool.writes);
+          const ms = Math.floor(Math.random() * 5) + 1;
+          await sleep(ms);
+        }
+        await Promise.all(promises);
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should pre-fill session pool', async () => {
       const database = newTestDatabase({
         writes: 0.2,
@@ -1804,7 +1857,8 @@ describe('Spanner with mock server', () => {
       // Wait until all sessions have been created and prepared.
       const started = new Date().getTime();
       while (
-        (pool.reads < expectedReads || pool.writes < expectedWrites) &&
+        (pool._inventory[types.ReadOnly].length < expectedReads ||
+          pool._inventory[types.ReadWrite].length < expectedWrites) &&
         new Date().getTime() - started < 1000
       ) {
         await sleep(1);
@@ -1830,14 +1884,18 @@ describe('Spanner with mock server', () => {
       // Wait until all sessions have been created and prepared.
       const started = new Date().getTime();
       while (
-        (pool.reads < expectedReads || pool.writes < expectedWrites) &&
+        (pool._inventory[types.ReadOnly].length < expectedReads ||
+          pool._inventory[types.ReadWrite].length < expectedWrites) &&
         new Date().getTime() - started < 1000
       ) {
         await sleep(1);
       }
-      assert.strictEqual(pool.reads, expectedReads);
-      assert.strictEqual(pool.writes, expectedWrites);
       assert.strictEqual(pool.size, expectedReads + expectedWrites);
+      assert.strictEqual(
+        pool._inventory[types.ReadWrite].length,
+        expectedWrites
+      );
+      assert.strictEqual(pool._inventory[types.ReadOnly].length, expectedReads);
       await database.close();
     });
 
@@ -2223,6 +2281,30 @@ describe('Spanner with mock server', () => {
         `projects/${spanner.projectId}/instances/new-instance`
       );
       assert.strictEqual(createdInstance.nodeCount, 10);
+    });
+
+    it('should create an instance with a display name', async () => {
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          nodes: 10,
+          displayName: 'some new instance',
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(createdInstance.nodeCount, 10);
+      assert.strictEqual(createdInstance.displayName, 'some new instance');
     });
 
     it('should create an instance using a callback', done => {
