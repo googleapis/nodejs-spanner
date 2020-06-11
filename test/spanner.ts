@@ -2283,6 +2283,30 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(createdInstance.nodeCount, 10);
     });
 
+    it('should create an instance with a display name', async () => {
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          nodes: 10,
+          displayName: 'some new instance',
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(createdInstance.nodeCount, 10);
+      assert.strictEqual(createdInstance.displayName, 'some new instance');
+    });
+
     it('should create an instance using a callback', done => {
       spanner.createInstance(
         'new-instance',
