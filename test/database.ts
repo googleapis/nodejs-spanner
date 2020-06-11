@@ -378,6 +378,17 @@ describe('Database', () => {
       assert.deepStrictEqual(reqOpts.sessionTemplate, {labels});
     });
 
+    it('should accept gaxOptions', () => {
+      const stub = sandbox.stub(database, 'request');
+      const gaxOptions = {};
+
+      database.batchCreateSessions({count: 10, gaxOptions}, assert.ifError);
+
+      const {gaxOpts} = stub.lastCall.args[0];
+
+      assert.strictEqual(gaxOpts, gaxOptions);
+    });
+
     it('should return any request errors', done => {
       const error = new Error('err');
       const response = {};
@@ -593,12 +604,21 @@ describe('Database', () => {
       database.createTable(SCHEMA, assert.ifError);
     });
 
+    it('should accept and pass gaxOptions to updateSchema', done => {
+      const gaxOptions = {};
+      database.updateSchema = (schema, options) => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+      database.createTable(SCHEMA, gaxOptions, assert.ifError);
+    });
+
     describe('error', () => {
       const ERROR = new Error('Error.');
       const API_RESPONSE = {};
 
       beforeEach(() => {
-        database.updateSchema = (name, callback) => {
+        database.updateSchema = (name, options, callback) => {
           callback(ERROR, null, API_RESPONSE);
         };
       });
@@ -619,7 +639,7 @@ describe('Database', () => {
       const API_RESPONSE = {};
 
       beforeEach(() => {
-        database.updateSchema = (name, callback) => {
+        database.updateSchema = (name, options, callback) => {
           callback(null, OPERATION, API_RESPONSE);
         };
       });
@@ -696,7 +716,7 @@ describe('Database', () => {
     it('should return any non-404 like errors', done => {
       const error = {code: 3};
 
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(error);
       };
 
@@ -708,7 +728,7 @@ describe('Database', () => {
     });
 
     it('should return true if error is absent', done => {
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(null);
       };
 
@@ -722,7 +742,7 @@ describe('Database', () => {
     it('should return false if not found error if present', done => {
       const error = {code: 5};
 
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(error);
       };
 
@@ -731,6 +751,16 @@ describe('Database', () => {
         assert.strictEqual(exists, false);
         done();
       });
+    });
+
+    it('should accept and pass gaxOptions to getMetadata', done => {
+      const gaxOptions = {};
+
+      database.getMetadata = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+      database.exists(gaxOptions, assert.ifError);
     });
   });
 
@@ -743,6 +773,16 @@ describe('Database', () => {
       };
 
       database.get(options, assert.ifError);
+    });
+
+    it('should accept and pass gaxOptions to getMetadata', done => {
+      const gaxOptions = {};
+      database.getMetadata = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+
+      database.get({gaxOptions});
     });
 
     it('should not require an options object', done => {
@@ -772,7 +812,7 @@ describe('Database', () => {
       beforeEach(() => {
         OPERATION.listeners = {};
 
-        database.getMetadata = callback => {
+        database.getMetadata = (options, callback) => {
           callback(error);
         };
 
@@ -788,6 +828,17 @@ describe('Database', () => {
         };
 
         database.get(OPTIONS, assert.ifError);
+      });
+
+      it('should pass gaxOptions to create', done => {
+        const gaxOptions = {};
+        const options = Object.assign({}, OPTIONS, {gaxOptions});
+        database.create = opts => {
+          assert.strictEqual(opts.gaxOptions, options.gaxOptions);
+          done();
+        };
+
+        database.get(options, assert.ifError);
       });
 
       it('should return error if create failed', done => {
@@ -842,7 +893,7 @@ describe('Database', () => {
         autoCreate: true,
       };
 
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(error);
       };
 
@@ -860,7 +911,7 @@ describe('Database', () => {
       const error = new ApiError('Error.');
       error.code = 5;
 
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(error);
       };
 
@@ -877,7 +928,7 @@ describe('Database', () => {
     it('should return an error from getMetadata', done => {
       const error = new Error('Error.');
 
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(error);
       };
 
@@ -890,7 +941,7 @@ describe('Database', () => {
     it('should return self and API response', done => {
       const apiResponse = {};
 
-      database.getMetadata = callback => {
+      database.getMetadata = (options, callback) => {
         callback(null, apiResponse);
       };
 
@@ -920,6 +971,15 @@ describe('Database', () => {
       const returnValue = database.getMetadata(assert.ifError);
       assert.strictEqual(returnValue, requestReturnValue);
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      database.getMetadata(gaxOptions, assert.ifError);
+    });
   });
 
   describe('getSchema', () => {
@@ -934,6 +994,16 @@ describe('Database', () => {
       };
 
       database.getSchema(assert.ifError);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+
+      database.getSchema(gaxOptions, assert.ifError);
     });
 
     describe('error', () => {
@@ -1555,6 +1625,15 @@ describe('Database', () => {
       };
 
       database.updateSchema(config, assert.ifError);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      database.updateSchema(STATEMENTS, gaxOptions, assert.ifError);
     });
   });
 
@@ -2402,6 +2481,15 @@ describe('Database', () => {
       const result = await database.getState();
       assert.strictEqual(result, 'READY');
     });
+
+    it('should accept and pass gaxOptions to getMetadata', async () => {
+      const options = {};
+      database.getMetadata = async gaxOptions => {
+        assert.strictEqual(gaxOptions, options);
+        return [{}];
+      };
+      await database.getState(options);
+    });
   });
 
   describe('getRestoreInfo', () => {
@@ -2410,6 +2498,15 @@ describe('Database', () => {
       database.getMetadata = async () => [{restoreInfo}];
       const result = await database.getRestoreInfo();
       assert.deepStrictEqual(result, restoreInfo);
+    });
+
+    it('should accept and pass gaxOptions to getMetadata', async () => {
+      const options = {};
+      database.getMetadata = async gaxOptions => {
+        assert.strictEqual(gaxOptions, options);
+        return [{}];
+      };
+      await database.getRestoreInfo(options);
     });
   });
 

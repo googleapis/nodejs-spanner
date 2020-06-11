@@ -38,7 +38,7 @@ const fakePfy = extend({}, pfy, {
 });
 
 class FakeTransaction {
-  commit(callback) {
+  commit(gaxOptions, callback) {
     callback(null, {});
   }
   createReadStream() {
@@ -108,13 +108,26 @@ describe('Table', () => {
       const schema = 'schema';
 
       table.database = {
-        createTable(schema_, callback) {
+        createTable(schema_, gaxOptions_, callback) {
           assert.strictEqual(schema_, schema);
           callback(); // done()
         },
       };
 
       table.create(schema, done);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOpts = {};
+
+      table.database = {
+        createTable(schema_, gaxOptions, callback) {
+          assert.strictEqual(gaxOptions, gaxOpts);
+          callback(); // done()
+        },
+      };
+
+      table.create('schema', gaxOpts, done);
     });
   });
 
@@ -194,19 +207,13 @@ describe('Table', () => {
   });
 
   describe('delete', () => {
-    it('should throw an error if any arguments are provided', () => {
-      const expectedErr = /Unexpected argument, please see Table#deleteRows to delete rows\./;
-
-      assert.throws(() => table.delete([]), expectedErr);
-    });
-
     it('should update the schema on the database', () => {
       const updateSchemaReturnValue = {};
 
       function callback() {}
 
       table.database = {
-        updateSchema: (schema, callback_) => {
+        updateSchema: (schema, gaxOptions, callback_) => {
           assert.strictEqual(schema, 'DROP TABLE `' + table.name + '`');
           assert.strictEqual(callback_, callback);
           return updateSchemaReturnValue;
@@ -215,6 +222,17 @@ describe('Table', () => {
 
       const returnValue = table.delete(callback);
       assert.strictEqual(returnValue, updateSchemaReturnValue);
+    });
+
+    it('should accept and pass gaxOptions to updateSchema', done => {
+      const gaxOptions = {};
+      table.database = {
+        updateSchema: (schema, gaxOptionsFromTable) => {
+          assert.strictEqual(gaxOptionsFromTable, gaxOptions);
+          done();
+        },
+      };
+      table.delete(gaxOptions, assert.ifError);
     });
   });
 
@@ -234,13 +252,24 @@ describe('Table', () => {
       });
     });
 
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      transaction.commit = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+      table.deleteRows(KEYS, gaxOptions, assert.ifError);
+    });
+
     it('should delete the rows via transaction', done => {
       const stub = (sandbox.stub(
         transaction,
         'deleteRows'
       ) as sinon.SinonStub).withArgs(table.name, KEYS);
 
-      sandbox.stub(transaction, 'commit').callsFake(callback => callback());
+      sandbox.stub(transaction, 'commit').callsFake((opts, callback) => {
+        callback();
+      });
 
       table.deleteRows(KEYS, err => {
         assert.ifError(err);
@@ -254,7 +283,7 @@ describe('Table', () => {
     it('should call through to Table#delete', done => {
       const returnVal = Promise.resolve();
 
-      table.delete = callback => {
+      table.delete = (gaxOptions, callback) => {
         setImmediate(callback); // the done fn
         return returnVal;
       };
@@ -262,6 +291,15 @@ describe('Table', () => {
       const promise = table.drop(done);
 
       assert.strictEqual(promise, returnVal);
+    });
+
+    it('should accept and pass gaxOptions to Table#delete', done => {
+      const gaxOptions = {};
+      table.delete = gaxOptionsFromDrop => {
+        assert.strictEqual(gaxOptionsFromDrop, gaxOptions);
+        done();
+      };
+      table.drop(gaxOptions, assert.ifError);
     });
   });
 
@@ -292,6 +330,20 @@ describe('Table', () => {
         assert.strictEqual(stub.callCount, 1);
         done();
       });
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+
+      table.insert(ROW, gaxOptions, assert.ifError);
     });
   });
 
@@ -387,6 +439,20 @@ describe('Table', () => {
         done();
       });
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+
+      table.replace(ROW, gaxOptions, assert.ifError);
+    });
   });
 
   describe('update', () => {
@@ -417,6 +483,20 @@ describe('Table', () => {
         done();
       });
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+
+      table.update(ROW, gaxOptions, assert.ifError);
+    });
   });
 
   describe('upsert', () => {
@@ -446,6 +526,20 @@ describe('Table', () => {
         assert.strictEqual(stub.callCount, 1);
         done();
       });
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, gaxOptions);
+        done();
+      };
+
+      table.upsert(ROW, gaxOptions, assert.ifError);
     });
   });
 });

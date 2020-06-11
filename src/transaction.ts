@@ -263,8 +263,9 @@ export class Snapshot extends EventEmitter {
     this._options = {readOnly};
   }
 
-  begin(): Promise<BeginResponse>;
+  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
   begin(callback: BeginTransactionCallback): void;
+  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -286,6 +287,8 @@ export class Snapshot extends EventEmitter {
    *
    * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {TransactionBeginCallback} [callback] Callback function.
    * @returns {Promise<TransactionBeginResponse>}
    *
@@ -303,7 +306,15 @@ export class Snapshot extends EventEmitter {
    *     const apiResponse = data[0];
    *   });
    */
-  begin(callback?: BeginTransactionCallback): void | Promise<BeginResponse> {
+  begin(
+    gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
+    cb?: BeginTransactionCallback
+  ): void | Promise<BeginResponse> {
+    const gaxOpts =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
     const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
@@ -316,6 +327,7 @@ export class Snapshot extends EventEmitter {
         client: 'SpannerClient',
         method: 'beginTransaction',
         reqOpts,
+        gaxOpts,
       },
       (
         err: null | grpc.ServiceError,
@@ -1223,9 +1235,17 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
   }
 
-  batchUpdate(queries: Array<string | Statement>): Promise<BatchUpdateResponse>;
   batchUpdate(
     queries: Array<string | Statement>,
+    gaxOptions?: CallOptions
+  ): Promise<BatchUpdateResponse>;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    callback: BatchUpdateCallback
+  ): void;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    gaxOptions: CallOptions,
     callback: BatchUpdateCallback
   ): void;
   /**
@@ -1257,6 +1277,8 @@ export class Transaction extends Dml {
    *     object.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.types] A map of parameter types.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    *
@@ -1283,8 +1305,14 @@ export class Transaction extends Dml {
    */
   batchUpdate(
     queries: Array<string | Statement>,
-    callback?: BatchUpdateCallback
+    gaxOptionsOrCallback?: CallOptions | BatchUpdateCallback,
+    cb?: BatchUpdateCallback
   ): Promise<BatchUpdateResponse> | void {
+    const gaxOpts =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
     if (!Array.isArray(queries) || !queries.length) {
       const rowCounts: number[] = [];
       const error = new Error('batchUpdate requires at least 1 DML statement.');
@@ -1319,6 +1347,7 @@ export class Transaction extends Dml {
         client: 'SpannerClient',
         method: 'executeBatchDml',
         reqOpts,
+        gaxOpts,
       },
       (
         err: null | grpc.ServiceError,
@@ -1375,8 +1404,9 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(): Promise<CommitResponse>;
+  commit(gaxOptions?: CallOptions): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
+  commit(gaxOptions: CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1399,6 +1429,8 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#commit}
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {CommitCallback} [callback] Callback function.
    * @returns {Promise<CommitPromiseResponse>}
    *
@@ -1423,7 +1455,15 @@ export class Transaction extends Dml {
    *   });
    * });
    */
-  commit(callback?: CommitCallback): void | Promise<CommitResponse> {
+  commit(
+    gaxOptionsOrCallback?: CallOptions | CommitCallback,
+    cb?: CommitCallback
+  ): void | Promise<CommitResponse> {
+    const gaxOpts =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
@@ -1439,6 +1479,7 @@ export class Transaction extends Dml {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
+        gaxOpts,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
@@ -1607,8 +1648,12 @@ export class Transaction extends Dml {
     this._mutate('replace', table, rows);
   }
 
-  rollback(): Promise<void>;
+  rollback(gaxOptions?: CallOptions): Promise<void>;
   rollback(callback: spannerClient.spanner.v1.Spanner.RollbackCallback): void;
+  rollback(
+    gaxOptions: CallOptions,
+    callback: spannerClient.spanner.v1.Spanner.RollbackCallback
+  ): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -1619,6 +1664,8 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#rollback}
    * @see [Rollback API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Rollback)
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -1636,8 +1683,16 @@ export class Transaction extends Dml {
    * });
    */
   rollback(
-    callback?: spannerClient.spanner.v1.Spanner.RollbackCallback
+    gaxOptionsOrCallback?:
+      | CallOptions
+      | spannerClient.spanner.v1.Spanner.RollbackCallback,
+    cb?: spannerClient.spanner.v1.Spanner.RollbackCallback
   ): void | Promise<void> {
+    const gaxOpts =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+
     if (!this.id) {
       callback!(
         new Error(
@@ -1659,6 +1714,7 @@ export class Transaction extends Dml {
         client: 'SpannerClient',
         method: 'rollback',
         reqOpts,
+        gaxOpts,
       },
       (err: null | ServiceError) => {
         this.end();

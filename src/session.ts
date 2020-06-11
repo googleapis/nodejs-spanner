@@ -36,7 +36,7 @@ import {
 } from './database';
 import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
 import {NormalCallback} from './common';
-import {grpc} from 'google-gax';
+import {grpc, CallOptions} from 'google-gax';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -280,8 +280,12 @@ export class Session extends GrpcServiceObject {
       callback!
     );
   }
-  getMetadata(): Promise<GetSessionMetadataResponse>;
+  getMetadata(gaxOptions?: CallOptions): Promise<GetSessionMetadataResponse>;
   getMetadata(callback: GetSessionMetadataCallback): void;
+  getMetadata(
+    gaxOptions: CallOptions,
+    callback: GetSessionMetadataCallback
+  ): void;
   /**
    * @typedef {array} GetSessionMetadataResponse
    * @property {object} 0 The session's metadata.
@@ -301,6 +305,8 @@ export class Session extends GrpcServiceObject {
    * @see {@link v1.SpannerClient#getSession}
    * @see [GetSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.GetSession)
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {GetSessionMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetSessionMetadataResponse>}
    *
@@ -316,8 +322,14 @@ export class Session extends GrpcServiceObject {
    * });
    */
   getMetadata(
-    callback?: GetSessionMetadataCallback
+    optionsOrCallback?: CallOptions | GetSessionMetadataCallback,
+    cb?: GetSessionMetadataCallback
   ): void | Promise<GetSessionMetadataResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -326,15 +338,19 @@ export class Session extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'getSession',
         reqOpts,
+        gaxOpts,
       },
       callback!
     );
   }
-  keepAlive(): Promise<KeepAliveResponse>;
+  keepAlive(gaxOptions?: CallOptions): Promise<KeepAliveResponse>;
   keepAlive(callback: KeepAliveCallback): void;
+  keepAlive(gaxOptions: CallOptions, callback: KeepAliveCallback): void;
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
    *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -345,7 +361,15 @@ export class Session extends GrpcServiceObject {
    *   }
    * });
    */
-  keepAlive(callback?: KeepAliveCallback): void | Promise<KeepAliveResponse> {
+  keepAlive(
+    optionsOrCallback?: CallOptions | KeepAliveCallback,
+    cb?: KeepAliveCallback
+  ): void | Promise<KeepAliveResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts = {
       session: this.formattedName_,
       sql: 'SELECT 1',
@@ -355,6 +379,7 @@ export class Session extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'executeSql',
         reqOpts,
+        gaxOpts,
       },
       callback!
     );
