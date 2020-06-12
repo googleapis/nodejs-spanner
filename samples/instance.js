@@ -38,8 +38,8 @@ async function createInstance(instanceId, projectId) {
     console.log(`Creating instance ${instance.formattedName_}.`);
     const [, operation] = await instance.create({
       config: 'regional-us-central1',
-      nodes: 2,
-      displayName: instanceId,
+      nodes: 1,
+      displayName: 'This is a display name.',
       labels: {
         ['cloud_spanner_samples']: 'true',
       },
