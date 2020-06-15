@@ -32,7 +32,7 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import {grpc} from 'google-gax';
+import {grpc, CallOptions} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -44,6 +44,24 @@ const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
 });
+const RETRYOPTIONS: CallOptions = {
+  retry: {
+    retryCodes: [
+      grpc.status.RESOURCE_EXHAUSTED,
+      grpc.status.DEADLINE_EXCEEDED,
+      grpc.status.UNAVAILABLE,
+    ],
+    backoffSettings: {
+      initialRetryDelayMillis: 1000,
+      retryDelayMultiplier: 1.3,
+      maxRetryDelayMillis: 32000,
+      initialRpcTimeoutMillis: 60000,
+      rpcTimeoutMultiplier: 1,
+      maxRpcTimeoutMillis: 60000,
+      totalTimeoutMillis: 600000,
+    },
+  },
+};
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
@@ -97,7 +115,7 @@ describe('Spanner', () => {
       await Promise.all(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Backup
-        ).map(backup => backup.delete())
+        ).map(backup => backup.delete(RETRYOPTIONS))
       );
       /**
        * Deleting instances created during this test.
@@ -107,7 +125,7 @@ describe('Spanner', () => {
       await Promise.all(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Instance
-        ).map(instance => instance.delete())
+        ).map(instance => instance.delete(RETRYOPTIONS))
       );
     } else {
       /**
@@ -117,7 +135,9 @@ describe('Spanner', () => {
        */
       const limit = pLimit(5);
       await Promise.all(
-        RESOURCES_TO_CLEAN.map(resource => limit(() => resource.delete()))
+        RESOURCES_TO_CLEAN.map(resource =>
+          limit(() => resource.delete(RETRYOPTIONS))
+        )
       );
     }
   });
@@ -1040,6 +1060,7 @@ describe('Spanner', () => {
           AlbumId STRING(1024) NOT NULL,
           AlbumTitle STRING(1024) NOT NULL,
           ) PRIMARY KEY(AlbumId)`,
+        gaxOptions: RETRYOPTIONS,
       });
       await database2CreateOperation.promise();
       RESOURCES_TO_CLEAN.push(database2);
@@ -1053,10 +1074,12 @@ describe('Spanner', () => {
       const [, backup1Operation] = await backup1.create({
         databasePath: database1.formattedName_,
         expireTime: backupExpiryDate,
+        gaxOptions: RETRYOPTIONS,
       });
       const [, backup2Operation] = await backup2.create({
         databasePath: database2.formattedName_,
         expireTime: backupExpiryDate,
+        gaxOptions: RETRYOPTIONS,
       });
 
       assert.strictEqual(
@@ -1383,13 +1406,10 @@ describe('Spanner', () => {
               Accents ARRAY<STRING(1024)>,
               PhoneNumbers ARRAY<INT64>,
               HasGear BOOL,
-            ) PRIMARY KEY(SingerId)`
+            ) PRIMARY KEY(SingerId)`,
+          RETRYOPTIONS
         )
         .then(onPromiseOperationComplete);
-    });
-
-    after(() => {
-      return table.delete().then(onPromiseOperationComplete);
     });
 
     it('should throw an error for non-existant tables', done => {
