@@ -4260,12 +4260,6 @@ describe('Spanner', () => {
     });
 
     describe('pdml', () => {
-      before(function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
-      });
-
       it('should execute a simple pdml statement', done => {
         DATABASE.runPartitionedUpdate(
           {
