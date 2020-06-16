@@ -4300,7 +4300,9 @@ describe('Spanner', () => {
           .then(() => {
             return DATABASE.runPartitionedUpdate({
               sql:
-                'UPDATE ' + TABLE_NAME + " t SET t.StringValue = @str WHERE t.StringValue = 'a'",
+                'UPDATE ' +
+                TABLE_NAME +
+                " t SET t.StringValue = @str WHERE t.StringValue = 'a'",
               params: {str},
             });
           })
