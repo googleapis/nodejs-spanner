@@ -4891,7 +4891,7 @@ async function deleteOldTestInstances() {
   // Leave only instances that contain PREFIX in their name
   // and where created more that an hour ago.
   function isOld(timestampCreated: number) {
-    return (currentTimestampSeconds - timestampCreated) / (60 * 60 * 4) > 1;
+    return currentTimestampSeconds - timestampCreated >= 60 * 60 * 4;
   }
   const toDelete = instances.filter(
     instance =>

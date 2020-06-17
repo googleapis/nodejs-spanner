@@ -53,12 +53,12 @@ const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 
 async function deleteStaleInstances() {
   const [instances] = await spanner.getInstances();
-  const yesterday = new Date();
-  yesterday.setHours(-24);
+  const old = new Date();
+  old.setHours(-4);
   const toDelete = instances.filter(
     instance =>
       instance.id.includes(PREFIX) &&
-      instance.metadata.labels.created < Math.round(yesterday.getTime() / 1000)
+      instance.metadata.labels.created < Math.round(old.getTime() / 1000)
   );
 
   return deleteInstanceArray(toDelete);
