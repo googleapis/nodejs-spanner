@@ -4260,12 +4260,6 @@ describe('Spanner', () => {
     });
 
     describe('pdml', () => {
-      before(function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
-      });
-
       it('should execute a simple pdml statement', done => {
         DATABASE.runPartitionedUpdate(
           {
@@ -4286,8 +4280,11 @@ describe('Spanner', () => {
         );
       });
 
-      // tslint:disable-next-line ban
-      it.skip('should execute a long running pdml statement', () => {
+      it('should execute a long running pdml statement', async function () {
+        if (!IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+
         const count = 10000;
 
         const tableData = new Array(count).fill(0).map((_, i) => {
@@ -4303,7 +4300,9 @@ describe('Spanner', () => {
           .then(() => {
             return DATABASE.runPartitionedUpdate({
               sql:
-                "UPDATE ' + TABLE_NAME + ' t SET t.StringValue = @str WHERE t.StringValue = 'a'",
+                'UPDATE ' +
+                TABLE_NAME +
+                " t SET t.StringValue = @str WHERE t.StringValue = 'a'",
               params: {str},
             });
           })
