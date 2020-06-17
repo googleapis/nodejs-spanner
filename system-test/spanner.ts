@@ -44,7 +44,7 @@ const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
 });
-const RETRYOPTIONS: CallOptions = {
+const GAX_OPTIONS: CallOptions = {
   retry: {
     retryCodes: [
       grpc.status.RESOURCE_EXHAUSTED,
@@ -115,7 +115,7 @@ describe('Spanner', () => {
       await Promise.all(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Backup
-        ).map(backup => backup.delete(RETRYOPTIONS))
+        ).map(backup => backup.delete(GAX_OPTIONS))
       );
       /**
        * Deleting instances created during this test.
@@ -125,7 +125,7 @@ describe('Spanner', () => {
       await Promise.all(
         RESOURCES_TO_CLEAN.filter(
           resource => resource instanceof Instance
-        ).map(instance => instance.delete(RETRYOPTIONS))
+        ).map(instance => instance.delete(GAX_OPTIONS))
       );
     } else {
       /**
@@ -136,7 +136,7 @@ describe('Spanner', () => {
       const limit = pLimit(5);
       await Promise.all(
         RESOURCES_TO_CLEAN.map(resource =>
-          limit(() => resource.delete(RETRYOPTIONS))
+          limit(() => resource.delete(GAX_OPTIONS))
         )
       );
     }
@@ -1060,7 +1060,7 @@ describe('Spanner', () => {
           AlbumId STRING(1024) NOT NULL,
           AlbumTitle STRING(1024) NOT NULL,
           ) PRIMARY KEY(AlbumId)`,
-        gaxOptions: RETRYOPTIONS,
+        gaxOptions: GAX_OPTIONS,
       });
       await database2CreateOperation.promise();
       RESOURCES_TO_CLEAN.push(database2);
@@ -1074,12 +1074,12 @@ describe('Spanner', () => {
       const [, backup1Operation] = await backup1.create({
         databasePath: database1.formattedName_,
         expireTime: backupExpiryDate,
-        gaxOptions: RETRYOPTIONS,
+        gaxOptions: GAX_OPTIONS,
       });
       const [, backup2Operation] = await backup2.create({
         databasePath: database2.formattedName_,
         expireTime: backupExpiryDate,
-        gaxOptions: RETRYOPTIONS,
+        gaxOptions: GAX_OPTIONS,
       });
 
       assert.strictEqual(
@@ -1407,7 +1407,7 @@ describe('Spanner', () => {
               PhoneNumbers ARRAY<INT64>,
               HasGear BOOL,
             ) PRIMARY KEY(SingerId)`,
-          RETRYOPTIONS
+          GAX_OPTIONS
         )
         .then(onPromiseOperationComplete);
     });
