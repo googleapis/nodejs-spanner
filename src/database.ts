@@ -1440,6 +1440,12 @@ class Database extends GrpcServiceObject {
    * called to release the underlying {@link Session}. **Failure to do could
    * result in a Session leak.**
    *
+   * **NOTE:** Since the returned {@link Snapshot} transaction is not a
+   * single-use transaction, it is invalid to set the `minReadTimestamp` and
+   * `maxStaleness` parameters in {@link TimestampBounds} as those parameters
+   * can only be set for single-use transactions.
+   * https://cloud.google.com/spanner/docs/reference/rest/v1/TransactionOptions#bounded-staleness
+   *
    * @see {@link v1.SpannerClient#beginTransaction}
    *
    * @param {TimestampBounds} [options] Timestamp bounds.

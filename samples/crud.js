@@ -159,19 +159,12 @@ async function deleteData(instanceId, databaseId, projectId) {
         sql: 'DELETE FROM Singers WHERE SingerId >= 3 AND SingerId < 5',
       });
       console.log(`${rowCount} records deleted from Singers.`);
-      await transaction.commit();
     } catch (err) {
       console.error('ERROR:', err);
     }
-  });
 
-  // Deletes remaining rows from the Singers table and the Albums table,
-  // because Albums table is defined with ON DELETE CASCADE.
-  database.runTransaction(async (err, transaction) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
+    // Deletes remaining rows from the Singers table and the Albums table,
+    // because Albums table is defined with ON DELETE CASCADE.
     try {
       // The WHERE clause is required for DELETE statements to prevent
       // accidentally deleting all rows in a table.
