@@ -149,30 +149,17 @@ async function deleteData(instanceId, databaseId, projectId) {
   }
 
   // Delete a range of rows where the column key is >=3 and <5
-  database.runTransaction(async (err, transaction) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    try {
-      const [rowCount] = await transaction.runUpdate({
-        sql: 'DELETE FROM Singers WHERE SingerId >= 3 AND SingerId < 5',
-      });
-      console.log(`${rowCount} records deleted from Singers.`);
-      await transaction.commit();
-    } catch (err) {
-      console.error('ERROR:', err);
-    }
-  });
-
-  // Deletes remaining rows from the Singers table and the Albums table,
-  // because Albums table is defined with ON DELETE CASCADE.
-  database.runTransaction(async (err, transaction) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    try {
+  database.runTransactionAsync(async transaction => {
+    const [rowCount] = await transaction.runUpdate({
+      sql: 'DELETE FROM Singers WHERE SingerId >= 3 AND SingerId < 5',
+    });
+    console.log(`${rowCount} records deleted from Singers.`);
+    await transaction.commit();
+  })
+  .then(() => {
+    // Deletes remaining rows from the Singers table and the Albums table,
+    // because Albums table is defined with ON DELETE CASCADE.
+    return database.runTransactionAsync(async transaction => {
       // The WHERE clause is required for DELETE statements to prevent
       // accidentally deleting all rows in a table.
       // https://cloud.google.com/spanner/docs/dml-syntax#where_clause
@@ -181,12 +168,12 @@ async function deleteData(instanceId, databaseId, projectId) {
       });
       console.log(`${rowCount} records deleted from Singers.`);
       await transaction.commit();
-    } catch (err) {
-      console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      await database.close();
-    }
+    })
+  })
+  .catch(err => { console.error('ERROR:', err); })
+  .then(async () => {
+    // Close the database when finished.
+    await database.close();
   });
   // [END spanner_delete_data]
 }
