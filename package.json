@@ -57,6 +57,7 @@
     "@google-cloud/promisify": "^2.0.0",
     "@types/stack-trace": "0.0.29",
     "arrify": "^2.0.0",
+    "big.js": "^5.2.2",
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
@@ -75,6 +76,7 @@
   },
   "devDependencies": {
     "@grpc/proto-loader": "^0.5.1",
+    "@types/big.js": "^4.0.5",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.21",
