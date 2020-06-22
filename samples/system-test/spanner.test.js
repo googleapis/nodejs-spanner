@@ -50,6 +50,20 @@ const spanner = new Spanner({
 });
 const LABEL = 'node-sample-tests';
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
+const GAX_OPTIONS = {
+  retry: {
+    retryCodes: [4, 8, 14],
+    backoffSettings: {
+      initialRetryDelayMillis: 1000,
+      retryDelayMultiplier: 1.3,
+      maxRetryDelayMillis: 32000,
+      initialRpcTimeoutMillis: 60000,
+      rpcTimeoutMultiplier: 1,
+      maxRpcTimeoutMillis: 60000,
+      totalTimeoutMillis: 600000,
+    },
+  },
+};
 
 async function deleteStaleInstances() {
   const [instances] = await spanner.getInstances();
@@ -81,8 +95,8 @@ function deleteInstanceArray(instanceArray) {
 
 async function deleteInstance(instance) {
   const [backups] = await instance.getBackups();
-  await Promise.all(backups.map(backup => backup.delete()));
-  return instance.delete();
+  await Promise.all(backups.map(backup => backup.delete(GAX_OPTIONS)));
+  return instance.delete(GAX_OPTIONS);
 }
 
 describe('Spanner', () => {
@@ -99,6 +113,7 @@ describe('Spanner', () => {
           [LABEL]: 'true',
           created: CURRENT_TIME,
         },
+        gaxOptions: GAX_OPTIONS,
       });
       await operation.promise();
     } else {
@@ -114,16 +129,16 @@ describe('Spanner', () => {
     if (!INSTANCE_ALREADY_EXISTS) {
       // Make sure all backups are deleted before an instance can be deleted.
       await Promise.all([
-        instance.backup(BACKUP_ID).delete(),
-        instance.backup(CANCELLED_BACKUP_ID).delete(),
+        instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
-      await instance.delete();
+      await instance.delete(GAX_OPTIONS);
     } else {
       await Promise.all([
         instance.database(DATABASE_ID).delete(),
         instance.database(RESTORE_DATABASE_ID).delete(),
-        instance.backup(BACKUP_ID).delete(),
-        instance.backup(CANCELLED_BACKUP_ID).delete(),
+        instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
     }
   });
