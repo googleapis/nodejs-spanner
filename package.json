@@ -59,7 +59,7 @@
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
     "google-auth-library": "^6.0.0",
-    "google-gax": "^2.3.1",
+    "google-gax": "2.6.2-beta.1",
     "grpc-gcp": "^0.3.2",
     "is": "^3.2.1",
     "lodash.snakecase": "^4.1.1",
