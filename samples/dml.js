@@ -493,27 +493,13 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
           );
       })
       .then(() => {
-        // Get updated albums' budgets.
-        const query = `SELECT MarketingBudget FROM Albums
-          WHERE (SingerId = 1 AND AlbumId = 1) OR (SingerId = 2 AND AlbumId = 2)
-          ORDER BY SingerId`;
-        return transaction.run(query);
-      })
-      .then(results => {
-        // Verify the accuracy of the new budgets.
-        const rows = results[0].map(row => row.toJSON());
-        if (
-          rows[0].MarketingBudget === firstBudget &&
-          rows[1].MarketingBudget === secondBudget
-        ) {
-          console.log(
-            `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 2 to Album 1.`
-          );
-        }
-      })
-      .then(() => {
         // Commits the transaction and send the changes to the database
         return transaction.commit();
+      })
+      .then(() => {
+        console.log(
+          `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 2 to Album 1.`
+        );
       })
       .then(() => {
         // Closes the database when finished
