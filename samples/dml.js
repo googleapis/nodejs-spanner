@@ -474,20 +474,23 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
         // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
         // must be converted (back) to strings before being inserted as INT64s.
 
-        transaction.runUpdate({
-          sql: `UPDATE Albums SET MarketingBudget = @Budget
-            WHERE SingerId = 1 and AlbumId = 1`,
-          params: {
-            Budget: firstBudget.toString(),
-          },
-        });
-        transaction.runUpdate({
-          sql: `UPDATE Albums SET MarketingBudget = @Budget
-            WHERE SingerId = 2 and AlbumId = 2`,
-          params: {
-            Budget: secondBudget.toString(),
-          },
-        });
+        return transaction
+          .runUpdate({
+            sql: `UPDATE Albums SET MarketingBudget = @Budget
+                WHERE SingerId = 1 and AlbumId = 1`,
+            params: {
+              Budget: firstBudget,
+            },
+          })
+          .then(() =>
+            transaction.runUpdate({
+              sql: `UPDATE Albums SET MarketingBudget = @Budget
+                    WHERE SingerId = 2 and AlbumId = 2`,
+              params: {
+                Budget: secondBudget,
+              },
+            })
+          );
       })
       .then(() => {
         // Commits the transaction and send the changes to the database
@@ -497,9 +500,6 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
         console.log(
           `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 2 to Album 1.`
         );
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
       })
       .then(() => {
         // Closes the database when finished
