@@ -18,6 +18,7 @@ import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
+import {Big} from 'big.js';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {GrpcService} from '../src/common-grpc/service';
 import {google} from '../protos/protos';
@@ -160,6 +161,30 @@ describe('codec', () => {
       assert.throws(() => {
         int.valueOf();
       }, new RegExp('Integer ' + value + ' is out of bounds.'));
+    });
+  });
+
+  describe('Numeric', () => {
+    it('should store value as a string', () => {
+      const value = '8.01911';
+      const numeric = new codec.Numeric(value);
+
+      assert.strictEqual(numeric.value, '8.01911');
+    });
+
+    it('should return as a Big', () => {
+      const value = '8.01911';
+      const numeric = new codec.Numeric(value);
+
+      const expected = new Big(value);
+      assert.ok(numeric.valueOf().eq(expected));
+    });
+
+    it('toJSON', () => {
+      const value = '8.01911';
+      const numeric = new codec.Numeric(value);
+
+      assert.strictEqual(numeric.toJSON(), value);
     });
   });
 
@@ -412,6 +437,17 @@ describe('codec', () => {
       assert.strictEqual(decoded.value, value);
     });
 
+    it('should decode NUMERIC', () => {
+      const value = '8.01911';
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.NUMERIC,
+      });
+
+      assert(decoded instanceof codec.Numeric);
+      assert.strictEqual(decoded.value, value);
+    });
+
     it('should decode TIMESTAMP', () => {
       const value = new Date();
       const expected = new PreciseDate(value.getTime());
@@ -531,6 +567,14 @@ describe('codec', () => {
       assert.strictEqual(encoded, value.toString());
     });
 
+    it('should stringify NUMERIC', () => {
+      const value = new codec.Numeric('8.01911');
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, value.value);
+    });
+
     it('should encode ARRAY and inner members', () => {
       const value = [5];
 
@@ -592,6 +636,11 @@ describe('codec', () => {
     it('should determine if the value is an int', () => {
       assert.deepStrictEqual(codec.getType(1234), {type: 'int64'});
       assert.deepStrictEqual(codec.getType(new codec.Int(1)), {type: 'int64'});
+    });
+
+    it('should determine if the value is numeric', () => {
+      assert.deepStrictEqual(codec.getType(new codec.Numeric('8.01911')),
+                             {type: 'numeric'});
     });
 
     it('should determine if the value is a string', () => {
