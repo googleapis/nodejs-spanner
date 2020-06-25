@@ -639,8 +639,9 @@ describe('codec', () => {
     });
 
     it('should determine if the value is numeric', () => {
-      assert.deepStrictEqual(codec.getType(new codec.Numeric('8.01911')),
-                             {type: 'numeric'});
+      assert.deepStrictEqual(codec.getType(new codec.Numeric('8.01911')), {
+        type: 'numeric',
+      });
     });
 
     it('should determine if the value is a string', () => {
