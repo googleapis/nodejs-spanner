@@ -35,21 +35,22 @@ const datatypesCmd = 'node datatypes.js';
 const backupsCmd = 'node backups.js';
 const instanceCmd = 'node instance.js';
 
-const date = Date.now();
+const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
 const PREFIX = 'test-instance';
-const INSTANCE_ID = process.env.SPANNERTEST_INSTANCE || `${PREFIX}-${date}`;
+const INSTANCE_ID =
+  process.env.SPANNERTEST_INSTANCE || `${PREFIX}-${CURRENT_TIME}`;
+const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
-const DATABASE_ID = `test-database-${date}`;
-const RESTORE_DATABASE_ID = `test-database-${date}-r`;
-const BACKUP_ID = `test-backup-${date}`;
-const CANCELLED_BACKUP_ID = `test-backup-${date}-c`;
+const DATABASE_ID = `test-database-${CURRENT_TIME}`;
+const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
+const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
+const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
 });
 const LABEL = 'node-sample-tests';
-const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const GAX_OPTIONS = {
   retry: {
     retryCodes: [4, 8, 14],
@@ -66,30 +67,37 @@ const GAX_OPTIONS = {
 };
 
 async function deleteStaleInstances() {
-  const [instances] = await spanner.getInstances();
+  const [instances] = await spanner.getInstances({
+    filter:
+      '(labels.gcloud-sample-tests:true) OR (labels.cloud_spanner_samples:true)',
+  });
   const old = new Date();
   old.setHours(-4);
-  const toDelete = instances.filter(
-    instance =>
-      instance.id.includes(PREFIX) &&
-      instance.metadata.labels.created < Math.round(old.getTime() / 1000)
-  );
 
-  return deleteInstanceArray(toDelete);
-}
+  await Promise.all(
+    instances.map(async instance => {
+      const instanceName = instance.metadata.name;
 
-function deleteInstanceArray(instanceArray) {
-  /**
-   * Delay to allow instance and its databases to fully clear.
-   * Refer to "Soon afterwards"
-   *  @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
-   */
-  const delay = 500;
-  const limit = pLimit(5);
-  return Promise.all(
-    instanceArray.map(instance =>
-      limit(() => setTimeout(deleteInstance, delay, instance))
-    )
+      const res = await spanner.auth.request({
+        url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
+      });
+      const operations = res.data.operations;
+
+      const delay = 500;
+      const limit = pLimit(5);
+
+      await Promise.all(
+        operations
+          .filter(operation => {
+            return operation.metadata['@type'].includes('CreateInstance');
+          })
+          .filter(operation => {
+            const instanceCreated = new Date(operation.metadata.startTime);
+            return instanceCreated < Math.round(old.getTime() / 1000);
+          })
+          .map(() => limit(() => setTimeout(deleteInstance, delay, instance)))
+      );
+    })
   );
 }
 
@@ -141,11 +149,10 @@ describe('Spanner', () => {
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
     }
+    await spanner.instance(SAMPLE_INSTANCE_ID).delete(GAX_OPTIONS);
   });
 
   describe('instance', () => {
-    const SAMPLE_INSTANCE_ID = 'my-sample-instance';
-
     after(async () => {
       const sample_instance = spanner.instance(SAMPLE_INSTANCE_ID);
       await sample_instance.delete();
