@@ -4,6 +4,31 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.2.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.1.0...v5.2.0) (2020-06-30)
+
+
+### Features
+
+* add code sample for creating an instance ([#1073](https://www.github.com/googleapis/nodejs-spanner/issues/1073)) ([ab6dc62](https://www.github.com/googleapis/nodejs-spanner/commit/ab6dc62061e6893ec170b07fc3ffebbd2a4179f8))
+* **secrets:** begin migration to secret manager from keystore ([#1092](https://www.github.com/googleapis/nodejs-spanner/issues/1092)) ([2031652](https://www.github.com/googleapis/nodejs-spanner/commit/2031652e062004d06a18605dc45fdd00bd52989f))
+
+
+### Bug Fixes
+
+* handle fallback option properly ([#1146](https://www.github.com/googleapis/nodejs-spanner/issues/1146)) ([70d3f2c](https://www.github.com/googleapis/nodejs-spanner/commit/70d3f2c1cd89f71d777b6bc06b48931b8e075417))
+* **samples-test:** race condition in deleteData sample ([#1156](https://www.github.com/googleapis/nodejs-spanner/issues/1156)) ([39d8f0c](https://www.github.com/googleapis/nodejs-spanner/commit/39d8f0cf28f0d7df76d3d0f0d967d1ce574df3ce))
+* race condition in "should transfer value from one record to another using DML statements within a transaction test" ([#1159](https://www.github.com/googleapis/nodejs-spanner/issues/1159)) ([0c46714](https://www.github.com/googleapis/nodejs-spanner/commit/0c4671460b265965482afb1894deacdc60900ee7))
+* set displayName in CreateInstance sample ([#1145](https://www.github.com/googleapis/nodejs-spanner/issues/1145)) ([f9e47d9](https://www.github.com/googleapis/nodejs-spanner/commit/f9e47d9e1b9067b7488ad73b67b656efc4bb93d7))
+* set instanceId to the given id ([#1094](https://www.github.com/googleapis/nodejs-spanner/issues/1094)) ([8973cbc](https://www.github.com/googleapis/nodejs-spanner/commit/8973cbcc9158b37650af2edb6015c575da1cc3ec)), closes [#1093](https://www.github.com/googleapis/nodejs-spanner/issues/1093)
+* unskip PDML tests when run against emulator ([#1150](https://www.github.com/googleapis/nodejs-spanner/issues/1150)) ([8465482](https://www.github.com/googleapis/nodejs-spanner/commit/8465482fad3b40b524f0d3e255983ddd75440e3e))
+* update DELETE samples to match docs ([#1072](https://www.github.com/googleapis/nodejs-spanner/issues/1072)) ([3336e04](https://www.github.com/googleapis/nodejs-spanner/commit/3336e04f6ff75539712d62ce2afabc70d8738150))
+* update node issue template ([#1157](https://www.github.com/googleapis/nodejs-spanner/issues/1157)) ([27d0699](https://www.github.com/googleapis/nodejs-spanner/commit/27d0699851c24b49a77ad7e2751804a7911d698c))
+
+
+### Performance Improvements
+
+* use write fraction when resizing pool ([#1031](https://www.github.com/googleapis/nodejs-spanner/issues/1031)) ([58f773b](https://www.github.com/googleapis/nodejs-spanner/commit/58f773b17459a96abcd3b5345aaaf497a2386840))
+
 ## [5.1.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.0.0...v5.1.0) (2020-06-04)
 
 
