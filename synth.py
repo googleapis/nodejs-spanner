@@ -8,33 +8,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 AUTOSYNTH_MULTIPLE_COMMITS = True
 
-gapic = gcp.GAPICMicrogenerator()
+gapic = gcp.GAPICBazel()
 
-spanner = gapic.typescript_library(
-    'spanner', 'v1',
-    proto_path='google/spanner/v1',
-    generator_args={
-      'grpc-service-config': 'google/spanner/v1/spanner_grpc_service_config.json',
-      'main-service': 'spanner',
-      'package-name': '@google-cloud/spanner'
-    }
-)
+spanner = gapic.node_library('spanner', 'v1', proto_path='google/spanner/v1')
 
-spanner_admin_database = gapic.typescript_library(
-    'spanner-admin-database', 'v1',
-    proto_path='google/spanner/admin/database/v1',
-    generator_args={
-      'grpc-service-config': 'google/spanner/admin/database/v1/spanner_admin_database_grpc_service_config.json'
-    }
-)
+spanner_admin_database = gapic.node_library('admin-database', 'v1', proto_path='google/spanner/admin/database/v1')
 
-spanner_admin_instance = gapic.typescript_library(
-    'spanner-admin-instance', 'v1',
-    proto_path='google/spanner/admin/instance/v1',
-    generator_args={
-      'grpc-service-config': 'google/spanner/admin/instance/v1/spanner_admin_instance_grpc_service_config.json'
-    }
-)
+spanner_admin_instance = gapic.node_library('admin-instance', 'v1', proto_path='google/spanner/admin/instance/v1')
 
 # nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and
 # SpannerAdminInstance, all 3 are exported in src/v1/index.js
@@ -50,5 +30,4 @@ common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library(source_location='build/src')
 s.copy(templates)
 
-# '''
 node.postprocess_gapic_library()
