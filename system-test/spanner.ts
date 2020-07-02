@@ -80,6 +80,7 @@ describe('Spanner', () => {
       [LABEL]: 'true',
       created: CURRENT_TIME,
     },
+    gaxOptions: GAX_OPTIONS,
   };
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
@@ -104,6 +105,7 @@ describe('Spanner', () => {
             SingerId STRING(1024) NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId)`,
+      gaxOptions: GAX_OPTIONS,
     });
     await operation.promise();
     RESOURCES_TO_CLEAN.push(DATABASE);
@@ -4938,8 +4940,8 @@ function deleteInstanceArray(instanceArray) {
 }
 async function deleteInstance(instance: Instance) {
   const [backups] = await instance.getBackups();
-  await Promise.all(backups.map(backup => backup.delete()));
-  return instance.delete();
+  await Promise.all(backups.map(backup => backup.delete(GAX_OPTIONS)));
+  return instance.delete(GAX_OPTIONS);
 }
 
 function wait(time) {

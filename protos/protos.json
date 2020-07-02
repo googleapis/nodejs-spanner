@@ -1187,6 +1187,7 @@
                         "java_outer_classname": "SpannerDatabaseAdminProto",
                         "java_package": "com.google.spanner.admin.database.v1",
                         "php_namespace": "Google\\Cloud\\Spanner\\Admin\\Database\\V1",
+                        "ruby_package": "Google::Cloud::Spanner::Admin::Database::V1",
                         "(google.api.resource_definition).type": "spanner.googleapis.com/Instance",
                         "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}"
                       },
@@ -1974,7 +1975,8 @@
                         "java_multiple_files": true,
                         "java_outer_classname": "SpannerInstanceAdminProto",
                         "java_package": "com.google.spanner.admin.instance.v1",
-                        "php_namespace": "Google\\Cloud\\Spanner\\Admin\\Instance\\V1"
+                        "php_namespace": "Google\\Cloud\\Spanner\\Admin\\Instance\\V1",
+                        "ruby_package": "Google::Cloud::Spanner::Admin::Instance::V1"
                       },
                       "nested": {
                         "InstanceAdmin": {
@@ -2379,6 +2381,7 @@
                 "java_outer_classname": "SpannerProto",
                 "java_package": "com.google.spanner.v1",
                 "php_namespace": "Google\\Cloud\\Spanner\\V1",
+                "ruby_package": "Google::Cloud::Spanner::V1",
                 "cc_enable_arenas": true,
                 "(google.api.resource_definition).type": "spanner.googleapis.com/Database",
                 "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/databases/{database}"
