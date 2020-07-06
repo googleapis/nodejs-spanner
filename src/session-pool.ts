@@ -156,7 +156,7 @@ const DEFAULTS: SessionPoolOptions = {
   labels: {},
   max: 100,
   maxIdle: 1,
-  min: 0,
+  min: 25,
   writes: 0,
   incStep: 25,
 };
@@ -214,6 +214,21 @@ export function isSessionNotFoundError(
     error !== undefined &&
     error.code === grpc.status.NOT_FOUND &&
     error.message.includes('Session not found')
+  );
+}
+
+/**
+ * Checks whether the given error is a 'Database not found' error.
+ * @param error the error to check
+ * @return true if the error is a 'Database not found' error, and otherwise false.
+ */
+export function isDatabaseNotFoundError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.code === grpc.status.NOT_FOUND &&
+    error.message.includes('Database not found')
   );
 }
 
@@ -525,7 +540,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.isOpen = true;
     this.emit('open');
 
-    this._fill();
+    this._fill().catch(err => {
+      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
+      // for a database that does not yet exist with SessionPoolOptions.min > 0.
+      if (!isDatabaseNotFoundError(err)) {
+        throw err;
+      }
+    });
   }
 
   /**

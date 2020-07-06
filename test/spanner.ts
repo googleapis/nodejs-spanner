@@ -394,7 +394,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: selectSql,
       };
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         const promises: Array<Promise<RunResponse>> = [];
@@ -416,7 +416,7 @@ describe('Spanner with mock server', () => {
       const update = {
         sql: insertSql,
       };
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         const promises: Array<Promise<number | number[]>> = [];
@@ -1089,6 +1089,7 @@ describe('Spanner with mock server', () => {
     it('should retry "Session not found" errors on Database.run()', done => {
       const db = newTestDatabase({
         incStep: 1,
+        min: 0,
       });
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,
@@ -1589,7 +1590,7 @@ describe('Spanner with mock server', () => {
     }
 
     it('should reuse sessions', async () => {
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         await verifyReadSessionReuse(database);
       } finally {
@@ -1599,6 +1600,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions when fail=true', async () => {
       const db = newTestDatabase({
+        min: 0,
         max: 10,
         incStep: 1,
         concurrency: 5,
@@ -1638,6 +1640,7 @@ describe('Spanner with mock server', () => {
     async function testSessionPoolExhaustedError() {
       const database = newTestDatabase({
         incStep: 1,
+        min: 0,
         max: 1,
         fail: true,
       });
@@ -1666,7 +1669,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: invalidSql,
       };
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         for (let i = 0; i < 10; i++) {
@@ -1691,7 +1694,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: selectSql,
       };
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         for (let i = 0; i < 10; i++) {
@@ -1709,7 +1712,7 @@ describe('Spanner with mock server', () => {
       const query = {
         sql: invalidSql,
       };
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         const pool = database.pool_ as SessionPool;
         for (let i = 0; i < 10; i++) {
@@ -1730,7 +1733,7 @@ describe('Spanner with mock server', () => {
     });
 
     it('should reuse write sessions', async () => {
-      const database = newTestDatabase({incStep: 1});
+      const database = newTestDatabase({incStep: 1, min: 0});
       try {
         await verifyWriteSessionReuse(database);
       } finally {
@@ -1740,6 +1743,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse write sessions when fail=true', async () => {
       const db = newTestDatabase({
+        min: 0,
         max: 10,
         incStep: 1,
         concurrency: 5,
@@ -1902,6 +1906,8 @@ describe('Spanner with mock server', () => {
     it('should propagate database not found errors', async () => {
       spannerMock.setExecutionTime(
         spannerMock.batchCreateSessions,
+        // Two errors; one for the initial _fill of the session pool, and one
+        // for the query.
         SimulatedExecutionTime.ofErrors([
           {
             code: Status.NOT_FOUND,
@@ -1916,7 +1922,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase({
         min: 100,
         max: 200,
-      }).on('error', () => {});
+      });
       try {
         await database.run(selectSql);
         assert.fail('missing expected error');
@@ -1924,6 +1930,31 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(err.code, Status.NOT_FOUND);
       } finally {
         await database.close();
+      }
+    });
+
+    it('should not propagate database not found errors for SessionPoolOptions.min > 0', async () => {
+      spannerMock.setExecutionTime(
+        spannerMock.batchCreateSessions,
+        SimulatedExecutionTime.ofErrors([
+          {
+            code: Status.NOT_FOUND,
+            message: 'Database not found',
+          },
+        ] as MockError[])
+      );
+      try {
+        const database = newTestDatabase({
+          min: 25,
+          max: 400,
+        });
+        const response = await database.create();
+        assert.ok(response);
+        const [rows] = await database.run(selectSql);
+        assert.strictEqual(rows.length, 3);
+        await database.close();
+      } catch (err) {
+        assert.fail(err);
       }
     });
 
@@ -2004,6 +2035,7 @@ describe('Spanner with mock server', () => {
 
     it('should respect options.max', async () => {
       const database = newTestDatabase({
+        min: 0,
         max: 3,
         incStep: 2,
       });
@@ -2021,6 +2053,7 @@ describe('Spanner with mock server', () => {
 
     it('should respect options.max when a write session is requested', async () => {
       const database = newTestDatabase({
+        min: 0,
         max: 3,
         incStep: 2,
       });
