@@ -233,6 +233,21 @@ export function isDatabaseNotFoundError(
 }
 
 /**
+ * Checks whether the given error is an 'Instance not found' error.
+ * @param error the error to check
+ * @return true if the error is an 'Instance not found' error, and otherwise false.
+ */
+export function isInstanceNotFoundError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.code === grpc.status.NOT_FOUND &&
+    error.message.includes('Instance not found')
+  );
+}
+
+/**
  * enum to capture errors that can appear from multiple places
  */
 const enum errors {
@@ -543,9 +558,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._fill().catch(err => {
       // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
       // for a database that does not yet exist with SessionPoolOptions.min > 0.
-      if (!isDatabaseNotFoundError(err)) {
-        throw err;
+      if (isDatabaseNotFoundError(err) || isInstanceNotFoundError(err)) {
+        return;
       }
+      this.emit('error', err);
     });
   }
 
