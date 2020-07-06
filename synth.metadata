@@ -3,23 +3,15 @@
     {
       "git": {
         "name": ".",
-        "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "eba2bbae33acfff7d26d8dbc4aae6a4f631fd08e"
-      }
-    },
-    {
-      "git": {
-        "name": "googleapis",
-        "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "b5653ef55579186841dee924592248d821902a12",
-        "internalRef": "316144276"
+        "remote": "git@github.com:googleapis/nodejs-spanner.git",
+        "sha": "4166c09d5cec87a1c777ff4eaf48a9d952b032dc"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "dc9caca650c77b7039e2bbc3339ffb34ae78e5b7"
+        "sha": "303271797a360f8a439203413f13a160f2f5b3b4"
       }
     }
   ],
@@ -29,26 +21,26 @@
         "source": "googleapis",
         "apiName": "spanner",
         "apiVersion": "v1",
-        "language": "typescript",
-        "generator": "gapic-generator-typescript"
+        "language": "nodejs",
+        "generator": "bazel"
       }
     },
     {
       "client": {
         "source": "googleapis",
-        "apiName": "spanner-admin-database",
+        "apiName": "admin-database",
         "apiVersion": "v1",
-        "language": "typescript",
-        "generator": "gapic-generator-typescript"
+        "language": "nodejs",
+        "generator": "bazel"
       }
     },
     {
       "client": {
         "source": "googleapis",
-        "apiName": "spanner-admin-instance",
+        "apiName": "admin-instance",
         "apiVersion": "v1",
-        "language": "typescript",
-        "generator": "gapic-generator-typescript"
+        "language": "nodejs",
+        "generator": "bazel"
       }
     }
   ]
