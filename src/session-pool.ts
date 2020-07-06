@@ -956,20 +956,26 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         })
       );
     }
+
+    let removeErrorListener: Function;
     promises.push(
       new Promise((_, reject) => {
         this.once('createError', reject);
+        removeErrorListener = this.removeListener.bind(
+          this,
+          'createError',
+          reject
+        );
       })
     );
 
     try {
       this._waiters[type]++;
       await Promise.race(promises);
-    } catch (e) {
-      removeListener!();
-      throw e;
     } finally {
       this._waiters[type]--;
+      removeListener!();
+      removeErrorListener!();
     }
 
     return this._borrowNextAvailableSession(type);
