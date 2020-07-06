@@ -1919,10 +1919,7 @@ describe('Spanner with mock server', () => {
           },
         ] as MockError[])
       );
-      const database = newTestDatabase({
-        min: 100,
-        max: 200,
-      });
+      const database = newTestDatabase();
       try {
         await database.run(selectSql);
         assert.fail('missing expected error');
@@ -1933,28 +1930,57 @@ describe('Spanner with mock server', () => {
       }
     });
 
-    it('should not propagate database not found errors for SessionPoolOptions.min > 0', async () => {
+    it('should not propagate instance and database not found errors for SessionPoolOptions.min > 0', async () => {
+      for (const msg of ['Instance not found', 'Database not found']) {
+        spannerMock.setExecutionTime(
+          spannerMock.batchCreateSessions,
+          SimulatedExecutionTime.ofErrors([
+            {
+              code: Status.NOT_FOUND,
+              message: msg,
+            },
+          ] as MockError[])
+        );
+        try {
+          const database = newTestDatabase({
+            min: 25,
+            max: 400,
+          });
+          const response = await database.create();
+          assert.ok(response);
+          const [rows] = await database.run(selectSql);
+          assert.strictEqual(rows.length, 3);
+          await database.close();
+        } catch (err) {
+          assert.fail(err);
+        }
+      }
+    });
+
+    it('should propagate permission denied errors on initialization', async () => {
       spannerMock.setExecutionTime(
         spannerMock.batchCreateSessions,
         SimulatedExecutionTime.ofErrors([
           {
-            code: Status.NOT_FOUND,
-            message: 'Database not found',
+            code: Status.PERMISSION_DENIED,
+            message: 'Needs permission',
+          },
+          {
+            code: Status.PERMISSION_DENIED,
+            message: 'Needs permission',
           },
         ] as MockError[])
       );
+      const database = newTestDatabase().on('error', err => {
+        assert.strictEqual(err.code, Status.PERMISSION_DENIED);
+      });
       try {
-        const database = newTestDatabase({
-          min: 25,
-          max: 400,
-        });
-        const response = await database.create();
-        assert.ok(response);
-        const [rows] = await database.run(selectSql);
-        assert.strictEqual(rows.length, 3);
-        await database.close();
+        await database.run(selectSql);
+        assert.fail('missing expected error');
       } catch (err) {
-        assert.fail(err);
+        assert.strictEqual(err.code, Status.PERMISSION_DENIED);
+      } finally {
+        await database.close();
       }
     });
 
