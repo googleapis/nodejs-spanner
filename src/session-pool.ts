@@ -156,7 +156,7 @@ const DEFAULTS: SessionPoolOptions = {
   labels: {},
   max: 100,
   maxIdle: 1,
-  min: 0,
+  min: 25,
   writes: 0,
   incStep: 25,
 };
@@ -214,6 +214,36 @@ export function isSessionNotFoundError(
     error !== undefined &&
     error.code === grpc.status.NOT_FOUND &&
     error.message.includes('Session not found')
+  );
+}
+
+/**
+ * Checks whether the given error is a 'Database not found' error.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is a 'Database not found' error, and otherwise false.
+ */
+export function isDatabaseNotFoundError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.code === grpc.status.NOT_FOUND &&
+    error.message.includes('Database not found')
+  );
+}
+
+/**
+ * Checks whether the given error is an 'Instance not found' error.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is an 'Instance not found' error, and otherwise false.
+ */
+export function isInstanceNotFoundError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.code === grpc.status.NOT_FOUND &&
+    error.message.includes('Instance not found')
   );
 }
 
@@ -525,7 +555,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.isOpen = true;
     this.emit('open');
 
-    this._fill();
+    this._fill().catch(err => {
+      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
+      // for a database that does not yet exist with SessionPoolOptions.min > 0.
+      if (isDatabaseNotFoundError(err) || isInstanceNotFoundError(err)) {
+        return;
+      }
+      this.emit('error', err);
+    });
   }
 
   /**
@@ -956,20 +993,26 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         })
       );
     }
+
+    let removeErrorListener: Function;
     promises.push(
       new Promise((_, reject) => {
         this.once('createError', reject);
+        removeErrorListener = this.removeListener.bind(
+          this,
+          'createError',
+          reject
+        );
       })
     );
 
     try {
       this._waiters[type]++;
       await Promise.race(promises);
-    } catch (e) {
-      removeListener!();
-      throw e;
     } finally {
       this._waiters[type]--;
+      removeListener!();
+      removeErrorListener!();
     }
 
     return this._borrowNextAvailableSession(type);
