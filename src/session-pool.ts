@@ -219,8 +219,8 @@ export function isSessionNotFoundError(
 
 /**
  * Checks whether the given error is a 'Database not found' error.
- * @param error the error to check
- * @return true if the error is a 'Database not found' error, and otherwise false.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is a 'Database not found' error, and otherwise false.
  */
 export function isDatabaseNotFoundError(
   error: grpc.ServiceError | undefined
