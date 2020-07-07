@@ -24,7 +24,7 @@ import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {codec, Float, Int, SpannerDate, Struct} from './codec';
+import {codec, Float, Int, Numeric, SpannerDate, Struct} from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
@@ -1055,6 +1055,20 @@ class Spanner extends GrpcService {
    */
   static int(value): Int {
     return new codec.Int(value);
+  }
+
+  /**
+   * Helper function to get a Cloud Spanner Numeric object.
+   *
+   * @param {string} value The numeric value as a string.
+   * @returns {Numeric}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const numeric = Spanner.numeric("3.141592653");
+   */
+  static numeric(value): Numeric {
+    return new codec.Numeric(value);
   }
 
   /**
