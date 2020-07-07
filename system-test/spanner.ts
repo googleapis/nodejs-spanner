@@ -17,7 +17,7 @@
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
 import {describe, it, before, after, beforeEach} from 'mocha';
-import pLimit from 'p-limit';
+import pLimit = require('p-limit');
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
 import * as extend from 'extend';
