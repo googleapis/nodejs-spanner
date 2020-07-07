@@ -179,31 +179,59 @@ describe('Spanner', () => {
     }
 
     before(done => {
-      DATABASE.updateSchema(
-        `
-            CREATE TABLE ${TABLE_NAME} (
-              Key STRING(MAX) NOT NULL,
-              BytesValue BYTES(MAX),
-              BoolValue BOOL,
-              DateValue DATE,
-              FloatValue FLOAT64,
-              IntValue INT64,
-              NumericValue NUMERIC,
-              StringValue STRING(MAX),
-              TimestampValue TIMESTAMP,
-              BytesArray ARRAY<BYTES(MAX)>,
-              BoolArray ARRAY<BOOL>,
-              DateArray ARRAY<DATE>,
-              FloatArray ARRAY<FLOAT64>,
-              IntArray ARRAY<INT64>,
-              NumericArray ARRAY<NUMERIC>,
-              StringArray ARRAY<STRING(MAX)>,
-              TimestampArray ARRAY<TIMESTAMP>,
-              CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
-            ) PRIMARY KEY (Key)
-          `,
-        execAfterOperationComplete(done)
-      );
+      if (IS_EMULATOR_ENABLED) {
+        // Table without NUMERIC types since the emulator doesn't yet support
+        // this type.
+        DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME} (
+                Key STRING(MAX) NOT NULL,
+                BytesValue BYTES(MAX),
+                BoolValue BOOL,
+                DateValue DATE,
+                FloatValue FLOAT64,
+                IntValue INT64,
+                StringValue STRING(MAX),
+                TimestampValue TIMESTAMP,
+                BytesArray ARRAY<BYTES(MAX)>,
+                BoolArray ARRAY<BOOL>,
+                DateArray ARRAY<DATE>,
+                FloatArray ARRAY<FLOAT64>,
+                IntArray ARRAY<INT64>,
+                StringArray ARRAY<STRING(MAX)>,
+                TimestampArray ARRAY<TIMESTAMP>,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+              ) PRIMARY KEY (Key)
+            `,
+          execAfterOperationComplete(done)
+        );
+      } else {
+        DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME} (
+                Key STRING(MAX) NOT NULL,
+                BytesValue BYTES(MAX),
+                BoolValue BOOL,
+                DateValue DATE,
+                FloatValue FLOAT64,
+                IntValue INT64,
+                NumericValue NUMERIC,
+                StringValue STRING(MAX),
+                TimestampValue TIMESTAMP,
+                BytesArray ARRAY<BYTES(MAX)>,
+                BoolArray ARRAY<BOOL>,
+                DateArray ARRAY<DATE>,
+                FloatArray ARRAY<FLOAT64>,
+                IntArray ARRAY<INT64>,
+                NumericArray ARRAY<NUMERIC>,
+                StringArray ARRAY<STRING(MAX)>,
+                TimestampArray ARRAY<TIMESTAMP>,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+              ) PRIMARY KEY (Key)
+            `,
+          execAfterOperationComplete(done)
+        );
+      }
     });
 
     describe('uneven rows', () => {
@@ -530,6 +558,12 @@ describe('Spanner', () => {
     });
 
     describe('numerics', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
       it('should write numeric values', done => {
         const value = Spanner.numeric('3.141592653');
 
