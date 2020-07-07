@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.2.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.0...v5.2.1) (2020-07-07)
+
+
+### Bug Fixes
+
+* remove error listener to prevent memory leak ([#1168](https://www.github.com/googleapis/nodejs-spanner/issues/1168)) ([523bd67](https://www.github.com/googleapis/nodejs-spanner/commit/523bd67ed6d5ecbfe9abce0f1b6ed4cce2c07b30))
+
+
+### Performance Improvements
+
+* increase default min sessions to 25 ([#1167](https://www.github.com/googleapis/nodejs-spanner/issues/1167)) ([e4aba27](https://www.github.com/googleapis/nodejs-spanner/commit/e4aba27d307e5932b223121af5bea37a7418bb20))
+
 ## [5.2.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.1.0...v5.2.0) (2020-06-30)
 
 
