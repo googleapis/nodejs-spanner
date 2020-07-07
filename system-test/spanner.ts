@@ -188,6 +188,7 @@ describe('Spanner', () => {
               DateValue DATE,
               FloatValue FLOAT64,
               IntValue INT64,
+              NumericValue NUMERIC,
               StringValue STRING(MAX),
               TimestampValue TIMESTAMP,
               BytesArray ARRAY<BYTES(MAX)>,
@@ -195,6 +196,7 @@ describe('Spanner', () => {
               DateArray ARRAY<DATE>,
               FloatArray ARRAY<FLOAT64>,
               IntArray ARRAY<INT64>,
+              NumericArray ARRAY<NUMERIC>,
               StringArray ARRAY<STRING(MAX)>,
               TimestampArray ARRAY<TIMESTAMP>,
               CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
@@ -522,6 +524,63 @@ describe('Spanner', () => {
         insert({FloatArray: values}, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, values);
+          done();
+        });
+      });
+    });
+
+    describe('numerics', () => {
+      it('should write numeric values', done => {
+        const value = Spanner.numeric("3.141592653");
+
+        insert({NumericValue: value}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericValue, value);
+          done();
+        });
+      });
+
+      it('should write null numeric values', done => {
+        insert({NumericValue: null}, (err, row) => {
+          assert.ifError(err);
+          assert.strictEqual(row.toJSON().NumericValue, null);
+          done();
+        });
+      });
+
+      it('should throw for out of bounds values', done => {
+        insert({NumericValue: Spanner.numeric("3.1415926535")}, (err, row) => {
+          assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
+          done();
+        });
+      });
+
+      it('should write empty numeric array values', done => {
+        insert({NumericArray: []}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, []);
+          done();
+        });
+      });
+
+      it('should write null numeric array values', done => {
+        insert({NumericArray: [null]}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
+          done();
+        });
+      });
+
+      it('should write numeric array values', done => {
+        const values = [
+          Spanner.numeric("-99999999999999999999999999999.999999999"),
+          Spanner.numeric("3.141592653"),
+          Spanner.numeric("99999999999999999999999999999.999999999")
+        ];
+
+        insert({NumericArray: values}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, values);
           done();
         });
       });
