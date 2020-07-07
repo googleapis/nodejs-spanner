@@ -234,8 +234,8 @@ export function isDatabaseNotFoundError(
 
 /**
  * Checks whether the given error is an 'Instance not found' error.
- * @param error the error to check
- * @return true if the error is an 'Instance not found' error, and otherwise false.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is an 'Instance not found' error, and otherwise false.
  */
 export function isInstanceNotFoundError(
   error: grpc.ServiceError | undefined
