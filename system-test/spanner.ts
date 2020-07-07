@@ -531,7 +531,7 @@ describe('Spanner', () => {
 
     describe('numerics', () => {
       it('should write numeric values', done => {
-        const value = Spanner.numeric("3.141592653");
+        const value = Spanner.numeric('3.141592653');
 
         insert({NumericValue: value}, (err, row) => {
           assert.ifError(err);
@@ -549,7 +549,7 @@ describe('Spanner', () => {
       });
 
       it('should throw for out of bounds values', done => {
-        insert({NumericValue: Spanner.numeric("3.1415926535")}, (err, row) => {
+        insert({NumericValue: Spanner.numeric('3.1415926535')}, err => {
           assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
           done();
         });
@@ -573,9 +573,9 @@ describe('Spanner', () => {
 
       it('should write numeric array values', done => {
         const values = [
-          Spanner.numeric("-99999999999999999999999999999.999999999"),
-          Spanner.numeric("3.141592653"),
-          Spanner.numeric("99999999999999999999999999999.999999999")
+          Spanner.numeric('-99999999999999999999999999999.999999999'),
+          Spanner.numeric('3.141592653'),
+          Spanner.numeric('99999999999999999999999999999.999999999'),
         ];
 
         insert({NumericArray: values}, (err, row) => {
