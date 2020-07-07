@@ -239,9 +239,9 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.idlesAfter, 10);
         assert.strictEqual(sessionPool.options.keepAlive, 30);
         assert.deepStrictEqual(sessionPool.options.labels, {});
+        assert.strictEqual(sessionPool.options.min, 25);
         assert.strictEqual(sessionPool.options.max, 100);
         assert.strictEqual(sessionPool.options.maxIdle, 1);
-        assert.strictEqual(sessionPool.options.min, 0);
         assert.strictEqual(sessionPool.options.writes, 0);
       });
 
