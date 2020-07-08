@@ -67,9 +67,9 @@ const GAX_OPTIONS = {
 };
 
 async function deleteStaleInstances() {
+  console.log(`(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`);
   const [instances] = await spanner.getInstances({
-    filter:
-      '(labels.node-sample-tests:true) OR (labels.cloud_spanner_samples:true)',
+    filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
   });
   const old = new Date();
   old.setHours(-4);
