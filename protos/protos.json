@@ -1547,7 +1547,7 @@
                                 "(google.api.http).post": "/v1/{parent=projects/*/instances/*}/backups",
                                 "(google.api.http).body": "backup",
                                 "(google.api.method_signature)": "parent,backup,backup_id",
-                                "(google.longrunning.operation_info).response_type": "Backup",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.database.v1.Backup",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.database.v1.CreateBackupMetadata"
                               }
                             },
