@@ -67,7 +67,6 @@ const GAX_OPTIONS = {
 };
 
 async function deleteStaleInstances() {
-  console.log(`(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`);
   const [instances] = await spanner.getInstances({
     filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
   });
