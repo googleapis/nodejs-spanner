@@ -9872,17 +9872,31 @@
                 Struct.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Struct(), key;
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Struct(), key, value;
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
                         case 1:
-                            reader.skip().pos++;
                             if (message.fields === $util.emptyObject)
                                 message.fields = {};
-                            key = reader.string();
-                            reader.pos++;
-                            message.fields[key] = $root.google.protobuf.Value.decode(reader, reader.uint32());
+                            var end2 = reader.uint32() + reader.pos;
+                            key = "";
+                            value = null;
+                            while (reader.pos < end2) {
+                                var tag2 = reader.uint32();
+                                switch (tag2 >>> 3) {
+                                case 1:
+                                    key = reader.string();
+                                    break;
+                                case 2:
+                                    value = $root.google.protobuf.Value.decode(reader, reader.uint32());
+                                    break;
+                                default:
+                                    reader.skipType(tag2 & 7);
+                                    break;
+                                }
+                            }
+                            message.fields[key] = value;
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -21885,7 +21899,7 @@
                             Instance.decode = function decode(reader, length) {
                                 if (!(reader instanceof $Reader))
                                     reader = $Reader.create(reader);
-                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.Instance(), key;
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.Instance(), key, value;
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
@@ -21905,12 +21919,26 @@
                                         message.state = reader.int32();
                                         break;
                                     case 7:
-                                        reader.skip().pos++;
                                         if (message.labels === $util.emptyObject)
                                             message.labels = {};
-                                        key = reader.string();
-                                        reader.pos++;
-                                        message.labels[key] = reader.string();
+                                        var end2 = reader.uint32() + reader.pos;
+                                        key = "";
+                                        value = "";
+                                        while (reader.pos < end2) {
+                                            var tag2 = reader.uint32();
+                                            switch (tag2 >>> 3) {
+                                            case 1:
+                                                key = reader.string();
+                                                break;
+                                            case 2:
+                                                value = reader.string();
+                                                break;
+                                            default:
+                                                reader.skipType(tag2 & 7);
+                                                break;
+                                            }
+                                        }
+                                        message.labels[key] = value;
                                         break;
                                     case 8:
                                         if (!(message.endpointUris && message.endpointUris.length))
@@ -26814,7 +26842,7 @@
                         ShortRepresentation.decode = function decode(reader, length) {
                             if (!(reader instanceof $Reader))
                                 reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode.ShortRepresentation(), key;
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PlanNode.ShortRepresentation(), key, value;
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
@@ -26822,12 +26850,26 @@
                                     message.description = reader.string();
                                     break;
                                 case 2:
-                                    reader.skip().pos++;
                                     if (message.subqueries === $util.emptyObject)
                                         message.subqueries = {};
-                                    key = reader.string();
-                                    reader.pos++;
-                                    message.subqueries[key] = reader.int32();
+                                    var end2 = reader.uint32() + reader.pos;
+                                    key = "";
+                                    value = 0;
+                                    while (reader.pos < end2) {
+                                        var tag2 = reader.uint32();
+                                        switch (tag2 >>> 3) {
+                                        case 1:
+                                            key = reader.string();
+                                            break;
+                                        case 2:
+                                            value = reader.int32();
+                                            break;
+                                        default:
+                                            reader.skipType(tag2 & 7);
+                                            break;
+                                        }
+                                    }
+                                    message.subqueries[key] = value;
                                     break;
                                 default:
                                     reader.skipType(tag & 7);
@@ -31805,7 +31847,7 @@
                     Session.decode = function decode(reader, length) {
                         if (!(reader instanceof $Reader))
                             reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Session(), key;
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.Session(), key, value;
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
@@ -31813,12 +31855,26 @@
                                 message.name = reader.string();
                                 break;
                             case 2:
-                                reader.skip().pos++;
                                 if (message.labels === $util.emptyObject)
                                     message.labels = {};
-                                key = reader.string();
-                                reader.pos++;
-                                message.labels[key] = reader.string();
+                                var end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = "";
+                                while (reader.pos < end2) {
+                                    var tag2 = reader.uint32();
+                                    switch (tag2 >>> 3) {
+                                    case 1:
+                                        key = reader.string();
+                                        break;
+                                    case 2:
+                                        value = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag2 & 7);
+                                        break;
+                                    }
+                                }
+                                message.labels[key] = value;
                                 break;
                             case 3:
                                 message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
@@ -33018,7 +33074,7 @@
                     ExecuteSqlRequest.decode = function decode(reader, length) {
                         if (!(reader instanceof $Reader))
                             reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ExecuteSqlRequest(), key;
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ExecuteSqlRequest(), key, value;
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
@@ -33035,12 +33091,26 @@
                                 message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
                                 break;
                             case 5:
-                                reader.skip().pos++;
                                 if (message.paramTypes === $util.emptyObject)
                                     message.paramTypes = {};
-                                key = reader.string();
-                                reader.pos++;
-                                message.paramTypes[key] = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                var end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = null;
+                                while (reader.pos < end2) {
+                                    var tag2 = reader.uint32();
+                                    switch (tag2 >>> 3) {
+                                    case 1:
+                                        key = reader.string();
+                                        break;
+                                    case 2:
+                                        value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag2 & 7);
+                                        break;
+                                    }
+                                }
+                                message.paramTypes[key] = value;
                                 break;
                             case 6:
                                 message.resumeToken = reader.bytes();
@@ -33916,7 +33986,7 @@
                         Statement.decode = function decode(reader, length) {
                             if (!(reader instanceof $Reader))
                                 reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ExecuteBatchDmlRequest.Statement(), key;
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.ExecuteBatchDmlRequest.Statement(), key, value;
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
@@ -33927,12 +33997,26 @@
                                     message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
                                     break;
                                 case 3:
-                                    reader.skip().pos++;
                                     if (message.paramTypes === $util.emptyObject)
                                         message.paramTypes = {};
-                                    key = reader.string();
-                                    reader.pos++;
-                                    message.paramTypes[key] = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                    var end2 = reader.uint32() + reader.pos;
+                                    key = "";
+                                    value = null;
+                                    while (reader.pos < end2) {
+                                        var tag2 = reader.uint32();
+                                        switch (tag2 >>> 3) {
+                                        case 1:
+                                            key = reader.string();
+                                            break;
+                                        case 2:
+                                            value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                            break;
+                                        default:
+                                            reader.skipType(tag2 & 7);
+                                            break;
+                                        }
+                                    }
+                                    message.paramTypes[key] = value;
                                     break;
                                 default:
                                     reader.skipType(tag & 7);
@@ -34692,7 +34776,7 @@
                     PartitionQueryRequest.decode = function decode(reader, length) {
                         if (!(reader instanceof $Reader))
                             reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PartitionQueryRequest(), key;
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.PartitionQueryRequest(), key, value;
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
@@ -34709,12 +34793,26 @@
                                 message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
                                 break;
                             case 5:
-                                reader.skip().pos++;
                                 if (message.paramTypes === $util.emptyObject)
                                     message.paramTypes = {};
-                                key = reader.string();
-                                reader.pos++;
-                                message.paramTypes[key] = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                var end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = null;
+                                while (reader.pos < end2) {
+                                    var tag2 = reader.uint32();
+                                    switch (tag2 >>> 3) {
+                                    case 1:
+                                        key = reader.string();
+                                        break;
+                                    case 2:
+                                        value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag2 & 7);
+                                        break;
+                                    }
+                                }
+                                message.paramTypes[key] = value;
                                 break;
                             case 6:
                                 message.partitionOptions = $root.google.spanner.v1.PartitionOptions.decode(reader, reader.uint32());
