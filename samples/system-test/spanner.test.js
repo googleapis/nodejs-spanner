@@ -307,7 +307,7 @@ describe('Spanner', () => {
   // create_storing_index
   it('should create a storing index in an example table', async function () {
     this.retries(5);
-    // delay the start of the test, if this is a retry.
+    // Delay the start of the test, if this is a retry.
     await delay(this.test);
 
     const output = execSync(
