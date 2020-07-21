@@ -12084,20 +12084,6 @@ export namespace google {
                 public toJSON(): { [k: string]: any };
             }
 
-            /** TypeCode enum. */
-            enum TypeCode {
-                TYPE_CODE_UNSPECIFIED = 0,
-                BOOL = 1,
-                INT64 = 2,
-                FLOAT64 = 3,
-                TIMESTAMP = 4,
-                DATE = 5,
-                STRING = 6,
-                BYTES = 7,
-                ARRAY = 8,
-                STRUCT = 9
-            }
-
             /** Properties of a Type. */
             interface IType {
 
@@ -12387,6 +12373,21 @@ export namespace google {
                      */
                     public toJSON(): { [k: string]: any };
                 }
+            }
+
+            /** TypeCode enum. */
+            enum TypeCode {
+                TYPE_CODE_UNSPECIFIED = 0,
+                BOOL = 1,
+                INT64 = 2,
+                FLOAT64 = 3,
+                TIMESTAMP = 4,
+                DATE = 5,
+                STRING = 6,
+                BYTES = 7,
+                ARRAY = 8,
+                STRUCT = 9,
+                NUMERIC = 10
             }
 
             /** Represents a Spanner */
