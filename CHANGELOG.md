@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.2.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.1...v5.2.2) (2020-07-21)
+
+
+### Bug Fixes
+
+* typeo in nodejs .gitattribute ([#1178](https://www.github.com/googleapis/nodejs-spanner/issues/1178)) ([439d5af](https://www.github.com/googleapis/nodejs-spanner/commit/439d5af2124cc02f24e097d8101f9d6843de9b20))
+
 ### [5.2.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.0...v5.2.1) (2020-07-07)
 
 
