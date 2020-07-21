@@ -66,6 +66,18 @@ const GAX_OPTIONS = {
   },
 };
 
+const delay = async test => {
+  const retries = test.currentRetry();
+  // No retry on the first failure.
+  if (retries === 0) return;
+  // See: https://cloud.google.com/storage/docs/exponential-backoff
+  const ms = Math.pow(2, retries) + Math.random() * 1000;
+  return new Promise(done => {
+    console.info(`retrying "${test.title}" in ${ms}ms`);
+    setTimeout(done, ms);
+  });
+};
+
 async function deleteStaleInstances() {
   const [instances] = await spanner.getInstances({
     filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
@@ -293,7 +305,11 @@ describe('Spanner', () => {
   });
 
   // create_storing_index
-  it('should create a storing index in an example table', async () => {
+  it('should create a storing index in an example table', async function () {
+    this.retries(5);
+    // Delay the start of the test, if this is a retry.
+    await delay(this.test);
+
     const output = execSync(
       `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
