@@ -29786,36 +29786,6 @@
                     return TransactionSelector;
                 })();
     
-                /**
-                 * TypeCode enum.
-                 * @name google.spanner.v1.TypeCode
-                 * @enum {number}
-                 * @property {number} TYPE_CODE_UNSPECIFIED=0 TYPE_CODE_UNSPECIFIED value
-                 * @property {number} BOOL=1 BOOL value
-                 * @property {number} INT64=2 INT64 value
-                 * @property {number} FLOAT64=3 FLOAT64 value
-                 * @property {number} TIMESTAMP=4 TIMESTAMP value
-                 * @property {number} DATE=5 DATE value
-                 * @property {number} STRING=6 STRING value
-                 * @property {number} BYTES=7 BYTES value
-                 * @property {number} ARRAY=8 ARRAY value
-                 * @property {number} STRUCT=9 STRUCT value
-                 */
-                v1.TypeCode = (function() {
-                    var valuesById = {}, values = Object.create(valuesById);
-                    values[valuesById[0] = "TYPE_CODE_UNSPECIFIED"] = 0;
-                    values[valuesById[1] = "BOOL"] = 1;
-                    values[valuesById[2] = "INT64"] = 2;
-                    values[valuesById[3] = "FLOAT64"] = 3;
-                    values[valuesById[4] = "TIMESTAMP"] = 4;
-                    values[valuesById[5] = "DATE"] = 5;
-                    values[valuesById[6] = "STRING"] = 6;
-                    values[valuesById[7] = "BYTES"] = 7;
-                    values[valuesById[8] = "ARRAY"] = 8;
-                    values[valuesById[9] = "STRUCT"] = 9;
-                    return values;
-                })();
-    
                 v1.Type = (function() {
     
                     /**
@@ -29988,6 +29958,7 @@
                             case 7:
                             case 8:
                             case 9:
+                            case 10:
                                 break;
                             }
                         if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType")) {
@@ -30055,6 +30026,10 @@
                         case "STRUCT":
                         case 9:
                             message.code = 9;
+                            break;
+                        case "NUMERIC":
+                        case 10:
+                            message.code = 10;
                             break;
                         }
                         if (object.arrayElementType != null) {
@@ -30532,6 +30507,38 @@
                     })();
     
                     return StructType;
+                })();
+    
+                /**
+                 * TypeCode enum.
+                 * @name google.spanner.v1.TypeCode
+                 * @enum {number}
+                 * @property {number} TYPE_CODE_UNSPECIFIED=0 TYPE_CODE_UNSPECIFIED value
+                 * @property {number} BOOL=1 BOOL value
+                 * @property {number} INT64=2 INT64 value
+                 * @property {number} FLOAT64=3 FLOAT64 value
+                 * @property {number} TIMESTAMP=4 TIMESTAMP value
+                 * @property {number} DATE=5 DATE value
+                 * @property {number} STRING=6 STRING value
+                 * @property {number} BYTES=7 BYTES value
+                 * @property {number} ARRAY=8 ARRAY value
+                 * @property {number} STRUCT=9 STRUCT value
+                 * @property {number} NUMERIC=10 NUMERIC value
+                 */
+                v1.TypeCode = (function() {
+                    var valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "TYPE_CODE_UNSPECIFIED"] = 0;
+                    values[valuesById[1] = "BOOL"] = 1;
+                    values[valuesById[2] = "INT64"] = 2;
+                    values[valuesById[3] = "FLOAT64"] = 3;
+                    values[valuesById[4] = "TIMESTAMP"] = 4;
+                    values[valuesById[5] = "DATE"] = 5;
+                    values[valuesById[6] = "STRING"] = 6;
+                    values[valuesById[7] = "BYTES"] = 7;
+                    values[valuesById[8] = "ARRAY"] = 8;
+                    values[valuesById[9] = "STRUCT"] = 9;
+                    values[valuesById[10] = "NUMERIC"] = 10;
+                    return values;
                 })();
     
                 v1.Spanner = (function() {
