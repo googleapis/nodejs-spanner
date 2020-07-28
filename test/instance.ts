@@ -33,6 +33,7 @@ import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
 import {Backup} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
+import {addResourcePrefixHeader} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -258,7 +259,10 @@ describe('Instance', () => {
     it('should accept gaxOptions', done => {
       const options = Object.assign({}, OPTIONS, {gaxOptions: {}});
       instance.request = config => {
-        assert.strictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(options.gaxOptions, instance.formattedName_)
+        );
         assert.strictEqual(config.reqOpts.gaxOptions, undefined);
 
         done();
@@ -555,7 +559,10 @@ describe('Instance', () => {
       const gaxOptions = {};
 
       instance.request = (config, callback: Function) => {
-        assert.strictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOptions, instance.formattedName_)
+        );
         callback(); // done()
       };
 
@@ -900,7 +907,10 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(OPTIONS.gaxOptions!, instance.formattedName_)
+        );
 
         done();
       };
@@ -911,7 +921,10 @@ describe('Instance', () => {
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -938,7 +951,10 @@ describe('Instance', () => {
     it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -975,7 +991,10 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, instance.formattedName_)
+        );
 
         done();
       };
@@ -1056,7 +1075,10 @@ describe('Instance', () => {
 
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(OPTIONS.gaxOptions!, instance.formattedName_)
+        );
         return returnValue;
       };
 
@@ -1068,7 +1090,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -1095,7 +1120,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -1133,7 +1161,10 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, instance.formattedName_)
+        );
 
         return returnValue;
       };
@@ -1196,7 +1227,10 @@ describe('Instance', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       instance.request = config => {
-        assert.strictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOptions, instance.formattedName_)
+        );
         done();
       };
       instance.getMetadata({gaxOptions}, assert.ifError);
@@ -1241,7 +1275,10 @@ describe('Instance', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       instance.request = config => {
-        assert.strictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOptions, instance.formattedName_)
+        );
         done();
       };
       instance.setMetadata(METADATA, gaxOptions, assert.ifError);
@@ -1260,7 +1297,7 @@ describe('Instance', () => {
     } as inst.GetBackupsOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should make the correct request', async () => {
+    it('should make the correct request', done => {
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1278,17 +1315,24 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(options.gaxOptions, instance.formattedName_)
+        );
+        done();
       };
 
-      await instance.getBackups(options);
+      instance.getBackups(options, assert.ifError);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -1314,7 +1358,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -1348,7 +1395,10 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.reqOpts, {
           parent: instance.formattedName_,
         });
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, instance.formattedName_)
+        );
         done();
       };
 
@@ -1429,7 +1479,10 @@ describe('Instance', () => {
 
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(OPTIONS.gaxOptions!, instance.formattedName_)
+        );
         return returnValue;
       };
 
@@ -1441,7 +1494,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -1468,7 +1524,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -1506,7 +1565,10 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, instance.formattedName_)
+        );
 
         return returnValue;
       };
@@ -1539,7 +1601,7 @@ describe('Instance', () => {
     } as inst.GetBackupOperationsOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should make the correct request', async () => {
+    it('should make the correct request', done => {
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1557,17 +1619,24 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(options.gaxOptions, instance.formattedName_)
+        );
+        done();
       };
 
-      await instance.getBackupOperations(options);
+      instance.getBackupOperations(options, assert.ifError);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
       const options = Object.assign({}, OPTIONS, {gaxOptions});
       const expectedReqOpts = extend(
         {},
@@ -1594,7 +1663,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -1630,7 +1702,10 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, instance.formattedName_)
+        );
         done();
       };
 
@@ -1644,7 +1719,7 @@ describe('Instance', () => {
     } as inst.GetDatabaseOperationsOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should make the correct request', async () => {
+    it('should make the correct request', done => {
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1662,17 +1737,24 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(options.gaxOptions, instance.formattedName_)
+        );
+        done();
       };
 
-      await instance.getDatabaseOperations(options);
+      instance.getDatabaseOperations(options, assert.ifError);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
       const options = Object.assign({}, OPTIONS, {gaxOptions});
       const expectedReqOpts = extend(
         {},
@@ -1699,7 +1781,10 @@ describe('Instance', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        instance.formattedName_
+      );
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -1735,7 +1820,10 @@ describe('Instance', () => {
           parent: instance.formattedName_,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, instance.formattedName_)
+        );
         done();
       };
 

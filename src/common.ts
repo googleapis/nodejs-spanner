@@ -17,6 +17,7 @@
 import {grpc, CallOptions, Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
+import * as extend from 'extend';
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 
@@ -68,4 +69,25 @@ export interface PagedOptions {
 
 export interface PagedOptionsWithFilter extends PagedOptions {
   filter?: string;
+}
+
+/*!
+ * HTTP header for the resource prefix to improve routing
+ * by the backend.
+ */
+export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';
+
+/**
+ * Returns GAX call options that set the cloud resource header.
+ * @private
+ */
+export function addResourcePrefixHeader(
+  gaxOpts: CallOptions,
+  headerValue: string
+): CallOptions {
+  return extend(true, {}, gaxOpts, {
+    otherArgs: {
+      headers: {[CLOUD_RESOURCE_HEADER]: headerValue},
+    },
+  });
 }

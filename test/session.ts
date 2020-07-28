@@ -21,6 +21,7 @@ import * as assert from 'assert';
 import {before, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
+import {addResourcePrefixHeader} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -228,6 +229,9 @@ describe('Session', () => {
   });
 
   describe('delete', () => {
+    beforeEach(() => {
+      session.parent = DATABASE;
+    });
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
@@ -239,6 +243,11 @@ describe('Session', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, session.parent.formattedName_)
+        );
+
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -249,6 +258,10 @@ describe('Session', () => {
   });
 
   describe('getMetadata', () => {
+    beforeEach(() => {
+      session.parent = DATABASE;
+    });
+
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
@@ -271,7 +284,10 @@ describe('Session', () => {
     it('should accept and pass gaxOptions to getMetadata', done => {
       const gaxOptions = {};
       session.request = config => {
-        assert.strictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOptions, session.parent.formattedName_)
+        );
         done();
       };
       session.getMetadata(gaxOptions, assert.ifError);
@@ -279,6 +295,10 @@ describe('Session', () => {
   });
 
   describe('keepAlive', () => {
+    beforeEach(() => {
+      session.parent = DATABASE;
+    });
+
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
@@ -302,7 +322,10 @@ describe('Session', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       session.request = config => {
-        assert.strictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, session.parent.formattedName_)
+        );
         done();
       };
       session.keepAlive(gaxOptions, assert.ifError);

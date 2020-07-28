@@ -24,11 +24,12 @@ import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
+import {addResourcePrefixHeader} from '../src/common';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
 
-  const PARENT = {};
+  const PARENT = {formattedName_: 'formatted-database-name'};
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
@@ -278,7 +279,13 @@ describe('Transaction', () => {
 
         const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.strictEqual(gaxOpts, fakeOptions);
+        assert.deepStrictEqual(
+          gaxOpts,
+          addResourcePrefixHeader(
+            fakeOptions,
+            snapshot.session.parent.formattedName_
+          )
+        );
         assert.strictEqual(reqOpts.gaxOptions, undefined);
       });
 
@@ -558,7 +565,13 @@ describe('Transaction', () => {
         const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
         assert.strictEqual(reqOpts.gaxOptions, undefined);
-        assert.strictEqual(gaxOpts, fakeQuery.gaxOptions);
+        assert.deepStrictEqual(
+          gaxOpts,
+          addResourcePrefixHeader(
+            fakeQuery.gaxOptions,
+            snapshot.session.parent.formattedName_
+          )
+        );
       });
 
       it('should update the `seqno` for each call', () => {
@@ -1022,7 +1035,13 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, gaxOptions);
+          assert.deepStrictEqual(
+            config.gaxOpts,
+            addResourcePrefixHeader(
+              gaxOptions,
+              transaction.session.parent.formattedName_
+            )
+          );
           done();
         };
         transaction.batchUpdate(STRING_STATEMENTS, gaxOptions, assert.ifError);
@@ -1198,7 +1217,13 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, gaxOptions);
+          assert.deepStrictEqual(
+            config.gaxOpts,
+            addResourcePrefixHeader(
+              gaxOptions,
+              transaction.session.parent.formattedName_
+            )
+          );
           done();
         };
         transaction.begin(gaxOptions, assert.ifError);
@@ -1222,7 +1247,13 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, gaxOptions);
+          assert.deepStrictEqual(
+            config.gaxOpts,
+            addResourcePrefixHeader(
+              gaxOptions,
+              transaction.session.parent.formattedName_
+            )
+          );
           done();
         };
         transaction.commit(gaxOptions, assert.ifError);
@@ -1421,7 +1452,13 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, gaxOptions);
+          assert.deepStrictEqual(
+            config.gaxOpts,
+            addResourcePrefixHeader(
+              gaxOptions,
+              transaction.session.parent.formattedName_
+            )
+          );
           done();
         };
         transaction.rollback(gaxOptions, assert.ifError);

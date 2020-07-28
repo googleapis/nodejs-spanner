@@ -33,10 +33,11 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {google as spannerClient} from '../protos/protos';
-import {NormalCallback} from './common';
+import {NormalCallback, addResourcePrefixHeader} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+import {Database} from '.';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -310,8 +311,10 @@ export class Snapshot extends EventEmitter {
     gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
     cb?: BeginTransactionCallback
   ): void | Promise<BeginResponse> {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const gaxOpts = addResourcePrefixHeader(
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {},
+      (this.session.parent as Database).formattedName_
+    );
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
@@ -528,7 +531,10 @@ export class Snapshot extends EventEmitter {
         client: 'SpannerClient',
         method: 'streamingRead',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-        gaxOpts: gaxOptions,
+        gaxOpts: addResourcePrefixHeader(
+          gaxOptions!,
+          (this.session.parent as Database).formattedName_
+        ),
       });
     };
 
@@ -926,7 +932,10 @@ export class Snapshot extends EventEmitter {
         client: 'SpannerClient',
         method: 'executeStreamingSql',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-        gaxOpts: gaxOptions,
+        gaxOpts: addResourcePrefixHeader(
+          gaxOptions!,
+          (this.session.parent as Database).formattedName_
+        ),
       });
     };
 
@@ -1308,8 +1317,10 @@ export class Transaction extends Dml {
     gaxOptionsOrCallback?: CallOptions | BatchUpdateCallback,
     cb?: BatchUpdateCallback
   ): Promise<BatchUpdateResponse> | void {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const gaxOpts = addResourcePrefixHeader(
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {},
+      (this.session.parent as Database).formattedName_
+    );
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
@@ -1459,8 +1470,10 @@ export class Transaction extends Dml {
     gaxOptionsOrCallback?: CallOptions | CommitCallback,
     cb?: CommitCallback
   ): void | Promise<CommitResponse> {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const gaxOpts = addResourcePrefixHeader(
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {},
+      (this.session.parent as Database).formattedName_
+    );
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
@@ -1688,8 +1701,10 @@ export class Transaction extends Dml {
       | spannerClient.spanner.v1.Spanner.RollbackCallback,
     cb?: spannerClient.spanner.v1.Spanner.RollbackCallback
   ): void | Promise<void> {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const gaxOpts = addResourcePrefixHeader(
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {},
+      (this.session.parent as Database).formattedName_
+    );
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 

@@ -76,6 +76,7 @@ import {
   NormalCallback,
   LongRunningCallback,
   PagedOptionsWithFilter,
+  addResourcePrefixHeader,
 } from './common';
 import {Readable, Transform, Duplex} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -418,7 +419,10 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'batchCreateSessions',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts: addResourcePrefixHeader(
+          options.gaxOptions!,
+          this.formattedName_
+        ),
       },
       (err, resp) => {
         if (err) {
@@ -672,7 +676,10 @@ class Database extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts: addResourcePrefixHeader(
+          options.gaxOptions!,
+          this.formattedName_
+        ),
       },
       (err, resp) => {
         if (err) {
@@ -849,6 +856,7 @@ class Database extends GrpcServiceObject {
           client: 'DatabaseAdminClient',
           method: 'dropDatabase',
           reqOpts,
+          gaxOpts: addResourcePrefixHeader({}, this.formattedName_),
         },
         callback!
       );
@@ -1051,10 +1059,12 @@ class Database extends GrpcServiceObject {
       typeof gaxOptionsOrCallback === 'function'
         ? (gaxOptionsOrCallback as GetMetadataCallback)
         : cb;
-    const gaxOpts =
+    const gaxOpts = addResourcePrefixHeader(
       typeof gaxOptionsOrCallback === 'object'
         ? (gaxOptionsOrCallback as CallOptions)
-        : {};
+        : {},
+      this.formattedName_
+    );
 
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseRequest = {
       name: this.formattedName_,
@@ -1185,8 +1195,10 @@ class Database extends GrpcServiceObject {
     optionsOrCallback?: CallOptions | GetSchemaCallback,
     cb?: GetSchemaCallback
   ): void | Promise<GetSchemaResponse> {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const gaxOpts = addResourcePrefixHeader(
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {},
+      this.formattedName_
+    );
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
@@ -1305,26 +1317,26 @@ class Database extends GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetSessionsOptions);
-    const gaxOpts = extend(true, {}, options.gaxOptions);
-    let reqOpts = extend({}, options, {
-      database: this.formattedName_,
-    });
-    delete reqOpts.gaxOptions;
+    const gaxOpts = addResourcePrefixHeader(
+      options.gaxOptions!,
+      this.formattedName_
+    );
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    if (gaxOpts) {
-      reqOpts = extend(
-        {},
-        {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
-        },
-        reqOpts
-      );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
-    }
+    const reqOpts = extend(
+      {},
+      {
+        database: this.formattedName_,
+        pageSize: gaxOpts.pageSize,
+        pageToken: gaxOpts.pageToken,
+      },
+      options
+    );
+
+    delete reqOpts.gaxOptions;
+    delete gaxOpts.pageSize;
+    delete gaxOpts.pageToken;
 
     this.request<
       google.spanner.v1.ISession,
@@ -1389,27 +1401,26 @@ class Database extends GrpcServiceObject {
    *   });
    */
   getSessionsStream(options: GetSessionsOptions = {}): NodeJS.ReadableStream {
-    const gaxOpts = extend(true, {}, options.gaxOptions);
-
-    let reqOpts = extend({}, options, {
-      database: this.formattedName_,
-    });
-    delete reqOpts.gaxOptions;
+    const gaxOpts = addResourcePrefixHeader(
+      options.gaxOptions!,
+      this.formattedName_
+    );
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    if (gaxOpts) {
-      reqOpts = extend(
-        {},
-        {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
-        },
-        reqOpts
-      );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
-    }
+    const reqOpts = extend(
+      {},
+      {
+        database: this.formattedName_,
+        pageSize: gaxOpts.pageSize,
+        pageToken: gaxOpts.pageToken,
+      },
+      options
+    );
+
+    delete reqOpts.gaxOptions;
+    delete gaxOpts.pageSize;
+    delete gaxOpts.pageToken;
 
     return this.requestStream({
       client: 'SpannerClient',
@@ -1775,10 +1786,12 @@ class Database extends GrpcServiceObject {
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as RestoreDatabaseCallback)
         : cb;
-    const gaxOpts =
+    const gaxOpts = addResourcePrefixHeader(
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as CallOptions)
-        : {};
+        : {},
+      this.instance.formattedName_
+    );
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
       parent: this.instance.formattedName_,
       databaseId: this.id,
@@ -2562,8 +2575,10 @@ class Database extends GrpcServiceObject {
     optionsOrCallback?: CallOptions | UpdateSchemaCallback,
     cb?: UpdateSchemaCallback
   ): Promise<UpdateSchemaResponse> | void {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const gaxOpts = addResourcePrefixHeader(
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {},
+      this.formattedName_
+    );
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 

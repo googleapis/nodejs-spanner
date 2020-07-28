@@ -32,6 +32,7 @@ import * as spnr from '../src';
 import {Duplex} from 'stream';
 import {CreateInstanceRequest} from '../src/index';
 import {GetInstanceConfigsOptions, GetInstancesOptions} from '../src';
+import {addResourcePrefixHeader} from '../src/common';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -478,7 +479,8 @@ describe('Spanner', () => {
     const NAME = 'instance-name';
     let PATH;
 
-    const CONFIG = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const CONFIG: any = {
       config: 'b',
     };
     const ORIGINAL_CONFIG = extend({}, CONFIG);
@@ -523,7 +525,10 @@ describe('Spanner', () => {
             config: `projects/project-id/instanceConfigs/${CONFIG.config}`,
           },
         });
-        assert.strictEqual(config.gaxOpts, undefined);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(CONFIG.gaxOptions, reqOpts.parent)
+        );
         done();
       };
       spanner.createInstance(NAME, CONFIG, assert.ifError);
@@ -552,7 +557,10 @@ describe('Spanner', () => {
     it('should accept gaxOptions', done => {
       const cfg = Object.assign({}, CONFIG, {gaxOptions: {}});
       spanner.request = config => {
-        assert.strictEqual(config.gaxOpts, cfg.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(cfg.gaxOptions, config.reqOpts.parent)
+        );
         done();
       };
       spanner.createInstance(NAME, cfg, assert.ifError);
@@ -664,7 +672,10 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(OPTIONS.gaxOptions!, expectedReqOpts.parent)
+        );
 
         done();
       };
@@ -676,7 +687,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
       const options = Object.assign({}, OPTIONS, {gaxOptions});
       const expectedReqOpts = extend(
         {},
@@ -685,6 +695,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
       );
 
       spanner.request = config => {
@@ -703,7 +717,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -719,6 +732,11 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
       );
 
       spanner.request = config => {
@@ -739,7 +757,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, config.reqOpts.parent)
+        );
 
         done();
       };
@@ -820,7 +841,10 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(OPTIONS.gaxOptions!, expectedReqOpts.parent)
+        );
         return returnValue as Duplex;
       };
 
@@ -832,7 +856,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -840,6 +863,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
       );
 
       spanner.requestStream = config => {
@@ -859,7 +886,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -874,6 +900,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
       );
 
       spanner.requestStream = config => {
@@ -895,7 +925,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         });
 
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, config.reqOpts.parent)
+        );
 
         return returnValue;
       };
@@ -933,8 +966,10 @@ describe('Spanner', () => {
         assert.notStrictEqual(reqOpts, options);
 
         const gaxOpts = config.gaxOpts;
-        assert.deepStrictEqual(gaxOpts, options.gaxOptions);
-
+        assert.deepStrictEqual(
+          gaxOpts,
+          addResourcePrefixHeader(options.gaxOptions!, expectedQuery.parent)
+        );
         assert.strictEqual(callback_, callback);
 
         return returnValue;
@@ -948,7 +983,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
       const options = Object.assign({}, OPTIONS, {gaxOptions});
       const expectedReqOpts = extend(
         {},
@@ -957,6 +991,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
       );
 
       spanner.request = config => {
@@ -975,7 +1013,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -991,6 +1028,10 @@ describe('Spanner', () => {
           parent: 'projects/' + spanner.projectId,
         },
         {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
       );
 
       spanner.request = config => {
@@ -1011,6 +1052,11 @@ describe('Spanner', () => {
         assert.deepStrictEqual(reqOpts, {
           parent: 'projects/' + spanner.projectId,
         });
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, config.reqOpts.parent)
+        );
+
         done();
       };
 
@@ -1043,8 +1089,10 @@ describe('Spanner', () => {
         assert.deepStrictEqual(reqOpts, expectedOptions);
         assert.notStrictEqual(reqOpts, OPTIONS);
 
-        const gaxOpts = config.gaxOpts;
-        assert.deepStrictEqual(gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(OPTIONS.gaxOptions!, expectedOptions.parent)
+        );
 
         return returnValue;
       };
@@ -1068,8 +1116,10 @@ describe('Spanner', () => {
         const reqOpts = config.reqOpts;
         assert.deepStrictEqual(reqOpts, expectedOptions);
 
-        const gaxOpts = config.gaxOpts;
-        assert.deepStrictEqual(gaxOpts, {});
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader({}, config.reqOpts.parent)
+        );
 
         return returnValue;
       };
@@ -1081,7 +1131,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         true,
@@ -1093,6 +1142,10 @@ describe('Spanner', () => {
         {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
       );
       delete expectedReqOpts.gaxOptions;
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
+      );
 
       spanner.requestStream = config => {
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
@@ -1111,7 +1164,6 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = {timeout: 1000};
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -1132,6 +1184,10 @@ describe('Spanner', () => {
         {pageSize: optionsPageSize, pageToken: optionsPageToken}
       );
       delete expectedReqOpts.gaxOptions;
+      const expectedGaxOpts = addResourcePrefixHeader(
+        {timeout: 1000},
+        expectedReqOpts.parent
+      );
 
       spanner.request = config => {
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);

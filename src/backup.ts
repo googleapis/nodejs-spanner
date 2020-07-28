@@ -21,6 +21,7 @@ import {
   RequestCallback,
   ResourceCallback,
   NormalCallback,
+  addResourcePrefixHeader,
 } from './common';
 import {EnumKey, Spanner, RequestConfig, TranslateEnumKeys} from '.';
 import {
@@ -164,7 +165,10 @@ class Backup {
     options: CreateBackupOptions,
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
-    const gaxOpts = options.gaxOptions;
+    const gaxOpts = addResourcePrefixHeader(
+      options.gaxOptions!,
+      this.instanceFormattedName_
+    );
     const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
       parent: this.instanceFormattedName_,
       backupId: this.id,
@@ -233,10 +237,12 @@ class Backup {
       typeof gaxOptionsOrCallback === 'function'
         ? (gaxOptionsOrCallback as GetMetadataCallback)
         : cb;
-    const gaxOpts =
+    const gaxOpts = addResourcePrefixHeader(
       typeof gaxOptionsOrCallback === 'object'
         ? (gaxOptionsOrCallback as CallOptions)
-        : {};
+        : {},
+      this.instanceFormattedName_
+    );
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetBackupRequest = {
       name: this.formattedName_,
     };
@@ -401,10 +407,12 @@ class Backup {
       typeof gaxOptionsOrCallback === 'function'
         ? (gaxOptionsOrCallback as UpdateExpireTimeCallback)
         : cb;
-    const gaxOpts =
+    const gaxOpts = addResourcePrefixHeader(
       typeof gaxOptionsOrCallback === 'object'
         ? (gaxOptionsOrCallback as CallOptions)
-        : {};
+        : {},
+      this.instanceFormattedName_
+    );
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
       backup: {
         name: this.formattedName_,
@@ -454,10 +462,12 @@ class Backup {
       typeof gaxOptionsOrCallback === 'function'
         ? (gaxOptionsOrCallback as DeleteCallback)
         : cb;
-    const gaxOpts =
+    const gaxOpts = addResourcePrefixHeader(
       typeof gaxOptionsOrCallback === 'object'
         ? (gaxOptionsOrCallback as CallOptions)
-        : {};
+        : {},
+      this.instanceFormattedName_
+    );
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
       name: this.formattedName_,
     };

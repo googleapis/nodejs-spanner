@@ -24,9 +24,10 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import {Session} from '../src';
+import {Session, Database} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
+import {addResourcePrefixHeader} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -56,6 +57,10 @@ const fakeCodec: any = {
   convertProtoTimestampToDate() {},
 };
 
+const DATABASE = {
+  formattedName_: 'database',
+};
+
 class FakeTransaction {
   calledWith_: IArguments;
   session;
@@ -80,8 +85,11 @@ describe('BatchTransaction', () => {
   let BatchTransaction: typeof bt.BatchTransaction;
   let batchTransaction: bt.BatchTransaction;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const SESSION: any = {};
+  const SESSION = {
+    parent: DATABASE,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    delete: (callback: any) => {},
+  };
 
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
@@ -93,7 +101,7 @@ describe('BatchTransaction', () => {
   });
 
   beforeEach(() => {
-    batchTransaction = new BatchTransaction(SESSION);
+    batchTransaction = new BatchTransaction((SESSION as {}) as Session);
   });
 
   afterEach(() => sandbox.restore());
@@ -104,7 +112,7 @@ describe('BatchTransaction', () => {
     });
 
     it('should extend the Snapshot class', () => {
-      const batchTransaction = new BatchTransaction(SESSION);
+      const batchTransaction = new BatchTransaction((SESSION as {}) as Session);
       assert(batchTransaction instanceof FakeTransaction);
     });
   });
@@ -173,6 +181,7 @@ describe('BatchTransaction', () => {
   describe('createPartitions_', () => {
     const REQUEST = sandbox.stub();
     const SESSION = {
+      parent: DATABASE,
       formattedName_: 'abcdef',
       request: REQUEST,
     };
@@ -183,7 +192,7 @@ describe('BatchTransaction', () => {
     const RESPONSE = {partitions: PARTITIONS};
 
     const QUERY = {a: 'b'};
-    const CONFIG = {reqOpts: QUERY};
+    const CONFIG = {reqOpts: QUERY, gaxOpts: {timeout: 1000}};
 
     beforeEach(() => {
       batchTransaction.session = (SESSION as {}) as Session;
@@ -199,6 +208,20 @@ describe('BatchTransaction', () => {
       assert.strictEqual(reqOpts.a, 'b');
       assert.strictEqual(reqOpts.session, SESSION.formattedName_);
       assert.deepStrictEqual(reqOpts.transaction, {id: ID});
+    });
+
+    it('should add resource prefix to `gaxOpt`', done => {
+      batchTransaction.createPartitions_(CONFIG, assert.ifError);
+      const {gaxOpts} = REQUEST.lastCall.args[0];
+      assert.deepStrictEqual(
+        gaxOpts,
+        addResourcePrefixHeader(
+          CONFIG.gaxOpts,
+          (batchTransaction.session.parent as Database).formattedName_
+        )
+      );
+      console.log(gaxOpts);
+      done();
     });
 
     it('should return any request errors', done => {

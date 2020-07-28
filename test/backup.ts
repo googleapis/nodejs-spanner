@@ -27,6 +27,7 @@ import {Instance, Spanner} from '../src';
 import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
 import {grpc} from 'google-gax';
+import {addResourcePrefixHeader} from '../src/common';
 
 let promisified = false;
 // let callbackified = false;
@@ -182,7 +183,10 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOptions, backup.instanceFormattedName_)
+        );
         done();
       };
 
@@ -308,7 +312,10 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOptions, backup.instanceFormattedName_)
+        );
         done();
       };
 
@@ -563,7 +570,10 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOpts, backup.instanceFormattedName_)
+        );
         done();
       };
 
@@ -616,7 +626,10 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
+        assert.deepStrictEqual(
+          config.gaxOpts,
+          addResourcePrefixHeader(gaxOpts, backup.instanceFormattedName_)
+        );
         done();
       };
 
