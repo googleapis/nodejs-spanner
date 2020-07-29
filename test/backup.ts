@@ -342,6 +342,28 @@ describe('Backup', () => {
         done();
       });
     });
+
+    it('should update metadata', done => {
+      const metadata = {};
+      backup.request = (config: {}, callback: Function) => {
+        callback(null, metadata);
+      };
+      backup.getMetadata(() => {
+        assert.strictEqual(backup.metadata, metadata);
+        done();
+      });
+    });
+
+    it('should call callback with error', done => {
+      const error = new Error('Error');
+      backup.request = (config: {}, callback: Function) => {
+        callback(error);
+      };
+      backup.getMetadata(err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
   });
 
   describe('getState', () => {

@@ -1085,7 +1085,12 @@ class Database extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      callback!
+      (err, resp) => {
+        if (resp) {
+          this.metadata = resp;
+        }
+        callback!(err, resp);
+      }
     );
   }
 

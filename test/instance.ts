@@ -1181,13 +1181,12 @@ describe('Instance', () => {
 
       function callback() {}
 
-      instance.request = (config, callback_) => {
+      instance.request = config => {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'getInstance');
         assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
         });
-        assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
 
@@ -1232,6 +1231,28 @@ describe('Instance', () => {
         done();
       };
       instance.getMetadata({gaxOptions}, assert.ifError);
+    });
+
+    it('should update metadata', done => {
+      const metadata = {};
+      instance.request = (config, callback) => {
+        callback(null, metadata);
+      };
+      instance.getMetadata(() => {
+        assert.strictEqual(instance.metadata, metadata);
+        done();
+      });
+
+      it('should call callback with error', done => {
+        const error = new Error('Error');
+        instance.request = (config, callback) => {
+          callback(error);
+        };
+        instance.getMetadata(err => {
+          assert.strictEqual(err, error);
+          done();
+        });
+      });
     });
   });
 
@@ -1435,6 +1456,7 @@ describe('Instance', () => {
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backup = args[1]!.pop();
           assert.strictEqual(backup, fakeBackupInstance);
+          assert.strictEqual(backup.metadata, REQUEST_RESPONSE_ARGS[1][0]);
           assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
           assert.strictEqual(args[3], REQUEST_RESPONSE_ARGS[3]);
           done();
