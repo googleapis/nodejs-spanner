@@ -351,15 +351,18 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, backups, ...args) => {
+      (err, backups, nexPageRequest, ...args) => {
         let backupInstances: Backup[] | null = null;
         if (backups) {
           backupInstances = backups.map(backup => {
             return this.backup(backup.name!);
           });
         }
+        const nextQuery = nexPageRequest!
+          ? extend({}, options, nexPageRequest!)
+          : null;
 
-        callback(err, backupInstances, ...args);
+        callback(err, backupInstances, nextQuery, ...args);
       }
     );
   }
@@ -545,7 +548,13 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      callback
+      (err, operations, nexPageRequest, ...args) => {
+        const nextQuery = nexPageRequest!
+          ? extend({}, options, nexPageRequest!)
+          : null;
+
+        callback!(err, operations, nextQuery, ...args);
+      }
     );
   }
 
@@ -663,7 +672,13 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      callback
+      (err, operations, nexPageRequest, ...args) => {
+        const nextQuery = nexPageRequest!
+          ? extend({}, options, nexPageRequest!)
+          : null;
+
+        callback!(err, operations, nextQuery, ...args);
+      }
     );
   }
 
@@ -1221,7 +1236,7 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, rowDatabases, ...args) => {
+      (err, rowDatabases, nexPageRequest, ...args) => {
         let databases: Database[] | null = null;
         if (rowDatabases) {
           databases = rowDatabases.map(database => {
@@ -1230,7 +1245,11 @@ class Instance extends common.GrpcServiceObject {
             return databaseInstance;
           });
         }
-        callback(err, databases, ...args);
+        const nextQuery = nexPageRequest!
+          ? extend({}, options, nexPageRequest!)
+          : null;
+
+        callback(err, databases, nextQuery, ...args);
       }
     );
   }
