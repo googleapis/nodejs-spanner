@@ -78,6 +78,7 @@ describe('Instance', () => {
     requestStream: () => {},
     projectId: 'project-id',
     instances_: new Map(),
+    projectFormattedName_: 'projects/project-id',
   } as {}) as Spanner;
 
   const NAME = 'instance-name';
@@ -110,10 +111,10 @@ describe('Instance', () => {
       const formatName_ = Instance.formatName_;
       const formattedName = 'formatted-name';
 
-      Instance.formatName_ = (projectId, name) => {
+      Instance.formatName_ = (projectName, name) => {
         Instance.formatName_ = formatName_;
 
-        assert.strictEqual(projectId, SPANNER.projectId);
+        assert.strictEqual(projectName, SPANNER.projectFormattedName_);
         assert.strictEqual(name, NAME);
 
         return formattedName;
@@ -174,14 +175,20 @@ describe('Instance', () => {
   });
 
   describe('formatName_', () => {
-    const PATH = 'projects/' + SPANNER.projectId + '/instances/' + NAME;
+    const PATH = SPANNER.projectFormattedName_ + '/instances/' + NAME;
 
     it('should return the name if already formatted', () => {
-      assert.strictEqual(Instance.formatName_(SPANNER.projectId, PATH), PATH);
+      assert.strictEqual(
+        Instance.formatName_(SPANNER.projectFormattedName_, PATH),
+        PATH
+      );
     });
 
     it('should format the name', () => {
-      const formattedName = Instance.formatName_(SPANNER.projectId, NAME);
+      const formattedName = Instance.formatName_(
+        SPANNER.projectFormattedName_,
+        NAME
+      );
       assert.strictEqual(formattedName, PATH);
     });
   });

@@ -368,7 +368,10 @@ class Spanner extends GrpcService {
         ['A configuration object is required to create an instance.'].join('')
       );
     }
-    const formattedName = Instance.formatName_(this.projectId, name);
+    const formattedName = Instance.formatName_(
+      this.projectFormattedName_,
+      name
+    );
     const displayName = config.displayName || formattedName.split('/').pop();
     const reqOpts = {
       parent: this.projectFormattedName_,

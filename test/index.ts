@@ -508,8 +508,8 @@ describe('Spanner', () => {
       const stub = sandbox.stub(FakeInstance, 'formatName_').returns(PATH);
 
       spanner.request = config => {
-        const [projectId, name] = stub.lastCall.args;
-        assert.strictEqual(projectId, spanner.projectId);
+        const [projectName, name] = stub.lastCall.args;
+        assert.strictEqual(projectName, spanner.projectFormattedName_);
         assert.strictEqual(name, NAME);
 
         assert.deepStrictEqual(CONFIG, ORIGINAL_CONFIG);
