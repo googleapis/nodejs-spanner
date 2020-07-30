@@ -155,6 +155,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  projectFormattedName_: string;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -255,6 +256,7 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.projectFormattedName_ = 'projects/' + this.projectId;
   }
 
   createInstance(
@@ -369,7 +371,7 @@ class Spanner extends GrpcService {
     const formattedName = Instance.formatName_(this.projectId, name);
     const displayName = config.displayName || formattedName.split('/').pop();
     const reqOpts = {
-      parent: 'projects/' + this.projectId,
+      parent: this.projectFormattedName_,
       instanceId: formattedName.split('/').pop(),
       instance: extend(
         {
@@ -507,7 +509,7 @@ class Spanner extends GrpcService {
 
     const gaxOpts = addResourcePrefixHeader(
       options.gaxOptions!,
-      'projects/' + this.projectId
+      this.projectFormattedName_
     );
 
     // Copy over pageSize and pageToken values from gaxOptions.
@@ -515,7 +517,7 @@ class Spanner extends GrpcService {
     const reqOpts = extend(
       {},
       {
-        parent: 'projects/' + this.projectId,
+        parent: this.projectFormattedName_,
         pageSize: gaxOpts.pageSize,
         pageToken: gaxOpts.pageToken,
       },
@@ -584,7 +586,7 @@ class Spanner extends GrpcService {
   getInstancesStream(options: GetInstancesOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = addResourcePrefixHeader(
       options.gaxOptions!,
-      'projects/' + this.projectId
+      this.projectFormattedName_
     );
 
     // Copy over pageSize and pageToken values from gaxOptions.
@@ -592,7 +594,7 @@ class Spanner extends GrpcService {
     const reqOpts = extend(
       {},
       {
-        parent: 'projects/' + this.projectId,
+        parent: this.projectFormattedName_,
         pageSize: gaxOpts.pageSize,
         pageToken: gaxOpts.pageToken,
       },
@@ -707,7 +709,7 @@ class Spanner extends GrpcService {
 
     const gaxOpts = addResourcePrefixHeader(
       options.gaxOptions!,
-      'projects/' + this.projectId
+      this.projectFormattedName_
     );
 
     // Copy over pageSize and pageToken values from gaxOptions.
@@ -715,7 +717,7 @@ class Spanner extends GrpcService {
     const reqOpts = extend(
       {},
       {
-        parent: 'projects/' + this.projectId,
+        parent: this.projectFormattedName_,
         pageSize: gaxOpts.pageSize,
         pageToken: gaxOpts.pageToken,
       },
@@ -774,7 +776,7 @@ class Spanner extends GrpcService {
   ): NodeJS.ReadableStream {
     const gaxOpts = addResourcePrefixHeader(
       options.gaxOptions!,
-      'projects/' + this.projectId
+      this.projectFormattedName_
     );
 
     // Copy over pageSize and pageToken values from gaxOptions.
@@ -782,7 +784,7 @@ class Spanner extends GrpcService {
     const reqOpts = extend(
       {},
       {
-        parent: 'projects/' + this.projectId,
+        parent: this.projectFormattedName_,
         pageSize: gaxOpts.pageSize,
         pageToken: gaxOpts.pageToken,
       },

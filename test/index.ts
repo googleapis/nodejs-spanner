@@ -108,8 +108,10 @@ const fakeCodec: any = {
 
 class FakeGrpcService {
   calledWith_: IArguments;
+  projectId: string;
   constructor() {
     this.calledWith_ = arguments;
+    this.projectId = arguments[1].projectId;
   }
 }
 
