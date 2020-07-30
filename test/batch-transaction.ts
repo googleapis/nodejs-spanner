@@ -210,7 +210,7 @@ describe('BatchTransaction', () => {
       assert.deepStrictEqual(reqOpts.transaction, {id: ID});
     });
 
-    it('should add resource prefix to `gaxOpt`', done => {
+    it('should add resource prefix to `gaxOpts`', done => {
       batchTransaction.createPartitions_(CONFIG, assert.ifError);
       const {gaxOpts} = REQUEST.lastCall.args[0];
       assert.deepStrictEqual(
