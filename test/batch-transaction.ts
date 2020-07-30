@@ -220,7 +220,6 @@ describe('BatchTransaction', () => {
           (batchTransaction.session.parent as Database).formattedName_
         )
       );
-      console.log(gaxOpts);
       done();
     });
 
