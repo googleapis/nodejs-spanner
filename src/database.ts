@@ -1336,7 +1336,7 @@ class Database extends GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, sessions, nexPageRequest, ...args) => {
+      (err, sessions, nextPageRequest, ...args) => {
         let sessionInstances: Session[] | null = null;
         if (sessions) {
           sessionInstances = sessions.map(metadata => {
@@ -1345,8 +1345,8 @@ class Database extends GrpcServiceObject {
             return session;
           });
         }
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
         callback!(err, sessionInstances!, nextQuery, ...args);
       }

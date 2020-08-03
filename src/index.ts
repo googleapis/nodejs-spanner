@@ -534,7 +534,7 @@ class Spanner extends GrpcService {
         reqOpts,
         gaxOpts,
       },
-      (err, instances, nexPageRequest, ...args) => {
+      (err, instances, nextPageRequest, ...args) => {
         let instanceInstances: Instance[] | null = null;
         if (instances) {
           instanceInstances = instances.map(instance => {
@@ -543,8 +543,8 @@ class Spanner extends GrpcService {
             return instanceInstance;
           });
         }
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
         callback!(err, instanceInstances, nextQuery, ...args);
       }
@@ -740,9 +740,9 @@ class Spanner extends GrpcService {
         reqOpts,
         gaxOpts,
       },
-      (err, instanceConfigs, nexPageRequest, ...args) => {
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+      (err, instanceConfigs, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
         callback!(err, instanceConfigs, nextQuery, ...args);
       }

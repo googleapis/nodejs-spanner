@@ -351,15 +351,15 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, backups, nexPageRequest, ...args) => {
+      (err, backups, nextPageRequest, ...args) => {
         let backupInstances: Backup[] | null = null;
         if (backups) {
           backupInstances = backups.map(backup => {
             return this.backup(backup.name!);
           });
         }
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
 
         callback(err, backupInstances, nextQuery, ...args);
@@ -548,9 +548,9 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, operations, nexPageRequest, ...args) => {
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+      (err, operations, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
 
         callback!(err, operations, nextQuery, ...args);
@@ -672,9 +672,9 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, operations, nexPageRequest, ...args) => {
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+      (err, operations, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
 
         callback!(err, operations, nextQuery, ...args);
@@ -1236,7 +1236,7 @@ class Instance extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, rowDatabases, nexPageRequest, ...args) => {
+      (err, rowDatabases, nextPageRequest, ...args) => {
         let databases: Database[] | null = null;
         if (rowDatabases) {
           databases = rowDatabases.map(database => {
@@ -1245,8 +1245,8 @@ class Instance extends common.GrpcServiceObject {
             return databaseInstance;
           });
         }
-        const nextQuery = nexPageRequest!
-          ? extend({}, options, nexPageRequest!)
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
           : null;
 
         callback(err, databases, nextQuery, ...args);
