@@ -16,6 +16,9 @@ offers transactional consistency at global scale, schemas, SQL (ANSI 2011 with e
 and automatic, synchronous replication for high availability.
 
 
+A comprehensive list of changes in each version may be found in
+[the CHANGELOG](https://github.com/googleapis/nodejs-spanner/blob/master/CHANGELOG.md).
+
 * [Cloud Spanner Node.js Client API Reference][client-docs]
 * [Cloud Spanner Documentation][product-docs]
 * [github.com/googleapis/nodejs-spanner](https://github.com/googleapis/nodejs-spanner)
