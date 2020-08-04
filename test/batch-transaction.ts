@@ -27,7 +27,7 @@ import * as sinon from 'sinon';
 import {Session, Database} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
-import {addResourcePrefixHeader} from '../src/common';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -210,16 +210,13 @@ describe('BatchTransaction', () => {
       assert.deepStrictEqual(reqOpts.transaction, {id: ID});
     });
 
-    it('should add resource prefix to `gaxOpts`', done => {
+    it('should add pass headers argument', done => {
       batchTransaction.createPartitions_(CONFIG, assert.ifError);
-      const {gaxOpts} = REQUEST.lastCall.args[0];
-      assert.deepStrictEqual(
-        gaxOpts,
-        addResourcePrefixHeader(
-          CONFIG.gaxOpts,
-          (batchTransaction.session.parent as Database).formattedName_
-        )
-      );
+      const {headers} = REQUEST.lastCall.args[0];
+      assert.deepStrictEqual(headers, {
+        [CLOUD_RESOURCE_HEADER]: (batchTransaction.session.parent as Database)
+          .formattedName_,
+      });
       done();
     });
 

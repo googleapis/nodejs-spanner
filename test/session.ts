@@ -21,7 +21,8 @@ import * as assert from 'assert';
 import {before, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
-import {addResourcePrefixHeader} from '../src/common';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {Database} from '../src';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -43,8 +44,10 @@ const fakePfy = extend({}, pfy, {
 
 class FakeGrpcServiceObject {
   calledWith_: IArguments;
+  parent: Database;
   constructor() {
     this.calledWith_ = arguments;
+    this.parent = arguments[0].parent;
   }
 }
 
@@ -63,6 +66,7 @@ describe('Session', () => {
   let Session: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let session: any;
+  let resourceHeader: {[k: string]: string};
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const DATABASE: any = {
@@ -88,6 +92,8 @@ describe('Session', () => {
 
   beforeEach(() => {
     session = new Session(DATABASE, NAME);
+    session.parent = DATABASE;
+    resourceHeader = {[CLOUD_RESOURCE_HEADER]: session.parent.formattedName_};
   });
 
   describe('instantiation', () => {
@@ -229,9 +235,6 @@ describe('Session', () => {
   });
 
   describe('delete', () => {
-    beforeEach(() => {
-      session.parent = DATABASE;
-    });
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
@@ -243,10 +246,8 @@ describe('Session', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader({}, session.parent.formattedName_)
-        );
+        assert.strictEqual(config.gaxOpts, undefined);
+        assert.deepStrictEqual(config.headers, resourceHeader);
 
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
@@ -258,10 +259,6 @@ describe('Session', () => {
   });
 
   describe('getMetadata', () => {
-    beforeEach(() => {
-      session.parent = DATABASE;
-    });
-
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
@@ -273,6 +270,8 @@ describe('Session', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, resourceHeader);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -284,10 +283,7 @@ describe('Session', () => {
     it('should accept and pass gaxOptions to getMetadata', done => {
       const gaxOptions = {};
       session.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, session.parent.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       session.getMetadata(gaxOptions, assert.ifError);
@@ -295,10 +291,6 @@ describe('Session', () => {
   });
 
   describe('keepAlive', () => {
-    beforeEach(() => {
-      session.parent = DATABASE;
-    });
-
     it('should correctly call and return the request', () => {
       const requestReturnValue = {};
 
@@ -311,6 +303,8 @@ describe('Session', () => {
           session: session.formattedName_,
           sql: 'SELECT 1',
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, resourceHeader);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -322,10 +316,7 @@ describe('Session', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       session.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader({}, session.parent.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, {});
         done();
       };
       session.keepAlive(gaxOptions, assert.ifError);

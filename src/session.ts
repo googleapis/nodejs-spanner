@@ -35,7 +35,7 @@ import {
   CreateSessionOptions,
 } from './database';
 import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
-import {NormalCallback, addResourcePrefixHeader} from './common';
+import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {grpc, CallOptions} from 'google-gax';
 
 export type GetSessionResponse = [Session, r.Response];
@@ -101,6 +101,7 @@ export class Session extends GrpcServiceObject {
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
+  resourceHeader_: {[k: string]: string};
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -231,6 +232,9 @@ export class Session extends GrpcServiceObject {
       },
     } as {}) as ServiceObjectConfig);
 
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: (this.parent as Database).formattedName_,
+    };
     this.request = database.request;
     this.requestStream = database.requestStream;
 
@@ -276,10 +280,7 @@ export class Session extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'deleteSession',
         reqOpts,
-        gaxOpts: addResourcePrefixHeader(
-          {},
-          (this.parent as Database).formattedName_
-        ),
+        headers: this.resourceHeader_,
       },
       callback!
     );
@@ -329,10 +330,8 @@ export class Session extends GrpcServiceObject {
     optionsOrCallback?: CallOptions | GetSessionMetadataCallback,
     cb?: GetSessionMetadataCallback
   ): void | Promise<GetSessionMetadataResponse> {
-    const gaxOpts = addResourcePrefixHeader(
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {},
-      (this.parent as Database).formattedName_
-    );
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
@@ -345,6 +344,7 @@ export class Session extends GrpcServiceObject {
         method: 'getSession',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback!
     );
@@ -371,10 +371,8 @@ export class Session extends GrpcServiceObject {
     optionsOrCallback?: CallOptions | KeepAliveCallback,
     cb?: KeepAliveCallback
   ): void | Promise<KeepAliveResponse> {
-    const gaxOpts = addResourcePrefixHeader(
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {},
-      (this.parent as Database).formattedName_
-    );
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
@@ -388,6 +386,7 @@ export class Session extends GrpcServiceObject {
         method: 'executeSql',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback!
     );

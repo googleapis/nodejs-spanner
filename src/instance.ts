@@ -31,7 +31,7 @@ import {
   NormalCallback,
   ResourceCallback,
   PagedOptionsWithFilter,
-  addResourcePrefixHeader,
+  CLOUD_RESOURCE_HEADER,
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
@@ -152,6 +152,7 @@ class Instance extends common.GrpcServiceObject {
   requestStream: (config: RequestConfig) => Duplex;
   databases_: Map<string, Database>;
   metadata?: IInstance;
+  resourceHeader_: {[k: string]: string};
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(
       spanner.projectFormattedName_,
@@ -225,6 +226,9 @@ class Instance extends common.GrpcServiceObject {
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);
     this.databases_ = new Map<string, Database>();
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: this.formattedName_,
+    };
   }
 
   /**
@@ -324,10 +328,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetBackupsOptions);
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.formattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -353,6 +354,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listBackups',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, backups, ...args) => {
         let backupInstances: Backup[] | null = null;
@@ -405,10 +407,7 @@ class Instance extends common.GrpcServiceObject {
    *   });
    */
   getBackupsStream(options: GetBackupsOptions = {}): NodeJS.ReadableStream {
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.formattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -430,6 +429,7 @@ class Instance extends common.GrpcServiceObject {
       method: 'listBackupsStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -515,10 +515,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetBackupOperationsOptions);
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.formattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -544,6 +541,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listBackupOperations',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback
     );
@@ -632,10 +630,7 @@ class Instance extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
         : ({} as GetDatabaseOperationsOptions);
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.formattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -661,6 +656,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listDatabaseOperations',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback
     );
@@ -798,10 +794,8 @@ class Instance extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'createDatabase',
         reqOpts,
-        gaxOpts: addResourcePrefixHeader(
-          options.gaxOptions!,
-          this.formattedName_
-        ),
+        gaxOpts: options.gaxOptions,
+        headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -913,10 +907,8 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | DeleteInstanceCallback,
     cb?: DeleteInstanceCallback
   ): void | Promise<DeleteInstanceResponse> {
-    const gaxOpts = addResourcePrefixHeader(
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {},
-      this.formattedName_
-    );
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
@@ -937,6 +929,7 @@ class Instance extends common.GrpcServiceObject {
             method: 'deleteInstance',
             reqOpts,
             gaxOpts,
+            headers: this.resourceHeader_,
           },
           (err, resp) => {
             if (!err) {
@@ -1194,10 +1187,7 @@ class Instance extends common.GrpcServiceObject {
         ? optionsOrCallback
         : ({} as GetDatabasesOptions);
 
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.formattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
     const reqOpts = extend(
@@ -1222,6 +1212,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listDatabases',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, rowDatabases, ...args) => {
         let databases: Database[] | null = null;
@@ -1275,10 +1266,7 @@ class Instance extends common.GrpcServiceObject {
    *   });
    */
   getDatabasesStream(options: GetDatabasesOptions = {}): NodeJS.ReadableStream {
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.formattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -1300,6 +1288,7 @@ class Instance extends common.GrpcServiceObject {
       method: 'listDatabasesStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -1393,10 +1382,8 @@ class Instance extends common.GrpcServiceObject {
         client: 'InstanceAdminClient',
         method: 'getInstance',
         reqOpts,
-        gaxOpts: addResourcePrefixHeader(
-          options.gaxOptions!,
-          this.formattedName_
-        ),
+        gaxOpts: options.gaxOptions,
+        headers: this.resourceHeader_,
       },
       callback!
     );
@@ -1462,10 +1449,8 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | SetInstanceMetadataCallback,
     cb?: SetInstanceMetadataCallback
   ): void | Promise<SetInstanceMetadataResponse> {
-    const gaxOpts = addResourcePrefixHeader(
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {},
-      this.formattedName_
-    );
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
@@ -1486,6 +1471,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'updateInstance',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback!
     );

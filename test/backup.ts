@@ -27,7 +27,7 @@ import {Instance, Spanner} from '../src';
 import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
 import {grpc} from 'google-gax';
-import {addResourcePrefixHeader} from '../src/common';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
 // let callbackified = false;
@@ -68,6 +68,7 @@ describe('Backup', () => {
 
   // tslint:disable-next-line variable-name
   let Backup: typeof bu.Backup;
+  let resourceHeader: {[k: string]: string};
 
   const INSTANCE = ({
     request: util.noop,
@@ -99,6 +100,7 @@ describe('Backup', () => {
   beforeEach(() => {
     fakeCodec.encode = util.noop;
     backup = new Backup(INSTANCE, BACKUP_NAME);
+    resourceHeader = {[CLOUD_RESOURCE_HEADER]: backup.instanceFormattedName_};
   });
 
   afterEach(() => sandbox.restore());
@@ -165,6 +167,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -183,10 +186,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, backup.instanceFormattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -300,6 +300,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -312,10 +313,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, backup.instanceFormattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -558,6 +556,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -570,10 +569,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOpts, backup.instanceFormattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
         done();
       };
 
@@ -614,6 +610,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -626,10 +623,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOpts, backup.instanceFormattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
         done();
       };
 

@@ -31,7 +31,7 @@ import * as db from '../src/database';
 import {Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
-import {addResourcePrefixHeader} from '../src/common';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -184,6 +184,7 @@ describe('Database', () => {
   let Database: typeof db.Database;
   // tslint:disable-next-line variable-name
   let DatabaseCached: typeof db.Database;
+  let resourceHeader: {[k: string]: string};
 
   const INSTANCE = ({
     request: util.noop,
@@ -228,6 +229,7 @@ describe('Database', () => {
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
+    resourceHeader = {[CLOUD_RESOURCE_HEADER]: database.formattedName_};
   });
 
   afterEach(() => sandbox.restore());
@@ -350,12 +352,14 @@ describe('Database', () => {
 
       database.batchCreateSessions({count}, assert.ifError);
 
-      const {client, method, reqOpts} = stub.lastCall.args[0];
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
 
       assert.strictEqual(client, 'SpannerClient');
       assert.strictEqual(method, 'batchCreateSessions');
       assert.strictEqual(reqOpts.database, DATABASE_FORMATTED_NAME);
       assert.strictEqual(reqOpts.sessionCount, count);
+      assert.strictEqual(gaxOpts, undefined);
+      assert.deepStrictEqual(headers, resourceHeader);
     });
 
     it('should accept just a count number', () => {
@@ -387,10 +391,7 @@ describe('Database', () => {
 
       const {gaxOpts} = stub.lastCall.args[0];
 
-      assert.deepStrictEqual(
-        gaxOpts,
-        addResourcePrefixHeader(gaxOptions, database.formattedName_)
-      );
+      assert.deepStrictEqual(gaxOpts, gaxOptions);
     });
 
     it('should return any request errors', done => {
@@ -709,10 +710,8 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader({}, database.formattedName_)
-        );
+        assert.strictEqual(config.gaxOpts, undefined);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         assert.strictEqual(callback, assert.ifError);
       };
 
@@ -972,6 +971,8 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: database.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, resourceHeader);
         assert.strictEqual(callback, assert.ifError);
         return requestReturnValue;
       };
@@ -983,10 +984,7 @@ describe('Database', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       database.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       database.getMetadata(gaxOptions, assert.ifError);
@@ -1001,6 +999,8 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -1010,10 +1010,7 @@ describe('Database', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       database.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -1606,6 +1603,8 @@ describe('Database', () => {
           database: database.formattedName_,
           statements: STATEMENTS,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, resourceHeader);
         assert.strictEqual(callback, assert.ifError);
         return requestReturnValue;
       };
@@ -1644,10 +1643,7 @@ describe('Database', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       database.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       database.updateSchema(STATEMENTS, gaxOptions, assert.ifError);
@@ -1665,11 +1661,8 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
-
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOptions, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.headers, resourceHeader);
 
         done();
       };
@@ -1683,10 +1676,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader({}, database.formattedName_)
-        );
+        assert.strictEqual(config.gaxOpts, undefined);
         done();
       };
 
@@ -1999,10 +1989,8 @@ describe('Database', () => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'listSessions');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(gaxOpts, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -2013,10 +2001,7 @@ describe('Database', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = addResourcePrefixHeader(
-        {timeout: 1000},
-        database.formattedName_
-      );
+      const expectedGaxOpts = {timeout: 1000};
       const options = {a: 'a', gaxOptions: gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -2044,10 +2029,7 @@ describe('Database', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = addResourcePrefixHeader(
-        {timeout: 1000},
-        database.formattedName_
-      );
+      const expectedGaxOpts = {timeout: 1000};
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -2086,10 +2068,7 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader({}, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, {});
         done();
       };
       database.getSessions(assert.ifError);
@@ -2148,10 +2127,8 @@ describe('Database', () => {
 
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(OPTIONS.gaxOptions!, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(config.headers, resourceHeader);
         return returnValue;
       };
 
@@ -2163,10 +2140,7 @@ describe('Database', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = addResourcePrefixHeader(
-        {timeout: 1000},
-        database.formattedName_
-      );
+      const expectedGaxOpts = {timeout: 1000};
       const options = {gaxOptions};
       const expectedReqOpts = extend(
         {},
@@ -2193,10 +2167,7 @@ describe('Database', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const expectedGaxOpts = addResourcePrefixHeader(
-        {timeout: 1000},
-        database.formattedName_
-      );
+      const expectedGaxOpts = {timeout: 1000};
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
@@ -2232,10 +2203,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
 
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader({}, database.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, {});
 
         return returnValue;
       };
@@ -2627,6 +2595,8 @@ describe('Database', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, resourceHeader);
         done();
       };
 
@@ -2656,10 +2626,7 @@ describe('Database', () => {
       };
 
       database.request = config => {
-        assert.deepStrictEqual(
-          config.gaxOpts,
-          addResourcePrefixHeader(options, database.instance.formattedName_)
-        );
+        assert.deepStrictEqual(config.gaxOpts, options);
         done();
       };
 

@@ -83,11 +83,11 @@ export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';
  */
 export function addResourcePrefixHeader(
   gaxOpts: CallOptions,
-  headerValue: string
+  headers: {[k: string]: string}
 ): CallOptions {
   return extend(true, {}, gaxOpts, {
     otherArgs: {
-      headers: {[CLOUD_RESOURCE_HEADER]: headerValue},
+      headers,
     },
   });
 }

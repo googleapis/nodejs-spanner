@@ -40,6 +40,7 @@ import {
   PagedCallback,
   PagedOptionsWithFilter,
   addResourcePrefixHeader,
+  CLOUD_RESOURCE_HEADER,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
@@ -87,6 +88,7 @@ export interface RequestConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reqOpts: any;
   gaxOpts?: CallOptions;
+  headers: {[k: string]: string};
 }
 export interface CreateInstanceRequest {
   config?: string;
@@ -156,6 +158,7 @@ class Spanner extends GrpcService {
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
   projectFormattedName_: string;
+  resourceHeader_: {[k: string]: string};
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -257,6 +260,9 @@ class Spanner extends GrpcService {
     this.clients_ = new Map();
     this.instances_ = new Map();
     this.projectFormattedName_ = 'projects/' + this.projectId;
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
+    };
   }
 
   createInstance(
@@ -397,7 +403,8 @@ class Spanner extends GrpcService {
         client: 'InstanceAdminClient',
         method: 'createInstance',
         reqOpts,
-        gaxOpts: addResourcePrefixHeader(config.gaxOptions!, reqOpts.parent),
+        gaxOpts: config.gaxOptions,
+        headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -510,10 +517,7 @@ class Spanner extends GrpcService {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.projectFormattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -536,6 +540,7 @@ class Spanner extends GrpcService {
         method: 'listInstances',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, instances, ...args) => {
         let instanceInstances: Instance[] | null = null;
@@ -587,10 +592,7 @@ class Spanner extends GrpcService {
    *   });
    */
   getInstancesStream(options: GetInstancesOptions = {}): NodeJS.ReadableStream {
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.projectFormattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -612,6 +614,7 @@ class Spanner extends GrpcService {
       method: 'listInstancesStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -710,10 +713,7 @@ class Spanner extends GrpcService {
         ? optionsOrCallback
         : ({} as GetInstanceConfigsOptions);
 
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.projectFormattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -736,6 +736,7 @@ class Spanner extends GrpcService {
         method: 'listInstanceConfigs',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback
     );
@@ -777,10 +778,7 @@ class Spanner extends GrpcService {
   getInstanceConfigsStream(
     options: GetInstanceConfigsOptions = {}
   ): NodeJS.ReadableStream {
-    const gaxOpts = addResourcePrefixHeader(
-      options.gaxOptions!,
-      this.projectFormattedName_
-    );
+    const gaxOpts = extend(true, {}, options.gaxOptions);
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
@@ -803,6 +801,7 @@ class Spanner extends GrpcService {
       method: 'listInstanceConfigsStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -855,7 +854,7 @@ class Spanner extends GrpcService {
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
-        config.gaxOpts
+        addResourcePrefixHeader(config.gaxOpts, config.headers)
       );
       callback(null, requestFn);
     });
