@@ -2235,7 +2235,11 @@ describe('Database', () => {
         'begin'
       ) as sinon.SinonStub).callsFake(callback => callback(null));
 
-      runUpdateStub = sandbox.stub(fakePartitionedDml, 'runUpdate');
+      // runUpdateStub = sandbox.stub(fakePartitionedDml, 'runUpdate');
+      runUpdateStub = (sandbox.stub(
+        fakePartitionedDml,
+        'runUpdate'
+      ) as sinon.SinonStub).callsFake((_, callback) => callback(null));
     });
 
     it('should get a read only session from the pool', () => {
@@ -2289,10 +2293,10 @@ describe('Database', () => {
 
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
-      const [query, callback] = runUpdateStub.lastCall.args;
+      const [query] = runUpdateStub.lastCall.args;
 
       assert.strictEqual(query, QUERY);
-      assert.strictEqual(callback, fakeCallback);
+      assert.ok(fakeCallback.calledOnce);
     });
 
     it('should release the session on transaction end', () => {

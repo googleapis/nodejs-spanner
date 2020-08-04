@@ -17,46 +17,49 @@
 import {
   ApiError,
   ExistsCallback,
+  GetConfig,
   Metadata,
   ServiceObjectConfig,
-  GetConfig,
 } from '@google-cloud/common';
 import {GrpcServiceObject} from './common-grpc/service-object';
 import {promisify, promisifyAll} from '@google-cloud/promisify';
-import arrify = require('arrify');
 import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
+import {CallOptions, grpc, Operation as GaxOperation} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
-import {google as databaseAdmin} from '../protos/protos';
 import {
-  Instance,
-  CreateDatabaseOptions,
+  google as databaseAdmin,
+  google,
+  google as spannerClient,
+} from '../protos/protos';
+import {
   CreateDatabaseCallback,
+  CreateDatabaseOptions,
   GetDatabaseOperationsOptions,
   GetDatabaseOperationsResponse,
+  Instance,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
 import {
+  isSessionNotFoundError,
   SessionPool,
-  SessionPoolOptions,
   SessionPoolCloseCallback,
   SessionPoolInterface,
-  isSessionNotFoundError,
+  SessionPoolOptions,
 } from './session-pool';
-import {Table, CreateTableCallback, CreateTableResponse} from './table';
+import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  ExecuteSqlRequest,
+  RunCallback,
+  RunResponse,
+  RunUpdateCallback,
   Snapshot,
   TimestampBounds,
   Transaction,
-  ExecuteSqlRequest,
-  RunUpdateCallback,
-  RunResponse,
-  RunCallback,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -65,22 +68,20 @@ import {
   RunTransactionOptions,
   TransactionRunner,
 } from './transaction-runner';
-
-import {google} from '../protos/protos';
 import {
   IOperation,
-  Schema,
+  LongRunningCallback,
+  NormalCallback,
+  PagedOptionsWithFilter,
+  PagedResponse,
   RequestCallback,
   ResourceCallback,
-  PagedResponse,
-  NormalCallback,
-  LongRunningCallback,
-  PagedOptionsWithFilter,
+  Schema,
 } from './common';
-import {Readable, Transform, Duplex} from 'stream';
+import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {google as spannerClient} from '../protos/protos';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import arrify = require('arrify');
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -2021,20 +2022,41 @@ class Database extends GrpcServiceObject {
         return;
       }
 
-      const transaction = session!.partitionedDml();
+      this._runPartitionedUpdate(session!, query, callback);
+    });
+  }
 
-      transaction.begin(err => {
+  _runPartitionedUpdate(
+    session: Session,
+    query: string | ExecuteSqlRequest,
+    callback?: RunUpdateCallback
+  ): void | Promise<number> {
+    const transaction = session.partitionedDml();
+
+    transaction.begin(err => {
+      if (err) {
+        this.pool_.release(session!);
+        callback!(err, 0);
+        return;
+      }
+
+      transaction.runUpdate(query, (err, updateCount) => {
         if (err) {
+          if (err.code !== grpc.status.ABORTED) {
+            this.pool_.release(session!);
+            callback!(err, 0);
+            return;
+          }
+          this._runPartitionedUpdate(session, query, callback);
+        } else {
           this.pool_.release(session!);
-          callback!(err, 0);
+          callback!(null, updateCount);
           return;
         }
-
-        this._releaseOnEnd(session!, transaction);
-        transaction.runUpdate(query, callback!);
       });
     });
   }
+
   /**
    * Create a readable object stream to receive resulting rows from a SQL
    * statement.
