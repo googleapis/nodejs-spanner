@@ -557,12 +557,13 @@ class Database extends GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.createSession((err, session, resp) => {
+    this.pool_.getReadSession((err, session) => {
       if (err) {
-        callback!(err, null, resp);
+        callback!(err, null, undefined);
         return;
       }
       const transaction = this.batchTransaction({session: session!}, options);
+      this._releaseOnEnd(session!, transaction);
       transaction.begin((err, resp) => {
         if (err) {
           callback!(err, null, resp!);
