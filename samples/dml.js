@@ -630,6 +630,74 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_batch_update]
 }
 
+async function executeSqlWithCustomTimeoutAndRetrySettings(
+  instanceId,
+  databaseId,
+  projectId
+) {
+  // [START spanner_set_custom_timeout_and_retry]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+  const {grpc} = require('google-gax');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  const retryAndTimeoutSettings = {
+    retry: {
+      retryCodes: [grpc.status.DEADLINE_EXCEEDED, grpc.status.UNAVAILABLE],
+      backoffSettings: {
+        // Configure retry delay settings.
+        initialRetryDelayMillis: 500,
+        maxRetryDelayMillis: 64000,
+        retryDelayMultiplier: 1.5,
+        // Configure RPC and total timeout settings.
+        initialRpcTimeoutMillis: 60000,
+        rpcTimeoutMultiplier: 1.0,
+        maxRpcTimeoutMillis: 60000,
+        totalTimeoutMillis: 600000,
+      },
+    },
+  };
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  database.runTransaction(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    try {
+      const [rowCount] = await transaction.runUpdate({
+        sql: `INSERT Singers (SingerId, FirstName, LastName)
+            VALUES (16, 'Martha', 'Waller')`,
+        gaxOptions: retryAndTimeoutSettings,
+      });
+
+      console.log(`${rowCount} record inserted.`);
+
+      await transaction.commit();
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
+  });
+  // [END spanner_set_custom_timeout_and_retry]
+}
+
 require('yargs')
   .demand(1)
   .command(
@@ -736,6 +804,17 @@ require('yargs')
     opts =>
       updateUsingBatchDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
+  .command(
+    'executeSqlWithCustomTimeoutAndRetrySettings <instanceName> <databaseName> <projectId>',
+    'Insert records using custom timeout and retry settings.',
+    {},
+    opts =>
+      executeSqlWithCustomTimeoutAndRetrySettings(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
   .example('node $0 insertUsingDml "my-instance" "my-database" "my-project-id"')
   .example('node $0 updateUsingDml "my-instance" "my-database" "my-project-id"')
   .example('node $0 deleteUsingDml "my-instance" "my-database" "my-project-id"')
@@ -763,6 +842,9 @@ require('yargs')
   )
   .example(
     'node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 executeSqlWithCustomTimeoutAndRetrySettings "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()

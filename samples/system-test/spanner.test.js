@@ -876,4 +876,12 @@ describe('Spanner', () => {
     );
     assert.match(output, /Backup deleted./);
   });
+
+  // custom_timeout_and_retry
+  it('should insert using DML with custom timeout and retry settings', async () => {
+    const output = execSync(
+      `${dmlCmd} executeSqlWithCustomTimeoutAndRetrySettings ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /record inserted./);
+  });
 });
