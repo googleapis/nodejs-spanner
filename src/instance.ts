@@ -154,10 +154,7 @@ class Instance extends common.GrpcServiceObject {
   metadata?: IInstance;
   resourceHeader_: {[k: string]: string};
   constructor(spanner: Spanner, name: string) {
-    const formattedName_ = Instance.formatName_(
-      spanner.projectFormattedName_,
-      name
-    );
+    const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
       /**
        * Create an instance.
@@ -1489,12 +1486,12 @@ class Instance extends common.GrpcServiceObject {
    * Instance.formatName_('grape-spaceship-123', 'my-instance');
    * // 'projects/grape-spaceship-123/instances/my-instance'
    */
-  static formatName_(projectName: string, name: string) {
+  static formatName_(projectId: string, name: string) {
     if (name.indexOf('/') > -1) {
       return name;
     }
     const instanceName = name.split('/').pop();
-    return projectName + '/instances/' + instanceName;
+    return 'projects/' + projectId + '/instances/' + instanceName;
   }
 }
 

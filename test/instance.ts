@@ -114,10 +114,10 @@ describe('Instance', () => {
       const formatName_ = Instance.formatName_;
       const formattedName = 'formatted-name';
 
-      Instance.formatName_ = (projectName, name) => {
+      Instance.formatName_ = (projectId, name) => {
         Instance.formatName_ = formatName_;
 
-        assert.strictEqual(projectName, SPANNER.projectFormattedName_);
+        assert.strictEqual(projectId, SPANNER.projectId);
         assert.strictEqual(name, NAME);
 
         return formattedName;
@@ -178,20 +178,14 @@ describe('Instance', () => {
   });
 
   describe('formatName_', () => {
-    const PATH = SPANNER.projectFormattedName_ + '/instances/' + NAME;
+    const PATH = 'projects/' + SPANNER.projectId + '/instances/' + NAME;
 
     it('should return the name if already formatted', () => {
-      assert.strictEqual(
-        Instance.formatName_(SPANNER.projectFormattedName_, PATH),
-        PATH
-      );
+      assert.strictEqual(Instance.formatName_(SPANNER.projectId, PATH), PATH);
     });
 
     it('should format the name', () => {
-      const formattedName = Instance.formatName_(
-        SPANNER.projectFormattedName_,
-        NAME
-      );
+      const formattedName = Instance.formatName_(SPANNER.projectId, NAME);
       assert.strictEqual(formattedName, PATH);
     });
   });
