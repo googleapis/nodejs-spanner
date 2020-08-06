@@ -2235,7 +2235,6 @@ describe('Database', () => {
         'begin'
       ) as sinon.SinonStub).callsFake(callback => callback(null));
 
-      // runUpdateStub = sandbox.stub(fakePartitionedDml, 'runUpdate');
       runUpdateStub = (sandbox.stub(
         fakePartitionedDml,
         'runUpdate'
