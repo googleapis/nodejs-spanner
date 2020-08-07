@@ -897,44 +897,50 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
-    const {params, paramTypes} = Snapshot.encodeParams(query);
-    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    try {
+      const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
+      const {params, paramTypes} = Snapshot.encodeParams(query);
+      const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
-    if (this.id) {
-      transaction.id = this.id as Uint8Array;
-    } else {
-      transaction.singleUse = this._options;
-    }
+      if (this.id) {
+        transaction.id = this.id as Uint8Array;
+      } else {
+        transaction.singleUse = this._options;
+      }
 
-    delete query.gaxOptions;
-    delete query.json;
-    delete query.jsonOptions;
-    delete query.maxResumeRetries;
-    delete query.types;
+      delete query.gaxOptions;
+      delete query.json;
+      delete query.jsonOptions;
+      delete query.maxResumeRetries;
+      delete query.types;
 
-    const reqOpts: ExecuteSqlRequest = Object.assign(query, {
-      session: this.session.formattedName_!,
-      seqno: this._seqno++,
-      transaction,
-      params,
-      paramTypes,
-    });
-
-    const makeRequest = (resumeToken?: ResumeToken): Readable => {
-      return this.requestStream({
-        client: 'SpannerClient',
-        method: 'executeStreamingSql',
-        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-        gaxOpts: gaxOptions,
+      const reqOpts: ExecuteSqlRequest = Object.assign(query, {
+        session: this.session.formattedName_!,
+        seqno: this._seqno++,
+        transaction,
+        params,
+        paramTypes,
       });
-    };
 
-    return partialResultStream(makeRequest, {
-      json,
-      jsonOptions,
-      maxResumeRetries,
-    });
+      const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        return this.requestStream({
+          client: 'SpannerClient',
+          method: 'executeStreamingSql',
+          reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+          gaxOpts: gaxOptions,
+        });
+      };
+
+      return partialResultStream(makeRequest, {
+        json,
+        jsonOptions,
+        maxResumeRetries,
+      });
+    } catch (err) {
+      const prs = new PartialResultStream();
+      process.nextTick(() => prs.emit('error', err));
+      return prs;
+    }
   }
 
   /**

@@ -2175,14 +2175,7 @@ class Database extends GrpcServiceObject {
       this._releaseOnEnd(session!, snapshot);
 
       let dataReceived = false;
-      let dataStream;
-      try {
-        dataStream = snapshot.runStream(query);
-      } catch (err) {
-        proxyStream.destroy(err);
-        snapshot.end();
-        return;
-      }
+      let dataStream = snapshot.runStream(query);
       const endListener = () => snapshot.end();
       dataStream
         .once('data', () => (dataReceived = true))
