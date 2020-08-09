@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "429f083ec326ca5aff16065836922a7f13492607"
+        "sha": "6e1f300ebe31027eb1f2922facb70bb0ba392b11"
       }
     },
     {
@@ -19,7 +19,7 @@
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "5936421202fb53ed4641bcb824017dd393a3dbcc"
+        "sha": "94421c47802f56a44c320257b2b4c190dc7d6b68"
       }
     }
   ],
