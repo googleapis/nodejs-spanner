@@ -1316,22 +1316,25 @@ class Database extends GrpcServiceObject {
         ? optionsOrCallback
         : ({} as GetSessionsOptions);
     const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
+      database: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    const reqOpts = extend(
-      {},
-      {
-        database: this.formattedName_,
-        pageSize: gaxOpts.pageSize,
-        pageToken: gaxOpts.pageToken,
-      },
-      options
-    );
-
-    delete reqOpts.gaxOptions;
-    delete gaxOpts.pageSize;
-    delete gaxOpts.pageToken;
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     this.request<
       google.spanner.v1.ISession,
@@ -1399,21 +1402,25 @@ class Database extends GrpcServiceObject {
   getSessionsStream(options: GetSessionsOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
 
+    let reqOpts = extend({}, options, {
+      database: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    const reqOpts = extend(
-      {},
-      {
-        database: this.formattedName_,
-        pageSize: gaxOpts.pageSize,
-        pageToken: gaxOpts.pageToken,
-      },
-      options
-    );
-
-    delete reqOpts.gaxOptions;
-    delete gaxOpts.pageSize;
-    delete gaxOpts.pageToken;
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     return this.requestStream({
       client: 'SpannerClient',

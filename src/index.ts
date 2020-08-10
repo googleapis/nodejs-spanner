@@ -515,20 +515,26 @@ class Spanner extends GrpcService {
 
     const gaxOpts = extend(true, {}, options.gaxOptions);
 
+    let reqOpts = extend({}, options, {
+      parent: 'projects/' + this.projectId,
+    });
+
+    delete reqOpts.gaxOptions;
+
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    const reqOpts = extend(
-      {},
-      {
-        parent: this.projectFormattedName_,
-        pageSize: gaxOpts.pageSize,
-        pageToken: gaxOpts.pageToken,
-      },
-      options
-    );
-    delete gaxOpts.pageSize;
-    delete gaxOpts.pageToken;
-    delete reqOpts.gaxOptions;
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageToken;
+      delete gaxOpts.pageSize;
+    }
 
     this.request(
       {
@@ -590,20 +596,25 @@ class Spanner extends GrpcService {
   getInstancesStream(options: GetInstancesOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
 
+    let reqOpts = extend({}, options, {
+      parent: 'projects/' + this.projectId,
+    });
+    delete reqOpts.gaxOptions;
+
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    const reqOpts = extend(
-      {},
-      {
-        parent: this.projectFormattedName_,
-        pageSize: gaxOpts.pageSize,
-        pageToken: gaxOpts.pageToken,
-      },
-      options
-    );
-    delete gaxOpts.pageSize;
-    delete gaxOpts.pageToken;
-    delete reqOpts.gaxOptions;
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     return this.requestStream({
       client: 'InstanceAdminClient',
@@ -710,21 +721,25 @@ class Spanner extends GrpcService {
         : ({} as GetInstanceConfigsOptions);
 
     const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
+      parent: 'projects/' + this.projectId,
+    });
+    delete reqOpts.gaxOptions;
 
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    const reqOpts = extend(
-      {},
-      {
-        parent: this.projectFormattedName_,
-        pageSize: gaxOpts.pageSize,
-        pageToken: gaxOpts.pageToken,
-      },
-      options
-    );
-    delete gaxOpts.pageSize;
-    delete gaxOpts.pageToken;
-    delete reqOpts.gaxOptions;
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     return this.request(
       {
@@ -776,20 +791,24 @@ class Spanner extends GrpcService {
   ): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
 
+    let reqOpts = extend({}, options, {
+      parent: 'projects/' + this.projectId,
+    });
+
     // Copy over pageSize and pageToken values from gaxOptions.
     // However values set on options take precedence.
-    const reqOpts = extend(
-      {},
-      {
-        parent: this.projectFormattedName_,
-        pageSize: gaxOpts.pageSize,
-        pageToken: gaxOpts.pageToken,
-      },
-      options
-    );
-    delete gaxOpts.pageSize;
-    delete gaxOpts.pageToken;
-    delete reqOpts.gaxOptions;
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
 
     delete reqOpts.gaxOptions;
     return this.requestStream({
