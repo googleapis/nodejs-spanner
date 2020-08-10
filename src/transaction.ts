@@ -37,6 +37,7 @@ import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+import * as stream from 'stream';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -897,50 +898,56 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    try {
-      const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
-      const {params, paramTypes} = Snapshot.encodeParams(query);
-      const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
+    let reqOpts;
 
+    const sanitizeRequest = () => {
+      const q = query as ExecuteSqlRequest;
+      const {params, paramTypes} = Snapshot.encodeParams(q);
+      const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
       if (this.id) {
         transaction.id = this.id as Uint8Array;
       } else {
         transaction.singleUse = this._options;
       }
-
-      delete query.gaxOptions;
-      delete query.json;
-      delete query.jsonOptions;
-      delete query.maxResumeRetries;
-      delete query.types;
-
-      const reqOpts: ExecuteSqlRequest = Object.assign(query, {
+      delete q.gaxOptions;
+      delete q.json;
+      delete q.jsonOptions;
+      delete q.maxResumeRetries;
+      delete q.types;
+      reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
         seqno: this._seqno++,
         transaction,
         params,
         paramTypes,
       });
+    };
 
-      const makeRequest = (resumeToken?: ResumeToken): Readable => {
-        return this.requestStream({
-          client: 'SpannerClient',
-          method: 'executeStreamingSql',
-          reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-          gaxOpts: gaxOptions,
-        });
-      };
+    const makeRequest = (resumeToken?: ResumeToken): Readable => {
+      if (!reqOpts) {
+        try {
+          sanitizeRequest();
+        } catch (e) {
+          const errorStream = new stream.PassThrough();
+          setImmediate(() => errorStream.destroy(e));
+          return errorStream;
+        }
+      }
 
-      return partialResultStream(makeRequest, {
-        json,
-        jsonOptions,
-        maxResumeRetries,
+      return this.requestStream({
+        client: 'SpannerClient',
+        method: 'executeStreamingSql',
+        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+        gaxOpts: gaxOptions,
       });
-    } catch (err) {
-      const prs = new PartialResultStream();
-      process.nextTick(() => prs.emit('error', err));
-      return prs;
-    }
+    };
+
+    return partialResultStream(makeRequest, {
+      json,
+      jsonOptions,
+      maxResumeRetries,
+    });
   }
 
   /**

@@ -564,6 +564,35 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    it('should handle missing parameters in query stream', done => {
+      const sql =
+        'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
+      const database = newTestDatabase();
+      const q = {
+        json: true,
+        params: {namedParameter: undefined},
+        sql,
+      };
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(mock.createSimpleResultSet())
+      );
+      const prs = database.runStream(q);
+      setImmediate(() => {
+        prs
+          .on('data', () => {})
+          .on('error', () => {
+            // The stream should end with an error, so the test should succeed.
+            done();
+          })
+          .on('end', () => {
+            database.close().then(() => {
+              done(assert.fail('missing error'));
+            });
+          });
+      });
+    });
+
     it('should handle missing parameters in update', async () => {
       const sql =
         "UPDATE tableId SET namedParameter='Foo' WHERE namedParameter = @namedParameter";
