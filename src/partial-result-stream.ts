@@ -500,6 +500,9 @@ export function partialResultStream(
 function isRetryableInternalError(err: grpc.ServiceError): boolean {
   return (
     err.code === grpc.status.INTERNAL &&
-    err.message.includes('Received unexpected EOS on DATA frame from server')
+    (err.message.includes(
+      'Received unexpected EOS on DATA frame from server'
+    ) ||
+      err.message.includes('Received RST_STREAM'))
   );
 }
