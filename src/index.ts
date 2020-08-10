@@ -39,7 +39,6 @@ import {
   PagedResponse,
   PagedCallback,
   PagedOptionsWithFilter,
-  addResourcePrefixHeader,
   CLOUD_RESOURCE_HEADER,
 } from './common';
 import {Session} from './session';
@@ -851,7 +850,12 @@ class Spanner extends GrpcService {
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
-        addResourcePrefixHeader(config.gaxOpts, config.headers)
+        // Add headers to `gaxOpts`
+        extend(true, {}, config.gaxOpts, {
+          otherArgs: {
+            headers: config.headers,
+          },
+        })
       );
       callback(null, requestFn);
     });

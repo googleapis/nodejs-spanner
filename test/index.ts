@@ -32,7 +32,7 @@ import * as spnr from '../src';
 import {Duplex} from 'stream';
 import {CreateInstanceRequest} from '../src/index';
 import {GetInstanceConfigsOptions, GetInstancesOptions} from '../src';
-import {CLOUD_RESOURCE_HEADER, addResourcePrefixHeader} from '../src/common';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
@@ -1299,15 +1299,17 @@ describe('Spanner', () => {
       replaceProjectIdTokenOverride = reqOpts => {
         return reqOpts;
       };
+      const expectedGaxOpts = extend(true, {}, CONFIG.gaxOpts, {
+        otherArgs: {
+          headers: CONFIG.headers,
+        },
+      });
 
       FAKE_GAPIC_CLIENT[CONFIG.method] = function (reqOpts, gaxOpts, arg) {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
-        assert.deepStrictEqual(
-          gaxOpts,
-          addResourcePrefixHeader(CONFIG.gaxOpts, CONFIG.headers)
-        );
+        assert.deepStrictEqual(gaxOpts, expectedGaxOpts);
         arg(); // done()
       };
 
