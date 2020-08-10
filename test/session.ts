@@ -246,6 +246,16 @@ describe('Session', () => {
       const returnValue = session.delete(callback);
       assert.strictEqual(returnValue, requestReturnValue);
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+
+      session.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      session.delete(gaxOptions, assert.ifError);
+    });
   });
 
   describe('getMetadata', () => {
