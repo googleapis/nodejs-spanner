@@ -1353,7 +1353,7 @@ class Database extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, sessions, ...args) => {
+      (err, sessions, nextPageRequest, ...args) => {
         let sessionInstances: Session[] | null = null;
         if (sessions) {
           sessionInstances = sessions.map(metadata => {
@@ -1362,7 +1362,10 @@ class Database extends common.GrpcServiceObject {
             return session;
           });
         }
-        callback!(err, sessionInstances!, ...args);
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+        callback!(err, sessionInstances!, nextQuery, ...args);
       }
     );
   }
