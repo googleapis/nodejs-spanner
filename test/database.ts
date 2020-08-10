@@ -710,6 +710,17 @@ describe('Database', () => {
 
       database.delete(assert.ifError);
     });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+
+      database.delete(gaxOptions, assert.ifError);
+    });
   });
 
   describe('exists', () => {

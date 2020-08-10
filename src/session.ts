@@ -18,7 +18,8 @@
  * @module spanner/session
  */
 
-import {GrpcServiceObject} from './common-grpc/service-object';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const common = require('./common-grpc/service-object');
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as r from 'teeny-request';
@@ -34,7 +35,7 @@ import {
   CreateSessionCallback,
   CreateSessionOptions,
 } from './database';
-import {ServiceObjectConfig, DeleteCallback} from '@google-cloud/common';
+import {ServiceObjectConfig} from '@google-cloud/common';
 import {NormalCallback} from './common';
 import {grpc, CallOptions} from 'google-gax';
 
@@ -55,7 +56,9 @@ export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
 
 export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
 export type KeepAliveResponse = [google.spanner.v1.IResultSet];
-export type DeleteResponse = [r.Response];
+export type DeleteSessionResponse = [google.protobuf.IEmpty];
+export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
+
 /**
  * Create a Session object to interact with a Cloud Spanner session.
  *
@@ -94,7 +97,7 @@ export type DeleteResponse = [r.Response];
  * //-
  * const session = database.session('session-name');
  */
-export class Session extends GrpcServiceObject {
+export class Session extends common.GrpcServiceObject {
   id!: string;
   formattedName_?: string;
   type?: types;
@@ -238,8 +241,9 @@ export class Session extends GrpcServiceObject {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
   }
-  delete(): Promise<DeleteResponse>;
-  delete(callback: DeleteCallback): void;
+  delete(gaxOptions?: CallOptions): Promise<DeleteSessionResponse>;
+  delete(callback: DeleteSessionCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteSessionCallback): void;
   /**
    * Delete a session.
    *
@@ -248,8 +252,10 @@ export class Session extends GrpcServiceObject {
    * @see {@link v1.SpannerClient#deleteSession}
    * @see [DeleteSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.DeleteSession)
    *
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {DeleteSessionCallback} [callback] Callback function.
+   * @returns {Promise<DeleteSessionResponse>}
    *
    * @example
    * session.delete(function(err, apiResponse) {
@@ -267,7 +273,15 @@ export class Session extends GrpcServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback?: DeleteCallback): void | Promise<DeleteResponse> {
+  delete(
+    optionsOrCallback?: CallOptions | DeleteSessionCallback,
+    cb?: DeleteSessionCallback
+  ): void | Promise<DeleteSessionResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts = {
       name: this.formattedName_,
     };
@@ -276,6 +290,7 @@ export class Session extends GrpcServiceObject {
         client: 'SpannerClient',
         method: 'deleteSession',
         reqOpts,
+        gaxOpts,
       },
       callback!
     );
