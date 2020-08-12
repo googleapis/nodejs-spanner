@@ -984,7 +984,7 @@ describe('Instance', () => {
     });
 
     describe('error', () => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, null, {}];
 
       beforeEach(() => {
         instance.request = (config, callback: Function) => {
@@ -1008,7 +1008,7 @@ describe('Instance', () => {
       ];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const REQUEST_RESPONSE_ARGS: any = [null, DATABASES, {}];
+      const REQUEST_RESPONSE_ARGS: any = [null, DATABASES, null, {}];
 
       beforeEach(() => {
         instance.request = (config, callback) => {
@@ -1031,8 +1031,40 @@ describe('Instance', () => {
           assert.strictEqual(database, fakeDatabaseInstance);
           assert.strictEqual(database!.metadata, REQUEST_RESPONSE_ARGS[1][0]);
           assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
+          assert.strictEqual(args[3], REQUEST_RESPONSE_ARGS[3]);
           done();
         });
+      });
+
+      it('should return a complete nextQuery object', done => {
+        const pageSize = 1;
+        const filter = 'filter';
+        const NEXTPAGEREQUEST = {
+          parent: instance.formattedName_,
+          pageSize,
+          filter,
+          pageToken: 'pageToken',
+        };
+        const REQUEST_RESPONSE_ARGS = [null, [], NEXTPAGEREQUEST, {}];
+
+        const GETDATABASESOPTIONS = {
+          pageSize,
+          filter,
+          gaxOptions: {timeout: 1000, autoPaginate: false},
+        };
+        const EXPECTEDNEXTQUERY = extend(
+          {},
+          GETDATABASESOPTIONS,
+          NEXTPAGEREQUEST
+        );
+        instance.request = (config, callback) => {
+          callback(...REQUEST_RESPONSE_ARGS);
+        };
+        function callback(err, databases, nextQuery) {
+          assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+          done();
+        }
+        instance.getDatabases(GETDATABASESOPTIONS, callback);
       });
     });
   });
@@ -1356,7 +1388,7 @@ describe('Instance', () => {
     });
 
     describe('error', () => {
-      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+      const REQUEST_RESPONSE_ARGS = [new Error('Error.'), null, null, {}];
 
       beforeEach(() => {
         instance.request = (config, callback: Function) => {
@@ -1382,7 +1414,7 @@ describe('Instance', () => {
       ];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, {}];
+      const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, null, {}];
 
       beforeEach(() => {
         instance.request = (config, callback) => {
@@ -1404,8 +1436,40 @@ describe('Instance', () => {
           const backup = args[1]!.pop();
           assert.strictEqual(backup, fakeBackupInstance);
           assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
+          assert.strictEqual(args[3], REQUEST_RESPONSE_ARGS[3]);
           done();
         });
+      });
+
+      it('should return a complete nextQuery object', done => {
+        const pageSize = 1;
+        const filter = 'filter';
+        const NEXTPAGEREQUEST = {
+          parent: instance.formattedName_,
+          pageSize,
+          filter,
+          pageToken: 'pageToken',
+        };
+        const REQUEST_RESPONSE_ARGS = [null, [], NEXTPAGEREQUEST, {}];
+
+        const GETBACKUPSOPTIONS = {
+          pageSize,
+          filter,
+          gaxOptions: {timeout: 1000, autoPaginate: false},
+        };
+        const EXPECTEDNEXTQUERY = extend(
+          {},
+          GETBACKUPSOPTIONS,
+          NEXTPAGEREQUEST
+        );
+        instance.request = (config, callback) => {
+          callback(...REQUEST_RESPONSE_ARGS);
+        };
+        function callback(err, backups, nextQuery) {
+          assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+          done();
+        }
+        instance.getBackups(GETBACKUPSOPTIONS, callback);
       });
     });
   });
@@ -1636,6 +1700,37 @@ describe('Instance', () => {
 
       instance.getBackupOperations(assert.ifError);
     });
+
+    it('should return a complete nextQuery object', done => {
+      const pageSize = 1;
+      const filter = 'filter';
+      const NEXTPAGEREQUEST = {
+        parent: instance.formattedName_,
+        pageSize,
+        filter,
+        pageToken: 'pageToken',
+      };
+      const RESPONSE = [null, [], NEXTPAGEREQUEST, {}];
+
+      const GETBACKUPOPSOPTIONS = {
+        pageSize,
+        filter,
+        gaxOptions: {timeout: 1000, autoPaginate: false},
+      };
+      const EXPECTEDNEXTQUERY = extend(
+        {},
+        GETBACKUPOPSOPTIONS,
+        NEXTPAGEREQUEST
+      );
+      instance.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+      function callback(err, backupOps, nextQuery) {
+        assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+        done();
+      }
+      instance.getBackupOperations(GETBACKUPOPSOPTIONS, callback);
+    });
   });
 
   describe('getDatabaseOperations', () => {
@@ -1740,6 +1835,37 @@ describe('Instance', () => {
       };
 
       instance.getDatabaseOperations(assert.ifError);
+    });
+
+    it('should return a complete nextQuery object', done => {
+      const pageSize = 1;
+      const filter = 'filter';
+      const NEXTPAGEREQUEST = {
+        parent: instance.formattedName_,
+        pageSize,
+        filter,
+        pageToken: 'pageToken',
+      };
+      const RESPONSE = [null, [], NEXTPAGEREQUEST, {}];
+
+      const GETDATABASEOPSOPTIONS = {
+        pageSize,
+        filter,
+        gaxOptions: {timeout: 1000, autoPaginate: false},
+      };
+      const EXPECTEDNEXTQUERY = extend(
+        {},
+        GETDATABASEOPSOPTIONS,
+        NEXTPAGEREQUEST
+      );
+      instance.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+      function callback(err, databaseOps, nextQuery) {
+        assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+        done();
+      }
+      instance.getDatabaseOperations(GETDATABASEOPSOPTIONS, callback);
     });
   });
 });

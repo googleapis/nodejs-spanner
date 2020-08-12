@@ -520,6 +520,7 @@ export class MockSpanner {
         if (res) {
           let partialResultSets;
           let resumeIndex;
+          let streamErr;
           switch (res.type) {
             case StatementResultType.RESULT_SET:
               partialResultSets = MockSpanner.toPartialResultSets(
@@ -549,6 +550,19 @@ export class MockSpanner {
               }
               break;
             case StatementResultType.UPDATE_COUNT:
+              call.write(
+                MockSpanner.emptyPartialResultSet(
+                  Buffer.from('1'.padStart(8, '0'))
+                )
+              );
+              streamErr = this.shiftStreamError(
+                this.executeStreamingSql.name,
+                1
+              );
+              if (streamErr) {
+                call.emit('error', streamErr);
+                break;
+              }
               call.write(MockSpanner.toPartialResultSet(res.updateCount));
               break;
             case StatementResultType.ERROR:
@@ -615,6 +629,14 @@ export class MockSpanner {
       };
     }
     return res;
+  }
+
+  private static emptyPartialResultSet(
+    resumeToken: Uint8Array
+  ): protobuf.PartialResultSet {
+    return protobuf.PartialResultSet.create({
+      resumeToken,
+    });
   }
 
   private static toPartialResultSet(

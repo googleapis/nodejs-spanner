@@ -94,19 +94,18 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     });
 
     // List backups using pagination
-    let pageToken = undefined;
+    let getBackupsOptions = {
+      pageSize: 3,
+      gaxOptions: {autoPaginate: false},
+    };
     console.log('Get backups paginated:');
     do {
-      const [backups, , response] = await instance.getBackups({
-        pageSize: 3,
-        pageToken,
-        gaxOptions: {autoPaginate: false},
-      });
+      const [backups, nextQuery] = await instance.getBackups(getBackupsOptions);
       backups.forEach(backup => {
         console.log(backup.id);
       });
-      pageToken = response.nextPageToken;
-    } while (pageToken);
+      getBackupsOptions = nextQuery;
+    } while (getBackupsOptions);
   } catch (err) {
     console.error('ERROR:', err);
   }
