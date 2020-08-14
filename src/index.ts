@@ -66,11 +66,11 @@ export type GetInstancesCallback = PagedCallback<
 
 export type GetInstanceConfigsOptions = PagedOptions;
 export type GetInstanceConfigsResponse = PagedResponse<
-  instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.IInstanceConfig,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
 >;
 export type GetInstanceConfigsCallback = PagedCallback<
-  instanceAdmin.spanner.admin.instance.v1.InstanceConfig,
+  instanceAdmin.spanner.admin.instance.v1.IInstanceConfig,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
 >;
 
@@ -534,7 +534,7 @@ class Spanner extends GrpcService {
         reqOpts,
         gaxOpts,
       },
-      (err, instances, ...args) => {
+      (err, instances, nextPageRequest, ...args) => {
         let instanceInstances: Instance[] | null = null;
         if (instances) {
           instanceInstances = instances.map(instance => {
@@ -543,7 +543,10 @@ class Spanner extends GrpcService {
             return instanceInstance;
           });
         }
-        callback!(err, instanceInstances, ...args);
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+        callback!(err, instanceInstances, nextQuery, ...args);
       }
     );
   }
@@ -737,7 +740,12 @@ class Spanner extends GrpcService {
         reqOpts,
         gaxOpts,
       },
-      callback
+      (err, instanceConfigs, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+        callback!(err, instanceConfigs, nextQuery, ...args);
+      }
     );
   }
 
@@ -1058,15 +1066,7 @@ class Spanner extends GrpcService {
  * that a callback is omitted.
  */
 promisifyAll(Spanner, {
-  exclude: [
-    'date',
-    'float',
-    'getInstanceConfigs',
-    'instance',
-    'int',
-    'operation',
-    'timestamp',
-  ],
+  exclude: ['date', 'float', 'instance', 'int', 'operation', 'timestamp'],
 });
 
 /**
