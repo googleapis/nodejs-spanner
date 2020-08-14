@@ -788,8 +788,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
         needed -= sessions.length;
       } catch (e) {
-        this.emit('createError', e);
         this._pending -= needed;
+        this.emit('createError', e);
         throw e;
       }
 
