@@ -525,23 +525,26 @@ describe('Database', () => {
     const RESPONSE = {a: 'b'};
 
     beforeEach(() => {
-      database.createSession = callback => {
-        callback(null, SESSION, RESPONSE);
+      database.pool_ = {
+        getReadSession(callback) {
+          callback(null, SESSION);
+        },
       };
     });
 
-    it('should return any session creation errors', done => {
+    it('should return any get session errors', done => {
       const error = new Error('err');
-      const apiResponse = {c: 'd'};
 
-      database.createSession = callback => {
-        callback(error, null, apiResponse);
+      database.pool_ = {
+        getReadSession(callback) {
+          callback(error);
+        },
       };
 
       database.createBatchTransaction((err, transaction, resp) => {
         assert.strictEqual(err, error);
         assert.strictEqual(transaction, null);
-        assert.strictEqual(resp, apiResponse);
+        assert.strictEqual(resp, undefined);
         done();
       });
     });
@@ -553,6 +556,8 @@ describe('Database', () => {
         begin(callback) {
           callback(null, RESPONSE);
         },
+
+        once() {},
       };
 
       database.batchTransaction = (identifier, options) => {
@@ -576,6 +581,8 @@ describe('Database', () => {
         begin(callback) {
           callback(error, RESPONSE);
         },
+
+        once() {},
       };
 
       database.batchTransaction = () => {

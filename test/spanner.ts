@@ -2265,6 +2265,30 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
+    describe('batch-readonly-transaction', () => {
+      it('should use session from pool', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const pool = database.pool_ as SessionPool;
+        assert.strictEqual(pool.size, 0);
+        const [transaction] = await database.createBatchTransaction();
+        assert.strictEqual(pool.size, 1);
+        assert.strictEqual(pool.available, 0);
+        transaction.close();
+        await database.close();
+      });
+
+      it('failing to close transaction should cause session leak error', async () => {
+        const database = newTestDatabase();
+        await database.createBatchTransaction();
+        try {
+          await database.close();
+          assert.fail('missing expected session leak error');
+        } catch (err) {
+          assert.ok(err instanceof SessionLeakError);
+        }
+      });
+    });
+
     describe('pdml', () => {
       it('should retry on aborted error', async () => {
         const database = newTestDatabase();
