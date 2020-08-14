@@ -629,6 +629,40 @@ describe('Transaction', () => {
 
         assert.deepStrictEqual(options, expectedOptions);
       });
+
+      it('should use valid parameters', () => {
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {
+            a: 'a',
+            b: 3.14,
+            c: true,
+          },
+        });
+        const expectedParams = {
+          fields: {
+            a: {stringValue: 'a'},
+            b: {numberValue: 3.14},
+            c: {boolValue: true},
+          },
+        };
+
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+        assert.deepStrictEqual(reqOpts.params, expectedParams);
+      });
+
+      it('should return an error stream for invalid parameters', done => {
+        REQUEST_STREAM.resetHistory();
+
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {a: undefined},
+        });
+
+        snapshot.runStream(fakeQuery).on('error', () => done());
+
+        assert.ok(!REQUEST_STREAM.called, 'No request should be made');
+      });
     });
 
     describe('encodeKeySet', () => {
