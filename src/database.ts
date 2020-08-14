@@ -17,46 +17,50 @@
 import {
   ApiError,
   ExistsCallback,
+  GetConfig,
   Metadata,
   ServiceObjectConfig,
-  GetConfig,
 } from '@google-cloud/common';
-import {GrpcServiceObject} from './common-grpc/service-object';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const common = require('./common-grpc/service-object');
 import {promisify, promisifyAll} from '@google-cloud/promisify';
-import arrify = require('arrify');
 import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
+import {CallOptions, grpc, Operation as GaxOperation} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
-import {google as databaseAdmin} from '../protos/protos';
 import {
-  Instance,
-  CreateDatabaseOptions,
+  google as databaseAdmin,
+  google,
+  google as spannerClient,
+} from '../protos/protos';
+import {
   CreateDatabaseCallback,
+  CreateDatabaseOptions,
   GetDatabaseOperationsOptions,
   GetDatabaseOperationsResponse,
+  Instance,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
 import {
+  isSessionNotFoundError,
   SessionPool,
-  SessionPoolOptions,
   SessionPoolCloseCallback,
   SessionPoolInterface,
-  isSessionNotFoundError,
+  SessionPoolOptions,
 } from './session-pool';
-import {Table, CreateTableCallback, CreateTableResponse} from './table';
+import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  ExecuteSqlRequest,
+  RunCallback,
+  RunResponse,
+  RunUpdateCallback,
   Snapshot,
   TimestampBounds,
   Transaction,
-  ExecuteSqlRequest,
-  RunUpdateCallback,
-  RunResponse,
-  RunCallback,
 } from './transaction';
 import {
   AsyncRunTransactionCallback,
@@ -65,22 +69,20 @@ import {
   RunTransactionOptions,
   TransactionRunner,
 } from './transaction-runner';
-
-import {google} from '../protos/protos';
 import {
   IOperation,
-  Schema,
+  LongRunningCallback,
+  NormalCallback,
+  PagedOptionsWithFilter,
+  PagedResponse,
   RequestCallback,
   ResourceCallback,
-  PagedResponse,
-  NormalCallback,
-  LongRunningCallback,
-  PagedOptionsWithFilter,
+  Schema,
 } from './common';
-import {Readable, Transform, Duplex} from 'stream';
+import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {google as spannerClient} from '../protos/protos';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import arrify = require('arrify');
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -199,7 +201,10 @@ export type BatchCreateSessionsCallback = ResourceCallback<
   spannerClient.spanner.v1.IBatchCreateSessionsResponse
 >;
 
-export type DatabaseDeleteCallback = NormalCallback<r.Response>;
+export type DatabaseDeleteResponse = [databaseAdmin.protobuf.IEmpty];
+export type DatabaseDeleteCallback = NormalCallback<
+  databaseAdmin.protobuf.IEmpty
+>;
 
 export interface CancelableDuplex extends Duplex {
   cancel(): void;
@@ -238,7 +243,7 @@ interface DatabaseRequest {
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
  */
-class Database extends GrpcServiceObject {
+class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
@@ -806,8 +811,9 @@ class Database extends GrpcServiceObject {
       }
     });
   }
-  delete(): Promise<[r.Response]>;
+  delete(gaxOptions?: CallOptions): Promise<DatabaseDeleteResponse>;
   delete(callback: DatabaseDeleteCallback): void;
+  delete(gaxOptions: CallOptions, callback: DatabaseDeleteCallback): void;
   /**
    * Delete the database.
    *
@@ -815,8 +821,11 @@ class Database extends GrpcServiceObject {
    *
    * @see {@link v1.DatabaseAdminClient#dropDatabase}
    * @see [DropDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.DropDatabase)
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   *
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {DatabaseDeleteCallback} [callback] Callback function.
+   * @returns {Promise<DatabaseDeleteResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -840,7 +849,15 @@ class Database extends GrpcServiceObject {
    *   const apiResponse = data[0];
    * });
    */
-  delete(callback?: DatabaseDeleteCallback): void | Promise<[r.Response]> {
+  delete(
+    optionsOrCallback?: CallOptions | DatabaseDeleteCallback,
+    cb?: DatabaseDeleteCallback
+  ): void | Promise<DatabaseDeleteResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IDropDatabaseRequest = {
       database: this.formattedName_,
     };
@@ -850,6 +867,7 @@ class Database extends GrpcServiceObject {
           client: 'DatabaseAdminClient',
           method: 'dropDatabase',
           reqOpts,
+          gaxOpts,
         },
         callback!
       );
@@ -1337,7 +1355,7 @@ class Database extends GrpcServiceObject {
         reqOpts,
         gaxOpts,
       },
-      (err, sessions, ...args) => {
+      (err, sessions, nextPageRequest, ...args) => {
         let sessionInstances: Session[] | null = null;
         if (sessions) {
           sessionInstances = sessions.map(metadata => {
@@ -1346,7 +1364,10 @@ class Database extends GrpcServiceObject {
             return session;
           });
         }
-        callback!(err, sessionInstances!, ...args);
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+        callback!(err, sessionInstances!, nextQuery, ...args);
       }
     );
   }
@@ -2022,20 +2043,41 @@ class Database extends GrpcServiceObject {
         return;
       }
 
-      const transaction = session!.partitionedDml();
+      this._runPartitionedUpdate(session!, query, callback);
+    });
+  }
 
-      transaction.begin(err => {
+  _runPartitionedUpdate(
+    session: Session,
+    query: string | ExecuteSqlRequest,
+    callback?: RunUpdateCallback
+  ): void | Promise<number> {
+    const transaction = session.partitionedDml();
+
+    transaction.begin(err => {
+      if (err) {
+        this.pool_.release(session!);
+        callback!(err, 0);
+        return;
+      }
+
+      transaction.runUpdate(query, (err, updateCount) => {
         if (err) {
+          if (err.code !== grpc.status.ABORTED) {
+            this.pool_.release(session!);
+            callback!(err, 0);
+            return;
+          }
+          this._runPartitionedUpdate(session, query, callback);
+        } else {
           this.pool_.release(session!);
-          callback!(err, 0);
+          callback!(null, updateCount);
           return;
         }
-
-        this._releaseOnEnd(session!, transaction);
-        transaction.runUpdate(query, callback!);
       });
     });
   }
+
   /**
    * Create a readable object stream to receive resulting rows from a SQL
    * statement.

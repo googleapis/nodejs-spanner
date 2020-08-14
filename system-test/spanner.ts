@@ -3275,7 +3275,8 @@ describe('Spanner', () => {
             CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
-            ) PRIMARY KEY (Key)`
+            ) PRIMARY KEY (Key)`,
+            GAX_OPTIONS
           )
           .then(onPromiseOperationComplete)
           .then(() => {
@@ -3791,7 +3792,7 @@ describe('Spanner', () => {
     const records: any[] = [];
 
     before(async () => {
-      await onPromiseOperationComplete(await table.create(schema));
+      await onPromiseOperationComplete(await table.create(schema, GAX_OPTIONS));
 
       for (let i = 0; i < 5; i++) {
         const entry = {Key: `k${i}`, StringValue: `v${i}`};

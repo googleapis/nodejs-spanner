@@ -2288,6 +2288,60 @@ describe('Spanner with mock server', () => {
         }
       });
     });
+
+    describe('pdml', () => {
+      it('should retry on aborted error', async () => {
+        const database = newTestDatabase();
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: grpc.status.ABORTED,
+            message: 'Transaction aborted',
+            metadata: MockSpanner.createMinimalRetryDelayMetadata(),
+            streamIndex: 1,
+          } as MockError)
+        );
+        const [updateCount] = await database.runPartitionedUpdate(updateSql);
+        assert.strictEqual(updateCount, 2);
+        await database.close();
+      });
+
+      it('should retry on specific internal error', async () => {
+        const database = newTestDatabase();
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: grpc.status.INTERNAL,
+            message: 'Received unexpected EOS on DATA frame from server',
+            streamIndex: 1,
+          } as MockError)
+        );
+        const [updateCount] = await database.runPartitionedUpdate(updateSql);
+        assert.strictEqual(updateCount, 2);
+        await database.close();
+      });
+
+      it('should fail on generic internal error', async () => {
+        const database = newTestDatabase();
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: grpc.status.INTERNAL,
+            message: 'Generic internal error',
+            streamIndex: 1,
+          } as MockError)
+        );
+        try {
+          await database.runPartitionedUpdate(updateSql);
+          assert.fail('missing expected INTERNAL error');
+        } catch (err) {
+          assert.strictEqual(err.code, grpc.status.INTERNAL);
+          assert.ok(err.message.includes('Generic internal error'));
+        } finally {
+          await database.close();
+        }
+      });
+    });
   });
 
   describe('instanceAdmin', () => {
