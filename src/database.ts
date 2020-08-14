@@ -310,7 +310,32 @@ class Database extends common.GrpcServiceObject {
         options: CreateDatabaseOptions,
         callback: CreateDatabaseCallback
       ) => {
-        return instance.createDatabase(formattedName_, options, callback);
+        const pool = this.pool_ as SessionPool;
+        if (pool._pending > 0) {
+          // If there are BatchCreateSessions requests pending, then we should
+          // wait until these have finished before we try to create the database.
+          // Otherwise the results of these requests might be propagated to
+          // client requests that are submitted after the database has been
+          // created.
+          const p = new Promise<void>((resolve, reject) => {
+            pool
+              .on('available', () => {
+                if (pool._pending === 0) {
+                  resolve();
+                }
+              })
+              .on('createError', () => {
+                if (pool._pending === 0) {
+                  resolve();
+                }
+              });
+          });
+          p.then(() =>
+            instance.createDatabase(formattedName_, options, callback)
+          );
+        } else {
+          return instance.createDatabase(formattedName_, options, callback);
+        }
       },
     } as {}) as ServiceObjectConfig);
 
