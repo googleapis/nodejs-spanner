@@ -316,21 +316,30 @@ class Database extends common.GrpcServiceObject {
           // wait until these have finished before we try to create the database.
           // Otherwise the results of these requests might be propagated to
           // client requests that are submitted after the database has been
-          // created.
-          const p = new Promise<void>((resolve, reject) => {
-            pool
-              .on('available', () => {
-                if (pool._pending === 0) {
-                  resolve();
-                }
-              })
-              .on('createError', () => {
-                if (pool._pending === 0) {
-                  resolve();
-                }
-              });
-          });
-          p.then(() =>
+          // created. If the pending requests have not finished within 10 seconds,
+          // they will be ignored and the database creation will proceed.
+          let timeout;
+          const promises = [
+            new Promise<void>(
+              resolve => (timeout = setTimeout(resolve, 10000))
+            ),
+            new Promise<void>(resolve => {
+              pool
+                .on('available', () => {
+                  if (pool._pending === 0) {
+                    clearTimeout(timeout);
+                    resolve();
+                  }
+                })
+                .on('createError', () => {
+                  if (pool._pending === 0) {
+                    clearTimeout(timeout);
+                    resolve();
+                  }
+                });
+            }),
+          ];
+          Promise.race(promises).then(() =>
             instance.createDatabase(formattedName_, options, callback)
           );
         } else {
