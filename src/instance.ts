@@ -357,15 +357,18 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       },
-      (err, backups, ...args) => {
+      (err, backups, nextPageRequest, ...args) => {
         let backupInstances: Backup[] | null = null;
         if (backups) {
           backupInstances = backups.map(backup => {
             return this.backup(backup.name!);
           });
         }
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
 
-        callback(err, backupInstances, ...args);
+        callback(err, backupInstances, nextQuery, ...args);
       }
     );
   }
@@ -553,7 +556,13 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       },
-      callback
+      (err, operations, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+
+        callback!(err, operations, nextQuery, ...args);
+      }
     );
   }
 
@@ -672,7 +681,13 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       },
-      callback
+      (err, operations, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+
+        callback!(err, operations, nextQuery, ...args);
+      }
     );
   }
 
@@ -1233,7 +1248,7 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       },
-      (err, rowDatabases, ...args) => {
+      (err, rowDatabases, nextPageRequest, ...args) => {
         let databases: Database[] | null = null;
         if (rowDatabases) {
           databases = rowDatabases.map(database => {
@@ -1242,7 +1257,11 @@ class Instance extends common.GrpcServiceObject {
             return databaseInstance;
           });
         }
-        callback(err, databases, ...args);
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+
+        callback(err, databases, nextQuery, ...args);
       }
     );
   }

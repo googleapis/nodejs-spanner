@@ -530,23 +530,26 @@ describe('Database', () => {
     const RESPONSE = {a: 'b'};
 
     beforeEach(() => {
-      database.createSession = callback => {
-        callback(null, SESSION, RESPONSE);
+      database.pool_ = {
+        getReadSession(callback) {
+          callback(null, SESSION);
+        },
       };
     });
 
-    it('should return any session creation errors', done => {
+    it('should return any get session errors', done => {
       const error = new Error('err');
-      const apiResponse = {c: 'd'};
 
-      database.createSession = callback => {
-        callback(error, null, apiResponse);
+      database.pool_ = {
+        getReadSession(callback) {
+          callback(error);
+        },
       };
 
       database.createBatchTransaction((err, transaction, resp) => {
         assert.strictEqual(err, error);
         assert.strictEqual(transaction, null);
-        assert.strictEqual(resp, apiResponse);
+        assert.strictEqual(resp, undefined);
         done();
       });
     });
@@ -558,6 +561,8 @@ describe('Database', () => {
         begin(callback) {
           callback(null, RESPONSE);
         },
+
+        once() {},
       };
 
       database.batchTransaction = (identifier, options) => {
@@ -581,6 +586,8 @@ describe('Database', () => {
         begin(callback) {
           callback(error, RESPONSE);
         },
+
+        once() {},
       };
 
       database.batchTransaction = () => {
@@ -716,6 +723,17 @@ describe('Database', () => {
       };
 
       database.delete(assert.ifError);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+
+      database.delete(gaxOptions, assert.ifError);
     });
   });
 
@@ -2086,12 +2104,15 @@ describe('Database', () => {
     });
 
     it('should create and return Session objects', done => {
+      const ERR = null;
       const SESSIONS = [{name: 'abc'}];
+      const NEXTPAGEREQUEST = null;
+      const FULLAPIRESPONSE = {};
       const SESSION_INSTANCE = {};
-      const RESPONSE = {};
+      const RESPONSE = [ERR, SESSIONS, NEXTPAGEREQUEST, FULLAPIRESPONSE];
 
       database.request = (config, callback) => {
-        callback(null, SESSIONS, RESPONSE);
+        callback(...RESPONSE);
       };
 
       database.session = name => {
@@ -2099,12 +2120,39 @@ describe('Database', () => {
         return SESSION_INSTANCE;
       };
 
-      database.getSessions((err, sessions, resp) => {
+      database.getSessions((err, sessions, nextQuery, resp) => {
         assert.ifError(err);
         assert.strictEqual(sessions[0], SESSION_INSTANCE);
-        assert.strictEqual(resp, RESPONSE);
+        assert.strictEqual(resp, FULLAPIRESPONSE);
         done();
       });
+    });
+
+    it('should return a complete nexQuery object', done => {
+      const pageSize = 1;
+      const filter = 'filter';
+      const NEXTPAGEREQUEST = {
+        database: database.formattedName_,
+        pageSize,
+        filter,
+        pageToken: 'pageToken',
+      };
+      const RESPONSE = [null, [], NEXTPAGEREQUEST, {}];
+
+      const GETSESSIONOPTIONS = {
+        pageSize,
+        filter,
+        gaxOptions: {timeout: 1000, autoPaginate: false},
+      };
+      const EXPECTEDNEXTQUERY = extend({}, GETSESSIONOPTIONS, NEXTPAGEREQUEST);
+      database.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+      function callback(err, sessions, nextQuery) {
+        assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+        done();
+      }
+      database.getSessions(GETSESSIONOPTIONS, callback);
     });
   });
 
@@ -2249,7 +2297,10 @@ describe('Database', () => {
         'begin'
       ) as sinon.SinonStub).callsFake(callback => callback(null));
 
-      runUpdateStub = sandbox.stub(fakePartitionedDml, 'runUpdate');
+      runUpdateStub = (sandbox.stub(
+        fakePartitionedDml,
+        'runUpdate'
+      ) as sinon.SinonStub).callsFake((_, callback) => callback(null));
     });
 
     it('should get a read only session from the pool', () => {
@@ -2303,10 +2354,10 @@ describe('Database', () => {
 
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
-      const [query, callback] = runUpdateStub.lastCall.args;
+      const [query] = runUpdateStub.lastCall.args;
 
       assert.strictEqual(query, QUERY);
-      assert.strictEqual(callback, fakeCallback);
+      assert.ok(fakeCallback.calledOnce);
     });
 
     it('should release the session on transaction end', () => {

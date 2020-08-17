@@ -118,12 +118,10 @@ describe('BatchTransaction', () => {
   });
 
   describe('close', () => {
-    it('should delete the session', done => {
-      SESSION.delete = callback => {
-        callback(); // the done fn
-      };
+    it('should end the transaction', done => {
+      batchTransaction.end = done;
 
-      batchTransaction.close(done);
+      batchTransaction.close();
     });
   });
 

@@ -77,8 +77,11 @@ class BatchTransaction extends Snapshot {
    *   return transaction.close();
    * });
    */
-  close(callback) {
-    this.session.delete(callback);
+  close(callback?) {
+    this.end();
+    if (callback) {
+      callback();
+    }
   }
   /**
    * @see [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)

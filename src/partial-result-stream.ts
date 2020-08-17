@@ -452,7 +452,12 @@ export function partialResultStream(
   };
 
   const retry = (err: grpc.ServiceError): void => {
-    if (!(err.code && retryableCodes!.includes(err.code))) {
+    if (
+      !(
+        err.code &&
+        (retryableCodes!.includes(err.code) || isRetryableInternalError(err))
+      )
+    ) {
       // This is not a retryable error, so this will flush any rows the
       // checkpoint stream has queued. After that, we will destroy the
       // user's stream with the same error.
@@ -489,5 +494,15 @@ export function partialResultStream(
       .pipe(userStream)
       .on('paused', () => requestsStream.pause())
       .on('resumed', () => requestsStream.resume())
+  );
+}
+
+function isRetryableInternalError(err: grpc.ServiceError): boolean {
+  return (
+    err.code === grpc.status.INTERNAL &&
+    (err.message.includes(
+      'Received unexpected EOS on DATA frame from server'
+    ) ||
+      err.message.includes('Received RST_STREAM'))
   );
 }

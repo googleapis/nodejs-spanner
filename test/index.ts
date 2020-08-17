@@ -75,7 +75,6 @@ const fakePfy = extend({}, pfy, {
     assert.deepStrictEqual(options.exclude, [
       'date',
       'float',
-      'getInstanceConfigs',
       'instance',
       'int',
       'operation',
@@ -759,7 +758,7 @@ describe('Spanner', () => {
     });
 
     describe('error', () => {
-      const GAX_RESPONSE_ARGS = [new Error('Error.'), null, {}];
+      const GAX_RESPONSE_ARGS = [new Error('Error.'), null, null, {}];
 
       beforeEach(() => {
         spanner.request = (config, callback) => {
@@ -782,7 +781,7 @@ describe('Spanner', () => {
         },
       ];
 
-      const GAX_RESPONSE_ARGS = [null, INSTANCES, {}];
+      const GAX_RESPONSE_ARGS = [null, INSTANCES, null, {}];
 
       beforeEach(() => {
         spanner.request = (config, callback) => {
@@ -805,8 +804,40 @@ describe('Spanner', () => {
           assert.strictEqual(instance, fakeInstanceInstance);
           assert.strictEqual(instance!.metadata, GAX_RESPONSE_ARGS[1]![0]);
           assert.strictEqual(args[2], GAX_RESPONSE_ARGS[2]);
+          assert.strictEqual(args[3], GAX_RESPONSE_ARGS[3]);
           done();
         });
+      });
+
+      it('should return a complete nextQuery object', done => {
+        const pageSize = 1;
+        const filter = 'filter';
+        const NEXTPAGEREQUEST = {
+          parent: 'projects/' + spanner.projectId,
+          pageSize,
+          filter,
+          pageToken: 'pageToken',
+        };
+        const GAX_RESPONSE_ARGS = [null, [], NEXTPAGEREQUEST, {}];
+
+        const GETINSTANCESOPTIONS = {
+          pageSize,
+          filter,
+          gaxOptions: {timeout: 1000, autoPaginate: false},
+        };
+        const EXPECTEDNEXTQUERY = extend(
+          {},
+          GETINSTANCESOPTIONS,
+          NEXTPAGEREQUEST
+        );
+        spanner.request = (config, callback) => {
+          callback(...GAX_RESPONSE_ARGS);
+        };
+        function callback(err, instances, nextQuery) {
+          assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+          done();
+        }
+        spanner.getInstances(GETINSTANCESOPTIONS, callback);
       });
     });
   });
@@ -938,7 +969,7 @@ describe('Spanner', () => {
 
       const returnValue = {};
 
-      spanner.request = (config, callback_) => {
+      spanner.request = config => {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'listInstanceConfigs');
 
@@ -946,9 +977,9 @@ describe('Spanner', () => {
         assert.deepStrictEqual(reqOpts, expectedQuery);
         assert.notStrictEqual(reqOpts, options);
 
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        const gaxOpts = config.gaxOpts;
+        assert.deepStrictEqual(gaxOpts, options.gaxOptions);
         assert.deepStrictEqual(config.headers, resourceHeader);
-        assert.strictEqual(callback_, callback);
 
         return returnValue;
       };
@@ -1032,6 +1063,37 @@ describe('Spanner', () => {
       };
 
       spanner.getInstanceConfigs(assert.ifError);
+    });
+
+    it('should return a complete nextQuery object', done => {
+      const pageSize = 1;
+      const filter = 'filter';
+      const NEXTPAGEREQUEST = {
+        parent: 'projects/' + spanner.projectId,
+        pageSize,
+        filter,
+        pageToken: 'pageToken',
+      };
+      const RESPONSE = [null, [], NEXTPAGEREQUEST, {}];
+
+      const GETINSTANCECONFIGSOPTIONS = {
+        pageSize,
+        filter,
+        gaxOptions: {timeout: 1000, autoPaginate: false},
+      };
+      const EXPECTEDNEXTQUERY = extend(
+        {},
+        GETINSTANCECONFIGSOPTIONS,
+        NEXTPAGEREQUEST
+      );
+      spanner.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+      function callback(err, instanceConfigs, nextQuery) {
+        assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+        done();
+      }
+      spanner.getInstanceConfigs(GETINSTANCECONFIGSOPTIONS, callback);
     });
   });
 

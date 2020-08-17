@@ -2264,6 +2264,84 @@ describe('Spanner with mock server', () => {
       }
       await database.close();
     });
+
+    describe('batch-readonly-transaction', () => {
+      it('should use session from pool', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const pool = database.pool_ as SessionPool;
+        assert.strictEqual(pool.size, 0);
+        const [transaction] = await database.createBatchTransaction();
+        assert.strictEqual(pool.size, 1);
+        assert.strictEqual(pool.available, 0);
+        transaction.close();
+        await database.close();
+      });
+
+      it('failing to close transaction should cause session leak error', async () => {
+        const database = newTestDatabase();
+        await database.createBatchTransaction();
+        try {
+          await database.close();
+          assert.fail('missing expected session leak error');
+        } catch (err) {
+          assert.ok(err instanceof SessionLeakError);
+        }
+      });
+    });
+
+    describe('pdml', () => {
+      it('should retry on aborted error', async () => {
+        const database = newTestDatabase();
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: grpc.status.ABORTED,
+            message: 'Transaction aborted',
+            metadata: MockSpanner.createMinimalRetryDelayMetadata(),
+            streamIndex: 1,
+          } as MockError)
+        );
+        const [updateCount] = await database.runPartitionedUpdate(updateSql);
+        assert.strictEqual(updateCount, 2);
+        await database.close();
+      });
+
+      it('should retry on specific internal error', async () => {
+        const database = newTestDatabase();
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: grpc.status.INTERNAL,
+            message: 'Received unexpected EOS on DATA frame from server',
+            streamIndex: 1,
+          } as MockError)
+        );
+        const [updateCount] = await database.runPartitionedUpdate(updateSql);
+        assert.strictEqual(updateCount, 2);
+        await database.close();
+      });
+
+      it('should fail on generic internal error', async () => {
+        const database = newTestDatabase();
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError({
+            code: grpc.status.INTERNAL,
+            message: 'Generic internal error',
+            streamIndex: 1,
+          } as MockError)
+        );
+        try {
+          await database.runPartitionedUpdate(updateSql);
+          assert.fail('missing expected INTERNAL error');
+        } catch (err) {
+          assert.strictEqual(err.code, grpc.status.INTERNAL);
+          assert.ok(err.message.includes('Generic internal error'));
+        } finally {
+          await database.close();
+        }
+      });
+    });
   });
 
   describe('instanceAdmin', () => {
