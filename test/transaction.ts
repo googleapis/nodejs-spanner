@@ -52,7 +52,6 @@ describe('Transaction', () => {
   let Transaction;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let PartitionedDml;
-  let resourceHeader: {[k: string]: string};
 
   before(() => {
     const txns = proxyquire('../src/transaction', {
@@ -77,9 +76,6 @@ describe('Transaction', () => {
     beforeEach(() => {
       sandbox.stub(Snapshot, 'encodeTimestampBounds').returns(OPTIONS);
       snapshot = new Snapshot(SESSION);
-      resourceHeader = {
-        [CLOUD_RESOURCE_HEADER]: snapshot.session.parent.formattedName_,
-      };
     });
 
     describe('initialization', () => {
@@ -114,6 +110,12 @@ describe('Transaction', () => {
         snapshot.requestStream();
         assert.strictEqual(REQUEST_STREAM.callCount, 1);
       });
+
+      it('should set the resourceHeader_', () => {
+        assert.deepStrictEqual(snapshot.resourceHeader_, {
+          [CLOUD_RESOURCE_HEADER]: snapshot.session.parent.formattedName_,
+        });
+      });
     });
 
     describe('begin', () => {
@@ -136,7 +138,7 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'beginTransaction');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(gaxOpts, {});
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
       it('should send the formatted options', () => {
@@ -226,7 +228,7 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'streamingRead');
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
       it('should use the transaction id if present', () => {
@@ -494,7 +496,7 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'executeStreamingSql');
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
       it('should use the transaction id if present', () => {
@@ -1081,7 +1083,7 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
         assert.strictEqual(reqOpts.seqno, 1);
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should encode sql string statements', () => {
@@ -1211,7 +1213,7 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {
@@ -1236,7 +1238,7 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'commit');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.mutations, []);
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {
@@ -1436,7 +1438,7 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'rollback');
         assert.deepStrictEqual(reqOpts, expectedReqOpts);
-        assert.deepStrictEqual(headers, resourceHeader);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {

@@ -208,7 +208,7 @@ describe('BatchTransaction', () => {
       assert.deepStrictEqual(reqOpts.transaction, {id: ID});
     });
 
-    it('should add pass headers argument', done => {
+    it('should pass headers', done => {
       batchTransaction.createPartitions_(CONFIG, assert.ifError);
       const {headers} = REQUEST.lastCall.args[0];
       assert.deepStrictEqual(headers, {

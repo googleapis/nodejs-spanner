@@ -68,7 +68,6 @@ describe('Backup', () => {
 
   // tslint:disable-next-line variable-name
   let Backup: typeof bu.Backup;
-  let resourceHeader: {[k: string]: string};
 
   const INSTANCE = ({
     request: util.noop,
@@ -100,7 +99,6 @@ describe('Backup', () => {
   beforeEach(() => {
     fakeCodec.encode = util.noop;
     backup = new Backup(INSTANCE, BACKUP_NAME);
-    resourceHeader = {[CLOUD_RESOURCE_HEADER]: backup.instanceFormattedName_};
   });
 
   afterEach(() => sandbox.restore());
@@ -141,6 +139,12 @@ describe('Backup', () => {
     it('should set the backup id', () => {
       assert.strictEqual(backup.id, BACKUP_NAME);
     });
+
+    it('should set the resourceHeader_', () => {
+      assert.deepStrictEqual(backup.resourceHeader_, {
+        [CLOUD_RESOURCE_HEADER]: backup.instanceFormattedName_,
+      });
+    });
   });
 
   describe('create', () => {
@@ -167,7 +171,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
@@ -300,7 +304,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
@@ -556,7 +560,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
@@ -610,7 +614,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 

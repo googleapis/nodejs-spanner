@@ -66,7 +66,6 @@ describe('Session', () => {
   let Session: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let session: any;
-  let resourceHeader: {[k: string]: string};
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const DATABASE: any = {
@@ -93,7 +92,6 @@ describe('Session', () => {
   beforeEach(() => {
     session = new Session(DATABASE, NAME);
     session.parent = DATABASE;
-    resourceHeader = {[CLOUD_RESOURCE_HEADER]: session.parent.formattedName_};
   });
 
   describe('instantiation', () => {
@@ -135,6 +133,12 @@ describe('Session', () => {
         create: true,
         exists: true,
         get: true,
+      });
+    });
+
+    it('should set the resourceHeader_', () => {
+      assert.deepStrictEqual(session.resourceHeader_, {
+        [CLOUD_RESOURCE_HEADER]: session.parent.formattedName_,
       });
     });
 
@@ -246,8 +250,8 @@ describe('Session', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
-        assert.strictEqual(config.gaxOpts, undefined);
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
 
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
@@ -281,7 +285,7 @@ describe('Session', () => {
           name: session.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -314,7 +318,7 @@ describe('Session', () => {
           sql: 'SELECT 1',
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, resourceHeader);
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
