@@ -1006,7 +1006,7 @@ describe('Database', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       database.getMetadata(gaxOptions, assert.ifError);
@@ -1665,7 +1665,7 @@ describe('Database', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       database.updateSchema(STATEMENTS, gaxOptions, assert.ifError);
