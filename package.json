@@ -90,6 +90,7 @@
     "@types/uuid": "^8.0.0",
     "binary-search-bounds": "^2.0.4",
     "c8": "^7.0.0",
+    "chai": "^4.2.0",
     "codecov": "^3.0.2",
     "concat-stream": "^2.0.0",
     "dedent": "^0.7.0",
