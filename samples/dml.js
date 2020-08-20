@@ -664,7 +664,7 @@ async function insertWithCustomTimeoutAndRetrySettings(
         initialRpcTimeoutMillis: 60000,
         rpcTimeoutMultiplier: 1.0,
         maxRpcTimeoutMillis: 60000,
-        totalTimeoutMillis: 600000,
+        totalTimeoutMillis: 60000,
       },
     },
   };
