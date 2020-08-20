@@ -294,7 +294,7 @@ describe('Transaction', () => {
 
         const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.deepStrictEqual(gaxOpts, fakeOptions);
+        assert.strictEqual(gaxOpts, fakeOptions);
         assert.strictEqual(reqOpts.gaxOptions, undefined);
       });
 
@@ -575,7 +575,7 @@ describe('Transaction', () => {
         const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
         assert.strictEqual(reqOpts.gaxOptions, undefined);
-        assert.deepStrictEqual(gaxOpts, fakeQuery.gaxOptions);
+        assert.strictEqual(gaxOpts, fakeQuery.gaxOptions);
       });
 
       it('should update the `seqno` for each call', () => {
@@ -1039,7 +1039,7 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+          assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
         transaction.batchUpdate(STRING_STATEMENTS, gaxOptions, assert.ifError);
@@ -1219,7 +1219,7 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+          assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
         transaction.begin(gaxOptions, assert.ifError);
@@ -1244,7 +1244,7 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+          assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
         transaction.commit(gaxOptions, assert.ifError);
@@ -1444,7 +1444,7 @@ describe('Transaction', () => {
       it('should accept gaxOptions', done => {
         const gaxOptions = {};
         transaction.request = config => {
-          assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+          assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
         transaction.rollback(gaxOptions, assert.ifError);

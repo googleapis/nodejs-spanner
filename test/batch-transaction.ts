@@ -190,7 +190,7 @@ describe('BatchTransaction', () => {
     const RESPONSE = {partitions: PARTITIONS};
 
     const QUERY = {a: 'b'};
-    const CONFIG = {reqOpts: QUERY, gaxOpts: {timeout: 1000}};
+    const CONFIG = {reqOpts: QUERY};
 
     beforeEach(() => {
       batchTransaction.session = (SESSION as {}) as Session;

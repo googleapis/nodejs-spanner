@@ -269,7 +269,7 @@ describe('Instance', () => {
     it('should accept gaxOptions', done => {
       const options = Object.assign({}, OPTIONS, {gaxOptions: {}});
       instance.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
         assert.strictEqual(config.reqOpts.gaxOptions, undefined);
 
         done();
@@ -568,7 +568,7 @@ describe('Instance', () => {
       const gaxOptions = {};
 
       instance.request = (config, callback: Function) => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         callback(); // done()
       };
 
@@ -672,7 +672,7 @@ describe('Instance', () => {
     it('should accept and pass gaxOptions to getMetadata', done => {
       const gaxOptions = {};
       (instance.getMetadata as Function) = options => {
-        assert.deepStrictEqual(options.gaxOptions, gaxOptions);
+        assert.strictEqual(options.gaxOptions, gaxOptions);
         done();
       };
 
@@ -757,7 +757,7 @@ describe('Instance', () => {
       });
 
       it('should accept and pass gaxOptions to instance#create', done => {
-        const gaxOptions = {};
+        const gaxOptions = {timeout: 1000};
         const options = Object.assign({}, OPTIONS, {gaxOptions});
         instance.create = options => {
           assert.deepStrictEqual(options.gaxOptions, gaxOptions);
@@ -1247,7 +1247,7 @@ describe('Instance', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       instance.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       instance.getMetadata({gaxOptions}, assert.ifError);
@@ -1294,7 +1294,7 @@ describe('Instance', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       instance.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       instance.setMetadata(METADATA, gaxOptions, assert.ifError);

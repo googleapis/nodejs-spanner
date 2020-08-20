@@ -190,7 +190,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -317,7 +317,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 

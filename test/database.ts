@@ -395,7 +395,7 @@ describe('Database', () => {
 
       const {gaxOpts} = stub.lastCall.args[0];
 
-      assert.deepStrictEqual(gaxOpts, gaxOptions);
+      assert.strictEqual(gaxOpts, gaxOptions);
     });
 
     it('should return any request errors', done => {
@@ -1032,7 +1032,7 @@ describe('Database', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -1683,7 +1683,7 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
         });
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.headers, database.resourceHeader_);
 
         done();

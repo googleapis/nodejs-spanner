@@ -297,7 +297,7 @@ describe('Session', () => {
     it('should accept and pass gaxOptions to getMetadata', done => {
       const gaxOptions = {};
       session.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       session.getMetadata(gaxOptions, assert.ifError);
@@ -330,7 +330,7 @@ describe('Session', () => {
     it('should accept gaxOptions', done => {
       const gaxOptions = {};
       session.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       session.keepAlive(gaxOptions, assert.ifError);
