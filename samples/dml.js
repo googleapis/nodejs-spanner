@@ -14,8 +14,6 @@
 
 'use strict';
 
-const {grpc} = require('google-gax');
-
 // sample-metadata:
 //  title: DML
 
@@ -652,9 +650,11 @@ async function insertWithCustomTimeoutAndRetrySettings(
   const spanner = new Spanner({
     projectId: projectId,
   });
+  const DEADLINE_EXCEEDED_STATUS_CODE = 4;
+  const UNAVAILABLE_STATUS_CODE = 14;
   const retryAndTimeoutSettings = {
     retry: {
-      retryCodes: [grpc.status.DEADLINE_EXCEEDED, grpc.status.UNAVAILABLE],
+      retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE, UNAVAILABLE_STATUS_CODE],
       backoffSettings: {
         // Configure retry delay settings.
         initialRetryDelayMillis: 500,
