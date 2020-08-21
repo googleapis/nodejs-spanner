@@ -630,6 +630,64 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_batch_update]
 }
 
+async function insertWithCustomTimeoutAndRetrySettings(
+  instanceId,
+  databaseId,
+  projectId
+) {
+  // [START spanner_set_custom_timeout_and_retry]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+  const DEADLINE_EXCEEDED_STATUS_CODE = 4;
+  const UNAVAILABLE_STATUS_CODE = 14;
+  const retryAndTimeoutSettings = {
+    retry: {
+      retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE, UNAVAILABLE_STATUS_CODE],
+      backoffSettings: {
+        // Configure retry delay settings.
+        initialRetryDelayMillis: 500,
+        maxRetryDelayMillis: 64000,
+        retryDelayMultiplier: 1.5,
+        // Configure RPC and total timeout settings.
+        initialRpcTimeoutMillis: 60000,
+        rpcTimeoutMultiplier: 1.0,
+        maxRpcTimeoutMillis: 60000,
+        totalTimeoutMillis: 60000,
+      },
+    },
+  };
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+  const table = database.table('Singers');
+
+  const row = {
+    SingerId: 16,
+    FirstName: 'Martha',
+    LastName: 'Waller',
+  };
+
+  await table.insert(row, {
+    gaxOptions: retryAndTimeoutSettings,
+  });
+
+  console.log('record inserted.');
+  // [END spanner_set_custom_timeout_and_retry]
+}
+
 require('yargs')
   .demand(1)
   .command(
@@ -736,6 +794,17 @@ require('yargs')
     opts =>
       updateUsingBatchDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
+  .command(
+    'insertWithCustomTimeoutAndRetrySettings <instanceName> <databaseName> <projectId>',
+    'Insert records using custom timeout and retry settings.',
+    {},
+    opts =>
+      insertWithCustomTimeoutAndRetrySettings(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
   .example('node $0 insertUsingDml "my-instance" "my-database" "my-project-id"')
   .example('node $0 updateUsingDml "my-instance" "my-database" "my-project-id"')
   .example('node $0 deleteUsingDml "my-instance" "my-database" "my-project-id"')
@@ -763,6 +832,9 @@ require('yargs')
   )
   .example(
     'node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 insertWithCustomTimeoutAndRetrySettings "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
