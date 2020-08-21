@@ -41,13 +41,12 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
-      'getMetadata',
       'getRestoreInfo',
       'getState',
       'getOperations',
       'runTransaction',
+      'runTransactionAsync',
       'table',
-      'updateSchema',
       'session',
     ]);
   },

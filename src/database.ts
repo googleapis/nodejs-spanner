@@ -2669,13 +2669,12 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
-    'getMetadata',
     'getRestoreInfo',
     'getState',
     'getOperations',
     'runTransaction',
+    'runTransactionAsync',
     'table',
-    'updateSchema',
     'session',
   ],
 });
