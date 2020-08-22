@@ -2019,6 +2019,7 @@ describe('Spanner with mock server', () => {
         );
         try {
           const database = newTestDatabase({
+            incStep: 1,
             min: 25,
             max: 400,
           });
@@ -2026,6 +2027,9 @@ describe('Spanner with mock server', () => {
           assert.ok(response);
           const [rows] = await database.run(selectSql);
           assert.strictEqual(rows.length, 3);
+          // Make sure the pool of the newly created database is filled.
+          const pool = database.pool_ as SessionPool;
+          assert.strictEqual(pool.size, 25);
           await database.close();
         } catch (err) {
           assert.fail(err);
