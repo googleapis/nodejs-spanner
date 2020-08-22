@@ -1276,6 +1276,30 @@ describe('SessionPool', () => {
       assert.strictEqual(stub.callCount, 1);
     });
 
+    it('should create enough sessions for the minimum configured to be reached', async () => {
+      const fakeSession = createSession();
+      const stub = sandbox
+        .stub(sessionPool, '_createSessions')
+        .withArgs({reads: 20, writes: 0})
+        .callsFake(() => {
+          // this will fire off via _createSessions
+          setImmediate(() => sessionPool.emit('readonly-available'));
+          return Promise.resolve();
+        });
+
+      sessionPool.options.min = 20;
+      sessionPool.options.max = 400;
+      sessionPool.options.incStep = 10;
+      sandbox
+        .stub(sessionPool, '_borrowNextAvailableSession')
+        .returns(fakeSession);
+
+      const session = await sessionPool._getSession(types.ReadOnly, startTime);
+
+      assert.strictEqual(session, fakeSession);
+      assert.strictEqual(stub.callCount, 1);
+    });
+
     it('should wait for a pending session to become available', async () => {
       const fakeSession = createSession();
 
