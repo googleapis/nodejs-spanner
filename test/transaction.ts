@@ -659,8 +659,14 @@ describe('Transaction', () => {
           params: {a: undefined},
         });
 
-        snapshot.runStream(fakeQuery).on('error', () => done());
-
+        const stream = snapshot.runStream(fakeQuery);
+        stream.on('error', error => {
+          assert.strictEqual(
+            error.message,
+            'Value of type undefined not recognized.'
+          );
+          done();
+        });
         assert.ok(!REQUEST_STREAM.called, 'No request should be made');
       });
     });

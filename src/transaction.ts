@@ -21,7 +21,7 @@ import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-import {Readable} from 'stream';
+import {Readable, PassThrough} from 'stream';
 
 import {codec, Json, JSONOptions, Type, Value} from './codec';
 import {
@@ -37,7 +37,6 @@ import {NormalCallback} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
-import * as stream from 'stream';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -902,19 +901,19 @@ export class Snapshot extends EventEmitter {
     let reqOpts;
 
     const sanitizeRequest = () => {
-      const q = query as ExecuteSqlRequest;
-      const {params, paramTypes} = Snapshot.encodeParams(q);
+      query = query as ExecuteSqlRequest;
+      const {params, paramTypes} = Snapshot.encodeParams(query);
       const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
       if (this.id) {
         transaction.id = this.id as Uint8Array;
       } else {
         transaction.singleUse = this._options;
       }
-      delete q.gaxOptions;
-      delete q.json;
-      delete q.jsonOptions;
-      delete q.maxResumeRetries;
-      delete q.types;
+      delete query.gaxOptions;
+      delete query.json;
+      delete query.jsonOptions;
+      delete query.maxResumeRetries;
+      delete query.types;
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
         seqno: this._seqno++,
@@ -929,7 +928,7 @@ export class Snapshot extends EventEmitter {
         try {
           sanitizeRequest();
         } catch (e) {
-          const errorStream = new stream.PassThrough();
+          const errorStream = new PassThrough();
           setImmediate(() => errorStream.destroy(e));
           return errorStream;
         }
