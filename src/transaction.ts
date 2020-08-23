@@ -21,7 +21,7 @@ import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
-import {Readable} from 'stream';
+import {Readable, PassThrough} from 'stream';
 
 import {codec, Json, JSONOptions, Type, Value} from './codec';
 import {
@@ -898,30 +898,42 @@ export class Snapshot extends EventEmitter {
     );
 
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
-    const {params, paramTypes} = Snapshot.encodeParams(query);
-    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    let reqOpts;
 
-    if (this.id) {
-      transaction.id = this.id as Uint8Array;
-    } else {
-      transaction.singleUse = this._options;
-    }
-
-    delete query.gaxOptions;
-    delete query.json;
-    delete query.jsonOptions;
-    delete query.maxResumeRetries;
-    delete query.types;
-
-    const reqOpts: ExecuteSqlRequest = Object.assign(query, {
-      session: this.session.formattedName_!,
-      seqno: this._seqno++,
-      transaction,
-      params,
-      paramTypes,
-    });
+    const sanitizeRequest = () => {
+      query = query as ExecuteSqlRequest;
+      const {params, paramTypes} = Snapshot.encodeParams(query);
+      const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+      if (this.id) {
+        transaction.id = this.id as Uint8Array;
+      } else {
+        transaction.singleUse = this._options;
+      }
+      delete query.gaxOptions;
+      delete query.json;
+      delete query.jsonOptions;
+      delete query.maxResumeRetries;
+      delete query.types;
+      reqOpts = Object.assign(query, {
+        session: this.session.formattedName_!,
+        seqno: this._seqno++,
+        transaction,
+        params,
+        paramTypes,
+      });
+    };
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
+      if (!reqOpts) {
+        try {
+          sanitizeRequest();
+        } catch (e) {
+          const errorStream = new PassThrough();
+          setImmediate(() => errorStream.destroy(e));
+          return errorStream;
+        }
+      }
+
       return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
