@@ -539,6 +539,82 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    it('should handle missing parameters in query', async () => {
+      const sql =
+        'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
+      const database = newTestDatabase();
+      const q = {
+        json: true,
+        params: {namedParameter: undefined},
+        sql,
+      };
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(mock.createSimpleResultSet())
+      );
+      try {
+        await database.run(q);
+        assert.fail('missing expected exception');
+      } catch (err) {
+        assert.ok(
+          err.message.includes('Value of type undefined not recognized.')
+        );
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should handle missing parameters in query stream', done => {
+      const sql =
+        'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
+      const database = newTestDatabase();
+      const q = {
+        json: true,
+        params: {namedParameter: undefined},
+        sql,
+      };
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(mock.createSimpleResultSet())
+      );
+      const prs = database.runStream(q);
+      setImmediate(() => {
+        prs
+          .on('data', () => {})
+          .on('error', () => {
+            // The stream should end with an error, so the test should succeed.
+            done();
+          })
+          .on('end', () => {
+            database.close().then(() => {
+              done(assert.fail('missing error'));
+            });
+          });
+      });
+    });
+
+    it('should handle missing parameters in update', async () => {
+      const sql =
+        "UPDATE tableId SET namedParameter='Foo' WHERE namedParameter = @namedParameter";
+      const database = newTestDatabase();
+      const q = {
+        json: true,
+        params: {namedParameter: undefined},
+        sql,
+      };
+      await database.runTransactionAsync(async tx => {
+        try {
+          await tx.runUpdate(q);
+          assert.fail('missing expected exception');
+        } catch (err) {
+          assert.ok(
+            err.message.includes('Value of type undefined not recognized.')
+          );
+        }
+      });
+      await database.close();
+    });
+
     describe('PartialResultStream', () => {
       const streamIndexes = [1, 2];
       streamIndexes.forEach(index => {
@@ -1943,6 +2019,7 @@ describe('Spanner with mock server', () => {
         );
         try {
           const database = newTestDatabase({
+            incStep: 1,
             min: 25,
             max: 400,
           });
@@ -1950,6 +2027,9 @@ describe('Spanner with mock server', () => {
           assert.ok(response);
           const [rows] = await database.run(selectSql);
           assert.strictEqual(rows.length, 3);
+          // Make sure the pool of the newly created database is filled.
+          const pool = database.pool_ as SessionPool;
+          assert.strictEqual(pool.size, 25);
           await database.close();
         } catch (err) {
           assert.fail(err);
