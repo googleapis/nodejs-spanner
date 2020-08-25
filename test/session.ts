@@ -291,7 +291,8 @@ describe('Session', () => {
       session.request = (config, callback) => {
         callback(null, metadata);
       };
-      session.getMetadata(() => {
+      session.getMetadata(err => {
+        assert.ifError(err);
         assert.strictEqual(session.metadata, metadata);
         done();
       });
