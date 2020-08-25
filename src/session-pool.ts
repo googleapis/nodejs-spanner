@@ -788,8 +788,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
         needed -= sessions.length;
       } catch (e) {
-        this.emit('createError', e);
         this._pending -= needed;
+        this.emit('createError', e);
         throw e;
       }
 
@@ -981,6 +981,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       let reads = this.options.incStep
         ? this.options.incStep
         : DEFAULTS.incStep!;
+      // Create additional sessions if the configured minimum has not been reached.
+      const min = this.options.min ? this.options.min : 0;
+      if (this.size + this.totalPending + reads < min) {
+        reads = min - this.size - this.totalPending;
+      }
       // Make sure we don't create more sessions than the pool should have.
       if (reads + this.size > this.options.max!) {
         reads = this.options.max! - this.size;
