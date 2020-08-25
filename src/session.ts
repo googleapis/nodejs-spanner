@@ -37,8 +37,6 @@ import {
 } from './database';
 import {ServiceObjectConfig} from '@google-cloud/common';
 import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
-// import {ServiceObjectConfig} from '@google-cloud/common';
-// import {NormalCallback} from './common';
 import {grpc, CallOptions} from 'google-gax';
 
 export type GetSessionResponse = [Session, r.Response];
