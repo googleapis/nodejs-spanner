@@ -69,3 +69,9 @@ export interface PagedOptions {
 export interface PagedOptionsWithFilter extends PagedOptions {
   filter?: string;
 }
+
+/*!
+ * HTTP header for the resource prefix to improve routing
+ * by the backend.
+ */
+export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';

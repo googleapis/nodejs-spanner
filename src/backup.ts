@@ -21,6 +21,7 @@ import {
   RequestCallback,
   ResourceCallback,
   NormalCallback,
+  CLOUD_RESOURCE_HEADER,
 } from './common';
 import {EnumKey, Spanner, RequestConfig, TranslateEnumKeys} from '.';
 import {
@@ -100,12 +101,16 @@ class Backup {
   id: string;
   formattedName_: string;
   instanceFormattedName_: string;
+  resourceHeader_: {[k: string]: string};
   request: BackupRequest;
   constructor(instance: Instance, name: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
     this.id = this.formattedName_.split('/').pop() || '';
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: this.instanceFormattedName_,
+    };
   }
 
   create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
@@ -180,6 +185,7 @@ class Backup {
         method: 'createBackup',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -246,6 +252,7 @@ class Backup {
         method: 'getBackup',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, response) => {
         callback!(err, response);
@@ -420,6 +427,7 @@ class Backup {
         method: 'updateBackup',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, response) => {
         callback!(err, response);
@@ -467,6 +475,7 @@ class Backup {
         method: 'deleteBackup',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       err => {
         callback!(err);

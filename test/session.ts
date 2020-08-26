@@ -21,6 +21,8 @@ import * as assert from 'assert';
 import {before, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {Database} from '../src';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -42,8 +44,10 @@ const fakePfy = extend({}, pfy, {
 
 class FakeGrpcServiceObject {
   calledWith_: IArguments;
+  parent: Database;
   constructor() {
     this.calledWith_ = arguments;
+    this.parent = arguments[0].parent;
   }
 }
 
@@ -87,6 +91,7 @@ describe('Session', () => {
 
   beforeEach(() => {
     session = new Session(DATABASE, NAME);
+    session.parent = DATABASE;
   });
 
   describe('instantiation', () => {
@@ -128,6 +133,12 @@ describe('Session', () => {
         create: true,
         exists: true,
         get: true,
+      });
+    });
+
+    it('should set the resourceHeader_', () => {
+      assert.deepStrictEqual(session.resourceHeader_, {
+        [CLOUD_RESOURCE_HEADER]: session.parent.formattedName_,
       });
     });
 
@@ -239,6 +250,9 @@ describe('Session', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
+
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -270,6 +284,8 @@ describe('Session', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: session.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -301,6 +317,8 @@ describe('Session', () => {
           session: session.formattedName_,
           sql: 'SELECT 1',
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };

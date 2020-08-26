@@ -20,7 +20,8 @@ import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
 import {google} from '../protos/protos';
-import {Session} from '.';
+import {Session, Database} from '.';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -155,6 +156,9 @@ class BatchTransaction extends Snapshot {
       transaction: {id: this.id},
     });
     config.reqOpts = extend({}, query);
+    config.headers = {
+      [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
+    };
     delete query.partitionOptions;
     this.session.request(config, (err, resp) => {
       if (err) {

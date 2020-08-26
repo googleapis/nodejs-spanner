@@ -33,6 +33,7 @@ import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
 import {Backup} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -70,6 +71,7 @@ describe('Instance', () => {
   // tslint:disable-next-line variable-name
   let Instance: typeof inst.Instance;
   let instance: inst.Instance;
+
   const sandbox = sinon.createSandbox();
 
   const SPANNER = ({
@@ -77,6 +79,7 @@ describe('Instance', () => {
     requestStream: () => {},
     projectId: 'project-id',
     instances_: new Map(),
+    projectFormattedName_: 'projects/project-id',
   } as {}) as Spanner;
 
   const NAME = 'instance-name';
@@ -170,6 +173,12 @@ describe('Instance', () => {
 
       calledWith.createMethod(null, options, done);
     });
+
+    it('should set the resourceHeader_', () => {
+      assert.deepStrictEqual(instance.resourceHeader_, {
+        [CLOUD_RESOURCE_HEADER]: instance.formattedName_,
+      });
+    });
   });
 
   describe('formatName_', () => {
@@ -208,6 +217,8 @@ describe('Instance', () => {
           parent: instance.formattedName_,
           createStatement: 'CREATE DATABASE `' + NAME + '`',
         });
+        assert.strictEqual(config.gaxOpts, undefined);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
 
         done();
       };
@@ -528,6 +539,8 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
         });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
         callback(); // done()
       };
 
@@ -659,7 +672,7 @@ describe('Instance', () => {
     it('should accept and pass gaxOptions to getMetadata', done => {
       const gaxOptions = {};
       (instance.getMetadata as Function) = options => {
-        assert.deepStrictEqual(options.gaxOptions, gaxOptions);
+        assert.strictEqual(options.gaxOptions, gaxOptions);
         done();
       };
 
@@ -744,7 +757,7 @@ describe('Instance', () => {
       });
 
       it('should accept and pass gaxOptions to instance#create', done => {
-        const gaxOptions = {};
+        const gaxOptions = {timeout: 1000};
         const options = Object.assign({}, OPTIONS, {gaxOptions});
         instance.create = options => {
           assert.deepStrictEqual(options.gaxOptions, gaxOptions);
@@ -901,6 +914,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
 
         done();
       };
@@ -1089,6 +1103,8 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+
         return returnValue;
       };
 
@@ -1187,6 +1203,9 @@ describe('Instance', () => {
         assert.deepStrictEqual(config.reqOpts, {
           name: instance.formattedName_,
         });
+        assert.strictEqual(config.gaxOpts, undefined);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
@@ -1260,6 +1279,8 @@ describe('Instance', () => {
         });
 
         assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
 
         assert.strictEqual(callback_, callback);
 
@@ -1292,7 +1313,7 @@ describe('Instance', () => {
     } as inst.GetBackupsOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should make the correct request', async () => {
+    it('should make the correct request', done => {
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1311,9 +1332,11 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        done();
       };
 
-      await instance.getBackups(options);
+      instance.getBackups(options, assert.ifError);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
@@ -1494,6 +1517,8 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+
         return returnValue;
       };
 
@@ -1603,7 +1628,7 @@ describe('Instance', () => {
     } as inst.GetBackupOperationsOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should make the correct request', async () => {
+    it('should make the correct request', done => {
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1622,9 +1647,10 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        done();
       };
 
-      await instance.getBackupOperations(options);
+      instance.getBackupOperations(options, assert.ifError);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
@@ -1739,7 +1765,7 @@ describe('Instance', () => {
     } as inst.GetDatabaseOperationsOptions;
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
-    it('should make the correct request', async () => {
+    it('should make the correct request', done => {
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1758,9 +1784,11 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        done();
       };
 
-      await instance.getDatabaseOperations(options);
+      instance.getDatabaseOperations(options, assert.ifError);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {

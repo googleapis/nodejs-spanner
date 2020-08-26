@@ -27,6 +27,7 @@ import {Instance, Spanner} from '../src';
 import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
 import {grpc} from 'google-gax';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
 // let callbackified = false;
@@ -138,6 +139,12 @@ describe('Backup', () => {
     it('should set the backup id', () => {
       assert.strictEqual(backup.id, BACKUP_NAME);
     });
+
+    it('should set the resourceHeader_', () => {
+      assert.deepStrictEqual(backup.resourceHeader_, {
+        [CLOUD_RESOURCE_HEADER]: backup.instanceFormattedName_,
+      });
+    });
   });
 
   describe('create', () => {
@@ -164,6 +171,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
@@ -182,7 +190,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -296,6 +304,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
@@ -308,7 +317,7 @@ describe('Backup', () => {
       };
 
       backup.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
@@ -551,6 +560,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
@@ -604,6 +614,7 @@ describe('Backup', () => {
 
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
         done();
       };
 
