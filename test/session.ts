@@ -278,7 +278,7 @@ describe('Session', () => {
 
       function callback() {}
 
-      session.request = (config, callback_) => {
+      session.request = config => {
         assert.strictEqual(config.client, 'SpannerClient');
         assert.strictEqual(config.method, 'getSession');
         assert.deepStrictEqual(config.reqOpts, {
@@ -286,7 +286,6 @@ describe('Session', () => {
         });
         assert.deepStrictEqual(config.gaxOpts, {});
         assert.deepStrictEqual(config.headers, session.resourceHeader_);
-        assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
 
@@ -294,13 +293,36 @@ describe('Session', () => {
       assert.strictEqual(returnValue, requestReturnValue);
     });
 
-    it('should accept and pass gaxOptions to getMetadata', done => {
+    it('should accept and pass gaxOptions to request', done => {
       const gaxOptions = {};
       session.request = config => {
         assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
       session.getMetadata(gaxOptions, assert.ifError);
+    });
+
+    it('should update metadata', done => {
+      const metadata = {};
+      session.request = (config, callback) => {
+        callback(null, metadata);
+      };
+      session.getMetadata(err => {
+        assert.ifError(err);
+        assert.strictEqual(session.metadata, metadata);
+        done();
+      });
+    });
+
+    it('should call callback with error', done => {
+      const error = new Error('Error');
+      session.request = (config, callback) => {
+        callback(error);
+      };
+      session.getMetadata(err => {
+        assert.strictEqual(err, error);
+        done();
+      });
     });
   });
 

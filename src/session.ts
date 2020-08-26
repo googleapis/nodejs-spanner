@@ -361,7 +361,12 @@ export class Session extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       },
-      callback!
+      (err, resp) => {
+        if (resp) {
+          this.metadata = resp;
+        }
+        callback!(err, resp);
+      }
     );
   }
   keepAlive(gaxOptions?: CallOptions): Promise<KeepAliveResponse>;

@@ -42,13 +42,12 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
-      'getMetadata',
       'getRestoreInfo',
       'getState',
       'getOperations',
       'runTransaction',
+      'runTransactionAsync',
       'table',
-      'updateSchema',
       'session',
     ]);
   },
@@ -987,7 +986,7 @@ describe('Database', () => {
     it('should call and return the request', () => {
       const requestReturnValue = {};
 
-      database.request = (config, callback) => {
+      database.request = config => {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'getDatabase');
         assert.deepStrictEqual(config.reqOpts, {
@@ -995,7 +994,6 @@ describe('Database', () => {
         });
         assert.deepStrictEqual(config.gaxOpts, {});
         assert.deepStrictEqual(config.headers, database.resourceHeader_);
-        assert.strictEqual(callback, assert.ifError);
         return requestReturnValue;
       };
 
@@ -1087,6 +1085,28 @@ describe('Database', () => {
           assert.strictEqual(arg3, ARG_3);
           assert.strictEqual(arg4, ARG_4);
           assert.strictEqual(arg5, ARG_5);
+          done();
+        });
+      });
+
+      it('should update metadata', done => {
+        const metadata = {};
+        database.request = (config: {}, callback: Function) => {
+          callback(null, metadata);
+        };
+        database.getMetadata(() => {
+          assert.strictEqual(database.metadata, metadata);
+          done();
+        });
+      });
+
+      it('should call callback with error', done => {
+        const error = new Error('Error');
+        database.request = (config: {}, callback: Function) => {
+          callback(error);
+        };
+        database.getMetadata(err => {
+          assert.strictEqual(err, error);
           done();
         });
       });

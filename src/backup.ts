@@ -103,6 +103,7 @@ class Backup {
   instanceFormattedName_: string;
   resourceHeader_: {[k: string]: string};
   request: BackupRequest;
+  metadata?: databaseAdmin.spanner.admin.database.v1.IBackup;
   constructor(instance: Instance, name: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
@@ -255,6 +256,9 @@ class Backup {
         headers: this.resourceHeader_,
       },
       (err, response) => {
+        if (response) {
+          this.metadata = response;
+        }
         callback!(err, response);
       }
     );

@@ -1128,7 +1128,12 @@ class Database extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       },
-      callback!
+      (err, resp) => {
+        if (resp) {
+          this.metadata = resp;
+        }
+        callback!(err, resp);
+      }
     );
   }
 
@@ -2712,13 +2717,12 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
-    'getMetadata',
     'getRestoreInfo',
     'getState',
     'getOperations',
     'runTransaction',
+    'runTransactionAsync',
     'table',
-    'updateSchema',
     'session',
   ],
 });

@@ -361,7 +361,9 @@ class Instance extends common.GrpcServiceObject {
         let backupInstances: Backup[] | null = null;
         if (backups) {
           backupInstances = backups.map(backup => {
-            return this.backup(backup.name!);
+            const backupInstance = this.backup(backup.name!);
+            backupInstance.metadata = backup;
+            return backupInstance;
           });
         }
         const nextQuery = nextPageRequest!
@@ -1428,7 +1430,12 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts: options.gaxOptions,
         headers: this.resourceHeader_,
       },
-      callback!
+      (err, resp) => {
+        if (resp) {
+          this.metadata = resp;
+        }
+        callback!(err, resp);
+      }
     );
   }
 
