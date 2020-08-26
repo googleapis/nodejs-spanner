@@ -39,6 +39,7 @@ import {
   PagedResponse,
   PagedCallback,
   PagedOptionsWithFilter,
+  CLOUD_RESOURCE_HEADER,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
@@ -86,6 +87,7 @@ export interface RequestConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reqOpts: any;
   gaxOpts?: CallOptions;
+  headers: {[k: string]: string};
 }
 export interface CreateInstanceRequest {
   config?: string;
@@ -154,6 +156,8 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  projectFormattedName_: string;
+  resourceHeader_: {[k: string]: string};
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -254,6 +258,10 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.projectFormattedName_ = 'projects/' + this.projectId;
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
+    };
   }
 
   createInstance(
@@ -368,7 +376,7 @@ class Spanner extends GrpcService {
     const formattedName = Instance.formatName_(this.projectId, name);
     const displayName = config.displayName || formattedName.split('/').pop();
     const reqOpts = {
-      parent: 'projects/' + this.projectId,
+      parent: this.projectFormattedName_,
       instanceId: formattedName.split('/').pop(),
       instance: extend(
         {
@@ -392,6 +400,7 @@ class Spanner extends GrpcService {
         method: 'createInstance',
         reqOpts,
         gaxOpts: config.gaxOptions,
+        headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -523,8 +532,8 @@ class Spanner extends GrpcService {
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
       delete gaxOpts.pageToken;
+      delete gaxOpts.pageSize;
     }
 
     this.request(
@@ -533,6 +542,7 @@ class Spanner extends GrpcService {
         method: 'listInstances',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, instances, nextPageRequest, ...args) => {
         let instanceInstances: Instance[] | null = null;
@@ -614,6 +624,7 @@ class Spanner extends GrpcService {
       method: 'listInstancesStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -739,6 +750,7 @@ class Spanner extends GrpcService {
         method: 'listInstanceConfigs',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, instanceConfigs, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -812,6 +824,7 @@ class Spanner extends GrpcService {
       method: 'listInstanceConfigsStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -864,7 +877,12 @@ class Spanner extends GrpcService {
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
-        config.gaxOpts
+        // Add headers to `gaxOpts`
+        extend(true, {}, config.gaxOpts, {
+          otherArgs: {
+            headers: config.headers,
+          },
+        })
       );
       callback(null, requestFn);
     });

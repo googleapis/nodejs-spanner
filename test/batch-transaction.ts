@@ -24,9 +24,10 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import {Session} from '../src';
+import {Session, Database} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -56,6 +57,10 @@ const fakeCodec: any = {
   convertProtoTimestampToDate() {},
 };
 
+const DATABASE = {
+  formattedName_: 'database',
+};
+
 class FakeTransaction {
   calledWith_: IArguments;
   session;
@@ -80,8 +85,11 @@ describe('BatchTransaction', () => {
   let BatchTransaction: typeof bt.BatchTransaction;
   let batchTransaction: bt.BatchTransaction;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const SESSION: any = {};
+  const SESSION = {
+    parent: DATABASE,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    delete: (callback: any) => {},
+  };
 
   before(() => {
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
@@ -93,7 +101,7 @@ describe('BatchTransaction', () => {
   });
 
   beforeEach(() => {
-    batchTransaction = new BatchTransaction(SESSION);
+    batchTransaction = new BatchTransaction((SESSION as {}) as Session);
   });
 
   afterEach(() => sandbox.restore());
@@ -104,7 +112,7 @@ describe('BatchTransaction', () => {
     });
 
     it('should extend the Snapshot class', () => {
-      const batchTransaction = new BatchTransaction(SESSION);
+      const batchTransaction = new BatchTransaction((SESSION as {}) as Session);
       assert(batchTransaction instanceof FakeTransaction);
     });
   });
@@ -171,6 +179,7 @@ describe('BatchTransaction', () => {
   describe('createPartitions_', () => {
     const REQUEST = sandbox.stub();
     const SESSION = {
+      parent: DATABASE,
       formattedName_: 'abcdef',
       request: REQUEST,
     };
@@ -197,6 +206,16 @@ describe('BatchTransaction', () => {
       assert.strictEqual(reqOpts.a, 'b');
       assert.strictEqual(reqOpts.session, SESSION.formattedName_);
       assert.deepStrictEqual(reqOpts.transaction, {id: ID});
+    });
+
+    it('should pass headers', done => {
+      batchTransaction.createPartitions_(CONFIG, assert.ifError);
+      const {headers} = REQUEST.lastCall.args[0];
+      assert.deepStrictEqual(headers, {
+        [CLOUD_RESOURCE_HEADER]: (batchTransaction.session.parent as Database)
+          .formattedName_,
+      });
+      done();
     });
 
     it('should return any request errors', done => {

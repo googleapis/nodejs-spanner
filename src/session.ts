@@ -36,7 +36,7 @@ import {
   CreateSessionOptions,
 } from './database';
 import {ServiceObjectConfig} from '@google-cloud/common';
-import {NormalCallback} from './common';
+import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {grpc, CallOptions} from 'google-gax';
 
 export type GetSessionResponse = [Session, r.Response];
@@ -104,6 +104,7 @@ export class Session extends common.GrpcServiceObject {
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
+  resourceHeader_: {[k: string]: string};
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -234,6 +235,9 @@ export class Session extends common.GrpcServiceObject {
       },
     } as {}) as ServiceObjectConfig);
 
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: (this.parent as Database).formattedName_,
+    };
     this.request = database.request;
     this.requestStream = database.requestStream;
 
@@ -291,6 +295,7 @@ export class Session extends common.GrpcServiceObject {
         method: 'deleteSession',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback!
     );
@@ -354,6 +359,7 @@ export class Session extends common.GrpcServiceObject {
         method: 'getSession',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, resp) => {
         if (resp) {
@@ -400,6 +406,7 @@ export class Session extends common.GrpcServiceObject {
         method: 'executeSql',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback!
     );

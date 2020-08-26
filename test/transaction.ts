@@ -24,11 +24,12 @@ import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
 
-  const PARENT = {};
+  const PARENT = {formattedName_: 'formatted-database-name'};
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
@@ -109,6 +110,12 @@ describe('Transaction', () => {
         snapshot.requestStream();
         assert.strictEqual(REQUEST_STREAM.callCount, 1);
       });
+
+      it('should set the resourceHeader_', () => {
+        assert.deepStrictEqual(snapshot.resourceHeader_, {
+          [CLOUD_RESOURCE_HEADER]: snapshot.session.parent.formattedName_,
+        });
+      });
     });
 
     describe('begin', () => {
@@ -119,11 +126,19 @@ describe('Transaction', () => {
       it('should send the correct request', () => {
         snapshot.begin();
 
-        const {client, method, reqOpts} = REQUEST.lastCall.args[0];
+        const {
+          client,
+          method,
+          reqOpts,
+          gaxOpts,
+          headers,
+        } = REQUEST.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
+        assert.deepStrictEqual(gaxOpts, {});
+        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
       it('should send the formatted options', () => {
@@ -209,10 +224,11 @@ describe('Transaction', () => {
       it('should send the correct request', () => {
         snapshot.createReadStream(TABLE);
 
-        const {client, method} = REQUEST_STREAM.lastCall.args[0];
+        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'streamingRead');
+        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
       it('should use the transaction id if present', () => {
@@ -476,10 +492,11 @@ describe('Transaction', () => {
       it('should send the correct request', () => {
         snapshot.runStream(QUERY);
 
-        const {client, method} = REQUEST_STREAM.lastCall.args[0];
+        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'executeStreamingSql');
+        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
       it('should use the transaction id if present', () => {
@@ -1099,13 +1116,14 @@ describe('Transaction', () => {
         transaction.id = fakeId;
         transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
 
-        const {client, method, reqOpts} = stub.lastCall.args[0];
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'executeBatchDml');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
         assert.strictEqual(reqOpts.seqno, 1);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should encode sql string statements', () => {
@@ -1230,9 +1248,12 @@ describe('Transaction', () => {
         transaction.begin();
 
         const expectedOptions = {readWrite: {}};
-        const {reqOpts} = stub.lastCall.args[0];
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {
@@ -1251,12 +1272,13 @@ describe('Transaction', () => {
 
         transaction.commit();
 
-        const {client, method, reqOpts} = stub.lastCall.args[0];
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'commit');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.mutations, []);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {
@@ -1451,11 +1473,12 @@ describe('Transaction', () => {
 
         transaction.rollback();
 
-        const {client, method, reqOpts} = stub.lastCall.args[0];
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'rollback');
         assert.deepStrictEqual(reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {

@@ -33,10 +33,11 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {google as spannerClient} from '../protos/protos';
-import {NormalCallback} from './common';
+import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+import {Database} from '.';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -202,6 +203,7 @@ export class Snapshot extends EventEmitter {
   requestStream: (config: {}) => Readable;
   session: Session;
   queryOptions?: IQueryOptions;
+  resourceHeader_: {[k: string]: string};
 
   /**
    * The transaction ID.
@@ -261,6 +263,9 @@ export class Snapshot extends EventEmitter {
 
     const readOnly = Snapshot.encodeTimestampBounds(options || {});
     this._options = {readOnly};
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
+    };
   }
 
   begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
@@ -328,6 +333,7 @@ export class Snapshot extends EventEmitter {
         method: 'beginTransaction',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (
         err: null | grpc.ServiceError,
@@ -529,6 +535,7 @@ export class Snapshot extends EventEmitter {
         method: 'streamingRead',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
+        headers: this.resourceHeader_,
       });
     };
 
@@ -939,6 +946,7 @@ export class Snapshot extends EventEmitter {
         method: 'executeStreamingSql',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
+        headers: this.resourceHeader_,
       });
     };
 
@@ -1360,6 +1368,7 @@ export class Transaction extends Dml {
         method: 'executeBatchDml',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (
         err: null | grpc.ServiceError,
@@ -1492,6 +1501,7 @@ export class Transaction extends Dml {
         method: 'commit',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
@@ -1727,6 +1737,7 @@ export class Transaction extends Dml {
         method: 'rollback',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err: null | ServiceError) => {
         this.end();

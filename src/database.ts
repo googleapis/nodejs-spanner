@@ -74,6 +74,7 @@ import {
   LongRunningCallback,
   NormalCallback,
   PagedOptionsWithFilter,
+  CLOUD_RESOURCE_HEADER,
   PagedResponse,
   RequestCallback,
   ResourceCallback,
@@ -248,6 +249,7 @@ class Database extends common.GrpcServiceObject {
   formattedName_: string;
   pool_: SessionPoolInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+  resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
   constructor(
     instance: Instance,
@@ -354,6 +356,9 @@ class Database extends common.GrpcServiceObject {
         : new SessionPool(this, poolOptions);
     this.formattedName_ = formattedName_;
     this.instance = instance;
+    this.resourceHeader_ = {
+      [CLOUD_RESOURCE_HEADER]: this.formattedName_,
+    };
     this.request = instance.request;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
@@ -458,6 +463,7 @@ class Database extends common.GrpcServiceObject {
         method: 'batchCreateSessions',
         reqOpts,
         gaxOpts: options.gaxOptions,
+        headers: this.resourceHeader_,
       },
       (err, resp) => {
         if (err) {
@@ -713,6 +719,7 @@ class Database extends common.GrpcServiceObject {
         method: 'createSession',
         reqOpts,
         gaxOpts: options.gaxOptions,
+        headers: this.resourceHeader_,
       },
       (err, resp) => {
         if (err) {
@@ -902,6 +909,7 @@ class Database extends common.GrpcServiceObject {
           method: 'dropDatabase',
           reqOpts,
           gaxOpts,
+          headers: this.resourceHeader_,
         },
         callback!
       );
@@ -1118,6 +1126,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getDatabase',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, resp) => {
         if (resp) {
@@ -1259,6 +1268,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getDatabaseDdl',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err, statements, ...args: any[]) => {
@@ -1393,6 +1403,7 @@ class Database extends common.GrpcServiceObject {
         method: 'listSessions',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, sessions, nextPageRequest, ...args) => {
         let sessionInstances: Session[] | null = null;
@@ -1477,6 +1488,7 @@ class Database extends common.GrpcServiceObject {
       method: 'listSessionsStream',
       reqOpts,
       gaxOpts,
+      headers: this.resourceHeader_,
     });
   }
 
@@ -1851,6 +1863,7 @@ class Database extends common.GrpcServiceObject {
         method: 'restoreDatabase',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -2666,6 +2679,7 @@ class Database extends common.GrpcServiceObject {
         method: 'updateDatabaseDdl',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       },
       callback!
     );
