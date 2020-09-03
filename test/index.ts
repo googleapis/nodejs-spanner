@@ -429,7 +429,7 @@ describe('Spanner', () => {
   });
 
   describe('float', () => {
-    it('should create a SpannerDate instance', () => {
+    it('should create a Float instance', () => {
       const value = {};
       const customValue = {};
 
