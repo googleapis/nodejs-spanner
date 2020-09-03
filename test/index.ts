@@ -493,6 +493,23 @@ describe('Spanner', () => {
     });
   });
 
+  describe('numeric', () => {
+    it('should create a Numeric instance', () => {
+      const value = '3.145';
+      const customValue = {value: '3.145'};
+
+      fakeCodec.Numeric = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const numeric = Spanner.numeric(value);
+      assert.strictEqual(numeric, customValue);
+    });
+  });
+
   describe('createInstance', () => {
     const NAME = 'instance-name';
     let PATH;
