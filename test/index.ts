@@ -80,6 +80,7 @@ const fakePfy = extend({}, pfy, {
       'float',
       'instance',
       'int',
+      'numeric',
       'operation',
       'timestamp',
     ]);

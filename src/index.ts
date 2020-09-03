@@ -1098,7 +1098,7 @@ class Spanner extends GrpcService {
  * that a callback is omitted.
  */
 promisifyAll(Spanner, {
-  exclude: ['date', 'float', 'instance', 'int', 'operation', 'timestamp'],
+  exclude: ['date', 'float', 'instance', 'int', 'numeric', 'operation', 'timestamp'],
 });
 
 /**
