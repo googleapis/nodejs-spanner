@@ -16,6 +16,7 @@
 import {GrpcService} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
+import {Big} from 'big.js';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
@@ -195,6 +196,23 @@ export class Struct extends Array<Field> {
 }
 
 /**
+ * @typedef Numeric
+ * @see Spanner.numeric
+ */
+export class Numeric {
+  value: string;
+  constructor(value: string) {
+    this.value = value;
+  }
+  valueOf(): Big {
+    return new Big(this.value);
+  }
+  toJSON(): string {
+    return this.valueOf().toJSON();
+  }
+}
+
+/**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
@@ -299,6 +317,10 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'INT64':
       decoded = new Int(decoded);
       break;
+    case spannerClient.spanner.v1.TypeCode.NUMERIC:
+    case 'NUMERIC':
+      decoded = new Numeric(decoded);
+      break;
     case spannerClient.spanner.v1.TypeCode.TIMESTAMP:
     case 'TIMESTAMP':
       decoded = new PreciseDate(decoded);
@@ -369,6 +391,10 @@ function encodeValue(value: Value): Value {
     return value.value;
   }
 
+  if (value instanceof Numeric) {
+    return value.value;
+  }
+
   if (Buffer.isBuffer(value)) {
     return value.toString('base64');
   }
@@ -397,6 +423,7 @@ const TypeCode: {
   bool: 'BOOL',
   int64: 'INT64',
   float64: 'FLOAT64',
+  numeric: 'NUMERIC',
   timestamp: 'TIMESTAMP',
   date: 'DATE',
   string: 'STRING',
@@ -430,6 +457,7 @@ interface FieldType extends Type {
  * @property {string} type The param type. Must be one of the following:
  *     - float64
  *     - int64
+ *     - numeric
  *     - bool
  *     - string
  *     - bytes
@@ -464,6 +492,10 @@ function getType(value: Value): Type {
 
   if (is.number(value) || value instanceof Int) {
     return {type: 'int64'};
+  }
+
+  if (value instanceof Numeric) {
+    return {type: 'numeric'};
   }
 
   if (is.boolean(value)) {
@@ -611,6 +643,7 @@ export const codec = {
   SpannerDate,
   Float,
   Int,
+  Numeric,
   convertFieldsToJson,
   decode,
   encode,
