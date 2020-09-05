@@ -4,6 +4,29 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.3.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.1...v5.3.0) (2020-09-04)
+
+
+### Features
+
+* accept gaxOptions in Database and Session #delete() ([#1206](https://www.github.com/googleapis/nodejs-spanner/issues/1206)) ([2444e8e](https://www.github.com/googleapis/nodejs-spanner/commit/2444e8e45f409e783fcbf059d487d50eb4e12d88))
+* add resource header prefix ([#1196](https://www.github.com/googleapis/nodejs-spanner/issues/1196)) ([99744b6](https://www.github.com/googleapis/nodejs-spanner/commit/99744b6e3c7e61e185949913279edae35a234dce))
+* return full nextQuery object in paginated calls ([#1199](https://www.github.com/googleapis/nodejs-spanner/issues/1199)) ([445015f](https://www.github.com/googleapis/nodejs-spanner/commit/445015f82243611fc8de3213957fda352fff4783))
+* set metadata during getBackups and getMetadata calls ([#1198](https://www.github.com/googleapis/nodejs-spanner/issues/1198)) ([aa500a5](https://www.github.com/googleapis/nodejs-spanner/commit/aa500a517a4f825f4440936158f72a0bcc63cd35))
+* spanner NUMERIC support ([#1163](https://www.github.com/googleapis/nodejs-spanner/issues/1163)) ([4724ba3](https://www.github.com/googleapis/nodejs-spanner/commit/4724ba3937de9481356084fc5e8254d8691583e5))
+* Spanner numeric type, add Node 8 tests ([#1189](https://www.github.com/googleapis/nodejs-spanner/issues/1189)) ([c2bc40e](https://www.github.com/googleapis/nodejs-spanner/commit/c2bc40e9b71b658d68c7377d5598cc1a0ef0f75d))
+
+
+### Bug Fixes
+
+* `Database not found` could be returned after create() ([#1220](https://www.github.com/googleapis/nodejs-spanner/issues/1220)) ([1fddbb9](https://www.github.com/googleapis/nodejs-spanner/commit/1fddbb9847068a607e72993c2c4c09b796b70089)), closes [#1219](https://www.github.com/googleapis/nodejs-spanner/issues/1219) [#1219](https://www.github.com/googleapis/nodejs-spanner/issues/1219)
+* batch transaction should use a session from the pool ([#1207](https://www.github.com/googleapis/nodejs-spanner/issues/1207)) ([0708baa](https://www.github.com/googleapis/nodejs-spanner/commit/0708baab276def6cad0f0f3c4b7589084380c2d8)), closes [#1200](https://www.github.com/googleapis/nodejs-spanner/issues/1200)
+* handle potential errors when creating stream ([#1208](https://www.github.com/googleapis/nodejs-spanner/issues/1208)) ([fcf35f5](https://www.github.com/googleapis/nodejs-spanner/commit/fcf35f5749b47b47425285eca5da47b987b0e7cf)), closes [#1078](https://www.github.com/googleapis/nodejs-spanner/issues/1078)
+* retry PDML on Aborted and Internal errors ([#1205](https://www.github.com/googleapis/nodejs-spanner/issues/1205)) ([2b97bac](https://www.github.com/googleapis/nodejs-spanner/commit/2b97bacf4188f2344f23971ec667d3e20f04d420)), closes [#1197](https://www.github.com/googleapis/nodejs-spanner/issues/1197)
+* update minimum gax version to 2.7.0 ([#1213](https://www.github.com/googleapis/nodejs-spanner/issues/1213)) ([224de8f](https://www.github.com/googleapis/nodejs-spanner/commit/224de8f0e69e2e951be6596d83079012736cdc20)), closes [#1209](https://www.github.com/googleapis/nodejs-spanner/issues/1209)
+* **spanner:** update UpdateBackup to be retryable ([#1194](https://www.github.com/googleapis/nodejs-spanner/issues/1194)) ([e53a247](https://www.github.com/googleapis/nodejs-spanner/commit/e53a2471beff22a61c8e17098ba1a9b6cff3caf0))
+* typeo in nodejs .gitattribute ([#1178](https://www.github.com/googleapis/nodejs-spanner/issues/1178)) ([439d5af](https://www.github.com/googleapis/nodejs-spanner/commit/439d5af2124cc02f24e097d8101f9d6843de9b20))
+
 ### [5.2.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.0...v5.2.1) (2020-07-07)
 
 
