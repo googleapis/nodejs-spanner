@@ -1033,8 +1033,9 @@ describe('Instance', () => {
       it('should create and return Database objects', done => {
         const fakeDatabaseInstance = {};
 
-        instance.database = name => {
+        instance.database = (name, options) => {
           assert.strictEqual(name, DATABASES[0].name);
+          assert.strictEqual((options as SessionPoolOptions).min, 0);
           return fakeDatabaseInstance as Database;
         };
 
