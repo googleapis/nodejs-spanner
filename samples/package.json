@@ -11,7 +11,7 @@
     "node": ">=8"
   },
   "scripts": {
-    "test": "mocha system-test --timeout 600000"
+    "test": "mocha system-test --timeout 1600000"
   },
   "dependencies": {
     "@google-cloud/precise-date": "^1.0.0",
