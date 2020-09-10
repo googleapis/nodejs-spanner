@@ -2602,6 +2602,16 @@ describe('Database', () => {
       };
       await database.getState(options);
     });
+
+    it('should accept callback and return state', done => {
+      const state = 'READY';
+      database.getMetadata = async () => [{state}];
+      database.getState((err, result) => {
+        assert.ifError(err);
+        assert.strictEqual(result, state);
+        done();
+      });
+    });
   });
 
   describe('getRestoreInfo', () => {
@@ -2619,6 +2629,16 @@ describe('Database', () => {
         return [{}];
       };
       await database.getRestoreInfo(options);
+    });
+
+    it('should accept callback and return info', done => {
+      const restoreInfo = {sourceType: 'BACKUP'};
+      database.getMetadata = async () => [{restoreInfo}];
+      database.getRestoreInfo((err, result) => {
+        assert.ifError(err);
+        assert.strictEqual(result, restoreInfo);
+        done();
+      });
     });
   });
 
@@ -2652,7 +2672,7 @@ describe('Database', () => {
       assert.deepStrictEqual(results, operations);
     });
 
-    it('should options with given gaxOptions', async () => {
+    it('should accept options with given gaxOptions', async () => {
       const operations: IOperation[] = [{name: 'my-operation'}];
       const gaxOpts = {
         timeout: 1000,
@@ -2668,6 +2688,18 @@ describe('Database', () => {
         gaxOptions: gaxOpts,
       });
       assert.deepStrictEqual(results, operations);
+    });
+
+    it('should accept callback', done => {
+      const operations: IOperation[] = [{name: 'my-operation'}];
+
+      database.instance.getDatabaseOperations = async () => [operations, {}];
+
+      database.getOperations((err, results) => {
+        assert.ifError(err);
+        assert.deepStrictEqual(results, operations);
+        done();
+      });
     });
   });
 
