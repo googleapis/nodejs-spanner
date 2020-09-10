@@ -621,27 +621,26 @@ class Spanner extends GrpcService {
       delete gaxOpts.pageToken;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    const transform = function (
-      this: Transform,
-      chunk: instanceAdmin.spanner.admin.instance.v1.IInstance,
-      enc: string,
-      callback: Function
-    ) {
-      const instance = self.instance(chunk.name!);
-      instance.metadata = chunk;
-      callback(null, instance);
-    };
-
     return new pumpify.obj([
       this.requestStream({
         client: 'InstanceAdminClient',
         method: 'listInstancesStream',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       }),
-      new Transform({objectMode: true, transform}),
+      new Transform({
+        objectMode: true,
+        transform: (
+          chunk: instanceAdmin.spanner.admin.instance.v1.IInstance,
+          enc: string,
+          cb: Function
+        ) => {
+          const instance = this.instance(chunk.name!);
+          instance.metadata = chunk;
+          cb(null, instance);
+        },
+      }),
     ]);
   }
 

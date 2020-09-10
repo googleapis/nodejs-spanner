@@ -435,16 +435,6 @@ class Instance extends common.GrpcServiceObject {
       delete gaxOpts.pageSize;
       delete gaxOpts.pageToken;
     }
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    const transform = function (
-      this: Transform,
-      chunk: instanceAdmin.spanner.admin.database.v1.IBackup,
-      enc: string,
-      callback: Function
-    ) {
-      callback(null, self.backup(chunk.name!));
-    };
 
     return new pumpify.obj([
       this.requestStream({
@@ -454,7 +444,14 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       }),
-      new Transform({objectMode: true, transform}),
+      new Transform({
+        objectMode: true,
+        transform: (chunk: IBackup, enc: string, cb: Function) => {
+          const backup = this.backup(chunk.name!);
+          backup.metadata = chunk;
+          cb(null, backup);
+        },
+      }),
     ]);
   }
 
@@ -1342,19 +1339,6 @@ class Instance extends common.GrpcServiceObject {
       delete gaxOpts.pageToken;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    const transform = function (
-      this: Transform,
-      chunk: databaseAdmin.spanner.admin.database.v1.IDatabase,
-      enc: string,
-      callback: Function
-    ) {
-      const database = self.database(chunk.name!);
-      database.metadata = chunk;
-      callback(null, database);
-    };
-
     return new pumpify.obj([
       this.requestStream({
         client: 'DatabaseAdminClient',
@@ -1363,7 +1347,14 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.resourceHeader_,
       }),
-      new Transform({objectMode: true, transform}),
+      new Transform({
+        objectMode: true,
+        transform: (chunk: IDatabase, enc: string, cb: Function) => {
+          const database = this.database(chunk.name!, {min: 0});
+          database.metadata = chunk;
+          cb(null, database);
+        },
+      }),
     ]);
   }
 

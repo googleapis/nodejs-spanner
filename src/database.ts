@@ -361,8 +361,7 @@ class Database extends common.GrpcServiceObject {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
     this.request = instance.request;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.requestStream = instance.requestStream as any;
+    this.requestStream = instance.requestStream;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
     this.queryOptions_ = Object.assign(
@@ -1484,27 +1483,26 @@ class Database extends common.GrpcServiceObject {
       delete gaxOpts.pageToken;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    const transform = function (
-      this: Transform,
-      chunk: databaseAdmin.spanner.v1.ISession,
-      enc: string,
-      callback: Function
-    ) {
-      const session = self.session(chunk.name!);
-      session.metadata = chunk;
-      callback(null, session);
-    };
-
     return new pumpify.obj([
       this.requestStream({
         client: 'SpannerClient',
         method: 'listSessionsStream',
         reqOpts,
         gaxOpts,
+        headers: this.resourceHeader_,
       }),
-      new Transform({objectMode: true, transform}),
+      new Transform({
+        objectMode: true,
+        transform: (
+          chunk: databaseAdmin.spanner.v1.ISession,
+          enc: string,
+          cb: Function
+        ) => {
+          const session = this.session(chunk.name!);
+          session.metadata = chunk;
+          cb(null, session);
+        },
+      }),
     ]);
   }
 
