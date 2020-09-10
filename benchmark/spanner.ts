@@ -23,7 +23,6 @@ import * as mockDatabaseAdmin from '../test/mockserver/mockdatabaseadmin';
 import {google} from '../protos/protos';
 import {SessionPoolOptions} from '../src/session-pool';
 import protobuf = google.spanner.v1;
-import * as yargs from 'yargs';
 import {performance} from 'perf_hooks';
 
 let spannerMock;
@@ -59,7 +58,7 @@ let dbCounter = 1;
  *    increase the number of sessions in the pool, but not necessarily in
  *    parallel.
  */
-yargs
+require('yargs')
   .demand(1)
   .command('burstRead', 'Benchmarks a burst of read operations', {}, () =>
     runBurstRead().then(() => console.log('Benchmark finished'))
