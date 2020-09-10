@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.3.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.3.0...v5.3.1) (2020-09-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency yargs to v16 ([#1233](https://www.github.com/googleapis/nodejs-spanner/issues/1233)) ([75fd09a](https://www.github.com/googleapis/nodejs-spanner/commit/75fd09acb5a9a728a8b6403f44351e4b9b44b723))
+
 ## [5.3.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.1...v5.3.0) (2020-09-04)
 
 
