@@ -23,7 +23,7 @@ import {
 } from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
-import {promisify, promisifyAll} from '@google-cloud/promisify';
+import {promisify, promisifyAll, callbackifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
@@ -42,6 +42,7 @@ import {
   GetDatabaseOperationsOptions,
   GetDatabaseOperationsResponse,
   Instance,
+  GetDatabaseOperationsCallback,
 } from './instance';
 import {PartialResultStream, Row} from './partial-result-stream';
 import {Session} from './session';
@@ -218,6 +219,11 @@ export type RestoreDatabaseResponse = [
   GaxOperation,
   databaseAdmin.longrunning.IOperation
 ];
+
+export type GetRestoreInfoCallback = NormalCallback<IRestoreInfoTranslatedEnum>;
+export type GetStateCallback = NormalCallback<
+  EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
+>;
 
 interface DatabaseRequest {
   (
@@ -1137,6 +1143,11 @@ class Database extends common.GrpcServiceObject {
     );
   }
 
+  getRestoreInfo(
+    options?: CallOptions
+  ): Promise<IRestoreInfoTranslatedEnum | undefined>;
+  getRestoreInfo(callback: GetRestoreInfoCallback): void;
+  getRestoreInfo(options: CallOptions, callback: GetRestoreInfoCallback): void;
   /**
    * {@link google.spanner.admin.database.v1#RestoreInfo} structure with restore
    * source type enum translated to string form.
@@ -1151,6 +1162,7 @@ class Database extends common.GrpcServiceObject {
    * @method Database#getRestoreInfo
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {GetRestoreInfoCallback} [callback] Callback function.
    * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>} When resolved,
    *     contains the restore information for the database if it was restored
    *     from a backup.
@@ -1164,12 +1176,23 @@ class Database extends common.GrpcServiceObject {
    * console.log(`Database restored from ${restoreInfo.backupInfo.backup}`);
    */
   async getRestoreInfo(
-    options?: CallOptions
+    optionsOrCallback?: CallOptions | GetRestoreInfoCallback
   ): Promise<IRestoreInfoTranslatedEnum | undefined> {
-    const [metadata] = await this.getMetadata(options);
+    const gaxOptions =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+
+    const [metadata] = await this.getMetadata(gaxOptions);
     return metadata.restoreInfo ? metadata.restoreInfo : undefined;
   }
 
+  getState(
+    options?: CallOptions
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
+    | undefined
+  >;
+  getState(callback: GetStateCallback): void;
+  getState(options: CallOptions, callback: GetStateCallback): void;
   /**
    * Retrieves the state of the database.
    *
@@ -1181,6 +1204,7 @@ class Database extends common.GrpcServiceObject {
    * @method Database#getState
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {GetStateCallback} [callback] Callback function.
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
    *     When resolved, contains the current state of the database if the state
    *     is defined.
@@ -1194,12 +1218,15 @@ class Database extends common.GrpcServiceObject {
    * const isReady = (state === 'READY');
    */
   async getState(
-    options?: CallOptions
+    optionsOrCallback?: CallOptions | GetStateCallback
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
     | undefined
   > {
-    const [metadata] = await this.getMetadata(options);
+    const gaxOptions =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+
+    const [metadata] = await this.getMetadata(gaxOptions);
     return metadata.state || undefined;
   }
 
@@ -1643,6 +1670,14 @@ class Database extends common.GrpcServiceObject {
     });
   }
 
+  getOperations(
+    options?: GetDatabaseOperationsOptions
+  ): Promise<GetDatabaseOperationsResponse>;
+  getOperations(callback: GetDatabaseOperationsCallback): void;
+  getOperations(
+    options: GetDatabaseOperationsOptions,
+    callback: GetDatabaseOperationsCallback
+  ): void;
   /**
    * Query object for listing database operations.
    *
@@ -1653,6 +1688,9 @@ class Database extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options, outlined
+   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @param {GetDatabaseOperationsCallback} [callback] Callback function.
    */
   /**
    * @typedef {array} GetDatabaseOperationsResponse
@@ -1694,8 +1732,12 @@ class Database extends common.GrpcServiceObject {
    * } while (pageToken);
    */
   async getOperations(
-    options?: GetDatabaseOperationsOptions
+    optionsOrCallback?:
+      | GetDatabaseOperationsOptions
+      | GetDatabaseOperationsCallback
   ): Promise<GetDatabaseOperationsResponse> {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     // Create a query that lists database operations only on this database from
     // the instance. Operation name will be prefixed with the database path for
     // all operations on this database
@@ -2724,6 +2766,39 @@ promisifyAll(Database, {
     'runTransactionAsync',
     'table',
     'session',
+  ],
+});
+
+/*! Developer Documentation
+ *
+ * All async methods (except for streams) will return a Promise in the event
+ * that a callback is omitted.
+ */
+callbackifyAll(Database, {
+  exclude: [
+    'create',
+    'batchCreateSessions',
+    'batchTransaction',
+    'close',
+    'createBatchTransaction',
+    'createSession',
+    'createTable',
+    'delete',
+    'exists',
+    'get',
+    'getMetadata',
+    'getSchema',
+    'getSessions',
+    'getSnapshot',
+    'getTransaction',
+    'restore',
+    'run',
+    'runPartitionedUpdate',
+    'runTransaction',
+    'runTransactionAsync',
+    'session',
+    'table',
+    'updateSchema',
   ],
 });
 
