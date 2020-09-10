@@ -1202,6 +1202,7 @@ describe('Instance', () => {
         stream.push(null);
       });
 
+      const spy = sandbox.spy(instance, 'database');
       instance
         .getDatabasesStream()
         .on('error', assert.ifError)
@@ -1209,6 +1210,10 @@ describe('Instance', () => {
           assert.ok(database instanceof FakeDatabase);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           assert.strictEqual((database as any).metadata, protoDatabase);
+          assert.strictEqual(
+            (spy.getCall(0).args[1]! as SessionPoolOptions).min,
+            0
+          );
         })
         .on('end', done);
     });
