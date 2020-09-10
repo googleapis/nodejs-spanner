@@ -774,6 +774,18 @@ describe('Spanner', () => {
     assert.match(output, /VenueId: 42, VenueName: Venue 42, LastUpdateTime:/);
   });
 
+  // query_with_numeric_parameter
+  it('should use a NUMERIC query parameter to query record from the Venues example table', async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithNumeric ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 19, VenueName: Venue 19, Revenue: 1200100/);
+    assert.match(
+      output,
+      /VenueId: 42, VenueName: Venue 42, Revenue: 390650.99/
+    );
+  });
+
   // create_backup
   it('should create a backup of the database', async () => {
     const output = execSync(

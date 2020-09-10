@@ -80,6 +80,7 @@ const fakePfy = extend({}, pfy, {
       'float',
       'instance',
       'int',
+      'numeric',
       'operation',
       'timestamp',
     ]);
@@ -428,7 +429,7 @@ describe('Spanner', () => {
   });
 
   describe('float', () => {
-    it('should create a SpannerDate instance', () => {
+    it('should create a Float instance', () => {
       const value = {};
       const customValue = {};
 
@@ -489,6 +490,23 @@ describe('Spanner', () => {
       const struct = Spanner.struct(arr);
 
       assert.strictEqual(struct, fakeStruct);
+    });
+  });
+
+  describe('numeric', () => {
+    it('should create a Numeric instance', () => {
+      const value = '3.145';
+      const customValue = {value: '3.145'};
+
+      fakeCodec.Numeric = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const numeric = Spanner.numeric(value);
+      assert.strictEqual(numeric, customValue);
     });
   });
 
