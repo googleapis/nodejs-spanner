@@ -841,7 +841,13 @@ describe('Spanner', () => {
   });
 
   // restore_backup
-  it('should restore database from a backup', async () => {
+  it('should restore database from a backup', async function () {
+    // Restoring a backup can be a slow operation so the test may timeout and
+    // we'll have to retry.
+    this.retries(5);
+    // Delay the start of the test, if this is a retry.
+    await delay(this.test);
+
     const output = execSync(
       `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
