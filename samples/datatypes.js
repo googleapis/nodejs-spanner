@@ -45,7 +45,6 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
         LastContactDate        Date,
         OutdoorVenue           BOOL,
         PopularityScore        FLOAT64,
-        Revenue                NUMERIC,
         LastUpdateTime TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)
       ) PRIMARY KEY (VenueId)`,
   ];
@@ -103,7 +102,6 @@ async function insertData(instanceId, databaseId, projectId) {
       LastContactDate: '2018-09-02',
       OutdoorVenue: false,
       PopularityScore: 0.85543,
-      Revenue: Spanner.numeric('215100.10'),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -115,7 +113,6 @@ async function insertData(instanceId, databaseId, projectId) {
       LastContactDate: '2019-01-15',
       OutdoorVenue: true,
       PopularityScore: 0.98716,
-      Revenue: Spanner.numeric('1200100.00'),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -127,7 +124,6 @@ async function insertData(instanceId, databaseId, projectId) {
       LastContactDate: '2018-10-01',
       OutdoorVenue: false,
       PopularityScore: 0.72598,
-      Revenue: Spanner.numeric('390650.99'),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
   ];
@@ -611,6 +607,97 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // [END spanner_query_with_timestamp_parameter]
 }
 
+async function addNumericColumn(instanceId, databaseId, projectId) {
+  // [START spanner_add_numeric_column]
+  // Imports the Google Cloud client library.
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance.
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  const request = ['ALTER TABLE Venues ADD COLUMN Revenue NUMERIC'];
+
+  // Alter existing table to add a column.
+  const [operation] = await database.updateSchema(request);
+
+  console.log(`Waiting for operation on ${databaseId} to complete...`);
+
+  await operation.promise();
+
+  console.log(
+    `Added Revenue column to Venues table in database ${databaseId}.`
+  );
+  // [END spanner_add_numeric_column]
+}
+
+async function updateWithNumericData(instanceId, databaseId, projectId) {
+  // [START spanner_update_data_with_numeric]
+  // Imports the Google Cloud client library.
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client.
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database.
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  // Instantiate Spanner table objects.
+  const venuesTable = database.table('Venues');
+
+  const data = [
+    {
+      VenueId: '4',
+      Revenue: Spanner.numeric('35000'),
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+    {
+      VenueId: '19',
+      Revenue: Spanner.numeric('104500'),
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+    {
+      VenueId: '42',
+      Revenue: Spanner.numeric('99999999999999999999999999999.99'),
+      LastUpdateTime: 'spanner.commit_timestamp()',
+    },
+  ];
+
+  // Updates rows in the Venues table.
+  try {
+    await venuesTable.update(data);
+    console.log('Updated data.');
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
+  // [END spanner_update_data_with_numeric]
+}
+
 async function queryWithNumeric(instanceId, databaseId, projectId) {
   // [START spanner_query_with_numeric_parameter]
   // Imports the Google Cloud client library.
@@ -636,11 +723,11 @@ async function queryWithNumeric(instanceId, databaseId, projectId) {
     type: 'numeric',
   };
 
-  const exampleNumeric = Spanner.numeric('300000');
+  const exampleNumeric = Spanner.numeric('100000');
 
   const query = {
     sql: `SELECT VenueId, VenueName, Revenue FROM Venues
-            WHERE Revenue >= @revenue`,
+            WHERE Revenue < @revenue`,
     params: {
       revenue: exampleNumeric,
     },
@@ -655,10 +742,7 @@ async function queryWithNumeric(instanceId, databaseId, projectId) {
 
     rows.forEach(row => {
       const json = row.toJSON();
-      console.log(
-        `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` Revenue: ${json.Revenue.value}`
-      );
+      console.log(`VenueId: ${json.VenueId}, Revenue: ${json.Revenue.value}`);
     });
   } catch (err) {
     console.error('ERROR:', err);
@@ -735,6 +819,24 @@ require('yargs')
       queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
+    'addNumericColumn <instanceName> <databaseName> <projectId>',
+    'Adds a "Revenue" column to sample "Venues" table in a Cloud Spanner database.',
+    {},
+    opts =>
+      addNumericColumn(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'updateWithNumericData <instanceName> <databaseName> <projectId>',
+    'Updates rows to include "Revenue" in sample "Venues" Cloud Spanner table.',
+    {},
+    opts =>
+      updateWithNumericData(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
+  .command(
     'queryWithNumeric <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a NUMERIC datatype.",
     {},
@@ -756,6 +858,12 @@ require('yargs')
   )
   .example(
     'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 addNumericColumn "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 updateWithNumericData "my-instance" "my-database" "my-project-id"'
   )
   .example(
     'node $0 queryWithNumeric "my-instance" "my-database" "my-project-id"'
