@@ -780,15 +780,13 @@ describe('Spanner', () => {
       `${datatypesCmd} addNumericColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
 
-    assert.match(
+    assert.include(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      `Waiting for operation on ${DATABASE_ID} to complete...`
     );
-    assert.match(
+    assert.include(
       output,
-      new RegExp(
-        `Added Revenue column to Venues table in database ${DATABASE_ID}.`
-      )
+      `Added Revenue column to Venues table in database ${DATABASE_ID}.`
     );
   });
 
@@ -803,7 +801,7 @@ describe('Spanner', () => {
   // query_with_numeric_parameter
   it('should use a NUMERIC query parameter to query records from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithNumeric ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithNumericParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /VenueId: 4, Revenue: 35000/);
   });
