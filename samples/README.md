@@ -29,6 +29,9 @@ and automatic, synchronous replication for high availability.
   * [DML](#dml)
   * [Indexing](#indexing)
   * [Instance](#instance)
+  * [Numeric-add-column](#numeric-add-column)
+  * [Numeric-query-parameter](#numeric-query-parameter)
+  * [Numeric-update-data](#numeric-update-data)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Schema](#schema)
@@ -299,6 +302,57 @@ __Usage:__
 
 
 `node samples/instance.js`
+
+
+-----
+
+
+
+
+### Numeric-add-column
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/numeric-add-column.js`
+
+
+-----
+
+
+
+
+### Numeric-query-parameter
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-query-parameter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-query-parameter.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/numeric-query-parameter.js`
+
+
+-----
+
+
+
+
+### Numeric-update-data
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/numeric-update-data.js`
 
 
 -----

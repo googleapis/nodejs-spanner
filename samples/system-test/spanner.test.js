@@ -774,16 +774,36 @@ describe('Spanner', () => {
     assert.match(output, /VenueId: 42, VenueName: Venue 42, LastUpdateTime:/);
   });
 
-  // query_with_numeric_parameter
-  it('should use a NUMERIC query parameter to query record from the Venues example table', async () => {
+  // add_numeric_column
+  it('should add a Revenue column to Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithNumeric ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} addNumericColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
     );
-    assert.match(output, /VenueId: 19, VenueName: Venue 19, Revenue: 1200100/);
-    assert.match(
+
+    assert.include(
       output,
-      /VenueId: 42, VenueName: Venue 42, Revenue: 390650.99/
+      `Waiting for operation on ${DATABASE_ID} to complete...`
     );
+    assert.include(
+      output,
+      `Added Revenue column to Venues table in database ${DATABASE_ID}.`
+    );
+  });
+
+  // update_data_with_numeric
+  it('should update rows in Venues example table to add data in Revenue column', async () => {
+    const output = execSync(
+      `${datatypesCmd} updateWithNumericData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Updated data./);
+  });
+
+  // query_with_numeric_parameter
+  it('should use a NUMERIC query parameter to query records from the Venues example table', async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithNumericParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /VenueId: 4, Revenue: 35000/);
   });
 
   // create_backup

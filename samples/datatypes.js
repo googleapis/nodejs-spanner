@@ -45,7 +45,6 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
         LastContactDate        Date,
         OutdoorVenue           BOOL,
         PopularityScore        FLOAT64,
-        Revenue                NUMERIC,
         LastUpdateTime TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)
       ) PRIMARY KEY (VenueId)`,
   ];
@@ -103,7 +102,6 @@ async function insertData(instanceId, databaseId, projectId) {
       LastContactDate: '2018-09-02',
       OutdoorVenue: false,
       PopularityScore: 0.85543,
-      Revenue: Spanner.numeric('215100.10'),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -115,7 +113,6 @@ async function insertData(instanceId, databaseId, projectId) {
       LastContactDate: '2019-01-15',
       OutdoorVenue: true,
       PopularityScore: 0.98716,
-      Revenue: Spanner.numeric('1200100.00'),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -127,7 +124,6 @@ async function insertData(instanceId, databaseId, projectId) {
       LastContactDate: '2018-10-01',
       OutdoorVenue: false,
       PopularityScore: 0.72598,
-      Revenue: Spanner.numeric('390650.99'),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
   ];
@@ -611,63 +607,9 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
   // [END spanner_query_with_timestamp_parameter]
 }
 
-async function queryWithNumeric(instanceId, databaseId, projectId) {
-  // [START spanner_query_with_numeric_parameter]
-  // Imports the Google Cloud client library.
-  const {Spanner} = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  // Gets a reference to a Cloud Spanner instance and database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-
-  const fieldType = {
-    type: 'numeric',
-  };
-
-  const exampleNumeric = Spanner.numeric('300000');
-
-  const query = {
-    sql: `SELECT VenueId, VenueName, Revenue FROM Venues
-            WHERE Revenue >= @revenue`,
-    params: {
-      revenue: exampleNumeric,
-    },
-    types: {
-      revenue: fieldType,
-    },
-  };
-
-  // Queries rows from the Venues table.
-  try {
-    const [rows] = await database.run(query);
-
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` Revenue: ${json.Revenue.value}`
-      );
-    });
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
-  // [END spanner_query_with_numeric_parameter]
-}
+const {addNumericColumn} = require('./numeric-add-column');
+const {updateWithNumericData} = require('./numeric-update-data');
+const {queryWithNumericParameter} = require('./numeric-query-parameter');
 
 require('yargs')
   .demand(1)
@@ -735,11 +677,33 @@ require('yargs')
       queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    'queryWithNumeric <instanceName> <databaseName> <projectId>',
+    'addNumericColumn <instanceName> <databaseName> <projectId>',
+    'Adds a "Revenue" column to sample "Venues" table in a Cloud Spanner database.',
+    {},
+    opts =>
+      addNumericColumn(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'updateWithNumericData <instanceName> <databaseName> <projectId>',
+    'Updates rows to include "Revenue" in sample "Venues" Cloud Spanner table.',
+    {},
+    opts =>
+      updateWithNumericData(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
+  .command(
+    'queryWithNumericParameter <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a NUMERIC datatype.",
     {},
     opts =>
-      queryWithNumeric(opts.instanceName, opts.databaseName, opts.projectId)
+      queryWithNumericParameter(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
   )
   .example(
     'node $0 createVenuesTable "my-instance" "my-database" "my-project-id"'
@@ -758,7 +722,13 @@ require('yargs')
     'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"'
   )
   .example(
-    'node $0 queryWithNumeric "my-instance" "my-database" "my-project-id"'
+    'node $0 addNumericColumn "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 updateWithNumericData "my-instance" "my-database" "my-project-id"'
+  )
+  .example(
+    'node $0 queryWithNumericParameter "my-instance" "my-database" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
