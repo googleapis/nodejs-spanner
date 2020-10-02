@@ -884,9 +884,7 @@ describe('Spanner', () => {
   });
 
   // list_database_operations
-  // Skipped due to a backend issue with specifying a filter when calling
-  // ListDatabaseOperations.
-  it.skip('should list database operations in the instance', async () => {
+  it('should list database operations in the instance', async () => {
     const output = execSync(
       `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
     );
