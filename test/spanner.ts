@@ -2579,6 +2579,11 @@ describe('Spanner with mock server', () => {
     it('should list databases', async () => {
       const [databases] = await instance.getDatabases();
       assert.strictEqual(databases.length, 2);
+      // Assert that listing the databases does not cause a session pool to be
+      // initialized for the databases.
+      for (const db of databases) {
+        assert.strictEqual((db.pool_ as SessionPool).size, 0);
+      }
     });
 
     it('should create a database', async () => {

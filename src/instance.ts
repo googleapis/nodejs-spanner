@@ -1254,7 +1254,7 @@ class Instance extends common.GrpcServiceObject {
         let databases: Database[] | null = null;
         if (rowDatabases) {
           databases = rowDatabases.map(database => {
-            const databaseInstance = self.database(database.name!);
+            const databaseInstance = self.database(database.name!, {min: 0});
             databaseInstance.metadata = database;
             return databaseInstance;
           });
