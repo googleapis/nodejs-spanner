@@ -965,7 +965,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${schemaCmd} getDatabaseSchemaWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp("version_retention_period = '1d'"));
+    assert.include(output, "version_retention_period = '1d'");
   });
 
   // update_version_retention_period
@@ -973,8 +973,8 @@ describe('Spanner', () => {
     const output = execSync(
       `${schemaCmd} updateDatabaseWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp('Waiting for operation to complete...'));
-    assert.match(output, new RegExp('Updated the version retention period.'));
+    assert.include(output, 'Waiting for operation to complete...');
+    assert.include(output, 'Updated the version retention period.');
   });
 
   // get_database
@@ -982,8 +982,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${schemaCmd} getDatabaseWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`
     );
-    console.log(output);
-    assert.match(output, new RegExp("Version retention period: '2d'"));
-    assert.match(output, new RegExp('Earliest version time:'));
+    assert.include(output, 'Version retention period: 2d');
+    assert.include(output, 'Earliest version time:');
   });
 });
