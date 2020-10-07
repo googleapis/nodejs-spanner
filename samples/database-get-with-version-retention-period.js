@@ -16,7 +16,10 @@
 'use strict';
 
 async function getDatabaseWithVersionRetentionPeriod(
-    instanceId, databaseId, projectId) {
+  instanceId,
+  databaseId,
+  projectId
+) {
   // [START spanner_get_database]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -39,10 +42,10 @@ async function getDatabaseWithVersionRetentionPeriod(
   try {
     const [databaseInfo] = await database.getMetadata();
 
-    console.log('Version retention period: ' +
-        databaseInfo.versionRetentionPeriod);
-    console.log('Earliest version time: ' +
-        databaseInfo.earliestVersionTime);
+    console.log(
+      'Version retention period: ' + databaseInfo.versionRetentionPeriod
+    );
+    console.log('Earliest version time: ' + databaseInfo.earliestVersionTime);
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
@@ -52,5 +55,4 @@ async function getDatabaseWithVersionRetentionPeriod(
   // [END spanner_get_database]
 }
 
-module.exports.getDatabaseWithVersionRetentionPeriod =
-  getDatabaseWithVersionRetentionPeriod;
+module.exports.getDatabaseWithVersionRetentionPeriod = getDatabaseWithVersionRetentionPeriod;

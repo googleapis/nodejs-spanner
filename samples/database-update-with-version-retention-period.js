@@ -16,7 +16,10 @@
 'use strict';
 
 async function updateDatabaseWithVersionRetentionPeriod(
-    instanceId, databaseId, projectId) {
+  instanceId,
+  databaseId,
+  projectId
+) {
   // [START spanner_update_version_retention_period]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -35,9 +38,11 @@ async function updateDatabaseWithVersionRetentionPeriod(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const request = [`
+  const request = [
+    `
       ALTER DATABASE \`${databaseId}\`
-      SET OPTIONS (version_retention_period = '2d')`];
+      SET OPTIONS (version_retention_period = '2d')`,
+  ];
 
   // Updates the version retention period on the database.
   try {
@@ -56,5 +61,4 @@ async function updateDatabaseWithVersionRetentionPeriod(
   // [END spanner_update_version_retention_period]
 }
 
-module.exports.updateDatabaseWithVersionRetentionPeriod =
-  updateDatabaseWithVersionRetentionPeriod;
+module.exports.updateDatabaseWithVersionRetentionPeriod = updateDatabaseWithVersionRetentionPeriod;

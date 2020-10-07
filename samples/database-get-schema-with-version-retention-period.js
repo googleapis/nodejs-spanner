@@ -16,7 +16,10 @@
 'use strict';
 
 async function getDatabaseSchemaWithVersionRetentionPeriod(
-    instanceId, databaseId, projectId) {
+  instanceId,
+  databaseId,
+  projectId
+) {
   // [START spanner_get_database_ddl]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -53,5 +56,4 @@ async function getDatabaseSchemaWithVersionRetentionPeriod(
   // [END spanner_get_database_ddl]
 }
 
-module.exports.getDatabaseSchemaWithVersionRetentionPeriod =
-  getDatabaseSchemaWithVersionRetentionPeriod;
+module.exports.getDatabaseSchemaWithVersionRetentionPeriod = getDatabaseSchemaWithVersionRetentionPeriod;

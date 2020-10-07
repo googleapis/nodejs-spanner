@@ -16,7 +16,10 @@
 'use strict';
 
 async function createDatabaseWithVersionRetentionPeriod(
-    instanceId, databaseId, projectId) {
+  instanceId,
+  databaseId,
+  projectId
+) {
   // [START spanner_create_database_with_version_retention_period]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -56,5 +59,4 @@ async function createDatabaseWithVersionRetentionPeriod(
   // [END spanner_create_database_with_version_retention_period]
 }
 
-module.exports.createDatabaseWithVersionRetentionPeriod =
-  createDatabaseWithVersionRetentionPeriod;
+module.exports.createDatabaseWithVersionRetentionPeriod = createDatabaseWithVersionRetentionPeriod;
