@@ -195,6 +195,7 @@ export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
   id?: Uint8Array | string;
+  inlineBegin?: boolean;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
   readTimestamp?: PreciseDate;
@@ -509,6 +510,8 @@ export class Snapshot extends EventEmitter {
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
+    } else if (this.inlineBegin) {
+      transaction.begin = this._options;
     } else {
       transaction.singleUse = this._options;
     }
@@ -539,11 +542,27 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {
+    const prs = partialResultStream(makeRequest, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
+    this.addTransactionListener(prs);
+    return prs;
+  }
+
+  private addTransactionListener(prs: PartialResultStream) {
+    if (prs) {
+      prs.once('response', (prs: google.spanner.v1.PartialResultSet) => {
+        if (
+          prs.metadata &&
+          prs.metadata.transaction &&
+          prs.metadata.transaction.id
+        ) {
+          this.id = prs.metadata.transaction.id;
+        }
+      });
+    }
   }
 
   /**
@@ -913,6 +932,8 @@ export class Snapshot extends EventEmitter {
       const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
       if (this.id) {
         transaction.id = this.id as Uint8Array;
+      } else if (this.inlineBegin) {
+        transaction.begin = this._options;
       } else {
         transaction.singleUse = this._options;
       }
@@ -950,11 +971,13 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {
+    const prs = partialResultStream(makeRequest, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
+    this.addTransactionListener(prs);
+    return prs;
   }
 
   /**
@@ -1253,6 +1276,7 @@ export class Transaction extends Dml {
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
+    this.inlineBegin = true;
   }
 
   batchUpdate(
@@ -1355,9 +1379,17 @@ export class Transaction extends Dml {
       }
     );
 
+    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    if (this.id) {
+      transaction.id = this.id;
+    } else if (this.inlineBegin) {
+      transaction.begin = this._options;
+    } else {
+      throw new Error('BatchDml cannot be used with a singleUse transaction');
+    }
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
-      transaction: {id: this.id!},
+      transaction: transaction,
       seqno: this._seqno++,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
@@ -1384,6 +1416,14 @@ export class Transaction extends Dml {
         }
 
         const {resultSets, status} = resp;
+        if (
+          resultSets[0] &&
+          resultSets[0].metadata &&
+          resultSets[0].metadata.transaction &&
+          resultSets[0].metadata.transaction.id
+        ) {
+          this.id = resultSets[0].metadata.transaction.id;
+        }
         const rowCounts: number[] = resultSets.map(({stats}) => {
           return (
             (stats &&

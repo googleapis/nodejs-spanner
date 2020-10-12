@@ -26,6 +26,7 @@ import ResultSet = google.spanner.v1.ResultSet;
 import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import ITransaction = google.spanner.v1.ITransaction;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -247,7 +248,11 @@ export class MockSpanner {
     this.rollback = this.rollback.bind(this);
 
     this.executeBatchDml = this.executeBatchDml.bind(this);
+    this.executeSql = this.executeSql.bind(this);
     this.executeStreamingSql = this.executeStreamingSql.bind(this);
+
+    this.read = this.read.bind(this);
+    this.streamingRead = this.streamingRead.bind(this);
   }
 
   /**
@@ -501,12 +506,32 @@ export class MockSpanner {
     >
   ) {
     this.requests.push(call.request!);
-    this.simulateExecutionTime(this.executeStreamingSql.name)
+    this.executeSelect(this.executeStreamingSql.name, call.request!.sql, call);
+  }
+
+  private executeSelect(
+    method: string,
+    sql: string,
+    call: grpc.ServerWritableStream<
+      protobuf.ExecuteSqlRequest | protobuf.ReadRequest,
+      protobuf.PartialResultSet
+    >
+  ) {
+    this.simulateExecutionTime(method)
       .then(() => {
-        if (call.request!.transaction && call.request!.transaction.id) {
-          const fullTransactionId = `${call.request!.session}/transactions/${
-            call.request!.transaction.id
-          }`;
+        const request = call.request!;
+        const session = this.sessions.get(request.session);
+        if (!session) {
+          call.emit(
+            'error',
+            MockSpanner.createSessionNotFoundError(request.session)
+          );
+          call.end();
+          return;
+        }
+        let transaction;
+        if (request.transaction && request.transaction.id) {
+          const fullTransactionId = `${request.session}/transactions/${request.transaction.id}`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             call.emit(
               'error',
@@ -515,33 +540,45 @@ export class MockSpanner {
             call.end();
             return;
           }
+        } else if (
+          request.transaction &&
+          request.transaction.begin &&
+          request.transaction.begin.readWrite
+        ) {
+          // Begin a new transaction.
+          transaction = this.createTransaction(session);
         }
-        const res = this.statementResults.get(call.request!.sql);
+        const res = this.statementResults.get(sql);
         if (res) {
           let partialResultSets;
           let resumeIndex;
           let streamErr;
+          let queryMode:
+            | google.spanner.v1.ExecuteSqlRequest.QueryMode
+            | keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode;
+          if ((request as protobuf.ExecuteSqlRequest).queryMode) {
+            queryMode = (request as protobuf.ExecuteSqlRequest).queryMode;
+          } else {
+            queryMode = QueryMode.NORMAL;
+          }
           switch (res.type) {
             case StatementResultType.RESULT_SET:
               partialResultSets = MockSpanner.toPartialResultSets(
                 res.resultSet,
-                call.request!.queryMode
+                queryMode,
+                transaction
               );
               // Resume on the next index after the last one seen by the client.
               resumeIndex =
-                call.request!.resumeToken.length === 0
+                request.resumeToken.length === 0
                   ? 0
-                  : Number.parseInt(call.request!.resumeToken.toString(), 10) +
-                    1;
+                  : Number.parseInt(request.resumeToken.toString(), 10) + 1;
               for (
                 let index = resumeIndex;
                 index < partialResultSets.length;
                 index++
               ) {
-                const streamErr = this.shiftStreamError(
-                  this.executeStreamingSql.name,
-                  index
-                );
+                const streamErr = this.shiftStreamError(method, index);
                 if (streamErr) {
                   call.emit('error', streamErr);
                   break;
@@ -552,13 +589,11 @@ export class MockSpanner {
             case StatementResultType.UPDATE_COUNT:
               call.write(
                 MockSpanner.emptyPartialResultSet(
-                  Buffer.from('1'.padStart(8, '0'))
+                  Buffer.from('1'.padStart(8, '0')),
+                  transaction
                 )
               );
-              streamErr = this.shiftStreamError(
-                this.executeStreamingSql.name,
-                1
-              );
+              streamErr = this.shiftStreamError(method, 1);
               if (streamErr) {
                 call.emit('error', streamErr);
                 break;
@@ -577,7 +612,7 @@ export class MockSpanner {
         } else {
           call.emit(
             'error',
-            new Error(`There is no result registered for ${call.request!.sql}`)
+            new Error(`There is no result registered for ${sql}`)
           );
         }
         call.end();
@@ -592,12 +627,15 @@ export class MockSpanner {
    * Splits a ResultSet into one PartialResultSet per row. This ensure that we can also test returning multiple partial results sets from a streaming method.
    * @param resultSet The ResultSet to split.
    * @param queryMode The query mode that was used to execute the query.
+   * @param transaction TransactionSelector to use.
+   * @param rowsPerPartialResultSet The number of rows to include in each PartialResultSet.
    */
   private static toPartialResultSets(
     resultSet: protobuf.ResultSet,
     queryMode:
       | google.spanner.v1.ExecuteSqlRequest.QueryMode
       | keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode,
+    transaction?: protobuf.Transaction,
     rowsPerPartialResultSet = 1
   ): protobuf.PartialResultSet[] {
     const res: protobuf.PartialResultSet[] = [];
@@ -616,7 +654,10 @@ export class MockSpanner {
         partial.values.push(...resultSet.rows[row].values!);
       }
       if (first) {
-        partial.metadata = resultSet.metadata;
+        partial.metadata = Object.assign({}, resultSet.metadata);
+        if (transaction) {
+          partial.metadata!.transaction = {id: transaction.id} as ITransaction;
+        }
         first = false;
       }
       res.push(partial);
@@ -632,11 +673,16 @@ export class MockSpanner {
   }
 
   private static emptyPartialResultSet(
-    resumeToken: Uint8Array
+    resumeToken: Uint8Array,
+    transaction?: protobuf.Transaction
   ): protobuf.PartialResultSet {
-    return protobuf.PartialResultSet.create({
+    const res = protobuf.PartialResultSet.create({
       resumeToken,
     });
+    if (transaction) {
+      res.metadata = {transaction: {id: transaction.id}};
+    }
+    return res;
   }
 
   private static toPartialResultSet(
@@ -668,18 +714,31 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.ExecuteBatchDmlCallback
   ) {
+    const request = call.request!;
+    this.requests.push(request);
     this.simulateExecutionTime(this.executeBatchDml.name)
       .then(() => {
-        if (call.request!.transaction && call.request!.transaction.id) {
-          const fullTransactionId = `${call.request!.session}/transactions/${
-            call.request!.transaction.id
-          }`;
+        const session = this.sessions.get(request.session);
+        if (!session) {
+          callback(MockSpanner.createSessionNotFoundError(request.session));
+          return;
+        }
+        let transaction;
+        if (request.transaction && request.transaction.id) {
+          const fullTransactionId = `${request.session}/transactions/${request.transaction.id}`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             callback(
               MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
             );
             return;
           }
+        } else if (
+          request.transaction &&
+          request.transaction.begin &&
+          request.transaction.begin.readWrite
+        ) {
+          // Begin a new transaction.
+          transaction = this.createTransaction(session);
         }
         const results: ResultSet[] = [];
         let statementStatus = Status.create({code: grpc.status.OK});
@@ -709,12 +768,22 @@ export class MockSpanner {
           const statement = call.request!.statements[i];
           const res = this.statementResults.get(statement.sql!);
           if (res) {
+            let rs;
             switch (res.type) {
               case StatementResultType.RESULT_SET:
                 callback(new Error('Wrong result type for batch DML'));
                 break;
               case StatementResultType.UPDATE_COUNT:
-                results.push(MockSpanner.toResultSet(res.updateCount));
+                rs = MockSpanner.toResultSet(res.updateCount);
+                if (i === 0) {
+                  rs.metadata = Object.assign({}, rs.metadata);
+                  if (transaction) {
+                    rs.metadata!.transaction = {
+                      id: transaction.id,
+                    } as ITransaction;
+                  }
+                }
+                results.push(rs);
                 break;
               case StatementResultType.ERROR:
                 if ((res.error as grpc.ServiceError).code) {
@@ -763,12 +832,18 @@ export class MockSpanner {
   }
 
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
-    this.requests.push(call.request!);
-    call.emit(
-      'error',
-      createUnimplementedError('StreamingRead is not yet implemented')
-    );
-    call.end();
+    const request = call.request!;
+    this.requests.push(request);
+    if (request.keySet && request.keySet.all) {
+      const sql = `SELECT ${request.columns.join(', ')} FROM ${request.table}`;
+      this.executeSelect(this.streamingRead.name, sql, call);
+    } else {
+      call.emit(
+        'error',
+        createUnimplementedError('StreamingRead is not yet implemented')
+      );
+      call.end();
+    }
   }
 
   beginTransaction(
@@ -778,40 +853,43 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.BeginTransactionCallback
   ) {
+    const request = call.request!;
     this.requests.push(call.request!);
     this.simulateExecutionTime(this.beginTransaction.name)
       .then(() => {
-        const session = this.sessions.get(call.request!.session);
+        const session = this.sessions.get(request.session);
         if (session) {
-          let counter = this.transactionCounters.get(session.name);
-          if (!counter) {
-            counter = 0;
-          }
-          const id = ++counter;
-          this.transactionCounters.set(session.name, counter);
-          const transactionId = id.toString().padStart(12, '0');
-          const fullTransactionId =
-            session.name + '/transactions/' + transactionId;
-          const readTimestamp =
-            call.request!.options && call.request!.options.readOnly
-              ? now()
-              : undefined;
-          const transaction = protobuf.Transaction.create({
-            id: Buffer.from(transactionId),
-            readTimestamp,
-          });
-          this.transactions.set(fullTransactionId, transaction);
-          this.transactionOptions.set(fullTransactionId, call.request!.options);
+          const transaction = this.createTransaction(session, request.options);
           callback(null, transaction);
         } else {
-          callback(
-            MockSpanner.createSessionNotFoundError(call.request!.session)
-          );
+          callback(MockSpanner.createSessionNotFoundError(request.session));
         }
       })
       .catch(err => {
         callback(err);
       });
+  }
+
+  createTransaction(
+    session: google.spanner.v1.Session,
+    options?: google.spanner.v1.ITransactionOptions | null | undefined
+  ): protobuf.Transaction {
+    let counter = this.transactionCounters.get(session.name);
+    if (!counter) {
+      counter = 0;
+    }
+    const id = ++counter;
+    this.transactionCounters.set(session.name, counter);
+    const transactionId = id.toString().padStart(12, '0');
+    const fullTransactionId = session.name + '/transactions/' + transactionId;
+    const readTimestamp = options && options.readOnly ? now() : undefined;
+    const transaction = protobuf.Transaction.create({
+      id: Buffer.from(transactionId),
+      readTimestamp,
+    });
+    this.transactions.set(fullTransactionId, transaction);
+    this.transactionOptions.set(fullTransactionId, options);
+    return transaction;
   }
 
   commit(

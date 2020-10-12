@@ -2424,6 +2424,71 @@ describe('Spanner with mock server', () => {
     });
   });
 
+  describe('inline-begin-transaction', () => {
+    it('should include begin transaction with the first update', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        await tx.runUpdate(updateSql);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      await database.close();
+    });
+
+    it('should include begin transaction with the first batchUpdate', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        await tx.batchUpdate([updateSql, updateSql]);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      await database.close();
+    });
+
+    it('should include begin transaction with the first query', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        await tx.run(selectSql);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      await database.close();
+    });
+
+    it('should include begin transaction with the first read', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        await tx.read('NUMBERS', {
+          keySet: {all: true},
+          columns: ['NUM', 'NAME'],
+        });
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      await database.close();
+    });
+  });
+
   describe('instanceAdmin', () => {
     it('should list instance configurations', async () => {
       const [configs] = await spanner.getInstanceConfigs();
@@ -2674,4 +2739,27 @@ function getRowCountFromStreamingSql(
 
 function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function assertInlinedBegin(mock: MockSpanner) {
+  const request = mock.getRequests().find(val => {
+    return (
+      (val as v1.ExecuteSqlRequest).sql ||
+      ((val as v1.ReadRequest).table && (val as v1.ReadRequest).columns) ||
+      (val as v1.ExecuteBatchDmlRequest).statements
+    );
+  }) as v1.ExecuteSqlRequest | v1.ReadRequest | v1.ExecuteBatchDmlRequest;
+  assert.ok(request, 'no ExecuteSqlRequest found');
+  assert.ok(
+    request.transaction,
+    'no Transaction included with ExecuteSqlRequest'
+  );
+  assert.ok(
+    request.transaction.begin,
+    'no Begin included with ExecuteSqlRequest'
+  );
+  assert.ok(
+    request.transaction.begin.readWrite,
+    'Begin option is not read/write'
+  );
 }

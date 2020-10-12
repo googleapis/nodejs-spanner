@@ -189,7 +189,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       this.emit('stats', chunk.stats);
     }
 
-    if (!this._fields && chunk.metadata) {
+    if (!this._fields && chunk.metadata && chunk.metadata.rowType) {
       this._fields = chunk.metadata.rowType!
         .fields as google.spanner.v1.StructType.Field[];
     }

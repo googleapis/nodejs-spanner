@@ -41,6 +41,7 @@ const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
  */
 export interface RunTransactionOptions {
   timeout?: number;
+  inlineBeginTx?: boolean;
 }
 
 /**
@@ -191,7 +192,9 @@ export abstract class Runner<T> {
     const transaction = this.session.transaction(
       (this.session.parent as Database).queryOptions_
     );
-    await transaction.begin();
+    if (!this.options.inlineBeginTx) {
+      await transaction.begin();
+    }
     return transaction;
   }
   /**

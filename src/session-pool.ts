@@ -132,6 +132,8 @@ export interface SessionPoolInterface extends EventEmitter {
  *     write sessions represented as a float.
  * @property {number} [incStep=25] The number of new sessions to create when at
  *     least one more session is needed.
+ * @property {boolean} [inlineBeginTx=false] Indicates whether a BeginTransaction
+ *     option should be included with the first statement of a transaction.
  */
 export interface SessionPoolOptions {
   acquireTimeout?: number;
@@ -145,6 +147,7 @@ export interface SessionPoolOptions {
   min?: number;
   writes?: number;
   incStep?: number;
+  inlineBeginTx?: boolean;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -159,6 +162,7 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   writes: 0,
   incStep: 25,
+  inlineBeginTx: false,
 };
 
 /**

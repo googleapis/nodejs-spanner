@@ -2501,6 +2501,11 @@ describe('Database', () => {
           callback(null, SESSION, TRANSACTION);
         }
       );
+      (sandbox.stub(pool, 'getReadSession') as sinon.SinonStub).callsFake(
+        callback => {
+          callback(null, SESSION);
+        }
+      );
     });
 
     it('should create an `AsyncTransactionRunner`', async () => {

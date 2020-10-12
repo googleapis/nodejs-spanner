@@ -254,6 +254,7 @@ class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  inlineBeginTx_?: boolean;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
@@ -356,10 +357,13 @@ class Database extends common.GrpcServiceObject {
       },
     } as {}) as ServiceObjectConfig);
 
-    this.pool_ =
-      typeof poolOptions === 'function'
-        ? new (poolOptions as SessionPoolConstructor)(this, null)
-        : new SessionPool(this, poolOptions);
+    if (typeof poolOptions === 'function') {
+      this.pool_ = new (poolOptions as SessionPoolConstructor)(this, null);
+      this.inlineBeginTx_ = false;
+    } else {
+      this.pool_ = new SessionPool(this, poolOptions);
+      this.inlineBeginTx_ = poolOptions && poolOptions.inlineBeginTx;
+    }
     this.formattedName_ = formattedName_;
     this.instance = instance;
     this.resourceHeader_ = {
@@ -2543,14 +2547,23 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrRunFn === 'object'
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
+    if (this.inlineBeginTx_) {
+      options.inlineBeginTx = true;
+    }
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
+    const getReadSession = this.pool_.getReadSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
     // (and yes, we like while (true) more than for (;;) here)
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        const [session, transaction] = await promisify(getWriteSession)();
+        let session, transaction;
+        if (options.inlineBeginTx) {
+          [session] = await promisify(getReadSession)();
+        } else {
+          [session, transaction] = await promisify(getWriteSession)();
+        }
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,
