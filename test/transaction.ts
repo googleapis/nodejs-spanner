@@ -1282,12 +1282,40 @@ describe('Transaction', () => {
       });
 
       it('should accept gaxOptions', done => {
-        const gaxOptions = {};
+        const options = {gaxOptions: {}};
         transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, options.gaxOptions);
+          done();
+        };
+        transaction.commit(options, assert.ifError);
+      });
+
+      it('should accept commit options', done => {
+        const options = {returnCommitStats: true};
+        transaction.request = config => {
+          assert.strictEqual(config.reqOpts.returnCommitStats, true);
+          done();
+        };
+        transaction.commit(options, assert.ifError);
+      });
+
+      it('should accept commit and gaxOptions', done => {
+        const DEADLINE_EXCEEDED_STATUS_CODE = 4;
+        const gaxOptions = {
+          retry: {
+            retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE],
+          },
+        };
+        const options = {
+          returnCommitStats: true,
+          gaxOptions,
+        };
+        transaction.request = config => {
+          assert.strictEqual(config.reqOpts.returnCommitStats, true);
           assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
-        transaction.commit(gaxOptions, assert.ifError);
+        transaction.commit(options, assert.ifError);
       });
 
       it('should use the transaction `id` when set', () => {

@@ -19,6 +19,7 @@ import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError} from 'google-gax';
+import * as extend from 'extend';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable, PassThrough} from 'stream';
@@ -57,6 +58,11 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
+}
+
+export interface CommitOptions {
+  returnCommitStats?: boolean;
+  gaxOptions?: CallOptions;
 }
 
 export interface Statement {
@@ -1421,13 +1427,24 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(gaxOptions?: CallOptions): Promise<CommitResponse>;
+  commit(options?: CommitOptions): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
-  commit(gaxOptions: CallOptions, callback: CommitCallback): void;
+  commit(options: CommitOptions, callback: CommitCallback): void;
+  /**
+   * @typedef {object} CommitOptions
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {CallOptions} [gaxOptions] The request configuration options
+   *     outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   */
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
    *     commit timestamp.
+   * @property {google.spanner.v1.CommitResponse.ICommitStats|null} commitStats
+   *     The statistics about this commit. Only populated if requested in
+   *     {@link CommitOptions}.
    */
   /**
    * @typedef {array} CommitPromiseResponse
@@ -1446,8 +1463,7 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#commit}
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {CommitOptions} [options] Options for configuring the request.
    * @param {CommitCallback} [callback] Callback function.
    * @returns {Promise<CommitPromiseResponse>}
    *
@@ -1473,13 +1489,15 @@ export class Transaction extends Dml {
    * });
    */
   commit(
-    gaxOptionsOrCallback?: CallOptions | CommitCallback,
+    optionsOrCallback?: CommitOptions | CommitCallback,
     cb?: CommitCallback
   ): void | Promise<CommitResponse> {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
     const callback =
-      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? extend({}, optionsOrCallback)
+        : ({} as CommitOptions);
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
@@ -1491,12 +1509,16 @@ export class Transaction extends Dml {
       reqOpts.singleUseTransaction = this._options;
     }
 
+    if (options.returnCommitStats) {
+      reqOpts.returnCommitStats = options.returnCommitStats;
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
         headers: this.resourceHeader_,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
