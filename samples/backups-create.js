@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,9 +46,12 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     const databasePath = database.formattedName_;
     // Expire backup 14 days in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database now.
+    const versionTime = Date.now();
     const [, operation] = await backup.create({
       databasePath: databasePath,
       expireTime: expireTime,
+      versionTime: versionTime,
     });
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
@@ -60,7 +63,9 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
       console.log(
         `Backup ${backupInfo.name} of size ` +
           `${backupInfo.sizeBytes} bytes was created at ` +
-          `${new PreciseDate(backupInfo.createTime).toISOString()}`
+          `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
+          'for version of database at ' +
+          `${new PreciseDate(backupInfo.versionTime).toISOString()}`
       );
     } else {
       console.error('ERROR: Backup is not ready.');

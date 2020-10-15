@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,8 +17,9 @@
 
 async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_restore_backup]
-  // Imports the Google Cloud client library
+  // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
+  const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -53,7 +54,9 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   const restoreInfo = await database.getRestoreInfo();
   console.log(
     `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
-      `to ${databaseId} from backup ${restoreInfo.backupInfo.backup}.`
+      `to ${databaseId} from backup ${restoreInfo.backupInfo.backup} ` +
+      'with version time ' +
+      `${new PreciseDate(restoreInfo.backupInfo.versionTime).toISOString()}.`
   );
   // [END spanner_restore_backup]
 }

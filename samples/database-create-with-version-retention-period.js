@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,8 +38,9 @@ async function createDatabaseWithVersionRetentionPeriod(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  // Creates a new database.
   try {
+    // Create a new database with an extra statement which will alter the
+    // database after creation to set the version retention period.
     console.log(`Creating database ${instance.formattedName_}.`);
     const versionRetentionStatement = `
       ALTER DATABASE \`${databaseId}\`
@@ -50,9 +51,17 @@ async function createDatabaseWithVersionRetentionPeriod(
 
     console.log(`Waiting for operation on ${database.id} to complete...`);
     await operation.promise();
-
     console.log(`
         Created database ${databaseId} with version retention period.`);
+
+    const [data] = await database.get();
+    console.log(
+      `Version retention period: ${data.metadata.versionRetentionPeriod}`
+    );
+    const earliestVersionTime = Spanner.timestamp(
+      data.metadata.earliestVersionTime
+    );
+    console.log(`Earliest version time: ${earliestVersionTime}`);
   } catch (err) {
     console.error('ERROR:', err);
   }
