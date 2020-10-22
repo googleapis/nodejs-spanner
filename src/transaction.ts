@@ -1495,8 +1495,8 @@ export class Transaction extends Dml {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
     const options =
-      typeof optionsOrCallback === 'object' && optionsOrCallback
-        ? extend({}, optionsOrCallback)
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
         : ({} as CommitOptions);
 
     const mutations = this._queuedMutations;

@@ -40,7 +40,7 @@ async function getCommitStats(instanceId, databaseId, projectId) {
 
   // Updates rows in the Venues table.
   try {
-    const [response] = await albumsTable.update(
+    const [response] = await albumsTable.upsert(
       [
         {SingerId: '1', AlbumId: '1', MarketingBudget: '200000'},
         {SingerId: '2', AlbumId: '2', MarketingBudget: '400000'},
