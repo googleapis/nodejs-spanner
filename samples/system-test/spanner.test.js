@@ -17,7 +17,7 @@
 const {Spanner} = require('@google-cloud/spanner');
 const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
-const {describe, it, before, after} = require('mocha');
+const {describe, it, before, after, afterEach} = require('mocha');
 const cp = require('child_process');
 const pLimit = require('p-limit');
 
@@ -227,7 +227,7 @@ describe('Spanner', () => {
   });
 
   describe('instance', () => {
-    after(async () => {
+    afterEach(async () => {
       const sample_instance = spanner.instance(SAMPLE_INSTANCE_ID);
       await sample_instance.delete();
     });
@@ -246,6 +246,27 @@ describe('Spanner', () => {
       assert.match(
         output,
         new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+      );
+    });
+
+    // create_instance_with_processing_units
+    it('should create an example instance with processing units', async () => {
+      const output = execSync(
+        `${instanceCmd} createInstanceWithProcessingUnits "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Instance ${SAMPLE_INSTANCE_ID} has 500 processing units.`)
       );
     });
   });
