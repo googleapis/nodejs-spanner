@@ -1479,7 +1479,7 @@ describe('Instance', () => {
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backup = args[1]!.pop();
           assert.strictEqual(backup, fakeBackupInstance);
-          assert.strictEqual(backup.metadata, REQUEST_RESPONSE_ARGS[1][0]);
+          assert.strictEqual(backup!.metadata, REQUEST_RESPONSE_ARGS[1][0]);
           assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
           assert.strictEqual(args[3], REQUEST_RESPONSE_ARGS[3]);
           done();
