@@ -1070,7 +1070,9 @@ describe('Spanner', () => {
       );
     });
 
-    it('should list database operations on an instance', async function () {
+    // Skipped due to a backend issue with specifying a filter when calling
+    // ListDatabaseOperations.
+    it.skip('should list database operations on an instance', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1417,7 +1419,9 @@ describe('Spanner', () => {
       }
     });
 
-    it('should list backup operations', async () => {
+    // Skipped due to a backend issue with specifying a filter when calling
+    // ListBackupOperations.
+    it.skip('should list backup operations', async () => {
       // List operations and ensure operation for current backup exists.
       // Without a filter.
       const [operationsWithoutFilter] = await instance.getBackupOperations();

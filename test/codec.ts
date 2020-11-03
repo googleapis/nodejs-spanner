@@ -184,7 +184,7 @@ describe('codec', () => {
       const value = '8.01911';
       const numeric = new codec.Numeric(value);
 
-      assert.strictEqual(numeric.toJSON(), value);
+      assert.strictEqual(numeric.toJSON(), '8.01911e+0');
     });
   });
 

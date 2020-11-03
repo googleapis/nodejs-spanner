@@ -1034,8 +1034,9 @@ describe('Instance', () => {
       it('should create and return Database objects', done => {
         const fakeDatabaseInstance = {};
 
-        instance.database = name => {
+        instance.database = (name, options) => {
           assert.strictEqual(name, DATABASES[0].name);
+          assert.strictEqual((options as SessionPoolOptions).min, 0);
           return fakeDatabaseInstance as Database;
         };
 
@@ -1506,7 +1507,7 @@ describe('Instance', () => {
           assert.strictEqual(args[0], REQUEST_RESPONSE_ARGS[0]);
           const backup = args[1]!.pop();
           assert.strictEqual(backup, fakeBackupInstance);
-          assert.strictEqual(backup.metadata, REQUEST_RESPONSE_ARGS[1][0]);
+          assert.strictEqual(backup!.metadata, REQUEST_RESPONSE_ARGS[1][0]);
           assert.strictEqual(args[2], REQUEST_RESPONSE_ARGS[2]);
           assert.strictEqual(args[3], REQUEST_RESPONSE_ARGS[3]);
           done();
