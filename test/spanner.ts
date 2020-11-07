@@ -2487,6 +2487,46 @@ describe('Spanner with mock server', () => {
       assertInlinedBegin(spannerMock);
       await database.close();
     });
+
+    it('should use the transaction id that was returned by the first statement', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // This will begin a transaction.
+        await tx.runUpdate(updateSql);
+        // This statement should use the statement from the previous statement.
+        await tx.run(selectSql);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      assertSecondRequestUsesTransactionId(spannerMock);
+      await database.close();
+    });
+
+    it('second statement should wait for the first statement', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // Execute two queries in parallel.
+        // The first statement should begin a transaction, the second should
+        // wait until the first has finished.
+        const response1 = tx.run(selectSql);
+        const response2 = tx.run(selectSql);
+        await Promise.all([response1, response2]);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      assertSecondRequestUsesTransactionId(spannerMock);
+      await database.close();
+    });
   });
 
   describe('instanceAdmin', () => {
@@ -2761,5 +2801,16 @@ function assertInlinedBegin(mock: MockSpanner) {
   assert.ok(
     request.transaction.begin.readWrite,
     'Begin option is not read/write'
+  );
+}
+
+function assertSecondRequestUsesTransactionId(mock: MockSpanner) {
+  const requests = mock.getRequests().filter(val => {
+    return (val as v1.ExecuteSqlRequest).sql;
+  }) as v1.ExecuteSqlRequest[];
+  assert.strictEqual(requests.length, 2);
+  assert.ok(
+    requests[1].transaction!.id,
+    'no Transaction id found in second request'
   );
 }

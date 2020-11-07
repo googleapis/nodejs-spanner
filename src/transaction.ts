@@ -38,6 +38,9 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import {Database} from '.';
+import ITransactionSelector = google.spanner.v1.ITransactionSelector;
+import validate = WebAssembly.validate;
+import TransactionSelector = google.spanner.v1.TransactionSelector;
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -195,6 +198,9 @@ export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
   id?: Uint8Array | string;
+  idPromise?: Promise<Uint8Array | string>;
+  idResolve?: (id: Uint8Array | string) => void;
+  idReject?: (error: Error) => void;
   inlineBegin?: boolean;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -347,6 +353,7 @@ export class Snapshot extends EventEmitter {
 
         const {id, readTimestamp} = resp;
 
+        this.idPromise = Promise.resolve(id!);
         this.id = id!;
         this.metadata = resp;
 
@@ -358,6 +365,22 @@ export class Snapshot extends EventEmitter {
         callback!(null, resp);
       }
     );
+  }
+
+  private addTransactionListener(prs: PartialResultStream) {
+    if (prs) {
+      prs.once('response', (prs: google.spanner.v1.PartialResultSet) => {
+        if (
+          this.idResolve &&
+          prs.metadata &&
+          prs.metadata.transaction &&
+          prs.metadata.transaction.id
+        ) {
+          this.id = prs.metadata.transaction.id;
+          this.idResolve(prs.metadata.transaction.id);
+        }
+      });
+    }
   }
 
   /**
@@ -506,14 +529,22 @@ export class Snapshot extends EventEmitter {
   ): PartialResultStream {
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
-
-    if (this.id) {
-      transaction.id = this.id as Uint8Array;
+    let transaction;
+    if (this.idPromise) {
+      transaction = this.idPromise.then(id => {
+        return {id} as ITransactionSelector;
+      });
     } else if (this.inlineBegin) {
-      transaction.begin = this._options;
+      this.idPromise = new Promise((resolve, reject) => {
+        this.idResolve = id => {
+          this.id = id;
+          resolve(id);
+        };
+        this.idReject = reject;
+      });
+      transaction = Promise.resolve({begin: this._options});
     } else {
-      transaction.singleUse = this._options;
+      transaction = Promise.resolve({singleUse: this._options});
     }
 
     request = Object.assign({}, request);
@@ -527,42 +558,30 @@ export class Snapshot extends EventEmitter {
 
     const reqOpts: ReadRequest = Object.assign(request, {
       session: this.session.formattedName_!,
-      transaction,
       table,
       keySet,
     });
 
-    const makeRequest = (resumeToken?: ResumeToken): Readable => {
+    const makeRequest = (
+      transaction: ITransactionSelector,
+      resumeToken?: ResumeToken
+    ): Readable => {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
-        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+        reqOpts: Object.assign({}, reqOpts, {transaction, resumeToken}),
         gaxOpts: gaxOptions,
         headers: this.resourceHeader_,
       });
     };
 
-    const prs = partialResultStream(makeRequest, {
+    const prs = partialResultStream(makeRequest, transaction, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
     this.addTransactionListener(prs);
     return prs;
-  }
-
-  private addTransactionListener(prs: PartialResultStream) {
-    if (prs) {
-      prs.once('response', (prs: google.spanner.v1.PartialResultSet) => {
-        if (
-          prs.metadata &&
-          prs.metadata.transaction &&
-          prs.metadata.transaction.id
-        ) {
-          this.id = prs.metadata.transaction.id;
-        }
-      });
-    }
   }
 
   /**
@@ -926,17 +945,28 @@ export class Snapshot extends EventEmitter {
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
     let reqOpts;
 
-    const sanitizeRequest = () => {
+    let transaction: Promise<ITransactionSelector>;
+    if (this.idPromise) {
+      transaction = this.idPromise.then(id => {
+        return {id} as ITransactionSelector;
+      });
+    } else if (this.inlineBegin) {
+      this.idPromise = new Promise((resolve, reject) => {
+        this.idResolve = id => {
+          this.id = id;
+          resolve(id);
+        };
+        this.idReject = reject;
+      });
+      transaction = Promise.resolve({begin: this._options});
+    } else {
+      transaction = Promise.resolve({singleUse: this._options});
+    }
+
+    const sanitizeRequest = (transaction: ITransactionSelector) => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
-      const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
-      if (this.id) {
-        transaction.id = this.id as Uint8Array;
-      } else if (this.inlineBegin) {
-        transaction.begin = this._options;
-      } else {
-        transaction.singleUse = this._options;
-      }
+
       delete query.gaxOptions;
       delete query.json;
       delete query.jsonOptions;
@@ -944,17 +974,20 @@ export class Snapshot extends EventEmitter {
       delete query.types;
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
-        seqno: this._seqno++,
         transaction,
+        seqno: this._seqno++,
         params,
         paramTypes,
       });
     };
 
-    const makeRequest = (resumeToken?: ResumeToken): Readable => {
+    const makeRequest = (
+      transactionSelector: ITransactionSelector,
+      resumeToken?: ResumeToken
+    ): Readable => {
       if (!reqOpts) {
         try {
-          sanitizeRequest();
+          sanitizeRequest(transactionSelector);
         } catch (e) {
           const errorStream = new PassThrough();
           setImmediate(() => errorStream.destroy(e));
@@ -971,7 +1004,7 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    const prs = partialResultStream(makeRequest, {
+    const prs = partialResultStream(makeRequest, transaction, {
       json,
       jsonOptions,
       maxResumeRetries,
@@ -1378,76 +1411,87 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       }
     );
-
-    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
-    if (this.id) {
-      transaction.id = this.id;
+    let transaction;
+    if (this.idPromise) {
+      transaction = this.idPromise.then(id => {
+        return {id} as ITransactionSelector;
+      });
     } else if (this.inlineBegin) {
-      transaction.begin = this._options;
+      this.idPromise = new Promise((resolve, reject) => {
+        this.idResolve = id => {
+          this.id = id;
+          resolve(id);
+        };
+        this.idReject = reject;
+      });
+      transaction = Promise.resolve({begin: this._options});
     } else {
-      throw new Error('BatchDml cannot be used with a singleUse transaction');
+      transaction = Promise.resolve({singleUse: this._options});
     }
-    const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
-      session: this.session.formattedName_!,
-      transaction: transaction,
-      seqno: this._seqno++,
-      statements,
-    } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    this.request(
-      {
-        client: 'SpannerClient',
-        method: 'executeBatchDml',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (
-        err: null | grpc.ServiceError,
-        resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
-      ) => {
-        let batchUpdateError: BatchUpdateError;
+    transaction.then(transaction => {
+      const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
+        session: this.session.formattedName_!,
+        transaction,
+        seqno: this._seqno++,
+        statements,
+      } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
+      this.request(
+        {
+          client: 'SpannerClient',
+          method: 'executeBatchDml',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (
+          err: null | grpc.ServiceError,
+          resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
+        ) => {
+          let batchUpdateError: BatchUpdateError;
 
-        if (err) {
-          const rowCounts: number[] = [];
-          batchUpdateError = Object.assign(err, {rowCounts});
-          callback!(batchUpdateError, rowCounts, resp);
-          return;
+          if (err) {
+            const rowCounts: number[] = [];
+            batchUpdateError = Object.assign(err, {rowCounts});
+            callback!(batchUpdateError, rowCounts, resp);
+            return;
+          }
+
+          const {resultSets, status} = resp;
+          if (
+            this.idResolve &&
+            resultSets[0] &&
+            resultSets[0].metadata &&
+            resultSets[0].metadata.transaction &&
+            resultSets[0].metadata.transaction.id
+          ) {
+            this.idResolve(resultSets[0].metadata.transaction.id);
+          }
+          const rowCounts: number[] = resultSets.map(({stats}) => {
+            return (
+              (stats &&
+                Number(
+                  stats[
+                    (stats as spannerClient.spanner.v1.ResultSetStats).rowCount!
+                  ]
+                )) ||
+              0
+            );
+          });
+
+          if (status && status.code !== 0) {
+            const error = new Error(status.message!);
+            batchUpdateError = Object.assign(error, {
+              code: status.code,
+              metadata: Transaction.extractKnownMetadata(status.details!),
+              rowCounts,
+            }) as BatchUpdateError;
+          }
+
+          callback!(batchUpdateError!, rowCounts, resp);
         }
-
-        const {resultSets, status} = resp;
-        if (
-          resultSets[0] &&
-          resultSets[0].metadata &&
-          resultSets[0].metadata.transaction &&
-          resultSets[0].metadata.transaction.id
-        ) {
-          this.id = resultSets[0].metadata.transaction.id;
-        }
-        const rowCounts: number[] = resultSets.map(({stats}) => {
-          return (
-            (stats &&
-              Number(
-                stats[
-                  (stats as spannerClient.spanner.v1.ResultSetStats).rowCount!
-                ]
-              )) ||
-            0
-          );
-        });
-
-        if (status && status.code !== 0) {
-          const error = new Error(status.message!);
-          batchUpdateError = Object.assign(error, {
-            code: status.code,
-            metadata: Transaction.extractKnownMetadata(status.details!),
-            rowCounts,
-          }) as BatchUpdateError;
-        }
-
-        callback!(batchUpdateError!, rowCounts, resp);
-      }
-    );
+      );
+    });
   }
 
   private static extractKnownMetadata(
@@ -1528,34 +1572,45 @@ export class Transaction extends Dml {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
-
-    if (this.id) {
-      reqOpts.transactionId = this.id as Uint8Array;
+    let transaction;
+    if (this.idPromise) {
+      transaction = this.idPromise.then(id => {
+        return {id} as ITransactionSelector;
+      });
+    } else if (this.inlineBegin) {
+      throw new Error('Nothing to commit');
     } else {
-      reqOpts.singleUseTransaction = this._options;
+      transaction = Promise.resolve({singleUse: this._options});
     }
 
-    this.request(
-      {
-        client: 'SpannerClient',
-        method: 'commit',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
-        this.end();
-
-        if (resp && resp.commitTimestamp) {
-          this.commitTimestampProto = resp.commitTimestamp;
-          this.commitTimestamp = new PreciseDate(
-            resp.commitTimestamp as DateStruct
-          );
-        }
-
-        callback!(err as ServiceError | null, resp);
+    transaction.then(transaction => {
+      if (transaction.id) {
+        reqOpts.transactionId = transaction.id;
+      } else if (transaction.singleUse) {
+        reqOpts.singleUseTransaction = transaction.singleUse;
       }
-    );
+      this.request(
+        {
+          client: 'SpannerClient',
+          method: 'commit',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
+          this.end();
+
+          if (resp && resp.commitTimestamp) {
+            this.commitTimestampProto = resp.commitTimestamp;
+            this.commitTimestamp = new PreciseDate(
+              resp.commitTimestamp as DateStruct
+            );
+          }
+
+          callback!(err as ServiceError | null, resp);
+        }
+      );
+    });
   }
 
   /**
@@ -1755,7 +1810,7 @@ export class Transaction extends Dml {
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
-    if (!this.id) {
+    if (!this.idPromise) {
       callback!(
         new Error(
           'Transaction ID is unknown, nothing to rollback.'
@@ -1765,25 +1820,26 @@ export class Transaction extends Dml {
     }
 
     const session = this.session.formattedName_!;
-    const transactionId = this.id;
-    const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
-      session,
-      transactionId,
-    };
+    this.idPromise.then(transactionId => {
+      const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
+        session,
+        transactionId,
+      };
 
-    this.request(
-      {
-        client: 'SpannerClient',
-        method: 'rollback',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (err: null | ServiceError) => {
-        this.end();
-        callback!(err);
-      }
-    );
+      this.request(
+        {
+          client: 'SpannerClient',
+          method: 'rollback',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err: null | ServiceError) => {
+          this.end();
+          callback!(err);
+        }
+      );
+    });
   }
 
   /**
