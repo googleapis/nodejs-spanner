@@ -94,6 +94,10 @@ async function deleteStaleInstances() {
       });
       const operations = res.data.operations;
 
+      if (!operations) {
+        return deleteInstance(instance);
+      }
+
       const delay = 500;
       const limit = pLimit(5);
 
