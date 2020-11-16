@@ -3,23 +3,15 @@
     {
       "git": {
         "name": ".",
-        "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "d8d8f2bead6f1a1817541188bf3bf82b986dcb25"
-      }
-    },
-    {
-      "git": {
-        "name": "googleapis",
-        "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "4c5071b615d96ef9dfd6a63d8429090f1f2872bb",
-        "internalRef": "327369997"
+        "remote": "git@github.com:googleapis/nodejs-spanner.git",
+        "sha": "69038568a6c34d7484ea9370cc96ba92af2c83d8"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "89c849ba5013e45e8fb688b138f33c2ec6083dc5"
+        "sha": "1f1148d3c7a7a52f0c98077f976bd9b3c948ee2b"
       }
     }
   ],
@@ -105,6 +97,7 @@
     "README.md",
     "api-extractor.json",
     "linkinator.config.json",
+    "package-lock.json.2151674011",
     "protos/google/spanner/admin/database/v1/backup.proto",
     "protos/google/spanner/admin/database/v1/common.proto",
     "protos/google/spanner/admin/database/v1/spanner_database_admin.proto",
@@ -121,6 +114,7 @@
     "protos/protos.json",
     "renovate.json",
     "samples/README.md",
+    "samples/package-lock.json.2424150423",
     "src/v1/database_admin_client.ts",
     "src/v1/database_admin_client_config.json",
     "src/v1/database_admin_proto_list.json",
